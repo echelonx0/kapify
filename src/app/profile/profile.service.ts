@@ -61,6 +61,51 @@ export interface ProfileData {
     businessPlan?: File;
     taxClearance?: File;
   };
+
+    // New sections
+  managementGovernance?: {
+    managementTeam: ManagementMember[];
+    boardOfDirectors: BoardMember[];
+    managementCommittee: CommitteeMember[];
+  };
+  
+  businessReview?: {
+    // Business review fields
+  };
+  
+  swotAnalysis?: {
+    strengths: string[];
+    weaknesses: string[];
+    opportunities: string[];
+    threats: string[];
+  };
+  
+  businessPlan?: {
+    // Business plan fields
+  };
+}
+
+export interface ManagementMember {
+  id: string;
+  fullName: string;
+  role: string;
+  qualification: string;
+  yearsOfExperience: number;
+}
+
+export interface BoardMember {
+  id: string;
+  fullName: string;
+  role: string;
+  independent: boolean;
+  appointmentDate: string;
+}
+
+export interface CommitteeMember {
+  id: string;
+  fullName: string;
+  committee: string;
+  role: string;
 }
 
 export interface ProfileStep {
@@ -82,13 +127,15 @@ export class ProfileService {
   data = this.profileData.asReadonly();
   currentStepId = this.currentStep.asReadonly();
   
-  steps: ProfileStep[] = [
-    { id: 'personal', title: 'Personal Information', description: 'Tell us about yourself', completed: false, required: true },
-    { id: 'business', title: 'Business Details', description: 'Company information and structure', completed: false, required: true },
-    { id: 'financial', title: 'Financial Overview', description: 'Revenue, expenses, and banking', completed: false, required: true },
-    { id: 'funding', title: 'Funding Requirements', description: 'What you need and why', completed: false, required: true },
-    { id: 'documents', title: 'Supporting Documents', description: 'Upload required documents', completed: false, required: true }
-  ];
+steps: ProfileStep[] = [
+  { id: 'admin', title: 'Administration Information', description: 'Key administrative details', completed: false, required: true },
+  { id: 'documents', title: 'Document upload', description: 'Upload required documents', completed: false, required: true },
+  { id: 'business-review', title: 'Business review', description: 'Business operations review', completed: false, required: true },
+  { id: 'swot', title: 'SWOT analysis', description: 'Strengths, weaknesses, opportunities, threats', completed: false, required: true },
+  { id: 'management', title: 'Management Governance', description: 'Leadership and oversight structure', completed: false, required: true },
+  { id: 'business-plan', title: 'Business plan', description: 'Strategic business planning', completed: false, required: true },
+  { id: 'financial', title: 'Financial Analysis', description: 'Financial performance and projections', completed: false, required: true }
+];
   
   completionPercentage = computed(() => {
     const completedSteps = this.steps.filter(step => step.completed).length;
@@ -139,6 +186,42 @@ export class ProfileService {
     this.markStepCompleted('documents');
   }
   
+
+  // Add new update methods
+updateManagementGovernance(data: any) {
+  this.profileData.update(current => ({
+    ...current,
+    managementGovernance: data
+  }));
+  this.markStepCompleted('management');
+}
+
+updateBusinessReview(data: any) {
+  this.profileData.update(current => ({
+    ...current,
+    businessReview: data
+  }));
+  this.markStepCompleted('business-review');
+}
+
+updateSwotAnalysis(data: any) {
+  this.profileData.update(current => ({
+    ...current,
+    swotAnalysis: data
+  }));
+  this.markStepCompleted('swot');
+}
+
+updateBusinessPlan(data: any) {
+  this.profileData.update(current => ({
+    ...current,
+    businessPlan: data
+  }));
+  this.markStepCompleted('business-plan');
+}
+
+
+
   setCurrentStep(stepId: string) {
     this.currentStep.set(stepId);
   }

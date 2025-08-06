@@ -1,5 +1,5 @@
 
-// src/app/profile/profile-layout.component.ts
+// // src/app/profile/profile-layout.component.ts
 import { Component, signal } from '@angular/core';
 import { Router, RouterOutlet } from '@angular/router';
 import { LucideAngularModule, ArrowLeft, ArrowRight, Check } from 'lucide-angular';
@@ -7,6 +7,215 @@ import { UiButtonComponent, UiProgressComponent, UiCardComponent } from '../../s
 import { ProfileService } from '../profile.service';
 
 
+// @Component({
+//   selector: 'app-profile-layout',
+//   standalone: true,
+//   imports: [RouterOutlet, LucideAngularModule, UiButtonComponent, UiProgressComponent, UiCardComponent],
+//   template: `
+//     <div class="min-h-screen bg-neutral-50">
+//       <!-- Header -->
+//       <header class="bg-white border-b border-neutral-200 sticky top-0 z-40">
+//         <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+//           <div class="flex items-center justify-between">
+//             <div class="flex items-center space-x-4">
+//               <button 
+//                 class="text-neutral-500 hover:text-neutral-700 transition-colors"
+//                 (click)="goBack()"
+//               >
+//                 <lucide-icon [img]="ArrowLeftIcon" [size]="20" />
+//               </button>
+//               <div>
+//                 <h1 class="text-xl font-semibold text-neutral-900">Complete Your Profile</h1>
+//                 <p class="text-sm text-neutral-600">Step {{ currentStepNumber() }} of {{ totalSteps() }}</p>
+//               </div>
+//             </div>
+            
+//             <div class="text-sm text-neutral-500">
+//               {{ profileService.completionPercentage() }}% Complete
+//             </div>
+//           </div>
+          
+//           <!-- Progress Bar -->
+//           <div class="mt-4">
+//             <ui-progress [value]="profileService.completionPercentage()" color="primary" />
+//           </div>
+//         </div>
+//       </header>
+
+//       <!-- Step Navigation -->
+//       <div class="bg-white border-b border-neutral-200">
+//         <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+//           <nav class="flex space-x-8 overflow-x-auto py-4" aria-label="Progress">
+//             @for (step of profileService.steps; track step.id; let i = $index) {
+//               <button
+//                 (click)="goToStep(step.id)"
+//                 [class]="getStepClasses(step, i)"
+//                 [disabled]="!canAccessStep(step, i)"
+//               >
+//                 <div class="flex items-center">
+//                   <div [class]="getStepIconClasses(step)">
+//                     @if (step.completed) {
+//                       <lucide-icon [img]="CheckIcon" [size]="16" />
+//                     } @else {
+//                       <span class="text-xs font-medium">{{ i + 1 }}</span>
+//                     }
+//                   </div>
+//                   <div class="ml-3 text-left">
+//                     <div class="text-sm font-medium">{{ step.title }}</div>
+//                     <div class="text-xs text-neutral-500">{{ step.description }}</div>
+//                   </div>
+//                 </div>
+//               </button>
+//             }
+//           </nav>
+//         </div>
+//       </div>
+
+//       <!-- Main Content -->
+//       <main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+//         <router-outlet />
+//       </main>
+
+//       <!-- Navigation Footer -->
+//       <footer class="sticky bottom-0 bg-white border-t border-neutral-200 py-4">
+//         <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+//           <div class="flex items-center justify-between">
+//             <ui-button 
+//               variant="outline" 
+//               (clicked)="previousStep()"
+//               [disabled]="isFirstStep()"
+//             >
+//               <lucide-icon [img]="ArrowLeftIcon" [size]="16" class="mr-2" />
+//               Previous
+//             </ui-button>
+            
+//             @if (isLastStep()) {
+//               <ui-button 
+//                 variant="primary"
+//                 (clicked)="submitProfile()"
+//                 [disabled]="!canSubmit() || isSubmitting()"
+//               >
+//                 @if (isSubmitting()) {
+//                   Submitting...
+//                 } @else {
+//                   Submit Profile
+//                 }
+//               </ui-button>
+//             } @else {
+//               <ui-button 
+//                 variant="primary"
+//                 (clicked)="nextStep()"
+//                 [disabled]="!canProceed()"
+//               >
+//                 Next
+//                 <lucide-icon [img]="ArrowRightIcon" [size]="16" class="ml-2" />
+//               </ui-button>
+//             }
+//           </div>
+//         </div>
+//       </footer>
+//     </div>
+//   `
+// })
+// export class ProfileLayoutComponent {
+//   isSubmitting = signal(false);
+  
+//   ArrowLeftIcon = ArrowLeft;
+//   ArrowRightIcon = ArrowRight;
+//   CheckIcon = Check;
+  
+//   constructor(
+//     public profileService: ProfileService,
+//     private router: Router
+//   ) {}
+  
+//   currentStepNumber = () => this.profileService.currentStepIndex() + 1;
+//   totalSteps = () => this.profileService.steps.length;
+  
+//   goBack() {
+//     this.router.navigate(['/dashboard']);
+//   }
+  
+//   goToStep(stepId: string) {
+//     this.profileService.setCurrentStep(stepId);
+//     this.router.navigate(['/profile', stepId]);
+//   }
+  
+//   previousStep() {
+//     this.profileService.previousStep();
+//     this.router.navigate(['/profile', this.profileService.currentStepId()]);
+//   }
+  
+//   nextStep() {
+//     this.profileService.nextStep();
+//     this.router.navigate(['/profile', this.profileService.currentStepId()]);
+//   }
+  
+//   async submitProfile() {
+//     this.isSubmitting.set(true);
+//     const result = await this.profileService.submitProfile();
+//     this.isSubmitting.set(false);
+    
+//     if (result.success) {
+//       this.router.navigate(['/dashboard'], { 
+//         queryParams: { profileCompleted: 'true' } 
+//       });
+//     }
+//   }
+  
+//   isFirstStep = () => this.profileService.currentStepIndex() === 0;
+//   isLastStep = () => this.profileService.currentStepIndex() === this.profileService.steps.length - 1;
+  
+//   canAccessStep(step: any, index: number): boolean {
+//     // Can access current step, completed steps, or next step if current is completed
+//     const currentIndex = this.profileService.currentStepIndex();
+//     return index <= currentIndex || step.completed;
+//   }
+  
+//   canProceed(): boolean {
+//     const currentStep = this.profileService.steps[this.profileService.currentStepIndex()];
+//     return currentStep?.completed || false;
+//   }
+  
+//   canSubmit(): boolean {
+//     return this.profileService.steps.every(step => step.completed);
+//   }
+  
+//   getStepClasses(step: any, index: number): string {
+//     const baseClasses = 'flex items-center p-2 rounded-lg transition-colors';
+//     const currentIndex = this.profileService.currentStepIndex();
+    
+//     if (index === currentIndex) {
+//       return `${baseClasses} bg-primary-50 text-primary-700`;
+//     } else if (step.completed) {
+//       return `${baseClasses} text-neutral-900 hover:bg-neutral-50`;
+//     } else if (this.canAccessStep(step, index)) {
+//       return `${baseClasses} text-neutral-600 hover:bg-neutral-50`;
+//     } else {
+//       return `${baseClasses} text-neutral-400 cursor-not-allowed`;
+//     }
+//   }
+  
+//   getStepIconClasses(step: any): string {
+//     const baseClasses = 'w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium';
+    
+//     if (step.completed) {
+//       return `${baseClasses} bg-primary-500 text-white`;
+//     } else {
+//       const currentIndex = this.profileService.currentStepIndex();
+//       const stepIndex = this.profileService.steps.indexOf(step);
+      
+//       if (stepIndex === currentIndex) {
+//         return `${baseClasses} bg-primary-100 text-primary-600 border-2 border-primary-500`;
+//       } else {
+//         return `${baseClasses} bg-neutral-200 text-neutral-600`;
+//       }
+//     }
+//   }
+// }
+
+
+// src/app/profile/profile-layout.component.ts - Updated to match the UI
 @Component({
   selector: 'app-profile-layout',
   standalone: true,
@@ -14,79 +223,93 @@ import { ProfileService } from '../profile.service';
   template: `
     <div class="min-h-screen bg-neutral-50">
       <!-- Header -->
-      <header class="bg-white border-b border-neutral-200 sticky top-0 z-40">
-        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div class="flex items-center justify-between">
-            <div class="flex items-center space-x-4">
-              <button 
-                class="text-neutral-500 hover:text-neutral-700 transition-colors"
-                (click)="goBack()"
-              >
-                <lucide-icon [img]="ArrowLeftIcon" [size]="20" />
-              </button>
-              <div>
-                <h1 class="text-xl font-semibold text-neutral-900">Complete Your Profile</h1>
-                <p class="text-sm text-neutral-600">Step {{ currentStepNumber() }} of {{ totalSteps() }}</p>
+      <div class="bg-white border-b border-neutral-200">
+        <!-- Main Header -->
+        <div class="border-b border-neutral-200 py-4">
+          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center space-x-2 text-sm text-neutral-600 mb-2">
+              <span>Home</span>
+              <span>></span>
+              <span>Set up your profile</span>
+            </div>
+            <h1 class="text-2xl font-bold text-neutral-900">Complete Your Investment Readiness Profile</h1>
+            <p class="text-neutral-600 mt-2 max-w-4xl">
+              Welcome to your Investment Readiness Profile. Please provide the latest information about your business structure, 
+              operations, and relevant documents. This profile supports your funding applications and helps us understand your business better.
+            </p>
+            
+            <!-- Help Banner -->
+            <div class="bg-primary-50 border border-primary-200 rounded-lg p-4 mt-4 max-w-4xl">
+              <div class="flex items-center space-x-2">
+                <div class="w-2 h-2 bg-primary-500 rounded-full"></div>
+                <span class="text-sm text-primary-700">
+                  Request assistance with building your profile? 
+                  <button class="underline hover:no-underline font-medium">Click here</button>
+                </span>
               </div>
             </div>
-            
-            <div class="text-sm text-neutral-500">
-              {{ profileService.completionPercentage() }}% Complete
-            </div>
-          </div>
-          
-          <!-- Progress Bar -->
-          <div class="mt-4">
-            <ui-progress [value]="profileService.completionPercentage()" color="primary" />
           </div>
         </div>
-      </header>
-
-      <!-- Step Navigation -->
-      <div class="bg-white border-b border-neutral-200">
-        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <nav class="flex space-x-8 overflow-x-auto py-4" aria-label="Progress">
+        
+        <!-- Step Navigation -->
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div class="flex items-center justify-between space-x-4 overflow-x-auto">
             @for (step of profileService.steps; track step.id; let i = $index) {
               <button
                 (click)="goToStep(step.id)"
-                [class]="getStepClasses(step, i)"
+                [class]="getStepButtonClasses(step, i)"
                 [disabled]="!canAccessStep(step, i)"
+                class="flex-shrink-0"
               >
-                <div class="flex items-center">
-                  <div [class]="getStepIconClasses(step)">
+                <div class="flex flex-col items-center space-y-2">
+                  <div [class]="getStepIconClasses(step, i)">
                     @if (step.completed) {
-                      <lucide-icon [img]="CheckIcon" [size]="16" />
+                      <lucide-icon [img]="CheckIcon" [size]="16" class="text-white" />
                     } @else {
                       <span class="text-xs font-medium">{{ i + 1 }}</span>
                     }
                   </div>
-                  <div class="ml-3 text-left">
-                    <div class="text-sm font-medium">{{ step.title }}</div>
-                    <div class="text-xs text-neutral-500">{{ step.description }}</div>
+                  <div class="text-xs text-center max-w-20">
+                    <div [class]="getStepTextClasses(step, i)">{{ step.title }}</div>
                   </div>
                 </div>
               </button>
             }
-          </nav>
+          </div>
         </div>
       </div>
 
       <!-- Main Content -->
-      <main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <!-- Current Step Info -->
+        <div class="mb-6">
+          <h2 class="text-xl font-semibold text-neutral-900">{{ getCurrentStepTitle() }}</h2>
+          <p class="text-neutral-600 mt-1">{{ getCurrentStepDescription() }}</p>
+        </div>
+        
         <router-outlet />
       </main>
 
-      <!-- Navigation Footer -->
-      <footer class="sticky bottom-0 bg-white border-t border-neutral-200 py-4">
-        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div class="flex items-center justify-between">
+      <!-- Footer Actions -->
+      <div class="bg-white border-t border-neutral-200 sticky bottom-0">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div class="flex items-center justify-end space-x-4">
+            @if (!isFirstStep()) {
+              <ui-button variant="outline" (clicked)="previousStep()">
+                Back
+              </ui-button>
+            }
+            
             <ui-button 
-              variant="outline" 
-              (clicked)="previousStep()"
-              [disabled]="isFirstStep()"
+              variant="primary" 
+              (clicked)="saveChanges()"
+              [disabled]="isSaving()"
             >
-              <lucide-icon [img]="ArrowLeftIcon" [size]="16" class="mr-2" />
-              Previous
+              @if (isSaving()) {
+                Saving...
+              } @else {
+                Save Changes
+              }
             </ui-button>
             
             @if (isLastStep()) {
@@ -98,30 +321,28 @@ import { ProfileService } from '../profile.service';
                 @if (isSubmitting()) {
                   Submitting...
                 } @else {
-                  Submit Profile
+                  Save and Continue →
                 }
               </ui-button>
             } @else {
               <ui-button 
                 variant="primary"
-                (clicked)="nextStep()"
-                [disabled]="!canProceed()"
+                (clicked)="saveAndContinue()"
+                [disabled]="isSaving()"
               >
-                Next
-                <lucide-icon [img]="ArrowRightIcon" [size]="16" class="ml-2" />
+                Save and Continue →
               </ui-button>
             }
           </div>
         </div>
-      </footer>
+      </div>
     </div>
   `
 })
 export class ProfileLayoutComponent {
+  isSaving = signal(false);
   isSubmitting = signal(false);
   
-  ArrowLeftIcon = ArrowLeft;
-  ArrowRightIcon = ArrowRight;
   CheckIcon = Check;
   
   constructor(
@@ -129,11 +350,23 @@ export class ProfileLayoutComponent {
     private router: Router
   ) {}
   
-  currentStepNumber = () => this.profileService.currentStepIndex() + 1;
-  totalSteps = () => this.profileService.steps.length;
+  getCurrentStepTitle(): string {
+    const currentStep = this.profileService.steps[this.profileService.currentStepIndex()];
+    return currentStep?.title || '';
+  }
   
-  goBack() {
-    this.router.navigate(['/dashboard']);
+  getCurrentStepDescription(): string {
+    const currentStep = this.profileService.steps[this.profileService.currentStepIndex()];
+    const descriptions: { [key: string]: string } = {
+      'admin': 'Fill in your company\'s key administrative details to help us understand your business structure and operational setup. Ensure all required fields are completed accurately.',
+      'documents': 'Please provide the necessary documents to support your investment readiness profile. Accurate and complete documentation helps expedite the review process.',
+      'business-review': 'Provide comprehensive information about your business operations, market position, and competitive landscape.',
+      'swot': 'Analyze your business strengths, weaknesses, opportunities, and threats to provide investors with strategic insights.',
+      'management': 'Provide detailed information about the governance structures and key personnel managing your organization. This section helps us understand the leadership and oversight in place to ensure effective business operations.',
+      'business-plan': 'Share your strategic business plan, including market analysis, financial projections, and growth strategies.',
+      'financial': 'Provide detailed financial information including historical performance, current financial position, and future projections.'
+    };
+    return descriptions[currentStep?.id || ''] || currentStep?.description || '';
   }
   
   goToStep(stepId: string) {
@@ -146,7 +379,18 @@ export class ProfileLayoutComponent {
     this.router.navigate(['/profile', this.profileService.currentStepId()]);
   }
   
-  nextStep() {
+  async saveChanges() {
+    this.isSaving.set(true);
+    // Simulate save
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    this.isSaving.set(false);
+  }
+  
+  async saveAndContinue() {
+    this.isSaving.set(true);
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    this.isSaving.set(false);
+    
     this.profileService.nextStep();
     this.router.navigate(['/profile', this.profileService.currentStepId()]);
   }
@@ -157,9 +401,7 @@ export class ProfileLayoutComponent {
     this.isSubmitting.set(false);
     
     if (result.success) {
-      this.router.navigate(['/dashboard'], { 
-        queryParams: { profileCompleted: 'true' } 
-      });
+      this.router.navigate(['/profile-complete']);
     }
   }
   
@@ -167,49 +409,36 @@ export class ProfileLayoutComponent {
   isLastStep = () => this.profileService.currentStepIndex() === this.profileService.steps.length - 1;
   
   canAccessStep(step: any, index: number): boolean {
-    // Can access current step, completed steps, or next step if current is completed
     const currentIndex = this.profileService.currentStepIndex();
     return index <= currentIndex || step.completed;
-  }
-  
-  canProceed(): boolean {
-    const currentStep = this.profileService.steps[this.profileService.currentStepIndex()];
-    return currentStep?.completed || false;
   }
   
   canSubmit(): boolean {
     return this.profileService.steps.every(step => step.completed);
   }
   
-  getStepClasses(step: any, index: number): string {
-    const baseClasses = 'flex items-center p-2 rounded-lg transition-colors';
+  getStepButtonClasses(step: any, index: number): string {
+    return 'hover:bg-neutral-50 transition-colors rounded-lg p-2';
+  }
+  
+  getStepIconClasses(step: any, index: number): string {
+    const baseClasses = 'w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium border-2';
     const currentIndex = this.profileService.currentStepIndex();
     
-    if (index === currentIndex) {
-      return `${baseClasses} bg-primary-50 text-primary-700`;
-    } else if (step.completed) {
-      return `${baseClasses} text-neutral-900 hover:bg-neutral-50`;
-    } else if (this.canAccessStep(step, index)) {
-      return `${baseClasses} text-neutral-600 hover:bg-neutral-50`;
+    if (step.completed) {
+      return `${baseClasses} bg-primary-500 border-primary-500 text-white`;
+    } else if (index === currentIndex) {
+      return `${baseClasses} bg-white border-primary-500 text-primary-600`;
     } else {
-      return `${baseClasses} text-neutral-400 cursor-not-allowed`;
+      return `${baseClasses} bg-neutral-200 border-neutral-300 text-neutral-600`;
     }
   }
   
-  getStepIconClasses(step: any): string {
-    const baseClasses = 'w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium';
-    
-    if (step.completed) {
-      return `${baseClasses} bg-primary-500 text-white`;
-    } else {
-      const currentIndex = this.profileService.currentStepIndex();
-      const stepIndex = this.profileService.steps.indexOf(step);
-      
-      if (stepIndex === currentIndex) {
-        return `${baseClasses} bg-primary-100 text-primary-600 border-2 border-primary-500`;
-      } else {
-        return `${baseClasses} bg-neutral-200 text-neutral-600`;
-      }
+  getStepTextClasses(step: any, index: number): string {
+    const currentIndex = this.profileService.currentStepIndex();
+    if (index === currentIndex) {
+      return 'font-medium text-primary-600 border-b-2 border-primary-500 pb-1';
     }
+    return 'text-neutral-600';
   }
 }
