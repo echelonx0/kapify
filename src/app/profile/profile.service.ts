@@ -83,6 +83,15 @@ export interface ProfileData {
   businessPlan?: {
     // Business plan fields
   };
+
+    // Add this new property
+  financialAnalysis?: {
+    template?: File;
+    notes?: string;
+    incomeStatement?: any[];
+    financialRatios?: any[];
+    lastUpdated?: string;
+  };
 }
 
 export interface ManagementMember {
@@ -185,7 +194,14 @@ steps: ProfileStep[] = [
     }));
     this.markStepCompleted('documents');
   }
-  
+  // Add this method to the ProfileService class
+updateFinancialAnalysis(data: any) {
+  this.profileData.update(current => ({
+    ...current,
+    financialAnalysis: data
+  }));
+  this.markStepCompleted('financial');
+}
 
   // Add new update methods
 updateManagementGovernance(data: any) {

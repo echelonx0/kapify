@@ -30,7 +30,7 @@ export interface User {
   updatedAt: Date;
 }
 
-// SME Organization (can have multiple users)
+// SME Organization (can have multiple users) 
 export interface SMEOrganization {
   id: string;
   

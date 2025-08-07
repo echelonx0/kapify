@@ -1,13 +1,7 @@
 // src/app/auth/auth.service.ts
 import { Injectable, signal } from '@angular/core';
+import { User } from '../shared/models/user.models';
 
-export interface User {
-  id: string;
-  email: string;
-  name: string;
-  userType: 'sme' | 'funder';
-  profileComplete: boolean;
-}
 
 export interface AuthState {
   user: User | null;
@@ -41,9 +35,15 @@ export class AuthService {
       const user: User = {
         id: '1',
         email: email,
-        name: email.split('@')[0],
+        firstName: email.split('@')[0],
         userType: 'sme',
-        profileComplete: false
+        lastName: '',
+        status: 'active',
+        emailVerified: false,
+        phoneVerified: false,
+        accountTier: 'basic',
+        createdAt: new Date(),
+        updatedAt: new Date(),
       };
 
       this.authState.set({
@@ -67,13 +67,22 @@ export class AuthService {
       await new Promise(resolve => setTimeout(resolve, 1000));
       
       // Mock successful registration
+      // Mock successful login
       const user: User = {
         id: '1',
-        email: data.email,
-        name: `${data.firstName} ${data.lastName}`,
-        userType: data.userType,
-        profileComplete: false
+
+        userType: 'sme',
+        lastName: '',
+        status: 'active',
+        emailVerified: false,
+        phoneVerified: false,
+        accountTier: 'basic',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        email: '',
+        firstName: ''
       };
+
 
       this.authState.set({
         user,
