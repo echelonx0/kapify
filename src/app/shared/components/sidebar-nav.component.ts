@@ -1,96 +1,233 @@
+ 
+
+// // 3. src/app/shared/components/sidebar-nav.component.ts - UPDATE FOR USER TYPES
+// import { Component, computed } from '@angular/core';
+// import { Router, RouterModule } from '@angular/router';
+// import { LucideAngularModule, Home, User, FileText, DollarSign, Settings, LogOut, Building, House } from 'lucide-angular';
+// import { AuthService } from '../../auth/auth.service';
+
+// interface NavItem {
+//   label: string;
+//   icon: any;
+//   route: string;
+//   userTypes: ('sme' | 'funder')[]; // Keep this limited to navigation-relevant types
+// }
+
+// @Component({
+//   selector: 'sidebar-nav',
+//   standalone: true,
+//   imports: [RouterModule, LucideAngularModule],
+//   template: `
+//     <nav class="fixed left-0 top-0 h-full w-16 bg-white border-r border-neutral-200 flex flex-col items-center py-4 z-40">
+//       <!-- Logo -->
+//       <div class="w-10 h-10 bg-primary-500 rounded-xl flex items-center justify-center mb-8">
+//         <span class="text-white font-bold text-lg">K</span>
+//       </div>
+
+//       <!-- Navigation Items -->
+//       <div class="flex flex-col space-y-2 flex-1">
+//         @for (item of visibleNavItems(); track item.route) {
+//           <a
+//             [routerLink]="item.route"
+//             routerLinkActive="bg-primary-50 text-primary-600"
+//             [routerLinkActiveOptions]="{exact: item.route === '/dashboard'}"
+//             class="w-10 h-10 rounded-lg flex items-center justify-center text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900 transition-colors"
+//             [title]="item.label"
+//           >
+//             <lucide-icon [img]="item.icon" [size]="20" />
+//           </a>
+//         }
+//       </div>
+
+//       <!-- Bottom Actions -->
+//       <div class="flex flex-col space-y-2">
+//         <button
+//           class="w-10 h-10 rounded-lg flex items-center justify-center text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900 transition-colors"
+//           title="Settings"
+//         >
+//           <lucide-icon [img]="SettingsIcon" [size]="20" />
+//         </button>
+//         <button
+//           (click)="logout()"
+//           class="w-10 h-10 rounded-lg flex items-center justify-center text-neutral-600 hover:bg-red-100 hover:text-red-600 transition-colors"
+//           title="Logout"
+//         >
+//           <lucide-icon [img]="LogOutIcon" [size]="20" />
+//         </button>
+//       </div>
+//     </nav>
+//   `
+// })
+// export class SidebarNavComponent {
+//   HomeIcon = House;
+//   UserIcon = User;
+//   FileTextIcon = FileText;
+//   DollarSignIcon = DollarSign;
+//   BuildingIcon = Building;
+//   SettingsIcon = Settings;
+//   LogOutIcon = LogOut;
+
+//   private navItems: NavItem[] = [
+//     { label: 'Dashboard', icon: House, route: '/dashboard', userTypes: ['sme', 'funder'] },
+//     { label: 'Profile', icon: User, route: '/profile', userTypes: ['sme'] },
+//     { label: 'Applications', icon: FileText, route: '/applications', userTypes: ['sme'] },
+//     { label: 'Funding Opportunities', icon: DollarSign, route: '/funding-opportunities', userTypes: ['sme'] },
+//     { label: 'Funder Dashboard', icon: Building, route: '/funder-dashboard', userTypes: ['funder'] },
+//     // Add admin-specific routes when needed
+//     // { label: 'Admin Panel', icon: Settings, route: '/admin', userTypes: ['admin'] },
+//   ];
+
+//   visibleNavItems = computed(() => {
+//     const user = this.authService.user();
+//     const userType = user?.user?.userType || 'sme';
+    
+//     // Handle all user types defensively
+//     const mappedUserType = this.mapUserTypeForNavigation(userType);
+    
+//     return this.navItems.filter(item => 
+//       item.userTypes.includes(mappedUserType)
+//     );
+//   });
+
+//   private mapUserTypeForNavigation(userType: string): 'sme' | 'funder' {
+//     switch (userType) {
+//       case 'sme':
+//         return 'sme';
+//       case 'funder':
+//         return 'funder';
+//       case 'admin':
+//       case 'consultant':
+//         // Admins and consultants get funder-like permissions (can see everything)
+//         return 'funder';
+//       default:
+//         return 'sme'; // Default fallback
+//     }
+//   }
+
+//   constructor(
+//     private authService: AuthService,
+//     private router: Router
+//   ) {}
+
+//   logout() {
+//     this.authService.logout();
+//     this.router.navigate(['/']);
+//   }
+// } 
 
 
-// src/app/shared/components/sidebar-nav.component.ts
-import { Component, signal } from '@angular/core';
-import { 
-  LucideAngularModule, 
-  Home, 
-  User, 
-  Eye, 
-  FileText, 
-  Send, 
-  HelpCircle, 
-  Settings, 
-  Moon 
-} from 'lucide-angular';
-import { UiTooltipComponent } from './ui-tooltip.component';
+// src/app/shared/components/sidebar-nav.component.ts - UPDATED FOR DASHBOARD ROUTES
+import { Component, computed } from '@angular/core';
+import { Router, RouterModule } from '@angular/router';
+import { LucideAngularModule, Home, User, FileText, DollarSign, Settings, LogOut, Building } from 'lucide-angular';
+import { AuthService } from '../../auth/auth.service';
 
 interface NavItem {
-  id: string;
-  icon: any;
   label: string;
-  href: string;
+  icon: any;
+  route: string;
+  userTypes: ('sme' | 'funder')[]; 
 }
 
 @Component({
   selector: 'sidebar-nav',
   standalone: true,
-  imports: [LucideAngularModule, UiTooltipComponent],
+  imports: [RouterModule, LucideAngularModule],
   template: `
-    <div class="fixed left-0 top-0 h-full w-16 bg-white border-r border-neutral-200 flex flex-col items-center py-4 z-50">
+    <nav class="fixed left-0 top-0 h-full w-16 bg-white border-r border-neutral-200 flex flex-col items-center py-4 z-40">
       <!-- Logo -->
-      <ui-tooltip text="Kapify">
-        <div class="mb-8 w-8 h-8 bg-primary-500 rounded-lg flex items-center justify-center cursor-pointer">
-          <span class="text-white font-bold text-sm">K</span>
-        </div>
-      </ui-tooltip>
+      <button 
+        (click)="goToDashboard()"
+        class="w-10 h-10 bg-primary-500 rounded-xl flex items-center justify-center mb-8 hover:bg-primary-600 transition-colors"
+      >
+        <span class="text-white font-bold text-lg">K</span>
+      </button>
 
       <!-- Navigation Items -->
-      <nav class="flex-1 flex flex-col space-y-2 w-full px-2">
-        @for (item of navItems; track item.id) {
-          <ui-tooltip [text]="item.label">
-            <button
-              (click)="setActiveItem(item.id)"
-              [class]="getNavItemClasses(item.id)"
-            >
-              <lucide-icon [img]="item.icon" [size]="20" />
-            </button>
-          </ui-tooltip>
+      <div class="flex flex-col space-y-2 flex-1">
+        @for (item of visibleNavItems(); track item.route) {
+          <a
+            [routerLink]="item.route"
+            routerLinkActive="bg-primary-50 text-primary-600"
+            [routerLinkActiveOptions]="{exact: item.route === '/dashboard/home'}"
+            class="w-10 h-10 rounded-lg flex items-center justify-center text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900 transition-colors"
+            [title]="item.label"
+          >
+            <lucide-icon [img]="item.icon" [size]="20" />
+          </a>
         }
-      </nav>
+      </div>
 
       <!-- Bottom Actions -->
-      <div class="space-y-2">
-        <ui-tooltip text="Settings">
-          <button class="w-12 h-12 rounded-lg flex items-center justify-center text-neutral-500 hover:bg-neutral-50 hover:text-neutral-700 transition-colors">
-            <lucide-icon [img]="SettingsIcon" [size]="20" />
-          </button>
-        </ui-tooltip>
-        
-        <ui-tooltip text="Dark Mode">
-          <button class="w-12 h-12 rounded-lg flex items-center justify-center text-neutral-500 hover:bg-neutral-50 hover:text-neutral-700 transition-colors">
-            <lucide-icon [img]="MoonIcon" [size]="20" />
-          </button>
-        </ui-tooltip>
+      <div class="flex flex-col space-y-2">
+        <a
+          routerLink="/dashboard/settings"
+          routerLinkActive="bg-primary-50 text-primary-600"
+          class="w-10 h-10 rounded-lg flex items-center justify-center text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900 transition-colors"
+          title="Settings"
+        >
+          <lucide-icon [img]="SettingsIcon" [size]="20" />
+        </a>
+        <button
+          (click)="logout()"
+          class="w-10 h-10 rounded-lg flex items-center justify-center text-neutral-600 hover:bg-red-100 hover:text-red-600 transition-colors"
+          title="Logout"
+        >
+          <lucide-icon [img]="LogOutIcon" [size]="20" />
+        </button>
       </div>
-    </div>
-  `,
+    </nav>
+  `
 })
 export class SidebarNavComponent {
-  activeItem = signal('dashboard');
-  
+  HomeIcon = Home;
+  UserIcon = User;
+  FileTextIcon = FileText;
+  DollarSignIcon = DollarSign;
+  BuildingIcon = Building;
   SettingsIcon = Settings;
-  MoonIcon = Moon;
+  LogOutIcon = LogOut;
 
-  navItems: NavItem[] = [
-    { id: 'dashboard', icon: Home, label: 'Dashboard', href: '#' },
-    { id: 'profile', icon: User, label: 'Profile', href: '#' },
-    { id: 'review', icon: Eye, label: 'Review', href: '#' },
-    { id: 'documents', icon: FileText, label: 'Documents', href: '#' },
-    { id: 'funding', icon: Send, label: 'Funding', href: '#' },
-    { id: 'applications', icon: Send, label: 'Applications', href: '#' },
-    { id: 'faq', icon: HelpCircle, label: 'FAQs', href: '#' },
+  private navItems: NavItem[] = [
+    { label: 'Home', icon: Home, route: '/dashboard/home', userTypes: ['sme', 'funder'] },
+    { label: 'Profile', icon: User, route: '/dashboard/profile', userTypes: ['sme'] },
+    { label: 'Applications', icon: FileText, route: '/dashboard/applications', userTypes: ['sme'] },
+    { label: 'Funding Opportunities', icon: DollarSign, route: '/dashboard/funding-opportunities', userTypes: ['sme'] },
+    { label: 'Funder Dashboard', icon: Building, route: '/dashboard/funder-dashboard', userTypes: ['funder'] },
   ];
 
-  setActiveItem(id: string) {
-    this.activeItem.set(id);
+  visibleNavItems = computed(() => {
+    const user = this.authService.user();
+    const userType = user?.user?.userType || 'sme';
+    const mappedUserType = this.mapUserTypeForNavigation(userType);
+    
+    return this.navItems.filter(item => 
+      item.userTypes.includes(mappedUserType)
+    );
+  });
+
+  private mapUserTypeForNavigation(userType: string): 'sme' | 'funder' {
+    switch (userType) {
+      case 'sme': return 'sme';
+      case 'funder': return 'funder';
+      case 'admin':
+      case 'consultant': return 'funder';
+      default: return 'sme';
+    }
   }
 
-  getNavItemClasses(itemId: string): string {
-    const baseClasses = 'w-12 h-12 rounded-lg flex items-center justify-center transition-colors';
-    const activeClasses = 'bg-primary-50 text-primary-600';
-    const inactiveClasses = 'text-neutral-500 hover:bg-neutral-50 hover:text-neutral-700';
-    
-    return `${baseClasses} ${this.activeItem() === itemId ? activeClasses : inactiveClasses}`;
+  constructor(
+    private authService: AuthService,
+    private router: Router
+  ) {}
+
+  goToDashboard() {
+    this.router.navigate(['/dashboard']);
+  }
+
+  logout() {
+    this.authService.logout();
+    this.router.navigate(['/']);
   }
 }
+ 

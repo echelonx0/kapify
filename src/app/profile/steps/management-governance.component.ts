@@ -1,6 +1,6 @@
 // src/app/profile/steps/management-governance.component.ts
 import { Component, signal, OnInit } from '@angular/core';
-import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, FormsModule } from '@angular/forms';
 import { LucideAngularModule, Plus, Edit, Trash2, ChevronDown, ChevronUp, Search, MoreHorizontal } from 'lucide-angular';
 import { UiInputComponent, UiCardComponent, UiButtonComponent } from '../../shared/components';
 import { ProfileService } from '../profile.service';
@@ -36,7 +36,7 @@ type SectionStates = Record<SectionKey, boolean>;
 @Component({
   selector: 'app-management-governance',
   standalone: true,
-  imports: [ReactiveFormsModule, LucideAngularModule, UiInputComponent, UiCardComponent, UiButtonComponent],
+  imports: [ReactiveFormsModule, LucideAngularModule, UiInputComponent,  UiButtonComponent, FormsModule, ],
   templateUrl: 'management-governance.component.html'
 })
 export class ManagementGovernanceComponent implements OnInit {

@@ -1,26 +1,26 @@
-
-// // src/app/profile/profile-layout.component.ts
 import { Component, signal } from '@angular/core';
 import { Router, RouterOutlet } from '@angular/router';
-import { LucideAngularModule, ArrowLeft, ArrowRight, Check } from 'lucide-angular';
+import { LucideAngularModule, ArrowLeft, Check } from 'lucide-angular';
 import { UiButtonComponent, UiProgressComponent, UiCardComponent } from '../../shared/components';
 import { ProfileService } from '../profile.service';
- 
+
 @Component({
-  selector: 'app-profile-layout',
+  selector: 'app-profile-steps-layout',
   standalone: true,
   imports: [RouterOutlet, LucideAngularModule, UiButtonComponent, UiProgressComponent, UiCardComponent],
   template: `
-    <div class="min-h-screen bg-neutral-50">
+    <div class="space-y-8">
       <!-- Header -->
       <div class="bg-white border-b border-neutral-200">
         <!-- Main Header -->
         <div class="border-b border-neutral-200 py-4">
           <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center space-x-2 text-sm text-neutral-600 mb-2">
-              <span>Home</span>
+              <button (click)="goToProfileHome()" class="hover:text-neutral-900">Home</button>
               <span>></span>
-              <span>Set up your profile</span>
+              <button (click)="goToProfileHome()" class="hover:text-neutral-900">Profile</button>
+              <span>></span>
+              <span>{{ getCurrentStepTitle() }}</span>
             </div>
             <h1 class="text-2xl font-bold text-neutral-900">Complete Your Investment Readiness Profile</h1>
             <p class="text-neutral-600 mt-2 max-w-4xl">
@@ -90,6 +90,10 @@ import { ProfileService } from '../profile.service';
               </ui-button>
             }
             
+            <ui-button variant="outline" (clicked)="goToProfileHome()">
+              Save & Exit
+            </ui-button>
+            
             <ui-button 
               variant="primary" 
               (clicked)="saveChanges()"
@@ -129,11 +133,12 @@ import { ProfileService } from '../profile.service';
     </div>
   `
 })
-export class ProfileLayoutComponent {
+export class ProfileStepsLayoutComponent {
   isSaving = signal(false);
   isSubmitting = signal(false);
   
   CheckIcon = Check;
+  ArrowLeftIcon = ArrowLeft;
   
   constructor(
     public profileService: ProfileService,
@@ -159,14 +164,18 @@ export class ProfileLayoutComponent {
     return descriptions[currentStep?.id || ''] || currentStep?.description || '';
   }
   
+  goToProfileHome() {
+    this.router.navigate(['/dashboard/profile']);
+  }
+  
   goToStep(stepId: string) {
     this.profileService.setCurrentStep(stepId);
-    this.router.navigate(['/profile', stepId]);
+    this.router.navigate(['/dashboard/profile/steps', stepId]);
   }
   
   previousStep() {
     this.profileService.previousStep();
-    this.router.navigate(['/profile', this.profileService.currentStepId()]);
+    this.router.navigate(['/dashboard/profile/steps', this.profileService.currentStepId()]);
   }
   
   async saveChanges() {
@@ -182,7 +191,7 @@ export class ProfileLayoutComponent {
     this.isSaving.set(false);
     
     this.profileService.nextStep();
-    this.router.navigate(['/profile', this.profileService.currentStepId()]);
+    this.router.navigate(['/dashboard/profile/steps', this.profileService.currentStepId()]);
   }
   
   async submitProfile() {
@@ -191,7 +200,9 @@ export class ProfileLayoutComponent {
     this.isSubmitting.set(false);
     
     if (result.success) {
-      this.router.navigate(['/profile-complete']);
+      this.router.navigate(['/dashboard/profile'], { 
+        queryParams: { completed: 'true' } 
+      });
     }
   }
   

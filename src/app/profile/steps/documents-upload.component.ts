@@ -40,7 +40,8 @@ interface DocumentUpload {
       <!-- Help Link -->
       <div class="bg-primary-50 border border-primary-200 rounded-lg p-4">
         <div class="flex items-center space-x-2">
-          <CheckCircle class="text-primary-500" [size]="16" />
+      <lucide-icon [img]="CheckCircleIcon" [size]="16" class="text-primary-500" />
+
           <span class="text-sm text-primary-700">
             Request assistance with building your profile? 
             <button class="underline hover:no-underline font-medium">Click here</button>
