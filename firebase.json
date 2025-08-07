@@ -1,0 +1,17 @@
+{
+  "hosting": {
+    "site": "kapify",
+    "public": "dist/kapify/browser",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "rewrites": [
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ]
+  }
+}
