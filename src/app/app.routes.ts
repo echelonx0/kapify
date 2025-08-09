@@ -44,13 +44,12 @@ export const routes: Routes = [
     title: 'Profile Setup - Kapify'
   },
   
-  // NEW: Additional dashboard routes for different user types
-  // {
-  //   path: 'applications',
-  //   canActivate: [AuthGuard],
-  //   loadComponent: () => import('./applications/applications.component').then(c => c.ApplicationsComponent),
-  //   title: 'My Applications - Kapify'
-  // },
+ // NEW: Applications routes with lazy loading
+  {
+    path: 'applications',
+    canActivate: [AuthGuard],
+    loadChildren: () => import('./applications/applications.routes').then(m => m.applicationRoutes)
+  },
   {
     path: 'funding-opportunities',
     canActivate: [AuthGuard], 
