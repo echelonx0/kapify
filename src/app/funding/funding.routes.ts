@@ -1,5 +1,33 @@
-// // src/app/funding/funding.routes.ts
-// export const fundingRoutes = [
-//   { path: '', loadComponent: () => import('./funding-opportunities.component').then(c => c.FundingOpportunitiesComponent) },
-//   { path: ':id', loadComponent: () => import('./funding-detail.component').then(c => c.FundingDetailComponent) }
-// ];
+ 
+
+// src/app/funding/funding.routes.ts
+import { Routes } from '@angular/router';
+
+export const fundingRoutes: Routes = [
+  {
+    path: '',
+    loadComponent: () => import('./funding.component').then(c => c.FundingComponent),
+    children: [
+      { 
+        path: '', 
+        redirectTo: 'opportunities', 
+        pathMatch: 'full' as 'full' 
+      },
+      { 
+        path: 'opportunities', 
+        loadComponent: () => import('./funding-opportunities.component').then(c => c.FundingOpportunitiesComponent),
+        title: 'Funding Opportunities - Kapify'
+      },
+      { 
+        path: 'opportunities/:id', 
+        loadComponent: () => import('./funding-detail.component').then(c => c.OpportunityDetailsComponent),
+        title: 'Opportunity Details - Kapify'
+      },
+      { 
+        path: 'create-opportunity', 
+        loadComponent: () => import('../funder/create-opportunity.component').then(c => c.OpportunityFormComponent),
+        title: 'Create Opportunity - Kapify'
+      }
+    ]
+  }
+];

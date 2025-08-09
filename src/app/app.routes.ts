@@ -50,6 +50,11 @@ export const routes: Routes = [
     canActivate: [AuthGuard],
     loadChildren: () => import('./applications/applications.routes').then(m => m.applicationRoutes)
   },
+   {
+    path: 'funding',
+    canActivate: [AuthGuard],
+    loadChildren: () => import('./funding/funding.routes').then(m => m.fundingRoutes)
+  },
   {
     path: 'funding-opportunities',
     canActivate: [AuthGuard], 

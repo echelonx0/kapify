@@ -1,0 +1,267 @@
+    <div class="min-h-screen bg-neutral-50">
+      <sidebar-nav />
+      <div >
+    
+        <main >
+          <!-- Breadcrumb -->
+          <!-- <div class="flex items-center space-x-2 text-sm text-neutral-500 mb-4">
+            <span class="cursor-pointer hover:text-neutral-700" (click)="goToDashboard()">Dashboard</span>
+            <span>›</span>
+            <span class="text-neutral-700">Available Fundings</span>
+          </div> -->
+
+          <!-- Header -->
+        
+          <!-- Search and Filters -->
+          <div class="bg-white rounded-lg border border-neutral-200 p-4 mb-6">
+            <div class="flex items-center space-x-4">
+              <!-- Search -->
+              <div class="flex-1 relative">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <lucide-icon [img]="SearchIcon" [size]="16" class="text-neutral-400" />
+                </div>
+                <input
+                  type="text"
+                  placeholder="Search funding opportunities..."
+                  [value]="searchQuery()"
+                  (input)="onSearchChange($event)"
+                  class="block w-full pl-10 pr-3 py-2 border border-neutral-300 rounded-md placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+                />
+              </div>
+
+              <!-- Filter Toggle -->
+              <ui-button 
+                variant="outline" 
+                (clicked)="toggleFilters()"
+                [class]="showFilters() ? 'bg-primary-50 border-primary-200' : ''"
+              >
+                <lucide-icon [img]="FilterIcon" [size]="16" class="mr-1" />
+                Filters
+              </ui-button>
+
+              <!-- Quick Filters -->
+              <select
+                [value]="selectedFundingType()"
+                (change)="onFundingTypeChange($event)"
+                class="px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+              >
+                <option value="">All Types</option>
+                <option value="equity">Equity</option>
+                <option value="debt">Debt</option>
+                <option value="mezzanine">Mezzanine</option>
+                <option value="grant">Grant</option>
+                <option value="convertible">Convertible</option>
+              </select>
+            </div>
+
+            <!-- Advanced Filters -->
+            @if (showFilters()) {
+              <div class="mt-4 pt-4 border-t border-neutral-200">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                  <div>
+                    <label class="block text-sm font-medium text-neutral-700 mb-1">Industry</label>
+                    <select
+                      [value]="selectedIndustry()"
+                      (change)="onIndustryChange($event)"
+                      class="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+                    >
+                      <option value="">All Industries</option>
+                      <option value="technology">Technology</option>
+                      <option value="manufacturing">Manufacturing</option>
+                      <option value="retail">Retail</option>
+                      <option value="agriculture">Agriculture</option>
+                      <option value="healthcare">Healthcare</option>
+                      <option value="fintech">Fintech</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label class="block text-sm font-medium text-neutral-700 mb-1">Min Amount</label>
+                    <input
+                      type="number"
+                      placeholder="0"
+                      [value]="minAmount()"
+                      (input)="onMinAmountChange($event)"
+                      class="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+                    />
+                  </div>
+
+                  <div>
+                    <label class="block text-sm font-medium text-neutral-700 mb-1">Max Amount</label>
+                    <input
+                      type="number"
+                      placeholder="No limit"
+                      [value]="maxAmount()"
+                      (input)="onMaxAmountChange($event)"
+                      class="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+                    />
+                  </div>
+
+                  <div>
+                    <label class="block text-sm font-medium text-neutral-700 mb-1">Currency</label>
+                    <select
+                      [value]="selectedCurrency()"
+                      (change)="onCurrencyChange($event)"
+                      class="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+                    >
+                      <option value="">All Currencies</option>
+                      <option value="ZAR">ZAR</option>
+                      <option value="USD">USD</option>
+                      <option value="EUR">EUR</option>
+                      <option value="GBP">GBP</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+
+          <!-- Loading State -->
+          @if (isLoading()) {
+            <div class="bg-white rounded-lg border border-neutral-200 p-12 text-center">
+              <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mx-auto mb-4"></div>
+              <p class="text-neutral-600">Loading opportunities...</p>
+            </div>
+          }
+
+          <!-- Empty State -->
+          @if (!isLoading() && filteredOpportunities().length === 0) {
+            <div class="bg-white rounded-lg border border-neutral-200 p-12 text-center">
+              <div class="w-16 h-16 bg-neutral-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <lucide-icon [img]="SearchIcon" [size]="24" class="text-neutral-400" />
+              </div>
+              <h3 class="text-lg font-medium text-neutral-900 mb-2">No opportunities found</h3>
+              <p class="text-neutral-600 mb-4">Try adjusting your search criteria or filters.</p>
+              <ui-button variant="outline" (clicked)="clearFilters()">
+                Clear all filters
+              </ui-button>
+            </div>
+          }
+
+          <!-- Opportunities List -->
+          @if (!isLoading() && filteredOpportunities().length > 0) {
+            <div class="space-y-6">
+              @for (opportunity of filteredOpportunities(); track opportunity.id) {
+                <div class="bg-white rounded-lg border border-neutral-200 p-6 hover:shadow-md transition-shadow">
+                  <div class="flex items-start justify-between">
+                    <!-- Opportunity Info -->
+                    <div class="flex-1">
+                      <div class="flex items-center space-x-4 mb-4">
+                        <!-- Logo placeholder -->
+                        <div class="w-16 h-16 bg-gradient-to-br from-primary-100 to-primary-200 rounded-lg flex items-center justify-center">
+                          <span class="text-primary-700 font-bold text-xl">{{ getInitials(opportunity.title) }}</span>
+                        </div>
+                        
+                        <div class="flex-1">
+                          <h3 class="text-xl font-bold text-neutral-900 mb-1">{{ opportunity.title }}</h3>
+                          
+                          <!-- Funding Types -->
+                          <div class="flex items-center space-x-2 mb-2">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
+                                  [class]="getFundingTypeClasses(opportunity.fundingType)">
+                              {{ formatFundingType(opportunity.fundingType) }}
+                            </span>
+                            @for (industry of opportunity.eligibilityCriteria.industries.slice(0, 3); track industry) {
+                              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-neutral-100 text-neutral-800">
+                                {{ formatIndustry(industry) }}
+                              </span>
+                            }
+                            @if (opportunity.eligibilityCriteria.industries.length > 3) {
+                              <span class="text-xs text-neutral-500">+{{ opportunity.eligibilityCriteria.industries.length - 3 }} more</span>
+                            }
+                          </div>
+                        </div>
+                      </div>
+
+                      <!-- Description -->
+                      <p class="text-neutral-600 mb-4">{{ opportunity.shortDescription }}</p>
+
+                      <!-- Key Details -->
+                      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="flex items-center space-x-2">
+                          <lucide-icon [img]="DollarSignIcon" [size]="16" class="text-neutral-400" />
+                          <div>
+                            <div class="text-sm font-medium text-neutral-900">
+                              {{ opportunity.currency }} {{ formatAmount(opportunity.minInvestment) }} - {{ formatAmount(opportunity.maxInvestment) }}
+                            </div>
+                            <div class="text-xs text-neutral-500">Investment Range</div>
+                          </div>
+                        </div>
+
+                        <div class="flex items-center space-x-2">
+                          <lucide-icon [img]="CalendarIcon" [size]="16" class="text-neutral-400" />
+                          <div>
+                            <div class="text-sm font-medium text-neutral-900">{{ opportunity.decisionTimeframe }} days</div>
+                            <div class="text-xs text-neutral-500">Decision Timeline</div>
+                          </div>
+                        </div>
+
+                        <div class="flex items-center space-x-2">
+                          <lucide-icon [img]="UsersIcon" [size]="16" class="text-neutral-400" />
+                          <div>
+                            <div class="text-sm font-medium text-neutral-900">{{ opportunity.currentApplications }}/{{ opportunity.maxApplications || '∞' }}</div>
+                            <div class="text-xs text-neutral-500">Applications</div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <!-- Location Restrictions -->
+                      @if (opportunity.eligibilityCriteria.geographicRestrictions && opportunity.eligibilityCriteria.geographicRestrictions.length > 0) {
+                        <div class="flex items-center space-x-2 mt-3">
+                          <lucide-icon [img]="MapPinIcon" [size]="16" class="text-neutral-400" />
+                          <span class="text-sm text-neutral-600">
+                            Available in: {{ formatLocations(opportunity.eligibilityCriteria.geographicRestrictions) }}
+                          </span>
+                        </div>
+                      }
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="flex flex-col space-y-2 ml-6">
+                      @if (isOwner(opportunity)) {
+                        <ui-button variant="primary" (clicked)="manageApplications(opportunity.id)">
+                          <lucide-icon [img]="UsersIcon" [size]="16" class="mr-1" />
+                          Manage Applications
+                        </ui-button>
+                      } @else {
+                        @if (hasExistingApplication(opportunity.id)) {
+                          <ui-button variant="outline" (clicked)="viewApplication(opportunity.id)">
+                            <lucide-icon [img]="FileTextIcon" [size]="16" class="mr-1" />
+                            View Application
+                          </ui-button>
+                        } @else {
+                          <ui-button variant="primary" (clicked)="applyToOpportunity(opportunity.id)">
+                            Apply Now
+                          </ui-button>
+                        }
+                      }
+                      
+                      <ui-button variant="outline" (clicked)="viewOpportunityDetails(opportunity.id)">
+                        <lucide-icon [img]="EyeIcon" [size]="16" class="mr-1" />
+                        View Details
+                      </ui-button>
+                    </div>
+                  </div>
+
+                  <!-- Progress Bar (if applicable) -->
+                  @if (opportunity.totalAvailable > 0) {
+                    <div class="mt-4 pt-4 border-t border-neutral-200">
+                      <div class="flex items-center justify-between text-sm text-neutral-600 mb-2">
+                        <span>Funding Progress</span>
+                        <span>{{ formatAmount(opportunity.amountDeployed) }} / {{ formatAmount(opportunity.totalAvailable) }}</span>
+                      </div>
+                      <div class="w-full bg-neutral-200 rounded-full h-2">
+                        <div 
+                          class="bg-primary-500 h-2 rounded-full transition-all duration-300"
+                          [style.width.%]="getProgressPercentage(opportunity)"
+                        ></div>
+                      </div>
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+          }
+        </main>
+      </div>
+    </div>

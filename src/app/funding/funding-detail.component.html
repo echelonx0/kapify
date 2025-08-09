@@ -1,0 +1,426 @@
+<div class="min-h-screen bg-neutral-50">
+  <sidebar-nav />
+  <div class="ml-16">
+ 
+    <main class="p-6 max-w-6xl mx-auto">
+      @if (isLoading()) {
+        <div class="bg-white rounded-lg border border-neutral-200 p-12 text-center">
+          <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mx-auto mb-4"></div>
+          <p class="text-neutral-600">Loading opportunity details...</p>
+        </div>
+      }
+
+      @if (!isLoading() && opportunity()) {
+        <!-- Header with logo -->
+        <div class="bg-white rounded-lg border border-neutral-200 p-6 mb-6">
+          <div class="flex items-center space-x-6 mb-6">
+            <!-- Large logo placeholder -->
+            <div class="w-24 h-24 bg-gradient-to-br from-primary-100 to-primary-200 rounded-lg flex items-center justify-center">
+              <span class="text-primary-700 font-bold text-3xl">{{ getInitials(opportunity()!.title) }}</span>
+            </div>
+            
+            <div class="flex-1">
+              <h1 class="text-3xl font-bold text-neutral-900 mb-2">{{ opportunity()!.title }}</h1>
+              
+              <!-- Funding Types Tags -->
+              <div class="flex items-center space-x-2 mb-4">
+                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium"
+                      [class]="getFundingTypeClasses(opportunity()!.fundingType)">
+                  {{ formatFundingType(opportunity()!.fundingType) }}
+                </span>
+                @for (industry of opportunity()!.eligibilityCriteria.industries.slice(0, 5); track industry) {
+                  <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-neutral-100 text-neutral-800">
+                    {{ formatIndustry(industry) }}
+                  </span>
+                }
+                @if (opportunity()!.eligibilityCriteria.industries.length > 5) {
+                  <span class="text-sm text-neutral-500">+{{ opportunity()!.eligibilityCriteria.industries.length - 5 }} more</span>
+                }
+              </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex flex-col space-y-3">
+              @if (isOwner(opportunity()!)) {
+                <ui-button variant="primary" (clicked)="manageApplications()">
+                  <lucide-icon [img]="UsersIcon" [size]="16" class="mr-2" />
+                  Manage Applications
+                </ui-button>
+              } @else {
+                @if (hasExistingApplication()) {
+                  <ui-button variant="outline" (clicked)="viewApplication()">
+                    <lucide-icon [img]="FileTextIcon" [size]="16" class="mr-2" />
+                    View Application
+                  </ui-button>
+                } @else {
+                  <ui-button variant="primary" (clicked)="applyNow()">
+                    Apply Now
+                  </ui-button>
+                }
+              }
+              
+              <ui-button variant="outline" (clicked)="goBack()">
+                <lucide-icon [img]="ArrowLeftIcon" [size]="16" class="mr-2" />
+                Back to Opportunities
+              </ui-button>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <!-- Main Content -->
+          <div class="lg:col-span-2 space-y-6">
+            <!-- Investor Information -->
+            <ui-card>
+              <div class="p-6">
+                <h3 class="text-lg font-semibold text-neutral-900 mb-4">Investor</h3>
+                <div class="flex items-center space-x-3">
+                  <lucide-icon [img]="Building2Icon" [size]="20" class="text-neutral-400" />
+                  <span class="text-neutral-900 font-medium">{{ getInvestorName(opportunity()!) }}</span>
+                </div>
+              </div>
+            </ui-card>
+
+            <!-- Amount Range -->
+            <ui-card>
+              <div class="p-6">
+                <h3 class="text-lg font-semibold text-neutral-900 mb-4">Amount range</h3>
+                <div class="flex items-center space-x-3">
+                  <lucide-icon [img]="DollarSignIcon" [size]="20" class="text-neutral-400" />
+                  <span class="text-neutral-900 font-medium">
+                    {{ opportunity()!.currency }} {{ formatAmount(opportunity()!.minInvestment) }} - {{ formatAmount(opportunity()!.maxInvestment) }}
+                  </span>
+                </div>
+              </div>
+            </ui-card>
+
+            <!-- About Funding -->
+            <ui-card>
+              <div class="p-6">
+                <h3 class="text-lg font-semibold text-neutral-900 mb-4">About Funding</h3>
+                <div class="flex items-start space-x-3">
+                  <lucide-icon [img]="FileTextIcon" [size]="20" class="text-neutral-400 mt-1" />
+                  <p class="text-neutral-700 leading-relaxed">{{ opportunity()!.description }}</p>
+                </div>
+              </div>
+            </ui-card>
+
+            <!-- Investment Criteria -->
+            <ui-card>
+              <div class="p-6">
+                <h3 class="text-lg font-semibold text-neutral-900 mb-4">Investment Criteria</h3>
+                <p class="text-neutral-600 mb-4">
+                  Only businesses that meet the criteria set below must apply. Your application will not be considered should you fail to meet one of these criterias.
+                </p>
+                
+                <div class="space-y-3">
+                  @if (opportunity()!.eligibilityCriteria.minYearsOperation) {
+                    <div class="flex items-start space-x-3">
+                      <lucide-icon [img]="CheckCircleIcon" [size]="16" class="text-green-500 mt-1" />
+                      <span class="text-neutral-700">
+                        Minimum {{ opportunity()!.eligibilityCriteria.minYearsOperation }} years of operational track record or a robust feasibility study for startups.
+                      </span>
+                    </div>
+                  }
+                  
+                  @if (opportunity()!.eligibilityCriteria.businessStages.length > 0) {
+                    <div class="flex items-start space-x-3">
+                      <lucide-icon [img]="CheckCircleIcon" [size]="16" class="text-green-500 mt-1" />
+                      <span class="text-neutral-700">
+                        The proposed project must align with {{ formatBusinessStages(opportunity()!.eligibilityCriteria.businessStages) }} business stages.
+                      </span>
+                    </div>
+                  }
+                  
+                  @if (opportunity()!.eligibilityCriteria.minRevenue) {
+                    <div class="flex items-start space-x-3">
+                      <lucide-icon [img]="CheckCircleIcon" [size]="16" class="text-green-500 mt-1" />
+                      <span class="text-neutral-700">
+                        Minimum annual revenue of {{ opportunity()!.currency }} {{ formatFullAmount(opportunity()!.eligibilityCriteria.minRevenue!) }}.
+                      </span>
+                    </div>
+                  }
+                  
+                  <div class="flex items-start space-x-3">
+                    <lucide-icon [img]="CheckCircleIcon" [size]="16" class="text-green-500 mt-1" />
+                    <span class="text-neutral-700">
+                      Submission of recent financial statements, tax compliance certificates, and a detailed budget for the proposed project.
+                    </span>
+                  </div>
+                  
+                  <div class="flex items-start space-x-3">
+                    <lucide-icon [img]="CheckCircleIcon" [size]="16" class="text-green-500 mt-1" />
+                    <span class="text-neutral-700">
+                      Clear articulation of how the project benefits the community or environment, with measurable outcomes.
+                    </span>
+                  </div>
+                  
+                  <div class="flex items-start space-x-3">
+                    <lucide-icon [img]="CheckCircleIcon" [size]="16" class="text-green-500 mt-1" />
+                    <span class="text-neutral-700">
+                      Transparent ownership structure and sound governance practices.
+                    </span>
+                  </div>
+                  
+                  @if (opportunity()!.eligibilityCriteria.requiresCollateral) {
+                    <div class="flex items-start space-x-3">
+                      <lucide-icon [img]="CheckCircleIcon" [size]="16" class="text-green-500 mt-1" />
+                      <span class="text-neutral-700">
+                        Collateral or security requirements must be met.
+                      </span>
+                    </div>
+                  }
+                </div>
+              </div>
+            </ui-card>
+
+            <!-- Sectors Funded -->
+            <ui-card>
+              <div class="p-6">
+                <h3 class="text-lg font-semibold text-neutral-900 mb-4">Sectors Funded</h3>
+                <p class="text-neutral-600 mb-4">Below are the sectors/industries that we support.</p>
+                
+                <div class="space-y-3">
+                  @for (industry of opportunity()!.eligibilityCriteria.industries; track industry) {
+                    <div class="flex items-center space-x-3">
+                      <lucide-icon [img]="CheckCircleIcon" [size]="16" class="text-green-500" />
+                      <span class="text-neutral-700">{{ formatIndustryDescription(industry) }}</span>
+                    </div>
+                  }
+                </div>
+              </div>
+            </ui-card>
+
+            <!-- Application Process -->
+            @if (opportunity()!.applicationProcess.length > 0) {
+              <ui-card>
+                <div class="p-6">
+                  <h3 class="text-lg font-semibold text-neutral-900 mb-4">Application Process</h3>
+                  <p class="text-neutral-600 mb-4">Our application process consists of the following steps:</p>
+                  
+                  <div class="space-y-4">
+                    @for (step of opportunity()!.applicationProcess; track step.step) {
+                      <div class="border border-neutral-200 rounded-lg p-4">
+                        <div class="flex items-start space-x-3">
+                          <div class="w-8 h-8 bg-primary-100 rounded-full flex items-center justify-center flex-shrink-0">
+                            <span class="text-primary-700 font-medium text-sm">{{ step.step }}</span>
+                          </div>
+                          <div class="flex-1">
+                            <h4 class="font-medium text-neutral-900 mb-1">{{ step.name }}</h4>
+                            <p class="text-neutral-600 text-sm mb-2">{{ step.description }}</p>
+                            
+                            @if (step.requiredDocuments.length > 0) {
+                              <div class="mb-2">
+                                <span class="text-xs font-medium text-neutral-700">Required Documents:</span>
+                                <ul class="mt-1 space-y-1">
+                                  @for (doc of step.requiredDocuments; track doc) {
+                                    <li class="text-xs text-neutral-600 flex items-center space-x-2">
+                                      <div class="w-1 h-1 bg-neutral-400 rounded-full"></div>
+                                      <span>{{ doc }}</span>
+                                    </li>
+                                  }
+                                </ul>
+                              </div>
+                            }
+                            
+                            <div class="flex items-center space-x-4 text-xs text-neutral-500">
+                              <div class="flex items-center space-x-1">
+                                <lucide-icon [img]="CalendarIcon" [size]="12" />
+                                <span>{{ step.timeframe }} days</span>
+                              </div>
+                              @if (step.isOptional) {
+                                <span class="px-2 py-1 bg-blue-100 text-blue-700 rounded">Optional</span>
+                              } @else {
+                                <span class="px-2 py-1 bg-red-100 text-red-700 rounded">Required</span>
+                              }
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    }
+                  </div>
+                </div>
+              </ui-card>
+            }
+          </div>
+
+          <!-- Sidebar -->
+          <div class="space-y-6">
+            <!-- Key Details -->
+            <ui-card>
+              <div class="p-6">
+                <h3 class="text-lg font-semibold text-neutral-900 mb-4">Key Details</h3>
+                
+                <div class="space-y-4">
+                  <div>
+                    <div class="text-sm font-medium text-neutral-700 mb-1">Funding Type</div>
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
+                          [class]="getFundingTypeClasses(opportunity()!.fundingType)">
+                      {{ formatFundingType(opportunity()!.fundingType) }}
+                    </span>
+                  </div>
+
+                  <div>
+                    <div class="text-sm font-medium text-neutral-700 mb-1">Typical Investment</div>
+                    <div class="text-neutral-900">{{ opportunity()!.currency }} {{ formatFullAmount(opportunity()!.offerAmount) }}</div>
+                  </div>
+
+                  @if (opportunity()!.interestRate) {
+                    <div>
+                      <div class="text-sm font-medium text-neutral-700 mb-1">Interest Rate</div>
+                      <div class="text-neutral-900">{{ opportunity()!.interestRate }}% per annum</div>
+                    </div>
+                  }
+
+                  @if (opportunity()!.equityOffered) {
+                    <div>
+                      <div class="text-sm font-medium text-neutral-700 mb-1">Equity Offered</div>
+                      <div class="text-neutral-900">{{ opportunity()!.equityOffered }}%</div>
+                    </div>
+                  }
+
+                  @if (opportunity()!.expectedReturns) {
+                    <div>
+                      <div class="text-sm font-medium text-neutral-700 mb-1">Expected Returns</div>
+                      <div class="text-neutral-900">{{ opportunity()!.expectedReturns }}% IRR</div>
+                    </div>
+                  }
+
+                  @if (opportunity()!.investmentHorizon) {
+                    <div>
+                      <div class="text-sm font-medium text-neutral-700 mb-1">Investment Horizon</div>
+                      <div class="text-neutral-900">{{ opportunity()!.investmentHorizon }} years</div>
+                    </div>
+                  }
+
+                  <div>
+                    <div class="text-sm font-medium text-neutral-700 mb-1">Decision Timeframe</div>
+                    <div class="text-neutral-900">{{ opportunity()!.decisionTimeframe }} days</div>
+                  </div>
+
+                  @if (opportunity()!.applicationDeadline) {
+                    <div>
+                      <div class="text-sm font-medium text-neutral-700 mb-1">Application Deadline</div>
+                      <div class="text-neutral-900">{{ formatDate(opportunity()!.applicationDeadline!) }}</div>
+                    </div>
+                  }
+                </div>
+              </div>
+            </ui-card>
+
+            <!-- Geographic Focus -->
+            @if (hasGeographicRestrictions()) {
+              <ui-card>
+                <div class="p-6">
+                  <h3 class="text-lg font-semibold text-neutral-900 mb-4">Geographic Focus</h3>
+                  <div class="space-y-2">
+                    @for (location of getGeographicRestrictions(); track location) {
+                      <div class="flex items-center space-x-2">
+                        <lucide-icon [img]="MapPinIcon" [size]="14" class="text-neutral-400" />
+                        <span class="text-neutral-700 text-sm">{{ formatLocation(location) }}</span>
+                      </div>
+                    }
+                  </div>
+                </div>
+              </ui-card>
+            }
+
+            <!-- Revenue Range -->
+            @if (opportunity()!.eligibilityCriteria.minRevenue || opportunity()!.eligibilityCriteria.maxRevenue) {
+              <ui-card>
+                <div class="p-6">
+                  <h3 class="text-lg font-semibold text-neutral-900 mb-4">Revenue Requirements</h3>
+                  <div class="space-y-2">
+                    @if (opportunity()!.eligibilityCriteria.minRevenue) {
+                      <div>
+                        <div class="text-sm font-medium text-neutral-700">Minimum Revenue</div>
+                        <div class="text-neutral-900">{{ opportunity()!.currency }} {{ formatFullAmount(opportunity()!.eligibilityCriteria.minRevenue!) }}</div>
+                      </div>
+                    }
+                    @if (opportunity()!.eligibilityCriteria.maxRevenue) {
+                      <div>
+                        <div class="text-sm font-medium text-neutral-700">Maximum Revenue</div>
+                        <div class="text-neutral-900">{{ opportunity()!.currency }} {{ formatFullAmount(opportunity()!.eligibilityCriteria.maxRevenue!) }}</div>
+                      </div>
+                    }
+                  </div>
+                </div>
+              </ui-card>
+            }
+
+            <!-- Funding Progress -->
+            @if (opportunity()!.totalAvailable > 0) {
+              <ui-card>
+                <div class="p-6">
+                  <h3 class="text-lg font-semibold text-neutral-900 mb-4">Funding Progress</h3>
+                  
+                  <div class="space-y-3">
+                    <div class="flex justify-between text-sm">
+                      <span class="text-neutral-600">Deployed</span>
+                      <span class="font-medium">{{ formatFullAmount(opportunity()!.amountDeployed) }}</span>
+                    </div>
+                    
+                    <div class="w-full bg-neutral-200 rounded-full h-2">
+                      <div 
+                        class="bg-primary-500 h-2 rounded-full transition-all duration-300"
+                        [style.width.%]="getProgressPercentage()"
+                      ></div>
+                    </div>
+                    
+                    <div class="flex justify-between text-sm">
+                      <span class="text-neutral-600">Total Available</span>
+                      <span class="font-medium">{{ formatFullAmount(opportunity()!.totalAvailable) }}</span>
+                    </div>
+                  </div>
+                </div>
+              </ui-card>
+            }
+
+            <!-- Application Stats -->
+            <ui-card>
+              <div class="p-6">
+                <h3 class="text-lg font-semibold text-neutral-900 mb-4">Application Statistics</h3>
+                
+                <div class="space-y-3">
+                  <div class="flex justify-between">
+                    <span class="text-neutral-600 text-sm">Current Applications</span>
+                    <span class="font-medium">{{ opportunity()!.currentApplications }}</span>
+                  </div>
+                  
+                  @if (opportunity()!.maxApplications) {
+                    <div class="flex justify-between">
+                      <span class="text-neutral-600 text-sm">Maximum Applications</span>
+                      <span class="font-medium">{{ opportunity()!.maxApplications }}</span>
+                    </div>
+                  }
+                  
+                  <div class="flex justify-between">
+                    <span class="text-neutral-600 text-sm">Total Views</span>
+                    <span class="font-medium">{{ opportunity()!.viewCount }}</span>
+                  </div>
+                  
+                  @if (opportunity()!.conversionRate) {
+                    <div class="flex justify-between">
+                      <span class="text-neutral-600 text-sm">Conversion Rate</span>
+                      <span class="font-medium">{{ opportunity()!.conversionRate }}%</span>
+                    </div>
+                  }
+                </div>
+              </div>
+            </ui-card>
+          </div>
+        </div>
+      }
+
+      @if (!isLoading() && !opportunity()) {
+        <div class="bg-white rounded-lg border border-neutral-200 p-12 text-center">
+          <h3 class="text-lg font-medium text-neutral-900 mb-2">Opportunity not found</h3>
+          <p class="text-neutral-600 mb-4">The funding opportunity you're looking for doesn't exist or has been removed.</p>
+          <ui-button variant="primary" (clicked)="goBack()">
+            Back to Opportunities
+          </ui-button>
+        </div>
+      }
+    </main>
+  </div>
+</div>
