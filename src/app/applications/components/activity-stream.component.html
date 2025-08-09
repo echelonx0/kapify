@@ -1,0 +1,58 @@
+<div class="bg-white rounded-lg border border-neutral-200 h-full flex flex-col">
+  <div class="px-6 py-4 border-b border-neutral-100 flex items-center justify-between">
+    <div>
+      <h3 class="text-lg font-medium text-neutral-900">Activity</h3>
+      <p class="text-sm text-neutral-500">Recent actions and comments</p>
+    </div>
+    <button class="text-sm text-primary-600 hover:underline" (click)="refresh()">Refresh</button>
+  </div>
+
+  <div class="p-4 overflow-y-auto" style="min-height:0;">
+    <ng-container *ngIf="(activities && activities.length) > 0; else empty">
+      <div *ngFor="let it of activities; trackBy: trackByActivityId" class="flex items-start space-x-3 py-3 border-b last:border-b-0">
+        <img *ngIf="it.actorAvatarUrl; else showInitials"
+             [src]="it.actorAvatarUrl"
+             alt="avatar"
+             class="w-10 h-10 rounded-full object-cover"/>
+        <ng-template #showInitials>
+          <div class="w-10 h-10 rounded-full bg-neutral-100 flex items-center justify-center text-sm text-neutral-700">
+            {{ initials(it.actorName) }}
+          </div>
+        </ng-template>
+
+        <div class="flex-1">
+          <div class="flex items-center justify-between">
+            <div class="text-sm">
+              <span class="font-medium text-neutral-900">{{ it.actorName }}</span>
+              <span class="text-neutral-600"> · {{ it.timeAgo }}</span>
+            </div>
+            <div class="text-xs text-neutral-500">
+              <span *ngIf="it.type === 'file'">📎</span>
+              <span *ngIf="it.type === 'comment'">💬</span>
+              <span *ngIf="it.type === 'status'">⚠️</span>
+              <span *ngIf="it.type === 'note'">📝</span>
+            </div>
+          </div>
+
+          <div class="mt-1 text-sm text-neutral-700">
+            <div [innerText]="it.message"></div>
+            <div *ngIf="it.related" class="text-xs text-primary-600 mt-1">Related: {{ it.related }}</div>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+
+    <ng-template #empty>
+      <div class="text-center text-neutral-500 py-10">
+        No recent activity
+      </div>
+    </ng-template>
+  </div>
+
+  <div class="px-4 py-3 border-t border-neutral-100">
+    <div class="flex items-center space-x-2">
+      <input type="text" placeholder="Write a message..." class="flex-1 px-3 py-2 border border-neutral-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"/>
+      <button class="px-3 py-2 rounded-lg bg-primary-600 text-white text-sm">Send</button>
+    </div>
+  </div>
+</div>

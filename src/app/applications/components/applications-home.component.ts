@@ -1,13 +1,24 @@
-// src/app/applications/applications-home.component.ts
-import { Component, signal, OnInit } from '@angular/core';
+ 
+// src/app/applications/components/applications-home.component.ts
+import { Component, signal, OnInit, computed } from '@angular/core';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { LucideAngularModule, Search, Filter, Plus, Eye, Calendar, DollarSign } from 'lucide-angular';
+import { LucideAngularModule, Search, Filter, Plus, Eye, Calendar, DollarSign, FileText, TrendingUp, Clock, Users, AlertCircle } from 'lucide-angular';
 import { UiCardComponent, UiButtonComponent, UiStatusBadgeComponent } from '../../shared/components';
-import { Application, ApplicationStatus } from '../../shared/models/application.models';
-import { ApplicationService } from '../services/application.service';
+import { Application, ApplicationStage, ApplicationStatus, StatusColor } from '../../shared/models/application.models';
+import { ApplicationService } from '../services/applications.service';
+import { ActivityStreamComponent } from './activity-stream.component';
  
+
+interface ApplicationsStats {
+  total: number;
+  draft: number;
+  submitted: number;
+  underReview: number;
+  approved: number;
+  rejected: number;
+}
 
 @Component({
   selector: 'app-applications-home',
@@ -18,264 +29,12 @@ import { ApplicationService } from '../services/application.service';
     LucideAngularModule,
     UiCardComponent,
     UiButtonComponent,
-    UiStatusBadgeComponent
+    UiStatusBadgeComponent,
+        ActivityStreamComponent 
   ],
-  template: `
-    <!-- Page Header -->
-    <div class="mb-8">
-      <div class="flex items-center justify-between">
-        <div>
-          <h1 class="text-2xl font-bold text-neutral-900">Applications</h1>
-          <p class="text-neutral-600 mt-1">
-            Manage and track your funding applications
-          </p>
-        </div>
-        
-        <!-- Actions -->
-        <div class="flex items-center space-x-3">
-          <ui-button
-            variant="outline"
-            (clicked)="toggleFilters()"
-          >
-            <lucide-icon [img]="FilterIcon" [size]="16" class="mr-2" />
-            Filters
-          </ui-button>
-          
-          <ui-button
-            variant="primary"
-            (clicked)="createNewApplication()"
-          >
-            <lucide-icon [img]="PlusIcon" [size]="16" class="mr-2" />
-            New Application
-          </ui-button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Quick Stats -->
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-      <ui-card>
-        <div class="flex items-center">
-          <div class="flex-shrink-0">
-            <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-              <lucide-icon [img]="EyeIcon" [size]="16" class="text-blue-600" />
-            </div>
-          </div>
-          <div class="ml-4">
-            <p class="text-sm font-medium text-neutral-600">Total Applications</p>
-            <p class="text-2xl font-bold text-neutral-900">{{ getTotalApplications() }}</p>
-          </div>
-        </div>
-      </ui-card>
-
-      <ui-card>
-        <div class="flex items-center">
-          <div class="flex-shrink-0">
-            <div class="w-8 h-8 bg-yellow-100 rounded-lg flex items-center justify-center">
-              <lucide-icon [img]="CalendarIcon" [size]="16" class="text-yellow-600" />
-            </div>
-          </div>
-          <div class="ml-4">
-            <p class="text-sm font-medium text-neutral-600">Under Review</p>
-            <p class="text-2xl font-bold text-neutral-900">{{ getUnderReviewCount() }}</p>
-          </div>
-        </div>
-      </ui-card>
-
-      <ui-card>
-        <div class="flex items-center">
-          <div class="flex-shrink-0">
-            <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
-              <lucide-icon [img]="DollarSignIcon" [size]="16" class="text-green-600" />
-            </div>
-          </div>
-          <div class="ml-4">
-            <p class="text-sm font-medium text-neutral-600">Approved</p>
-            <p class="text-2xl font-bold text-neutral-900">{{ getApprovedCount() }}</p>
-          </div>
-        </div>
-      </ui-card>
-
-      <ui-card>
-        <div class="flex items-center">
-          <div class="flex-shrink-0">
-            <div class="w-8 h-8 bg-primary-100 rounded-lg flex items-center justify-center">
-              <lucide-icon [img]="DollarSignIcon" [size]="16" class="text-primary-600" />
-            </div>
-          </div>
-          <div class="ml-4">
-            <p class="text-sm font-medium text-neutral-600">Total Requested</p>
-            <p class="text-xl font-bold text-neutral-900">R{{ formatCurrency(getTotalRequested()) }}</p>
-          </div>
-        </div>
-      </ui-card>
-    </div>
-
-    <!-- Search and Filters -->
-    <div class="bg-white rounded-lg border border-neutral-200 p-4 mb-6">
-      <div class="flex items-center space-x-4">
-        <!-- Search -->
-        <div class="flex-1 relative">
-          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <lucide-icon [img]="SearchIcon" [size]="16" class="text-neutral-400" />
-          </div>
-          <input
-            type="text"
-            [value]="searchTerm()"
-            (input)="onSearchChange($event)"
-            placeholder="Search applications..."
-            class="block w-full pl-10 pr-3 py-2 border border-neutral-300 rounded-md leading-5 bg-white placeholder-neutral-500 focus:outline-none focus:placeholder-neutral-400 focus:ring-1 focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
-          />
-        </div>
-
-        <!-- Status Filter -->
-        @if (showFilters()) {
-          <select
-            [value]="statusFilter()"
-            (change)="onFilterChange($event)"
-            class="block px-3 py-2 border border-neutral-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-primary-500 focus:border-primary-500"
-          >
-            <option value="">All Statuses</option>
-            <option value="draft">Draft</option>
-            <option value="submitted">Submitted</option>
-            <option value="under_review">Under Review</option>
-            <option value="approved">Approved</option>
-            <option value="rejected">Rejected</option>
-          </select>
-        }
-      </div>
-    </div>
-
-    <!-- Applications List -->
-    <div class="space-y-4">
-      @if (isLoading()) {
-        <div class="text-center py-12">
-          <div class="inline-block w-8 h-8 border-4 border-primary-500 border-t-transparent rounded-full animate-spin"></div>
-          <p class="text-neutral-600 mt-2">Loading applications...</p>
-        </div>
-      } @else if (filteredApplications().length === 0) {
-        <ui-card>
-          <div class="text-center py-12">
-            <lucide-icon [img]="EyeIcon" [size]="48" class="text-neutral-300 mx-auto mb-4" />
-            <h3 class="text-lg font-medium text-neutral-900 mb-2">No applications found</h3>
-            <p class="text-neutral-500 mb-6">
-              @if (searchTerm() || statusFilter()) {
-                Try adjusting your search or filters
-              } @else {
-                Get started by creating your first application
-              }
-            </p>
-            @if (!searchTerm() && !statusFilter()) {
-              <ui-button variant="primary" (clicked)="createNewApplication()">
-                <lucide-icon [img]="PlusIcon" [size]="16" class="mr-2" />
-                Create Application
-              </ui-button>
-            }
-          </div>
-        </ui-card>
-      } @else {
-        @for (application of filteredApplications(); track application.id) {
-          <ui-card [hover]="true" (click)="viewApplication(application.id)">
-            <div class="flex items-center justify-between">
-              <!-- Application Info -->
-              <div class="flex-1">
-                <div class="flex items-center space-x-3 mb-2">
-                  <h3 class="text-lg font-semibold text-neutral-900">
-                    {{ application.title }}
-                  </h3>
-                  <ui-status-badge 
-                    [text]="getStatusText(application.status)"
-                    [color]="getStatusColor(application.status)"
-                  />
-                </div>
-                
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-neutral-600">
-                  <div>
-                    <span class="font-medium">Application ID:</span>
-                    {{ application.applicationNumber }}
-                  </div>
-                  <div>
-                    <span class="font-medium">Amount:</span>
-                    {{ application.currency }} {{ formatNumber(application.requestedAmount) }}
-                  </div>
-                  <div>
-                    <span class="font-medium">Submitted:</span>
-                    {{ formatDate(application.submittedAt) }}
-                  </div>
-                </div>
-                
-                <p class="text-neutral-600 mt-2 line-clamp-2">
-                  {{ application.description }}
-                </p>
-              </div>
-
-              <!-- Actions -->
-              <div class="flex items-center space-x-2 ml-6">
-                <ui-button
-                  variant="outline"
-                  size="sm"
-                  (clicked)="viewApplication(application.id)"
-                >
-                  <lucide-icon [img]="EyeIcon" [size]="14" class="mr-1" />
-                  View
-                </ui-button>
-              </div>
-            </div>
-          </ui-card>
-        }
-      }
-    </div>
-
-    <!-- Pagination -->
-    @if (filteredApplications().length > 0 && totalPages() > 1) {
-      <div class="flex items-center justify-between mt-8">
-        <div class="text-sm text-neutral-700">
-          Showing {{ getShowingStart() }} to {{ getShowingEnd() }} of {{ filteredApplications().length }} applications
-        </div>
-        
-        <div class="flex items-center space-x-2">
-          <ui-button
-            variant="outline"
-            size="sm"
-            [disabled]="currentPage() === 1"
-            (clicked)="goToPage(currentPage() - 1)"
-          >
-            Previous
-          </ui-button>
-          
-          @for (page of getPageNumbers(); track page) {
-            <ui-button
-              [variant]="page === currentPage() ? 'primary' : 'ghost'"
-              size="sm"
-              (clicked)="goToPage(page)"
-            >
-              {{ page }}
-            </ui-button>
-          }
-          
-          <ui-button
-            variant="outline"
-            size="sm"
-            [disabled]="currentPage() === totalPages()"
-            (clicked)="goToPage(currentPage() + 1)"
-          >
-            Next
-          </ui-button>
-        </div>
-      </div>
-    }
-  `
+  templateUrl: 'applications-home.component.html'
 })
 export class ApplicationsHomeComponent implements OnInit {
-  // Signals
-  applications = signal<Application[]>([]);
-  isLoading = signal(true);
-  searchTerm = signal('');
-  statusFilter = signal('');
-  showFilters = signal(false);
-  currentPage = signal(1);
-  pageSize = signal(10);
-
   // Icons
   SearchIcon = Search;
   FilterIcon = Filter;
@@ -283,143 +42,147 @@ export class ApplicationsHomeComponent implements OnInit {
   EyeIcon = Eye;
   CalendarIcon = Calendar;
   DollarSignIcon = DollarSign;
-
-  // Computed
+  FileTextIcon = FileText;
+  TrendingUpIcon = TrendingUp;
+  ClockIcon = Clock;
+  UsersIcon = Users;
+  AlertCircleIcon = AlertCircle;
+ 
+  // State
+  applications = signal<Application[]>([]);
   filteredApplications = signal<Application[]>([]);
-  totalPages = signal(1);
+  stats = signal<ApplicationsStats | null>(null);
+  isLoading = signal(true);
+  userID = 'uche'
+  
+  // Filter state
+  showFilters = signal(false);
+  searchQuery = signal('');
+  filterStatus = signal<ApplicationStatus | ''>('');
+  filterFundingType = signal<string>('');
+
+  // Computed properties
+  hasActiveFilters = computed(() => {
+    return this.searchQuery() !== '' || 
+           this.filterStatus() !== '' || 
+           this.filterFundingType() !== '';
+  });
 
   constructor(
-    private applicationService: ApplicationService,
-    private router: Router
+    private router: Router,
+    private applicationService: ApplicationService
   ) {}
 
   ngOnInit() {
     this.loadApplications();
+    this.loadStats();
   }
 
-  // Navigation
-  viewApplication(applicationId: string) {
-    this.router.navigate(['/applications', applicationId]);
+  private loadApplications() {
+    this.isLoading.set(true);
+    
+    this.applicationService.getApplications().subscribe({
+      next: (applications) => {
+        this.applications.set(applications);
+        this.applyFilters();
+        this.isLoading.set(false);
+      },
+      error: (error) => {
+        console.error('Error loading applications:', error);
+        this.isLoading.set(false);
+      }
+    });
   }
 
-  createNewApplication() {
-    this.router.navigate(['/applications', 'new']);
-  }
+  
 
-  // Filters and Search
+  private loadStats() {
+    this.applicationService.getApplicationsStats().subscribe({
+      next: (stats) => {
+        this.stats.set(stats);
+      },
+      error: (error) => {
+        console.error('Error loading stats:', error);
+      }
+    });
+  }
+trackByApp(index: number, app: Application): string {
+  return app.id; // or whatever unique ID field your Application model has
+}
+
+  // Filter methods
   toggleFilters() {
     this.showFilters.update(show => !show);
   }
 
-  onSearchChange(event: Event) {
-    const target = event.target as HTMLInputElement;
-    this.searchTerm.set(target.value);
-    this.applyFilters();
-  }
-
-  onFilterChange(event: Event) {
-    const target = event.target as HTMLSelectElement;
-    this.statusFilter.set(target.value);
-    this.applyFilters();
-  }
-
-  private applyFilters() {
-    let filtered = this.applications();
-
-    // Apply search filter
-    if (this.searchTerm()) {
-      const term = this.searchTerm().toLowerCase();
+  applyFilters() {
+    let filtered = [...this.applications()];
+    
+    // Search filter
+    if (this.searchQuery()) {
+      const query = this.searchQuery().toLowerCase();
       filtered = filtered.filter(app => 
-        app.title.toLowerCase().includes(term) ||
-        app.applicationNumber.toLowerCase().includes(term) ||
-        app.description.toLowerCase().includes(term)
+        app.title.toLowerCase().includes(query) ||
+        app.applicationNumber.toLowerCase().includes(query) ||
+        app.description?.toLowerCase().includes(query)
       );
     }
-
-    // Apply status filter
-    if (this.statusFilter()) {
-      filtered = filtered.filter(app => app.status === this.statusFilter());
+    
+    // Status filter
+    if (this.filterStatus()) {
+      filtered = filtered.filter(app => app.status === this.filterStatus());
     }
-
+    
+    // Funding type filter
+    if (this.filterFundingType()) {
+      filtered = filtered.filter(app => app.fundingType === this.filterFundingType());
+    }
+    
     this.filteredApplications.set(filtered);
-    this.updatePagination();
-    this.currentPage.set(1);
   }
 
-  // Pagination
-  goToPage(page: number) {
-    this.currentPage.set(page);
+
+getStageDisplayName(stage?: ApplicationStage): string {
+  if (!stage) return 'Not started';
+
+  const stageNames: Record<ApplicationStage['stage'], string> = {
+    submission: 'Submission',
+    initial_review: 'Initial Review',
+    detailed_review: 'Detailed Review',
+    due_diligence: 'Due Diligence',
+    investment_committee: 'Investment Committee',
+    term_sheet: 'Term Sheet',
+    legal_docs: 'Legal Documentation',
+    funding: 'Funding'
+  };
+
+  return stageNames[stage.stage] || stage.stage;
+}
+
+
+
+  clearFilters() {
+    this.searchQuery.set('');
+    this.filterStatus.set('');
+    this.filterFundingType.set('');
+    this.applyFilters();
   }
 
-  getPageNumbers(): number[] {
-    const total = this.totalPages();
-    const current = this.currentPage();
-    const pages: number[] = [];
-    
-    for (let i = Math.max(1, current - 2); i <= Math.min(total, current + 2); i++) {
-      pages.push(i);
-    }
-    
-    return pages;
+  // Navigation methods
+  createNewApplication() {
+    this.router.navigate(['/applications/new']);
   }
 
-  getShowingStart(): number {
-    return ((this.currentPage() - 1) * this.pageSize()) + 1;
+  viewApplication(applicationId: string) {
+    this.router.navigate(['/applications', applicationId]);
   }
 
-  getShowingEnd(): number {
-    return Math.min(this.currentPage() * this.pageSize(), this.filteredApplications().length);
+  loadMoreApplications() {
+    // TODO: Implement pagination
+    console.log('Load more applications');
   }
 
-  private updatePagination() {
-    const total = Math.ceil(this.filteredApplications().length / this.pageSize());
-    this.totalPages.set(total);
-  }
-
-  // Stats
-  getTotalApplications(): number {
-    return this.applications().length;
-  }
-
-  getUnderReviewCount(): number {
-    return this.applications().filter(app => 
-      app.status === 'under_review' || app.status === 'due_diligence'
-    ).length;
-  }
-
-  getApprovedCount(): number {
-    return this.applications().filter(app => app.status === 'approved').length;
-  }
-
-  getTotalRequested(): number {
-    return this.applications().reduce((total, app) => total + app.requestedAmount, 0);
-  }
-
-  // Formatting helpers
-  formatCurrency(amount: number): string {
-    return new Intl.NumberFormat('en-ZA', {
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0
-    }).format(amount);
-  }
-
-  formatNumber(amount: number): string {
-    return new Intl.NumberFormat('en-ZA', {
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0
-    }).format(amount);
-  }
-
-  formatDate(date?: Date): string {
-    if (!date) return 'Not specified';
-    return new Intl.DateTimeFormat('en-ZA', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    }).format(new Date(date));
-  }
-
-  // Status helpers
+  // Utility methods
   getStatusText(status: ApplicationStatus): string {
     const statusMap: Record<ApplicationStatus, string> = {
       'draft': 'Draft',
@@ -435,33 +198,65 @@ export class ApplicationsHomeComponent implements OnInit {
     return statusMap[status] || status;
   }
 
-  getStatusColor(status: ApplicationStatus): 'primary' | 'success' | 'warning' | 'error' {
-    const colorMap: Record<ApplicationStatus, 'primary' | 'success' | 'warning' | 'error'> = {
-      'draft': 'warning',
-      'submitted': 'primary',
-      'under_review': 'primary',
-      'due_diligence': 'primary',
-      'investment_committee': 'warning',
-      'approved': 'success',
-      'rejected': 'error',
-      'funded': 'success',
-      'withdrawn': 'error'
-    };
-    return colorMap[status] || 'primary';
+
+
+getStatusColor(status: ApplicationStatus): StatusColor {
+  const colorMap: Record<ApplicationStatus, StatusColor> = {
+    draft: 'neutral',
+    submitted: 'blue',
+    under_review: 'yellow',
+    due_diligence: 'purple',
+    investment_committee: 'orange',
+    approved: 'green',
+    rejected: 'red',
+    funded: 'green',
+    withdrawn: 'gray'
+  };
+  return colorMap[status] || 'neutral';
+}
+
+  getApplicationProgress(application: Application): number {
+    const completedSteps = application.applicationSteps.filter(step => step.status === 'completed').length;
+    const totalSteps = application.applicationSteps.length;
+    
+    return totalSteps > 0 ? Math.round((completedSteps / totalSteps) * 100) : 0;
   }
 
-  private loadApplications() {
-    this.applicationService.getApplications().subscribe({
-      next: (applications: Application[]) => {
-        this.applications.set(applications);
-        this.filteredApplications.set(applications);
-        this.updatePagination();
-        this.isLoading.set(false);
-      },
-      error: (error: any) => {
-        console.error('Failed to load applications:', error);
-        this.isLoading.set(false);
-      }
+  getApplicationActions(application: Application): string[] {
+    const actions: string[] = [];
+    
+    if (application.status === 'draft') {
+      actions.push('Complete and submit application');
+    } else if (application.status === 'under_review' && application.reviewNotes.length === 0) {
+      actions.push('Awaiting initial review');
+    } else if (application.currentStage?.status === 'in_progress') {
+      actions.push(application.currentStage.stage);
+    }
+    
+    return actions;
+  }
+
+  formatCurrency(amount: number, currency: string): string {
+    const formatter = new Intl.NumberFormat('en-ZA', {
+      style: 'currency',
+      currency: currency || 'ZAR',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
     });
+    
+    return formatter.format(amount);
+  }
+
+  formatTotalRequested(): string {
+    const total = this.applications().reduce((sum, app) => sum + app.requestedAmount, 0);
+    return this.formatCurrency(total, 'ZAR');
+  }
+
+  formatDate(date: Date): string {
+    return new Intl.DateTimeFormat('en-ZA', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    }).format(new Date(date));
   }
 }

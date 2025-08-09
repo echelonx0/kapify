@@ -1,6 +1,7 @@
 // src/app/shared/models/application.models.ts
 
 export type ApplicationStatus = 'draft' | 'submitted' | 'under_review' | 'due_diligence' | 'investment_committee' | 'approved' | 'rejected' | 'funded' | 'withdrawn';
+export type StatusColor = 'neutral' | 'blue' | 'yellow' | 'purple' | 'orange' | 'green' | 'red' | 'gray';
 
 // Enhanced Application Model with SWOT integration
 export interface Application {
@@ -116,9 +117,11 @@ export interface ProposedTerms {
 }
 
 export interface ProposedMilestone {
+  name: string; // Add this property
   description: string;
   targetDate: Date;
   measurementCriteria: string[];
+  successCriteria?: string[]; // Add this property
   consequenceIfMissed: string;
 }
 
@@ -133,7 +136,8 @@ export interface ApplicationStage {
 }
 
 export interface ApplicationStep {
-  stepNumber: number;
+  id: string; // permanent unique ID
+  stepNumber: number; // order in the process
   name: string;
   description: string;
   status: 'pending' | 'in_progress' | 'completed' | 'skipped';
