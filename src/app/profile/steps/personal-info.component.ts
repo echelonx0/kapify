@@ -8,7 +8,7 @@ import { ProfileService, ProfileData } from '../profile.service';
 @Component({
   selector: 'app-personal-info',
   standalone: true,
-  imports: [ReactiveFormsModule, UiInputComponent, UiCardComponent, UiButtonComponent],
+  imports: [ReactiveFormsModule, UiInputComponent, UiCardComponent],
   template: `
     <div class="space-y-8">
       <div class="text-center">

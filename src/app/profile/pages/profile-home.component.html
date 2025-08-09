@@ -1,158 +1,162 @@
-    <div class="space-y-8">
-      <!-- Header -->
-     
-
-      <!-- Progress Overview -->
-      <ui-card title="Profile Progress" [padding]="false">
-        <div class="p-6">
-          <!-- Progress Bar -->
-          <div class="mb-6">
-            <div class="flex items-center justify-between mb-2">
-              <span class="text-sm font-medium text-neutral-700">Overall Completion</span>
-              <span class="text-sm text-neutral-500">{{ completedSteps() }} of {{ totalSteps() }} completed</span>
-            </div>
-            <ui-progress [value]="completionPercentage()" color="primary" />
+<div class="min-h-screen p-6">
+      <!-- Top Funding Banner -->
+      <div class="gradient-bg rounded-xl p-6 mb-6 text-white">
+        <div class="flex items-center justify-between">
+          <div>
+            <h1 class="text-2xl font-bold mb-2">{{ fundingTitle() }}</h1>
+            <div class="text-4xl font-bold">{{ fundingAmount() }}</div>
+            <p class="text-green-100 mt-2">{{ fundingDescription() }}</p>
           </div>
-
-          <!-- Quick Stats -->
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-            <div class="bg-green-50 rounded-lg p-4 text-center">
-              <div class="text-2xl font-bold text-green-600">{{ completedSteps() }}</div>
-              <div class="text-sm text-green-700">Completed</div>
-            </div>
-            <div class="bg-blue-50 rounded-lg p-4 text-center">
-              <div class="text-2xl font-bold text-blue-600">{{ inProgressSteps() }}</div>
-              <div class="text-sm text-blue-700">In Progress</div>
-            </div>
-            <div class="bg-orange-50 rounded-lg p-4 text-center">
-              <div class="text-2xl font-bold text-orange-600">{{ pendingSteps() }}</div>
-              <div class="text-sm text-orange-700">Pending</div>
-            </div>
-          </div>
-
-          <!-- Action Buttons -->
-          <div class="flex flex-col sm:flex-row gap-4">
-            @if (completionPercentage() === 0) {
-              <ui-button variant="primary" size="lg" (clicked)="startProfile()">
-                Start Your Profile
-                <lucide-icon [img]="ArrowRightIcon" [size]="20" class="ml-2" />
-              </ui-button>
-            } @else if (completionPercentage() < 100) {
-              <ui-button variant="primary" size="lg" (clicked)="continueProfile()">
-                Continue Profile
-                <lucide-icon [img]="ArrowRightIcon" [size]="20" class="ml-2" />
-              </ui-button>
-            } @else {
-              <ui-button variant="primary" size="lg" (clicked)="reviewProfile()">
-                Review Complete Profile
-                <lucide-icon [img]="CheckCircleIcon" [size]="20" class="ml-2" />
-              </ui-button>
-            }
-            
-            @if (completionPercentage() > 0) {
-              <ui-button variant="outline" size="lg" (clicked)="viewAllSteps()">
-                View All Steps
-              </ui-button>
-            }
+          <div class="flex space-x-4">
+            <ui-button 
+              variant="outline" 
+              size="lg" 
+              class="bg-white/20 hover:bg-white/30 border-white/30 text-white"
+              (clicked)="viewOpportunities()">
+              {{ primaryButtonText() }}
+            </ui-button>
+         
           </div>
         </div>
-      </ui-card>
+      </div>
 
-      <!-- Steps Overview -->
-      <ui-card title="Profile Sections" subtitle="Complete all sections to maximize your funding opportunities">
-        <div class="grid gap-4">
-          @for (step of profileService.steps; track step.id; let i = $index) {
-            <div 
-              class="flex items-center justify-between p-4 border rounded-lg hover:bg-neutral-50 transition-colors cursor-pointer"
-              (click)="goToStep(step.id)"
-            >
-              <div class="flex items-center space-x-4">
-                <!-- Step Icon -->
-                <div [class]="getStepIconClasses(step)">
-                  @if (step.completed) {
-                    <lucide-icon [img]="CheckCircleIcon" [size]="20" class="text-white" />
-                  } @else {
-                    <lucide-icon [img]="getStepIcon(step.id)" [size]="20" />
-                  }
-                </div>
-                
-                <!-- Step Info -->
-                <div>
-                  <h3 class="font-medium text-neutral-900">{{ step.title }}</h3>
-                  <p class="text-sm text-neutral-600">{{ getStepDescription(step.id) }}</p>
-                </div>
-              </div>
-
-              <!-- Status -->
-              <div class="flex items-center space-x-3">
-                @if (step.completed) {
-                  <ui-status-badge text="Complete" color="success" />
-                } @else if (isCurrentStep(step.id)) {
-                  <ui-status-badge text="Current" color="primary" />
-                } @else {
-                  <ui-status-badge text="Pending" color="warning" />
-                }
-                
-                <lucide-icon [img]="ArrowRightIcon" [size]="16" class="text-neutral-400" />
-              </div>
-            </div>
-          }
-        </div>
-      </ui-card>
-
-      <!-- Benefits Card -->
-      <ui-card title="Why Complete Your Profile?" [padding]="false">
-        <div class="p-6">
-          <div class="grid md:grid-cols-2 gap-6">
-            <div class="space-y-4">
-              <div class="flex items-start space-x-3">
-                <lucide-icon [img]="CheckCircleIcon" [size]="20" class="text-green-500 mt-0.5" />
-                <div>
-                  <h4 class="font-medium text-neutral-900">Better Funding Matches</h4>
-                  <p class="text-sm text-neutral-600">Get matched with funders that align with your business model and growth stage.</p>
-                </div>
-              </div>
-              
-              <div class="flex items-start space-x-3">
-                <lucide-icon [img]="CheckCircleIcon" [size]="20" class="text-green-500 mt-0.5" />
-                <div>
-                  <h4 class="font-medium text-neutral-900">Faster Application Process</h4>
-                  <p class="text-sm text-neutral-600">Pre-qualified profiles get priority review and faster funding decisions.</p>
-                </div>
-              </div>
-            </div>
-            
-            <div class="space-y-4">
-              <div class="flex items-start space-x-3">
-                <lucide-icon [img]="CheckCircleIcon" [size]="20" class="text-green-500 mt-0.5" />
-                <div>
-                  <h4 class="font-medium text-neutral-900">Higher Success Rate</h4>
-                  <p class="text-sm text-neutral-600">Complete profiles have 3x higher approval rates for funding applications.</p>
-                </div>
-              </div>
-              
-              <div class="flex items-start space-x-3">
-                <lucide-icon [img]="CheckCircleIcon" [size]="20" class="text-green-500 mt-0.5" />
-                <div>
-                  <h4 class="font-medium text-neutral-900">Investor Confidence</h4>
-                  <p class="text-sm text-neutral-600">Detailed profiles build trust and credibility with potential funders.</p>
-                </div>
-              </div>
-            </div>
+      <!-- Main Layout Grid -->
+      <div class="grid grid-cols-12 gap-6 h-full">
+        <!-- Main Content Area (Left) -->
+        <div class="col-span-8">
+          <!-- 3D Viewer Component -->
+          <div class="main-content-area mb-6" style="height: 400px;">
+          <app-three-d-viewer 
+          [objUrl]="'models/scene.gltf'"
+          [modelScale]="2"
+          [autoRotate]="true"
+          [showMeshSphere]="true">
+        </app-three-d-viewer>
           </div>
-        </div>
-      </ui-card>
 
-      <!-- Help Section -->
-      <ui-card>
-        <div class="text-center">
-          <h3 class="text-lg font-semibold text-neutral-900 mb-2">Need Help?</h3>
-          <p class="text-neutral-600 mb-4">
-            Our team is here to help you complete your profile and maximize your funding potential.
-          </p>
-          <ui-button variant="outline" (clicked)="requestHelp()">
-            Request Assistance
-          </ui-button>
+          <!-- Integrated Activity Feed Widget -->
+          <app-activity-feed
+            (viewAllClicked)="viewAllActivities()"
+            (activityClicked)="onActivityClicked($event)"
+            class="mb-6">
+          </app-activity-feed>
         </div>
-      </ui-card>
+
+        <!-- Right Sidebar Cards -->
+        <div class="col-span-4 space-y-6">
+          <!-- Profile Progress Card -->
+          <ui-card title="Profile Progress" [hasActions]="true" marginBottom="mb-6">
+            <div slot="actions" class="text-sm text-gray-500">
+              {{ completedSteps() }} of {{ totalSteps() }} completed
+            </div>
+
+            <!-- Progress Bar -->
+            <div class="mb-6">
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-sm font-medium text-gray-700">Overall Completion</span>
+                <span class="text-sm text-gray-500">{{ completionPercentage() }}%</span>
+              </div>
+              <ui-progress [value]="completionPercentage()" color="primary"></ui-progress>
+            </div>
+
+            <!-- Quick Stats -->
+            <div class="grid grid-cols-3 gap-3 mb-6">
+              <div class="bg-green-50 rounded-lg p-3 text-center">
+                <div class="text-xl font-bold text-green-600">{{ completedSteps() }}</div>
+                <div class="text-xs text-green-700">Completed</div>
+              </div>
+              <div class="bg-blue-50 rounded-lg p-3 text-center">
+                <div class="text-xl font-bold text-blue-600">{{ inProgressSteps() }}</div>
+                <div class="text-xs text-blue-700">In Progress</div>
+              </div>
+              <div class="bg-orange-50 rounded-lg p-3 text-center">
+                <div class="text-xl font-bold text-orange-600">{{ pendingSteps() }}</div>
+                <div class="text-xs text-orange-700">Pending</div>
+              </div>
+            </div>
+
+         <ui-button 
+  variant="primary" 
+  size="lg" 
+  class="w-full"
+  [routerLink]="['/profile/steps']">
+  {{ getProfileButtonText() }}
+  <lucide-icon [img]="ArrowRightIcon" [size]="16" class="ml-2"></lucide-icon>
+</ui-button>
+          </ui-card>
+
+          <!-- Profile Sections Card -->
+          <ui-card 
+            title="Profile Sections" 
+            subtitle="Complete all sections to maximize funding opportunities"
+            marginBottom="mb-6">
+            <div class="space-y-3">
+              @for (step of profileService.steps.slice(0, 3); track step.id) {
+                <div 
+                  class="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
+                  (click)="goToStep(step.id)">
+                  <div class="flex items-center space-x-3">
+                    <div [class]="getStepIconClasses(step)">
+                      @if (step.completed) {
+                        <lucide-icon [img]="CheckCircleIcon" [size]="16" class="text-white"></lucide-icon>
+                      } @else {
+                        <lucide-icon [img]="getStepIcon(step.id)" [size]="16"></lucide-icon>
+                      }
+                    </div>
+                    <div>
+                      <p class="text-sm font-medium text-gray-900">{{ step.title }}</p>
+                      <p class="text-xs text-gray-600">{{ getStepDescription(step.id) }}</p>
+                    </div>
+                  </div>
+                  <ui-status-badge 
+                    [text]="getStepStatusText(step)" 
+                    [color]="getStepStatusColor(step)">
+                  </ui-status-badge>
+                </div>
+              }
+              @if (profileService.steps.length > 3) {
+                <button 
+                  class="w-full text-center py-2 text-sm text-blue-600 hover:text-blue-700 font-medium"
+                  (click)="viewAllSteps()">
+                  View All {{ profileService.steps.length }} Sections
+                </button>
+              }
+            </div>
+          </ui-card>
+
+       
+        
+
+          <!-- Help Section -->
+          <ui-card>
+            <div class="text-center">
+              <h3 class="text-lg font-semibold text-gray-900 mb-2">Need Help?</h3>
+              <p class="text-gray-600 mb-4 text-sm">
+                Our team is here to help you complete your profile and maximize your funding potential.
+              </p>
+              <ui-button variant="outline" (clicked)="requestHelp()">Request Assistance</ui-button>
+            </div>
+          </ui-card>
+
+   <!-- Subscription Card -->
+          <div class="bg-red-500 text-white p-6 rounded-lg border border-red-600 mt-4">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-lg font-semibold">Subscription Status</h3>
+              <lucide-icon [img]="AlertTriangleIcon" [size]="20" class="text-white"></lucide-icon>
+            </div>
+            <p class="text-sm opacity-90 mb-3">{{ subscriptionStatus.planName }} - {{ subscriptionStatus.status }}</p>
+            <ui-button 
+              variant="outline" 
+              size="sm"
+              class="w-full bg-white text-red-500 hover:bg-gray-100 border-white"
+              (clicked)="upgradeSubscription()">
+              {{ subscriptionStatus.actionText }}
+            </ui-button>
+          </div>
+                  
+
+        </div>
+      </div>
+
+   
     </div>

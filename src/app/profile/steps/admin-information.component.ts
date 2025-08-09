@@ -23,7 +23,7 @@ interface SectionStates {
 @Component({
   selector: 'app-admin-information',
   standalone: true,
-  imports: [ReactiveFormsModule, LucideAngularModule, UiInputComponent, UiCardComponent, UiButtonComponent],
+  imports: [ReactiveFormsModule, LucideAngularModule, UiInputComponent, UiButtonComponent],
   templateUrl: 'admin-information.component.html'
 })
 export class AdminInformationComponent implements OnInit {

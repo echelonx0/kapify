@@ -9,19 +9,26 @@ import { DashboardHeaderComponent } from '../shared/components/dashboard-header.
   standalone: true,
   imports: [RouterOutlet, SidebarNavComponent, DashboardHeaderComponent],
   template: `
-    <div class="min-h-screen bg-neutral-50">
+    <div class="h-screen bg-neutral-50 flex overflow-hidden">
       <sidebar-nav />
       
-      <!-- Main Content -->
-      <div class="ml-16">
+      <!-- Main Content Area -->
+      <div class="flex-1 flex flex-col overflow-hidden">
         <dashboard-header />
         
-        <!-- Page Content -->
-        <main class="p-6">
+        <!-- Page Content - Takes remaining height -->
+        <main class="flex-1 overflow-hidden">
           <router-outlet />
         </main>
       </div>
     </div>
-  `
+  `,
+  styles: [`
+    :host {
+      display: block;
+      height: 100vh;
+      overflow: hidden;
+    }
+  `]
 })
 export class ApplicationsComponent {}

@@ -1,6 +1,6 @@
 // src/app/dashboard/dashboard-layout.component.ts
-import { Component } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { Component, computed } from '@angular/core';
+import { Router, RouterOutlet } from '@angular/router';
 import { SidebarNavComponent } from '../shared/components/sidebar-nav.component';
 import { DashboardHeaderComponent } from '../shared/components/dashboard-header.component';
 
@@ -9,19 +9,36 @@ import { DashboardHeaderComponent } from '../shared/components/dashboard-header.
   standalone: true,
   imports: [RouterOutlet, SidebarNavComponent, DashboardHeaderComponent],
   template: `
-    <div class="min-h-screen bg-neutral-50">
-      <sidebar-nav />
+    <div class="min-h-screen bg-neutral-50 overflow-hidden">
+      <!-- Show sidebar only for non-home routes -->
+      <sidebar-nav *ngIf="!isHomeRoute()" />
       
       <!-- Main Content -->
-      <div class="ml-16">
-        <dashboard-header />
+      <div [class]="contentClass()">
+        <!-- Show header only for non-home routes -->
+        <dashboard-header *ngIf="!isHomeRoute()" />
         
         <!-- Page Content -->
-        <main class="p-6">
+        <main [class]="mainClass()">
           <router-outlet />
         </main>
       </div>
     </div>
   `
 })
-export class DashboardLayoutComponent {}
+export class DashboardLayoutComponent {
+  
+  constructor(private router: Router) {}
+
+  isHomeRoute = computed(() => {
+    return this.router.url === '/dashboard/home' || this.router.url === '/dashboard';
+  });
+
+  contentClass = computed(() => {
+    return this.isHomeRoute() ? '' : 'ml-16';
+  });
+
+  mainClass = computed(() => {
+    return this.isHomeRoute() ? 'h-screen overflow-hidden' : 'p-6';
+  });
+}

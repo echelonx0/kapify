@@ -7,7 +7,7 @@ import { ProfileService } from '../profile.service';
 @Component({
   selector: 'app-profile-steps-layout',
   standalone: true,
-  imports: [RouterOutlet, LucideAngularModule, UiButtonComponent, UiProgressComponent, UiCardComponent],
+  imports: [RouterOutlet, LucideAngularModule, UiButtonComponent],
   template: `
     <div class="space-y-8">
       <!-- Header -->

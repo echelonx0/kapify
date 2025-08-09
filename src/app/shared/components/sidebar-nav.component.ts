@@ -29,7 +29,7 @@ interface NavItem {
           <span class="text-white font-bold text-lg">K</span>
         </button>
         <span class="ml-3 font-bold text-xl text-neutral-900 opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">
-          Khula
+          Kapify
         </span>
       </div>
 

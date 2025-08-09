@@ -1,4 +1,4 @@
-// 2. src/app/app.routes.ts - ADD PROFILE AND DASHBOARD ROUTES
+// src/app/app.routes.ts - FIXED ROUTING STRUCTURE
 import { Routes } from '@angular/router';
 import { LandingComponent } from './landing/landing.component';
 import { LoginComponent } from './auth/login.component';
@@ -36,7 +36,7 @@ export const routes: Routes = [
     loadChildren: () => import('./dashboard/dashboard.routes').then(m => m.dashboardRoutes)
   },
   
-  // Profile routes - FIXED IMPORT
+  // Profile routes - CONSISTENT STRUCTURE
   {
     path: 'profile',
     canActivate: [AuthGuard],
@@ -44,17 +44,21 @@ export const routes: Routes = [
     title: 'Profile Setup - Kapify'
   },
   
- // NEW: Applications routes with lazy loading
+  // Applications routes - REVENUE FOCUSED
   {
     path: 'applications',
     canActivate: [AuthGuard],
     loadChildren: () => import('./applications/applications.routes').then(m => m.applicationRoutes)
   },
-   {
+  
+  // Funding routes - CORE REVENUE PATH
+  {
     path: 'funding',
     canActivate: [AuthGuard],
     loadChildren: () => import('./funding/funding.routes').then(m => m.fundingRoutes)
   },
+  
+  // DIRECT REVENUE-GENERATING ROUTES
   {
     path: 'funding-opportunities',
     canActivate: [AuthGuard], 
