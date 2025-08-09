@@ -17,7 +17,7 @@ import { DashboardHeaderComponent } from '../shared/components/dashboard-header.
         <dashboard-header />
         
         <!-- Page Content -->
-        <main class="p-6">
+        <main class="ml-16">
           <router-outlet />
         </main>
       </div>
