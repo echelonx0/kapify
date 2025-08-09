@@ -6,7 +6,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { LucideAngularModule, ArrowLeft, MessageSquare, Upload, Clock, AlertCircle, Edit3, Trash2, Eye, DollarSign, Calendar, FileText, CheckCircle, XCircle, User, Building } from 'lucide-angular';
 import { UiButtonComponent, UiProgressComponent, UiCardComponent, UiStatusBadgeComponent } from '../../shared/components';
-import { Application, ApplicationStage, ApplicationStatus, ReviewNote } from '../../shared/models/application.models';
+import { Application, ApplicationStatus } from '../../shared/models/application.models';
  
 import { SWOTAnalysis } from '../../shared/models/swot.models';
 import { ApplicationService } from '../services/applications.service';
