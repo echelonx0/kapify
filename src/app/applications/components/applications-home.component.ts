@@ -45,9 +45,9 @@ interface Application {
     CommonModule,
     FormsModule,
     LucideAngularModule,
-    UiCardComponent,
+ 
     UiButtonComponent,
-    UiStatusBadgeComponent,
+ 
     ActivityInboxComponent
   ],
   templateUrl: 'applications-home.component.html',

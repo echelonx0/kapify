@@ -29,7 +29,7 @@ interface ApplicationSection {
     LucideAngularModule, 
     UiButtonComponent, 
     UiProgressComponent, 
-    UiCardComponent, 
+   
     UiStatusBadgeComponent
   ],
   templateUrl: 'application-detail.component.html'

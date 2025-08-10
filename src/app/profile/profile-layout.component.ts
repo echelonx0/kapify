@@ -10,7 +10,7 @@ import { SidebarNavComponent } from '../shared/components';
   imports: [RouterOutlet, SidebarNavComponent],
   template: `
 
-   <div class="h-screen bg-neutral-50 flex">
+   <div class=" bg-neutral-50 flex">
       <sidebar-nav />
       
      

@@ -17,10 +17,9 @@ import { OpportunitiesService } from './services/opportunities.service';
   imports: [
     CommonModule,
     FormsModule,
-    SidebarNavComponent, 
-    DashboardHeaderComponent,
+    SidebarNavComponent,  
     UiButtonComponent,
-    UiCardComponent,
+  
     LucideAngularModule
   ],
   templateUrl: 'funding-opportunities.component.html'

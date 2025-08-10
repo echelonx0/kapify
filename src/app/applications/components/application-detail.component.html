@@ -446,7 +446,7 @@
                               </div>
                             </div>
                             <p class="text-neutral-900 mb-2">{{ note.content }}</p>
-                            @if (note.tags?.length) {
+                            @if (note.tags.length) {
                               <div class="flex flex-wrap gap-1">
                                 @for (tag of note.tags; track tag) {
                                   <span class="bg-neutral-100 text-neutral-700 px-2 py-1 text-xs rounded">{{ tag }}</span>

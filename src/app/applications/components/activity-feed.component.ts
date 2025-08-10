@@ -12,7 +12,7 @@ import { Observable } from 'rxjs';
   imports: [
     CommonModule,
     LucideAngularModule,
-    UiCardComponent,
+ 
     UiButtonComponent
   ],
   template: `

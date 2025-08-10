@@ -16,7 +16,7 @@ import { OpportunitiesService } from './services/opportunities.service';
   imports: [
     CommonModule,
     SidebarNavComponent,
-    DashboardHeaderComponent,
+    
     UiButtonComponent,
     UiCardComponent,
     LucideAngularModule

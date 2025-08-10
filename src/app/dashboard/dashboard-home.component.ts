@@ -20,8 +20,7 @@ import {
 } from 'lucide-angular';
 import { AuthService } from '../auth/auth.service';
  
-import { ThreeDViewerComponent } from '../shared/components/three_d_viewer.component';
-import { UiCardComponent, UiButtonComponent, UiProgressComponent, UiStatusBadgeComponent, UiProgressStepComponent } from '../shared/components';
+import { ThreeDViewerComponent } from '../shared/components/three_d_viewer.component'; 
 import { OpportunitiesService } from '../funding/services/opportunities.service';
 
 import { FormsModule } from '@angular/forms';
@@ -32,11 +31,8 @@ import { FormsModule } from '@angular/forms';
   imports: [
     CommonModule,
     LucideAngularModule,
-    UiCardComponent,
-    UiButtonComponent,
-    UiProgressComponent,
-    UiStatusBadgeComponent,
-    UiProgressStepComponent,
+   
+    
     ThreeDViewerComponent,
     FormsModule
   ],

@@ -203,9 +203,8 @@ scheduleCall(){}
           this.router.navigate(['/dashboard/users', activity.user.id]);
         }
         break;
-      case 'system':
-        this.showActivityDetails(activity);
-        break;
+  
+ 
       default:
         this.showActivityDetails(activity);
     }
