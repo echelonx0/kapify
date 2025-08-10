@@ -3,7 +3,7 @@
 import { Component, signal, OnInit } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { UiInputComponent, UiCardComponent } from '../../shared/components';
-import { ProfileService } from '../profile.service';
+import { FundingApplicationProfileService } from '../../applications/services/funding-profile.service';
  
 
 @Component({
@@ -165,7 +165,7 @@ export class FinancialInfoComponent implements OnInit {
 
   constructor(
     private fb: FormBuilder,
-    private profileService: ProfileService
+    private profileService: FundingApplicationProfileService
   ) {
     this.financialForm = this.fb.group({
       monthlyRevenue: ['', [Validators.required]],

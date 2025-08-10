@@ -1,5 +1,9 @@
 // src/app/shared/models/document-scoring.models.ts
 
+import { RiskFactor } from "./funder.models";
+import { InvestorReadinessLevel, AssessmentStatus } from "./sme.models";
+import { Strategy } from "./swot.models";
+
 export type DocumentCategory = 'company' | 'financial' | 'legal' | 'management' | 'additional' | 'swot' | 'business_plan';
 export type DocumentStatus = 'uploaded' | 'processing' | 'verified' | 'rejected' | 'expired' | 'pending_update';
 export type VerificationLevel = 'none' | 'basic' | 'enhanced' | 'professional';
@@ -448,7 +452,7 @@ export interface InvestorReadinessReport {
   detailedAnalysis: DetailedAnalysis;
   
   // Investment case
-  investmentCase: InvestmentCase;
+ // investmentCase: InvestmentCase;
   
   // Risk assessment
   riskAssessment: ComprehensiveRiskAssessment;

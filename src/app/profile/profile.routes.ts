@@ -27,7 +27,7 @@ export const profileRoutes: Routes = [
           },
           { 
             path: 'admin', 
-            loadComponent: () => import('./steps/admin-information.component').then(c => c.AdminInformationComponent),
+            loadComponent: () => import('./steps/admin-information-step/admin-information.component').then(c => c.AdminInformationComponent),
             title: 'Company Information - Profile Setup'
           },
           { 

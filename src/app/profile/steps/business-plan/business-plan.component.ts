@@ -5,7 +5,7 @@ import { LucideAngularModule, FileText, TrendingUp, Users, Building, Gavel, MapP
 import { UiButtonComponent, UiCardComponent, UiInputComponent } from '../../../shared/components';
 import { UiSectionCardComponent } from '../../../shared/components/ui-section-card.component';
 import { UiTextareaComponent } from '../../../shared/components/ui-textarea.component';
-import { ProfileService } from '../../profile.service';
+import { FundingApplicationProfileService } from '../../../applications/services/funding-profile.service';
  
 
 interface BusinessPlanSection {
@@ -52,7 +52,7 @@ export class BusinessPlanComponent implements OnInit {
 
   constructor(
     private fb: FormBuilder,
-    private profileService: ProfileService
+    private profileService: FundingApplicationProfileService
   ) {
     this.initializeSections();
   }

@@ -1,5 +1,26 @@
 // src/app/profile/profile.service.ts
 import { Injectable, signal, computed } from '@angular/core';
+import { ProfileManagementService } from '../../shared/services/profile-management.service';
+import { FundingApplicationBackendService } from './application-management.service';
+
+export interface ApplicationProfileData {
+  adminInformation?: Record<string, any>;
+  documents?: Record<string, any>;
+  businessReview?: Record<string, any>;
+  swotAnalysis?: {
+    strengths: string[];
+    weaknesses: string[];
+    opportunities: string[];
+    threats: string[];
+  };
+  managementGovernance?: {
+    managementTeam: any[];
+    boardOfDirectors: any[];
+    managementCommittee: any[];
+  };
+  businessPlan?: Record<string, any>;
+  financialAnalysis?: Record<string, any>;
+}
 
 export interface ProfileData {
   // Personal Info
@@ -82,6 +103,8 @@ export interface ProfileData {
   
   businessPlan?: {
     // Business plan fields
+
+    
   };
 
     // Add this new property
@@ -128,13 +151,18 @@ export interface ProfileStep {
 @Injectable({
   providedIn: 'root'
 })
-export class ProfileService {
+export class FundingApplicationProfileService {
   private profileData = signal<Partial<ProfileData>>({});
   private currentStep = signal<string>('personal');
   
   // Public readonly signals
   data = this.profileData.asReadonly();
   currentStepId = this.currentStep.asReadonly();
+  constructor(private applicationsProfileeManagementService: FundingApplicationBackendService) {
+ 
+}
+
+
   
 steps: ProfileStep[] = [
   { id: 'admin', title: 'Administration Information', description: 'Key administrative details', completed: false, required: true },
@@ -202,7 +230,7 @@ updateFinancialAnalysis(data: any) {
   }));
   this.markStepCompleted('financial');
 }
-
+ 
   // Add new update methods
 updateManagementGovernance(data: any) {
   this.profileData.update(current => ({

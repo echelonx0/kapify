@@ -3,7 +3,7 @@
 import { Component, signal, OnInit } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { UiInputComponent, UiCardComponent, UiButtonComponent } from '../../shared/components';
-import { ProfileService, ProfileData } from '../profile.service';
+import { FundingApplicationProfileService, ProfileData } from '../../applications/services/funding-profile.service';
 
 @Component({
   selector: 'app-personal-info',
@@ -98,7 +98,7 @@ export class PersonalInfoComponent implements OnInit {
 
   constructor(
     private fb: FormBuilder,
-    private profileService: ProfileService
+    private profileService: FundingApplicationProfileService
   ) {
     this.personalForm = this.fb.group({
       firstName: ['', [Validators.required]],

@@ -2,7 +2,7 @@
 import { Component, signal, OnInit } from '@angular/core';
 import { UiCardComponent, UiButtonComponent } from '../../shared/components';
 import { LucideAngularModule, Upload, FileText, CheckCircle, X, Download, Trash2, ChevronDown, ChevronUp } from 'lucide-angular';
-import { ProfileService, ProfileData } from '../profile.service';
+import { FundingApplicationProfileService, ProfileData } from '../../applications/services/funding-profile.service';
 
 interface DocumentSection {
   id: string;
@@ -351,7 +351,7 @@ export class DocumentsUploadComponent implements OnInit {
     }
   ]);
 
-  constructor(private profileService: ProfileService) {}
+  constructor(private profileService: FundingApplicationProfileService) {}
 
   ngOnInit() {
     const existingData = this.profileService.data().documents;

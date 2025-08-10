@@ -4,7 +4,7 @@
 import { Component, signal, OnInit } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { UiInputComponent, UiCardComponent } from '../../shared/components';
-import { ProfileService } from '../profile.service';
+import { FundingApplicationProfileService } from '../../applications/services/funding-profile.service';
 
 @Component({
   selector: 'app-business-info',
@@ -159,7 +159,7 @@ export class BusinessInfoComponent implements OnInit {
 
   constructor(
     private fb: FormBuilder,
-    private profileService: ProfileService
+    private profileService: FundingApplicationProfileService
   ) {
     this.businessForm = this.fb.group({
       companyName: ['', [Validators.required]],

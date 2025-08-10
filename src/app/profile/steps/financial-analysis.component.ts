@@ -3,7 +3,7 @@ import { Component, signal, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { UiCardComponent, UiButtonComponent } from '../../shared/components';
 import { LucideAngularModule, Upload, Download, FileSpreadsheet } from 'lucide-angular';
-import { ProfileService } from '../profile.service';
+import { FundingApplicationProfileService } from '../../applications/services/funding-profile.service';
 
 interface FinancialData {
   incomeStatement: any[];
@@ -229,7 +229,7 @@ export class FinancialAnalysisComponent implements OnInit {
   DownloadIcon = Download;
   FileSpreadsheetIcon = FileSpreadsheet;
 
-  constructor(private profileService: ProfileService) {}
+  constructor(private profileService: FundingApplicationProfileService) {}
 
   ngOnInit() {
     this.loadExistingData();
@@ -464,9 +464,9 @@ export class FinancialAnalysisComponent implements OnInit {
     // Load existing data from profile service
     const existingData = this.profileService.data().financialAnalysis;
     if (existingData) {
-      this.notesText = existingData.notes || '';
-      if (existingData.template) {
-        this.uploadedTemplate.set(existingData.template);
+      this.notesText = existingData['notes'] || '';
+      if (existingData['template']) {
+        this.uploadedTemplate.set(existingData['template']);
       }
     }
   }

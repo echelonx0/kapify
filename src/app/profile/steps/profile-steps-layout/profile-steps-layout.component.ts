@@ -2,7 +2,7 @@ import { Component, signal } from '@angular/core';
 import { Router, RouterOutlet } from '@angular/router';
 import { LucideAngularModule, ArrowLeft, Check } from 'lucide-angular';
 import { UiButtonComponent} from '../../../shared/components';
-import { ProfileService } from '../../profile.service';
+import { FundingApplicationProfileService } from '../../../applications/services/funding-profile.service';
 
 @Component({
   selector: 'app-profile-steps-layout',
@@ -18,7 +18,7 @@ export class ProfileStepsLayoutComponent {
   ArrowLeftIcon = ArrowLeft;
   
   constructor(
-    public profileService: ProfileService,
+    public profileService: FundingApplicationProfileService,
     private router: Router
   ) {}
   

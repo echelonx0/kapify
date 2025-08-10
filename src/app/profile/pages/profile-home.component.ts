@@ -9,7 +9,7 @@ import { UiCardComponent } from '../../shared/components/ui-card.component';
 import { UiButtonComponent } from '../../shared/components/ui-button.component';
 import { UiProgressComponent } from '../../shared/components/ui-progress.component';
 import { UiStatusBadgeComponent } from '../../shared/components/ui-status-badge.component';
-import { ProfileService } from '../profile.service';
+import { FundingApplicationProfileService } from '../../applications/services/funding-profile.service';
 import { AuthService } from '../../auth/auth.service';
 import { ActivityFeedComponent } from '../../applications/components/activity-feed.component';
 import { Activity } from '../../applications/services/activity.service';
@@ -178,7 +178,7 @@ export class ProfileHomeComponent {
   };
 
   constructor(
-    public profileService: ProfileService,
+    public profileService: FundingApplicationProfileService,
     public authService: AuthService,
     private router: Router
   ) {}

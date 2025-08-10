@@ -7,7 +7,7 @@ import { UiButtonComponent, UiCardComponent, UiInputComponent } from '../../../s
 import { UiSectionCardComponent } from '../../../shared/components/ui-section-card.component';
 import { UiTextareaComponent } from '../../../shared/components/ui-textarea.component';
 import { SWOTCategory } from '../../../shared/models/swot.models';
-import { ProfileService } from '../../profile.service';
+import { FundingApplicationProfileService } from '../../../applications/services/funding-profile.service';
 
 interface SWOTItem {
   title: string;
@@ -97,7 +97,7 @@ export class SWOTAnalysisComponent implements OnInit {
 
   constructor(
     private fb: FormBuilder,
-    private profileService: ProfileService
+    private profileService: FundingApplicationProfileService
   ) {}
 
   ngOnInit() {
