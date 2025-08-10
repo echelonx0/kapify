@@ -1,9 +1,9 @@
-// src/app/profile/services/funding-application.service.ts
+// src/app/profile/services/funding-application.service.ts - Updated with Local Storage
 import { Injectable, signal, computed, inject, OnDestroy } from '@angular/core';
 import { FundingApplicationProfile, FundingApplicationStep } from '../models/funding-application.models';
 import { FundingApplicationBackendService } from './funding-application-backend.service';
 import { AuthService } from '../../auth/auth.service';
-import { interval, Subscription, Subject } from 'rxjs';
+import { Subscription, Subject } from 'rxjs';
 import { debounceTime, takeUntil } from 'rxjs/operators';
 
 @Injectable({
@@ -19,11 +19,13 @@ export class FundingApplicationService implements OnDestroy {
   private completionPercentage = signal<number>(0);
   private isLoading = signal<boolean>(false);
   private lastSaved = signal<Date | null>(null);
+  private lastSavedLocally = signal<Date | null>(null);
   
   // Auto-save management
   private autoSaveSubscription?: Subscription;
   private dataChangeSubject = new Subject<void>();
   private destroy$ = new Subject<void>();
+  private localStorageKey = 'funding_application_draft';
   
   // Public readonly signals
   readonly data = this.applicationData.asReadonly();
@@ -31,6 +33,7 @@ export class FundingApplicationService implements OnDestroy {
   readonly completion = this.completionPercentage.asReadonly();
   readonly loading = this.isLoading.asReadonly();
   readonly lastSavedAt = this.lastSaved.asReadonly();
+  readonly lastSavedLocallyAt = this.lastSavedLocally.asReadonly();
   
   // Application steps for SME funding
   readonly steps: FundingApplicationStep[] = [
@@ -112,6 +115,7 @@ export class FundingApplicationService implements OnDestroy {
 
   constructor() {
     this.initializeAutoSave();
+    this.loadFromLocalStorage();
     this.loadSavedApplication();
   }
 
@@ -122,7 +126,76 @@ export class FundingApplicationService implements OnDestroy {
   }
 
   // ===============================
-  // DATA UPDATE METHODS
+  // LOCAL STORAGE MANAGEMENT
+  // ===============================
+
+  private getLocalStorageKey(): string {
+    const user = this.authService.user();
+    return user ? `${this.localStorageKey}_${user.id}` : this.localStorageKey;
+  }
+
+  private saveToLocalStorage() {
+    try {
+      const dataToSave = {
+        applicationData: this.applicationData(),
+        currentStep: this.currentStep(),
+        completionPercentage: this.completionPercentage(),
+        stepCompletionStatus: this.steps.map(step => ({
+          id: step.id,
+          completed: step.completed
+        })),
+        lastSaved: new Date().toISOString()
+      };
+      
+      localStorage.setItem(this.getLocalStorageKey(), JSON.stringify(dataToSave));
+      this.lastSavedLocally.set(new Date());
+      console.log('✅ Data saved to local storage');
+    } catch (error) {
+      console.error('❌ Failed to save to local storage:', error);
+    }
+  }
+
+  private loadFromLocalStorage() {
+    try {
+      const savedData = localStorage.getItem(this.getLocalStorageKey());
+      if (savedData) {
+        const parsed = JSON.parse(savedData);
+        
+        // Restore application data
+        this.applicationData.set(parsed.applicationData || {});
+        this.currentStep.set(parsed.currentStep || 'company-info');
+        this.completionPercentage.set(parsed.completionPercentage || 0);
+        
+        // Restore step completion status
+        if (parsed.stepCompletionStatus) {
+          parsed.stepCompletionStatus.forEach((stepStatus: any) => {
+            const step = this.steps.find(s => s.id === stepStatus.id);
+            if (step) {
+              step.completed = stepStatus.completed;
+            }
+          });
+        }
+        
+        this.lastSavedLocally.set(new Date(parsed.lastSaved));
+        console.log('✅ Data loaded from local storage');
+      }
+    } catch (error) {
+      console.error('❌ Failed to load from local storage:', error);
+    }
+  }
+
+  clearLocalStorage() {
+    try {
+      localStorage.removeItem(this.getLocalStorageKey());
+      this.lastSavedLocally.set(null);
+      console.log('✅ Local storage cleared');
+    } catch (error) {
+      console.error('❌ Failed to clear local storage:', error);
+    }
+  }
+
+  // ===============================
+  // DATA UPDATE METHODS (Now with local save)
   // ===============================
 
   updateCompanyInfo(data: any) {
@@ -132,6 +205,7 @@ export class FundingApplicationService implements OnDestroy {
     }));
     this.markStepCompleted('company-info');
     this.triggerDataChange();
+    this.saveToLocalStorage(); // ✅ Save locally immediately
   }
 
   updateSupportingDocuments(data: any) {
@@ -141,6 +215,7 @@ export class FundingApplicationService implements OnDestroy {
     }));
     this.markStepCompleted('documents');
     this.triggerDataChange();
+    this.saveToLocalStorage(); // ✅ Save locally immediately
   }
 
   updateBusinessAssessment(data: any) {
@@ -150,6 +225,7 @@ export class FundingApplicationService implements OnDestroy {
     }));
     this.markStepCompleted('business-assessment');
     this.triggerDataChange();
+    this.saveToLocalStorage(); // ✅ Save locally immediately
   }
 
   updateSwotAnalysis(data: any) {
@@ -159,6 +235,7 @@ export class FundingApplicationService implements OnDestroy {
     }));
     this.markStepCompleted('swot-analysis');
     this.triggerDataChange();
+    this.saveToLocalStorage(); // ✅ Save locally immediately
   }
 
   updateManagementStructure(data: any) {
@@ -168,6 +245,7 @@ export class FundingApplicationService implements OnDestroy {
     }));
     this.markStepCompleted('management');
     this.triggerDataChange();
+    this.saveToLocalStorage(); // ✅ Save locally immediately
   }
 
   updateBusinessStrategy(data: any) {
@@ -177,6 +255,7 @@ export class FundingApplicationService implements OnDestroy {
     }));
     this.markStepCompleted('business-strategy');
     this.triggerDataChange();
+    this.saveToLocalStorage(); // ✅ Save locally immediately
   }
 
   updateFinancialProfile(data: any) {
@@ -186,41 +265,11 @@ export class FundingApplicationService implements OnDestroy {
     }));
     this.markStepCompleted('financial-profile');
     this.triggerDataChange();
+    this.saveToLocalStorage(); // ✅ Save locally immediately
   }
 
   // ===============================
-  // NAVIGATION METHODS
-  // ===============================
-
-  setCurrentStep(stepId: string) {
-    if (this.isValidStep(stepId)) {
-      this.currentStep.set(stepId);
-    }
-  }
-
-  nextStep() {
-    const currentIndex = this.currentStepIndex();
-    if (currentIndex < this.steps.length - 1) {
-      this.currentStep.set(this.steps[currentIndex + 1].id);
-    }
-  }
-
-  previousStep() {
-    const currentIndex = this.currentStepIndex();
-    if (currentIndex > 0) {
-      this.currentStep.set(this.steps[currentIndex - 1].id);
-    }
-  }
-
-  goToFirstIncompleteStep() {
-    const incompleteStep = this.steps.find(step => step.required && !step.completed);
-    if (incompleteStep) {
-      this.currentStep.set(incompleteStep.id);
-    }
-  }
-
-  // ===============================
-  // BACKEND INTEGRATION
+  // BACKEND SYNC METHODS
   // ===============================
 
   async loadSavedApplication(): Promise<void> {
@@ -229,13 +278,19 @@ export class FundingApplicationService implements OnDestroy {
       const savedData = await this.backendService.loadSavedProfile().toPromise();
       
       if (savedData) {
-        this.applicationData.set(savedData);
+        // Merge with local data (local takes precedence for newer changes)
+        const localData = this.applicationData();
+        const mergedData = this.mergeApplicationData(localData, savedData);
+        
+        this.applicationData.set(mergedData);
         this.updateCompletionFromData();
         this.updateStepCompletionStatus();
         this.lastSaved.set(new Date());
+        console.log('✅ Data loaded from backend and merged with local');
       }
     } catch (error) {
-      console.error('Failed to load saved application:', error);
+      console.error('❌ Failed to load from backend:', error);
+      // Local data is still available, so not critical
     } finally {
       this.isLoading.set(false);
     }
@@ -253,55 +308,14 @@ export class FundingApplicationService implements OnDestroy {
       
       if (response?.success) {
         this.lastSaved.set(new Date());
+        console.log('✅ Data saved to backend');
         return true;
       }
       
       return false;
     } catch (error) {
-      console.error('Failed to save application:', error);
+      console.error('❌ Failed to save to backend:', error);
       return false;
-    }
-  }
-
-  async saveSectionToBackend(sectionId: string): Promise<boolean> {
-    try {
-      const sectionData = this.getSectionData(sectionId);
-      const isCompleted = this.isStepCompleted(sectionId);
-      
-      const response = await this.backendService.saveDraftSection(
-        sectionId, 
-        sectionData, 
-        isCompleted
-      ).toPromise();
-      
-      if (response?.section) {
-        this.lastSaved.set(new Date());
-        return true;
-      }
-      
-      return false;
-    } catch (error) {
-      console.error(`Failed to save section ${sectionId}:`, error);
-      return false;
-    }
-  }
-
-  async submitForReview(): Promise<{ success: boolean; applicationId?: string; error?: string }> {
-    try {
-      if (!this.isApplicationComplete()) {
-        return { success: false, error: 'Application is not complete' };
-      }
-
-      const response = await this.backendService.submitProfileForReview(this.applicationData()).toPromise();
-      
-      if (response?.success) {
-        return { success: true, applicationId: response.applicationId };
-      }
-      
-      return { success: false, error: 'Failed to submit application' };
-    } catch (error) {
-      console.error('Failed to submit application:', error);
-      return { success: false, error: 'Failed to submit application' };
     }
   }
 
@@ -310,16 +324,16 @@ export class FundingApplicationService implements OnDestroy {
   // ===============================
 
   private initializeAutoSave() {
-    // Auto-save every 30 seconds when data changes
+    // Auto-save to backend every 2 minutes when data changes
     this.dataChangeSubject.pipe(
-      debounceTime(30000), // 30 seconds
+      debounceTime(120000), // 2 minutes
       takeUntil(this.destroy$)
     ).subscribe(() => {
-      this.performAutoSave();
+      this.performBackendAutoSave();
     });
   }
 
-  private async performAutoSave() {
+  private async performBackendAutoSave() {
     const user = this.authService.user();
     if (!user) return;
 
@@ -328,20 +342,30 @@ export class FundingApplicationService implements OnDestroy {
 
     try {
       await this.backendService.autoSaveProfile(currentData).toPromise();
-      console.log('Auto-save completed successfully');
+      this.lastSaved.set(new Date());
+      console.log('✅ Auto-save to backend completed');
     } catch (error) {
-      console.error('Auto-save failed:', error);
+      console.error('❌ Auto-save to backend failed:', error);
     }
   }
 
   private triggerDataChange() {
     this.updateCompletionFromData();
-    this.dataChangeSubject.next();
+    this.dataChangeSubject.next(); // Triggers backend auto-save
   }
 
   // ===============================
   // UTILITY METHODS
   // ===============================
+
+  private mergeApplicationData(localData: any, backendData: any): any {
+    // Simple merge strategy: local data takes precedence
+    // In production, you might want more sophisticated merging
+    return {
+      ...backendData,
+      ...localData
+    };
+  }
 
   private markStepCompleted(stepId: string) {
     const step = this.steps.find(s => s.id === stepId);
@@ -397,28 +421,6 @@ export class FundingApplicationService implements OnDestroy {
            swot.threats?.length >= 2;
   }
 
-  private getSectionData(sectionId: string): any {
-    const data = this.applicationData();
-    switch (sectionId) {
-      case 'company-info': return data.companyInfo || {};
-      case 'documents': return data.supportingDocuments || {};
-      case 'business-assessment': return data.businessAssessment || {};
-      case 'swot-analysis': return data.swotAnalysis || {};
-      case 'management': return data.managementStructure || {};
-      case 'business-strategy': return data.businessStrategy || {};
-      case 'financial-profile': return data.financialProfile || {};
-      default: return {};
-    }
-  }
-
-  private isStepCompleted(stepId: string): boolean {
-    return this.steps.find(step => step.id === stepId)?.completed || false;
-  }
-
-  private isValidStep(stepId: string): boolean {
-    return this.steps.some(step => step.id === stepId);
-  }
-
   private isDataEmpty(data: any): boolean {
     if (!data || typeof data !== 'object') return true;
     return Object.values(data).every(value => 
@@ -441,58 +443,80 @@ export class FundingApplicationService implements OnDestroy {
   }
 
   // ===============================
+  // NAVIGATION METHODS
+  // ===============================
+
+  setCurrentStep(stepId: string) {
+    if (this.isValidStep(stepId)) {
+      this.currentStep.set(stepId);
+      this.saveToLocalStorage(); // Save navigation state
+    }
+  }
+
+  nextStep() {
+    const currentIndex = this.currentStepIndex();
+    if (currentIndex < this.steps.length - 1) {
+      this.currentStep.set(this.steps[currentIndex + 1].id);
+      this.saveToLocalStorage(); // Save navigation state
+    }
+  }
+
+  previousStep() {
+    const currentIndex = this.currentStepIndex();
+    if (currentIndex > 0) {
+      this.currentStep.set(this.steps[currentIndex - 1].id);
+      this.saveToLocalStorage(); // Save navigation state
+    }
+  }
+
+  private isValidStep(stepId: string): boolean {
+    return this.steps.some(step => step.id === stepId);
+  }
+
+  // ===============================
   // MANUAL SAVE METHODS
   // ===============================
 
   async saveCurrentProgress(): Promise<boolean> {
-    return await this.saveToBackend(true);
+    const success = await this.saveToBackend(true);
+    if (success) {
+      console.log('✅ Manual save to backend completed');
+    }
+    return success;
   }
 
   async saveAndExit(): Promise<boolean> {
     const success = await this.saveToBackend(true);
     if (success) {
-      // Could navigate away or show confirmation
-      console.log('Application saved successfully');
+      console.log('✅ Application saved successfully');
+      // Could clear local storage after successful backend save
+      // this.clearLocalStorage();
     }
     return success;
   }
 
   // ===============================
-  // HELPER METHODS FOR COMPONENTS
+  // SUBMISSION
   // ===============================
 
-  getStepProgress(stepId: string): number {
-    const step = this.steps.find(s => s.id === stepId);
-    return step?.completed ? 100 : 0;
-  }
+  async submitForReview(): Promise<{ success: boolean; applicationId?: string; error?: string }> {
+    try {
+      if (!this.isApplicationComplete()) {
+        return { success: false, error: 'Application is not complete' };
+      }
 
-  canNavigateToStep(stepId: string): boolean {
-    const step = this.steps.find(s => s.id === stepId);
-    if (!step) return false;
-    
-    // Check if dependencies are met
-    if (step.dependencies) {
-      return step.dependencies.every(depId => 
-        this.steps.find(s => s.id === depId)?.completed
-      );
-    }
-    
-    return true;
-  }
-
-  getEstimatedTimeRemaining(): string {
-    const incompleteSteps = this.steps.filter(step => step.required && !step.completed);
-    const totalMinutes = incompleteSteps.reduce((total, step) => {
-      const time = step.estimatedTime?.match(/(\d+) minutes?/);
-      return total + (time ? parseInt(time[1]) : 10);
-    }, 0);
-    
-    if (totalMinutes < 60) {
-      return `${totalMinutes} minutes`;
-    } else {
-      const hours = Math.floor(totalMinutes / 60);
-      const minutes = totalMinutes % 60;
-      return `${hours}h ${minutes}m`;
+      const response = await this.backendService.submitProfileForReview(this.applicationData()).toPromise();
+      
+      if (response?.success) {
+        // Clear local storage after successful submission
+        this.clearLocalStorage();
+        return { success: true, applicationId: response.applicationId };
+      }
+      
+      return { success: false, error: 'Failed to submit application' };
+    } catch (error) {
+      console.error('❌ Failed to submit application:', error);
+      return { success: false, error: 'Failed to submit application' };
     }
   }
 }

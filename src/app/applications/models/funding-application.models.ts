@@ -48,28 +48,203 @@ export interface CompanyInformation {
   regulatoryLicenses: string[];
 }
 
+// src/app/profile/models/funding-application.models.ts - Updated SupportingDocuments Interface
+
 export interface SupportingDocuments {
-  // Company Registration Documents
+  // Company Documents
+  companyProfile?: FileUpload;
+  companyRegistrationDocument?: FileUpload;
+  taxPin?: FileUpload;
+  beeAffidavit?: FileUpload;
+  businessPlan?: FileUpload;
+  shareholderRegister?: FileUpload;
+  fundingApplicationRequest?: FileUpload;
+  pitchDeck?: FileUpload;
+
+  // Financial Documents  
+  currentYearFinancials?: FileUpload;
+  priorYearFinancialYear1?: FileUpload;
+  priorYearFinancialYear2?: FileUpload;
+  assetRegister?: FileUpload;
+  financialProjections?: FileUpload;
+  salesPipeline?: FileUpload;
+
+  // Additional Documents
+  letterOfIntent?: FileUpload;
+  quotations?: FileUpload;
+  mouOrSaleAgreements?: FileUpload;
+  other?: FileUpload;
+
+  // Legacy support (keep for backward compatibility)
   companyRegistration?: FileUpload;
   taxClearanceCertificate?: FileUpload;
   vatRegistration?: FileUpload;
-  
-  // Financial Documents
   auditedFinancials?: FileUpload[];
   managementAccounts?: FileUpload[];
   bankStatements?: FileUpload[];
-  assetRegister?: FileUpload;
-  
-  // Business Documents
-  businessPlan?: FileUpload;
-  financialProjections?: FileUpload;
-  salesPipeline?: FileUpload;
-  
-  // Additional Supporting Documents
   lettersOfIntent?: FileUpload[];
   supplierQuotations?: FileUpload[];
   customerContracts?: FileUpload[];
-  other?: FileUpload[];
+}
+
+export interface FileUpload {
+  id: string;
+  fileName: string;
+  originalName: string;
+  fileSize: number;
+  fileType: string;
+  uploadDate: Date;
+  storageUrl?: string;
+  metadata?: {
+    description?: string;
+    category?: string;
+    tags?: string[];
+  };
+}
+
+// Helper type for document categories
+export type DocumentCategory = 
+  | 'company'
+  | 'financial' 
+  | 'additional'
+  | 'legacy';
+
+// Document field mapping for validation and organization
+export const DocumentFieldMapping: Record<string, {
+  category: DocumentCategory;
+  required: boolean;
+  description: string;
+}> = {
+  // Company Documents
+  companyProfile: {
+    category: 'company',
+    required: true,
+    description: 'Company Information Profile (CIP) or CIPC certificate'
+  },
+  companyRegistrationDocument: {
+    category: 'company',
+    required: true,
+    description: 'CIPC registration or incorporation documents'
+  },
+  taxPin: {
+    category: 'company',
+    required: true,
+    description: 'Tax PIN document from SARS'
+  },
+  beeAffidavit: {
+    category: 'company',
+    required: false,
+    description: 'B-BBEE affidavit or certificate'
+  },
+  businessPlan: {
+    category: 'company',
+    required: false,
+    description: 'Current business plan with financial projections'
+  },
+  shareholderRegister: {
+    category: 'company',
+    required: false,
+    description: 'Current shareholder register and ownership structure'
+  },
+  fundingApplicationRequest: {
+    category: 'company',
+    required: false,
+    description: 'Formal funding application request document'
+  },
+  pitchDeck: {
+    category: 'company',
+    required: false,
+    description: 'Investment pitch deck presentation'
+  },
+
+  // Financial Documents
+  currentYearFinancials: {
+    category: 'financial',
+    required: true,
+    description: 'Latest audited or reviewed financial statements'
+  },
+  priorYearFinancialYear1: {
+    category: 'financial',
+    required: true,
+    description: 'Previous year audited financial statements'
+  },
+  priorYearFinancialYear2: {
+    category: 'financial',
+    required: false,
+    description: 'Two years ago audited financial statements'
+  },
+  assetRegister: {
+    category: 'financial',
+    required: false,
+    description: 'Current asset register with valuations'
+  },
+  financialProjections: {
+    category: 'financial',
+    required: true,
+    description: 'Financial projections and cash flow forecasts'
+  },
+  salesPipeline: {
+    category: 'financial',
+    required: false,
+    description: 'Current sales pipeline and customer contracts'
+  },
+
+  // Additional Documents
+  letterOfIntent: {
+    category: 'additional',
+    required: false,
+    description: 'Letters of intent from potential customers or partners'
+  },
+  quotations: {
+    category: 'additional',
+    required: false,
+    description: 'Quotations for equipment or services to be purchased'
+  },
+  mouOrSaleAgreements: {
+    category: 'additional',
+    required: false,
+    description: 'Memorandums of understanding or sale agreements'
+  },
+  other: {
+    category: 'additional',
+    required: false,
+    description: 'Any other relevant supporting documents'
+  }
+};
+
+// Utility functions for document validation
+export class DocumentValidator {
+  static getRequiredDocuments(): string[] {
+    return Object.entries(DocumentFieldMapping)
+      .filter(([_, config]) => config.required)
+      .map(([key, _]) => key);
+  }
+
+  static getDocumentsByCategory(category: DocumentCategory): string[] {
+    return Object.entries(DocumentFieldMapping)
+      .filter(([_, config]) => config.category === category)
+      .map(([key, _]) => key);
+  }
+
+  static isDocumentRequired(documentKey: string): boolean {
+    return DocumentFieldMapping[documentKey]?.required || false;
+  }
+
+  static validateDocumentCompleteness(documents: SupportingDocuments): {
+    isComplete: boolean;
+    missingRequired: string[];
+    completionPercentage: number;
+  } {
+    const requiredDocs = this.getRequiredDocuments();
+    const missingRequired = requiredDocs.filter(key => !documents[key as keyof SupportingDocuments]);
+    const completedRequired = requiredDocs.length - missingRequired.length;
+    
+    return {
+      isComplete: missingRequired.length === 0,
+      missingRequired,
+      completionPercentage: Math.round((completedRequired / requiredDocs.length) * 100)
+    };
+  }
 }
 
 export interface BusinessAssessment {

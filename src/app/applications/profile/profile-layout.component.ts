@@ -2,7 +2,7 @@
 // src/app/profile/profile-layout.component.ts - SIMPLE LAYOUT
 import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import { SidebarNavComponent } from '../shared/components';
+import { SidebarNavComponent } from '../../shared/components';
 
 @Component({
   selector: 'app-profile-layout',

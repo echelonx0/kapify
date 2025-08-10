@@ -5,15 +5,15 @@ import { CommonModule } from '@angular/common';
 import { LucideAngularModule, ArrowRight, CheckCircle, Clock, AlertTriangle, FileText, Users, Building, DollarSign, Calendar, Headphones, Mail, MessageCircle, Phone, ShieldCheck ,
   
 } from 'lucide-angular';
-import { UiCardComponent } from '../../shared/components/ui-card.component';
-import { UiButtonComponent } from '../../shared/components/ui-button.component';
-import { UiProgressComponent } from '../../shared/components/ui-progress.component';
-import { UiStatusBadgeComponent } from '../../shared/components/ui-status-badge.component';
-import { FundingApplicationProfileService } from '../../applications/services/funding-profile.service';
-import { AuthService } from '../../auth/auth.service';
-import { ActivityFeedComponent } from '../../applications/components/activity-feed.component';
-import { Activity } from '../../applications/services/activity.service';
-import { ThreeDViewerComponent } from '../../shared/components/three_d_viewer.component';
+import { UiCardComponent } from '../../../shared/components/ui-card.component';
+import { UiButtonComponent } from '../../../shared/components/ui-button.component';
+import { UiProgressComponent } from '../../../shared/components/ui-progress.component';
+import { UiStatusBadgeComponent } from '../../../shared/components/ui-status-badge.component';
+import { FundingApplicationProfileService } from '../../services/funding-profile.service';
+import { AuthService } from '../../../auth/auth.service';
+import { ActivityFeedComponent } from '../../components/activity-feed.component';
+import { Activity } from '../../services/activity.service';
+import { ThreeDViewerComponent } from '../../../shared/components/three_d_viewer.component';
 
 // Legacy activity interface for old mock data (rename to avoid conflict)
 interface LegacyActivity {

@@ -1,9 +1,9 @@
 // src/app/profile/steps/financial-analysis.component.ts
 import { Component, signal, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { UiCardComponent, UiButtonComponent } from '../../shared/components';
+import { UiCardComponent, UiButtonComponent } from '../../../shared/components';
 import { LucideAngularModule, Upload, Download, FileSpreadsheet } from 'lucide-angular';
-import { FundingApplicationProfileService } from '../../applications/services/funding-profile.service';
+import { FundingApplicationProfileService } from '../../services/funding-profile.service';
 
 interface FinancialData {
   incomeStatement: any[];

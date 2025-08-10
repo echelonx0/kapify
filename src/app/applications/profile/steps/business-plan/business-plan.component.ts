@@ -2,10 +2,10 @@
 import { Component, signal, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { LucideAngularModule, FileText, TrendingUp, Users, Building, Gavel, MapPin, Upload } from 'lucide-angular';
-import { UiButtonComponent, UiCardComponent, UiInputComponent } from '../../../shared/components';
-import { UiSectionCardComponent } from '../../../shared/components/ui-section-card.component';
-import { UiTextareaComponent } from '../../../shared/components/ui-textarea.component';
-import { FundingApplicationProfileService } from '../../../applications/services/funding-profile.service';
+import { UiButtonComponent, UiCardComponent, UiInputComponent } from '../../../../shared/components';
+import { UiSectionCardComponent } from '../../../../shared/components/ui-section-card.component';
+import { UiTextareaComponent } from '../../../../shared/components/ui-textarea.component';
+import { FundingApplicationProfileService } from '../../../services/funding-profile.service';
  
 
 interface BusinessPlanSection {

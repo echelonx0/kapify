@@ -1,0 +1,249 @@
+<!-- src/app/profile/steps/documents-upload.component.html -->
+<div class="space-y-6">
+  <!-- Header -->
+  <div class="text-center">
+    <h2 class="text-2xl font-bold text-neutral-900">Supporting Documents</h2>
+    <p class="text-neutral-600 mt-2">
+      Please provide the necessary documents to support your funding application. 
+      Accurate and complete documentation helps expedite the review process and enhances the credibility of your application.
+    </p>
+  </div>
+
+  <!-- Auto-save Status Header -->
+  <div class="bg-white rounded-lg border border-neutral-200 p-4">
+    <div class="flex items-center justify-between">
+      <div class="text-sm text-neutral-600">
+        Upload required documents for funding assessment
+      </div>
+      <div class="flex items-center space-x-4">
+        <!-- Auto-save status -->
+        <div class="flex items-center space-x-2 text-sm">
+          @if (isSaving()) {
+            <lucide-icon [img]="ClockIcon" [size]="16" class="text-orange-500 animate-spin" />
+            <span class="text-orange-600">Saving...</span>
+          } @else if (lastSaved()) {
+            <lucide-icon [img]="SaveIcon" [size]="16" class="text-green-500" />
+            <span class="text-green-600">Saved {{ getLastSavedText() }}</span>
+          } @else {
+            <span class="text-neutral-500">Not saved</span>
+          }
+        </div>
+        <!-- Manual save button -->
+        <ui-button 
+          variant="outline" 
+          size="sm" 
+          (clicked)="saveManually()"
+          [disabled]="isSaving()"
+        >
+          @if (isSaving()) {
+            <lucide-icon [img]="ClockIcon" [size]="16" class="mr-2 animate-spin" />
+            Saving...
+          } @else {
+            Save Now
+          }
+        </ui-button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Help Link -->
+  <div class="bg-primary-50 border border-primary-200 rounded-lg p-4">
+    <div class="flex items-center space-x-2">
+      <lucide-icon [img]="CheckCircleIcon" [size]="16" class="text-primary-500" />
+      <span class="text-sm text-primary-700">
+        Request assistance with building your profile? 
+        <button class="underline hover:no-underline font-medium">Click here</button>
+      </span>
+    </div>
+  </div>
+
+  <!-- Document Sections -->
+  @for (section of documentSections(); track section.id) {
+    <ui-card [padding]="false">
+      <!-- Section Header -->
+      <button
+        (click)="toggleSection(section.id)"
+        class="w-full px-6 py-4 text-left flex items-center justify-between hover:bg-neutral-50 transition-colors"
+      >
+        <div>
+          <h3 class="text-lg font-semibold text-neutral-900">{{ section.title }}</h3>
+          <p class="text-sm text-neutral-600 mt-1">{{ section.description }}</p>
+        </div>
+        <lucide-icon 
+          [img]="section.expanded ? ChevronUpIcon : ChevronDownIcon" 
+          [size]="20" 
+          class="text-neutral-400"
+        />
+      </button>
+
+      <!-- Section Content -->
+      @if (section.expanded) {
+        <div class="px-6 pb-6 border-t border-neutral-200">
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-4">
+            @for (doc of section.documents; track doc.key) {
+              <div class="border border-neutral-200 rounded-lg p-4">
+                <!-- Document Header -->
+                <div class="flex items-start justify-between mb-3">
+                  <div class="flex-1">
+                    <h4 class="font-medium text-neutral-900 text-sm">{{ doc.label }}</h4>
+                    <p class="text-xs text-neutral-600 mt-1">{{ doc.description }}</p>
+                    @if (doc.uploaded) {
+                      <div class="flex items-center space-x-2 mt-2">
+                        <lucide-icon [img]="CheckCircleIcon" [size]="14" class="text-green-500" />
+                        <span class="text-xs text-green-600">Uploaded</span>
+                      </div>
+                    }
+                  </div>
+                  @if (doc.required) {
+                    <span class="bg-red-100 text-red-600 text-xs px-2 py-1 rounded font-medium">Required</span>
+                  } @else {
+                    <span class="bg-neutral-100 text-neutral-600 text-xs px-2 py-1 rounded font-medium">Optional</span>
+                  }
+                </div>
+
+                <!-- File Display or Upload Area -->
+                @if (doc.file) {
+                  <!-- Uploaded File Display -->
+                  <div class="bg-neutral-50 rounded-lg p-3 border border-neutral-200">
+                    <div class="flex items-center justify-between">
+                      <div class="flex items-center space-x-2">
+                        <lucide-icon [img]="FileTextIcon" [size]="16" class="text-primary-600" />
+                        <div>
+                          <div class="text-sm font-medium text-neutral-900">{{ doc.file.name }}</div>
+                          <div class="text-xs text-neutral-500">{{ formatFileSize(doc.file.size) }}</div>
+                        </div>
+                      </div>
+                      <div class="flex items-center space-x-2">
+                        <button
+                          (click)="downloadFile(doc)"
+                          class="text-neutral-500 hover:text-primary-600 transition-colors p-1"
+                          title="Download"
+                        >
+                          <lucide-icon [img]="DownloadIcon" [size]="16" />
+                        </button>
+                        <button
+                          (click)="removeFile(doc.key)"
+                          class="text-neutral-500 hover:text-red-600 transition-colors p-1"
+                          title="Remove"
+                        >
+                          <lucide-icon [img]="Trash2Icon" [size]="16" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                } @else {
+                  <!-- Upload Area -->
+                  <div class="relative">
+                    <div 
+                      class="border-2 border-dashed border-neutral-300 rounded-lg p-4 text-center hover:border-primary-300 hover:bg-primary-50 transition-all cursor-pointer"
+                      (dragover)="onDragOver($event)"
+                      (dragleave)="onDragLeave($event)"
+                      (drop)="onDrop($event, doc.key)"
+                    >
+                      <lucide-icon [img]="UploadIcon" [size]="24" class="text-neutral-400 mx-auto mb-2" />
+                      <p class="text-xs text-neutral-600 mb-1">Click to upload or drag and drop</p>
+                      <p class="text-xs text-neutral-500">PDF, DOC, DOCX, XLS, XLSX, JPG, PNG up to 10MB</p>
+                    </div>
+                    <input
+                      type="file"
+                      [accept]="'.pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png'"
+                      (change)="onFileSelected($event, doc.key)"
+                      class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                    />
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        </div>
+      }
+    </ui-card>
+  }
+<!-- Upload Progress -->
+@if (uploadProgress() > 0 && uploadProgress() < 100) {
+  <ui-card>
+    <div class="space-y-2">
+      <div class="flex justify-between text-sm">
+        <span class="text-neutral-700">Uploading documents...</span>
+        <span class="text-neutral-500">{{ uploadProgress() }}%</span>
+      </div>
+      <div class="w-full bg-neutral-200 rounded-full h-2">
+        <div 
+          class="bg-primary-500 h-2 rounded-full transition-all duration-300"
+          [style.width.%]="uploadProgress()"
+        ></div>
+      </div>
+    </div>
+  </ui-card>
+}
+
+<!-- Summary with improved spacing -->
+<ui-card>
+  <div class="space-y-4">
+    <div class="flex items-center justify-between">
+      <div class="space-y-3">
+        <div>
+          <h3 class="font-semibold text-neutral-900">Upload Summary</h3>
+          <p class="text-sm text-neutral-600 mt-1">
+            {{ completedDocuments() }} of {{ totalDocuments() }} documents uploaded
+            ({{ completedRequiredDocuments() }} of {{ totalRequiredDocuments() }} required)
+          </p>
+        </div>
+        <div>
+          <div class="text-sm text-neutral-500 mb-2">Completion: {{ getCompletionPercentage() }}%</div>
+          <div class="w-full bg-neutral-200 rounded-full h-2">
+            <div 
+              class="bg-primary-500 h-2 rounded-full transition-all duration-300"
+              [style.width.%]="getCompletionPercentage()"
+            ></div>
+          </div>
+        </div>
+      </div>
+      
+      @if (allRequiredDocumentsUploaded()) {
+        <div class="flex items-center space-x-2 text-green-600">
+          <lucide-icon [img]="CheckCircleIcon" [size]="20" />
+          <span class="font-medium">Ready to proceed</span>
+        </div>
+      } @else {
+        <div class="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-sm font-medium">
+          {{ totalRequiredDocuments() - completedRequiredDocuments() }} required remaining
+        </div>
+      }
+    </div>
+  </div>
+</ui-card>
+
+<!-- Auto-save indicator with more spacing -->
+<div class="py-4">
+  @if (isSaving()) {
+    <div class="text-sm text-neutral-500 flex items-center justify-center">
+      <div class="w-2 h-2 bg-primary-500 rounded-full animate-pulse mr-2"></div>
+      Saving documents...
+    </div>
+  } @else if (lastSaved()) {
+    <div class="text-sm text-neutral-500 text-center">
+      ✓ Documents saved automatically
+    </div>
+  }
+</div>
+
+<!-- Action Buttons with improved spacing -->
+<div class="flex justify-between items-center pt-6 border-t border-neutral-100">
+  <ui-button variant="outline" (clicked)="goBack()">
+    ← Back
+  </ui-button>
+  
+  <ui-button 
+    variant="primary" 
+    (clicked)="saveAndContinue()"
+    [disabled]="!allRequiredDocumentsUploaded() || isSaving()"
+  >
+    @if (isSaving()) {
+      <lucide-icon [img]="ClockIcon" [size]="16" class="mr-2 animate-spin" />
+      Saving...
+    } @else {
+      Save and Continue →
+    }
+  </ui-button>
+</div>

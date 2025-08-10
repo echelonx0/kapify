@@ -1,8 +1,8 @@
 import { Component, signal } from '@angular/core';
 import { Router, RouterOutlet } from '@angular/router';
 import { LucideAngularModule, ArrowLeft, Check } from 'lucide-angular';
-import { UiButtonComponent} from '../../../shared/components';
-import { FundingApplicationProfileService } from '../../../applications/services/funding-profile.service';
+import { UiButtonComponent} from '../../../../shared/components';
+import { FundingApplicationProfileService } from '../../../services/funding-profile.service';
 
 @Component({
   selector: 'app-profile-steps-layout',

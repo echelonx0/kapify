@@ -2,8 +2,8 @@
 // src/app/profile/steps/personal-info.component.ts
 import { Component, signal, OnInit } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { UiInputComponent, UiCardComponent, UiButtonComponent } from '../../shared/components';
-import { FundingApplicationProfileService, ProfileData } from '../../applications/services/funding-profile.service';
+import { UiInputComponent, UiCardComponent, UiButtonComponent } from '../../../shared/components';
+import { FundingApplicationProfileService, ProfileData } from '../../services/funding-profile.service';
 
 @Component({
   selector: 'app-personal-info',

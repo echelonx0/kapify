@@ -3,11 +3,11 @@ import { Component, signal, OnInit, computed } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder, FormGroup, FormArray, Validators } from '@angular/forms';
 import { LucideAngularModule, Plus, X, TrendingUp, TrendingDown, Target, AlertTriangle, CheckCircle, Info } from 'lucide-angular';
 import { CommonModule } from '@angular/common';
-import { UiButtonComponent, UiCardComponent, UiInputComponent } from '../../../shared/components';
-import { UiSectionCardComponent } from '../../../shared/components/ui-section-card.component';
-import { UiTextareaComponent } from '../../../shared/components/ui-textarea.component';
-import { SWOTCategory } from '../../../shared/models/swot.models';
-import { FundingApplicationProfileService } from '../../../applications/services/funding-profile.service';
+import { UiButtonComponent, UiCardComponent, UiInputComponent } from '../../../../shared/components';
+import { UiSectionCardComponent } from '../../../../shared/components/ui-section-card.component';
+import { UiTextareaComponent } from '../../../../shared/components/ui-textarea.component';
+import { SWOTCategory } from '../../../../shared/models/swot.models';
+import { FundingApplicationProfileService } from '../../../services/funding-profile.service';
 
 interface SWOTItem {
   title: string;

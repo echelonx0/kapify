@@ -2,8 +2,8 @@
 import { Component, signal, OnInit } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, FormsModule } from '@angular/forms';
 import { LucideAngularModule, Plus, Edit, Trash2, ChevronDown, ChevronUp, Search, MoreHorizontal } from 'lucide-angular';
-import { UiInputComponent, UiCardComponent, UiButtonComponent } from '../../shared/components';
-import { FundingApplicationProfileService } from '../../applications/services/funding-profile.service';
+import { UiInputComponent, UiCardComponent, UiButtonComponent } from '../../../shared/components';
+import { FundingApplicationProfileService } from '../../services/funding-profile.service';
 
 interface ManagementMember {
   id: string;

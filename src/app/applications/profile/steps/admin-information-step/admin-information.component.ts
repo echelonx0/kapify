@@ -2,12 +2,12 @@
 import { Component, signal, OnInit, OnDestroy, inject } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { LucideAngularModule, AlertTriangle, Plus, Edit, Trash2, ChevronDown, ChevronUp, Save, Clock } from 'lucide-angular';
-import { UiInputComponent, UiButtonComponent } from '../../../shared/components';
+import { UiInputComponent, UiButtonComponent } from '../../../../shared/components';
  
 import { interval, Subscription } from 'rxjs';
 import { takeWhile } from 'rxjs/operators';
-import { FundingApplicationService } from '../../../applications/services/funding-application.service';
-import { CompanyInformation } from '../../../applications/models/funding-application.models';
+import { FundingApplicationService } from '../../../services/funding-application.service';
+import { CompanyInformation } from '../../../models/funding-application.models';
 
 interface Shareholder {
   id: string;

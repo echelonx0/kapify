@@ -3,8 +3,8 @@
 // src/app/profile/steps/business-info.component.ts
 import { Component, signal, OnInit } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { UiInputComponent, UiCardComponent } from '../../shared/components';
-import { FundingApplicationProfileService } from '../../applications/services/funding-profile.service';
+import { UiInputComponent, UiCardComponent } from '../../../shared/components';
+import { FundingApplicationProfileService } from '../../services/funding-profile.service';
 
 @Component({
   selector: 'app-business-info',
