@@ -42,7 +42,7 @@ export const profileRoutes: Routes = [
           },
           { 
             path: 'swot', 
-            loadComponent: () => import('./steps/personal-info.component').then(c => c.PersonalInfoComponent), 
+            loadComponent: () => import('./steps/swot-analysis/swot-analysis.component').then(c => c.SWOTAnalysisComponent), 
             title: 'SWOT Analysis - Profile Setup'
           },
           { 
