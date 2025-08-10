@@ -1,3 +1,4 @@
+ 
 // backend/src/server.ts
 import express from 'express';
 import cors from 'cors';
@@ -8,6 +9,7 @@ import { PrismaClient } from '@prisma/client';
 
 // Import routes
 import authRoutes from './routes/auth';
+import usersRoutes from './routes/users';
 
 // Load environment variables
 dotenv.config();
@@ -45,6 +47,7 @@ app.get('/health', (req, res) => {
 
 // API routes
 app.use('/api/auth', authRoutes);
+app.use('/api/users', usersRoutes);
 
 // Test route to verify routing
 app.get('/api/test', (req, res) => {
@@ -84,7 +87,8 @@ app.listen(PORT, () => {
   console.log(`🚀 Server running on http://localhost:${PORT}`);
   console.log(`📊 Health check: http://localhost:${PORT}/health`);
   console.log(`🧪 Test endpoint: http://localhost:${PORT}/api/test`);
-  console.log(`🔐 Auth endpoint: http://localhost:${PORT}/api/auth/register`);
+  console.log(`🔐 Auth endpoints: http://localhost:${PORT}/api/auth/*`);
+  console.log(`👤 User endpoints: http://localhost:${PORT}/api/users/*`);
   console.log(`🗄️  Database: SQLite (${process.env.DATABASE_URL})`);
   console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
 });

@@ -61,13 +61,13 @@
 
             <!-- Quick Stats -->
             <div class="grid grid-cols-3 gap-3 mb-6">
-              <div class="bg-green-50 rounded-lg p-3 text-center">
-                <div class="text-xl font-bold text-green-600">{{ completedSteps() }}</div>
-                <div class="text-xs text-green-700">Completed</div>
+              <div class="bg-slate-50 rounded-lg p-3 text-center">
+                <div class="text-xl font-bold text-slate-600">{{ completedSteps() }}</div>
+                <div class="text-xs text-slate-700">Completed</div>
               </div>
-              <div class="bg-blue-50 rounded-lg p-3 text-center">
-                <div class="text-xl font-bold text-blue-600">{{ inProgressSteps() }}</div>
-                <div class="text-xs text-blue-700">In Progress</div>
+              <div class="bg-green-50 rounded-lg p-3 text-center">
+                <div class="text-xl font-bold text-green-600">{{ inProgressSteps() }}</div>
+                <div class="text-xs text-green-700">In Progress</div>
               </div>
               <div class="bg-orange-50 rounded-lg p-3 text-center">
                 <div class="text-xl font-bold text-orange-600">{{ pendingSteps() }}</div>
@@ -116,7 +116,7 @@
               }
               @if (profileService.steps.length > 3) {
                 <button 
-                  class="w-full text-center py-2 text-sm text-blue-600 hover:text-blue-700 font-medium"
+                  class="w-full text-center py-2 text-sm text-green-600 hover:text-green-700 font-medium"
                   (click)="viewAllSteps()">
                   View All {{ profileService.steps.length }} Sections
                 </button>
@@ -128,15 +128,89 @@
         
 
           <!-- Help Section -->
-          <ui-card>
-            <div class="text-center">
-              <h3 class="text-lg font-semibold text-gray-900 mb-2">Need Help?</h3>
-              <p class="text-gray-600 mb-4 text-sm">
-                Our team is here to help you complete your profile and maximize your funding potential.
-              </p>
-              <ui-button variant="outline" (clicked)="requestHelp()">Request Assistance</ui-button>
-            </div>
-          </ui-card>
+      
+<!-- Enhanced Help Section -->
+<div class="bg-slate-700 text-white p-6 rounded-lg border border-slate-600 shadow-lg">
+  <div class="flex items-center justify-between mb-4">
+    <h3 class="text-lg font-semibold">Need Expert Assistance?</h3>
+    <lucide-icon [img]="HeadphonesIcon" [size]="20" class="text-slate-300"></lucide-icon>
+  </div>
+  
+  <p class="text-sm text-slate-200 mb-4 leading-relaxed">
+    Our funding specialists are ready to help you complete your profile and maximize your funding potential.
+  </p>
+  
+  <!-- Contact Details -->
+  <div class="space-y-3 mb-5">
+    <!-- Business Hours -->
+    <div class="flex items-center space-x-3">
+      <lucide-icon [img]="ClockIcon" [size]="16" class="text-slate-400"></lucide-icon>
+      <div>
+        <p class="text-sm font-medium text-slate-200">Monday to Friday</p>
+        <p class="text-xs text-slate-400">8am - 5pm (South African time)</p>
+      </div>
+    </div>
+    
+    <!-- Email -->
+    <div class="flex items-center space-x-3">
+      <lucide-icon [img]="MailIcon" [size]="16" class="text-slate-400"></lucide-icon>
+      <a 
+        href="mailto:info@bokamosoas.co.za" 
+        class="text-sm text-slate-200 hover:text-white transition-colors underline decoration-slate-400 hover:decoration-white"
+      >
+    {{email}}
+      </a>
+    </div>
+    
+    <!-- Phone Numbers -->
+    <div class="flex items-center space-x-3">
+      <lucide-icon [img]="PhoneIcon" [size]="16" class="text-slate-400"></lucide-icon>
+      <div class="flex flex-col sm:flex-row sm:space-x-4 space-y-1 sm:space-y-0">
+        <a 
+          href="tel:+27717496762" 
+          class="text-sm text-slate-200 hover:text-white transition-colors"
+        >
+          071 749 6762
+        </a>
+        <a 
+          href="tel:+27872655438" 
+          class="text-sm text-slate-200 hover:text-white transition-colors"
+        >
+          087 265 5438
+        </a>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Action Buttons -->
+  <div class="space-y-2">
+    <ui-button 
+      variant="outline" 
+      size="sm"
+      class="w-full bg-white text-slate-700 hover:bg-slate-50 border-white font-medium"
+      (clicked)="requestHelp()">
+      <lucide-icon [img]="MessageCircleIcon" [size]="16" class="mr-2"></lucide-icon>
+      Request Callback
+    </ui-button>
+    
+    <ui-button 
+     
+      size="sm"
+      class="w-full text-slate-200 hover:text-white hover:bg-slate-600 border-slate-500 ml-2"
+      (clicked)="scheduleCall()">
+      <lucide-icon [img]="CalendarIcon" [size]="16" class="mr-2"></lucide-icon>
+      Book Consultation
+    </ui-button>
+  </div>
+  
+  <!-- Trust Badge -->
+  <div class="mt-4 pt-4 border-t border-slate-600">
+    <div class="flex items-center justify-center space-x-2">
+      <lucide-icon [img]="ShieldCheckIcon" [size]="16" class="text-emerald-400"></lucide-icon>
+      <span class="text-xs text-slate-300">Trusted by 500+ South African SMEs</span>
+    </div>
+  </div>
+</div>
 
    <!-- Subscription Card -->
           <div class="bg-red-500 text-white p-6 rounded-lg border border-red-600 mt-4">

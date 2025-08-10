@@ -8,6 +8,7 @@ import { PrismaClient } from '@prisma/client';
 
 // Import routes
 import authRoutes from './routes/auth';
+import usersRoutes from './routes/users'; // Add this
 
 dotenv.config();
 
@@ -35,11 +36,12 @@ app.use(express.urlencoded({ extended: true }));
 
 // Health check
 app.get('/health', (req, res) => {
-  res.json({ status: 'OK', timestamp: new Date().toISOString() });
+  return res.json({ status: 'OK', timestamp: new Date().toISOString() });
 });
 
 // API routes
 app.use('/api/auth', authRoutes);
+app.use('/api/users', usersRoutes); // Add this line
 
 // Global error handler
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
@@ -52,7 +54,7 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
     });
   }
   
-  res.status(500).json({ 
+  return res.status(500).json({ 
     error: 'Internal server error',
     ...(process.env.NODE_ENV === 'development' && { details: err.message })
   });
@@ -60,7 +62,7 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
 
 // 404 handler
 app.use('*', (req, res) => {
-  res.status(404).json({ error: 'Route not found' });
+  return res.status(404).json({ error: 'Route not found' });
 });
 
 const PORT = process.env.PORT || 3000;
@@ -77,4 +79,3 @@ process.on('SIGINT', async () => {
 });
 
 export default app;
- 

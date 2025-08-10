@@ -171,7 +171,7 @@ export class ActivityFeedComponent implements OnInit {
       case 'donation':
         return `${baseClasses} bg-green-50 border-green-200 text-green-600`;
       case 'withdrawal':
-        return `${baseClasses} bg-blue-50 border-blue-200 text-blue-600`;
+        return `${baseClasses} bg-green-50 border-green-200 text-green-600`;
       case 'campaign':
         return `${baseClasses} bg-purple-50 border-purple-200 text-purple-600`;
       case 'user':
@@ -207,7 +207,7 @@ export class ActivityFeedComponent implements OnInit {
       case 'donation':
         return `${baseClasses} bg-green-100 text-green-800`;
       case 'withdrawal':
-        return `${baseClasses} bg-blue-100 text-blue-800`;
+        return `${baseClasses} bg-green-100 text-green-800`;
       case 'campaign':
         return `${baseClasses} bg-purple-100 text-purple-800`;
       case 'user':
@@ -268,7 +268,7 @@ export class ActivityFeedComponent implements OnInit {
     if (amount > 0) {
       return `${baseClasses} text-green-600`;
     } else {
-      return `${baseClasses} text-blue-600`;
+      return `${baseClasses} text-green-600`;
     }
   }
 

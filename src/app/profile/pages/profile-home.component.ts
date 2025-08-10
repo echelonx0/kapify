@@ -2,7 +2,9 @@
 import { Component, computed } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { LucideAngularModule, ArrowRight, CheckCircle, Clock, AlertTriangle, FileText, Users, Building, DollarSign } from 'lucide-angular';
+import { LucideAngularModule, ArrowRight, CheckCircle, Clock, AlertTriangle, FileText, Users, Building, DollarSign, Calendar, Headphones, Mail, MessageCircle, Phone, ShieldCheck ,
+  
+} from 'lucide-angular';
 import { UiCardComponent } from '../../shared/components/ui-card.component';
 import { UiButtonComponent } from '../../shared/components/ui-button.component';
 import { UiProgressComponent } from '../../shared/components/ui-progress.component';
@@ -58,7 +60,15 @@ export class ProfileHomeComponent {
   UsersIcon = Users;
   BuildingIcon = Building;
   DollarSignIcon = DollarSign;
+    HeadphonesIcon = Headphones;
+ 
+  MailIcon = Mail;
+  PhoneIcon = Phone;
+  MessageCircleIcon = MessageCircle;
+  CalendarIcon = Calendar;
+  ShieldCheckIcon = ShieldCheck;
   threeDModelUrl = '';
+  email = '    info@bokamosoas.co.za'
 
   // Computed properties
   completionPercentage = computed(() => this.profileService.completionPercentage());
@@ -172,7 +182,7 @@ export class ProfileHomeComponent {
     public authService: AuthService,
     private router: Router
   ) {}
-
+scheduleCall(){}
   // Event handlers for the NEW activity feed component
   onActivityClicked(activity: Activity): void {
     console.log('Activity clicked:', activity);

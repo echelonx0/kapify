@@ -1,4 +1,4 @@
- <div class="h-screen bg-gray-50 flex flex-col overflow-hidden">
+    <div class="h-full bg-gray-50 flex flex-col overflow-hidden">
       <!-- Fixed Header -->
       <div class="bg-white border-b border-gray-200 px-6 py-4 flex-shrink-0">
         <div class="flex items-center justify-between">
@@ -39,14 +39,14 @@
                     type="text"
                     placeholder="Search applications..."
                     [(ngModel)]="searchQuery"
-                    class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                   />
                 </div>
 
                 <!-- Status Filter -->
                 <select
                   [(ngModel)]="statusFilter"
-                  class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                 >
                   <option value="">All Statuses</option>
                   <option value="draft">Draft</option>
@@ -59,7 +59,7 @@
                 <!-- Funding Type Filter -->
                 <select
                   [(ngModel)]="fundingTypeFilter"
-                  class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                 >
                   <option value="">All Types</option>
                   <option value="equity">Equity</option>
@@ -81,8 +81,8 @@
           <div class="bg-white border-b border-gray-200 p-6 flex-shrink-0">
             <div class="grid grid-cols-4 gap-6">
               <div class="text-center">
-                <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mx-auto mb-2">
-                  <lucide-icon [img]="FileTextIcon" [size]="24" class="text-blue-600" />
+                <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mx-auto mb-2">
+                  <lucide-icon [img]="FileTextIcon" [size]="24" class="text-green-600" />
                 </div>
                 <div class="text-2xl font-bold text-gray-900">{{ stats().total }}</div>
                 <div class="text-sm text-gray-600">Total</div>
@@ -119,7 +119,7 @@
             @if (isLoading()) {
               <div class="flex items-center justify-center py-12">
                 <div class="text-center">
-                  <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                  <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto mb-4"></div>
                   <p class="text-gray-600">Loading applications...</p>
                 </div>
               </div>
@@ -142,7 +142,7 @@
                   <div class="flex items-start justify-between mb-4">
                     <div class="flex-1">
                       <div class="flex items-center space-x-3 mb-2">
-                        <h3 class="text-lg font-semibold text-gray-900 hover:text-blue-600 cursor-pointer"
+                        <h3 class="text-lg font-semibold text-gray-900 hover:text-green-600 cursor-pointer"
                             (click)="viewApplication(application.id)">
                           {{ application.title }}
                         </h3>
@@ -177,7 +177,7 @@
                     </div>
                     <div class="w-full bg-gray-200 rounded-full h-2">
                       <div 
-                        class="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                        class="bg-green-600 h-2 rounded-full transition-all duration-300"
                         [style.width.%]="getApplicationProgress(application)">
                       </div>
                     </div>
@@ -188,72 +188,9 @@
           </div>
         </div>
 
-        <!-- Right Side - Activity Stream (40%) -->
-        <div class="w-2/5 bg-white border-l border-gray-200 flex flex-col">
-          <!-- Activity Header -->
-          <div class="px-6 py-4 border-b border-gray-200 flex-shrink-0">
-            <h2 class="text-lg font-semibold text-gray-900">Activity</h2>
-            <p class="text-sm text-gray-600">Recent updates and messages</p>
-          </div>
-
-          <!-- Messages List - Scrollable -->
-          <div class="flex-1 overflow-y-auto p-4 space-y-4" #messagesContainer>
-            @for (activity of activities(); track activity.id) {
-              <div class="flex space-x-3" [class.opacity-60]="!activity.isRead">
-                <!-- Avatar -->
-                <div class="flex-shrink-0">
-                  @if (activity.user.avatar) {
-                    <img [src]="activity.user.avatar" [alt]="activity.user.name" 
-                         class="w-8 h-8 rounded-full">
-                  } @else {
-                    <div class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white text-sm font-medium">
-                      {{ activity.user.initials }}
-                    </div>
-                  }
-                </div>
-
-                <!-- Message Content -->
-                <div class="flex-1 min-w-0">
-                  <div class="flex items-center space-x-2 mb-1">
-                    <span class="font-medium text-gray-900 text-sm">{{ activity.user.name }}</span>
-                    @if (activity.projectName) {
-                      <span class="text-xs text-gray-500">on {{ activity.projectName }}</span>
-                    }
-                    <span class="text-xs text-gray-500">{{ getTimeAgo(activity.timestamp) }}</span>
-                  </div>
-                  <p class="text-sm text-gray-700">{{ activity.content }}</p>
-                  
-                  <!-- Activity Type Indicator -->
-                  @if (activity.type === 'file') {
-                    <div class="mt-2 flex items-center space-x-2 text-xs text-gray-500">
-                      <lucide-icon [img]="PaperclipIcon" [size]="12" />
-                      <span>File attachment</span>
-                    </div>
-                  }
-                </div>
-              </div>
-            }
-          </div>
-
-          <!-- Message Input - Fixed at Bottom -->
-          <div class="border-t border-gray-200 p-4 flex-shrink-0">
-            <div class="flex items-center space-x-2">
-              <input
-                type="text"
-                placeholder="Write a message..."
-                [(ngModel)]="newMessage"
-                (keyup.enter)="sendMessage()"
-                class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-              />
-              <button
-                (click)="sendMessage()"
-                [disabled]="!newMessage"
-                class="p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <lucide-icon [img]="SendIcon" [size]="16" />
-              </button>
-            </div>
-          </div>
+        <!-- Right Side - Activity Inbox (40%) -->
+        <div class="w-2/5 border-l border-gray-200">
+          <app-activity-inbox />
         </div>
       </div>
     </div>

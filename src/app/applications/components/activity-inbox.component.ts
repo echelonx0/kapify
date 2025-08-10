@@ -65,7 +65,7 @@ interface MessageThread {
                   type="text"
                   placeholder="Search..."
                   [(ngModel)]="searchQuery"
-                  class="w-32 px-3 py-1 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  class="w-32 px-3 py-1 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                 />
                 <lucide-icon [img]="SearchIcon" [size]="14" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
               </div>
@@ -99,7 +99,7 @@ interface MessageThread {
                         <img [src]="thread.lastMessage.user.avatar" [alt]="thread.lastMessage.user.name" 
                              class="w-10 h-10 rounded-full ring-2 ring-white shadow-sm">
                       } @else {
-                        <div class="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center text-white font-medium shadow-sm">
+                        <div class="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center text-white font-medium shadow-sm">
                           {{ thread.lastMessage.user.initials }}
                         </div>
                       }
@@ -131,7 +131,7 @@ interface MessageThread {
                       
                       @if (thread.lastMessage.projectName) {
                         <div class="mt-2">
-                          <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                          <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
                             {{ thread.lastMessage.projectName }}
                           </span>
                         </div>
@@ -157,7 +157,7 @@ interface MessageThread {
             <!-- Thread Header -->
             <div class="px-6 py-4 border-b border-gray-200 flex-shrink-0 bg-gray-50">
               <div class="flex items-center space-x-3">
-                <div class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white text-sm font-medium">
+                <div class="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center text-white text-sm font-medium">
                   {{ selectedThread()!.lastMessage.user.initials }}
                 </div>
                 <div class="flex-1">
@@ -182,7 +182,7 @@ interface MessageThread {
                     <!-- Sent Message -->
                     <div class="flex justify-end">
                       <div class="max-w-xs lg:max-w-md">
-                        <div class="bg-blue-600 text-white rounded-lg px-4 py-2 shadow-sm">
+                        <div class="bg-green-600 text-white rounded-lg px-4 py-2 shadow-sm">
                           <p class="text-sm">{{ message.content }}</p>
                         </div>
                         <p class="text-xs text-gray-500 mt-1 text-right">
@@ -236,7 +236,7 @@ interface MessageThread {
                     (keydown)="onEnterKey($event)"
                     placeholder="Type your reply..."
                     rows="2"
-                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-sm"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none text-sm"
                   ></textarea>
                 </div>
                 <div class="flex items-center space-x-2">
@@ -255,7 +255,7 @@ interface MessageThread {
                   <button
                     (click)="sendReply()"
                     [disabled]="!replyMessage().trim()"
-                    class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm font-medium"
+                    class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm font-medium"
                   >
                     <lucide-icon [img]="SendIcon" [size]="16" class="mr-1" />
                     Send

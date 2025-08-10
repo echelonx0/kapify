@@ -43,7 +43,8 @@ export interface AuthResponse {
   providedIn: 'root'
 })
 export class AuthService {
-  private readonly API_BASE = '/api/auth';
+  // private readonly API_BASE = '/api/auth';
+  private readonly API_BASE = 'http://localhost:3000/api/auth';
   private readonly TOKEN_KEY = 'access_token';
   private readonly REFRESH_TOKEN_KEY = 'refresh_token';
   

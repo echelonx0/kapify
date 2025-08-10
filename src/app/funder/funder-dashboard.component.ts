@@ -6,7 +6,7 @@ import { DashboardHeaderComponent } from '../shared/components/dashboard-header.
 @Component({
   selector: 'app-funder-dashboard',
   standalone: true,
-  imports: [SidebarNavComponent, DashboardHeaderComponent],
+  imports: [SidebarNavComponent, DashboardHeaderComponent], 
   template: `
     <div class="min-h-screen bg-neutral-50">
       <sidebar-nav />

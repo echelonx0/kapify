@@ -40,7 +40,7 @@ import * as THREE from 'three';
       <!-- Controls Hint -->
       @if (!isLoading && !hasError) {
         <div class="absolute bottom-4 left-4 bg-blue-900/30 backdrop-blur-sm text-blue-200 text-xs px-3 py-2 rounded-full border border-blue-500/30">
-          Click & drag to rotate • Scroll to zoom
+          Kapify Capital • Bokamoso Advisory
         </div>
       }
     </div>

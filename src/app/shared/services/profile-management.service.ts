@@ -5,10 +5,7 @@ import { Observable, BehaviorSubject, throwError } from 'rxjs';
 import { map, tap, catchError } from 'rxjs/operators';
 import { 
   User, 
-  // SMEUser, 
-  // FunderUser, 
-  // SMEOrganization, 
-  // FunderOrganization, 
+
   UserType,
   Organization,
   OrganizationUser,
@@ -37,7 +34,7 @@ export interface ProfileUpdateRequest {
 export class ProfileManagementService {
   private http = inject(HttpClient);
   private authService = inject(AuthService);
-  
+  private readonly API_BASE = 'http://localhost:3000/api';
   // State management
   private profileDataSubject = new BehaviorSubject<UserProfileData | null>(null);
   
@@ -93,31 +90,59 @@ export class ProfileManagementService {
     }
   }
 
-  // Load complete profile data
-  loadProfileData(): Observable<UserProfileData> {
-    this.isLoading.set(true);
-    this.error.set(null);
-    
-    const currentAuth = this.authService.user();
-    if (!currentAuth) {
-      this.isLoading.set(false);
-      return throwError(() => new Error('User not authenticated'));
-    }
-
-    return this.http.get<UserProfileData>(`/api/users/${currentAuth.id}/profile`).pipe(
-      tap(profileData => {
-        this.profileData.set(profileData);
-        this.profileDataSubject.next(profileData);
-        this.isLoading.set(false);
-      }),
-      catchError(error => {
-        this.error.set('Failed to load profile data');
-        this.isLoading.set(false);
-        console.error('Profile load error:', error);
-        return throwError(() => error);
-      })
-    );
+// In ProfileManagementService, revert to proper endpoint:
+loadProfileData(): Observable<UserProfileData> {
+  this.isLoading.set(true);
+  this.error.set(null);
+  
+  const currentAuth = this.authService.user();
+  if (!currentAuth) {
+    this.isLoading.set(false);
+    return throwError(() => new Error('User not authenticated'));
   }
+
+  // Use the proper users endpoint
+  return this.http.get<UserProfileData>(`${this.API_BASE}/users/${currentAuth.id}/profile`).pipe(
+    tap(profileData => {
+      this.profileData.set(profileData);
+      this.profileDataSubject.next(profileData);
+      this.isLoading.set(false);
+    }),
+    catchError(error => {
+      this.error.set('Failed to load profile data');
+      this.isLoading.set(false);
+      console.error('Profile load error:', error);
+      return throwError(() => error);
+    })
+  );
+}
+
+  // Load complete profile data
+//   loadProfileData(): Observable<UserProfileData> {
+//     this.isLoading.set(true);
+//     this.error.set(null);
+    
+//     const currentAuth = this.authService.user();
+//     if (!currentAuth) {
+//       this.isLoading.set(false);
+//       return throwError(() => new Error('User not authenticated'));
+//     }
+ 
+// return this.http.get<UserProfileData>(`${this.API_BASE}/users/${currentAuth.id}/profile`).pipe(
+     
+//       tap(profileData => {
+//         this.profileData.set(profileData);
+//         this.profileDataSubject.next(profileData);
+//         this.isLoading.set(false);
+//       }),
+//       catchError(error => {
+//         this.error.set('Failed to load profile data');
+//         this.isLoading.set(false);
+//         console.error('Profile load error:', error);
+//         return throwError(() => error);
+//       })
+//     );
+//   }
 
   // Update user profile
   updateProfile(updates: ProfileUpdateRequest): Observable<UserProfileData> {
@@ -131,7 +156,7 @@ export class ProfileManagementService {
     }
 
     return this.http.patch<UserProfileData>(
-      `/api/users/${currentAuth.id}/profile`,
+     `${this.API_BASE}/users/${currentAuth.id}/profile`,
       updates
     ).pipe(
       tap(updatedProfile => {
@@ -182,7 +207,7 @@ export class ProfileManagementService {
     }
 
     return this.http.post<{ profilePictureUrl: string }>(
-      `/api/users/${currentAuth.id}/profile-picture`,
+     `${this.API_BASE}/users/${currentAuth.id}/profile-picture`,
       formData
     ).pipe(
       tap(response => {
@@ -222,7 +247,7 @@ export class ProfileManagementService {
     const org = this.currentOrganization();
     if (!org) return throwError(() => new Error('No organization found'));
 
-    return this.http.post<void>(`/api/organizations/${org.id}/invite`, {
+    return this.http.post<void>(`${this.API_BASE}/organizations/${org.id}/invite`, {
       email,
       role,
       permissions
@@ -235,7 +260,7 @@ export class ProfileManagementService {
     if (!org) return throwError(() => new Error('No organization found'));
 
     return this.http.patch<OrganizationUser>(
-      `/api/organizations/${org.id}/team/${userId}`,
+      `${this.API_BASE}/organizations/${org.id}/team/${userId}`,
       updates
     );
   }
@@ -245,7 +270,7 @@ export class ProfileManagementService {
     const org = this.currentOrganization();
     if (!org) return throwError(() => new Error('No organization found'));
 
-    return this.http.delete<void>(`/api/organizations/${org.id}/team/${userId}`);
+    return this.http.delete<void>(`${this.API_BASE}/organizations/${org.id}/team/${userId}`);
   }
 
   // Clear profile data (on logout)
