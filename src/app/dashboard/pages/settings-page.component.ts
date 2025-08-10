@@ -8,7 +8,8 @@ import { BadgeComponent } from '../../shared/components/ui/badge.component';
 import { AvatarComponent } from '../../shared/components/ui/avatar.component'; 
 import { DropdownComponent } from '../../shared/components/ui/shared-ui-components';
 import { TableComponent, TableColumn, TableAction } from '../../shared/components/ui/table-ui.component';
-import { DummyProfileDataService, DummyUserProfileData } from '../../shared/services/dummy-profile.service';
+import { ProfileManagementService, UserProfileData } from '../../shared/services/profile-management.service';
+import { AuthService } from '../../auth/auth.service';
 
 type SettingsTab = 'personal' | 'members' | 'integrations' | 'billing';
 
@@ -21,16 +22,6 @@ interface TeamMemberDisplay {
   role: string;
   avatar?: string;
   isOnline?: boolean;
-}
-
-interface GuestUserDisplay {
-  id: string;
-  name: string;
-  email: string;
-  dateAdded: string;
-  lastActive: string;
-  role: string;
-  avatar?: string;
 }
 
 interface PendingInviteDisplay {
@@ -56,7 +47,8 @@ interface PendingInviteDisplay {
   templateUrl: 'settings-page.component.html'
 })
 export class SettingsComponent implements OnInit {
-  private dummyDataService = inject(DummyProfileDataService);
+  private profileService = inject(ProfileManagementService);
+  private authService = inject(AuthService);
   private fb = inject(FormBuilder);
 
   // Icons
@@ -82,14 +74,19 @@ export class SettingsComponent implements OnInit {
 
   // State
   activeTab = signal<SettingsTab>('personal');
-  isLoading = signal(false);
-  error = signal<string | null>(null);
   isSaving = signal(false);
-  profileData = signal<DummyUserProfileData | null>(null);
+
+  // Use ProfileManagementService signals
+  isLoading = this.profileService.isLoading;
+  error = this.profileService.error;
+  profileData = this.profileService.profileData;
 
   // Computed data
-  currentUser = computed(() => this.profileData()?.user || null);
-  currentOrganization = computed(() => this.profileData()?.organization || null);
+  currentUser = this.profileService.currentUser;
+  currentProfile = this.profileService.currentProfile;
+  currentOrganization = this.profileService.currentOrganization;
+  currentOrganizationUser = this.profileService.currentOrganizationUser;
+
   userDisplayName = computed(() => {
     const user = this.currentUser();
     return user ? `${user.firstName} ${user.lastName}` : '';
@@ -102,8 +99,35 @@ export class SettingsComponent implements OnInit {
   });
 
   billingDetails = computed(() => {
+    // Mock billing details since we don't have this in the real user model yet
+    // TODO: Replace with real billing data when billing system is implemented
+    const user = this.currentUser();
     const org = this.currentOrganization();
-    return org?.billingDetails || null;
+    
+    if (!user || !org) return null;
+    
+    return {
+      companyName: org.name,
+      vatNumber: null, // TODO: Add to organization model
+      billingEmail: user.email,
+      address: {
+        street: 'Not provided',
+        suburb: 'Not provided',
+        city: 'Not provided',
+        province: 'Not provided',
+        postalCode: 'Not provided',
+        country: 'South Africa'
+      },
+      paymentMethod: user.accountTier !== 'basic' ? {
+        id: 'pm_mock',
+        type: 'card',
+        last4: '4242',
+        brand: 'visa',
+        isDefault: true,
+        expiryMonth: 12,
+        expiryYear: 2026
+      } : null
+    };
   });
 
   nextBillingDate = computed(() => {
@@ -224,42 +248,35 @@ export class SettingsComponent implements OnInit {
     }
   ];
 
-  // Display data computed properties
+  // Team members data (mock for now since we don't have team API yet)
   teamMembersDisplay = computed(() => {
-    const data = this.profileData();
-    if (!data) return [];
+    const user = this.currentUser();
+    const orgUser = this.currentOrganizationUser();
+    
+    if (!user || !orgUser) return [];
 
-    return data.teamMembers.map(member => {
-      const userData = this.dummyDataService.getUserData(member.userId);
-      return {
-        id: member.id,
-        name: `${userData.firstName} ${userData.lastName}`,
-        email: userData.email,
-        dateAdded: this.formatDate(member.joinedAt),
-        lastActive: this.formatDate(userData.lastLoginAt || member.updatedAt),
-        role: member.role.displayName,
-        avatar: userData.profilePicture,
-        isOnline: this.isUserOnline(userData.lastLoginAt)
-      };
-    });
-  });
-
-  guestUsersDisplay = computed(() => {
-    // For demo, return empty array since we don't have guest users in dummy data
-    return [];
+    // For now, return just the current user as a team member
+    // TODO: Replace with real team API when available
+    return [{
+      id: user.id,
+      name: `${user.firstName} ${user.lastName}`,
+      email: user.email,
+      dateAdded: this.formatDate(new Date(user.createdAt)),
+      lastActive: this.formatDate(user.lastLoginAt ? new Date(user.lastLoginAt) : new Date()),
+      role: 'Owner', // orgUser.role,
+      avatar: user.profilePicture,
+      isOnline: this.isUserOnline(user.lastLoginAt ? new Date(user.lastLoginAt) : undefined)
+    }];
   });
 
   pendingInvitesDisplay = computed(() => {
-    const data = this.profileData();
-    if (!data) return [];
+    // Mock pending invites - TODO: Replace with real API
+    return [];
+  });
 
-    return data.pendingInvitations.map(invite => ({
-      id: invite.id,
-      name: invite.inviteeEmail.split('@')[0], // Use email prefix as name
-      email: invite.inviteeEmail,
-      dateSent: this.formatDate(invite.createdAt),
-      role: invite.inviteeRole
-    }));
+  guestUsersDisplay = computed(() => {
+    // Mock guest users - TODO: Replace with real API when guest system is implemented
+    return [];
   });
 
   // Mock invoice data for billing
@@ -284,13 +301,6 @@ export class SettingsComponent implements OnInit {
       description: 'Premium Plan - May 2024', 
       amount: 99,
       status: 'paid'
-    },
-    {
-      id: 'inv-004',
-      date: new Date('2024-04-01'),
-      description: 'Premium Plan - April 2024',
-      amount: 99,
-      status: 'paid'
     }
   ]);
 
@@ -309,31 +319,33 @@ export class SettingsComponent implements OnInit {
 
     this.organizationForm = this.fb.group({
       organizationName: ['', [Validators.required]],
-      registrationNumber: [''],
-      vatNumber: [''],
-      industry: ['']
+      description: [''],
+      website: [''],
+      phone: ['']
     });
   }
 
-    loadProfile() {
-    this.isLoading.set(true);
-    this.error.set(null);
-
-    this.dummyDataService.getProfileData().subscribe({
-      next: (data) => {
-        this.profileData.set(data);
-        this.populateForms(data);
-        this.isLoading.set(false);
-      },
-      error: (error) => {
-        this.error.set('Failed to load profile data');
-        this.isLoading.set(false);
-        console.error('Failed to load profile:', error);
-      }
-    });
+  loadProfile() {
+    // Profile data is already loaded by ProfileManagementService
+    // Just populate forms when data is available
+    const data = this.profileData();
+    if (data) {
+      this.populateForms(data);
+    } else {
+      // Load profile data if not already loaded
+      this.profileService.loadProfileData().subscribe({
+        next: (data) => {
+          this.populateForms(data);
+        },
+        error: (error) => {
+          console.error('Failed to load profile:', error);
+        }
+      });
+    }
   }
 
-  private populateForms(data: DummyUserProfileData) {
+  private populateForms(data: UserProfileData) {
+    // Populate user form
     this.profileForm.patchValue({
       firstName: data.user.firstName,
       lastName: data.user.lastName,
@@ -341,13 +353,15 @@ export class SettingsComponent implements OnInit {
       phone: data.user.phone || ''
     });
 
-    const org = data.organization;
-    this.organizationForm.patchValue({
-      organizationName: 'companyName' in org ? org.companyName : org.organizationName,
-      registrationNumber: org.registrationNumber || '',
-      vatNumber: 'vatNumber' in org ? org.vatNumber : '',
-      industry: 'industry' in org ? org.industry : ''
-    });
+    // Populate organization form
+    if (data.organization) {
+      this.organizationForm.patchValue({
+        organizationName: data.organization.name,
+        description: data.organization.description || '',
+        website: data.organization.website || '',
+        phone: data.organization.phone || ''
+      });
+    }
   }
 
   setActiveTab(tab: SettingsTab) {
@@ -370,14 +384,39 @@ export class SettingsComponent implements OnInit {
     this.isSaving.set(true);
     const formValue = this.profileForm.value;
 
-    this.dummyDataService.updateUserInfo(formValue).subscribe({
+    this.profileService.updateUserInfo(formValue).subscribe({
       next: () => {
         this.isSaving.set(false);
-        // Show success message
+        // Show success message - TODO: Add toast notification
+        console.log('Profile saved successfully');
       },
       error: (error) => {
         this.isSaving.set(false);
         console.error('Failed to save profile:', error);
+        // TODO: Show error message
+      }
+    });
+  }
+
+  saveOrganization() {
+    if (this.organizationForm.invalid) return;
+
+    this.isSaving.set(true);
+    const formValue = this.organizationForm.value;
+
+    this.profileService.updateOrganizationInfo({
+      name: formValue.organizationName,
+      description: formValue.description,
+      website: formValue.website,
+      phone: formValue.phone
+    }).subscribe({
+      next: () => {
+        this.isSaving.set(false);
+        console.log('Organization saved successfully');
+      },
+      error: (error) => {
+        this.isSaving.set(false);
+        console.error('Failed to save organization:', error);
       }
     });
   }
@@ -403,10 +442,10 @@ export class SettingsComponent implements OnInit {
       }
 
       this.isSaving.set(true);
-      this.dummyDataService.uploadProfilePicture(file).subscribe({
+      this.profileService.uploadProfilePicture(file).subscribe({
         next: () => {
           this.isSaving.set(false);
-          this.loadProfile(); // Refresh data
+          console.log('Profile picture uploaded successfully');
         },
         error: (error) => {
           this.isSaving.set(false);
@@ -417,56 +456,68 @@ export class SettingsComponent implements OnInit {
   }
 
   // Helper methods
-   formatDate(date: Date | undefined): string {
+  formatDate(date: Date | undefined): string {
     if (!date) return 'Never';
     return new Intl.DateTimeFormat('en-US', {
       month: 'short',
       day: '2-digit',
       year: 'numeric'
-    }).format(new Date(date));
+    }).format(date);
   }
 
-   isUserOnline(lastLogin: Date | undefined): boolean {
+  isUserOnline(lastLogin: Date | undefined): boolean {
     if (!lastLogin) return false;
     const now = new Date();
-    const diffMinutes = (now.getTime() - new Date(lastLogin).getTime()) / (1000 * 60);
+    const diffMinutes = (now.getTime() - lastLogin.getTime()) / (1000 * 60);
     return diffMinutes < 30; // Consider online if active within 30 minutes
   }
 
-  // Action methods
+  // Action methods - TODO: Implement when team management API is available
   downloadMembersCsv() {
-    console.log('Download members CSV');
+    console.log('Download members CSV - TODO: Implement');
   }
 
   downloadGuestsCsv() {
-    console.log('Download guests CSV');
+    console.log('Download guests CSV - TODO: Implement');
   }
 
   inviteNewMember() {
-    console.log('Invite new member');
+    console.log('Invite new member - TODO: Implement');
+    // TODO: Open invite modal
   }
 
   inviteNewGuest() {
-    console.log('Invite new guest');
+    console.log('Invite new guest - TODO: Implement');
+    // TODO: Open invite modal for guests
   }
 
   removeMember(member: any) {
     console.log('Remove member:', member);
+    // TODO: Implement with real API
+    if (confirm(`Are you sure you want to remove ${member.name}?`)) {
+      // this.profileService.removeTeamMember(member.id).subscribe(...)
+    }
   }
 
   removeGuest(guest: any) {
     console.log('Remove guest:', guest);
+    // TODO: Implement with real API
+    if (confirm(`Are you sure you want to remove ${guest.name}?`)) {
+      // this.profileService.removeGuest(guest.id).subscribe(...)
+    }
   }
 
   resendInvite(invite: any) {
     console.log('Resend invite:', invite);
+    // TODO: Implement with real API
   }
 
   revokeInvite(invite: any) {
     console.log('Revoke invite:', invite);
+    // TODO: Implement with real API
   }
 
-  // Billing action methods
+  // Billing action methods - TODO: Implement billing integration
   upgradePlan() {
     console.log('Upgrade plan clicked');
     // TODO: Open upgrade modal or redirect to billing portal

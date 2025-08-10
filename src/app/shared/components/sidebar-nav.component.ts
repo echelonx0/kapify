@@ -171,7 +171,7 @@ export class SidebarNavComponent implements OnInit {
 
   visibleNavItems = computed(() => {
     const user = this.authService.user();
-    const userType = user?.user?.userType || 'sme';
+    const userType = user?.userType || 'sme';
     const mappedUserType = this.mapUserTypeForNavigation(userType);
     
     return this.navItems.filter(item => 

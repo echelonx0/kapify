@@ -69,31 +69,31 @@ export class ProfileHomeComponent {
 
   // Conditional content based on user type
   fundingTitle = computed(() => {
-    return this.authService.user()?.user?.userType === 'funder' 
+    return this.authService.user()?.userType === 'funder' 
       ? 'Total Funding Raised' 
       : 'Total Funding Available';
   });
 
   fundingAmount = computed(() => {
-    return this.authService.user()?.user?.userType === 'funder' 
+    return this.authService.user()?.userType === 'funder' 
       ? 'ZAR 1,234,500' 
       : 'ZAR 2,847,500';
   });
 
   fundingDescription = computed(() => {
-    return this.authService.user()?.user?.userType === 'funder' 
+    return this.authService.user()?.userType === 'funder' 
       ? 'Successfully funded projects' 
       : 'Available funding opportunities';
   });
 
   primaryButtonText = computed(() => {
-    return this.authService.user()?.user?.userType === 'funder' 
+    return this.authService.user()?.userType === 'funder' 
       ? 'View Portfolio' 
       : 'View Opportunities';
   });
 
   secondaryButtonText = computed(() => {
-    return this.authService.user()?.user?.userType === 'funder' 
+    return this.authService.user()?.userType === 'funder' 
       ? 'New Investment' 
       : 'Apply Now';
   });
@@ -179,16 +179,16 @@ export class ProfileHomeComponent {
     
     // Route to activity details based on fundraising activity type
     switch (activity.type) {
-      case 'donation':
+      case 'milestone':
         this.router.navigate(['/dashboard/donations', activity.id]);
         break;
-      case 'withdrawal':
+      case 'partnership':
         this.router.navigate(['/dashboard/withdrawals', activity.id]);
         break;
-      case 'campaign':
+      case 'funding':
         this.router.navigate(['/dashboard/campaigns', activity.id]);
         break;
-      case 'user':
+      case 'system':
         if (activity.user?.id) {
           this.router.navigate(['/dashboard/users', activity.user.id]);
         }
@@ -342,7 +342,7 @@ export class ProfileHomeComponent {
 
   // FIXED ACTION METHODS - Revenue-focused routing
   viewOpportunities() {
-    if (this.authService.user()?.user?.userType === 'funder') {
+    if (this.authService.user()?.userType === 'funder') {
       this.router.navigate(['/dashboard/portfolio']);
     } else {
       this.router.navigate(['/funding-opportunities']);
@@ -350,7 +350,7 @@ export class ProfileHomeComponent {
   }
 
   primaryAction() {
-    if (this.authService.user()?.user?.userType === 'funder') {
+    if (this.authService.user()?.userType === 'funder') {
       this.router.navigate(['/funder-dashboard']);
     } else {
       this.router.navigate(['/applications']);

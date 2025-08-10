@@ -1,11 +1,13 @@
 // src/app/app.routes.ts - FIXED ROUTING STRUCTURE
 import { Routes } from '@angular/router';
 import { LandingComponent } from './landing/landing.component';
-import { LoginComponent } from './auth/login.component';
-import { DashboardComponent } from './dashboard/dashboard.component';
+import { LoginComponent } from './auth/login.component'; 
 import { AuthGuard } from './guards/auth.guard';
 import { GuestGuard } from './guards/guest.guard';
 import { RegisterComponent } from './auth/register.component';
+import { ProfileCompletionGuard } from './guards/profile-completion.guard';
+import { RoleGuard } from './guards/role.guard';
+ 
 
 export const routes: Routes = [
   // Public routes
@@ -54,7 +56,7 @@ export const routes: Routes = [
   // Funding routes - CORE REVENUE PATH
   {
     path: 'funding',
-    canActivate: [AuthGuard],
+    canActivate: [AuthGuard, ProfileCompletionGuard],
     loadChildren: () => import('./funding/funding.routes').then(m => m.fundingRoutes)
   },
   
@@ -67,7 +69,7 @@ export const routes: Routes = [
   },
   {
     path: 'funder-dashboard',
-    canActivate: [AuthGuard],
+    canActivate: [AuthGuard, RoleGuard],
     loadComponent: () => import('./funder/funder-dashboard.component').then(c => c.FunderDashboardComponent),
     title: 'Funder Dashboard - Kapify'
   },
@@ -75,3 +77,5 @@ export const routes: Routes = [
   // Catch all - redirect to home
   { path: '**', redirectTo: '', pathMatch: 'full' }
 ];
+
+ 

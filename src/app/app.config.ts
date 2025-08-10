@@ -1,7 +1,8 @@
-// src/app/app.config.ts - Updated app configuration
-import { ApplicationConfig, importProvidersFrom, provideZoneChangeDetection } from '@angular/core';
+// src/app/app.config.ts - Fixed configuration
+import { ApplicationConfig, provideZoneChangeDetection } from '@angular/core';
 import { provideRouter, withComponentInputBinding, withEnabledBlockingInitialNavigation } from '@angular/router';
-import { provideHttpClient, withInterceptors } from '@angular/common/http';
+import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
+import { HTTP_INTERCEPTORS } from '@angular/common/http';
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { routes } from './app.routes';
 import { initializeApp, provideFirebaseApp } from '@angular/fire/app';
@@ -11,6 +12,8 @@ import { getFunctions, provideFunctions } from '@angular/fire/functions';
 import { getStorage, provideStorage } from '@angular/fire/storage';
 import { getVertexAI, provideVertexAI } from '@angular/fire/vertexai';
 import { environment } from '../environments/environment';
+import { AuthInterceptor } from './auth/auth.interceptor';
+ 
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -20,9 +23,24 @@ export const appConfig: ApplicationConfig = {
       withComponentInputBinding(),  
       withEnabledBlockingInitialNavigation()  
     ),
+    // Use withInterceptorsFromDi() to allow DI-based interceptors
     provideHttpClient(
-      withInterceptors([])  
+      withInterceptorsFromDi()
     ),
-    provideAnimations(), provideFirebaseApp(() => initializeApp(environment.firebase)), provideAuth(() => getAuth()), provideFirestore(() => getFirestore()), provideFunctions(() => getFunctions()), provideStorage(() => getStorage()), provideVertexAI(() => getVertexAI()), // For smooth transitions
+    // Auth interceptor
+    {
+      provide: HTTP_INTERCEPTORS,
+      useClass: AuthInterceptor,
+      multi: true
+    },
+    provideAnimations(),
+    
+    // Firebase providers (for future migration)
+    provideFirebaseApp(() => initializeApp(environment.firebase)), 
+    provideAuth(() => getAuth()), 
+    provideFirestore(() => getFirestore()), 
+    provideFunctions(() => getFunctions()), 
+    provideStorage(() => getStorage()), 
+    provideVertexAI(() => getVertexAI())
   ]
 };

@@ -4,9 +4,9 @@ import { Observable, of } from 'rxjs';
 
 export interface Activity {
   id: number;
-  type: 'donation' | 'withdrawal' | 'campaign' | 'user' | 'system';
+  type: 'funding' | 'partnership' | 'milestone' | 'system';
   message: string;
-  amount?: number;
+  amount?: number; // stored in cents
   status: 'completed' | 'pending' | 'failed';
   method?: string;
   createdAt: string;
@@ -26,138 +26,88 @@ export class ActivityService {
   constructor(private http: HttpClient) {}
 
   /**
-   * Fetch the latest activities - returns dummy data for now
+   * Fetch the latest activities - returns dummy AngelList-style data
    */
   getActivities(): Observable<Activity[]> {
-    // Return dummy fundraising platform activities
     const activities: Activity[] = [
       {
         id: 1,
-        type: 'donation',
-        message: 'Donation received from John Smith',
-        amount: 50000, // €500.00 in cents
+        type: 'milestone',
+        message: 'Time extended for Kapify Growth Fund',
         status: 'completed',
-        method: 'Credit Card',
-        createdAt: '2024-12-03T14:30:00Z',
-        user: {
-          id: 1,
-          name: 'John Smith',
-          avatarUrl: undefined
-        }
+        createdAt: '2025-08-09T14:30:00Z'
       },
       {
         id: 2,
-        type: 'campaign',
-        message: 'New campaign "Save the Forest" created',
+        type: 'funding',
+        message: 'Funding limit raised for Prosperi Equity Fund',
         status: 'completed',
-        createdAt: '2024-12-03T13:15:00Z',
-        user: {
-          id: 2,
-          name: 'Environmental Fund',
-          avatarUrl: undefined
-        }
+        createdAt: '2025-08-09T13:15:00Z'
       },
       {
         id: 3,
-        type: 'withdrawal',
-        message: 'Funds transferred to beneficiary',
-        amount: -250000, // -€2,500.00 in cents
+        type: 'partnership',
+        message: 'De Meyer Family Fund joins Kapify platform',
         status: 'completed',
-        method: 'Bank Transfer',
-        createdAt: '2024-12-03T12:45:00Z'
+        createdAt: '2025-08-09T12:45:00Z'
       },
       {
         id: 4,
-        type: 'donation',
-        message: 'Monthly donation from Sarah Johnson',
-        amount: 2500, // €25.00 in cents
+        type: 'funding',
+        message: 'R3 million funding approved for Soso SME',
+        amount: 300000000, // stored in cents
         status: 'completed',
-        method: 'Bank Transfer',
-        createdAt: '2024-12-03T11:20:00Z',
-        user: {
-          id: 3,
-          name: 'Sarah Johnson',
-          avatarUrl: undefined
-        }
+        createdAt: '2025-08-09T11:20:00Z'
       },
       {
         id: 5,
-        type: 'user',
-        message: 'New user registered: Mike Wilson',
-        status: 'completed',
-        createdAt: '2024-12-03T10:30:00Z',
-        user: {
-          id: 4,
-          name: 'Mike Wilson',
-          avatarUrl: undefined
-        }
+        type: 'funding',
+        message: 'Seed round opened for MobiTech Africa',
+        amount: 50000000, // R500,000 in cents
+        status: 'pending',
+        createdAt: '2025-08-09T10:00:00Z'
       },
       {
         id: 6,
-        type: 'donation',
-        message: 'Corporate donation from TechCorp Ltd',
-        amount: 100000, // €1,000.00 in cents
-        status: 'pending',
-        method: 'Bank Transfer',
-        createdAt: '2024-12-03T09:15:00Z',
-        user: {
-          id: 5,
-          name: 'TechCorp Ltd',
-          avatarUrl: undefined
-        }
+        type: 'milestone',
+        message: 'GreenWave Capital surpasses R10 million raised',
+        amount: 1000000000, // R10,000,000 in cents
+        status: 'completed',
+        createdAt: '2025-08-08T16:30:00Z'
       },
       {
         id: 7,
         type: 'system',
-        message: 'Monthly report generated successfully',
+        message: 'Quarterly investment report generated successfully',
         status: 'completed',
-        createdAt: '2024-12-03T08:00:00Z'
-      },
-      {
-        id: 8,
-        type: 'campaign',
-        message: 'Campaign "Clean Water Initiative" reached 75% funding goal',
-        status: 'completed',
-        createdAt: '2024-12-02T16:30:00Z'
+        createdAt: '2025-08-08T09:00:00Z'
       }
     ];
 
     return of(activities);
   }
 
-  /**
-   * Fetch activities with pagination
-   */
   getActivitiesPaged(page: number, pageSize: number): Observable<Activity[]> {
     return this.http.get<Activity[]>(`${this.baseUrl}?page=${page}&pageSize=${pageSize}`);
   }
 
-  /**
-   * Fetch a single activity by ID
-   */
   getActivityById(id: number): Observable<Activity> {
     return this.http.get<Activity>(`${this.baseUrl}/${id}`);
   }
 
-  /**
-   * Post a new activity (if needed)
-   */
   createActivity(activity: Partial<Activity>): Observable<Activity> {
     return this.http.post<Activity>(this.baseUrl, activity);
   }
 
-  /**
-   * Delete an activity (if needed)
-   */
   deleteActivity(id: number): Observable<void> {
     return this.http.delete<void>(`${this.baseUrl}/${id}`);
   }
 
   /**
-   * Format amount for display
+   * Format amount for display in Rand
    */
   formatAmount(amount: number): string {
-    return `€${(Math.abs(amount) / 100).toFixed(2)}`;
+    return `R${(Math.abs(amount) / 100).toLocaleString(undefined, { minimumFractionDigits: 2 })}`;
   }
 
   /**
@@ -176,7 +126,7 @@ export class ActivityService {
     if (diffInHours < 24) return `${diffInHours}h ago`;
     if (diffInDays === 1) return 'Yesterday';
     if (diffInDays < 7) return `${diffInDays}d ago`;
-    
+
     return date.toLocaleDateString();
   }
 }

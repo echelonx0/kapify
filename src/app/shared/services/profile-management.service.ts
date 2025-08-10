@@ -1,21 +1,34 @@
 // src/app/shared/services/profile-management.service.ts
 import { Injectable, inject, signal, computed } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, BehaviorSubject, combineLatest } from 'rxjs';
+import { Observable, BehaviorSubject, throwError } from 'rxjs';
 import { map, tap, catchError } from 'rxjs/operators';
-import { User, SMEUser, FunderUser, SMEOrganization, FunderOrganization, UserType } from '../models/user.models';
+import { 
+  User, 
+  // SMEUser, 
+  // FunderUser, 
+  // SMEOrganization, 
+  // FunderOrganization, 
+  UserType,
+  Organization,
+  OrganizationUser,
+  UserProfile,
+ 
+} from '../models/user.models';
 import { AuthService } from '../../auth/auth.service';
 
 export interface UserProfileData {
   user: User;
-  organizationUser: SMEUser | FunderUser;
-  organization: SMEOrganization | FunderOrganization;
+  profile: UserProfile;
+  organizationUser?: OrganizationUser;
+  organization?: Organization;
 }
 
 export interface ProfileUpdateRequest {
   userUpdates?: Partial<User>;
-  organizationUpdates?: Partial<SMEOrganization | FunderOrganization>;
-  organizationUserUpdates?: Partial<SMEUser | FunderUser>;
+  profileUpdates?: Partial<UserProfile>;
+  organizationUpdates?: Partial<Organization>;
+  organizationUserUpdates?: Partial<OrganizationUser>;
 }
 
 @Injectable({
@@ -27,8 +40,6 @@ export class ProfileManagementService {
   
   // State management
   private profileDataSubject = new BehaviorSubject<UserProfileData | null>(null);
-  private loadingSubject = new BehaviorSubject<boolean>(false);
-  private errorSubject = new BehaviorSubject<string | null>(null);
   
   // Signals for reactive state
   profileData = signal<UserProfileData | null>(null);
@@ -37,11 +48,18 @@ export class ProfileManagementService {
   
   // Computed values
   currentUser = computed(() => this.profileData()?.user || null);
+  currentProfile = computed(() => this.profileData()?.profile || null);
   currentOrganization = computed(() => this.profileData()?.organization || null);
   currentOrganizationUser = computed(() => this.profileData()?.organizationUser || null);
+  
   userDisplayName = computed(() => {
     const user = this.currentUser();
     return user ? `${user.firstName} ${user.lastName}` : '';
+  });
+  
+  profileCompletionPercentage = computed(() => {
+    const profile = this.currentProfile();
+    return profile?.completionPercentage || 0;
   });
   
   userPermissions = computed(() => {
@@ -66,8 +84,12 @@ export class ProfileManagementService {
   constructor() {
     // Initialize from auth service if available
     const currentAuth = this.authService.user();
-    if (currentAuth?.user) {
-      this.loadProfileData().subscribe();
+    if (currentAuth) {
+      this.loadProfileData().subscribe({
+        error: (error) => {
+          console.error('Failed to load initial profile data:', error);
+        }
+      });
     }
   }
 
@@ -77,11 +99,12 @@ export class ProfileManagementService {
     this.error.set(null);
     
     const currentAuth = this.authService.user();
-    if (!currentAuth?.user) {
-      throw new Error('User not authenticated');
+    if (!currentAuth) {
+      this.isLoading.set(false);
+      return throwError(() => new Error('User not authenticated'));
     }
 
-    return this.http.get<UserProfileData>(`/api/users/${currentAuth.user.id}/profile`).pipe(
+    return this.http.get<UserProfileData>(`/api/users/${currentAuth.id}/profile`).pipe(
       tap(profileData => {
         this.profileData.set(profileData);
         this.profileDataSubject.next(profileData);
@@ -90,7 +113,8 @@ export class ProfileManagementService {
       catchError(error => {
         this.error.set('Failed to load profile data');
         this.isLoading.set(false);
-        throw error;
+        console.error('Profile load error:', error);
+        return throwError(() => error);
       })
     );
   }
@@ -101,12 +125,13 @@ export class ProfileManagementService {
     this.error.set(null);
     
     const currentAuth = this.authService.user();
-    if (!currentAuth?.user) {
-      throw new Error('User not authenticated');
+    if (!currentAuth) {
+      this.isLoading.set(false);
+      return throwError(() => new Error('User not authenticated'));
     }
 
     return this.http.patch<UserProfileData>(
-      `/api/users/${currentAuth.user.id}/profile`,
+      `/api/users/${currentAuth.id}/profile`,
       updates
     ).pipe(
       tap(updatedProfile => {
@@ -117,7 +142,7 @@ export class ProfileManagementService {
       catchError(error => {
         this.error.set('Failed to update profile');
         this.isLoading.set(false);
-        throw error;
+        return throwError(() => error);
       })
     );
   }
@@ -130,16 +155,16 @@ export class ProfileManagementService {
   }
 
   // Update organization info
-  updateOrganizationInfo(updates: Partial<SMEOrganization | FunderOrganization>): Observable<SMEOrganization | FunderOrganization> {
+  updateOrganizationInfo(updates: Partial<Organization>): Observable<Organization> {
     return this.updateProfile({ organizationUpdates: updates }).pipe(
-      map(profile => profile.organization)
+      map(profile => profile.organization!)
     );
   }
 
   // Update user role/permissions within organization
-  updateOrganizationUser(updates: Partial<SMEUser | FunderUser>): Observable<SMEUser | FunderUser> {
+  updateOrganizationUser(updates: Partial<OrganizationUser>): Observable<OrganizationUser> {
     return this.updateProfile({ organizationUserUpdates: updates }).pipe(
-      map(profile => profile.organizationUser)
+      map(profile => profile.organizationUser!)
     );
   }
 
@@ -151,12 +176,13 @@ export class ProfileManagementService {
     formData.append('profilePicture', file);
     
     const currentAuth = this.authService.user();
-    if (!currentAuth?.user) {
-      throw new Error('User not authenticated');
+    if (!currentAuth) {
+      this.isLoading.set(false);
+      return throwError(() => new Error('User not authenticated'));
     }
 
     return this.http.post<{ profilePictureUrl: string }>(
-      `/api/users/${currentAuth.user.id}/profile-picture`,
+      `/api/users/${currentAuth.id}/profile-picture`,
       formData
     ).pipe(
       tap(response => {
@@ -170,6 +196,7 @@ export class ProfileManagementService {
             }
           };
           this.profileData.set(updatedProfile);
+          this.profileDataSubject.next(updatedProfile);
         }
         this.isLoading.set(false);
       }),
@@ -177,23 +204,23 @@ export class ProfileManagementService {
       catchError(error => {
         this.error.set('Failed to upload profile picture');
         this.isLoading.set(false);
-        throw error;
+        return throwError(() => error);
       })
     );
   }
 
   // Get organization team members (if user has permission)
-  getOrganizationTeam(): Observable<(SMEUser | FunderUser)[]> {
+  getOrganizationTeam(): Observable<OrganizationUser[]> {
     const org = this.currentOrganization();
-    if (!org) throw new Error('No organization found');
+    if (!org) return throwError(() => new Error('No organization found'));
 
-    return this.http.get<(SMEUser | FunderUser)[]>(`/api/organizations/${org.id}/team`);
+    return this.http.get<OrganizationUser[]>(`/api/organizations/${org.id}/team`);
   }
 
   // Invite new team member
   inviteTeamMember(email: string, role: string, permissions: any): Observable<void> {
     const org = this.currentOrganization();
-    if (!org) throw new Error('No organization found');
+    if (!org) return throwError(() => new Error('No organization found'));
 
     return this.http.post<void>(`/api/organizations/${org.id}/invite`, {
       email,
@@ -203,11 +230,11 @@ export class ProfileManagementService {
   }
 
   // Update team member role/permissions
-  updateTeamMember(userId: string, updates: Partial<SMEUser | FunderUser>): Observable<SMEUser | FunderUser> {
+  updateTeamMember(userId: string, updates: Partial<OrganizationUser>): Observable<OrganizationUser> {
     const org = this.currentOrganization();
-    if (!org) throw new Error('No organization found');
+    if (!org) return throwError(() => new Error('No organization found'));
 
-    return this.http.patch<SMEUser | FunderUser>(
+    return this.http.patch<OrganizationUser>(
       `/api/organizations/${org.id}/team/${userId}`,
       updates
     );
@@ -216,7 +243,7 @@ export class ProfileManagementService {
   // Remove team member
   removeTeamMember(userId: string): Observable<void> {
     const org = this.currentOrganization();
-    if (!org) throw new Error('No organization found');
+    if (!org) return throwError(() => new Error('No organization found'));
 
     return this.http.delete<void>(`/api/organizations/${org.id}/team/${userId}`);
   }
@@ -254,5 +281,34 @@ export class ProfileManagementService {
     if (!user) return '';
     
     return `${user.firstName?.[0] || ''}${user.lastName?.[0] || ''}`.toUpperCase();
+  }
+
+  // Calculate profile completion percentage (temporary implementation)
+  calculateProfileCompletion(): number {
+    const profileData = this.profileData();
+    if (!profileData) return 0;
+
+    let completed = 0;
+    let total = 10;
+
+    // Basic user fields
+    if (profileData.user.firstName) completed++;
+    if (profileData.user.lastName) completed++;
+    if (profileData.user.email) completed++;
+    if (profileData.user.phone) completed++;
+    if (profileData.user.emailVerified) completed++;
+
+    // Profile fields
+    if (profileData.profile?.displayName) completed++;
+    if (profileData.profile?.bio) completed++;
+
+    // Organization
+    if (profileData.organization?.name) completed++;
+    if (profileData.organization?.description) completed++;
+
+    // Organization user
+    if (profileData.organizationUser) completed++;
+
+    return Math.round((completed / total) * 100);
   }
 }

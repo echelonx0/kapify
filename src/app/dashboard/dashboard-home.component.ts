@@ -284,7 +284,7 @@ export class DashboardHomeComponent implements OnInit {
   // Computed properties
   userType = computed(() => {
     const user = this.authService.user();
-    return user?.user?.userType || 'sme';
+    return user?.userType || 'sme';
   });
 
   monthlyLabel = computed(() => {
