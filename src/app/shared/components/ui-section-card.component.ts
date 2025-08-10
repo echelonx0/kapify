@@ -71,7 +71,7 @@ import { UiButtonComponent } from './ui-button.component';
                 </div>
               }
               
-              <div class="flex space-x-3 ml-auto">
+              <div class="flex space-x-3 ml-auto mt-2">
                 <ui-button
                   variant="outline"
                   size="sm"

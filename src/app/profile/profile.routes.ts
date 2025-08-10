@@ -18,7 +18,7 @@ export const profileRoutes: Routes = [
       },
       { 
         path: 'steps',
-        loadComponent: () => import('./steps/profile-steps-layout.component').then(c => c.ProfileStepsLayoutComponent),
+        loadComponent: () => import('./steps/profile-steps-layout/profile-steps-layout.component').then(c => c.ProfileStepsLayoutComponent),
         children: [
           { 
             path: '', 
@@ -42,7 +42,7 @@ export const profileRoutes: Routes = [
           },
           { 
             path: 'swot', 
-            loadComponent: () => import('./steps/personal-info.component').then(c => c.PersonalInfoComponent),
+            loadComponent: () => import('./steps/personal-info.component').then(c => c.PersonalInfoComponent), 
             title: 'SWOT Analysis - Profile Setup'
           },
           { 
@@ -52,7 +52,7 @@ export const profileRoutes: Routes = [
           },
           { 
             path: 'business-plan', 
-            loadComponent: () => import('./steps/business-plan.component').then(c => c.BusinessPlanComponent),
+            loadComponent: () => import('./steps/business-plan/business-plan.component').then(c => c.BusinessPlanComponent),
             title: 'Business Plan - Profile Setup'
           },
           { 

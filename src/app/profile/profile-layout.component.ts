@@ -2,14 +2,22 @@
 // src/app/profile/profile-layout.component.ts - SIMPLE LAYOUT
 import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
+import { SidebarNavComponent } from '../shared/components';
 
 @Component({
   selector: 'app-profile-layout',
   standalone: true,
-  imports: [RouterOutlet],
+  imports: [RouterOutlet, SidebarNavComponent],
   template: `
-    <div class="min-h-screen bg-neutral-50">
-      <router-outlet />
+
+   <div class="h-screen bg-neutral-50 flex">
+      <sidebar-nav />
+      
+     
+        <main class="flex-1">
+          <router-outlet />
+        </main>
+  
     </div>
   `
 })
