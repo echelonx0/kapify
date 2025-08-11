@@ -42,7 +42,7 @@ export const profileRoutes: Routes = [
           },
           { 
             path: 'business-assessment', 
-            loadComponent: () => import('./steps/business-info.component').then(c => c.BusinessInfoComponent),
+            loadComponent: () => import('./steps/business-review/business-review.component').then(c => c.BusinessReviewComponent),
             title: 'Business Assessment - Funding Application'
           },
           { 
@@ -52,7 +52,7 @@ export const profileRoutes: Routes = [
           },
           { 
             path: 'management', 
-            loadComponent: () => import('./steps/management-governance.component').then(c => c.ManagementGovernanceComponent),
+            loadComponent: () => import('./steps/governance/management-governance.component').then(c => c.ManagementGovernanceComponent),
             title: 'Leadership & Governance - Funding Application'
           },
           { 
@@ -62,7 +62,7 @@ export const profileRoutes: Routes = [
           },
           { 
             path: 'financial-profile', 
-            loadComponent: () => import('./steps/financial-analysis.component').then(c => c.FinancialAnalysisComponent),
+            loadComponent: () => import('./steps/financial-analysis/financial-analysis.component').then(c => c.FinancialAnalysisComponent),
             title: 'Financial Profile - Funding Application'
           },
 

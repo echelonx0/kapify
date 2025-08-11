@@ -1,34 +1,7 @@
     <div class="space-y-8">
       <!-- Header -->
       <div class="bg-white border-b border-neutral-200">
-        <!-- Main Header -->
-        <!-- <div class="border-b border-neutral-200 py-4">
-          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex items-center space-x-2 text-sm text-neutral-600 mb-2">
-              <button (click)="goToProfileHome()" class="hover:text-neutral-900">Home</button>
-              <span>></span>
-              <button (click)="goToProfileHome()" class="hover:text-neutral-900">Profile</button>
-              <span>></span>
-              <span>{{ getCurrentStepTitle() }}</span>
-            </div>
-            <h1 class="text-2xl font-bold text-neutral-900">Complete Your Investment Readiness Profile</h1>
-            <p class="text-neutral-600 mt-2 max-w-4xl">
-              Welcome to your Investment Readiness Profile. Please provide the latest information about your business structure, 
-              operations, and relevant documents. This profile supports your funding applications and helps us understand your business better.
-            </p>
-            
- 
-            <div class="bg-primary-50 border border-primary-200 rounded-lg p-4 mt-4 max-w-4xl">
-              <div class="flex items-center space-x-2">
-                <div class="w-2 h-2 bg-primary-500 rounded-full"></div>
-                <span class="text-sm text-primary-700">
-                  Request assistance with building your profile? 
-                  <button class="underline hover:no-underline font-medium">Click here</button>
-                </span>
-              </div>
-            </div>
-          </div>
-        </div> -->
+    
         
         <!-- Step Navigation -->
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
@@ -60,11 +33,11 @@
 
       <!-- Main Content -->
       <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <!-- Current Step Info -->
-        <div class="mb-6">
+        <!-- Header with Current Step Info -->
+        <!-- <div class="mb-6">
           <h2 class="text-xl font-semibold text-neutral-900">{{ getCurrentStepTitle() }}</h2>
           <p class="text-neutral-600 mt-1">{{ getCurrentStepDescription() }}</p>
-        </div>
+        </div> -->
         
         <router-outlet />
       </main>

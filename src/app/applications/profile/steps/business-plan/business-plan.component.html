@@ -1,311 +1,397 @@
-    <div class="space-y-6">
-      <!-- Header Section -->
-      <ui-card>
-        <div class="flex items-start justify-between">
-          <div class="flex items-center space-x-3">
-            <div class="w-10 h-10 bg-primary-100 rounded-lg flex items-center justify-center">
-              <lucide-icon [img]="FileTextIcon" [size]="20" class="text-primary-600" />
-            </div>
-            <div>
-              <h2 class="text-xl font-semibold text-neutral-900">Business Plan</h2>
-              <p class="text-neutral-600 mt-1">
-                Provide a detailed description of your business strategy, market analysis, and growth plans.
-              </p>
-            </div>
-          </div>
-          <div class="text-right">
-            <div class="text-sm text-neutral-500">Progress</div>
-            <div class="text-lg font-semibold text-primary-600">{{ getCompletionPercentage() }}%</div>
-          </div>
+<!-- src/app/profile/steps/business-plan.component.html -->
+<div class="space-y-8">
+  <!-- Header Section -->
+  <div>
+    <h2 class="text-2xl font-bold text-neutral-900">Business Strategy</h2>
+    <p class="text-neutral-600 mt-2">
+      Share your strategic business plan, including market analysis, financial projections, and growth strategies.
+      This comprehensive section helps funders understand your business vision and roadmap.
+    </p>
+  </div>
+
+  <!-- Auto-save Status Header -->
+  <div class="bg-white rounded-lg border border-neutral-200 p-4">
+    <div class="flex items-center justify-between">
+      <div class="text-sm text-neutral-600">
+        Strategic business planning and financial projections for funding assessment
+      </div>
+      <div class="flex items-center space-x-4">
+        <!-- Auto-save status -->
+        <div class="flex items-center space-x-2 text-sm">
+          @if (isSaving()) {
+            <lucide-icon [img]="ClockIcon" [size]="16" class="text-orange-500 animate-spin" />
+            <span class="text-orange-600">Saving...</span>
+          } @else if (lastSaved()) {
+            <lucide-icon [img]="SaveIcon" [size]="16" class="text-green-500" />
+            <span class="text-green-600">Saved {{ getLastSavedText() }}</span>
+          } @else {
+            <span class="text-neutral-500">Not saved</span>
+          }
         </div>
-        
-        <!-- Upload Business Plan Document -->
-        <div class="mt-6 pt-6 border-t border-neutral-200">
-          <h3 class="text-sm font-medium text-neutral-900 mb-3">Upload Complete Business Plan</h3>
-          <div class="flex items-center space-x-4">
-            <ui-button variant="outline" size="sm" (clicked)="triggerFileUpload()">
-              <lucide-icon [img]="UploadIcon" [size]="16" class="mr-2" />
-              Choose File
-            </ui-button>
-            @if (uploadedDocument()) {
-              <span class="text-sm text-neutral-600">{{ uploadedDocument()?.name }}</span>
-            } @else {
-              <span class="text-sm text-neutral-500">No file selected</span>
-            }
-          </div>
-          <p class="text-xs text-neutral-500 mt-2">
-            Upload your complete business plan document (PDF, DOC, or DOCX format)
+        <!-- Manual save button -->
+        <ui-button 
+          variant="outline" 
+          size="sm" 
+          (clicked)="saveManually()"
+          [disabled]="isSaving()"
+        >
+          @if (isSaving()) {
+            <lucide-icon [img]="ClockIcon" [size]="16" class="mr-2 animate-spin" />
+            Saving...
+          } @else {
+            Save Now
+          }
+        </ui-button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Header Card -->
+  <ui-card>
+    <div class="flex items-start justify-between">
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 bg-primary-100 rounded-lg flex items-center justify-center">
+          <lucide-icon [img]="FileTextIcon" [size]="20" class="text-primary-600" />
+        </div>
+        <div>
+          <h3 class="text-xl font-semibold text-neutral-900">Business Strategy Document</h3>
+          <p class="text-neutral-600 mt-1">
+            Provide a detailed description of your business strategy, market analysis, and growth plans.
           </p>
         </div>
-      </ui-card>
-
-      <!-- Business Plan Sections -->
-      @for (section of sections(); track section.id) {
-        <ui-section-card
-          [title]="section.title"
-          [description]="section.description"
-          [required]="section.required"
-          [completed]="section.completed"
-          [hasData]="hasFormData(section)"
-          [expanded]="section.expanded"
-          [saving]="getSectionSaving(section.id)"
-          [lastSaved]="getSectionLastSaved(section.id)"
-          (expandedChange)="toggleSection(section.id, $event)"
-          (saveDraft)="saveSectionDraft(section.id)"
-          (saveAndValidate)="saveSectionAndValidate(section.id)"
-        >
-          <lucide-icon slot="icon" [img]="section.icon" [size]="16" />
-          
-          @switch (section.id) {
-            @case ('executive-summary') {
-              <form [formGroup]="section.form" class="space-y-6">
-                <ui-textarea
-                  label="Executive Summary"
-                  placeholder="Provide a concise overview of your business, including your mission, vision, key objectives, and what makes your business unique..."
-                  [rows]="6"
-                  [maxLength]="1000"
-                  [showCharCount]="true"
-                  formControlName="executiveSummary"
-                  [required]="true"
-                  hint="This is the first thing investors will read. Make it compelling and clear."
-                />
-                
-                <ui-textarea
-                  label="Business Concept"
-                  placeholder="Describe your core business concept and how it addresses market needs."
-                  [rows]="4"
-                  formControlName="businessConcept"
-                  [required]="true"
-                />
-                
-                <ui-textarea
-                  label="Key Success Factors"
-                  placeholder="What are the critical factors that will determine your business success?"
-                  [rows]="3"
-                  formControlName="keySuccessFactors"
-                />
-              </form>
-            }
-            
-            @case ('market-analysis') {
-              <form [formGroup]="section.form" class="space-y-6">
-                <ui-textarea
-                  label="Industry Analysis"
-                  placeholder="Describe your industry, its size, growth trends, and key drivers."
-                  [rows]="4"
-                  formControlName="industryAnalysis"
-                  [required]="true"
-                />
-                
-                <ui-textarea
-                  label="Target Market"
-                  placeholder="Define your target customers, their demographics, and buying behavior."
-                  [rows]="4"
-                  formControlName="targetMarket"
-                  [required]="true"
-                />
-                
-                <ui-textarea
-                  label="Market Research"
-                  placeholder="Describe the market research you've conducted to validate your business opportunity."
-                  [rows]="4"
-                  formControlName="marketResearch"
-                />
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <ui-input
-                    label="Current Market Share (%)"
-                    type="number"
-                    placeholder="e.g., 2.5"
-                    formControlName="currentMarketShare"
-                  />
-                  <ui-input
-                    label="Target Market Share (%)"
-                    type="number"
-                    placeholder="e.g., 5.0"
-                    formControlName="targetMarketShare"
-                  />
-                </div>
-              </form>
-            }
-            
-            @case ('competitive-analysis') {
-              <form [formGroup]="section.form" class="space-y-6">
-                <ui-textarea
-                  label="Competitive Landscape"
-                  placeholder="Identify your main competitors and analyze their strengths and weaknesses."
-                  [rows]="5"
-                  formControlName="competitiveLandscape"
-                  [required]="true"
-                />
-                
-                <ui-textarea
-                  label="Competitive Advantage"
-                  placeholder="Explain what sets your business apart from competitors and how you maintain this advantage."
-                  [rows]="4"
-                  formControlName="competitiveAdvantage"
-                  [required]="true"
-                />
-                
-                <ui-textarea
-                  label="Market Positioning"
-                  placeholder="Describe how you position your products/services in the market."
-                  [rows]="3"
-                  formControlName="marketPositioning"
-                />
-              </form>
-            }
-            
-            @case ('operations-plan') {
-              <form [formGroup]="section.form" class="space-y-6">
-                <ui-textarea
-                  label="Operations Overview"
-                  placeholder="Describe your day-to-day operations, processes, and workflow."
-                  [rows]="4"
-                  formControlName="operationsOverview"
-                  [required]="true"
-                />
-                
-                <ui-textarea
-                  label="Supply Chain"
-                  placeholder="Explain your procurement strategy and supplier relationships."
-                  [rows]="4"
-                  formControlName="supplyChain"
-                />
-                
-                <ui-textarea
-                  label="Technology & Systems"
-                  placeholder="Describe the technology, equipment, and systems critical to your operations."
-                  [rows]="3"
-                  formControlName="technology"
-                />
-                
-                <ui-textarea
-                  label="Quality Control"
-                  placeholder="Outline your quality control processes and standards."
-                  [rows]="3"
-                  formControlName="qualityControl"
-                />
-              </form>
-            }
-            
-            @case ('financial-projections') {
-              <form [formGroup]="section.form" class="space-y-6">
-                <ui-textarea
-                  label="Financial Projections Overview"
-                  placeholder="Provide an overview of your financial projections, including key assumptions and methodology used."
-                  [rows]="4"
-                  formControlName="projectionsOverview"
-                  [required]="true"
-                />
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <ui-input
-                    label="Year 1 Revenue Projection (ZAR)"
-                    type="number"
-                    placeholder="e.g., 2500000"
-                    formControlName="year1Revenue"
-                    [required]="true"
-                  />
-                  <ui-input
-                    label="Year 3 Revenue Projection (ZAR)"
-                    type="number"
-                    placeholder="e.g., 8500000"
-                    formControlName="year3Revenue"
-                    [required]="true"
-                  />
-                </div>
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <ui-input
-                    label="Break-even Timeline (months)"
-                    type="number"
-                    placeholder="e.g., 18"
-                    formControlName="breakEvenTimeline"
-                    [required]="true"
-                  />
-                  <ui-input
-                    label="Expected ROI (%)"
-                    type="number"
-                    placeholder="e.g., 25"
-                    formControlName="expectedROI"
-                  />
-                </div>
-                
-                <ui-textarea
-                  label="Key Financial Assumptions"
-                  placeholder="List and justify the key assumptions underlying your financial projections (pricing, customer acquisition, cost structure, etc.)"
-                  [rows]="4"
-                  formControlName="financialAssumptions"
-                  [required]="true"
-                />
-              </form>
-            }
-            
-            @case ('legal-compliance') {
-              <form [formGroup]="section.form" class="space-y-6">
-                <ui-textarea
-                  label="Judgements Against Company/Directors"
-                  placeholder="Are there any judgements against the company/director(s)? If yes, please provide details."
-                  [rows]="3"
-                  formControlName="judgements"
-                />
-                
-                <ui-textarea
-                  label="Legal Structure & Compliance"
-                  placeholder="Describe your legal structure, regulatory requirements, and compliance measures."
-                  [rows]="4"
-                  formControlName="legalStructure"
-                />
-                
-                <ui-textarea
-                  label="Intellectual Property"
-                  placeholder="Detail any patents, trademarks, copyrights, or trade secrets."
-                  [rows]="3"
-                  formControlName="intellectualProperty"
-                />
-                
-                <ui-textarea
-                  label="Risk Management"
-                  placeholder="Identify key business risks and your mitigation strategies."
-                  [rows]="4"
-                  formControlName="riskManagement"
-                />
-              </form>
-            }
-          }
-        </ui-section-card>
-      }
-
-      <!-- Overall Progress -->
-      <ui-card>
-        <div class="flex items-center justify-between">
-          <div>
-            <h3 class="font-semibold text-neutral-900">Business Plan Progress</h3>
-            <p class="text-sm text-neutral-600">
-              {{ completedSections() }} of {{ totalSections() }} sections completed
-            </p>
-          </div>
-          
-          @if (allSectionsCompleted()) {
-            <div class="flex items-center space-x-2 text-green-600">
-              <div class="w-2 h-2 bg-green-500 rounded-full"></div>
-              <span class="font-medium">Ready to submit</span>
-            </div>
-          } @else {
-            <div class="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-sm font-medium">
-              {{ totalSections() - completedSections() }} sections remaining
-            </div>
-          }
-        </div>
-      </ui-card>
+      </div>
+      <div class="text-right">
+        <div class="text-sm text-neutral-500">Progress</div>
+        <div class="text-lg font-semibold text-primary-600">{{ getCompletionPercentage() }}%</div>
+      </div>
     </div>
+    
+    <!-- Upload Business Plan Document -->
+    <div class="mt-6 pt-6 border-t border-neutral-200">
+      <h4 class="text-sm font-medium text-neutral-900 mb-3">Upload Complete Business Plan</h4>
+      <div class="flex items-center space-x-4">
+        <ui-button variant="outline" size="sm" (clicked)="triggerFileUpload()">
+          <lucide-icon [img]="UploadIcon" [size]="16" class="mr-2" />
+          Choose File
+        </ui-button>
+        @if (uploadedDocument()) {
+          <span class="text-sm text-neutral-600">{{ uploadedDocument()?.name }}</span>
+        } @else {
+          <span class="text-sm text-neutral-500">No file selected</span>
+        }
+      </div>
+      <p class="text-xs text-neutral-500 mt-2">
+        Upload your complete business plan document (PDF, DOC, or DOCX format)
+      </p>
+    </div>
+  </ui-card>
 
-    <!-- Hidden file input -->
-    <input
-      #fileInput
-      type="file"
-      accept=".pdf,.doc,.docx"
-      (change)="onFileSelected($event)"
-      class="hidden"
-    />
+  <!-- Business Plan Sections -->
+  @for (section of sections(); track section.id) {
+    <div class="mb-8">
+      <ui-section-card
+        [title]="section.title"
+        [description]="section.description"
+        [required]="section.required"
+        [completed]="section.completed"
+        [hasData]="hasFormData(section)"
+        [expanded]="section.expanded"
+        [saving]="getSectionSaving(section.id)"
+        [lastSaved]="getSectionLastSaved(section.id)"
+        (expandedChange)="toggleSection(section.id, $event)"
+        (saveDraft)="saveSectionDraft(section.id)"
+        (saveAndValidate)="saveSectionAndValidate(section.id)"
+      >
+        <lucide-icon slot="icon" [img]="section.icon" [size]="16" />
+        
+        @switch (section.id) {
+          @case ('executive-summary') {
+            <form [formGroup]="section.form" class="space-y-6">
+              <ui-textarea
+                label="Executive Summary"
+                placeholder="Provide a concise overview of your business, including your mission, vision, key objectives, and what makes your business unique..."
+                [rows]="6"
+                [maxLength]="1000"
+                [showCharCount]="true"
+                formControlName="executiveSummary"
+                [required]="true"
+                hint="This is the first thing investors will read. Make it compelling and clear."
+              />
+              
+              <ui-textarea
+                label="Business Concept"
+                placeholder="Describe your core business concept and how it addresses market needs."
+                [rows]="4"
+                formControlName="businessConcept"
+                [required]="true"
+              />
+              
+              <ui-textarea
+                label="Key Success Factors"
+                placeholder="What are the critical factors that will determine your business success?"
+                [rows]="3"
+                formControlName="keySuccessFactors"
+              />
+            </form>
+          }
+          
+          @case ('market-analysis') {
+            <form [formGroup]="section.form" class="space-y-6">
+              <ui-textarea
+                label="Industry Analysis"
+                placeholder="Describe your industry, its size, growth trends, and key drivers."
+                [rows]="4"
+                formControlName="industryAnalysis"
+                [required]="true"
+              />
+              
+              <ui-textarea
+                label="Target Market"
+                placeholder="Define your target customers, their demographics, and buying behavior."
+                [rows]="4"
+                formControlName="targetMarket"
+                [required]="true"
+              />
+              
+              <ui-textarea
+                label="Market Research"
+                placeholder="Describe the market research you've conducted to validate your business opportunity."
+                [rows]="4"
+                formControlName="marketResearch"
+              />
+              
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <ui-input
+                  label="Current Market Share (%)"
+                  type="number"
+                  placeholder="e.g., 2.5"
+                  formControlName="currentMarketShare"
+                />
+                <ui-input
+                  label="Target Market Share (%)"
+                  type="number"
+                  placeholder="e.g., 5.0"
+                  formControlName="targetMarketShare"
+                />
+              </div>
+            </form>
+          }
+          
+          @case ('competitive-analysis') {
+            <form [formGroup]="section.form" class="space-y-6">
+              <ui-textarea
+                label="Competitive Landscape"
+                placeholder="Identify your main competitors and analyze their strengths and weaknesses."
+                [rows]="5"
+                formControlName="competitiveLandscape"
+                [required]="true"
+              />
+              
+              <ui-textarea
+                label="Competitive Advantage"
+                placeholder="Explain what sets your business apart from competitors and how you maintain this advantage."
+                [rows]="4"
+                formControlName="competitiveAdvantage"
+                [required]="true"
+              />
+              
+              <ui-textarea
+                label="Market Positioning"
+                placeholder="Describe how you position your products/services in the market."
+                [rows]="3"
+                formControlName="marketPositioning"
+              />
+            </form>
+          }
+          
+          @case ('operations-plan') {
+            <form [formGroup]="section.form" class="space-y-6">
+              <ui-textarea
+                label="Operations Overview"
+                placeholder="Describe your day-to-day operations, processes, and workflow."
+                [rows]="4"
+                formControlName="operationsOverview"
+                [required]="true"
+              />
+              
+              <ui-textarea
+                label="Supply Chain"
+                placeholder="Explain your procurement strategy and supplier relationships."
+                [rows]="4"
+                formControlName="supplyChain"
+              />
+              
+              <ui-textarea
+                label="Technology & Systems"
+                placeholder="Describe the technology, equipment, and systems critical to your operations."
+                [rows]="3"
+                formControlName="technology"
+              />
+              
+              <ui-textarea
+                label="Quality Control"
+                placeholder="Outline your quality control processes and standards."
+                [rows]="3"
+                formControlName="qualityControl"
+              />
+            </form>
+          }
+          
+          @case ('financial-projections') {
+            <form [formGroup]="section.form" class="space-y-6">
+              <ui-textarea
+                label="Financial Projections Overview"
+                placeholder="Provide an overview of your financial projections, including key assumptions and methodology used."
+                [rows]="4"
+                formControlName="projectionsOverview"
+                [required]="true"
+              />
+              
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <ui-input
+                  label="Year 1 Revenue Projection (ZAR)"
+                  type="number"
+                  placeholder="e.g., 2500000"
+                  formControlName="year1Revenue"
+                  [required]="true"
+                />
+                <ui-input
+                  label="Year 3 Revenue Projection (ZAR)"
+                  type="number"
+                  placeholder="e.g., 8500000"
+                  formControlName="year3Revenue"
+                  [required]="true"
+                />
+              </div>
+              
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <ui-input
+                  label="Break-even Timeline (months)"
+                  type="number"
+                  placeholder="e.g., 18"
+                  formControlName="breakEvenTimeline"
+                  [required]="true"
+                />
+                <ui-input
+                  label="Expected ROI (%)"
+                  type="number"
+                  placeholder="e.g., 25"
+                  formControlName="expectedROI"
+                />
+              </div>
+              
+              <ui-textarea
+                label="Key Financial Assumptions"
+                placeholder="List and justify the key assumptions underlying your financial projections (pricing, customer acquisition, cost structure, etc.)"
+                [rows]="4"
+                formControlName="financialAssumptions"
+                [required]="true"
+              />
+            </form>
+          }
+          
+          @case ('legal-compliance') {
+            <form [formGroup]="section.form" class="space-y-6">
+              <ui-textarea
+                label="Judgements Against Company/Directors"
+                placeholder="Are there any judgements against the company/director(s)? If yes, please provide details."
+                [rows]="3"
+                formControlName="judgements"
+              />
+              
+              <ui-textarea
+                label="Legal Structure & Compliance"
+                placeholder="Describe your legal structure, regulatory requirements, and compliance measures."
+                [rows]="4"
+                formControlName="legalStructure"
+              />
+              
+              <ui-textarea
+                label="Intellectual Property"
+                placeholder="Detail any patents, trademarks, copyrights, or trade secrets."
+                [rows]="3"
+                formControlName="intellectualProperty"
+              />
+              
+              <ui-textarea
+                label="Risk Management"
+                placeholder="Identify key business risks and your mitigation strategies."
+                [rows]="4"
+                formControlName="riskManagement"
+              />
+            </form>
+          }
+        }
+      </ui-section-card>
+    </div>
+  }
+
+  <!-- Overall Progress -->
+  <ui-card>
+    <div class="flex items-center justify-between">
+      <div>
+        <h3 class="font-semibold text-neutral-900">Business Strategy Progress</h3>
+        <p class="text-sm text-neutral-600">
+          {{ completedSections() }} of {{ totalSections() }} sections completed
+        </p>
+      </div>
+      
+      @if (allSectionsCompleted()) {
+        <div class="flex items-center space-x-2 text-green-600">
+          <div class="w-2 h-2 bg-green-500 rounded-full"></div>
+          <span class="font-medium">Ready to submit</span>
+        </div>
+      } @else {
+        <div class="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-sm font-medium">
+          {{ totalSections() - completedSections() }} sections remaining
+        </div>
+      }
+    </div>
+  </ui-card>
+
+  <!-- Progress Summary -->
+  <div class="bg-white rounded-lg border border-neutral-200 p-4">
+    <div class="flex items-center justify-between">
+      <div>
+        <h3 class="font-semibold text-neutral-900">Business Strategy Summary</h3>
+        <p class="text-sm text-neutral-600">
+          Data auto-saves every 30 seconds. Manual save available anytime.
+        </p>
+      </div>
+      
+      <div class="flex items-center space-x-4">
+        @if (hasAnyData()) {
+          <div class="flex items-center space-x-2 text-green-600">
+            <div class="w-2 h-2 bg-green-500 rounded-full"></div>
+            <span class="font-medium text-sm">{{ getCompletionPercentage() }}% complete</span>
+          </div>
+        } @else {
+          <div class="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-sm font-medium">
+            No data entered
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+
+  <!-- Auto-save indicator -->
+  @if (isSaving()) {
+    <div class="text-sm text-neutral-500 flex items-center justify-center">
+      <div class="w-2 h-2 bg-primary-500 rounded-full animate-pulse mr-2"></div>
+      Saving changes...
+    </div>
+  } @else if (lastSaved()) {
+    <div class="text-sm text-neutral-500 text-center">
+      ✓ Changes saved automatically
+    </div>
+  }
+</div>
+
+<!-- Hidden file input -->
+<input
+  #fileInput
+  type="file"
+  accept=".pdf,.doc,.docx"
+  (change)="onFileSelected($event)"
+  class="hidden"
+/>

@@ -1,12 +1,16 @@
 // src/app/profile/steps/business-plan.component.ts
-import { Component, signal, OnInit, ViewChild, ElementRef } from '@angular/core';
+import { Component, signal, OnInit, OnDestroy, ViewChild, ElementRef, inject } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { LucideAngularModule, FileText, TrendingUp, Users, Building, Gavel, MapPin, Upload } from 'lucide-angular';
+import { LucideAngularModule, FileText, TrendingUp, Users, Building, Gavel, MapPin, Upload, Save, Clock } from 'lucide-angular';
 import { UiButtonComponent, UiCardComponent, UiInputComponent } from '../../../../shared/components';
 import { UiSectionCardComponent } from '../../../../shared/components/ui-section-card.component';
 import { UiTextareaComponent } from '../../../../shared/components/ui-textarea.component';
-import { FundingApplicationProfileService } from '../../../services/funding-profile.service';
  
+import { interval, Subscription } from 'rxjs';
+import { takeWhile } from 'rxjs/operators';
+ 
+import { FundingApplicationService } from '../../../services/funding-application.service';
+import { BusinessStrategy, FinancialProjection } from '../../../models/funding-application.models';
 
 interface BusinessPlanSection {
   id: string;
@@ -33,9 +37,13 @@ interface BusinessPlanSection {
   ],
   templateUrl: 'business-plan.component.html'
 })
-export class BusinessPlanComponent implements OnInit {
+export class BusinessPlanComponent implements OnInit, OnDestroy {
   @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
 
+  private fundingApplicationService = inject(FundingApplicationService);
+  private fb = inject(FormBuilder);
+
+  // Icons
   FileTextIcon = FileText;
   TrendingUpIcon = TrendingUp;
   UsersIcon = Users;
@@ -43,23 +51,268 @@ export class BusinessPlanComponent implements OnInit {
   GavelIcon = Gavel;
   MapPinIcon = MapPin;
   UploadIcon = Upload;
+  SaveIcon = Save;
+  ClockIcon = Clock;
 
+  // State signals
   uploadedDocument = signal<File | null>(null);
   sectionSaving = signal<{ [key: string]: boolean }>({});
   sectionLastSaved = signal<{ [key: string]: boolean }>({});
+  isSaving = signal(false);
+  lastSaved = signal<Date | null>(null);
 
   sections = signal<BusinessPlanSection[]>([]);
 
-  constructor(
-    private fb: FormBuilder,
-    private profileService: FundingApplicationProfileService
-  ) {
+  // Auto-save subscription
+  private autoSaveSubscription?: Subscription;
+  private debounceTimer?: ReturnType<typeof setTimeout>;
+
+  constructor() {
     this.initializeSections();
   }
 
   ngOnInit() {
     this.loadExistingData();
+    this.setupAutoSave();
   }
+
+  ngOnDestroy() {
+    this.autoSaveSubscription?.unsubscribe();
+    if (this.debounceTimer) {
+      clearTimeout(this.debounceTimer);
+    }
+  }
+
+  // ===============================
+  // DATA LOADING & SAVING
+  // ===============================
+
+  private loadExistingData() {
+    const existingData = this.fundingApplicationService.data().businessStrategy;
+    if (existingData) {
+      this.populateFromBusinessStrategy(existingData);
+    }
+  }
+
+  private populateFromBusinessStrategy(data: BusinessStrategy) {
+    this.sections().forEach(section => {
+      switch (section.id) {
+        case 'executive-summary':
+          section.form.patchValue({
+            executiveSummary: data.executiveSummary || '',
+            businessConcept: data.missionStatement || '',
+            keySuccessFactors: data.strategicObjectives?.join(', ') || ''
+          });
+          break;
+        case 'market-analysis':
+          section.form.patchValue({
+            industryAnalysis: data.marketAnalysis || '',
+            targetMarket: data.competitiveStrategy || '',
+            marketResearch: '',
+            currentMarketShare: '',
+            targetMarketShare: ''
+          });
+          break;
+        case 'competitive-analysis':
+          section.form.patchValue({
+            competitiveLandscape: data.competitiveStrategy || '',
+            competitiveAdvantage: data.marketingStrategy || '',
+            marketPositioning: data.pricingStrategy || ''
+          });
+          break;
+        case 'operations-plan':
+          section.form.patchValue({
+            operationsOverview: data.scalingStrategy || '',
+            supplyChain: '',
+            technology: '',
+            qualityControl: ''
+          });
+          break;
+        case 'financial-projections':
+          section.form.patchValue({
+            projectionsOverview: data.profitabilityTimeline || '',
+            year1Revenue: data.revenueProjections?.[0]?.assumptions || '',
+            year3Revenue: data.revenueProjections?.[2]?.assumptions || '',
+            breakEvenTimeline: data.breakEvenAnalysis || '',
+            expectedROI: data.returnOnInvestment || '',
+            financialAssumptions: ''
+          });
+          break;
+        case 'legal-compliance':
+          section.form.patchValue({
+            judgements: '',
+            legalStructure: '',
+            intellectualProperty: '',
+            riskManagement: ''
+          });
+          break;
+      }
+      this.updateSectionCompletion(section);
+    });
+
+    // Update sections signal to trigger change detection
+    this.sections.update(sections => [...sections]);
+  }
+
+  private setupAutoSave() {
+    // Auto-save every 30 seconds when data changes
+    this.autoSaveSubscription = interval(30000).pipe(
+      takeWhile(() => true)
+    ).subscribe(() => {
+      if (this.hasAnyData() && !this.isSaving()) {
+        this.saveData(false);
+      }
+    });
+
+    // Setup form change listeners for debounced save
+    this.sections().forEach(section => {
+      section.form.valueChanges.subscribe(() => this.debouncedSave());
+    });
+  }
+
+  private debouncedSave() {
+    if (this.debounceTimer) {
+      clearTimeout(this.debounceTimer);
+    }
+    this.debounceTimer = setTimeout(() => {
+      if (this.hasAnyData() && !this.isSaving()) {
+        this.saveData(false);
+      }
+    }, 2000); // 2 second debounce
+  }
+
+  async saveManually() {
+    await this.saveData(true);
+  }
+
+  private async saveData(isManual: boolean = false) {
+    if (this.isSaving()) return;
+
+    this.isSaving.set(true);
+    
+    try {
+      const businessStrategyData = this.buildBusinessStrategyData();
+      this.fundingApplicationService.updateBusinessStrategy(businessStrategyData);
+      
+      if (isManual) {
+        // Force save to backend for manual saves
+        await this.fundingApplicationService.saveCurrentProgress();
+      }
+      
+      this.lastSaved.set(new Date());
+    } catch (error) {
+      console.error('Failed to save business strategy:', error);
+    } finally {
+      this.isSaving.set(false);
+    }
+  }
+
+  private buildBusinessStrategyData(): BusinessStrategy {
+    const sectionsData = this.sections();
+    const documentFile = this.uploadedDocument();
+
+    // Extract data from all sections
+    const executiveData = sectionsData.find(s => s.id === 'executive-summary')?.form.value;
+    const marketData = sectionsData.find(s => s.id === 'market-analysis')?.form.value;
+    const competitiveData = sectionsData.find(s => s.id === 'competitive-analysis')?.form.value;
+    const operationsData = sectionsData.find(s => s.id === 'operations-plan')?.form.value;
+    const financialData = sectionsData.find(s => s.id === 'financial-projections')?.form.value;
+    const legalData = sectionsData.find(s => s.id === 'legal-compliance')?.form.value;
+
+    return {
+      // Strategic Planning
+      executiveSummary: executiveData?.executiveSummary || '',
+      missionStatement: executiveData?.businessConcept || '',
+      visionStatement: executiveData?.keySuccessFactors || '',
+      strategicObjectives: executiveData?.keySuccessFactors ? 
+        executiveData.keySuccessFactors.split(',').map((s: string) => s.trim()) : [],
+
+      // Market Strategy
+      marketAnalysis: marketData?.industryAnalysis || '',
+      competitiveStrategy: competitiveData?.competitiveLandscape || '',
+      pricingStrategy: competitiveData?.marketPositioning || '',
+      marketingStrategy: competitiveData?.competitiveAdvantage || '',
+
+      // Growth Plans
+      expansionPlans: operationsData?.operationsOverview || '',
+      productDevelopment: operationsData?.technology || '',
+      marketEntry: marketData?.targetMarket || '',
+      scalingStrategy: operationsData?.supplyChain || '',
+
+      // Financial Projections
+      revenueProjections: this.buildRevenueProjections(financialData),
+      profitabilityTimeline: financialData?.projectionsOverview || '',
+      breakEvenAnalysis: financialData?.breakEvenTimeline?.toString() || '',
+      returnOnInvestment: financialData?.expectedROI?.toString() || '',
+
+      // Funding Strategy
+      fundingRequirements: {
+        totalAmountRequired: 0, // Would be populated from another section
+        currency: 'ZAR',
+        fundingType: 'loan', // Would be determined elsewhere
+        fundingPurpose: executiveData?.executiveSummary || '',
+        timeline: financialData?.breakEvenTimeline?.toString() || '',
+        repaymentTerms: undefined,
+        collateral: undefined
+      },
+      useOfFunds: executiveData?.executiveSummary || '',
+      repaymentStrategy: legalData?.riskManagement || undefined,
+      exitStrategy: undefined
+    };
+  }
+// Replace the buildRevenueProjections method with this corrected version:
+private buildRevenueProjections(financialData: any): FinancialProjection[] {
+  if (!financialData) return [];
+
+  const projections: FinancialProjection[] = [];
+  
+  if (financialData.year1Revenue) {
+    projections.push({
+      year: 1,
+      amount: financialData.year1Revenue,
+      assumptions: financialData.financialAssumptions || ''
+    });
+  }
+  
+  if (financialData.year3Revenue) {
+    projections.push({
+      year: 3,
+      amount: financialData.year3Revenue,
+      assumptions: financialData.financialAssumptions || ''
+    });
+  }
+  
+  return projections;
+}
+
+  // ===============================
+  // UI HELPER METHODS
+  // ===============================
+
+  hasAnyData(): boolean {
+    return this.sections().some(section => this.hasFormData(section)) || !!this.uploadedDocument();
+  }
+
+  getLastSavedText(): string {
+    const saved = this.lastSaved();
+    if (!saved) return '';
+    
+    const now = new Date();
+    const diffMs = now.getTime() - saved.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    
+    if (diffMins < 1) return 'just now';
+    if (diffMins < 60) return `${diffMins} minute${diffMins === 1 ? '' : 's'} ago`;
+    
+    const diffHours = Math.floor(diffMins / 60);
+    if (diffHours < 24) return `${diffHours} hour${diffHours === 1 ? '' : 's'} ago`;
+    
+    return saved.toLocaleDateString();
+  }
+
+  // ===============================
+  // SECTION MANAGEMENT
+  // ===============================
 
   initializeSections() {
     const sectionConfigs = [
@@ -158,19 +411,6 @@ export class BusinessPlanComponent implements OnInit {
     this.sections.set(sections);
   }
 
-  loadExistingData() {
-    // Load from profile service
-    // const businessPlanData = this.profileService.getBusinessPlanData();
-    // if (businessPlanData) {
-    //   this.sections().forEach(section => {
-    //     if (businessPlanData[section.id]) {
-    //       section.form.patchValue(businessPlanData[section.id]);
-    //       this.updateSectionCompletion(section);
-    //     }
-    //   });
-    // }
-  }
-
   toggleSection(sectionId: string, expanded: boolean) {
     this.sections.update(sections => 
       sections.map(s => s.id === sectionId ? { ...s, expanded } : s)
@@ -197,7 +437,7 @@ export class BusinessPlanComponent implements OnInit {
     this.sectionSaving.update(saving => ({ ...saving, [sectionId]: true }));
 
     try {
-      await this.saveBusinessPlanData();
+      await this.saveData(false);
       this.sectionLastSaved.update(lastSaved => ({ ...lastSaved, [sectionId]: true }));
       
       // Reset last saved indicator after 3 seconds
@@ -234,6 +474,10 @@ export class BusinessPlanComponent implements OnInit {
     this.sections.update(sections => [...sections]);
   }
 
+  // ===============================
+  // FILE UPLOAD METHODS
+  // ===============================
+
   triggerFileUpload() {
     this.fileInput.nativeElement.click();
   }
@@ -259,12 +503,16 @@ export class BusinessPlanComponent implements OnInit {
       }
 
       this.uploadedDocument.set(file);
-      this.saveBusinessPlanData();
+      this.saveData(false);
       
       // Clear input
       input.value = '';
     }
   }
+
+  // ===============================
+  // PROGRESS METHODS
+  // ===============================
 
   getCompletionPercentage(): number {
     const totalSections = this.sections().length;
@@ -282,23 +530,5 @@ export class BusinessPlanComponent implements OnInit {
 
   allSectionsCompleted(): boolean {
     return this.sections().every(s => s.completed || !s.required);
-  }
-
-  private async saveBusinessPlanData() {
-    const businessPlanData: any = {
-      uploadedDocument: this.uploadedDocument()
-    };
-
-    // Collect all form data
-    this.sections().forEach(section => {
-      businessPlanData[section.id] = section.form.value;
-    });
-
-    // Add completion metadata
-    businessPlanData.completionPercentage = this.getCompletionPercentage();
-    businessPlanData.lastUpdated = new Date().toISOString();
-
-    // Save to profile service
-    return this.profileService.updateBusinessPlan(businessPlanData);
   }
 }
