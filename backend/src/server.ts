@@ -1,5 +1,4 @@
- 
-// backend/src/server.ts
+// backend/src/server.ts - FIXED WITH FUNDING APPLICATION ROUTES
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
@@ -10,6 +9,8 @@ import { PrismaClient } from '@prisma/client';
 // Import routes
 import authRoutes from './routes/auth';
 import usersRoutes from './routes/users';
+// FIX: Import the missing funding application routes
+import fundingApplicationRoutes from './routes/funding-applications';
 
 // Load environment variables
 dotenv.config();
@@ -48,10 +49,47 @@ app.get('/health', (req, res) => {
 // API routes
 app.use('/api/auth', authRoutes);
 app.use('/api/users', usersRoutes);
+// FIX: Add the funding application routes to the users path
+// This will make routes like: /api/users/:id/funding-application/* work
+app.use('/api/users', fundingApplicationRoutes);
 
 // Test route to verify routing
 app.get('/api/test', (req, res) => {
   return res.json({ message: 'API is working!' });
+});
+
+// Debug route to list all registered routes
+app.get('/api/debug/routes', (req, res) => {
+  const routes: string[] = [];
+  
+  function printRoutes(stack: any[], prefix = '') {
+    stack.forEach((middleware: any) => {
+      if (middleware.route) {
+        // Regular route
+        const methods = Object.keys(middleware.route.methods).join(', ').toUpperCase();
+        routes.push(`${methods} ${prefix}${middleware.route.path}`);
+      } else if (middleware.name === 'router') {
+        // Router middleware
+        const routerPrefix = middleware.regexp.source
+          .replace(/\\\//g, '/')
+          .replace(/\$/, '')
+          .replace(/\^/, '')
+          .replace(/\?\(\?\=/, '')
+          .replace(/\)/, '');
+        
+        if (middleware.handle.stack) {
+          printRoutes(middleware.handle.stack, prefix + routerPrefix);
+        }
+      }
+    });
+  }
+  
+  printRoutes(app._router.stack, '/api');
+  
+  return res.json({ 
+    message: 'All registered API routes',
+    routes: routes.sort()
+  });
 });
 
 // Global error handler
@@ -77,7 +115,8 @@ app.use('*', (req, res) => {
   return res.status(404).json({ 
     error: 'Route not found',
     method: req.method,
-    path: req.originalUrl
+    path: req.originalUrl,
+    hint: 'Check /api/debug/routes to see all available routes'
   });
 });
 
@@ -87,8 +126,10 @@ app.listen(PORT, () => {
   console.log(`🚀 Server running on http://localhost:${PORT}`);
   console.log(`📊 Health check: http://localhost:${PORT}/health`);
   console.log(`🧪 Test endpoint: http://localhost:${PORT}/api/test`);
+  console.log(`🔍 Debug routes: http://localhost:${PORT}/api/debug/routes`);
   console.log(`🔐 Auth endpoints: http://localhost:${PORT}/api/auth/*`);
   console.log(`👤 User endpoints: http://localhost:${PORT}/api/users/*`);
+  console.log(`💰 Funding endpoints: http://localhost:${PORT}/api/users/*/funding-application*`);
   console.log(`🗄️  Database: SQLite (${process.env.DATABASE_URL})`);
   console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
 });
