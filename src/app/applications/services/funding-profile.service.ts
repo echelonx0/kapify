@@ -1,7 +1,6 @@
 // src/app/profile/profile.service.ts
 import { Injectable, signal, computed } from '@angular/core';
-import { ProfileManagementService } from '../../shared/services/profile-management.service';
-import { FundingApplicationBackendService } from './application-management.service';
+ 
 
 export interface ApplicationProfileData {
   adminInformation?: Record<string, any>;
@@ -158,7 +157,7 @@ export class FundingApplicationProfileService {
   // Public readonly signals
   data = this.profileData.asReadonly();
   currentStepId = this.currentStep.asReadonly();
-  constructor(private applicationsProfileeManagementService: FundingApplicationBackendService) {
+  constructor() {
  
 }
 

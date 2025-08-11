@@ -385,7 +385,7 @@ import { UiButtonComponent } from '../../../shared/components/ui-button.componen
 import { UiProgressComponent } from '../../../shared/components/ui-progress.component';
 import { UiStatusBadgeComponent } from '../../../shared/components/ui-status-badge.component';
  
-import { AuthService } from '../../../auth/auth.service';
+import { AuthService } from '../../../auth/production.auth.service';
 import { ActivityFeedComponent } from '../../components/activity-feed.component';
 import { Activity } from '../../services/activity.service';
 import { ThreeDViewerComponent } from '../../../shared/components/three_d_viewer.component';

@@ -3,7 +3,7 @@ import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { tap, catchError, map } from 'rxjs/operators';
-import { AuthService } from '../../auth/auth.service';
+import { AuthService } from '../../auth/production.auth.service';
 import { FundingApplicationProfile } from '../models/funding-application.models';
 import { environment } from '../../../environments/environment';
 

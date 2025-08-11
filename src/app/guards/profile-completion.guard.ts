@@ -3,8 +3,8 @@ import { Injectable, inject } from '@angular/core';
 import { CanActivate, Router } from '@angular/router';
 import { Observable, of } from 'rxjs';
 import { map, catchError } from 'rxjs/operators' 
-import { AuthService } from '../auth/auth.service';
 import { ProfileManagementService } from '../shared/services/profile-management.service';
+import { AuthService } from '../auth/production.auth.service';
 
 @Injectable({
   providedIn: 'root'

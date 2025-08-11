@@ -1,10 +1,10 @@
 // src/app/app.routes.ts - FIXED ROUTING STRUCTURE
 import { Routes } from '@angular/router';
 import { LandingComponent } from './landing/landing.component';
-import { LoginComponent } from './auth/login.component'; 
+import { LoginComponent } from './auth/login/login.component'; 
 import { AuthGuard } from './guards/auth.guard';
 import { GuestGuard } from './guards/guest.guard';
-import { RegisterComponent } from './auth/register.component';
+import { RegisterComponent } from './auth/register/register.component';
 import { ProfileCompletionGuard } from './guards/profile-completion.guard';
 import { RoleGuard } from './guards/role.guard';
  
