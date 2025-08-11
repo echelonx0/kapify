@@ -12,7 +12,8 @@ import { getFunctions, provideFunctions } from '@angular/fire/functions';
 import { getStorage, provideStorage } from '@angular/fire/storage';
 import { getVertexAI, provideVertexAI } from '@angular/fire/vertexai';
 import { environment } from '../environments/environment';
-import { AuthInterceptor } from './auth/auth.interceptor';
+// import { AuthInterceptor } from './auth/auth.interceptor';
+import { SupabaseAuthInterceptor } from './auth/interceptors/supabase.interceptor';
  
 
 export const appConfig: ApplicationConfig = {
@@ -30,7 +31,7 @@ export const appConfig: ApplicationConfig = {
     // Auth interceptor
     {
       provide: HTTP_INTERCEPTORS,
-      useClass: AuthInterceptor,
+      useClass: SupabaseAuthInterceptor,
       multi: true
     },
     provideAnimations(),

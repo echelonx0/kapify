@@ -3,8 +3,9 @@ import { Component, computed, signal, inject, OnInit } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { LucideAngularModule, Home, User, FileText, DollarSign, Settings, LogOut, Building, ChevronDown, Bell } from 'lucide-angular';
-import { AuthService } from '../../auth/auth.service';
+ 
 import { ProfileManagementService } from '../services/profile-management.service';
+import { AuthService } from '../../auth/production.auth.service';
 
 interface NavItem {
   label: string;
@@ -220,7 +221,7 @@ export class SidebarNavComponent implements OnInit {
 
   logout() {
     this.profileService.clearProfileData();
-    this.authService.logout();
+    this.authService.signOut();
     this.router.navigate(['/']);
   }
 

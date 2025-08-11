@@ -10,7 +10,7 @@ import { Application, ApplicationStatus } from '../../shared/models/application.
  
 import { SWOTAnalysis } from '../../shared/models/swot.models';
 import { ApplicationService } from '../services/applications.service';
-import { SWOTAnalysisService } from '../services/swot-dummy.service';
+ 
 
 interface ApplicationSection {
   id: string;
@@ -104,7 +104,7 @@ export class ApplicationDetailLayoutComponent implements OnInit {
     private router: Router,
     private route: ActivatedRoute,
     private applicationService: ApplicationService,
-    private swotService: SWOTAnalysisService
+   
   ) {}
 
   ngOnInit() {
@@ -121,11 +121,11 @@ export class ApplicationDetailLayoutComponent implements OnInit {
         this.updateSectionComments();
         
         // Load SWOT analysis if available
-        if (application?.swotAnalysisId) {
-          this.swotService.getSWOTAnalysisById(application.swotAnalysisId).subscribe({
-            next: (swot) => this.swotAnalysis.set(swot || null)
-          });
-        }
+        // if (application?.swotAnalysisId) {
+        //   this.swotService.getSWOTAnalysisById(application.swotAnalysisId).subscribe({
+        //     next: (swot) => this.swotAnalysis.set(swot || null)
+        //   });
+        // }
         
         this.isLoading.set(false);
       },
@@ -240,24 +240,7 @@ export class ApplicationDetailLayoutComponent implements OnInit {
   }
 
   createSWOTAnalysis() {
-    const app = this.applicationData();
-    if (!app) return;
-
-    this.swotService.createSWOTAnalysis({
-      applicationId: app.id,
-      smeId: app.smeId,
-      profileId: app.smeProfileId
-    }).subscribe({
-      next: (swot) => {
-        this.swotAnalysis.set(swot);
-        // Update application with SWOT ID
-        this.applicationService.updateApplication(app.id, { swotAnalysisId: swot.id }).subscribe();
-      },
-      error: (error) => {
-        console.error('Error creating SWOT analysis:', error);
-        alert('Error creating SWOT analysis');
-      }
-    });
+   
   }
 
 addReviewNote() {

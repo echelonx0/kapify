@@ -2,7 +2,7 @@
 import { Injectable, signal, inject } from '@angular/core';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { BehaviorSubject, Observable, from, throwError } from 'rxjs';
-import { tap, catchError, map } from 'rxjs/operators';
+import { tap, catchError } from 'rxjs/operators';
 import { AuthService } from '../../auth/production.auth.service';
 import { environment } from '../../../environments/environment';
 

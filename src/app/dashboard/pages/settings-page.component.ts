@@ -9,7 +9,8 @@ import { AvatarComponent } from '../../shared/components/ui/avatar.component';
 import { DropdownComponent } from '../../shared/components/ui/shared-ui-components';
 import { TableComponent, TableColumn, TableAction } from '../../shared/components/ui/table-ui.component';
 import { ProfileManagementService, UserProfileData } from '../../shared/services/profile-management.service';
-import { AuthService } from '../../auth/auth.service';
+ 
+ 
 
 type SettingsTab = 'personal' | 'members' | 'integrations' | 'billing';
 
@@ -48,7 +49,7 @@ interface PendingInviteDisplay {
 })
 export class SettingsComponent implements OnInit {
   private profileService = inject(ProfileManagementService);
-  private authService = inject(AuthService);
+ 
   private fb = inject(FormBuilder);
 
   // Icons

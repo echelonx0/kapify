@@ -18,12 +18,13 @@ import {
   Settings,
   ArrowRight
 } from 'lucide-angular';
-import { AuthService } from '../auth/auth.service';
+ 
  
 import { ThreeDViewerComponent } from '../shared/components/three_d_viewer.component'; 
 import { OpportunitiesService } from '../funding/services/opportunities.service';
 
 import { FormsModule } from '@angular/forms';
+import { AuthService } from '../auth/production.auth.service';
 
 @Component({
   selector: 'app-dashboard-home',

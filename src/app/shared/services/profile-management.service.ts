@@ -12,7 +12,8 @@ import {
   UserProfile,
  
 } from '../models/user.models';
-import { AuthService } from '../../auth/auth.service';
+import { AuthService } from '../../auth/production.auth.service';
+ 
 
 export interface UserProfileData {
   user: User;
