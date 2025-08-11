@@ -1,236 +1,302 @@
+<!-- src/app/profile/pages/profile-home.component.html - CONNECTED TO REAL BACKEND DATA -->
 <div class="min-h-screen p-6">
-      <!-- Top Funding Banner -->
-      <div class="gradient-bg rounded-xl p-6 mb-6 text-white">
-        <div class="flex items-center justify-between">
-          <div>
-            <h1 class="text-2xl font-bold mb-2">{{ fundingTitle() }}</h1>
-            <div class="text-4xl font-bold">{{ fundingAmount() }}</div>
-            <p class="text-green-100 mt-2">{{ fundingDescription() }}</p>
-          </div>
-          <div class="flex space-x-4">
-            <ui-button 
-              variant="outline" 
-              size="lg" 
-              class="bg-white/20 hover:bg-white/30 border-white/30 text-white"
-              (clicked)="viewOpportunities()">
-              {{ primaryButtonText() }}
-            </ui-button>
-         
-          </div>
-        </div>
+  <!-- Top Funding Banner - Using real data -->
+  <div class="gradient-bg rounded-xl p-6 mb-6 text-white">
+    <div class="flex items-center justify-between">
+      <div>
+        <h1 class="text-2xl font-bold mb-2">{{ fundingTitle() }}</h1>
+        <div class="text-4xl font-bold">{{ fundingAmount() }}</div>
+        <p class="text-green-100 mt-2">{{ fundingDescription() }}</p>
       </div>
+      <div class="flex space-x-4">
+        <ui-button 
+          variant="outline" 
+          size="lg" 
+          class="bg-white/20 hover:bg-white/30 border-white/30 text-white"
+          (clicked)="viewOpportunities()">
+          {{ primaryButtonText() }}
+        </ui-button>
+      </div>
+    </div>
+  </div>
 
-      <!-- Main Layout Grid -->
-      <div class="grid grid-cols-12 gap-6 h-full">
-        <!-- Main Content Area (Left) -->
-        <div class="col-span-8">
-          <!-- 3D Viewer Component -->
-          <div class="main-content-area mb-6" style="height: 400px;">
-          <app-three-d-viewer 
+  <!-- Main Layout Grid -->
+  <div class="grid grid-cols-12 gap-6 h-full">
+    <!-- Main Content Area (Left) -->
+    <div class="col-span-8">
+      <!-- 3D Viewer Component -->
+      <div class="main-content-area mb-6" style="height: 400px;">
+        <app-three-d-viewer 
           [objUrl]="'models/scene.gltf'"
           [modelScale]="2"
           [autoRotate]="true"
           [showMeshSphere]="true">
         </app-three-d-viewer>
-          </div>
+      </div>
 
-          <!-- Integrated Activity Feed Widget -->
-          <app-activity-feed
-            (viewAllClicked)="viewAllActivities()"
-            (activityClicked)="onActivityClicked($event)"
-            class="mb-6">
-          </app-activity-feed>
+      <!-- Integrated Activity Feed Widget -->
+      <app-activity-feed
+        (viewAllClicked)="viewAllActivities()"
+        (activityClicked)="onActivityClicked($event)"
+        class="mb-6">
+      </app-activity-feed>
+    </div>
+
+    <!-- Right Sidebar Cards -->
+    <div class="col-span-4 space-y-6">
+      <!-- Profile Progress Card - REAL DATA -->
+      <ui-card title="Profile Progress" [hasActions]="true" marginBottom="mb-6">
+        <!-- <div slot="actions" class="text-sm text-gray-500">
+          {{ completedSteps() }} of {{ totalSteps() }} completed
+          @if (lastSavedAt()) {
+            <div class="text-xs text-green-600 mt-1">
+              ✓ Saved {{ getLastSavedText() }}
+            </div>
+          }
+        </div> -->
+
+        <!-- Progress Bar - REAL DATA -->
+        <div class="mb-6">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-sm font-medium text-gray-700">Overall Completion</span>
+            <span class="text-sm text-gray-500">{{ completionPercentage() }}%</span>
+          </div>
+          <ui-progress [value]="completionPercentage()" color="primary"></ui-progress>
+          
+          <!-- Time Estimate - REAL DATA -->
+          @if (completionPercentage() < 100) {
+            <div class="text-xs text-gray-500 mt-2">
+              Estimated time remaining: {{ estimatedTimeRemaining() }}
+            </div>
+          }
         </div>
 
-        <!-- Right Sidebar Cards -->
-        <div class="col-span-4 space-y-6">
-          <!-- Profile Progress Card -->
-          <ui-card title="Profile Progress" [hasActions]="true" marginBottom="mb-6">
-            <div slot="actions" class="text-sm text-gray-500">
-              {{ completedSteps() }} of {{ totalSteps() }} completed
-            </div>
+        <!-- Quick Stats - REAL DATA -->
+        <div class="grid grid-cols-3 gap-3 mb-6">
+          <div class="bg-green-50 rounded-lg p-3 text-center">
+            <div class="text-xl font-bold text-green-600">{{ completedSteps() }}</div>
+            <div class="text-xs text-green-700">Completed</div>
+          </div>
+          <div class="bg-blue-50 rounded-lg p-3 text-center">
+            <div class="text-xl font-bold text-blue-600">{{ inProgressSteps() }}</div>
+            <div class="text-xs text-blue-700">In Progress</div>
+          </div>
+          <div class="bg-orange-50 rounded-lg p-3 text-center">
+            <div class="text-xl font-bold text-orange-600">{{ pendingSteps() }}</div>
+            <div class="text-xs text-orange-700">Pending</div>
+          </div>
+        </div>
 
-            <!-- Progress Bar -->
-            <div class="mb-6">
-              <div class="flex items-center justify-between mb-2">
-                <span class="text-sm font-medium text-gray-700">Overall Completion</span>
-                <span class="text-sm text-gray-500">{{ completionPercentage() }}%</span>
-              </div>
-              <ui-progress [value]="completionPercentage()" color="primary"></ui-progress>
-            </div>
+        <!-- Profile Insights - REAL DATA -->
+        <div class="bg-gray-50 rounded-lg p-3 mb-4">
+          <div class="text-sm font-medium text-gray-700 mb-1">
+            {{ profileInsights().message }}
+          </div>
+          <div class="text-xs text-gray-600">
+            {{ profileInsights().action }}
+          </div>
+        </div>
 
-            <!-- Quick Stats -->
-            <div class="grid grid-cols-3 gap-3 mb-6">
-              <div class="bg-slate-50 rounded-lg p-3 text-center">
-                <div class="text-xl font-bold text-slate-600">{{ completedSteps() }}</div>
-                <div class="text-xs text-slate-700">Completed</div>
-              </div>
-              <div class="bg-green-50 rounded-lg p-3 text-center">
-                <div class="text-xl font-bold text-green-600">{{ inProgressSteps() }}</div>
-                <div class="text-xs text-green-700">In Progress</div>
-              </div>
-              <div class="bg-orange-50 rounded-lg p-3 text-center">
-                <div class="text-xl font-bold text-orange-600">{{ pendingSteps() }}</div>
-                <div class="text-xs text-orange-700">Pending</div>
-              </div>
-            </div>
+        <!-- Main Action Button - REAL DATA -->
+        <ui-button 
+          variant="primary" 
+          size="lg" 
+          class="w-full"
+          (clicked)="getProfileButtonText() === 'Start Your Profile' ? startProfile() : continueProfile()">
+          {{ getProfileButtonText() }}
+          <lucide-icon [img]="ArrowRightIcon" [size]="16" class="ml-2"></lucide-icon>
+        </ui-button>
 
-         <ui-button 
-  variant="primary" 
-  size="lg" 
-  class="w-full"
-  [routerLink]="['/profile/steps']">
-  {{ getProfileButtonText() }}
-  <lucide-icon [img]="ArrowRightIcon" [size]="16" class="ml-2"></lucide-icon>
-</ui-button>
-          </ui-card>
+        <!-- Loading State -->
+        @if (isLoading()) {
+          <div class="text-center text-sm text-gray-500 mt-2">
+            <lucide-icon [img]="ClockIcon" [size]="16" class="inline animate-spin mr-1"></lucide-icon>
+            Loading application data...
+          </div>
+        }
+      </ui-card>
 
-          <!-- Profile Sections Card -->
-          <ui-card 
-            title="Profile Sections" 
-            subtitle="Complete all sections to maximize funding opportunities"
-            marginBottom="mb-6">
-            <div class="space-y-3">
-              @for (step of profileService.steps.slice(0, 3); track step.id) {
-                <div 
-                  class="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
-                  (click)="goToStep(step.id)">
-                  <div class="flex items-center space-x-3">
-                    <div [class]="getStepIconClasses(step)">
-                      @if (step.completed) {
-                        <lucide-icon [img]="CheckCircleIcon" [size]="16" class="text-white"></lucide-icon>
-                      } @else {
-                        <lucide-icon [img]="getStepIcon(step.id)" [size]="16"></lucide-icon>
-                      }
-                    </div>
-                    <div>
-                      <p class="text-sm font-medium text-gray-900">{{ step.title }}</p>
-                      <p class="text-xs text-gray-600">{{ getStepDescription(step.id) }}</p>
-                    </div>
-                  </div>
-                  <ui-status-badge 
-                    [text]="getStepStatusText(step)" 
-                    [color]="getStepStatusColor(step)">
-                  </ui-status-badge>
+      <!-- Profile Sections Card - REAL DATA -->
+      <ui-card 
+        title="Profile Sections" 
+        subtitle="Complete all sections to maximize funding opportunities"
+        marginBottom="mb-6">
+        <div class="space-y-3">
+          @for (step of applicationSteps.slice(0, 3); track step.id) {
+            <div 
+              class="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
+              (click)="goToStep(step.id)">
+              <div class="flex items-center space-x-3">
+                <div [class]="getStepIconClasses(step)">
+                  @if (step.completed) {
+                    <lucide-icon [img]="CheckCircleIcon" [size]="16" class="text-white"></lucide-icon>
+                  } @else {
+                    <lucide-icon [img]="getStepIcon(step.id)" [size]="16"></lucide-icon>
+                  }
                 </div>
-              }
-              @if (profileService.steps.length > 3) {
-                <button 
-                  class="w-full text-center py-2 text-sm text-green-600 hover:text-green-700 font-medium"
-                  (click)="viewAllSteps()">
-                  View All {{ profileService.steps.length }} Sections
-                </button>
-              }
+                <div>
+                  <p class="text-sm font-medium text-gray-900">{{ step.title }}</p>
+                  <p class="text-xs text-gray-600">{{ getStepDescription(step.id) }}</p>
+                  <!-- Estimated Time -->
+                  @if (step.estimatedTime && !step.completed) {
+                    <p class="text-xs text-blue-600">{{ step.estimatedTime }}</p>
+                  }
+                </div>
+              </div>
+              <ui-status-badge 
+                [text]="getStepStatusText(step)" 
+                [color]="getStepStatusColor(step)">
+              </ui-status-badge>
             </div>
-          </ui-card>
+          }
+          @if (applicationSteps.length > 3) {
+            <button 
+              class="w-full text-center py-2 text-sm text-green-600 hover:text-green-700 font-medium"
+              (click)="viewAllSteps()">
+              View All {{ applicationSteps.length }} Sections
+            </button>
+          }
+        </div>
+      </ui-card>
 
-       
+      <!-- Application Status Card - REAL DATA -->
+      @if (isApplicationComplete()) {
+        <ui-card title="Application Status" marginBottom="mb-6">
+          <div class="text-center py-4">
+            <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
+              <lucide-icon [img]="CheckCircleIcon" [size]="32" class="text-green-600"></lucide-icon>
+            </div>
+            <h3 class="text-lg font-semibold text-gray-900 mb-2">Profile Complete!</h3>
+            <p class="text-sm text-gray-600 mb-4">
+              Your funding application profile is ready for submission.
+            </p>
+            <ui-button 
+              variant="primary" 
+              size="lg" 
+              class="w-full"
+              (clicked)="primaryAction()">
+              Submit for Review
+              <lucide-icon [img]="ArrowRightIcon" [size]="16" class="ml-2"></lucide-icon>
+            </ui-button>
+          </div>
+        </ui-card>
+      }
+
+      <!-- Enhanced Help Section -->
+      <div class="bg-slate-700 text-white p-6 rounded-lg border border-slate-600 shadow-lg">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-lg font-semibold">Need Expert Assistance?</h3>
+          <lucide-icon [img]="HeadphonesIcon" [size]="20" class="text-slate-300"></lucide-icon>
+        </div>
         
+        <p class="text-sm text-slate-200 mb-4 leading-relaxed">
+          Our funding specialists are ready to help you complete your profile and maximize your funding potential.
+        </p>
+        
+        <!-- Contact Details -->
+        <div class="space-y-3 mb-5">
+          <!-- Business Hours -->
+          <div class="flex items-center space-x-3">
+            <lucide-icon [img]="ClockIcon" [size]="16" class="text-slate-400"></lucide-icon>
+            <div>
+              <p class="text-sm font-medium text-slate-200">Monday to Friday</p>
+              <p class="text-xs text-slate-400">8am - 5pm (South African time)</p>
+            </div>
+          </div>
+          
+          <!-- Email -->
+          <div class="flex items-center space-x-3">
+            <lucide-icon [img]="MailIcon" [size]="16" class="text-slate-400"></lucide-icon>
+            <a 
+              [href]="'mailto:' + email" 
+              class="text-sm text-slate-200 hover:text-white transition-colors underline decoration-slate-400 hover:decoration-white"
+            >
+              {{ email }}
+            </a>
+          </div>
+          
+          <!-- Phone Numbers -->
+          <div class="flex items-center space-x-3">
+            <lucide-icon [img]="PhoneIcon" [size]="16" class="text-slate-400"></lucide-icon>
+            <div class="flex flex-col sm:flex-row sm:space-x-4 space-y-1 sm:space-y-0">
+              <a 
+                href="tel:+27717496762" 
+                class="text-sm text-slate-200 hover:text-white transition-colors"
+              >
+                071 749 6762
+              </a>
+              <a 
+                href="tel:+27872655438" 
+                class="text-sm text-slate-200 hover:text-white transition-colors"
+              >
+                087 265 5438
+              </a>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Action Buttons -->
+        <div class="space-y-2">
+          <ui-button 
+            variant="outline" 
+            size="sm"
+            class="w-full mr-4 bg-white text-slate-700 hover:bg-slate-50 border-white font-medium"
+            (clicked)="requestHelp()">
+            <lucide-icon [img]="MessageCircleIcon" [size]="16" class="mr-2"></lucide-icon>
+            Request Callback
+          </ui-button>
+          
+          <ui-button 
+            size="sm"
+            class="w-full text-slate-200 hover:text-white hover:bg-slate-600 border-slate-500"
+            (clicked)="scheduleCall()">
+            <lucide-icon [img]="CalendarIcon" [size]="16" class="mr-2"></lucide-icon>
+            Book Consult
+          </ui-button>
+        </div>
+        
+        <!-- Trust Badge -->
+        <div class="mt-4 pt-4 border-t border-slate-600">
+          <div class="flex items-center justify-center space-x-2">
+            <lucide-icon [img]="ShieldCheckIcon" [size]="16" class="text-emerald-400"></lucide-icon>
+            <span class="text-xs text-slate-300">Trusted by 500+ South African SMEs</span>
+          </div>
+        </div>
+      </div>
 
-          <!-- Help Section -->
-      
-<!-- Enhanced Help Section -->
-<div class="bg-slate-700 text-white p-6 rounded-lg border border-slate-600 shadow-lg">
-  <div class="flex items-center justify-between mb-4">
-    <h3 class="text-lg font-semibold">Need Expert Assistance?</h3>
-    <lucide-icon [img]="HeadphonesIcon" [size]="20" class="text-slate-300"></lucide-icon>
-  </div>
-  
-  <p class="text-sm text-slate-200 mb-4 leading-relaxed">
-    Our funding specialists are ready to help you complete your profile and maximize your funding potential.
-  </p>
-  
-  <!-- Contact Details -->
-  <div class="space-y-3 mb-5">
-    <!-- Business Hours -->
-    <div class="flex items-center space-x-3">
-      <lucide-icon [img]="ClockIcon" [size]="16" class="text-slate-400"></lucide-icon>
-      <div>
-        <p class="text-sm font-medium text-slate-200">Monday to Friday</p>
-        <p class="text-xs text-slate-400">8am - 5pm (South African time)</p>
+      <!-- Subscription Status - Real subscription data would go here -->
+      <div class="bg-blue-500 text-white p-6 rounded-lg border border-blue-600 mt-4">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-lg font-semibold">Funding Readiness</h3>
+          <lucide-icon [img]="DollarSignIcon" [size]="20" class="text-white"></lucide-icon>
+        </div>
+        <p class="text-sm opacity-90 mb-3">
+          @if (completionPercentage() >= 100) {
+            Ready for funding applications
+          } @else if (completionPercentage() >= 70) {
+            Nearly ready - {{ 100 - completionPercentage() }}% remaining
+          } @else {
+            Building your profile - {{ completionPercentage() }}% complete
+          }
+        </p>
+        <ui-button 
+          variant="outline" 
+          size="sm"
+          class="w-full bg-white text-blue-500 hover:bg-gray-100 border-white"
+          (clicked)="viewOpportunities()">
+          @if (completionPercentage() >= 100) {
+            Explore Opportunities
+          } @else {
+            Continue Building Profile
+          }
+        </ui-button>
       </div>
-    </div>
-    
-    <!-- Email -->
-    <div class="flex items-center space-x-3">
-      <lucide-icon [img]="MailIcon" [size]="16" class="text-slate-400"></lucide-icon>
-      <a 
-        href="mailto:info@bokamosoas.co.za" 
-        class="text-sm text-slate-200 hover:text-white transition-colors underline decoration-slate-400 hover:decoration-white"
-      >
-    {{email}}
-      </a>
-    </div>
-    
-    <!-- Phone Numbers -->
-    <div class="flex items-center space-x-3">
-      <lucide-icon [img]="PhoneIcon" [size]="16" class="text-slate-400"></lucide-icon>
-      <div class="flex flex-col sm:flex-row sm:space-x-4 space-y-1 sm:space-y-0">
-        <a 
-          href="tel:+27717496762" 
-          class="text-sm text-slate-200 hover:text-white transition-colors"
-        >
-          071 749 6762
-        </a>
-        <a 
-          href="tel:+27872655438" 
-          class="text-sm text-slate-200 hover:text-white transition-colors"
-        >
-          087 265 5438
-        </a>
-      </div>
-    </div>
-  </div>
-  
-  <!-- Action Buttons -->
-  <div class="space-y-2">
-    <ui-button 
-      variant="outline" 
-      size="sm"
-      class="w-full bg-white text-slate-700 hover:bg-slate-50 border-white font-medium"
-      (clicked)="requestHelp()">
-      <lucide-icon [img]="MessageCircleIcon" [size]="16" class="mr-2"></lucide-icon>
-      Request Callback
-    </ui-button>
-    
-    <ui-button 
-     
-      size="sm"
-      class="w-full text-slate-200 hover:text-white hover:bg-slate-600 border-slate-500 ml-2"
-      (clicked)="scheduleCall()">
-      <lucide-icon [img]="CalendarIcon" [size]="16" class="mr-2"></lucide-icon>
-      Book Consultation
-    </ui-button>
-  </div>
-  
-  <!-- Trust Badge -->
-  <div class="mt-4 pt-4 border-t border-slate-600">
-    <div class="flex items-center justify-center space-x-2">
-      <lucide-icon [img]="ShieldCheckIcon" [size]="16" class="text-emerald-400"></lucide-icon>
-      <span class="text-xs text-slate-300">Trusted by 500+ South African SMEs</span>
     </div>
   </div>
 </div>
 
-   <!-- Subscription Card -->
-          <div class="bg-red-500 text-white p-6 rounded-lg border border-red-600 mt-4">
-            <div class="flex items-center justify-between mb-4">
-              <h3 class="text-lg font-semibold">Subscription Status</h3>
-              <lucide-icon [img]="AlertTriangleIcon" [size]="20" class="text-white"></lucide-icon>
-            </div>
-            <p class="text-sm opacity-90 mb-3">{{ subscriptionStatus.planName }} - {{ subscriptionStatus.status }}</p>
-            <ui-button 
-              variant="outline" 
-              size="sm"
-              class="w-full bg-white text-red-500 hover:bg-gray-100 border-white"
-              (clicked)="upgradeSubscription()">
-              {{ subscriptionStatus.actionText }}
-            </ui-button>
-          </div>
-                  
-
-        </div>
-      </div>
-
-   
-    </div>
+<!-- Helper method to format last saved time -->
+<!-- @if (false) {
+ 
+  <div>{{ getLastSavedText() }}</div>
+} -->
