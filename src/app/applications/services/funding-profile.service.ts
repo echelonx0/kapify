@@ -292,7 +292,7 @@ export class FundingApplicationProfileService {
     this.autoSave();
   }
 
-  // NEW METHOD: Supporting Documents for enhanced upload component
+  //  Supporting Documents for enhanced upload Component
   updateSupportingDocuments(data: Record<string, any>) {
     this.profileData.update(current => ({
       ...current,
