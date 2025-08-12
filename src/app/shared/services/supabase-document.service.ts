@@ -149,7 +149,7 @@ export class SupabaseDocumentService {
       }
 
       const result: DocumentUploadResult = {
-        id: this.generateDocumentId(),
+       id: '',
         documentKey,
         originalName: file.name,
         fileName,
@@ -180,7 +180,7 @@ export class SupabaseDocumentService {
     applicationId?: string
   ): Promise<void> {
     const metadata = {
-      id: uploadResult.id,
+    //  id: uploadResult.id,
       user_id: userId,
       application_id: applicationId,
       document_key: uploadResult.documentKey, // Fixed column name
