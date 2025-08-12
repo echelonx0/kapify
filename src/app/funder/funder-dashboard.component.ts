@@ -11,7 +11,7 @@ import { DashboardHeaderComponent } from '../shared/components/dashboard-header.
     <div class="min-h-screen bg-neutral-50">
       <sidebar-nav />
       <div class="ml-16">
-        <dashboard-header />
+ 
         <main class="p-6">
           <h1 class="text-2xl font-bold text-neutral-900 mb-6">Funder Dashboard</h1>
           <div class="bg-white rounded-lg border border-neutral-200 p-6 text-center">
