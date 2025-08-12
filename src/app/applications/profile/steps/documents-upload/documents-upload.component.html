@@ -1,79 +1,196 @@
-<!-- src/app/profile/steps/documents-upload.component.html -->
+<!-- src/app/profile/steps/documents-upload/documents-upload.component.html -->
 <div class="space-y-6">
-  <!-- Header -->
-  <div class="text-center">
-    <h2 class="text-2xl font-bold text-neutral-900">Supporting Documents</h2>
-    <p class="text-neutral-600 mt-2">
-      Please provide the necessary documents to support your funding application. 
-      Accurate and complete documentation helps expedite the review process and enhances the credibility of your application.
-    </p>
-  </div>
+  <!-- Enhanced Progress Header -->
+  <div class="bg-white rounded-lg border border-neutral-200 p-6">
+    <div class="space-y-4">
+    
+    
 
-  <!-- Auto-save Status Header -->
-  <div class="bg-white rounded-lg border border-neutral-200 p-4">
-    <div class="flex items-center justify-between">
-      <div class="text-sm text-neutral-600">
-        Upload required documents for funding assessment
-      </div>
-      <div class="flex items-center space-x-4">
-        <!-- Auto-save status -->
-        <div class="flex items-center space-x-2 text-sm">
-          @if (isSaving()) {
-            <lucide-icon [img]="ClockIcon" [size]="16" class="text-orange-500 animate-spin" />
-            <span class="text-orange-600">Saving...</span>
-          } @else if (lastSaved()) {
-            <lucide-icon [img]="SaveIcon" [size]="16" class="text-green-500" />
-            <span class="text-green-600">Saved {{ getLastSavedText() }}</span>
+      <!-- Overall Progress Bar -->
+      <div class="space-y-3">
+        <div class="flex items-center justify-between">
+          <span class="text-sm font-medium text-neutral-700">Upload Progress</span>
+          <span class="text-sm text-neutral-600">
+            {{ getUploadStatus().uploaded }} of {{ getUploadStatus().total }} documents
+          </span>
+        </div>
+        
+        <div class="w-full bg-neutral-200 rounded-full h-3">
+          <div 
+            class="bg-primary-500 h-3 rounded-full transition-all duration-300"
+            [style.width.%]="getCompletionPercentage()"
+          ></div>
+        </div>
+        
+        <!-- Status Summary -->
+        <div class="flex items-center justify-between text-sm">
+          <div class="flex items-center space-x-4">
+            @if (getUploadStatus().uploading > 0) {
+              <div class="flex items-center space-x-1 text-blue-600">
+                <lucide-icon [img]="ClockIcon" [size]="14" class="animate-spin" />
+                <span>{{ getUploadStatus().uploading }} uploading</span>
+              </div>
+            }
+            
+            @if (getUploadStatus().failed > 0) {
+              <div class="flex items-center space-x-1 text-red-600">
+                <lucide-icon [img]="AlertCircleIcon" [size]="14" />
+                <span>{{ getUploadStatus().failed }} failed</span>
+              </div>
+            }
+          </div>
+          
+          <!-- Overall Status -->
+          @if (allRequiredDocumentsUploaded()) {
+            <div class="flex items-center space-x-1 text-green-600 font-medium">
+              <lucide-icon [img]="CheckCircleIcon" [size]="16" />
+              <span>Ready to continue</span>
+            </div>
           } @else {
-            <span class="text-neutral-500">Not saved</span>
+            <span class="text-orange-600 font-medium">
+              {{ totalRequiredDocuments() - completedRequiredDocuments() }} required remaining
+            </span>
           }
         </div>
-        <!-- Manual save button -->
-        <ui-button 
-          variant="outline" 
-          size="sm" 
-          (clicked)="saveManually()"
-          [disabled]="isSaving()"
-        >
-          @if (isSaving()) {
-            <lucide-icon [img]="ClockIcon" [size]="16" class="mr-2 animate-spin" />
-            Saving...
-          } @else {
-            Save Now
-          }
-        </ui-button>
       </div>
     </div>
   </div>
 
-  <!-- Help Link -->
+  <!-- Active Upload Progress (Prominent) -->
+  @if (hasActiveUploads()) {
+    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+      <div class="flex items-center space-x-3">
+        <lucide-icon [img]="ClockIcon" [size]="20" class="text-blue-600 animate-spin" />
+        <div class="flex-1">
+          <h3 class="font-medium text-blue-900">Uploading Documents</h3>
+          <p class="text-sm text-blue-700">Please wait while your documents are being uploaded...</p>
+        </div>
+      </div>
+      
+      <!-- Individual Upload Progress -->
+      <div class="mt-4 space-y-2">
+        @for (section of documentSections(); track section.id) {
+          @for (doc of section.documents; track doc.key) {
+            @if (doc.uploading) {
+              <div class="bg-white rounded p-3">
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-sm font-medium text-neutral-900">{{ doc.label }}</span>
+                  <span class="text-sm text-blue-600">{{ doc.uploadProgress || 0 }}%</span>
+                </div>
+                <div class="w-full bg-neutral-200 rounded-full h-2">
+                  <div 
+                    class="bg-blue-500 h-2 rounded-full transition-all duration-300"
+                    [style.width.%]="doc.uploadProgress || 0"
+                  ></div>
+                </div>
+              </div>
+            }
+          }
+        }
+      </div>
+    </div>
+  }
+
+  <!-- Error Summary (if any) -->
+  @if (hasUploadErrors()) {
+    <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+      <div class="flex items-start space-x-3">
+        <lucide-icon [img]="AlertCircleIcon" [size]="20" class="text-red-600 mt-0.5" />
+        <div class="flex-1">
+          <h3 class="font-medium text-red-900">Upload Errors</h3>
+          <p class="text-sm text-red-700 mb-3">Some documents failed to upload. Please try again.</p>
+          
+          <div class="space-y-2">
+            @for (section of documentSections(); track section.id) {
+              @for (doc of section.documents; track doc.key) {
+                @if (doc.error) {
+                  <div class="bg-white rounded p-3">
+                    <div class="flex items-center justify-between">
+                      <span class="text-sm font-medium text-neutral-900">{{ doc.label }}</span>
+                      <ui-button 
+                        variant="outline" 
+                        size="sm"
+                        (clicked)="retryUpload(doc.key)"
+                      >
+                        <lucide-icon [img]="RefreshCwIcon" [size]="14" class="mr-1" />
+                        Retry
+                      </ui-button>
+                    </div>
+                    <p class="text-xs text-red-600 mt-1">{{ doc.error }}</p>
+                  </div>
+                }
+              }
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Help and Quick Actions -->
   <div class="bg-primary-50 border border-primary-200 rounded-lg p-4">
-    <div class="flex items-center space-x-2">
-      <lucide-icon [img]="CheckCircleIcon" [size]="16" class="text-primary-500" />
-      <span class="text-sm text-primary-700">
-        Request assistance with building your profile? 
-        <button class="underline hover:no-underline font-medium">Click here</button>
-      </span>
+    <div class="flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <lucide-icon [img]="CheckCircleIcon" [size]="16" class="text-primary-500" />
+        <div>
+          <span class="text-sm text-primary-700 font-medium">Need help with documents?</span>
+          <p class="text-xs text-primary-600 mt-1">
+            Our team can assist you with document preparation
+          </p>
+        </div>
+      </div>
+      
+      <div class="flex items-center space-x-2">
+        <ui-button variant="outline" size="sm" (clicked)="previewDocumentList()">
+          <lucide-icon [img]="EyeIcon" [size]="14" class="mr-1" />
+          Preview List
+        </ui-button>
+        <ui-button variant="outline" size="sm" (clicked)="requestHelp()">
+          Get Help
+        </ui-button>
+      </div>
     </div>
   </div>
 
   <!-- Document Sections -->
   @for (section of documentSections(); track section.id) {
     <ui-card [padding]="false">
-      <!-- Section Header -->
+      <!-- Section Header with Enhanced Status -->
       <button
         (click)="toggleSection(section.id)"
         class="w-full px-6 py-4 text-left flex items-center justify-between hover:bg-neutral-50 transition-colors"
       >
-        <div>
-          <h3 class="text-lg font-semibold text-neutral-900">{{ section.title }}</h3>
+        <div class="flex-1">
+          <div class="flex items-center space-x-3">
+            <h3 class="text-lg font-semibold text-neutral-900">{{ section.title }}</h3>
+            
+            <!-- Section Progress -->
+            <div class="flex items-center space-x-2">
+              <div class="w-16 bg-neutral-200 rounded-full h-2">
+                <div 
+                  class="bg-primary-500 h-2 rounded-full transition-all duration-300"
+                  [style.width.%]="getSectionProgress(section)"
+                ></div>
+              </div>
+              <span class="text-xs text-neutral-600">
+                {{ getSectionUploadedCount(section) }}/{{ section.documents.length }}
+              </span>
+            </div>
+          </div>
+          
           <p class="text-sm text-neutral-600 mt-1">{{ section.description }}</p>
         </div>
-        <lucide-icon 
-          [img]="section.expanded ? ChevronUpIcon : ChevronDownIcon" 
-          [size]="20" 
-          class="text-neutral-400"
-        />
+        
+        <div class="flex items-center space-x-2">
+          @if (getSectionProgress(section) === 100) {
+            <lucide-icon [img]="CheckCircleIcon" [size]="16" class="text-green-500" />
+          }
+          <lucide-icon 
+            [img]="section.expanded ? ChevronUpIcon : ChevronDownIcon" 
+            [size]="20" 
+            class="text-neutral-400"
+          />
+        </div>
       </button>
 
       <!-- Section Content -->
@@ -81,19 +198,42 @@
         <div class="px-6 pb-6 border-t border-neutral-200">
           <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-4">
             @for (doc of section.documents; track doc.key) {
-              <div class="border border-neutral-200 rounded-lg p-4">
+              <div class="border border-neutral-200 rounded-lg p-4 relative">
+                <!-- Upload Status Indicator -->
+                @if (doc.uploading) {
+                  <div class="absolute -top-1 -right-1 w-3 h-3 bg-blue-500 rounded-full animate-pulse"></div>
+                } @else if (doc.error) {
+                  <div class="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full"></div>
+                } @else if (doc.uploaded) {
+                  <div class="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full"></div>
+                }
+
                 <!-- Document Header -->
                 <div class="flex items-start justify-between mb-3">
                   <div class="flex-1">
                     <h4 class="font-medium text-neutral-900 text-sm">{{ doc.label }}</h4>
                     <p class="text-xs text-neutral-600 mt-1">{{ doc.description }}</p>
-                    @if (doc.uploaded) {
+                    
+                    <!-- Status Display -->
+                    @if (doc.uploading) {
+                      <div class="flex items-center space-x-2 mt-2">
+                        <lucide-icon [img]="ClockIcon" [size]="14" class="text-blue-500 animate-spin" />
+                        <span class="text-xs text-blue-600">Uploading {{ doc.uploadProgress || 0 }}%</span>
+                      </div>
+                    } @else if (doc.error) {
+                      <div class="flex items-center space-x-2 mt-2">
+                        <lucide-icon [img]="AlertCircleIcon" [size]="14" class="text-red-500" />
+                        <span class="text-xs text-red-600">Upload failed</span>
+                      </div>
+                    } @else if (doc.uploaded) {
                       <div class="flex items-center space-x-2 mt-2">
                         <lucide-icon [img]="CheckCircleIcon" [size]="14" class="text-green-500" />
-                        <span class="text-xs text-green-600">Uploaded</span>
+                        <span class="text-xs text-green-600">Uploaded successfully</span>
                       </div>
                     }
                   </div>
+                  
+                  <!-- Priority Badge -->
                   @if (doc.required) {
                     <span class="bg-red-100 text-red-600 text-xs px-2 py-1 rounded font-medium">Required</span>
                   } @else {
@@ -102,7 +242,7 @@
                 </div>
 
                 <!-- File Display or Upload Area -->
-                @if (doc.file) {
+                @if (doc.file && !doc.error) {
                   <!-- Uploaded File Display -->
                   <div class="bg-neutral-50 rounded-lg p-3 border border-neutral-200">
                     <div class="flex items-center justify-between">
@@ -113,43 +253,81 @@
                           <div class="text-xs text-neutral-500">{{ formatFileSize(doc.file.size) }}</div>
                         </div>
                       </div>
+                      
                       <div class="flex items-center space-x-2">
-                        <button
-                          (click)="downloadFile(doc)"
-                          class="text-neutral-500 hover:text-primary-600 transition-colors p-1"
-                          title="Download"
-                        >
-                          <lucide-icon [img]="DownloadIcon" [size]="16" />
-                        </button>
-                        <button
-                          (click)="removeFile(doc.key)"
-                          class="text-neutral-500 hover:text-red-600 transition-colors p-1"
-                          title="Remove"
-                        >
-                          <lucide-icon [img]="Trash2Icon" [size]="16" />
-                        </button>
+                        @if (doc.uploaded && !doc.uploading) {
+                          <button
+                            (click)="downloadFile(doc)"
+                            class="text-neutral-500 hover:text-primary-600 transition-colors p-1"
+                            title="Download"
+                          >
+                            <lucide-icon [img]="DownloadIcon" [size]="16" />
+                          </button>
+                          <button
+                            (click)="removeFile(doc.key)"
+                            class="text-neutral-500 hover:text-red-600 transition-colors p-1"
+                            title="Remove"
+                          >
+                            <lucide-icon [img]="Trash2Icon" [size]="16" />
+                          </button>
+                        }
                       </div>
                     </div>
+                    
+                    <!-- Upload Progress Bar (for active uploads) -->
+                    @if (doc.uploading && doc.uploadProgress !== undefined) {
+                      <div class="mt-2">
+                        <div class="w-full bg-neutral-200 rounded-full h-2">
+                          <div 
+                            class="bg-blue-500 h-2 rounded-full transition-all duration-300"
+                            [style.width.%]="doc.uploadProgress"
+                          ></div>
+                        </div>
+                      </div>
+                    }
                   </div>
                 } @else {
                   <!-- Upload Area -->
                   <div class="relative">
                     <div 
-                      class="border-2 border-dashed border-neutral-300 rounded-lg p-4 text-center hover:border-primary-300 hover:bg-primary-50 transition-all cursor-pointer"
+                      class="border-2 border-dashed transition-all cursor-pointer rounded-lg p-4 text-center"
+                      [class]="getUploadAreaClasses(doc)"
                       (dragover)="onDragOver($event)"
                       (dragleave)="onDragLeave($event)"
                       (drop)="onDrop($event, doc.key)"
                     >
-                      <lucide-icon [img]="UploadIcon" [size]="24" class="text-neutral-400 mx-auto mb-2" />
-                      <p class="text-xs text-neutral-600 mb-1">Click to upload or drag and drop</p>
-                      <p class="text-xs text-neutral-500">PDF, DOC, DOCX, XLS, XLSX, JPG, PNG up to 10MB</p>
+                      @if (doc.error) {
+                        <!-- Error State -->
+                        <div class="space-y-2">
+                          <lucide-icon [img]="AlertCircleIcon" [size]="24" class="text-red-400 mx-auto" />
+                          <p class="text-xs text-red-600 font-medium">Upload failed</p>
+                          <p class="text-xs text-red-500">{{ doc.error }}</p>
+                          <ui-button 
+                            variant="outline" 
+                            size="sm"
+                            (clicked)="retryUpload(doc.key)"
+                            class="mt-2"
+                          >
+                            <lucide-icon [img]="RefreshCwIcon" [size]="14" class="mr-1" />
+                            Try Again
+                          </ui-button>
+                        </div>
+                      } @else {
+                        <!-- Normal Upload Area -->
+                        <lucide-icon [img]="UploadIcon" [size]="24" class="text-neutral-400 mx-auto mb-2" />
+                        <p class="text-xs text-neutral-600 mb-1">Click to upload or drag and drop</p>
+                        <p class="text-xs text-neutral-500">PDF, DOC, DOCX, XLS, XLSX, JPG, PNG up to 10MB</p>
+                      }
                     </div>
-                    <input
-                      type="file"
-                      [accept]="'.pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png'"
-                      (change)="onFileSelected($event, doc.key)"
-                      class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                    />
+                    
+                    @if (!doc.error) {
+                      <input
+                        type="file"
+                        [accept]="'.pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png'"
+                        (change)="onFileSelected($event, doc.key)"
+                        class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                      />
+                    }
                   </div>
                 }
               </div>
@@ -159,29 +337,11 @@
       }
     </ui-card>
   }
-<!-- Upload Progress -->
-@if (uploadProgress() > 0 && uploadProgress() < 100) {
-  <ui-card>
-    <div class="space-y-2">
-      <div class="flex justify-between text-sm">
-        <span class="text-neutral-700">Uploading documents...</span>
-        <span class="text-neutral-500">{{ uploadProgress() }}%</span>
-      </div>
-      <div class="w-full bg-neutral-200 rounded-full h-2">
-        <div 
-          class="bg-primary-500 h-2 rounded-full transition-all duration-300"
-          [style.width.%]="uploadProgress()"
-        ></div>
-      </div>
-    </div>
-  </ui-card>
-}
 
-<!-- Summary with improved spacing -->
-<ui-card>
-  <div class="space-y-4">
-    <div class="flex items-center justify-between">
-      <div class="space-y-3">
+  <!-- Enhanced Summary -->
+  <ui-card>
+    <div class="space-y-4">
+      <div class="flex items-center justify-between">
         <div>
           <h3 class="font-semibold text-neutral-900">Upload Summary</h3>
           <p class="text-sm text-neutral-600 mt-1">
@@ -189,61 +349,48 @@
             ({{ completedRequiredDocuments() }} of {{ totalRequiredDocuments() }} required)
           </p>
         </div>
-        <div>
-          <div class="text-sm text-neutral-500 mb-2">Completion: {{ getCompletionPercentage() }}%</div>
-          <div class="w-full bg-neutral-200 rounded-full h-2">
-            <div 
-              class="bg-primary-500 h-2 rounded-full transition-all duration-300"
-              [style.width.%]="getCompletionPercentage()"
-            ></div>
+        
+        @if (allRequiredDocumentsUploaded()) {
+          <div class="flex items-center space-x-2 text-green-600">
+            <lucide-icon [img]="CheckCircleIcon" [size]="20" />
+            <span class="font-medium">Ready to proceed</span>
           </div>
-        </div>
+        } @else {
+          <div class="text-right">
+            <div class="bg-orange-100 text-orange-800 px-3 py-1 rounded-full text-sm font-medium">
+              {{ totalRequiredDocuments() - completedRequiredDocuments() }} required remaining
+            </div>
+            <p class="text-xs text-orange-600 mt-1">Complete required uploads to continue</p>
+          </div>
+        }
       </div>
       
-      @if (allRequiredDocumentsUploaded()) {
-        <div class="flex items-center space-x-2 text-green-600">
-          <lucide-icon [img]="CheckCircleIcon" [size]="20" />
-          <span class="font-medium">Ready to proceed</span>
+      <!-- Progress Visualization -->
+      <div>
+        <div class="flex justify-between text-sm text-neutral-500 mb-2">
+          <span>Progress: {{ getCompletionPercentage() }}%</span>
+          <span>{{ getRemainingDocuments() }} remaining</span>
         </div>
-      } @else {
-        <div class="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-sm font-medium">
-          {{ totalRequiredDocuments() - completedRequiredDocuments() }} required remaining
+        <div class="w-full bg-neutral-200 rounded-full h-2">
+          <div 
+            class="bg-primary-500 h-2 rounded-full transition-all duration-300"
+            [style.width.%]="getCompletionPercentage()"
+          ></div>
         </div>
-      }
+      </div>
     </div>
-  </div>
-</ui-card>
+  </ui-card>
 
-<!-- Auto-save indicator with more spacing -->
-<div class="py-4">
+  <!-- Auto-save Status -->
   @if (isSaving()) {
-    <div class="text-sm text-neutral-500 flex items-center justify-center">
-      <div class="w-2 h-2 bg-primary-500 rounded-full animate-pulse mr-2"></div>
+    <div class="text-sm text-neutral-500 flex items-center justify-center py-2">
+      <lucide-icon [img]="ClockIcon" [size]="16" class="animate-spin mr-2" />
       Saving documents...
     </div>
   } @else if (lastSaved()) {
-    <div class="text-sm text-neutral-500 text-center">
-      ✓ Documents saved automatically
+    <div class="text-sm text-neutral-500 text-center py-2">
+      <lucide-icon [img]="CheckCircleIcon" [size]="14" class="inline mr-1 text-green-500" />
+      Documents saved automatically
     </div>
   }
-</div>
-
-<!-- Action Buttons with improved spacing -->
-<div class="flex justify-between items-center pt-6 border-t border-neutral-100">
-  <ui-button variant="outline" (clicked)="goBack()">
-    ← Back
-  </ui-button>
-  
-  <ui-button 
-    variant="primary" 
-    (clicked)="saveAndContinue()"
-    [disabled]="!allRequiredDocumentsUploaded() || isSaving()"
-  >
-    @if (isSaving()) {
-      <lucide-icon [img]="ClockIcon" [size]="16" class="mr-2 animate-spin" />
-      Saving...
-    } @else {
-      Save and Continue →
-    }
-  </ui-button>
 </div>
