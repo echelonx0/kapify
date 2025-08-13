@@ -17,7 +17,7 @@ import {
   Check,
   AlertCircleIcon
 } from 'lucide-angular';
-import { UiButtonComponent, UiCardComponent, UiInputComponent } from '../../shared/components';
+import { UiButtonComponent} from '../../shared/components';
 import { UiSectionCardComponent } from '../../shared/components/ui-section-card.component';
 import { FunderOnboardingService, FunderOrganization } from '../services/funder-onboarding.service';
 

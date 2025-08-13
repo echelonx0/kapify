@@ -1,7 +1,8 @@
-// src/app/funder/services/funder-onboarding.service.ts - FIXED VERSION
+ 
+// src/app/funder/services/funder-onboarding.service.ts - COMPLETELY FIXED
 import { Injectable, signal, inject } from '@angular/core';
-import { Observable, from, throwError, BehaviorSubject, Subject } from 'rxjs';
-import { tap, catchError, finalize } from 'rxjs/operators';
+import { Observable, from, throwError, BehaviorSubject, Subject, timer, of } from 'rxjs';
+import { tap, catchError, finalize, timeout, switchMap } from 'rxjs/operators';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { environment } from '../../../environments/environment';
 import { AuthService } from '../../auth/production.auth.service';
@@ -68,8 +69,9 @@ export class FunderOnboardingService {
   private authService = inject(AuthService);
   private destroy$ = new Subject<void>();
   private localStorageKey = 'funder-onboarding-data';
+  private saveTimeout = 15000; // 15 second timeout
 
-  // **FIXED**: Simplified state management
+  // Simplified state management
   isLoading = signal(false);
   isSaving = signal(false);
   error = signal<string | null>(null);
@@ -136,7 +138,7 @@ export class FunderOnboardingService {
   }
 
   // ===============================
-  // LOCAL STORAGE METHODS - FIXED
+  // LOCAL STORAGE METHODS
   // ===============================
 
   private saveToLocalStorage() {
@@ -193,7 +195,7 @@ export class FunderOnboardingService {
   }
 
   // ===============================
-  // DATA UPDATE METHODS - FIXED
+  // DATA UPDATE METHODS
   // ===============================
 
   updateOrganizationData(updates: Partial<FunderOrganization>) {
@@ -204,14 +206,13 @@ export class FunderOnboardingService {
       ...updates
     }));
     
-    // **FIXED**: Only save to localStorage, remove auto-database saves
     this.saveToLocalStorage();
     this.updateStepCompletionFromData();
     console.log('📝 Organization data updated locally');
   }
 
   // ===============================
-  // VALIDATION METHODS - FIXED
+  // VALIDATION METHODS
   // ===============================
 
   isBasicInfoValid(): boolean {
@@ -262,254 +263,333 @@ export class FunderOnboardingService {
   }
 
   // ===============================
-  // DATABASE SAVE - COMPLETELY FIXED
+  // DATABASE SAVE - COMPLETELY FIXED WITH TIMEOUT
   // ===============================
 
-  saveToDatabase(): Observable<{ success: boolean; organizationId?: string }> {
-    console.log('💾 Starting manual save to database...');
-    
-    // **FIXED**: Prevent multiple saves and clear previous errors
-    if (this.isSaving()) {
-      console.warn('⚠️ Save already in progress');
-      return throwError(() => new Error('Save already in progress'));
-    }
-    
-    this.isSaving.set(true);
-    this.error.set(null);
-    
-    const currentAuth = this.authService.user();
-    if (!currentAuth) {
-      console.error('❌ User not authenticated for database save');
+ // Apply this fix to your FunderOnboardingService - use the WORKING pattern
+
+// Replace your saveToDatabase method with this:
+saveToDatabase(): Observable<{ success: boolean; organizationId?: string }> {
+  console.log('💾 Starting save to database...');
+  
+  if (this.isSaving()) {
+    console.warn('⚠️ Save already in progress');
+    return throwError(() => new Error('Save already in progress'));
+  }
+  
+  this.isSaving.set(true);
+  this.error.set(null);
+  
+  const currentAuth = this.authService.user();
+  if (!currentAuth) {
+    console.error('❌ User not authenticated');
+    this.isSaving.set(false);
+    return throwError(() => new Error('User not authenticated'));
+  }
+
+  const data = this.organizationData();
+  
+  if (!data.name?.trim()) {
+    console.error('❌ Organization name is required');
+    this.isSaving.set(false);
+    this.error.set('Organization name is required');
+    return throwError(() => new Error('Organization name is required'));
+  }
+  
+  console.log('💾 Saving with upsert pattern...');
+  
+  // ✅ USE THE WORKING PATTERN - UPSERT instead of complex check/create
+  return from(this.upsertOrganization(data, currentAuth.id)).pipe(
+    timeout(10000),
+    tap(result => {
+      console.log('✅ Database save completed:', result);
+      // ✅ NO STATUS REFRESH - this was causing timeout loops
+    }),
+    catchError(error => {
+      console.error('❌ Database save failed:', error);
+      let errorMessage = 'Failed to save organization';
+      
+      if (error.name === 'TimeoutError') {
+        errorMessage = 'Connection timeout. Please check your internet connection.';
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
+      this.error.set(errorMessage);
+      return throwError(() => error);
+    }),
+    finalize(() => {
       this.isSaving.set(false);
-      return throwError(() => new Error('User not authenticated'));
+      console.log('💾 Save operation completed');
+    })
+  );
+}
+
+// ✅ NEW METHOD - Use the working upsert pattern
+private async upsertOrganization(
+  orgData: Partial<FunderOrganization>, 
+  userId: string
+): Promise<{ success: boolean; organizationId?: string }> {
+  try {
+    console.log('💾 Using upsert for organization...');
+    
+    // ✅ EXACTLY like the working service
+    const organizationPayload = {
+      user_id: userId,
+      name: orgData.name?.trim() || '',
+      description: orgData.description?.trim() || null,
+      organization_type: orgData.organizationType || null,
+      legal_name: orgData.legalName?.trim() || null,
+      registration_number: orgData.registrationNumber?.trim() || null,
+      tax_number: orgData.taxNumber?.trim() || null,
+      website: orgData.website?.trim() || null,
+      email: orgData.email?.trim() || null,
+      phone: orgData.phone?.trim() || null,
+      address_line1: orgData.addressLine1?.trim() || null,
+      address_line2: orgData.addressLine2?.trim() || null,
+      city: orgData.city?.trim() || null,
+      province: orgData.province || null,
+      postal_code: orgData.postalCode?.trim() || null,
+      country: orgData.country || 'South Africa',
+      founded_year: orgData.foundedYear || null,
+      employee_count: orgData.employeeCount || null,
+      assets_under_management: orgData.assetsUnderManagement || null,
+      status: 'active',
+      is_verified: false,
+      updated_at: new Date().toISOString()
+    };
+
+    // ✅ USE UPSERT - handles both insert and update automatically
+    const { data, error } = await this.supabase
+      .from('funder_organizations')
+      .upsert(organizationPayload, {
+        onConflict: 'user_id',  // Assuming user_id is unique
+        ignoreDuplicates: false
+      })
+      .select()
+      .single();
+
+    // ✅ SIMPLE ERROR HANDLING like working service
+    if (error) {
+      console.error('❌ Upsert error:', error);
+      throw new Error(`Supabase error: ${error.message}`);
     }
 
-    const data = this.organizationData();
+    console.log('✅ Organization upserted successfully');
+    return { success: true, organizationId: data.id };
     
-    // **FIXED**: Validate data before sending
-    if (!data.name?.trim()) {
-      console.error('❌ Organization name is required');
-      this.isSaving.set(false);
-      this.error.set('Organization name is required');
-      return throwError(() => new Error('Organization name is required'));
-    }
-    
-    console.log('💾 Saving data:', {
-      hasName: !!data.name,
-      hasEmail: !!data.email,
-      organizationType: data.organizationType
-    });
-    
-    return from(this.performSaveToDatabase(data, currentAuth.id)).pipe(
-      tap(result => {
-        console.log('✅ Database save completed:', result);
-        if (result.success) {
-          // **FIXED**: Only refresh status on successful save
-          this.checkOnboardingStatus().subscribe({
-            next: () => console.log('✅ Status refreshed after save'),
-            error: (err) => console.warn('⚠️ Status refresh failed:', err)
-          });
-        }
-      }),
-      catchError(error => {
-        console.error('❌ Database save failed:', error);
-        this.error.set(error.message || 'Failed to save organization');
-        return throwError(() => error);
-      }),
-      finalize(() => {
-        this.isSaving.set(false);
-        console.log('💾 Save operation completed');
-      })
-    );
+  } catch (error) {
+    console.error('❌ Upsert operation failed:', error);
+    throw error;
   }
+}
+
+// ✅ SIMPLIFIED STATUS CHECK - no automatic calls
+checkOnboardingStatus(): Observable<OnboardingState> {
+  console.log('🔍 Checking onboarding status...');
+  
+  this.isLoading.set(true);
+  this.error.set(null);
+  
+  const currentAuth = this.authService.user();
+  if (!currentAuth) {
+    this.isLoading.set(false);
+    return throwError(() => new Error('User not authenticated'));
+  }
+
+  return from(this.fetchOnboardingStatus(currentAuth.id)).pipe(
+    timeout(8000),
+    tap(state => {
+      this.onboardingStateSubject.next(state);
+    }),
+    catchError(error => {
+      console.error('❌ Status check failed:', error);
+      // ✅ RETURN LOCAL STATE instead of failing completely
+      return of(this.onboardingStateSubject.value);
+    }),
+    finalize(() => {
+      this.isLoading.set(false);
+    })
+  );
+}
+
+private async fetchOnboardingStatus(userId: string): Promise<OnboardingState> {
+  try {
+    // ✅ SIMPLE QUERY like working service
+    const { data: organization, error } = await this.supabase
+      .from('funder_organizations')
+      .select('*')
+      .eq('user_id', userId)
+      .maybeSingle();
+
+    if (error) {
+      throw new Error(`Supabase error: ${error.message}`);
+    }
+
+    // ✅ RETURN LOCAL STATE if no org found (first time user)
+    if (!organization) {
+      console.log('📂 No organization found, using local state');
+      return this.onboardingStateSubject.value;
+    }
+
+    // Map database to local state
+    const basicInfoComplete = this.isBasicInfoCompleteFromDb(organization);
+    const legalInfoComplete = this.isLegalInfoCompleteFromDb(organization);
+    
+    let currentStep = 0;
+    let completionPercentage = 0;
+
+    if (basicInfoComplete) {
+      currentStep = 1;
+      completionPercentage = 33;
+    }
+
+    if (legalInfoComplete) {
+      currentStep = 2;
+      completionPercentage = 66;
+    }
+
+    if (organization.is_verified) {
+      currentStep = 3;
+      completionPercentage = 100;
+    }
+
+    return {
+      currentStep,
+      totalSteps: 3,
+      completionPercentage,
+      organization: this.mapDatabaseToModel(organization),
+      isComplete: completionPercentage === 100,
+      canCreateOpportunities: basicInfoComplete,
+      steps: this.steps
+    };
+    
+  } catch (error) {
+    console.error('❌ Error fetching status:', error);
+    throw error;
+  }
+}
 
   private async performSaveToDatabase(
     orgData: Partial<FunderOrganization>, 
     userId: string
   ): Promise<{ success: boolean; organizationId?: string }> {
+    const startTime = Date.now();
+    console.log('💾 Performing database save...');
+    
     try {
-      console.log('💾 Performing database save...');
+      // FIXED: Simplified payload with better error handling
+      const organizationPayload = this.buildDatabasePayload(orgData, userId);
       
-      // **FIXED**: Simplified payload creation with proper validation
-      const organizationPayload = {
-        user_id: userId,
-        name: orgData.name?.trim() || '',
-        description: orgData.description?.trim() || null,
-        organization_type: orgData.organizationType || null,
-        legal_name: orgData.legalName?.trim() || null,
-        registration_number: orgData.registrationNumber?.trim() || null,
-        tax_number: orgData.taxNumber?.trim() || null,
-        website: orgData.website?.trim() || null,
-        email: orgData.email?.trim() || null,
-        phone: orgData.phone?.trim() || null,
-        address_line1: orgData.addressLine1?.trim() || null,
-        address_line2: orgData.addressLine2?.trim() || null,
-        city: orgData.city?.trim() || null,
-        province: orgData.province || null,
-        postal_code: orgData.postalCode?.trim() || null,
-        country: orgData.country || 'South Africa',
-        founded_year: orgData.foundedYear || null,
-        employee_count: orgData.employeeCount || null,
-        assets_under_management: orgData.assetsUnderManagement || null,
-        status: 'active',
-        is_verified: false,
-        updated_at: new Date().toISOString()
-      };
+      console.log('📋 Payload prepared, checking for existing organization...');
+      
+      // FIXED: Better error handling for database check
+      let existingOrg;
+      try {
+        const { data, error: checkError } = await this.supabase
+          .from('funder_organizations')
+          .select('id')
+          .eq('user_id', userId)
+          .maybeSingle();
 
-      // **FIXED**: Check for existing organization properly
-      const { data: existingOrg, error: checkError } = await this.supabase
-        .from('funder_organizations')
-        .select('id')
-        .eq('user_id', userId)
-        .maybeSingle(); // **FIXED**: Use maybeSingle() instead of single()
-
-      if (checkError) {
-        console.error('❌ Error checking existing organization:', checkError);
-        throw new Error(`Database check failed: ${checkError.message}`);
+        if (checkError) {
+          console.error('❌ Error checking existing organization:', checkError);
+          throw new Error(`Database check failed: ${checkError.message}`);
+        }
+        
+        existingOrg = data;
+        console.log('🔍 Existing org check completed:', existingOrg ? 'Found' : 'Not found');
+        
+      } catch (error) {
+        console.error('❌ Database check failed:', error);
+        throw error;
       }
 
       let result;
       
       if (existingOrg) {
         console.log('🔄 Updating existing organization...');
-        
-        const { data, error } = await this.supabase
-          .from('funder_organizations')
-          .update(organizationPayload)
-          .eq('user_id', userId)
-          .select()
-          .single();
-
-        if (error) {
-          console.error('❌ Update error:', error);
-          throw new Error(`Update failed: ${error.message}`);
-        }
-
-        result = { success: true, organizationId: data.id };
+        result = await this.updateExistingOrganization(organizationPayload, userId);
       } else {
         console.log('🆕 Creating new organization...');
-        
-        const createPayload = {
-          ...organizationPayload,
-          created_at: new Date().toISOString()
-        };
-
-        const { data, error } = await this.supabase
-          .from('funder_organizations')
-          .insert(createPayload)
-          .select()
-          .single();
-
-        if (error) {
-          console.error('❌ Create error:', error);
-          throw new Error(`Create failed: ${error.message}`);
-        }
-
-        result = { success: true, organizationId: data.id };
+        result = await this.createNewOrganization(organizationPayload);
       }
 
-      console.log('✅ Database operation successful');
+      const endTime = Date.now();
+      console.log(`✅ Database operation successful in ${endTime - startTime}ms`);
       return result;
       
     } catch (error) {
-      console.error('❌ Database operation failed:', error);
+      const endTime = Date.now();
+      console.error(`❌ Database operation failed after ${endTime - startTime}ms:`, error);
       throw error;
     }
   }
 
-  // ===============================
-  // OTHER METHODS - SIMPLIFIED
-  // ===============================
-
-  checkOnboardingStatus(): Observable<OnboardingState> {
-    console.log('🔍 Checking onboarding status...');
-    
-    this.isLoading.set(true);
-    this.error.set(null);
-    
-    const currentAuth = this.authService.user();
-    if (!currentAuth) {
-      this.isLoading.set(false);
-      return throwError(() => new Error('User not authenticated'));
-    }
-
-    return from(this.fetchOnboardingStatus(currentAuth.id)).pipe(
-      tap(state => {
-        this.onboardingStateSubject.next(state);
-      }),
-      catchError(error => {
-        console.error('❌ Onboarding status check failed:', error);
-        this.error.set('Failed to check onboarding status');
-        return throwError(() => error);
-      }),
-      finalize(() => {
-        this.isLoading.set(false);
-      })
-    );
+  private buildDatabasePayload(orgData: Partial<FunderOrganization>, userId: string) {
+    return {
+      user_id: userId,
+      name: orgData.name?.trim() || '',
+      description: orgData.description?.trim() || null,
+      organization_type: orgData.organizationType || null,
+      legal_name: orgData.legalName?.trim() || null,
+      registration_number: orgData.registrationNumber?.trim() || null,
+      tax_number: orgData.taxNumber?.trim() || null,
+      website: orgData.website?.trim() || null,
+      email: orgData.email?.trim() || null,
+      phone: orgData.phone?.trim() || null,
+      address_line1: orgData.addressLine1?.trim() || null,
+      address_line2: orgData.addressLine2?.trim() || null,
+      city: orgData.city?.trim() || null,
+      province: orgData.province || null,
+      postal_code: orgData.postalCode?.trim() || null,
+      country: orgData.country || 'South Africa',
+      founded_year: orgData.foundedYear || null,
+      employee_count: orgData.employeeCount || null,
+      assets_under_management: orgData.assetsUnderManagement || null,
+      status: 'active',
+      is_verified: false,
+      updated_at: new Date().toISOString()
+    };
   }
 
-  private async fetchOnboardingStatus(userId: string): Promise<OnboardingState> {
-    try {
-      const { data: organization, error } = await this.supabase
-        .from('funder_organizations')
-        .select('*')
-        .eq('user_id', userId)
-        .maybeSingle(); // **FIXED**: Use maybeSingle()
+  private async updateExistingOrganization(payload: any, userId: string) {
+    const { data, error } = await this.supabase
+      .from('funder_organizations')
+      .update(payload)
+      .eq('user_id', userId)
+      .select()
+      .single();
 
-      if (error) {
-        console.error('❌ Database error:', error);
-        throw new Error(`Failed to fetch organization: ${error.message}`);
-      }
-
-      let completionPercentage = 0;
-      let currentStep = 0;
-
-      if (organization) {
-        const mappedOrg = this.mapDatabaseToModel(organization);
-        
-        const basicInfoComplete = this.isBasicInfoCompleteFromDb(organization);
-        const legalInfoComplete = this.isLegalInfoCompleteFromDb(organization);
-        
-        if (basicInfoComplete) {
-          currentStep = 1;
-          completionPercentage = 33;
-        }
-
-        if (legalInfoComplete) {
-          currentStep = 2;
-          completionPercentage = 66;
-        }
-
-        if (organization.is_verified) {
-          currentStep = 3;
-          completionPercentage = 100;
-        }
-
-        return {
-          currentStep,
-          totalSteps: 3,
-          completionPercentage,
-          organization: mappedOrg,
-          isComplete: completionPercentage === 100,
-          canCreateOpportunities: basicInfoComplete,
-          steps: this.steps
-        };
-      }
-
-      return {
-        currentStep: 0,
-        totalSteps: 3,
-        completionPercentage: 0,
-        isComplete: false,
-        canCreateOpportunities: false,
-        steps: this.steps
-      };
-      
-    } catch (error) {
-      console.error('❌ Error in fetchOnboardingStatus:', error);
-      throw error;
+    if (error) {
+      console.error('❌ Update error:', error);
+      throw new Error(`Update failed: ${error.message}`);
     }
+
+    return { success: true, organizationId: data.id };
   }
+
+  private async createNewOrganization(payload: any) {
+    const createPayload = {
+      ...payload,
+      created_at: new Date().toISOString()
+    };
+
+    const { data, error } = await this.supabase
+      .from('funder_organizations')
+      .insert(createPayload)
+      .select()
+      .single();
+
+    if (error) {
+      console.error('❌ Create error:', error);
+      throw new Error(`Create failed: ${error.message}`);
+    }
+
+    return { success: true, organizationId: data.id };
+  }
+
+  
 
   private isBasicInfoCompleteFromDb(org: any): boolean {
     return !!(
@@ -575,10 +655,10 @@ export class FunderOnboardingService {
     }
 
     return from(this.performVerificationRequest(currentAuth.id)).pipe(
+      timeout(10000), // 10 second timeout
       tap(result => {
         console.log('🛡️ Verification request result:', result);
         if (result.success) {
-          // Refresh onboarding status to reflect verification request
           this.checkOnboardingStatus().subscribe({
             next: () => console.log('✅ Status refreshed after verification request'),
             error: (err) => console.warn('⚠️ Status refresh failed:', err)
@@ -644,3 +724,4 @@ export class FunderOnboardingService {
     }
   }
 }
+

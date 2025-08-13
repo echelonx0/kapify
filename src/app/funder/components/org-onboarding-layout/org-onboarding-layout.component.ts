@@ -17,7 +17,7 @@ import {
   X,
   Save
 } from 'lucide-angular';
-import { UiButtonComponent, UiCardComponent } from '../../../shared/components';
+import { UiButtonComponent } from '../../../shared/components';
 import { FunderOnboardingService, OnboardingStep } from '../../services/funder-onboarding.service';
 
 @Component({
