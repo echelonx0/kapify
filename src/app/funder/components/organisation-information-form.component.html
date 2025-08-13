@@ -1,0 +1,437 @@
+    <div class="space-y-6">
+      <!-- Progress Indicator -->
+      <div class="mb-8">
+        <div class="flex items-center justify-between mb-4">
+          <h1 class="text-2xl font-bold text-neutral-900">Organization Information</h1>
+          <div class="text-sm text-neutral-500">Step 1 of 3</div>
+        </div>
+        <p class="text-neutral-600">
+          Provide basic information about your funding organization to get started on the platform.
+          
+        </p>
+       
+      </div>
+
+      <!-- Basic Information Section -->
+      <ui-section-card
+        title="Basic Information"
+        description="Essential details about your organization"
+        [required]="true"
+        [completed]="isBasicInfoComplete()"
+        [expanded]="expandedSections().basic"
+        [saving]="onboardingService.isSaving()"
+        [lastSaved]="!!onboardingService.lastSavedLocally()"
+        (expandedChange)="toggleSection('basic', $event)"
+        (saveDraft)="saveAsDraft()"
+        (saveAndValidate)="saveAndValidate()"
+      >
+        <lucide-icon [img]="Building2Icon" [size]="20" slot="icon" />
+        
+        <div class="space-y-6">
+          <!-- Organization Name -->
+          <div>
+            <label class="block text-sm font-medium text-neutral-700 mb-2">
+              Organization Name <span class="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              placeholder="e.g., South African Growth Fund"
+              [value]="formData().name"
+              (input)="updateField('name', $event)"
+              class="block w-full px-3 py-2 border border-neutral-300 rounded-md shadow-sm placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+            />
+          </div>
+
+          <!-- Organization Type -->
+          <div>
+            <label class="block text-sm font-medium text-neutral-700 mb-2">
+              Organization Type <span class="text-red-500">*</span>
+            </label>
+            <select
+              [value]="formData().organizationType"
+              (change)="updateField('organizationType', $event)"
+              class="block w-full px-3 py-2 border border-neutral-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+            >
+              <option value="">Select organization type</option>
+              <option value="investment_fund">Investment Fund</option>
+              <option value="venture_capital">Venture Capital</option>
+              <option value="private_equity">Private Equity</option>
+              <option value="bank">Bank</option>
+              <option value="government">Government Agency</option>
+              <option value="ngo">NGO/Non-Profit</option>
+            </select>
+          </div>
+
+          <!-- Description -->
+          <div>
+            <label class="block text-sm font-medium text-neutral-700 mb-2">
+              Description <span class="text-red-500">*</span>
+            </label>
+            <textarea
+              rows="4"
+              placeholder="Describe your organization's mission, focus areas, and investment approach..."
+              [value]="formData().description"
+              (input)="updateField('description', $event)"
+              class="block w-full px-3 py-2 border border-neutral-300 rounded-md shadow-sm placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+            ></textarea>
+          </div>
+        </div>
+      </ui-section-card>
+
+      <!-- Contact Information Section -->
+      <ui-section-card
+        title="Contact Information"
+        description="How SMEs and partners can reach your organization"
+        [required]="true"
+        [completed]="isContactInfoComplete()"
+        [expanded]="expandedSections().contact"
+        [saving]="onboardingService.isSaving()"
+        [lastSaved]="!!onboardingService.lastSavedLocally()"
+        (expandedChange)="toggleSection('contact', $event)"
+        (saveDraft)="saveAsDraft()"
+        (saveAndValidate)="saveAndValidate()"
+      >
+        <lucide-icon [img]="MailIcon" [size]="20" slot="icon" />
+        
+        <div class="space-y-6">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Email -->
+            <div>
+              <label class="block text-sm font-medium text-neutral-700 mb-2">
+                Email Address <span class="text-red-500">*</span>
+              </label>
+              <input
+                type="email"
+                placeholder="contact@yourfund.co.za"
+                [value]="formData().email"
+                (input)="updateField('email', $event)"
+                class="block w-full px-3 py-2 border border-neutral-300 rounded-md shadow-sm placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              />
+            </div>
+
+            <!-- Phone -->
+            <div>
+              <label class="block text-sm font-medium text-neutral-700 mb-2">
+                Phone Number <span class="text-red-500">*</span>
+              </label>
+              <input
+                type="tel"
+                placeholder="+27 11 123 4567"
+                [value]="formData().phone"
+                (input)="updateField('phone', $event)"
+                class="block w-full px-3 py-2 border border-neutral-300 rounded-md shadow-sm placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              />
+            </div>
+          </div>
+
+          <!-- Website -->
+          <div>
+            <label class="block text-sm font-medium text-neutral-700 mb-2">
+              Website
+            </label>
+            <input
+              type="url"
+              placeholder="https://yourfund.co.za"
+              [value]="formData().website"
+              (input)="updateField('website', $event)"
+              class="block w-full px-3 py-2 border border-neutral-300 rounded-md shadow-sm placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+            />
+          </div>
+        </div>
+      </ui-section-card>
+
+      <!-- Address Section -->
+      <ui-section-card
+        title="Address"
+        description="Physical location of your organization"
+        [required]="true"
+        [completed]="isAddressComplete()"
+        [expanded]="expandedSections().address"
+        [saving]="onboardingService.isSaving()"
+        [lastSaved]="!!onboardingService.lastSavedLocally()"
+        (expandedChange)="toggleSection('address', $event)"
+        (saveDraft)="saveAsDraft()"
+        (saveAndValidate)="saveAndValidate()"
+      >
+        <lucide-icon [img]="MapPinIcon" [size]="20" slot="icon" />
+        
+        <div class="space-y-6">
+          <!-- Address Line 1 -->
+          <div>
+            <label class="block text-sm font-medium text-neutral-700 mb-2">
+              Address Line 1 <span class="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              placeholder="123 Main Street"
+              [value]="formData().addressLine1"
+              (input)="updateField('addressLine1', $event)"
+              class="block w-full px-3 py-2 border border-neutral-300 rounded-md shadow-sm placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+            />
+          </div>
+
+          <!-- Address Line 2 -->
+          <div>
+            <label class="block text-sm font-medium text-neutral-700 mb-2">
+              Address Line 2
+            </label>
+            <input
+              type="text"
+              placeholder="Suite 456 (optional)"
+              [value]="formData().addressLine2"
+              (input)="updateField('addressLine2', $event)"
+              class="block w-full px-3 py-2 border border-neutral-300 rounded-md shadow-sm placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+            />
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <!-- City -->
+            <div>
+              <label class="block text-sm font-medium text-neutral-700 mb-2">
+                City <span class="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                placeholder="Cape Town"
+                [value]="formData().city"
+                (input)="updateField('city', $event)"
+                class="block w-full px-3 py-2 border border-neutral-300 rounded-md shadow-sm placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              />
+            </div>
+
+            <!-- Province -->
+            <div>
+              <label class="block text-sm font-medium text-neutral-700 mb-2">
+                Province <span class="text-red-500">*</span>
+              </label>
+              <select
+                [value]="formData().province"
+                (change)="updateField('province', $event)"
+                class="block w-full px-3 py-2 border border-neutral-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              >
+                <option value="">Select province</option>
+                <option value="western_cape">Western Cape</option>
+                <option value="gauteng">Gauteng</option>
+                <option value="kwazulu_natal">KwaZulu-Natal</option>
+                <option value="eastern_cape">Eastern Cape</option>
+                <option value="free_state">Free State</option>
+                <option value="limpopo">Limpopo</option>
+                <option value="mpumalanga">Mpumalanga</option>
+                <option value="north_west">North West</option>
+                <option value="northern_cape">Northern Cape</option>
+              </select>
+            </div>
+
+            <!-- Postal Code -->
+            <div>
+              <label class="block text-sm font-medium text-neutral-700 mb-2">
+                Postal Code
+              </label>
+              <input
+                type="text"
+                placeholder="8001"
+                [value]="formData().postalCode"
+                (input)="updateField('postalCode', $event)"
+                class="block w-full px-3 py-2 border border-neutral-300 rounded-md shadow-sm placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              />
+            </div>
+          </div>
+
+          <!-- Country -->
+          <div>
+            <label class="block text-sm font-medium text-neutral-700 mb-2">
+              Country <span class="text-red-500">*</span>
+            </label>
+            <select
+              [value]="formData().country"
+              (change)="updateField('country', $event)"
+              class="block w-full px-3 py-2 border border-neutral-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+            >
+              <option value="South Africa">South Africa</option>
+              <option value="Botswana">Botswana</option>
+              <option value="Namibia">Namibia</option>
+              <option value="Zambia">Zambia</option>
+              <option value="Zimbabwe">Zimbabwe</option>
+            </select>
+          </div>
+        </div>
+      </ui-section-card>
+
+      <!-- Legal Information Section -->
+      <ui-section-card
+        title="Legal Information"
+        description="Official registration and compliance details"
+        [required]="false"
+        [completed]="isLegalInfoComplete()"
+        [expanded]="expandedSections().legal"
+        [saving]="onboardingService.isSaving()"
+        [lastSaved]="!!onboardingService.lastSavedLocally()"
+        (expandedChange)="toggleSection('legal', $event)"
+        (saveDraft)="saveAsDraft()"
+        (saveAndValidate)="saveAndValidate()"
+      >
+        <lucide-icon [img]="FileTextIcon" [size]="20" slot="icon" />
+        
+        <div class="space-y-6">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Legal Name -->
+            <div>
+              <label class="block text-sm font-medium text-neutral-700 mb-2">
+                Legal Name
+              </label>
+              <input
+                type="text"
+                placeholder="Official registered name"
+                [value]="formData().legalName"
+                (input)="updateField('legalName', $event)"
+                class="block w-full px-3 py-2 border border-neutral-300 rounded-md shadow-sm placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              />
+            </div>
+
+            <!-- Registration Number -->
+            <div>
+              <label class="block text-sm font-medium text-neutral-700 mb-2">
+                Registration Number
+              </label>
+              <input
+                type="text"
+                placeholder="Company registration number"
+                [value]="formData().registrationNumber"
+                (input)="updateField('registrationNumber', $event)"
+                class="block w-full px-3 py-2 border border-neutral-300 rounded-md shadow-sm placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              />
+            </div>
+
+            <!-- Tax Number -->
+            <div>
+              <label class="block text-sm font-medium text-neutral-700 mb-2">
+                Tax Number
+              </label>
+              <input
+                type="text"
+                placeholder="VAT/Tax identification number"
+                [value]="formData().taxNumber"
+                (input)="updateField('taxNumber', $event)"
+                class="block w-full px-3 py-2 border border-neutral-300 rounded-md shadow-sm placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              />
+            </div>
+
+            <!-- Founded Year -->
+            <div>
+              <label class="block text-sm font-medium text-neutral-700 mb-2">
+                Founded Year
+              </label>
+              <input
+                type="number"
+                placeholder="2020"
+                min="1900"
+                [max]="currentYear"
+                [value]="formData().foundedYear"
+                (input)="updateField('foundedYear', $event)"
+                class="block w-full px-3 py-2 border border-neutral-300 rounded-md shadow-sm placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              />
+            </div>
+          </div>
+        </div>
+      </ui-section-card>
+
+      <!-- Organization Details Section -->
+      <ui-section-card
+        title="Organization Details"
+        description="Additional information about your organization size and scope"
+        [required]="false"
+        [completed]="isOrgDetailsComplete()"
+        [expanded]="expandedSections().details"
+        [saving]="onboardingService.isSaving()"
+        [lastSaved]="!!onboardingService.lastSavedLocally()"
+        (expandedChange)="toggleSection('details', $event)"
+        (saveDraft)="saveAsDraft()"
+        (saveAndValidate)="saveAndValidate()"
+      >
+        <lucide-icon [img]="UsersIcon" [size]="20" slot="icon" />
+        
+        <div class="space-y-6">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Employee Count -->
+            <div>
+              <label class="block text-sm font-medium text-neutral-700 mb-2">
+                Employee Count
+              </label>
+              <select
+                [value]="formData().employeeCount"
+                (change)="updateField('employeeCount', $event)"
+                class="block w-full px-3 py-2 border border-neutral-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              >
+                <option value="">Select size</option>
+                <option value="1-10">1-10 employees</option>
+                <option value="11-50">11-50 employees</option>
+                <option value="51-200">51-200 employees</option>
+                <option value="201-500">201-500 employees</option>
+                <option value="500+">500+ employees</option>
+              </select>
+            </div>
+
+            <!-- Assets Under Management -->
+            <div>
+              <label class="block text-sm font-medium text-neutral-700 mb-2">
+                Assets Under Management (ZAR)
+              </label>
+              <input
+                type="number"
+                placeholder="100000000"
+                [value]="formData().assetsUnderManagement"
+                (input)="updateField('assetsUnderManagement', $event)"
+                class="block w-full px-3 py-2 border border-neutral-300 rounded-md shadow-sm placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              />
+              <p class="mt-1 text-sm text-neutral-500">Enter the amount in South African Rand</p>
+            </div>
+          </div>
+        </div>
+      </ui-section-card>
+
+      <!-- Auto-save Status -->
+      <div class="flex items-center justify-between p-4 bg-neutral-50 rounded-lg">
+        <div class="flex items-center text-sm text-neutral-600">
+          @if (onboardingService.isSaving()) {
+            <div class="flex items-center">
+              <div class="w-2 h-2 bg-primary-500 rounded-full animate-pulse mr-2"></div>
+              Saving changes...
+            </div>
+          } @else if (onboardingService.lastSavedLocally()) {
+            <div class="flex items-center text-green-600">
+              <lucide-icon [img]="CheckIcon" [size]="16" class="mr-2" />
+              Changes saved locally
+            </div>
+          } @else {
+            <span>Start filling out the form to auto-save your progress</span>
+          }
+        </div>
+        
+        <ui-button
+          variant="outline"
+          size="sm"
+          (clicked)="saveToDatabase()"
+          [disabled]="onboardingService.isSaving() || !hasAnyData()"
+        >
+          @if (onboardingService.isSaving()) {
+            <lucide-icon [img]="SaveIcon" [size]="16" class="mr-2 animate-spin" />
+            Saving...
+          } @else {
+            <lucide-icon [img]="SaveIcon" [size]="16" class="mr-2" />
+            Save to Database
+          }
+        </ui-button>
+
+     
+      </div>
+
+      <!-- Error Display -->
+      @if (onboardingService.error()) {
+        <div class="p-4 bg-red-50 border border-red-200 rounded-lg">
+          <div class="flex items-center">
+            <lucide-icon [img]="AlertCircleIcon" [size]="20" class="text-red-600 mr-3" />
+            <p class="text-red-800">{{ onboardingService.error() }}</p>
+          </div>
+        </div>
+      }
+    </div>

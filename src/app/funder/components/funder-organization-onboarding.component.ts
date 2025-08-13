@@ -1,4 +1,6 @@
-// src/app/funder/components/organization-onboarding.component.ts
+ 
+
+// src/app/funder/components/organization-onboarding.component.ts - FIXED LOGIC
 import { Component, signal, OnInit, OnDestroy, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
@@ -10,48 +12,12 @@ import {
   CheckCircle, 
   AlertCircle,
   ArrowRight,
-  ArrowLeft,
   Shield,
   FileText,
-  Mail,
-  Phone,
-  MapPin,
-  Calendar,
-  Users,
-  DollarSign
+  Sparkles
 } from 'lucide-angular';
 import { UiButtonComponent, UiCardComponent } from '../../shared/components';
-import { FunderOnboardingService, OnboardingState, FunderOrganization } from '../services/funder-onboarding.service';
- 
-interface OrganizationFormData {
-  // Basic Information
-  name: string;
-  description: string;
-  organizationType: 'investment_fund' | 'bank' | 'government' | 'ngo' | 'private_equity' | 'venture_capital' | '';
-  
-  // Legal Information
-  legalName: string;
-  registrationNumber: string;
-  taxNumber: string;
-  foundedYear: string;
-  
-  // Contact Information
-  website: string;
-  email: string;
-  phone: string;
-  
-  // Address
-  addressLine1: string;
-  addressLine2: string;
-  city: string;
-  province: string;
-  postalCode: string;
-  country: string;
-  
-  // Organization Details
-  employeeCount: string;
-  assetsUnderManagement: string;
-}
+import { FunderOnboardingService, OnboardingState } from '../services/funder-onboarding.service';
 
 @Component({
   selector: 'app-organization-onboarding',
@@ -62,6 +28,7 @@ interface OrganizationFormData {
     UiButtonComponent,
     UiCardComponent,
     LucideAngularModule
+ 
   ],
   templateUrl: 'funder-organization-onboarding.component.html'
 })
@@ -75,45 +42,16 @@ export class OrganizationOnboardingComponent implements OnInit, OnDestroy {
   CheckCircleIcon = CheckCircle;
   AlertCircleIcon = AlertCircle;
   ArrowRightIcon = ArrowRight;
-  ArrowLeftIcon = ArrowLeft;
   ShieldIcon = Shield;
   FileTextIcon = FileText;
-  MailIcon = Mail;
-  PhoneIcon = Phone;
-  MapPinIcon = MapPin;
-  CalendarIcon = Calendar;
-  UsersIcon = Users;
-  DollarSignIcon = DollarSign;
+  SparklesIcon = Sparkles;
 
-  // State
-  currentView = signal<'form' | 'success' | 'verification'>('form');
+  // State - FIXED: Start with 'form' view and update based on actual data
+  currentView = signal<'form' | 'success' | 'verification' | 'complete'>('form');
   onboardingState = signal<OnboardingState | null>(null);
-  isEditMode = signal(false);
-  currentYear = new Date().getFullYear();
-
-  // Form data
-  formData = signal<OrganizationFormData>({
-    name: '',
-    description: '',
-    organizationType: '',
-    legalName: '',
-    registrationNumber: '',
-    taxNumber: '',
-    foundedYear: '',
-    website: '',
-    email: '',
-    phone: '',
-    addressLine1: '',
-    addressLine2: '',
-    city: '',
-    province: '',
-    postalCode: '',
-    country: 'South Africa',
-    employeeCount: '',
-    assetsUnderManagement: ''
-  });
 
   ngOnInit() {
+    console.log('🎯 OrganizationOnboardingComponent initialized');
     this.checkOnboardingStatus();
     this.setupSubscriptions();
   }
@@ -124,65 +62,125 @@ export class OrganizationOnboardingComponent implements OnInit, OnDestroy {
   }
 
   private checkOnboardingStatus() {
+    console.log('🔍 OrganizationOnboardingComponent checking onboarding status');
     this.onboardingService.checkOnboardingStatus().subscribe();
   }
 
   private setupSubscriptions() {
+    console.log('🔗 OrganizationOnboardingComponent setting up subscriptions');
     this.onboardingService.onboardingState$
       .pipe(takeUntil(this.destroy$))
       .subscribe(state => {
-        this.onboardingState.set(state);
+        console.log('📥 OrganizationOnboardingComponent received state update:', {
+          currentStep: state.currentStep,
+          completionPercentage: state.completionPercentage,
+          hasOrganization: !!state.organization,
+          isComplete: state.isComplete,
+          canCreateOpportunities: state.canCreateOpportunities,
+          organizationData: state.organization ? 'exists' : 'none'
+        });
         
-        // If organization exists, populate form
-        if (state.organization) {
-          this.populateFormFromOrganization(state.organization);
-          
-          // Determine view based on state
-          if (state.isComplete) {
-            this.currentView.set('verification');
-          } else if (state.canCreateOpportunities) {
-            this.currentView.set('success');
-          }
-        }
+        this.onboardingState.set(state);
+        this.updateViewBasedOnState(state);
       });
   }
 
-  private populateFormFromOrganization(org: FunderOrganization) {
-    this.formData.update(data => ({
-      ...data,
-      name: org.name || '',
-      description: org.description || '',
-      organizationType: org.organizationType || '',
-      legalName: org.legalName || '',
-      registrationNumber: org.registrationNumber || '',
-      taxNumber: org.taxNumber || '',
-      foundedYear: org.foundedYear?.toString() || '',
-      website: org.website || '',
-      email: org.email || '',
-      phone: org.phone || '',
-      addressLine1: org.addressLine1 || '',
-      addressLine2: org.addressLine2 || '',
-      city: org.city || '',
-      province: org.province || '',
-      postalCode: org.postalCode || '',
-      country: org.country || 'South Africa',
-      employeeCount: org.employeeCount?.toString() || '',
-      assetsUnderManagement: org.assetsUnderManagement?.toString() || ''
-    }));
+  // FIXED: More precise logic for determining view
+  private updateViewBasedOnState(state: OnboardingState) {
+    console.log('🎯 Updating view based on state...');
+    console.log('🎯 State analysis:', {
+      isComplete: state.isComplete,
+      canCreateOpportunities: state.canCreateOpportunities,
+      hasOrganization: !!state.organization,
+      completionPercentage: state.completionPercentage,
+      currentStep: state.currentStep
+    });
+
+    // FIXED: Check if organization actually has data, not just if object exists
+    const hasValidOrganization = state.organization && 
+      state.organization.name && 
+      state.organization.email && 
+      state.organization.phone;
+
+    console.log('🎯 Organization data check:', {
+      organizationExists: !!state.organization,
+      hasName: !!state.organization?.name,
+      hasEmail: !!state.organization?.email,
+      hasPhone: !!state.organization?.phone,
+      hasValidOrganization
+    });
+
+    if (state.isComplete && state.organization?.isVerified) {
+      console.log('🎯 Setting view to: complete (verified)');
+      this.currentView.set('complete');
+    } else if (hasValidOrganization && state.canCreateOpportunities) {
+      console.log('🎯 Setting view to: verification (ready for verification)');
+      this.currentView.set('verification');
+    } else if (hasValidOrganization) {
+      console.log('🎯 Setting view to: success (organization created but incomplete)');
+      this.currentView.set('success');
+    } else {
+      console.log('🎯 Setting view to: form (no valid organization data)');
+      this.currentView.set('form');
+    }
+
+    console.log('🎯 Final view set to:', this.currentView());
   }
 
-  // Form handling
-  updateField(field: keyof OrganizationFormData, event: Event) {
-    const target = event.target as HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement;
-    this.formData.update(data => ({
-      ...data,
-      [field]: target.value
-    }));
+  // ===============================
+  // NAVIGATION ACTIONS
+  // ===============================
+
+  startSetup() {
+    console.log('🚀 Starting organization setup');
+    this.onboardingService.setCurrentStep('organization-info');
+    this.router.navigate(['/funder/onboarding/organization-info']);
   }
+
+  loadFromExisting() {
+    console.log('📂 Loading from existing data');
+    this.checkOnboardingStatus();
+  }
+
+  editOrganization() {
+    console.log('✏️ Editing organization');
+    this.onboardingService.setCurrentStep('organization-info');
+    this.router.navigate(['/funder/onboarding/organization-info']);
+  }
+
+  proceedToDashboard() {
+    console.log('🏠 Proceeding to dashboard');
+    this.router.navigate(['/funder-dashboard']);
+  }
+
+  createFirstOpportunity() {
+    console.log('💼 Creating first opportunity');
+    this.router.navigate(['/funder/opportunities/create']);
+  }
+
+  skipVerification() {
+    console.log('⏭️ Skipping verification');
+    this.router.navigate(['/funder-dashboard']);
+  }
+
+  requestVerification() {
+    console.log('🛡️ Requesting verification');
+    this.onboardingService.requestVerification().subscribe({
+      next: (result) => {
+        console.log('✅ Verification requested successfully:', result.message);
+        this.currentView.set('complete');
+      },
+      error: (error) => console.error('❌ Failed to request verification:', error)
+    });
+  }
+
+  // ===============================
+  // FORM VALIDATION & SAVE
+  // ===============================
 
   isFormValid(): boolean {
-    const data = this.formData();
-    return !!(
+    const data = this.onboardingService.getCurrentOrganization();
+    const isValid = !!(
       data.name &&
       data.description &&
       data.organizationType &&
@@ -193,108 +191,34 @@ export class OrganizationOnboardingComponent implements OnInit, OnDestroy {
       data.province &&
       data.country
     );
+    
+    console.log('🔍 Form validation result:', isValid);
+    return isValid;
   }
 
   saveOrganization() {
-    if (!this.isFormValid()) return;
-
-    const organizationData: Partial<FunderOrganization> = {
-      name: this.formData().name,
-      description: this.formData().description,
-      organizationType: this.formData().organizationType as any,
-      legalName: this.formData().legalName || undefined,
-      registrationNumber: this.formData().registrationNumber || undefined,
-      taxNumber: this.formData().taxNumber || undefined,
-      foundedYear: this.formData().foundedYear ? Number(this.formData().foundedYear) : undefined,
-      website: this.formData().website || undefined,
-      email: this.formData().email,
-      phone: this.formData().phone,
-      addressLine1: this.formData().addressLine1,
-      addressLine2: this.formData().addressLine2 || undefined,
-      city: this.formData().city,
-      province: this.formData().province,
-      postalCode: this.formData().postalCode || undefined,
-      country: this.formData().country,
-      employeeCount: this.formData().employeeCount ? Number(this.formData().employeeCount.split('-')[0]) : undefined,
-      assetsUnderManagement: this.formData().assetsUnderManagement ? Number(this.formData().assetsUnderManagement) : undefined
-    };
-
-    if (this.isEditMode()) {
-      this.onboardingService.updateOrganization(organizationData).subscribe({
-        next: () => {
-          this.currentView.set('success');
-          this.isEditMode.set(false);
-        },
-        error: (error) => console.error('Failed to update organization:', error)
-      });
-    } else {
-      this.onboardingService.createOrganization(organizationData).subscribe({
-        next: () => {
-          this.currentView.set('success');
-        },
-        error: (error) => console.error('Failed to create organization:', error)
-      });
+    console.log('💾 Saving organization from welcome component');
+    
+    if (!this.isFormValid()) {
+      console.warn('⚠️ Form is not valid, cannot save');
+      return;
     }
-  }
 
-  // Navigation actions
-  editOrganization() {
-    this.isEditMode.set(true);
-    this.currentView.set('form');
-  }
-
-  cancelEdit() {
-    this.isEditMode.set(false);
-    this.currentView.set('success');
-    // Reset form to original data
-    const org = this.onboardingState()?.organization;
-    if (org) {
-      this.populateFormFromOrganization(org);
-    }
-  }
-
-  proceedToDashboard() {
-    this.router.navigate(['/funder-dashboard']);
-  }
-
-  skipVerification() {
-    this.router.navigate(['/funder-dashboard']);
-  }
-
-  requestVerification() {
-    this.onboardingService.requestVerification().subscribe({
+    this.onboardingService.saveToDatabase().subscribe({
       next: (result) => {
-        console.log('Verification requested:', result.message);
-        this.router.navigate(['/funder-dashboard']);
+        console.log('✅ Organization saved successfully from welcome component:', result);
+        this.currentView.set('success');
+        this.checkOnboardingStatus();
       },
-      error: (error) => console.error('Failed to request verification:', error)
+      error: (error) => {
+        console.error('❌ Failed to save organization from welcome component:', error);
+      }
     });
   }
 
-  // UI helpers
-  getStepClasses(stepIndex: number): string {
-    const state = this.onboardingState();
-    if (!state) return 'w-8 h-8 rounded-full bg-neutral-200 flex items-center justify-center';
-    
-    const baseClasses = 'w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium';
-    
-    if (stepIndex < state.currentStep) {
-      return `${baseClasses} bg-green-500 text-white`;
-    } else if (stepIndex === state.currentStep) {
-      return `${baseClasses} bg-primary-500 text-white`;
-    } else {
-      return `${baseClasses} bg-neutral-200 text-neutral-500`;
-    }
-  }
-
-  getStepTextClasses(stepIndex: number): string {
-    const state = this.onboardingState();
-    if (!state) return 'text-sm font-medium text-neutral-500';
-    
-    if (stepIndex <= state.currentStep) {
-      return 'text-sm font-medium text-neutral-900';
-    } else {
-      return 'text-sm font-medium text-neutral-500';
-    }
+  saveOrganizationWithData(organizationData: any) {
+    console.log('💾 Saving organization with provided data:', organizationData);
+    this.onboardingService.updateOrganizationData(organizationData);
+    this.saveOrganization();
   }
 }

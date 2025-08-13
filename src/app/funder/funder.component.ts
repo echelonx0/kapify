@@ -13,14 +13,14 @@ import { DashboardHeaderComponent } from '../shared/components/dashboard-header.
       <sidebar-nav />
       
       <!-- Main Content -->
-      <div class="ml-16">
-        <dashboard-header />
+     
+ 
         
         <!-- Page Content -->
         <main class="ml-16">
           <router-outlet />
         </main>
-      </div>
+      
     </div>
   `
 })

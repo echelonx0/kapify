@@ -80,12 +80,15 @@ export class AuthService {
     console.log('URL:', environment.supabaseUrl);
     console.log('Key length:', environment.supabaseAnonKey?.length);
     
-    this.supabase = createClient(environment.supabaseUrl, environment.supabaseAnonKey, {
-      auth: {
-        debug: true,
-        persistSession: true,
-      }
-    });
+    this.supabase = createClient(environment.supabaseUrl, environment.supabaseAnonKey,
+    //    {
+    //   auth: {
+    //     debug: true,
+    //     persistSession: true,
+    //   }
+    // }
+  
+  );
     this.initializeAuth();
   }
 
