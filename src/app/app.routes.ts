@@ -1,4 +1,4 @@
-// src/app/app.routes.ts - FIXED ROUTING STRUCTURE
+// src/app/app.routes.ts
 import { Routes } from '@angular/router';
 import { LandingComponent } from './landing/landing.component';
 import { LoginComponent } from './auth/login/login.component'; 
@@ -7,7 +7,6 @@ import { GuestGuard } from './guards/guest.guard';
 import { RegisterComponent } from './auth/register/register.component';
 import { ProfileCompletionGuard } from './guards/profile-completion.guard';
 import { RoleGuard } from './guards/role.guard';
- 
 
 export const routes: Routes = [
   // Public routes
@@ -16,7 +15,7 @@ export const routes: Routes = [
     component: LandingComponent,
     title: 'Kapify - Smart Funding for South African SMEs'
   },
-  
+
   // Auth routes (only accessible when not logged in)
   { 
     path: 'login', 
@@ -30,52 +29,43 @@ export const routes: Routes = [
     canActivate: [GuestGuard],
     title: 'Create Account - Kapify'
   },
-  
+
   // Protected routes (require authentication)
   { 
     path: 'dashboard',
     canActivate: [AuthGuard],
     loadChildren: () => import('./dashboard/dashboard.routes').then(m => m.dashboardRoutes)
   },
-  
-  // Profile routes - CONSISTENT STRUCTURE
+
+  // Profile routes
   {
     path: 'profile',
     canActivate: [AuthGuard],
     loadChildren: () => import('./applications/profile/profile.routes').then(m => m.profileRoutes),
     title: 'Profile Setup - Kapify'
   },
-  
-  // Applications routes - REVENUE FOCUSED
+
+  // Applications routes
   {
     path: 'applications',
     canActivate: [AuthGuard],
     loadChildren: () => import('./applications/applications.routes').then(m => m.applicationRoutes)
   },
-  
-  // Funding routes - CORE REVENUE PATH
+
+  // Funding routes
   {
     path: 'funding',
     canActivate: [AuthGuard, ProfileCompletionGuard],
     loadChildren: () => import('./funding/funding.routes').then(m => m.fundingRoutes)
   },
-  
-  // DIRECT REVENUE-GENERATING ROUTES
+
+  // Funder routes (lazy-loaded group)
   {
-    path: 'funding-opportunities',
-    canActivate: [AuthGuard], 
-    loadComponent: () => import('./funding/funding-opportunities.component').then(c => c.FundingOpportunitiesComponent),
-    title: 'Funding Opportunities - Kapify'
-  },
-  {
-    path: 'funder-dashboard',
+    path: 'funder',
     canActivate: [AuthGuard, RoleGuard],
-    loadComponent: () => import('./funder/funder-dashboard.component').then(c => c.FunderDashboardComponent),
-    title: 'Funder Dashboard - Kapify'
+    loadChildren: () => import('./funder/funder.routes').then(m => m.funderRoutes)
   },
-  
-  // Catch all - redirect to home
+
+  // Catch all
   { path: '**', redirectTo: '', pathMatch: 'full' }
 ];
-
- 
