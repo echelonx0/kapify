@@ -3,7 +3,7 @@ import { Component, signal, OnInit } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { SidebarNavComponent } from '../shared/components/sidebar-nav.component';
-import { DashboardHeaderComponent } from '../shared/components/dashboard-header.component';
+
 import { UiButtonComponent, UiCardComponent } from '../shared/components';
 import { LucideAngularModule, ArrowLeft, Building2, DollarSign, Calendar, MapPin, CheckCircle, FileText, Users, Eye } from 'lucide-angular';
  

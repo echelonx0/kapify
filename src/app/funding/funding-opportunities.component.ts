@@ -4,8 +4,7 @@ import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SidebarNavComponent } from '../shared/components/sidebar-nav.component';
-import { DashboardHeaderComponent } from '../shared/components/dashboard-header.component';
-import { UiButtonComponent, UiCardComponent } from '../shared/components';
+import { UiButtonComponent } from '../shared/components';
 import { LucideAngularModule, Search, Filter, DollarSign, Calendar, MapPin, Building, TrendingUp, Eye, FileText, Users } from 'lucide-angular';
  
 import { FundingOpportunity } from '../shared/models/funder.models';

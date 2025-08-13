@@ -10,7 +10,7 @@ export class OpportunitiesService {
   private opportunities = signal<FundingOpportunity[]>([]);
 
   constructor() {
-    this.loadMockData();
+    this.loadMockData(); 
   }
 
   private loadMockData() {
