@@ -3,9 +3,6 @@
   <!-- Enhanced Progress Header -->
   <div class="bg-white rounded-lg border border-neutral-200 p-6">
     <div class="space-y-4">
-    
-    
-
       <!-- Overall Progress Bar -->
       <div class="space-y-3">
         <div class="flex items-center justify-between">
@@ -116,7 +113,7 @@
                         Retry
                       </ui-button>
                     </div>
-                    <p class="text-xs text-red-600 mt-1">{{ doc.error }}</p>
+                    <p class="text-xs text-red-600 mt-1 break-words">{{ doc.error }}</p>
                   </div>
                 }
               }
@@ -144,6 +141,10 @@
         <ui-button variant="outline" size="sm" (clicked)="previewDocumentList()">
           <lucide-icon [img]="EyeIcon" [size]="14" class="mr-1" />
           Preview List
+        </ui-button>
+        <ui-button variant="outline" size="sm" (clicked)="downloadAllDocuments()">
+          <lucide-icon [img]="DownloadIcon" [size]="14" class="mr-1" />
+          Download All
         </ui-button>
         <ui-button variant="outline" size="sm" (clicked)="requestHelp()">
           Get Help
@@ -198,7 +199,7 @@
         <div class="px-6 pb-6 border-t border-neutral-200">
           <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-4">
             @for (doc of section.documents; track doc.key) {
-              <div class="border border-neutral-200 rounded-lg p-4 relative">
+              <div [class]="getDocumentCardClasses(doc)" class="p-4 relative">
                 <!-- Upload Status Indicator -->
                 @if (doc.uploading) {
                   <div class="absolute -top-1 -right-1 w-3 h-3 bg-blue-500 rounded-full animate-pulse"></div>
@@ -210,9 +211,9 @@
 
                 <!-- Document Header -->
                 <div class="flex items-start justify-between mb-3">
-                  <div class="flex-1">
-                    <h4 class="font-medium text-neutral-900 text-sm">{{ doc.label }}</h4>
-                    <p class="text-xs text-neutral-600 mt-1">{{ doc.description }}</p>
+                  <div class="flex-1 min-w-0">
+                    <h4 class="font-medium text-neutral-900 text-sm break-words leading-tight">{{ doc.label }}</h4>
+                    <p class="text-xs text-neutral-600 mt-1 break-words">{{ doc.description }}</p>
                     
                     <!-- Status Display -->
                     @if (doc.uploading) {
@@ -235,53 +236,131 @@
                   
                   <!-- Priority Badge -->
                   @if (doc.required) {
-                    <span class="bg-red-100 text-red-600 text-xs px-2 py-1 rounded font-medium">Required</span>
+                    <span class="bg-red-100 text-red-600 text-xs px-2 py-1 rounded font-medium flex-shrink-0">Required</span>
                   } @else {
-                    <span class="bg-neutral-100 text-neutral-600 text-xs px-2 py-1 rounded font-medium">Optional</span>
+                    <span class="bg-neutral-100 text-neutral-600 text-xs px-2 py-1 rounded font-medium flex-shrink-0">Optional</span>
                   }
                 </div>
 
                 <!-- File Display or Upload Area -->
                 @if (doc.file && !doc.error) {
-                  <!-- Uploaded File Display -->
-                  <div class="bg-neutral-50 rounded-lg p-3 border border-neutral-200">
-                    <div class="flex items-center justify-between">
-                      <div class="flex items-center space-x-2">
-                        <lucide-icon [img]="FileTextIcon" [size]="16" class="text-primary-600" />
-                        <div>
-                          <div class="text-sm font-medium text-neutral-900">{{ doc.file.name }}</div>
-                          <div class="text-xs text-neutral-500">{{ formatFileSize(doc.file.size) }}</div>
+                  <!-- Enhanced Uploaded File Display -->
+                  <div class="bg-neutral-50 rounded-lg border border-neutral-200 overflow-hidden">
+                    <!-- File Header -->
+                    <div class="p-3">
+                      <div class="flex items-start justify-between space-x-3">
+                        <!-- File Info with Better Text Wrapping -->
+                        <div class="flex items-start space-x-3 min-w-0 flex-1">
+                          <!-- File Type Icon -->
+                          <div class="flex-shrink-0 w-8 h-8 bg-white rounded-lg border border-neutral-200 flex items-center justify-center text-sm">
+                            {{ getFileTypeIcon(doc) }}
+                          </div>
+                          
+                          <!-- File Details -->
+                          <div class="min-w-0 flex-1">
+                            <!-- File Name with Proper Wrapping -->
+                            <div class="font-medium text-neutral-900 text-xs break-words leading-tight">
+                              {{ getDisplayFileName(doc) }}
+                            </div>
+                            
+                            <!-- File Metadata -->
+                            <!-- <div class="flex items-center space-x-2 mt-1 text-xs text-neutral-500">
+                              <span>{{ formatFileSize(doc.file.size) }}</span>
+                              @if (doc.metadata?.uploadedAt) {
+                                <span>•</span>
+                                <span>{{ doc.metadata.uploadedAt | date:'MMM d' }}</span>
+                              }
+                              @if (doc.file.type) {
+                                <span>•</span>
+                                <span class="uppercase">{{ doc.file.type.split('/')[1] || doc.file.name.split('.').pop() }}</span>
+                              }
+                            </div> -->
+                          </div>
                         </div>
-                      </div>
-                      
-                      <div class="flex items-center space-x-2">
-                        @if (doc.uploaded && !doc.uploading) {
-                          <button
-                            (click)="downloadFile(doc)"
-                            class="text-neutral-500 hover:text-primary-600 transition-colors p-1"
-                            title="Download"
-                          >
-                            <lucide-icon [img]="DownloadIcon" [size]="16" />
-                          </button>
-                          <button
-                            (click)="removeFile(doc.key)"
-                            class="text-neutral-500 hover:text-red-600 transition-colors p-1"
-                            title="Remove"
-                          >
-                            <lucide-icon [img]="Trash2Icon" [size]="16" />
-                          </button>
-                        }
+                        
+                        <!-- Action Buttons -->
+                        <div class="flex items-center space-x-1 flex-shrink-0">
+                          @if (doc.uploaded && !doc.uploading) {
+                            <!-- View Button for Previewable Files -->
+                            @if (isPreviewable(doc)) {
+                              <button
+                                (click)="viewDocument(doc)"
+                                class="p-1.5 text-neutral-500 hover:text-primary-600 hover:bg-primary-50 rounded-md transition-colors"
+                                title="View document"
+                              >
+                                <lucide-icon [img]="EyeIcon" [size]="14" />
+                              </button>
+                            }
+                            
+                            <!-- Download Button -->
+                            <button
+                              (click)="downloadFile(doc)"
+                              class="p-1.5 text-neutral-500 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
+                              title="Download"
+                            >
+                              <lucide-icon [img]="DownloadIcon" [size]="14" />
+                            </button>
+                            
+                            <!-- Remove Button -->
+                            <button
+                              (click)="removeFile(doc.key)"
+                              class="p-1.5 text-neutral-500 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors"
+                              title="Remove"
+                            >
+                              <lucide-icon [img]="Trash2Icon" [size]="14" />
+                            </button>
+                          }
+                        </div>
                       </div>
                     </div>
                     
                     <!-- Upload Progress Bar (for active uploads) -->
                     @if (doc.uploading && doc.uploadProgress !== undefined) {
-                      <div class="mt-2">
-                        <div class="w-full bg-neutral-200 rounded-full h-2">
+                      <div class="px-3 pb-3">
+                        <div class="flex items-center justify-between text-xs text-neutral-600 mb-1">
+                          <span>Uploading...</span>
+                          <span>{{ doc.uploadProgress }}%</span>
+                        </div>
+                        <div class="w-full bg-neutral-200 rounded-full h-1.5">
                           <div 
-                            class="bg-blue-500 h-2 rounded-full transition-all duration-300"
+                            class="bg-blue-500 h-1.5 rounded-full transition-all duration-300"
                             [style.width.%]="doc.uploadProgress"
                           ></div>
+                        </div>
+                      </div>
+                    }
+                    
+                    <!-- Quick Actions Bar (for uploaded files) -->
+                    @if (doc.uploaded && !doc.uploading && !doc.error) {
+                      <div class="border-t border-neutral-200 bg-neutral-25 px-3 py-2">
+                        <div class="flex items-center justify-between">
+                          <div class="flex items-center space-x-2 text-xs text-neutral-600">
+                            <lucide-icon [img]="CheckCircleIcon" [size]="10" class="text-green-500" />
+                            <span>Ready for review</span>
+                          </div>
+                          
+                          <!-- Quick Action Buttons -->
+                          <div class="flex items-center space-x-1">
+                            @if (isPreviewable(doc)) {
+                              <ui-button 
+                                variant="ghost" 
+                             
+                                (clicked)="viewDocument(doc)"
+                              >
+                                <lucide-icon [img]="EyeIcon" [size]="10" class="mr-1" />
+                                View
+                              </ui-button>
+                            }
+                            
+                            <ui-button 
+                              variant="ghost" 
+                             
+                              (clicked)="downloadFile(doc)"
+                            >
+                              <lucide-icon [img]="DownloadIcon" [size]="10" class="mr-1" />
+                              Download
+                            </ui-button>
+                          </div>
                         </div>
                       </div>
                     }
@@ -290,33 +369,42 @@
                   <!-- Upload Area -->
                   <div class="relative">
                     <div 
-                      class="border-2 border-dashed transition-all cursor-pointer rounded-lg p-4 text-center"
+                      class="border-2 border-dashed transition-all cursor-pointer rounded-lg p-4 text-center min-h-[100px] flex flex-col items-center justify-center"
                       [class]="getUploadAreaClasses(doc)"
                       (dragover)="onDragOver($event)"
                       (dragleave)="onDragLeave($event)"
                       (drop)="onDrop($event, doc.key)"
                     >
                       @if (doc.error) {
-                        <!-- Error State -->
+                        <!-- Error State with Better Formatting -->
                         <div class="space-y-2">
                           <lucide-icon [img]="AlertCircleIcon" [size]="24" class="text-red-400 mx-auto" />
-                          <p class="text-xs text-red-600 font-medium">Upload failed</p>
-                          <p class="text-xs text-red-500">{{ doc.error }}</p>
+                          <div class="space-y-1">
+                            <p class="text-xs text-red-600 font-medium">Upload failed</p>
+                            <p class="text-xs text-red-500 max-w-xs mx-auto break-words leading-tight">{{ doc.error }}</p>
+                          </div>
                           <ui-button 
                             variant="outline" 
                             size="sm"
                             (clicked)="retryUpload(doc.key)"
                             class="mt-2"
                           >
-                            <lucide-icon [img]="RefreshCwIcon" [size]="14" class="mr-1" />
+                            <lucide-icon [img]="RefreshCwIcon" [size]="12" class="mr-1" />
                             Try Again
                           </ui-button>
                         </div>
                       } @else {
                         <!-- Normal Upload Area -->
-                        <lucide-icon [img]="UploadIcon" [size]="24" class="text-neutral-400 mx-auto mb-2" />
-                        <p class="text-xs text-neutral-600 mb-1">Click to upload or drag and drop</p>
-                        <p class="text-xs text-neutral-500">PDF, DOC, DOCX, XLS, XLSX, JPG, PNG up to 10MB</p>
+                        <div class="space-y-2">
+                          <div class="w-10 h-10 bg-neutral-100 rounded-lg flex items-center justify-center mx-auto">
+                            <lucide-icon [img]="UploadIcon" [size]="20" class="text-neutral-400" />
+                          </div>
+                          <div class="space-y-1">
+                            <p class="text-xs text-neutral-600 font-medium">Click to upload or drag and drop</p>
+                            <p class="text-xs text-neutral-500">PDF, DOC, DOCX, XLS, XLSX, JPG, PNG</p>
+                            <p class="text-xs text-neutral-400">Maximum file size: 10MB</p>
+                          </div>
+                        </div>
                       }
                     </div>
                     
@@ -378,6 +466,31 @@
           ></div>
         </div>
       </div>
+      
+      <!-- Bulk Actions -->
+      @if (completedDocuments() > 0) {
+        <div class="flex items-center justify-between pt-4 border-t border-neutral-200">
+          <div class="text-sm text-neutral-600">
+            Bulk actions for uploaded documents
+          </div>
+          <div class="flex items-center space-x-2">
+            <ui-button variant="outline" size="sm" (clicked)="downloadAllDocuments()">
+              <lucide-icon [img]="DownloadIcon" [size]="14" class="mr-1" />
+              Download All
+            </ui-button>
+            @if (hasPreviewableDocuments()) {
+              <ui-button variant="outline" size="sm" (clicked)="previewAllDocuments()">
+                <lucide-icon [img]="EyeIcon" [size]="14" class="mr-1" />
+                Preview All
+              </ui-button>
+            }
+            <ui-button variant="outline" size="sm" (clicked)="exportDocumentList()">
+              <lucide-icon [img]="SaveIcon" [size]="14" class="mr-1" />
+              Export List
+            </ui-button>
+          </div>
+        </div>
+      }
     </div>
   </ui-card>
 
@@ -390,7 +503,60 @@
   } @else if (lastSaved()) {
     <div class="text-sm text-neutral-500 text-center py-2">
       <lucide-icon [img]="CheckCircleIcon" [size]="14" class="inline mr-1 text-green-500" />
-      Documents saved automatically
+      Documents saved automatically at {{ lastSaved() | date:'short' }}
     </div>
   }
 </div>
+
+<!-- Document Preview Modal -->
+@if (previewDocument()) {
+  <div class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4" (click)="closePreview()">
+    <div class="relative max-w-4xl max-h-full bg-white rounded-lg overflow-hidden" (click)="$event.stopPropagation()">
+      <!-- Modal Header -->
+      <div class="flex items-center justify-between p-4 border-b border-neutral-200">
+        <div class="flex items-center space-x-3">
+          <div class="text-lg">{{ getFileTypeIcon(previewDocument()!) }}</div>
+          <div>
+            <h3 class="font-medium text-neutral-900 break-words">{{ getDisplayFileName(previewDocument()!) }}</h3>
+            <p class="text-sm text-neutral-600">{{ formatFileSize(previewDocument()!.file!.size) }}</p>
+          </div>
+        </div>
+        
+        <div class="flex items-center space-x-2">
+          <ui-button 
+            variant="outline" 
+            size="sm"
+            (clicked)="downloadFile(previewDocument()!)"
+          >
+            <lucide-icon [img]="DownloadIcon" [size]="14" class="mr-1" />
+            Download
+          </ui-button>
+          
+          <button
+            (click)="closePreview()"
+            class="p-2 text-neutral-500 hover:text-neutral-700 hover:bg-neutral-100 rounded-md"
+          >
+            <lucide-icon [img]="XIcon" [size]="20" />
+          </button>
+        </div>
+      </div>
+      
+      <!-- Modal Content -->
+      <div class="p-4 max-h-[80vh] overflow-auto">
+        @if (previewDocument()!.file!.type.includes('image')) {
+          <img 
+            [src]="getPreviewUrl(previewDocument()!)" 
+            [alt]="getDisplayFileName(previewDocument()!)"
+            class="max-w-full h-auto mx-auto"
+          />
+        } @else {
+          <div class="text-center py-8">
+            <div class="text-4xl mb-4">{{ getFileTypeIcon(previewDocument()!) }}</div>
+            <p class="text-neutral-600">Preview not available for this file type</p>
+            <p class="text-sm text-neutral-500 mt-2">Click download to view the file</p>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+}

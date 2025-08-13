@@ -4,7 +4,7 @@
 import { Component, signal, OnInit, OnDestroy, inject, HostListener } from '@angular/core'; 
 import { LucideAngularModule, Upload, FileText, CheckCircle, X, Download, Trash2, ChevronDown, ChevronUp, Save, Clock, AlertCircle, RefreshCw, Eye, Plus } from 'lucide-angular';
 import { interval, Subscription } from 'rxjs';
-import { takeWhile, switchMap } from 'rxjs/operators';
+import { takeWhile } from 'rxjs/operators';
 import { FundingApplicationService } from '../../../services/funding-application.service';
 import { SupabaseDocumentService, DocumentMetadata } from '../../../../shared/services/supabase-document.service';
 import { UiCardComponent, UiButtonComponent } from '../../../../shared/components';
@@ -455,6 +455,11 @@ async exportDocumentList(): Promise<void> {
   // ===============================
   // ENHANCED FILE PROCESSING
   // ===============================
+  hasPreviewableDocuments(): boolean {
+  return this.getAllDocuments().some(doc => 
+    doc.uploaded && !doc.error && this.isPreviewable(doc)
+  );
+}
 
     async processFile(file: File, documentKey: string) {
     // Validate file
