@@ -1,0 +1,256 @@
+   <div class="min-h-screen bg-neutral-50">
+      <div class="max-w-7xl mx-auto px-4 py-8">
+        <!-- Header -->
+        <div class="flex items-center justify-between mb-8">
+        
+          
+          @if (onboardingState()?.canCreateOpportunities) {
+            <ui-button variant="primary" (clicked)="createOpportunity()">
+              <lucide-icon [img]="PlusIcon" [size]="16" class="mr-2" />
+              Create Opportunity
+            </ui-button>
+          }
+        </div>
+
+        <!-- Onboarding Status Card -->
+        @if (onboardingState() && !onboardingState()!.isComplete) {
+          <ui-card class="mb-8 border-l-4" [class]="getOnboardingCardClasses()">
+            <div class="p-6">
+              <div class="flex items-start">
+                <div class="flex-shrink-0">
+                  @if (onboardingState()!.canCreateOpportunities) {
+                    <lucide-icon [img]="CheckCircleIcon" [size]="24" class="text-green-500" />
+                  } @else {
+                    <lucide-icon [img]="AlertCircleIcon" [size]="24" class="text-orange-500" />
+                  }
+                </div>
+                <div class="ml-4 flex-1">
+                  <h3 class="text-lg font-medium text-neutral-900 mb-2">
+                    {{ getOnboardingTitle() }}
+                  </h3>
+                  <p class="text-neutral-600 mb-4">
+                    {{ getOnboardingDescription() }}
+                  </p>
+                  
+                  <!-- Progress Bar -->
+                  <div class="mb-4">
+                    <div class="flex items-center justify-between text-sm text-neutral-600 mb-2">
+                      <span>Setup Progress</span>
+                      <span>{{ onboardingState()!.completionPercentage }}%</span>
+                    </div>
+                    <div class="w-full bg-neutral-200 rounded-full h-2">
+                      <div 
+                        class="bg-primary-500 h-2 rounded-full transition-all duration-300"
+                        [style.width.%]="onboardingState()!.completionPercentage"
+                      ></div>
+                    </div>
+                  </div>
+
+                  <div class="flex items-center space-x-3">
+                    @if (!onboardingState()!.canCreateOpportunities) {
+                      <ui-button variant="primary" (clicked)="completeOnboarding()">
+                        Complete Setup
+                      </ui-button>
+                    } @else {
+                      <ui-button variant="outline" (clicked)="improveProfile()">
+                        <lucide-icon [img]="Building2Icon" [size]="16" class="mr-2" />
+                        Get Verified
+                      </ui-button>
+                    }
+                  </div>
+                </div>
+              </div>
+            </div>
+          </ui-card>
+        }
+
+        <!-- Quick Stats -->
+        @if (analytics()) {
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <ui-card class="p-6">
+              <div class="flex items-center">
+                <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                  <lucide-icon [img]="TrendingUpIcon" [size]="20" class="text-blue-600" />
+                </div>
+                <div class="ml-4">
+                  <p class="text-2xl font-bold text-neutral-900">{{ getActiveOpportunitiesCount() }}</p>
+                  <p class="text-sm text-neutral-600">Active Opportunities</p>
+                </div>
+              </div>
+            </ui-card>
+
+            <ui-card class="p-6">
+              <div class="flex items-center">
+                <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                  <lucide-icon [img]="UsersIcon" [size]="20" class="text-green-600" />
+                </div>
+                <div class="ml-4">
+                  <p class="text-2xl font-bold text-neutral-900">{{ formatNumber(analytics()!.totalApplications) }}</p>
+                  <p class="text-sm text-neutral-600">Total Applications</p>
+                </div>
+              </div>
+            </ui-card>
+
+            <ui-card class="p-6">
+              <div class="flex items-center">
+                <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                  <lucide-icon [img]="DollarSignIcon" [size]="20" class="text-purple-600" />
+                </div>
+                <div class="ml-4">
+                  <p class="text-2xl font-bold text-neutral-900">{{ analytics()!.averageConversionRate.toFixed(1) }}%</p>
+                  <p class="text-sm text-neutral-600">Conversion Rate</p>
+                </div>
+              </div>
+            </ui-card>
+
+            <ui-card class="p-6">
+              <div class="flex items-center">
+                <div class="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
+                  <lucide-icon [img]="TrendingUpIcon" [size]="20" class="text-orange-600" />
+                </div>
+                <div class="ml-4">
+                  <p class="text-2xl font-bold text-neutral-900">{{ formatNumber(analytics()!.totalViews) }}</p>
+                  <p class="text-sm text-neutral-600">Total Views</p>
+                </div>
+              </div>
+            </ui-card>
+          </div>
+        }
+
+        <!-- Main Content Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <!-- Recent Opportunities -->
+          <div class="lg:col-span-2">
+            <ui-card>
+              <div class="p-6 border-b border-neutral-200">
+                <div class="flex items-center justify-between">
+                  <h2 class="text-lg font-semibold text-neutral-900">Recent Opportunities</h2>
+                  <ui-button variant="outline" size="sm" (clicked)="viewAllOpportunities()">
+                    View All
+                  </ui-button>
+                </div>
+              </div>
+              
+              @if (recentOpportunities().length === 0) {
+                <div class="p-12 text-center">
+                  <div class="w-16 h-16 bg-neutral-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <lucide-icon [img]="PlusIcon" [size]="24" class="text-neutral-400" />
+                  </div>
+                  <h3 class="text-lg font-medium text-neutral-900 mb-2">No opportunities yet</h3>
+                  <p class="text-neutral-600 mb-4">Create your first funding opportunity to start connecting with SMEs.</p>
+                  @if (onboardingState()?.canCreateOpportunities) {
+                    <ui-button variant="primary" (clicked)="createOpportunity()">
+                      <lucide-icon [img]="PlusIcon" [size]="16" class="mr-2" />
+                      Create Opportunity
+                    </ui-button>
+                  } @else {
+                    <ui-button variant="outline" (clicked)="completeOnboarding()">
+                      Complete Setup First
+                    </ui-button>
+                  }
+                </div>
+              } @else {
+                <div class="divide-y divide-neutral-200">
+                  @for (opportunity of recentOpportunities(); track opportunity.id) {
+                    <div class="p-6 hover:bg-neutral-50 transition-colors cursor-pointer" 
+                         (click)="viewOpportunity(opportunity.id)">
+                      <div class="flex items-center justify-between">
+                        <div class="flex-1">
+                          <h3 class="text-sm font-medium text-neutral-900 mb-1">{{ opportunity.title }}</h3>
+                          <div class="flex items-center space-x-4 text-sm text-neutral-500">
+                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium"
+                                  [class]="getStatusClasses(opportunity.status)">
+                              {{ formatStatus(opportunity.status) }}
+                            </span>
+                            <span>{{ formatCurrency(opportunity.totalAvailable) }}</span>
+                            <span>{{ opportunity.currentApplications }} applications</span>
+                          </div>
+                        </div>
+                        <lucide-icon [img]="ArrowRightIcon" [size]="16" class="text-neutral-400" />
+                      </div>
+                    </div>
+                  }
+                </div>
+              }
+            </ui-card>
+          </div>
+
+          <!-- Sidebar -->
+          <div class="space-y-6">
+            <!-- Quick Actions -->
+            <ui-card>
+              <div class="p-6">
+                <h3 class="text-lg font-semibold text-neutral-900 mb-4">Quick Actions</h3>
+                <div class="space-y-3">
+                  @if (onboardingState()?.canCreateOpportunities) {
+                    <ui-button variant="outline" class="w-full justify-start" (clicked)="createOpportunity()">
+                      <lucide-icon [img]="PlusIcon" [size]="16" class="mr-3" />
+                      Create Opportunity
+                    </ui-button>
+                  }
+                  
+                  <ui-button variant="outline" class="w-full justify-start" (clicked)="viewAllOpportunities()">
+                    <lucide-icon [img]="TrendingUpIcon" [size]="16" class="mr-3" />
+                    Manage Opportunities
+                  </ui-button>
+                  
+                  <ui-button variant="outline" class="w-full justify-start" (clicked)="viewAnalytics()">
+                    <lucide-icon [img]="TrendingUpIcon" [size]="16" class="mr-3" />
+                    View Analytics
+                  </ui-button>
+                  
+                  <ui-button variant="outline" class="w-full justify-start" (clicked)="editOrganization()">
+                    <lucide-icon [img]="Building2Icon" [size]="16" class="mr-3" />
+                    Organization Settings
+                  </ui-button>
+                </div>
+              </div>
+            </ui-card>
+
+            <!-- Organization Info -->
+            @if (onboardingState()?.organization) {
+              <ui-card>
+                <div class="p-6">
+                  <h3 class="text-lg font-semibold text-neutral-900 mb-4">Organization</h3>
+                  <div class="space-y-3">
+                    <div>
+                      <p class="font-medium text-neutral-900">{{ onboardingState()!.organization!.name }}</p>
+                      <p class="text-sm text-neutral-600">{{ formatOrganizationType(onboardingState()!.organization!.organizationType) }}</p>
+                    </div>
+                    
+                    @if (onboardingState()!.organization!.isVerified) {
+                      <div class="flex items-center text-sm text-green-600">
+                        <lucide-icon [img]="CheckCircleIcon" [size]="16" class="mr-2" />
+                        Verified Organization
+                      </div>
+                    } @else {
+                      <div class="flex items-center text-sm text-orange-600">
+                        <lucide-icon [img]="AlertCircleIcon" [size]="16" class="mr-2" />
+                        Pending Verification
+                      </div>
+                    }
+                  </div>
+                </div>
+              </ui-card>
+            }
+
+            <!-- Recent Activity -->
+            @if (analytics()?.recentActivity && analytics()!.recentActivity.length > 0) {
+              <ui-card>
+                <div class="p-6">
+                  <h3 class="text-lg font-semibold text-neutral-900 mb-4">Recent Activity</h3>
+                  <div class="space-y-3">
+                    @for (activity of analytics()!.recentActivity.slice(0, 5); track activity.id) {
+                      <div class="text-sm">
+                        <p class="text-neutral-900">{{ activity.description }}</p>
+                        <p class="text-neutral-500">{{ getTimeAgo(activity.timestamp) }}</p>
+                      </div>
+                    }
+                  </div>
+                </div>
+              </ui-card>
+            }
+          </div>
+        </div>
+      </div>
+    </div>

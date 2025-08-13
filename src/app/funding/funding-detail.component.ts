@@ -8,7 +8,8 @@ import { UiButtonComponent, UiCardComponent } from '../shared/components';
 import { LucideAngularModule, ArrowLeft, Building2, DollarSign, Calendar, MapPin, CheckCircle, FileText, Users, Eye } from 'lucide-angular';
  
 import { FundingOpportunity } from '../shared/models/funder.models';
-import { OpportunitiesService } from './services/opportunities.service';
+import { SMEOpportunitiesService } from './services/opportunities.service';
+
 
 @Component({
   selector: 'app-opportunity-details',
@@ -46,7 +47,7 @@ export class OpportunityDetailsComponent implements OnInit {
   constructor(
     private router: Router,
     private route: ActivatedRoute,
-    private opportunitiesService: OpportunitiesService
+    private opportunitiesService: SMEOpportunitiesService
   ) {}
 
   ngOnInit() {

@@ -16,7 +16,7 @@ import { Observable } from 'rxjs';
     UiButtonComponent
   ],
   template: `
-    <div class="bg-white rounded-lg border border-gray-200">
+    <div class="bg-white rounded-lg border border-gray-200 mt-8">
       <!-- Header -->
       <div class="flex items-center justify-between p-6 border-b border-gray-100">
         <div class="flex items-center space-x-3">

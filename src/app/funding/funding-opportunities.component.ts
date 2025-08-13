@@ -8,7 +8,7 @@ import { UiButtonComponent } from '../shared/components';
 import { LucideAngularModule, Search, Filter, DollarSign, Calendar, MapPin, Building, TrendingUp, Eye, FileText, Users } from 'lucide-angular';
  
 import { FundingOpportunity } from '../shared/models/funder.models';
-import { OpportunitiesService } from './services/opportunities.service';
+import {  SMEOpportunitiesService } from './services/opportunities.service';
 
 @Component({
   selector: 'app-funding-opportunities',
@@ -56,7 +56,7 @@ export class FundingOpportunitiesComponent implements OnInit {
 
   constructor(
     private router: Router,
-    private opportunitiesService: OpportunitiesService
+    private opportunitiesService: SMEOpportunitiesService
   ) {}
 
   ngOnInit() {
@@ -65,7 +65,7 @@ export class FundingOpportunitiesComponent implements OnInit {
 
   loadOpportunities() {
     this.isLoading.set(true);
-    this.opportunitiesService.getOpportunities().subscribe({
+    this.opportunitiesService.loadActiveOpportunities().subscribe({
       next: (opportunities) => {
         this.opportunities.set(opportunities);
         this.applyFilters();

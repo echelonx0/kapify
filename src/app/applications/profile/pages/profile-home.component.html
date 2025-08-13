@@ -25,22 +25,31 @@
     <!-- Main Content Area (Left) -->
     <div class="col-span-8">
       <!-- 3D Viewer Component -->
-      <div class="main-content-area mb-6" style="height: 400px;">
-        <app-three-d-viewer 
+      <div class="main-content-area mb-8" style="height: 400px;">
+        <!-- <app-three-d-viewer 
           [objUrl]="'models/scene.gltf'"
           [modelScale]="2"
           [autoRotate]="true"
           [showMeshSphere]="true">
-        </app-three-d-viewer>
+        </app-three-d-viewer> -->
+   <div class="mb-4">
+        <img 
+          [src]="currentImage" 
+          alt="Workshop or Webinar" 
+          class="rounded-lg w-full h-auto object-cover"
+        >
+      </div>
       </div>
 
       <!-- Integrated Activity Feed Widget -->
-      <app-activity-feed
-        (viewAllClicked)="viewAllActivities()"
-        (activityClicked)="onActivityClicked($event)"
-        class="mb-6">
-      </app-activity-feed>
+     <div class="mt-12">
+        <app-activity-feed
+          (viewAllClicked)="viewAllActivities()"
+          (activityClicked)="onActivityClicked($event)"
+          class="mb-6">
+        </app-activity-feed>
     </div>
+  </div>
 
     <!-- Right Sidebar Cards -->
     <div class="col-span-4 space-y-6">

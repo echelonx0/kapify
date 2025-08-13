@@ -1,7 +1,5 @@
- 
-
 // src/app/dashboard/pages/dashboard-home.component.ts
-import { Component, signal, computed, OnInit, inject } from '@angular/core';
+import { Component, signal, computed, OnInit, inject, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { 
@@ -18,13 +16,15 @@ import {
   Settings,
   ArrowRight
 } from 'lucide-angular';
- 
- 
-import { ThreeDViewerComponent } from '../shared/components/three_d_viewer.component'; 
-import { OpportunitiesService } from '../funding/services/opportunities.service';
-
 import { FormsModule } from '@angular/forms';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
+
+import { ThreeDViewerComponent } from '../shared/components/three_d_viewer.component'; 
+ 
+import { FundingOpportunity } from '../shared/models/funder.models';
 import { AuthService } from '../auth/production.auth.service';
+import { SMEOpportunitiesService } from '../funding/services/opportunities.service';
 
 @Component({
   selector: 'app-dashboard-home',
@@ -32,8 +32,6 @@ import { AuthService } from '../auth/production.auth.service';
   imports: [
     CommonModule,
     LucideAngularModule,
-   
-    
     ThreeDViewerComponent,
     FormsModule
   ],
@@ -135,7 +133,24 @@ import { AuthService } from '../auth/production.auth.service';
             
             <!-- Opportunities Ticker -->
             <div class="flex-1 overflow-hidden relative">
-              @if (filteredOpportunities().length > 0) {
+              @if (isLoading()) {
+                <div class="flex items-center justify-center h-full text-gray-500 text-sm">
+                  <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-500 mr-2"></div>
+                  Loading opportunities...
+                </div>
+              } @else if (error()) {
+                <div class="flex items-center justify-center h-full text-red-500 text-sm">
+                  <div class="text-center">
+                    <div class="font-medium">Error loading opportunities</div>
+                    <div class="text-xs mt-1">{{ error() }}</div>
+                    <button 
+                      (click)="loadOpportunities()"
+                      class="mt-2 px-3 py-1 bg-red-100 text-red-700 rounded text-xs hover:bg-red-200 transition-colors">
+                      Retry
+                    </button>
+                  </div>
+                </div>
+              } @else if (filteredOpportunities().length > 0) {
                 <div class="h-full">
                   <!-- Ticker animation container -->
                   <div class="animate-scroll space-y-3" [style.animation-duration]="tickerDuration()">
@@ -151,7 +166,8 @@ import { AuthService } from '../auth/production.auth.service';
                                 {{ formatCurrency(opportunity.offerAmount, opportunity.currency) }}
                               </span>
                               <span class="capitalize">{{ opportunity.fundingType }}</span>
-                              <span>{{ opportunity.applicationCount }} applications</span>
+                              <span>{{ opportunity.applicationCount || 0 }} applications</span>
+                        
                             </div>
                           </div>
                           <lucide-icon [img]="ArrowRightIcon" [size]="16" class="text-gray-400 flex-shrink-0 ml-2" />
@@ -165,7 +181,7 @@ import { AuthService } from '../auth/production.auth.service';
                   @if (searchQuery()) {
                     No opportunities match your search.
                   } @else {
-                    Loading opportunities...
+                    No opportunities available at the moment.
                   }
                 </div>
               }
@@ -258,8 +274,10 @@ import { AuthService } from '../auth/production.auth.service';
     }
   `]
 })
-export class DashboardHomeComponent implements OnInit {
-  private opportunitiesService = inject(OpportunitiesService);
+export class DashboardHomeComponent implements OnInit, OnDestroy {
+  private destroy$ = new Subject<void>();
+  private opportunitiesService = inject(SMEOpportunitiesService);
+  private authService = inject(AuthService);
 
   // Icons
   ExternalLinkIcon = ExternalLink;
@@ -274,8 +292,10 @@ export class DashboardHomeComponent implements OnInit {
   SettingsIcon = Settings;
   ArrowRightIcon = ArrowRight;
 
-  // State
-  opportunities = signal<any[]>([]);
+  // State signals from service
+  opportunities = signal<FundingOpportunity[]>([]);
+  isLoading = computed(() => this.opportunitiesService.isLoading());
+  error = computed(() => this.opportunitiesService.error());
   searchQuery = signal('');
 
   // Computed properties
@@ -301,15 +321,20 @@ export class DashboardHomeComponent implements OnInit {
   });
 
   filteredOpportunities = computed(() => {
-    const query = this.searchQuery().toLowerCase();
-    if (!query) return this.opportunities();
+    const query = this.searchQuery().toLowerCase().trim();
+    const opportunities = this.opportunities();
     
-    return this.opportunities().filter(opp => 
+    if (!query) return opportunities;
+    
+    return opportunities.filter(opp => 
       opp.title.toLowerCase().includes(query) ||
       opp.shortDescription.toLowerCase().includes(query) ||
-      opp.eligibilityCriteria.industries.some((industry: string) => 
-        industry.toLowerCase().includes(query)
-      )
+      opp.fundingType.toLowerCase().includes(query)   ||
+      (opp.eligibilityCriteria?.industries && 
+       Array.isArray(opp.eligibilityCriteria.industries) &&
+       opp.eligibilityCriteria.industries.some((industry: string) => 
+         industry.toLowerCase().includes(query)
+       ))
     );
   });
 
@@ -347,25 +372,85 @@ export class DashboardHomeComponent implements OnInit {
   });
 
   constructor(
-    private router: Router,
-    private authService: AuthService,
- 
+    private router: Router
   ) {}
 
   ngOnInit() {
+
+    const currentUser = this.authService.user();
+  // console.log('=== USER DEBUG INFO ===');
+  // console.log('Current user:', currentUser);
+  // console.log('User ID:', currentUser?.id);
+  // console.log('User metadata:', currentUser?.user_metadata);
+  // console.log('User type:', currentUser?.user_metadata?.user_type);
+  // console.log('Raw user meta data:', currentUser?.raw_user_meta_data);
+  // console.log('=== END DEBUG ===');
+
+  // // Test direct Supabase auth
+  // this.supabase.auth.getUser().then(({ data: { user }, error }) => {
+  //   console.log('=== SUPABASE AUTH DEBUG ===');
+  //   console.log('Supabase user:', user);
+  //   console.log('Supabase user metadata:', user?.user_metadata);
+  //   console.log('Supabase raw metadata:', user?.raw_user_meta_data);
+  //   console.log('Auth error:', error);
+  //   console.log('=== END SUPABASE DEBUG ===');
+  // });
+
     this.loadOpportunities();
+    
+    // Subscribe to opportunities stream from service
+    this.opportunitiesService.opportunities$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(opportunities => {
+        this.opportunities.set(opportunities);
+      });
   }
 
-  private loadOpportunities() {
-    this.opportunitiesService.getOpportunitiesByStatus('active').subscribe({
-      next: (opportunities) => {
-        this.opportunities.set(opportunities);
-      },
-      error: (error) => {
-        console.error('Failed to load opportunities:', error);
-        this.opportunities.set([]);
-      }
-    });
+  ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  loadOpportunities() {
+    this.opportunitiesService.loadActiveOpportunities()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (opportunities) => {
+          // Opportunities are automatically updated via the service stream
+          console.log(`Loaded ${opportunities.length} opportunities`);
+        },
+        error: (error) => {
+          console.error('Failed to load opportunities:', error);
+          // Error is automatically handled by the service
+        }
+      });
+  }
+
+  onSearchChange() {
+    // If we want to implement server-side search for better performance
+    const query = this.searchQuery().trim();
+    
+    if (query.length > 2) {
+      // Debounce and search on server
+      this.performServerSearch(query);
+    } else if (query.length === 0) {
+      // Reset to all opportunities
+      this.loadOpportunities();
+    }
+    // For short queries, use client-side filtering via computed property
+  }
+
+  private performServerSearch(query: string) {
+    this.opportunitiesService.searchOpportunities({ searchQuery: query })
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (opportunities) => {
+          console.log(`Search returned ${opportunities.length} results for "${query}"`);
+        },
+        error: (error) => {
+          console.error('Search failed:', error);
+        }
+      });
   }
 
   private mapUserTypeForNavigation(userType: string): 'sme' | 'funder' {
@@ -378,25 +463,28 @@ export class DashboardHomeComponent implements OnInit {
     }
   }
 
-  onSearchChange() {
-    // The computed property will automatically update the filtered results
-  }
-
   navigateTo(route: string) {
     this.router.navigate([route]);
   }
 
   navigateToOpportunity(opportunityId: string) {
+    // Track interaction for analytics
+    this.opportunitiesService.trackUserInteraction(opportunityId, 'view');
     this.router.navigate(['/funding', opportunityId]);
   }
 
   formatCurrency(amount: number, currency: string): string {
-    const formatter = new Intl.NumberFormat('en-ZA', {
-      style: 'currency',
-      currency: currency,
-      notation: 'compact',
-      maximumFractionDigits: 1
-    });
-    return formatter.format(amount);
+    try {
+      const formatter = new Intl.NumberFormat('en-ZA', {
+        style: 'currency',
+        currency: currency,
+        notation: 'compact',
+        maximumFractionDigits: 1
+      });
+      return formatter.format(amount);
+    } catch (error) {
+      // Fallback for invalid currency codes
+      return `${currency} ${amount.toLocaleString()}`;
+    }
   }
 }

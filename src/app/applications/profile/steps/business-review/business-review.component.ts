@@ -5,7 +5,7 @@ import { LucideAngularModule, Building, FileText, Save, Clock, ChevronDown, Chev
  
 import { interval, Subscription } from 'rxjs';
 import { takeWhile } from 'rxjs/operators';
-import { UiInputComponent, UiCardComponent, UiButtonComponent } from '../../../../shared/components';
+import { UiButtonComponent } from '../../../../shared/components';
 import { BusinessAssessment } from '../../../models/funding-application.models';
 import { FundingApplicationService } from '../../../services/funding-application.service';
  
@@ -18,7 +18,7 @@ interface SectionStates {
 @Component({
   selector: 'app-business-info',
   standalone: true,
-  imports: [ReactiveFormsModule, LucideAngularModule, UiInputComponent, UiCardComponent, UiButtonComponent],
+  imports: [ReactiveFormsModule, LucideAngularModule, UiButtonComponent],
   templateUrl: 'business-review.component.html'
 })
 export class BusinessReviewComponent implements OnInit, OnDestroy {

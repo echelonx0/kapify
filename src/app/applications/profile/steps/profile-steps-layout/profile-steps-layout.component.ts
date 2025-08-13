@@ -9,7 +9,7 @@ import { CommonModule } from '@angular/common';
 @Component({
   selector: 'app-profile-steps-layout',
   standalone: true,
-  imports: [RouterOutlet, LucideAngularModule, UiButtonComponent, UiCardComponent, CommonModule],
+  imports: [RouterOutlet, LucideAngularModule, UiButtonComponent, CommonModule],
   templateUrl: 'profile-steps-layout.component.html',
   styles: [`
     .line-clamp-2 {
