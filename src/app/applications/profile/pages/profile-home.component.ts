@@ -324,7 +324,6 @@ currentImage: string = '';
     const icons: { [key: string]: any } = {
       'company-info': Building,
       'documents': FileText,
-      'business-assessment': Building,
       'swot-analysis': AlertTriangle,
       'management': Users,
       'business-strategy': FileText,

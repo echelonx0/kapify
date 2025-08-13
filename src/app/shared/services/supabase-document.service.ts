@@ -57,7 +57,7 @@ export class SupabaseDocumentService {
   isUploading = signal<boolean>(false);
   uploadError = signal<string | null>(null);
   
-  private readonly STORAGE_BUCKET = environment.storage?.bucket || 'platform-documents';
+  private readonly STORAGE_BUCKET =  'platform-documents';
   private readonly MAX_FILE_SIZE = environment.storage?.maxFileSize || 52428800; // 50MB
   private readonly ALLOWED_TYPES = environment.storage?.allowedTypes || ['pdf', 'doc', 'docx', 'jpg', 'jpeg', 'png', 'xls', 'xlsx'];
 

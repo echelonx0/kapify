@@ -26,7 +26,7 @@ import { FunderOnboardingService, OnboardingState } from '../services/funder-onb
     CommonModule,
     FormsModule,
     UiButtonComponent,
-    UiCardComponent,
+ 
     LucideAngularModule
  
   ],

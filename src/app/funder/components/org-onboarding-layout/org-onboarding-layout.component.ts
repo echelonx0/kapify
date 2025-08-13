@@ -23,7 +23,7 @@ import { FunderOnboardingService, OnboardingStep } from '../../services/funder-o
 @Component({
   selector: 'app-organization-onboarding-layout',
   standalone: true,
-  imports: [RouterOutlet, LucideAngularModule, UiButtonComponent, UiCardComponent, CommonModule],
+  imports: [RouterOutlet, LucideAngularModule, UiButtonComponent, CommonModule],
   templateUrl: 'org-onboarding-layout.component.html',
   styles: [`
     .line-clamp-2 {

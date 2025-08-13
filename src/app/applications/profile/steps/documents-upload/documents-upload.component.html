@@ -155,7 +155,8 @@
 
   <!-- Document Sections -->
   @for (section of documentSections(); track section.id) {
-    <ui-card [padding]="false">
+<div class="mb-4">
+      <ui-card [padding]="false">
       <!-- Section Header with Enhanced Status -->
       <button
         (click)="toggleSection(section.id)"
@@ -263,18 +264,7 @@
                               {{ getDisplayFileName(doc) }}
                             </div>
                             
-                            <!-- File Metadata -->
-                            <!-- <div class="flex items-center space-x-2 mt-1 text-xs text-neutral-500">
-                              <span>{{ formatFileSize(doc.file.size) }}</span>
-                              @if (doc.metadata?.uploadedAt) {
-                                <span>•</span>
-                                <span>{{ doc.metadata.uploadedAt | date:'MMM d' }}</span>
-                              }
-                              @if (doc.file.type) {
-                                <span>•</span>
-                                <span class="uppercase">{{ doc.file.type.split('/')[1] || doc.file.name.split('.').pop() }}</span>
-                              }
-                            </div> -->
+                        
                           </div>
                         </div>
                         
@@ -424,10 +414,12 @@
         </div>
       }
     </ui-card>
+</div>
   }
 
   <!-- Enhanced Summary -->
-  <ui-card>
+<div class="mt-2">
+    <ui-card>
     <div class="space-y-4">
       <div class="flex items-center justify-between">
         <div>
@@ -493,6 +485,7 @@
       }
     </div>
   </ui-card>
+</div>
 
   <!-- Auto-save Status -->
   @if (isSaving()) {

@@ -9,19 +9,21 @@ import { DashboardHeaderComponent } from '../shared/components/dashboard-header.
   standalone: true,
   imports: [RouterOutlet, SidebarNavComponent, DashboardHeaderComponent],
   template: `
-    <div class="h-screen bg-neutral-50 flex overflow-hidden">
-      <sidebar-nav />
-      
-      <!-- Main Content Area -->
-      <div class="flex-1 flex flex-col overflow-hidden">
-        <dashboard-header />
-        
-        <!-- Page Content - Takes remaining height -->
-        <main class="flex-1 overflow-hidden">
-          <router-outlet />
-        </main>
-      </div>
-    </div>
+<div class="h-screen bg-neutral-50 flex overflow-hidden">
+  <sidebar-nav />
+
+  <!-- Main Content Area -->
+  <div class="flex-1 flex flex-col overflow-hidden">
+    <!-- Sticky Header -->
+    <dashboard-header class="sticky top-0 z-50 bg-white shadow-sm" />
+
+    <!-- Page Content - scrollable -->
+    <main class="flex-1 overflow-y-auto">
+      <router-outlet />
+    </main>
+  </div>
+</div>
+
   `,
   styles: [`
     :host {

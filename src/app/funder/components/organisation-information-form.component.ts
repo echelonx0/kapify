@@ -49,7 +49,7 @@ interface OrganizationFormData {
     CommonModule,
     FormsModule,
     UiButtonComponent,
-    UiInputComponent,
+ 
     UiSectionCardComponent,
     LucideAngularModule
   ],
