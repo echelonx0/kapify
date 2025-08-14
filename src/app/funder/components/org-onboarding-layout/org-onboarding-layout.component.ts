@@ -208,18 +208,6 @@ export class OrganizationOnboardingLayoutComponent implements OnInit {
     return 'over a day ago';
   }
 
-  // ===============================
-  // STEP STATE METHODS
-  // ===============================
-
- 
-
-  
-
-  // ===============================
-  // STYLING METHODS
-  // ===============================
- 
 
   getStepIcon(stepId: string) {
     switch (stepId) {
@@ -234,13 +222,7 @@ export class OrganizationOnboardingLayoutComponent implements OnInit {
     }
   }
 
-
-
-  // Updated methods for org-onboarding-layout.component.ts - STEP NAVIGATION
-
-  // ===============================
-  // UPDATED NAVIGATION METHODS
-  // ===============================
+ 
 
   goToStep(stepId: string) {
     // Check if user can access this step

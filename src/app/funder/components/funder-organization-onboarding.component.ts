@@ -1,6 +1,4 @@
- 
-
-// src/app/funder/components/organization-onboarding.component.ts - FIXED LOGIC
+ // src/app/funder/components/organization-onboarding.component.ts - FIXED LOGIC
 import { Component, signal, OnInit, OnDestroy, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
@@ -152,17 +150,17 @@ export class OrganizationOnboardingComponent implements OnInit, OnDestroy {
 
   proceedToDashboard() {
     console.log('🏠 Proceeding to dashboard');
-    this.router.navigate(['/funder-dashboard']);
+    this.router.navigate(['/funder/dashboard']);
   }
 
   createFirstOpportunity() {
     console.log('💼 Creating first opportunity');
-    this.router.navigate(['/funder/opportunities/create']);
+    this.router.navigate(['/funding/opportunities/create']); 
   }
 
   skipVerification() {
     console.log('⏭️ Skipping verification');
-    this.router.navigate(['/funder-dashboard']);
+    this.router.navigate(['/funder/dashboard']);
   }
 
   requestVerification() {

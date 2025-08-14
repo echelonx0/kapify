@@ -103,15 +103,15 @@ export class FunderDashboardComponent implements OnInit {
   }
 
   viewAllOpportunities() {
-    this.router.navigate(['/funder/opportunities']);
+    this.router.navigate(['/funding/opportunities']);
   }
 
   viewOpportunity(opportunityId: string) {
-    this.router.navigate(['/funder/opportunities', opportunityId]);
+    this.router.navigate(['/funding/opportunities', opportunityId]);
   }
 
   viewAnalytics() {
-    this.router.navigate(['/funder/analytics']);
+    // this.router.navigate(['/funder/analytics']);
   }
 
   editOrganization() {

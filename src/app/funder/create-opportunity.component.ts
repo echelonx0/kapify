@@ -6,7 +6,7 @@ import { CommonModule } from '@angular/common';
 import { LucideAngularModule, ArrowLeft, Target, DollarSign, Users, Settings, FileText, DollarSignIcon, FileTextIcon, SettingsIcon, TargetIcon, UsersIcon } from 'lucide-angular'; 
 import { UiButtonComponent, UiCardComponent } from '../shared/components';
 import { FundingOpportunity } from '../shared/models/funder.models';
-
+import { trigger, transition, style, animate } from '@angular/animations';
 interface OpportunityFormData {
   // Basic details
   title: string;
@@ -64,6 +64,17 @@ interface OpportunityFormData {
     UiButtonComponent,
     UiCardComponent,
     LucideAngularModule
+  ],
+    animations: [
+    trigger('stepTransition', [
+      transition(':enter', [
+        style({ opacity: 0, transform: 'translateX(20px)' }),
+        animate('250ms ease-out', style({ opacity: 1, transform: 'translateX(0)' }))
+      ]),
+      transition(':leave', [
+        animate('200ms ease-in', style({ opacity: 0, transform: 'translateX(-20px)' }))
+      ])
+    ])
   ],
   templateUrl: 'create-opportunity.component.html'
 })
@@ -127,7 +138,7 @@ export class OpportunityFormComponent {
   constructor(private router: Router) {}
 
 goBack() {
-    this.router.navigate(['/dashboard/funding-opportunities/opportunities']);
+    this.router.navigate(['/funding/opportunities']);
   }
 
   updateField(field: keyof OpportunityFormData, event: Event) {
@@ -181,7 +192,7 @@ goBack() {
     
     switch (current) {
       case 'basic':
-        return !!(data.title && data.description && data.shortDescription);
+         return !!(data.title); // Only require title for now
       case 'terms':
         return !!(data.fundingType && data.totalAvailable && data.offerAmount && data.decisionTimeframe);
       case 'eligibility':
@@ -216,7 +227,7 @@ goBack() {
     setTimeout(() => {
       this.isPublishing.set(false);
       console.log('Opportunity published');
-      this.router.navigate(['/dashboard/funder-dashboard']);
+      this.router.navigate(['/funder/dashboard']);
     }, 2000);
   }
 

@@ -1,8 +1,9 @@
-// src/app/funder/components/legal-info-form.component.ts - ANIMATED VERSION
+ 
+// src/app/funder/components/legal-info-form.component.ts - REQUIRED FIELDS ONLY
 import { Component, signal, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Subject, takeUntil, debounceTime } from 'rxjs';
+import { Subject, takeUntil } from 'rxjs';
 import { 
   LucideAngularModule, 
   FileText,
@@ -48,13 +49,10 @@ interface SectionState {
     CommonModule,
     FormsModule,
     UiButtonComponent,
- 
     LucideAngularModule
   ],
   template: `
     <div class="space-y-8">
-  
-
       <!-- Legal Registration Section -->
       <div class="transform transition-all duration-300 hover:scale-[1.01]">
         <div class="bg-white rounded-xl border border-neutral-200 shadow-sm overflow-hidden">
@@ -73,7 +71,7 @@ interface SectionState {
               </div>
             </div>
             <div class="flex items-center space-x-2">
-              @if (isLegalInfoComplete()) {
+              @if (isLegalSectionComplete()) {
                 <div class="w-6 h-6 rounded-full bg-green-100 flex items-center justify-center">
                   <lucide-icon [img]="CheckIcon" [size]="14" class="text-green-600" />
                 </div>
@@ -96,7 +94,7 @@ interface SectionState {
             <div class="px-6 pb-6 border-t border-neutral-100">
               <div class="pt-4 space-y-6">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <!-- Legal Name -->
+                  <!-- Legal Name - REQUIRED -->
                   <div class="transform transition-all duration-200 hover:scale-[1.02]">
                     <label class="block text-sm font-medium text-neutral-700 mb-2">
                       Legal Name <span class="text-red-500">*</span>
@@ -107,10 +105,14 @@ interface SectionState {
                       [value]="formData().legalName"
                       (input)="updateField('legalName', $event)"
                       class="block w-full px-3 py-2 border border-neutral-300 rounded-md shadow-sm placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200"
+                      [class.border-red-300]="showValidation() && !formData().legalName.trim()"
                     />
+                    @if (showValidation() && !formData().legalName.trim()) {
+                      <p class="mt-1 text-sm text-red-600">Legal name is required</p>
+                    }
                   </div>
 
-                  <!-- Registration Number -->
+                  <!-- Registration Number - REQUIRED -->
                   <div class="transform transition-all duration-200 hover:scale-[1.02]">
                     <label class="block text-sm font-medium text-neutral-700 mb-2">
                       Registration Number <span class="text-red-500">*</span>
@@ -121,31 +123,35 @@ interface SectionState {
                       [value]="formData().registrationNumber"
                       (input)="updateField('registrationNumber', $event)"
                       class="block w-full px-3 py-2 border border-neutral-300 rounded-md shadow-sm placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200"
+                      [class.border-red-300]="showValidation() && !formData().registrationNumber.trim()"
                     />
+                    @if (showValidation() && !formData().registrationNumber.trim()) {
+                      <p class="mt-1 text-sm text-red-600">Registration number is required</p>
+                    }
                   </div>
 
-                  <!-- Tax Number -->
+                  <!-- Tax Number - OPTIONAL -->
                   <div class="transform transition-all duration-200 hover:scale-[1.02]">
                     <label class="block text-sm font-medium text-neutral-700 mb-2">
                       Tax Number
                     </label>
                     <input
                       type="text"
-                      placeholder="VAT/Tax identification number"
+                      placeholder="VAT/Tax identification number (optional)"
                       [value]="formData().taxNumber"
                       (input)="updateField('taxNumber', $event)"
                       class="block w-full px-3 py-2 border border-neutral-300 rounded-md shadow-sm placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200"
                     />
                   </div>
 
-                  <!-- Founded Year -->
+                  <!-- Founded Year - OPTIONAL -->
                   <div class="transform transition-all duration-200 hover:scale-[1.02]">
                     <label class="block text-sm font-medium text-neutral-700 mb-2">
                       Founded Year
                     </label>
                     <input
                       type="number"
-                      placeholder="2020"
+                      placeholder="2020 (optional)"
                       min="1900"
                       [max]="currentYear"
                       [value]="formData().foundedYear"
@@ -178,7 +184,7 @@ interface SectionState {
               </div>
             </div>
             <div class="flex items-center space-x-2">
-              @if (isAddressComplete()) {
+              @if (isAddressSectionComplete()) {
                 <div class="w-6 h-6 rounded-full bg-green-100 flex items-center justify-center">
                   <lucide-icon [img]="CheckIcon" [size]="14" class="text-green-600" />
                 </div>
@@ -200,7 +206,7 @@ interface SectionState {
           >
             <div class="px-6 pb-6 border-t border-neutral-100">
               <div class="pt-4 space-y-6">
-                <!-- Address Line 1 -->
+                <!-- Address Line 1 - REQUIRED -->
                 <div class="transform transition-all duration-200 hover:scale-[1.02]">
                   <label class="block text-sm font-medium text-neutral-700 mb-2">
                     Address Line 1 <span class="text-red-500">*</span>
@@ -211,10 +217,14 @@ interface SectionState {
                     [value]="formData().addressLine1"
                     (input)="updateField('addressLine1', $event)"
                     class="block w-full px-3 py-2 border border-neutral-300 rounded-md shadow-sm placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200"
+                    [class.border-red-300]="showValidation() && !formData().addressLine1.trim()"
                   />
+                  @if (showValidation() && !formData().addressLine1.trim()) {
+                    <p class="mt-1 text-sm text-red-600">Street address is required</p>
+                  }
                 </div>
 
-                <!-- Address Line 2 -->
+                <!-- Address Line 2 - OPTIONAL -->
                 <div class="transform transition-all duration-200 hover:scale-[1.02]">
                   <label class="block text-sm font-medium text-neutral-700 mb-2">
                     Address Line 2
@@ -229,7 +239,7 @@ interface SectionState {
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <!-- City -->
+                  <!-- City - REQUIRED -->
                   <div class="transform transition-all duration-200 hover:scale-[1.02]">
                     <label class="block text-sm font-medium text-neutral-700 mb-2">
                       City <span class="text-red-500">*</span>
@@ -240,10 +250,14 @@ interface SectionState {
                       [value]="formData().city"
                       (input)="updateField('city', $event)"
                       class="block w-full px-3 py-2 border border-neutral-300 rounded-md shadow-sm placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200"
+                      [class.border-red-300]="showValidation() && !formData().city.trim()"
                     />
+                    @if (showValidation() && !formData().city.trim()) {
+                      <p class="mt-1 text-sm text-red-600">City is required</p>
+                    }
                   </div>
 
-                  <!-- Province -->
+                  <!-- Province - REQUIRED -->
                   <div class="transform transition-all duration-200 hover:scale-[1.02]">
                     <label class="block text-sm font-medium text-neutral-700 mb-2">
                       Province <span class="text-red-500">*</span>
@@ -252,6 +266,7 @@ interface SectionState {
                       [value]="formData().province"
                       (change)="updateField('province', $event)"
                       class="block w-full px-3 py-2 border border-neutral-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200"
+                      [class.border-red-300]="showValidation() && !formData().province"
                     >
                       <option value="">Select province</option>
                       <option value="western_cape">Western Cape</option>
@@ -264,16 +279,19 @@ interface SectionState {
                       <option value="north_west">North West</option>
                       <option value="northern_cape">Northern Cape</option>
                     </select>
+                    @if (showValidation() && !formData().province) {
+                      <p class="mt-1 text-sm text-red-600">Province is required</p>
+                    }
                   </div>
 
-                  <!-- Postal Code -->
+                  <!-- Postal Code - OPTIONAL -->
                   <div class="transform transition-all duration-200 hover:scale-[1.02]">
                     <label class="block text-sm font-medium text-neutral-700 mb-2">
                       Postal Code
                     </label>
                     <input
                       type="text"
-                      placeholder="8001"
+                      placeholder="8001 (optional)"
                       [value]="formData().postalCode"
                       (input)="updateField('postalCode', $event)"
                       class="block w-full px-3 py-2 border border-neutral-300 rounded-md shadow-sm placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200"
@@ -281,7 +299,7 @@ interface SectionState {
                   </div>
                 </div>
 
-                <!-- Country -->
+                <!-- Country - REQUIRED -->
                 <div class="transform transition-all duration-200 hover:scale-[1.02]">
                   <label class="block text-sm font-medium text-neutral-700 mb-2">
                     Country <span class="text-red-500">*</span>
@@ -290,6 +308,7 @@ interface SectionState {
                     [value]="formData().country"
                     (change)="updateField('country', $event)"
                     class="block w-full px-3 py-2 border border-neutral-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200"
+                    [class.border-red-300]="showValidation() && !formData().country"
                   >
                     <option value="South Africa">South Africa</option>
                     <option value="Botswana">Botswana</option>
@@ -297,6 +316,9 @@ interface SectionState {
                     <option value="Zambia">Zambia</option>
                     <option value="Zimbabwe">Zimbabwe</option>
                   </select>
+                  @if (showValidation() && !formData().country) {
+                    <p class="mt-1 text-sm text-red-600">Country is required</p>
+                  }
                 </div>
               </div>
             </div>
@@ -304,9 +326,9 @@ interface SectionState {
         </div>
       </div>
 
-      <!-- Organization Scale Section -->
+      <!-- Organization Scale Section - OPTIONAL -->
       <div class="transform transition-all duration-300 hover:scale-[1.01]">
-        <div class="bg-white rounded-xl border border-neutral-200 shadow-sm overflow-hidden">
+        <div class=" rounded-xl border border-neutral-200 shadow-sm overflow-hidden">
           <!-- Section Header -->
           <button
             (click)="toggleSection('scale')"
@@ -436,18 +458,24 @@ interface SectionState {
           <div>
             <h3 class="font-medium text-blue-900">Step 2 Progress</h3>
             <p class="text-sm text-blue-700 mt-1">
-              @if (isFormValid()) {
+              @if (isRequiredFieldsComplete()) {
                 <span class="inline-flex items-center">
                   <span class="mr-2">✅</span>
                   Ready to proceed to verification
                 </span>
               } @else {
-                Complete required fields to continue
+                Complete required fields to continue:
+                @if (!isLegalSectionComplete()) {
+                  <span class="block mt-1">• Legal name and registration number needed</span>
+                }
+                @if (!isAddressSectionComplete()) {
+                  <span class="block mt-1">• Address, city, province, and country needed</span>
+                }
               }
             </p>
           </div>
           
-          @if (isFormValid()) {
+          @if (isRequiredFieldsComplete()) {
             <div class="flex items-center text-blue-600 animate-in fade-in duration-300">
               <lucide-icon [img]="CheckIcon" [size]="20" class="mr-2" />
               <span class="font-medium">Complete</span>
@@ -461,7 +489,6 @@ interface SectionState {
 export class LegalInfoFormComponent implements OnInit, OnDestroy {
   protected onboardingService = inject(FunderOnboardingService);
   private destroy$ = new Subject<void>();
- 
 
   // Icons
   FileTextIcon = FileText;
@@ -477,6 +504,7 @@ export class LegalInfoFormComponent implements OnInit, OnDestroy {
   ChevronRightIcon = ChevronRight;
 
   currentYear = new Date().getFullYear();
+  showValidation = signal(false);
 
   // Section expansion state
   expandedSections = signal<SectionState>({
@@ -504,7 +532,6 @@ export class LegalInfoFormComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.loadExistingData();
     this.setupSubscriptions();
- 
     this.setupSmartSectionExpansion();
   }
 
@@ -530,27 +557,23 @@ export class LegalInfoFormComponent implements OnInit, OnDestroy {
       });
   }
 
- 
-
   private setupSmartSectionExpansion() {
     // Auto-expand next section when current one is completed
- 
-        const current = this.expandedSections();
-        
-        if (this.isLegalInfoComplete() && current.legal && !current.address) {
-          this.expandedSections.update(sections => ({
-            ...sections,
-            address: true
-          }));
-        }
-        
-        if (this.isAddressComplete() && current.address && !current.scale) {
-          this.expandedSections.update(sections => ({
-            ...sections,
-            scale: true
-          }));
-        }
- 
+    const current = this.expandedSections();
+    
+    if (this.isLegalSectionComplete() && current.legal && !current.address) {
+      this.expandedSections.update(sections => ({
+        ...sections,
+        address: true
+      }));
+    }
+    
+    if (this.isAddressSectionComplete() && current.address && !current.scale) {
+      this.expandedSections.update(sections => ({
+        ...sections,
+        scale: true
+      }));
+    }
   }
 
   private populateFormFromOrganization(org: Partial<FunderOrganization>) {
@@ -595,13 +618,16 @@ export class LegalInfoFormComponent implements OnInit, OnDestroy {
       [field]: value
     }));
 
- 
+    // Auto-save to local storage after any change
+    this.saveToLocalStorageOnly();
+    
+    // Auto-expand sections as they become complete
+    this.setupSmartSectionExpansion();
   }
 
   private saveToLocalStorageOnly() {
     const organizationData: Partial<FunderOrganization> = this.mapFormDataToOrganization();
     this.onboardingService.updateOrganizationData(organizationData);
-    console.log('📝 Auto-saved legal info to local storage');
   }
 
   private mapFormDataToOrganization(): Partial<FunderOrganization> {
@@ -623,10 +649,11 @@ export class LegalInfoFormComponent implements OnInit, OnDestroy {
   }
 
   // ===============================
-  // VALIDATION METHODS
+  // VALIDATION METHODS - EXACT MATCH WITH SERVICE
   // ===============================
 
-  isLegalInfoComplete(): boolean {
+  // These methods MUST match exactly what the service expects
+  isLegalSectionComplete(): boolean {
     const data = this.formData();
     return !!(
       data.legalName?.trim() &&
@@ -634,7 +661,7 @@ export class LegalInfoFormComponent implements OnInit, OnDestroy {
     );
   }
 
-  isAddressComplete(): boolean {
+  isAddressSectionComplete(): boolean {
     const data = this.formData();
     return !!(
       data.addressLine1?.trim() &&
@@ -644,16 +671,17 @@ export class LegalInfoFormComponent implements OnInit, OnDestroy {
     );
   }
 
+  // This matches the service's isLegalInfoValid() method
+  isRequiredFieldsComplete(): boolean {
+    return this.isLegalSectionComplete() && this.isAddressSectionComplete();
+  }
+
   isScaleInfoComplete(): boolean {
     const data = this.formData();
     return !!(
       data.employeeCount ||
       data.assetsUnderManagement
     );
-  }
-
-  isFormValid(): boolean {
-    return this.isLegalInfoComplete() && this.isAddressComplete();
   }
 
   hasAnyData(): boolean {
@@ -671,6 +699,14 @@ export class LegalInfoFormComponent implements OnInit, OnDestroy {
   }
 
   saveAndValidate() {
+    // Show validation errors if form is incomplete
+    this.showValidation.set(true);
+    
+    if (!this.isRequiredFieldsComplete()) {
+      console.warn('⚠️ Required fields missing');
+      return;
+    }
+    
     this.saveToLocalStorageOnly();
     console.log('📝 Legal info validated and saved locally');
   }
@@ -702,3 +738,4 @@ export class LegalInfoFormComponent implements OnInit, OnDestroy {
     });
   }
 }
+ 
