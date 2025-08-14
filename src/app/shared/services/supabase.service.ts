@@ -11,26 +11,30 @@ export class SharedSupabaseService {
   private static instance: SupabaseClient;
 
   constructor() {
-    if (!SharedSupabaseService.instance) {
-      console.log('🔧 Creating SINGLE Supabase client instance');
+   
+     if (!SharedSupabaseService.instance) {
       SharedSupabaseService.instance = createClient(
         environment.supabaseUrl, 
         environment.supabaseAnonKey,
         {
-          db: {
-            schema: 'public'
-          },
+          db: { schema: 'public' },
           auth: {
             persistSession: true,
             autoRefreshToken: true,
-            detectSessionInUrl: true
+            detectSessionInUrl: false, // FIXED: Prevent URL conflicts
+            flowType: 'pkce'
           },
           global: {
-            headers: {
-              'X-Client-Info': 'supabase-js-web'
+            headers: { 'X-Client-Info': 'supabase-js-web' }
+          },
+          // FIXED: Add connection limits
+          realtime: {
+            params: {
+              eventsPerSecond: 10
             }
           }
         }
+ 
       );
     } else {
       console.log('♻️ Reusing existing Supabase client instance');
