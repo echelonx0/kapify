@@ -17,8 +17,7 @@ import {
   ChevronDown,
   ChevronRight
 } from 'lucide-angular';
-import { UiButtonComponent} from '../../shared/components';
-import { UiSectionCardComponent } from '../../shared/components/ui-section-card.component';
+import { UiButtonComponent} from '../../shared/components'; 
 import { FunderOnboardingService, FunderOrganization } from '../services/funder-onboarding.service';
 
 interface LegalInfoFormData {
@@ -49,7 +48,7 @@ interface SectionState {
     CommonModule,
     FormsModule,
     UiButtonComponent,
-    UiSectionCardComponent,
+ 
     LucideAngularModule
   ],
   template: `

@@ -234,9 +234,6 @@ currentImage: string = '';
       case 'funding':
         this.router.navigate(['/opportunities']);
         break;
-      case 'funding':
-        this.router.navigate(['/applications']);
-        break;
       default:
         this.showActivityDetails(activity);
     }
