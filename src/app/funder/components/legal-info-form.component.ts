@@ -504,7 +504,7 @@ export class LegalInfoFormComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.loadExistingData();
     this.setupSubscriptions();
-    this.setupAutoSave();
+ 
     this.setupSmartSectionExpansion();
   }
 
@@ -530,23 +530,14 @@ export class LegalInfoFormComponent implements OnInit, OnDestroy {
       });
   }
 
-  private setupAutoSave() {
-    this.autoSaveSubject
-      .pipe(
-        takeUntil(this.destroy$),
-        debounceTime(1000)
-      )
-      .subscribe(() => {
-        this.saveToLocalStorageOnly();
-      });
-  }
+ 
 
   private setupSmartSectionExpansion() {
     // Auto-expand next section when current one is completed
     this.autoSaveSubject
       .pipe(
         takeUntil(this.destroy$),
-        debounceTime(500)
+        debounceTime(5000)
       )
       .subscribe(() => {
         const current = this.expandedSections();
@@ -609,7 +600,7 @@ export class LegalInfoFormComponent implements OnInit, OnDestroy {
       [field]: value
     }));
 
-    this.autoSaveSubject.next();
+ 
   }
 
   private saveToLocalStorageOnly() {

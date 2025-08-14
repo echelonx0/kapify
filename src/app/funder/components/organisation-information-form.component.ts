@@ -58,7 +58,7 @@ interface OrganizationFormData {
 export class OrganizationInfoFormComponent implements OnInit, OnDestroy {
   protected onboardingService = inject(FunderOnboardingService);
   private destroy$ = new Subject<void>();
-  private autoSaveSubject = new Subject<void>();
+  
 
   // Icons
   Building2Icon = Building2;
@@ -111,7 +111,7 @@ export class OrganizationInfoFormComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.loadExistingData();
     this.setupSubscriptions();
-    this.setupAutoSave();
+ 
   }
 
   ngOnDestroy() {
@@ -136,17 +136,7 @@ export class OrganizationInfoFormComponent implements OnInit, OnDestroy {
       });
   }
 
-  // **FIXED**: Simplified auto-save
-  private setupAutoSave() {
-    this.autoSaveSubject
-      .pipe(
-        takeUntil(this.destroy$),
-        debounceTime(1000) // Wait 1 second after user stops typing
-      )
-      .subscribe(() => {
-        this.saveToLocalStorageOnly();
-      });
-  }
+ 
 
   private populateFormFromOrganization(org: Partial<FunderOrganization>) {
     this.formData.update(data => ({
@@ -185,8 +175,7 @@ export class OrganizationInfoFormComponent implements OnInit, OnDestroy {
       [field]: value
     }));
 
-    // **FIXED**: Only trigger debounced local save
-    this.autoSaveSubject.next();
+ 
   }
 
   // **FIXED**: Clear method that only saves locally

@@ -304,7 +304,7 @@ interface SectionState {
 export class BasicInfoFormComponent implements OnInit, OnDestroy {
   protected onboardingService = inject(FunderOnboardingService);
   private destroy$ = new Subject<void>();
-  private autoSaveSubject = new Subject<void>();
+   
 
   // Icons
   Building2Icon = Building2;
@@ -337,8 +337,7 @@ export class BasicInfoFormComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.loadExistingData();
     this.setupSubscriptions();
-    this.setupAutoSave();
-    this.setupSmartSectionExpansion();
+   
   }
 
   ngOnDestroy() {
@@ -363,35 +362,8 @@ export class BasicInfoFormComponent implements OnInit, OnDestroy {
       });
   }
 
-  private setupAutoSave() {
-    this.autoSaveSubject
-      .pipe(
-        takeUntil(this.destroy$),
-        debounceTime(1000)
-      )
-      .subscribe(() => {
-        this.saveToLocalStorageOnly();
-      });
-  }
-
-  private setupSmartSectionExpansion() {
-    // Auto-expand contact section when basic info is completed
-    this.autoSaveSubject
-      .pipe(
-        takeUntil(this.destroy$),
-        debounceTime(500)
-      )
-      .subscribe(() => {
-        const current = this.expandedSections();
-        
-        if (this.isBasicInfoComplete() && current.basic && !current.contact) {
-          this.expandedSections.update(sections => ({
-            ...sections,
-            contact: true
-          }));
-        }
-      });
-  }
+ 
+ 
 
   private populateFormFromOrganization(org: Partial<FunderOrganization>) {
     this.formData.update(data => ({
@@ -429,7 +401,7 @@ export class BasicInfoFormComponent implements OnInit, OnDestroy {
       [field]: value
     }));
 
-    this.autoSaveSubject.next();
+   
   }
 
   private saveToLocalStorageOnly() {
