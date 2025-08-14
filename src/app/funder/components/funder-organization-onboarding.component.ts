@@ -14,7 +14,8 @@ import {
   ArrowRight,
   Shield,
   FileText,
-  Sparkles
+  Sparkles,
+  Upload
 } from 'lucide-angular';
 import { UiButtonComponent } from '../../shared/components';
 import { FunderOnboardingService, OnboardingState } from '../services/funder-onboarding.service';
@@ -45,6 +46,7 @@ export class OrganizationOnboardingComponent implements OnInit, OnDestroy {
   ShieldIcon = Shield;
   FileTextIcon = FileText;
   SparklesIcon = Sparkles;
+  UploadIcon = Upload;   // ADD THIS
 
   // State - FIXED: Start with 'form' view and update based on actual data
   currentView = signal<'form' | 'success' | 'verification' | 'complete'>('form');
