@@ -78,7 +78,7 @@ import { FunderOnboardingService, OnboardingStep } from '../../services/funder-o
 })
 export class OrganizationOnboardingLayoutComponent implements OnInit {
   private router = inject(Router);
-  public onboardingService = inject(FunderOnboardingService);
+   public onboardingService = inject(FunderOnboardingService);
 
   // State
   showMobileNav = signal(false);

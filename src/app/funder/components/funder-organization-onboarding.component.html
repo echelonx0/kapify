@@ -15,26 +15,36 @@
         We'll guide you through setting up your funding organization profile. This should take about 15 minutes.
       </p>
 
-      <div class="space-y-4 max-w-sm mx-auto">
-        <ui-button 
-          variant="primary" 
-          size="lg" 
-          class="w-full"
-          (clicked)="startSetup()"
-        >
-          <lucide-icon [img]="ArrowRightIcon" [size]="16" class="mr-2" />
-          Start Setup
-        </ui-button>
-        
-        <ui-button 
-          variant="outline" 
-          size="lg" 
-          class="w-full"
-          (clicked)="loadFromExisting()"
-        >
-          Load from Database
-        </ui-button>
-      </div>
+   <div class="space-y-4 max-w-sm mx-auto">
+  <ui-button 
+    variant="primary" 
+    size="lg" 
+    class="w-full"
+    (clicked)="startSetup()"
+  >
+    <lucide-icon [img]="ArrowRightIcon" [size]="16" class="mr-2" />
+    Begin Org Setup
+  </ui-button>
+  
+  <ui-button 
+    variant="outline" 
+    size="lg" 
+    class="w-full"
+    (clicked)="loadFromExisting()"
+  >
+    Load from Database
+  </ui-button>
+
+  <ui-button 
+    variant="outline" 
+    size="lg" 
+    class="w-full"
+    (clicked)="loadFromExisting()"
+  >
+    Import Your Profile
+  </ui-button>
+</div>
+
     </div>
   }
 
@@ -53,7 +63,7 @@
         <ui-button 
           variant="primary" 
           size="lg" 
-          class="w-full"
+          class=" mr-4"
           (clicked)="proceedToDashboard()"
         >
           <lucide-icon [img]="ArrowRightIcon" [size]="16" class="mr-2" />
@@ -63,7 +73,7 @@
         <ui-button 
           variant="outline" 
           size="lg" 
-          class="w-full"
+         
           (clicked)="editOrganization()"
         >
           <lucide-icon [img]="FileTextIcon" [size]="16" class="mr-2" />

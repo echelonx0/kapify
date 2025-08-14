@@ -4,8 +4,7 @@ import { Observable, from, throwError, BehaviorSubject } from 'rxjs';
 import { tap, catchError, map } from 'rxjs/operators';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { environment } from '../../../environments/environment';
-import { AuthService } from '../../auth/production.auth.service';
-import { FundingOpportunity } from '../../shared/models/funder.models';
+import { AuthService } from '../../auth/production.auth.service'; 
 
 // Management-specific interfaces
 interface OpportunityListItem {

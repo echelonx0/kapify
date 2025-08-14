@@ -724,4 +724,3 @@ private async fetchOnboardingStatus(userId: string): Promise<OnboardingState> {
     }
   }
 }
-
