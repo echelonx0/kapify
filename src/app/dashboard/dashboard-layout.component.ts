@@ -14,12 +14,12 @@ import { Subject } from 'rxjs';
   template: `
     <div class="min-h-screen bg-neutral-50 overflow-hidden">
       <!-- Show sidebar only for non-home routes -->
-      <sidebar-nav *ngIf="!isHomeRoute()" />
+      <sidebar-nav   />
       
       <!-- Main Content -->
       <div [class]="contentClass()">
         <!-- Show header only for non-home routes -->
-        <dashboard-header *ngIf="!isHomeRoute()" />
+        <dashboard-header   />
         
         <!-- Page Content -->
         <main [class]="mainClass()">

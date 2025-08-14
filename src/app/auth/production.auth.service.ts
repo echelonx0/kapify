@@ -1,6 +1,4 @@
-// src/app/auth/production.auth.service.ts - FINAL FIX
-// Remove the broken import and clean up the code
-
+// src/app/auth/production.auth.service.ts  
 import { Injectable, signal, computed, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { createClient, SupabaseClient, User, Session } from '@supabase/supabase-js';
@@ -8,9 +6,7 @@ import { BehaviorSubject, Observable, from, throwError } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 
-// ❌ REMOVE THIS BROKEN LINE:
-// import { handleProfileError } from '../shared/utils/profileErrorHandler';
-
+ 
 export interface SignUpData {
   email: string;
   password: string;
@@ -76,9 +72,7 @@ export class AuthService {
   isAuthenticated$ = this.user$.pipe(map(user => !!user));
 
   constructor() {
-    console.log('🔌 Initializing Supabase with:');
-    console.log('URL:', environment.supabaseUrl);
-    console.log('Key length:', environment.supabaseAnonKey?.length);
+ 
     
     this.supabase = createClient(environment.supabaseUrl, environment.supabaseAnonKey,
       {

@@ -1,0 +1,196 @@
+    <div class="h-full bg-gray-50 flex flex-col overflow-hidden ml-16 mr-16">
+      <!-- Fixed Header -->
+      <div class="bg-white border-b border-gray-200 px-6 py-4 flex-shrink-0">
+        <div class="flex items-center justify-between">
+          <div>
+            <h1 class="text-2xl font-bold text-gray-900">This is Kapify</h1>
+            <p class="text-gray-600 mt-1">Connecting Capital to Wealth generating businesses</p>
+          </div>
+
+          <div class="flex items-center space-x-3">
+            <ui-button variant="outline" (clicked)="toggleFilters()">
+              <lucide-icon [img]="FilterIcon" [size]="16" class="mr-2" />
+              Filters
+              @if (hasActiveFilters()) {
+                <span class="ml-1 bg-red-500 text-white rounded-full w-2 h-2"></span>
+              }
+            </ui-button>
+
+            <ui-button variant="primary" (clicked)="createNewApplication()">
+              <lucide-icon [img]="PlusIcon" [size]="16" class="mr-2" />
+              New Application
+            </ui-button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Content Area -->
+      <div class="flex-1 flex overflow-hidden">
+        <!-- Left Side - Applications (60%) -->
+        <div class="w-3/5 flex flex-col overflow-hidden">
+          <!-- Filters Section -->
+          @if (showFilters()) {
+            <div class="bg-white border-b border-gray-200 p-6 flex-shrink-0">
+              <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <!-- Search -->
+                <div class="relative">
+                  <lucide-icon [img]="SearchIcon" [size]="16" class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                  <input
+                    type="text"
+                    placeholder="Search applications..."
+                    [(ngModel)]="searchQuery"
+                    class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  />
+                </div>
+
+                <!-- Status Filter -->
+                <select
+                  [(ngModel)]="statusFilter"
+                  class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                >
+                  <option value="">All Statuses</option>
+                  <option value="draft">Draft</option>
+                  <option value="submitted">Submitted</option>
+                  <option value="under_review">Under Review</option>
+                  <option value="approved">Approved</option>
+                  <option value="rejected">Rejected</option>
+                </select>
+
+                <!-- Funding Type Filter -->
+                <select
+                  [(ngModel)]="fundingTypeFilter"
+                  class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                >
+                  <option value="">All Types</option>
+                  <option value="equity">Equity</option>
+                  <option value="debt">Debt</option>
+                  <option value="grant">Grant</option>
+                  <option value="mezzanine">Mezzanine</option>
+                </select>
+
+                <!-- Clear Filters -->
+                <ui-button variant="outline" (clicked)="clearFilters()" [disabled]="!hasActiveFilters()">
+                  <lucide-icon [img]="XIcon" [size]="16" class="mr-2" />
+                  Clear
+                </ui-button>
+              </div>
+            </div>
+          }
+
+          <!-- Stats Cards -->
+          <div class="bg-white border-b border-gray-200 p-6 flex-shrink-0">
+            <div class="grid grid-cols-4 gap-6">
+              <div class="text-center">
+                <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mx-auto mb-2">
+                  <lucide-icon [img]="FileTextIcon" [size]="24" class="text-green-600" />
+                </div>
+                <div class="text-2xl font-bold text-gray-900">{{ stats().total }}</div>
+                <div class="text-sm text-gray-600">Total</div>
+              </div>
+
+              <div class="text-center">
+                <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center mx-auto mb-2">
+                  <lucide-icon [img]="ClockIcon" [size]="24" class="text-yellow-600" />
+                </div>
+                <div class="text-2xl font-bold text-gray-900">{{ stats().underReview }}</div>
+                <div class="text-sm text-gray-600">Under Review</div>
+              </div>
+
+              <div class="text-center">
+                <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mx-auto mb-2">
+                  <lucide-icon [img]="TrendingUpIcon" [size]="24" class="text-green-600" />
+                </div>
+                <div class="text-2xl font-bold text-gray-900">{{ stats().approved }}</div>
+                <div class="text-sm text-gray-600">Approved</div>
+              </div>
+
+              <div class="text-center">
+                <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mx-auto mb-2">
+                  <lucide-icon [img]="DollarSignIcon" [size]="24" class="text-purple-600" />
+                </div>
+                <div class="text-2xl font-bold text-gray-900">{{ formatTotalRequested() }}</div>
+                <div class="text-sm text-gray-600">Total Requested</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Applications List - Scrollable -->
+          <div class="flex-1 overflow-y-auto p-6 space-y-4">
+            @if (isLoading()) {
+              <div class="flex items-center justify-center py-12">
+                <div class="text-center">
+                  <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto mb-4"></div>
+                  <p class="text-gray-600">Loading applications...</p>
+                </div>
+              </div>
+            } @else if (filteredApplications().length === 0) {
+              <div class="text-center py-12">
+                <lucide-icon [img]="FileTextIcon" [size]="48" class="mx-auto text-gray-400 mb-4" />
+                <h3 class="text-lg font-medium text-gray-900 mb-2">No Applications Found</h3>
+                <p class="text-gray-600 mb-6">
+                  @if (hasActiveFilters()) {
+                    No applications match your current filters.
+                  } @else {
+                    You haven't created any applications yet.
+                  }
+                </p>
+              </div>
+            } @else {
+              @for (application of filteredApplications(); track application.id) {
+                <div class="bg-white rounded-lg border border-gray-200 p-6 hover:shadow-md transition-shadow">
+                  <!-- Application Header -->
+                  <div class="flex items-start justify-between mb-4">
+                    <div class="flex-1">
+                      <div class="flex items-center space-x-3 mb-2">
+                        <h3 class="text-lg font-semibold text-gray-900 hover:text-green-600 cursor-pointer"
+                            (click)="viewApplication(application.id)">
+                          {{ application.title }}
+                        </h3>
+                        <span class="px-2 py-1 text-xs font-medium rounded-full"
+                              [class]="getStatusBadgeClass(application.status)">
+                          {{ getStatusText(application.status) }}
+                        </span>
+                      </div>
+                      
+                      <div class="flex items-center space-x-4 text-sm text-gray-600 mb-2">
+                        <span>{{ application.applicationNumber }}</span>
+                        <span>{{ formatCurrency(application.requestedAmount, application.currency) }}</span>
+                        <span>{{ formatDate(application.submittedAt || application.createdAt) }}</span>
+                      </div>
+                      
+                      @if (application.description) {
+                        <p class="text-gray-700 line-clamp-2">{{ application.description }}</p>
+                      }
+                    </div>
+                    
+                    <ui-button variant="outline" size="sm" (clicked)="viewApplication(application.id)">
+                      <lucide-icon [img]="EyeIcon" [size]="14" class="mr-1" />
+                      View
+                    </ui-button>
+                  </div>
+                  
+                  <!-- Application Progress -->
+                  <div class="mt-4 pt-4 border-t border-gray-200">
+                    <div class="flex items-center justify-between text-sm mb-2">
+                      <span class="text-gray-600">Progress</span>
+                      <span class="text-gray-900 font-medium">{{ getApplicationProgress(application) }}% Complete</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2">
+                      <div 
+                        class="bg-green-600 h-2 rounded-full transition-all duration-300"
+                        [style.width.%]="getApplicationProgress(application)">
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              }
+            }
+          </div>
+        </div>
+
+        <!-- Right Side - Activity Inbox (40%) -->
+        <div class="w-2/5 border-l border-gray-200">
+          <app-activity-inbox />
+        </div>
+      </div>
+    </div>

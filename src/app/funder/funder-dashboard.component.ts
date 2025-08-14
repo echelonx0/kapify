@@ -14,7 +14,7 @@ import {
   CheckCircle,
   ArrowRight
 } from 'lucide-angular';
-import { UiButtonComponent, UiCardComponent } from '../shared/components';
+import { UiButtonComponent } from '../shared/components';
 import { FunderOnboardingService, OnboardingState } from './services/funder-onboarding.service';
 import { OpportunityManagementService } from './services/opportunity-management.service';
  
@@ -24,7 +24,7 @@ import { OpportunityManagementService } from './services/opportunity-management.
   imports: [
     CommonModule,
     UiButtonComponent,
-    UiCardComponent,
+   
     LucideAngularModule
   ],
   templateUrl: 'funder-dashboard.component.html'
