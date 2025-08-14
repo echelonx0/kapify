@@ -4,12 +4,12 @@
     <!-- Header Section -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
       <div>
-        <h1 class="text-2xl font-bold text-gray-900">Dashboard</h1>
-        <p class="mt-1 text-sm text-gray-600">Manage your funding opportunities and track performance</p>
+        <h1 class="text-3xl font-bold text-gray-900">Dashboard</h1>
+        <p class="mt-2 text-gray-600">Manage your funding opportunities and track performance</p>
       </div>
       
       @if (onboardingState()?.canCreateOpportunities) {
-        <ui-button variant="primary" (clicked)="createOpportunity()" class="shrink-0">
+        <ui-button variant="primary" (clicked)="createOpportunity()" class="shrink-0 shadow-sm">
           <lucide-icon [img]="PlusIcon" [size]="16" class="mr-2" />
           Create Opportunity
         </ui-button>
@@ -18,23 +18,23 @@
 
     <!-- Onboarding Status Card -->
     @if (onboardingState() && !onboardingState()!.isComplete) {
-      <ui-card class="border-l-4 shadow-sm" [class]="getOnboardingCardClasses()">
-        <div class="p-6">
+      <div class="bg-gradient-to-r from-blue-500 via-blue-600 to-indigo-600 p-0.5 rounded-xl shadow-lg">
+        <div class="bg-white rounded-xl p-6">
           <div class="flex items-start gap-4">
             <div class="flex-shrink-0 mt-1">
               @if (onboardingState()!.canCreateOpportunities) {
-                <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
-                  <lucide-icon [img]="CheckCircleIcon" [size]="20" class="text-green-600" />
+                <div class="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
+                  <lucide-icon [img]="CheckCircleIcon" [size]="24" class="text-green-600" />
                 </div>
               } @else {
-                <div class="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center">
-                  <lucide-icon [img]="AlertCircleIcon" [size]="20" class="text-orange-600" />
+                <div class="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center">
+                  <lucide-icon [img]="AlertCircleIcon" [size]="24" class="text-orange-600" />
                 </div>
               }
             </div>
             
             <div class="flex-1 min-w-0">
-              <h3 class="text-lg font-semibold text-gray-900 mb-2">
+              <h3 class="text-xl font-semibold text-gray-900 mb-2">
                 {{ getOnboardingTitle() }}
               </h3>
               <p class="text-gray-600 mb-6 leading-relaxed">
@@ -44,12 +44,12 @@
               <!-- Progress Section -->
               <div class="mb-6">
                 <div class="flex items-center justify-between mb-3">
-                  <span class="text-sm font-medium text-gray-700">Setup Progress</span>
-                  <span class="text-sm font-semibold text-gray-900">{{ onboardingState()!.completionPercentage }}%</span>
+                  <span class="text-sm font-semibold text-gray-700">Setup Progress</span>
+                  <span class="text-sm font-bold text-gray-900">{{ onboardingState()!.completionPercentage }}%</span>
                 </div>
                 <div class="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
                   <div 
-                    class="bg-gradient-to-r from-primary-500 to-primary-600 h-3 rounded-full transition-all duration-500 ease-out"
+                    class="bg-gradient-to-r from-blue-500 to-indigo-600 h-3 rounded-full transition-all duration-500 ease-out"
                     [style.width.%]="onboardingState()!.completionPercentage"
                   ></div>
                 </div>
@@ -58,11 +58,11 @@
               <!-- Action Buttons -->
               <div class="flex flex-col sm:flex-row gap-3">
                 @if (!onboardingState()!.canCreateOpportunities) {
-                  <ui-button variant="primary" (clicked)="completeOnboarding()">
+                  <ui-button variant="primary" (clicked)="completeOnboarding()" class="shadow-sm">
                     Complete Setup
                   </ui-button>
                 } @else {
-                  <ui-button variant="outline" (clicked)="improveProfile()">
+                  <ui-button variant="outline" (clicked)="improveProfile()" class="shadow-sm">
                     <lucide-icon [img]="Building2Icon" [size]="16" class="mr-2" />
                     Get Verified
                   </ui-button>
@@ -71,79 +71,71 @@
             </div>
           </div>
         </div>
-      </ui-card>
+      </div>
     }
 
     <!-- Analytics Cards -->
     @if (analytics()) {
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         <!-- Active Opportunities -->
-        <ui-card class="relative overflow-hidden group hover:shadow-md transition-shadow duration-200">
-          <div class="p-6">
-            <div class="flex items-center justify-between">
-              <div class="flex-1">
-                <div class="flex items-center gap-3 mb-4">
-                  <div class="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center group-hover:bg-blue-100 transition-colors">
-                    <lucide-icon [img]="TrendingUpIcon" [size]="24" class="text-blue-600" />
-                  </div>
+        <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-6 hover:shadow-md transition-all duration-200 group">
+          <div class="flex items-center justify-between">
+            <div class="flex-1">
+              <div class="flex items-center gap-3 mb-4">
+                <div class="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center group-hover:bg-blue-100 transition-colors">
+                  <lucide-icon [img]="TrendingUpIcon" [size]="24" class="text-blue-600" />
                 </div>
-                <p class="text-3xl font-bold text-gray-900 mb-1">{{ getActiveOpportunitiesCount() }}</p>
-                <p class="text-sm text-gray-600 font-medium">Active Opportunities</p>
               </div>
+              <p class="text-3xl font-bold text-gray-900 mb-1">{{ getActiveOpportunitiesCount() }}</p>
+              <p class="text-sm text-gray-600 font-medium">Active Opportunities</p>
             </div>
           </div>
-        </ui-card>
+        </div>
 
         <!-- Total Applications -->
-        <ui-card class="relative overflow-hidden group hover:shadow-md transition-shadow duration-200">
-          <div class="p-6">
-            <div class="flex items-center justify-between">
-              <div class="flex-1">
-                <div class="flex items-center gap-3 mb-4">
-                  <div class="w-12 h-12 bg-green-50 rounded-xl flex items-center justify-center group-hover:bg-green-100 transition-colors">
-                    <lucide-icon [img]="UsersIcon" [size]="24" class="text-green-600" />
-                  </div>
+        <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-6 hover:shadow-md transition-all duration-200 group">
+          <div class="flex items-center justify-between">
+            <div class="flex-1">
+              <div class="flex items-center gap-3 mb-4">
+                <div class="w-12 h-12 bg-green-50 rounded-xl flex items-center justify-center group-hover:bg-green-100 transition-colors">
+                  <lucide-icon [img]="UsersIcon" [size]="24" class="text-green-600" />
                 </div>
-                <p class="text-3xl font-bold text-gray-900 mb-1">{{ formatNumber(analytics()!.totalApplications) }}</p>
-                <p class="text-sm text-gray-600 font-medium">Total Applications</p>
               </div>
+              <p class="text-3xl font-bold text-gray-900 mb-1">{{ formatNumber(analytics()!.totalApplications) }}</p>
+              <p class="text-sm text-gray-600 font-medium">Total Applications</p>
             </div>
           </div>
-        </ui-card>
+        </div>
 
         <!-- Conversion Rate -->
-        <ui-card class="relative overflow-hidden group hover:shadow-md transition-shadow duration-200">
-          <div class="p-6">
-            <div class="flex items-center justify-between">
-              <div class="flex-1">
-                <div class="flex items-center gap-3 mb-4">
-                  <div class="w-12 h-12 bg-purple-50 rounded-xl flex items-center justify-center group-hover:bg-purple-100 transition-colors">
-                    <lucide-icon [img]="DollarSignIcon" [size]="24" class="text-purple-600" />
-                  </div>
+        <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-6 hover:shadow-md transition-all duration-200 group">
+          <div class="flex items-center justify-between">
+            <div class="flex-1">
+              <div class="flex items-center gap-3 mb-4">
+                <div class="w-12 h-12 bg-purple-50 rounded-xl flex items-center justify-center group-hover:bg-purple-100 transition-colors">
+                  <lucide-icon [img]="DollarSignIcon" [size]="24" class="text-purple-600" />
                 </div>
-                <p class="text-3xl font-bold text-gray-900 mb-1">{{ analytics()!.averageConversionRate.toFixed(1) }}%</p>
-                <p class="text-sm text-gray-600 font-medium">Conversion Rate</p>
               </div>
+              <p class="text-3xl font-bold text-gray-900 mb-1">{{ analytics()!.averageConversionRate.toFixed(1) }}%</p>
+              <p class="text-sm text-gray-600 font-medium">Conversion Rate</p>
             </div>
           </div>
-        </ui-card>
+        </div>
 
         <!-- Total Views -->
-        <ui-card class="relative overflow-hidden group hover:shadow-md transition-shadow duration-200">
-          <div class="p-6">
-            <div class="flex items-center justify-between">
-              <div class="flex-1">
-                <div class="flex items-center gap-3 mb-4">
-                  <div class="w-12 h-12 bg-orange-50 rounded-xl flex items-center justify-center group-hover:bg-orange-100 transition-colors">
-                    <lucide-icon [img]="TrendingUpIcon" [size]="24" class="text-orange-600" />
-                  </div>
+        <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-6 hover:shadow-md transition-all duration-200 group">
+          <div class="flex items-center justify-between">
+            <div class="flex-1">
+              <div class="flex items-center gap-3 mb-4">
+                <div class="w-12 h-12 bg-orange-50 rounded-xl flex items-center justify-center group-hover:bg-orange-100 transition-colors">
+                  <lucide-icon [img]="TrendingUpIcon" [size]="24" class="text-orange-600" />
                 </div>
-                <p class="text-3xl font-bold text-gray-900 mb-1">{{ formatNumber(analytics()!.totalViews) }}</p>
-                <p class="text-sm text-gray-600 font-medium">Total Views</p>
               </div>
+              <p class="text-3xl font-bold text-gray-900 mb-1">{{ formatNumber(analytics()!.totalViews) }}</p>
+              <p class="text-sm text-gray-600 font-medium">Total Views</p>
             </div>
           </div>
-        </ui-card>
+        </div>
       </div>
     }
 
@@ -152,9 +144,9 @@
       
       <!-- Recent Opportunities Section -->
       <div class="xl:col-span-2">
-        <ui-card class="shadow-sm">
+        <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
           <!-- Header -->
-          <div class="px-6 py-5 border-b border-gray-200 bg-white rounded-t-lg">
+          <div class="px-6 py-6 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50">
             <div class="flex items-center justify-between">
               <div>
                 <h2 class="text-xl font-semibold text-gray-900">Recent Opportunities</h2>
@@ -171,7 +163,7 @@
           @if (recentOpportunities().length === 0) {
             <!-- Empty State -->
             <div class="px-6 py-16 text-center">
-              <div class="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
+              <div class="w-20 h-20 bg-gray-100 rounded-xl flex items-center justify-center mx-auto mb-6">
                 <lucide-icon [img]="PlusIcon" [size]="32" class="text-gray-400" />
               </div>
               <h3 class="text-xl font-semibold text-gray-900 mb-3">No opportunities yet</h3>
@@ -181,12 +173,12 @@
               
               <div class="flex flex-col sm:flex-row gap-3 justify-center">
                 @if (onboardingState()?.canCreateOpportunities) {
-                  <ui-button variant="primary" (clicked)="createOpportunity()">
+                  <ui-button variant="primary" (clicked)="createOpportunity()" class="shadow-sm">
                     <lucide-icon [img]="PlusIcon" [size]="16" class="mr-2" />
                     Create Opportunity
                   </ui-button>
                 } @else {
-                  <ui-button variant="outline" (clicked)="completeOnboarding()">
+                  <ui-button variant="outline" (clicked)="completeOnboarding()" class="shadow-sm">
                     Complete Setup First
                   </ui-button>
                 }
@@ -196,11 +188,11 @@
             <!-- Opportunities List -->
             <div class="divide-y divide-gray-100">
               @for (opportunity of recentOpportunities(); track opportunity.id) {
-                <div class="px-6 py-5 hover:bg-gray-50 transition-colors cursor-pointer group" 
+                <div class="px-6 py-6 hover:bg-gray-50 transition-colors cursor-pointer group" 
                      (click)="viewOpportunity(opportunity.id)">
                   <div class="flex items-center justify-between">
                     <div class="flex-1 min-w-0 pr-4">
-                      <h4 class="text-base font-semibold text-gray-900 mb-2 group-hover:text-primary-600 transition-colors">
+                      <h4 class="text-base font-semibold text-gray-900 mb-3 group-hover:text-blue-600 transition-colors">
                         {{ opportunity.title }}
                       </h4>
                       <div class="flex flex-wrap items-center gap-4">
@@ -208,7 +200,7 @@
                               [class]="getStatusClasses(opportunity.status)">
                           {{ formatStatus(opportunity.status) }}
                         </span>
-                        <span class="text-sm font-medium text-gray-900">{{ formatCurrency(opportunity.totalAvailable) }}</span>
+                        <span class="text-sm font-semibold text-gray-900">{{ formatCurrency(opportunity.totalAvailable) }}</span>
                         <span class="text-sm text-gray-600">{{ opportunity.currentApplications }} applications</span>
                       </div>
                     </div>
@@ -218,102 +210,101 @@
               }
             </div>
           }
-        </ui-card>
+        </div>
       </div>
 
       <!-- Sidebar -->
-      <div class="space-y-6 mb-2">
+      <div class="space-y-6">
         
         <!-- Quick Actions Card -->
-        <ui-card class="shadow-sm" [marginBottom]="'mb-6'">
-          <div class="p-6">
-            <h3 class="text-lg font-semibold text-gray-900 mb-5">Quick Actions</h3>
-            <div class="space-y-3">
-              @if (onboardingState()?.canCreateOpportunities) {
-                <ui-button variant="outline" class="w-full justify-start h-12" (clicked)="createOpportunity()">
-                  <lucide-icon [img]="PlusIcon" [size]="18" class="mr-3" />
-                  <span class="font-medium">Create Opportunity</span>
-                </ui-button>
-              }
-              
-              <ui-button variant="outline" class="w-full justify-start h-12" (clicked)="viewAllOpportunities()"  >
-                <lucide-icon [img]="TrendingUpIcon" [size]="18" class="mr-3" />
-                <span class="font-medium">Manage Opportunities</span>
-              </ui-button>
-              
-              <!-- <ui-button variant="outline" class="w-full justify-start h-12" (clicked)="viewAnalytics()"  >
-                <lucide-icon [img]="TrendingUpIcon" [size]="18" class="mr-3" />
-                <span class="font-medium">View Analytics</span>
-              </ui-button>  -->
-              
-              <ui-button variant="outline" class="w-full justify-start h-12" (clicked)="editOrganization()" >
-                <lucide-icon [img]="Building2Icon" [size]="18" class="mr-3" />
-                <span class="font-medium">Organization Settings</span>
-              </ui-button>
-            </div>
+        <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+          <h3 class="text-lg font-semibold text-gray-900 mb-5">Quick Actions</h3>
+          <div class="space-y-3">
+            @if (onboardingState()?.canCreateOpportunities) {
+              <button 
+                class="w-full flex items-center justify-start p-4 border border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-all group"
+                (click)="createOpportunity()"
+              >
+                <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mr-4 group-hover:bg-blue-200 transition-colors">
+                  <lucide-icon [img]="PlusIcon" [size]="18" class="text-blue-600" />
+                </div>
+                <span class="font-medium text-gray-900 group-hover:text-blue-600 transition-colors">Create Opportunity</span>
+              </button>
+            }
+            
+            <button 
+              class="w-full flex items-center justify-start p-4 border border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-all group"
+              (click)="viewAllOpportunities()"
+            >
+              <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center mr-4 group-hover:bg-green-200 transition-colors">
+                <lucide-icon [img]="TrendingUpIcon" [size]="18" class="text-green-600" />
+              </div>
+              <span class="font-medium text-gray-900 group-hover:text-green-600 transition-colors">Manage Opportunities</span>
+            </button>
+            
+            <button 
+              class="w-full flex items-center justify-start p-4 border border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-all group"
+              (click)="editOrganization()"
+            >
+              <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center mr-4 group-hover:bg-purple-200 transition-colors">
+                <lucide-icon [img]="Building2Icon" [size]="18" class="text-purple-600" />
+              </div>
+              <span class="font-medium text-gray-900 group-hover:text-purple-600 transition-colors">Organization Settings</span>
+            </button>
           </div>
-        </ui-card>
+        </div>
 
         <!-- Organization Info Card -->
         @if (onboardingState()?.organization) {
-          <ui-card class="shadow-sm hover:shadow-md transition-shadow duration-200">
-  <div class="p-6 space-y-6">
-    
-    <!-- Card Header -->
-    <h3 class="text-lg font-semibold text-gray-900">Organization</h3>
-    
-    <!-- Organization Details -->
-    <div class="space-y-3">
-      <h4 class="text-base font-bold text-gray-900 leading-tight">
-        {{ onboardingState()!.organization!.name }}
-      </h4>
-      <p class="text-sm text-gray-500">
-        {{ formatOrganizationType(onboardingState()!.organization!.organizationType) }}
-      </p>
-    </div>
+          <div class="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow duration-200 p-6">
+            
+            <!-- Card Header -->
+            <h3 class="text-lg font-semibold text-gray-900 mb-6">Organization</h3>
+            
+            <!-- Organization Details -->
+            <div class="space-y-4">
+              <h4 class="text-base font-bold text-gray-900 leading-tight">
+                {{ onboardingState()!.organization!.name }}
+              </h4>
+              <p class="text-sm text-gray-500">
+                {{ formatOrganizationType(onboardingState()!.organization!.organizationType) }}
+              </p>
+            </div>
 
-    <!-- Verification Badge -->
-    <div>
-      @if (onboardingState()!.organization!.isVerified) {
-        <div
-          class="inline-flex items-center px-3 py-1.5 rounded-full bg-gradient-to-r from-green-50 to-green-100 border border-green-200 shadow-sm"
-        >
-          <lucide-icon [img]="CheckCircleIcon" [size]="16" class="mr-2 text-green-600" />
-          <span class="text-sm font-medium text-green-700">Verified Organization</span>
-        </div>
-      } @else {
-        <div
-          class="inline-flex items-center px-3 py-1.5 rounded-full bg-gradient-to-r from-orange-50 to-orange-100 border border-orange-200 shadow-sm"
-        >
-          <lucide-icon [img]="AlertCircleIcon" [size]="16" class="mr-2 text-orange-600" />
-          <span class="text-sm font-medium text-orange-700">Pending Verification</span>
-        </div>
-      }
-    </div>
+            <!-- Verification Badge -->
+            <div class="mt-6">
+              @if (onboardingState()!.organization!.isVerified) {
+                <div class="inline-flex items-center px-4 py-2 rounded-lg bg-green-50 border border-green-200">
+                  <lucide-icon [img]="CheckCircleIcon" [size]="16" class="mr-2 text-green-600" />
+                  <span class="text-sm font-semibold text-green-700">Verified Organization</span>
+                </div>
+              } @else {
+                <div class="inline-flex items-center px-4 py-2 rounded-lg bg-orange-50 border border-orange-200">
+                  <lucide-icon [img]="AlertCircleIcon" [size]="16" class="mr-2 text-orange-600" />
+                  <span class="text-sm font-semibold text-orange-700">Pending Verification</span>
+                </div>
+              }
+            </div>
 
-  </div>
-</ui-card>
-
+          </div>
         }
 
         <!-- Recent Activity Card -->
         @if (analytics()?.recentActivity && analytics()!.recentActivity.length > 0) {
-          <ui-card class="shadow-sm">
-            <div class="p-6">
-              <h3 class="text-lg font-semibold text-gray-900 mb-5">Recent Activity</h3>
-              <div class="space-y-4">
-                @for (activity of analytics()!.recentActivity.slice(0, 5); track activity.id) {
-                  <div class="flex items-start gap-3">
-                    <div class="w-2 h-2 bg-primary-500 rounded-full mt-2 shrink-0"></div>
-                    <div class="flex-1 min-w-0">
-                      <p class="text-sm text-gray-900 font-medium leading-relaxed">{{ activity.description }}</p>
-                      <p class="text-xs text-gray-500 mt-1">{{ getTimeAgo(activity.timestamp) }}</p>
-                    </div>
+          <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-5">Recent Activity</h3>
+            <div class="space-y-4">
+              @for (activity of analytics()!.recentActivity.slice(0, 5); track activity.id) {
+                <div class="flex items-start gap-3">
+                  <div class="w-2 h-2 bg-blue-500 rounded-full mt-2 shrink-0"></div>
+                  <div class="flex-1 min-w-0">
+                    <p class="text-sm text-gray-900 font-medium leading-relaxed">{{ activity.description }}</p>
+                    <p class="text-xs text-gray-500 mt-1">{{ getTimeAgo(activity.timestamp) }}</p>
                   </div>
-                }
-              </div>
+                </div>
+              }
             </div>
-          </ui-card>
+          </div>
         }
       </div>
     </div>
