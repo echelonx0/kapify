@@ -141,7 +141,7 @@ export class OrganizationOnboardingLayoutComponent implements OnInit {
  
 
   goToFunderDashboard() {
-    this.router.navigate(['/funder-dashboard']);
+    this.router.navigate(['/funder/']);
   }
 
   requestHelp() {
