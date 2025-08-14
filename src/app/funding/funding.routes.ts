@@ -27,6 +27,11 @@ export const fundingRoutes: Routes = [
         path: 'create-opportunity', 
         loadComponent: () => import('../funder/components/create-opportunity/create-opportunity.component').then(c => c.CreateOpportunityComponent),
         title: 'Create Opportunity - Kapify'
+      },
+       { 
+        path: 'opportunities/:id/edit', 
+        loadComponent: () => import('../funder/components/create-opportunity/create-opportunity.component').then(c => c.CreateOpportunityComponent),
+        title: 'Edit Opportunity - Kapify'
       }
     ]
   }
