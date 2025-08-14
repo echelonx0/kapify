@@ -15,6 +15,7 @@ export interface FunderOrganization {
   organizationType: 'investment_fund' | 'bank' | 'government' | 'ngo' | 'private_equity' | 'venture_capital';
   legalName?: string;
   registrationNumber?: string;
+  organization_id: string;
   taxNumber?: string;
   website?: string;
   email?: string;
@@ -457,7 +458,7 @@ export class FunderOnboardingService {
   // DATABASE MAPPING
   // ===============================
 
-  private mapDatabaseToModel(dbOrg: any): FunderOrganization {
+  private mapDatabaseToModel(dbOrg: any): FunderOrganization { 
     return {
       id: dbOrg.id,
       userId: dbOrg.user_id,
@@ -483,7 +484,8 @@ export class FunderOnboardingService {
       isVerified: dbOrg.is_verified,
       version: dbOrg.version || 1,
       createdAt: new Date(dbOrg.created_at),
-      updatedAt: new Date(dbOrg.updated_at)
+      updatedAt: new Date(dbOrg.updated_at),
+      organization_id: 'genesis'
     };
   }
 

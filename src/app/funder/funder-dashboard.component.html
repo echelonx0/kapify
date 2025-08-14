@@ -74,6 +74,68 @@
       </div>
     }
 
+    <!-- Add this draft card AFTER the onboarding status card and BEFORE the analytics cards -->
+
+<!-- Draft Status Card -->
+@if (draftSummary().hasDraft && onboardingState()?.canCreateOpportunities) {
+  <div class="bg-gradient-to-r from-indigo-500 via-purple-600 to-pink-600 p-0.5 rounded-xl shadow-lg">
+    <div class="bg-white rounded-xl p-6">
+      <div class="flex items-start gap-4">
+        <div class="flex-shrink-0 mt-1">
+          <div class="w-12 h-12 bg-indigo-100 rounded-xl flex items-center justify-center">
+            <lucide-icon [img]="FileTextIcon" [size]="24" class="text-indigo-600" />
+          </div>
+        </div>
+        
+        <div class="flex-1 min-w-0">
+          <h3 class="text-xl font-semibold text-gray-900 mb-2">
+            Continue Your Draft
+          </h3>
+          <p class="text-gray-600 mb-4 leading-relaxed">
+            You have an unfinished opportunity draft: <span class="font-medium">"{{ getDraftTitle() }}"</span>
+          </p>
+          
+          <!-- Progress Section -->
+          <div class="mb-6">
+            <div class="flex items-center justify-between mb-3">
+              <div class="flex items-center gap-2">
+                <span class="text-sm font-semibold text-gray-700">Draft Progress</span>
+                <div class="flex items-center gap-1 text-xs text-gray-500">
+                  <lucide-icon [img]="ClockIcon" [size]="12" />
+                  <span>{{ getDraftLastSavedText() }}</span>
+                </div>
+              </div>
+              <span class="text-sm font-bold text-gray-900">{{ draftSummary().completionPercentage }}%</span>
+            </div>
+            <div class="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+              <div 
+                class="h-3 rounded-full transition-all duration-500 ease-out"
+                [class]="getDraftProgressColor()"
+                [style.width.%]="draftSummary().completionPercentage"
+              ></div>
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="flex flex-col sm:flex-row gap-3">
+            <ui-button variant="primary" (clicked)="continueDraft()" class="shadow-sm">
+              <lucide-icon [img]="ArrowRightIcon" [size]="16" class="mr-2" />
+              Continue Draft
+            </ui-button>
+            <ui-button variant="outline" (clicked)="createNewOpportunity()" class="shadow-sm">
+              <lucide-icon [img]="PlusIcon" [size]="16" class="mr-2" />
+              Start Fresh
+            </ui-button>
+            <ui-button variant="ghost" (clicked)="deleteDraft()" class="text-red-600 hover:text-red-700 hover:bg-red-50">
+              Delete Draft
+            </ui-button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+}
+
     <!-- Analytics Cards -->
     @if (analytics()) {
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">

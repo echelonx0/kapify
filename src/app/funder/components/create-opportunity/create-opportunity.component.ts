@@ -4,11 +4,11 @@
 
 // src/app/funder/components/opportunity-form.component.ts
 import { Component, inject, signal, OnInit, OnDestroy, effect } from '@angular/core';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Subject, takeUntil, debounceTime, distinctUntilChanged } from 'rxjs';
-import { LucideAngularModule, ArrowLeft, Target, DollarSign, Users, Settings, FileText, Check, Eye, HelpCircle, Lightbulb, TrendingUp, Copy, Calculator, Sparkles, Save, ArrowRight, PieChart, RefreshCw, DollarSignIcon, FileTextIcon, SettingsIcon, TargetIcon, UsersIcon } from 'lucide-angular';
+import { LucideAngularModule, ArrowLeft, Target, DollarSign, Users, Settings, FileText, Check, Eye, HelpCircle, Lightbulb, TrendingUp, Copy, Calculator, Sparkles, Save, ArrowRight, PieChart, RefreshCw, DollarSignIcon, FileTextIcon, SettingsIcon, TargetIcon, UsersIcon, ClockIcon, AlertCircleIcon } from 'lucide-angular';
 
 import { FundingOpportunity } from '../../../shared/models/funder.models';
 import { trigger, transition, style, animate } from '@angular/animations';
@@ -116,6 +116,8 @@ export class CreateOpportunityComponent implements OnInit, OnDestroy {
   ArrowRightIcon = ArrowRight;
   PieChartIcon = PieChart;
   RefreshCwIcon = RefreshCw;
+   ClockIcon = ClockIcon;
+    AlertCircleIcon = AlertCircleIcon;
 
   // Form state
   currentStep = signal<'basic' | 'terms' | 'eligibility' | 'settings' | 'review'>('basic');
@@ -124,7 +126,8 @@ export class CreateOpportunityComponent implements OnInit, OnDestroy {
   overallCompletion = signal(0);
   hasUnsavedChanges = signal(false);
   lastLocalSave = signal<string | null>(null);
-
+  
+  private route = inject(ActivatedRoute);
   // Use service state for database operations
   get isSaving() { return this.opportunityService.isSaving; }
   get isPublishing() { return this.opportunityService.isPublishing; }
@@ -204,23 +207,133 @@ export class CreateOpportunityComponent implements OnInit, OnDestroy {
     { value: 'expansion', label: 'Expansion' },
     { value: 'mature', label: 'Mature' }
   ];
+ mode = signal<'create' | 'edit'>('create');
+  opportunityId = signal<string | null>(null);
 
   constructor(private router: Router) {}
 
-  ngOnInit() {
-    // Load existing draft on component init
-    this.loadDraft();
+ 
+
+    ngOnInit() {
+    // Determine mode based on route
+    this.detectMode();
     
     // Setup local auto-save functionality (localStorage only)
     this.setupLocalAutoSave();
     
     // Subscribe to service state
     this.subscribeToServiceState();
+    
+    // Load data based on mode
+    if (this.mode() === 'edit') {
+      this.loadOpportunityForEdit();
+    } else {
+      this.loadDraftWithMerge();
+    }
   }
+
+
 
   ngOnDestroy() {
     this.destroy$.next();
     this.destroy$.complete();
+  }
+
+   private loadDraftWithMerge() {
+    this.isLoading.set(true);
+    
+    this.opportunityService.loadDraftWithMerge()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response) => {
+          if (response.success && response.draftData) {
+            this.populateFormFromDraft(response.draftData);
+            this.overallCompletion.set(response.completionPercentage);
+            if (response.lastSaved) {
+              this.lastSavedAt.set(response.lastSaved);
+            }
+            this.updateSectionCompletionsFromService();
+          }
+          this.isLoading.set(false);
+        },
+        error: (error) => {
+          console.error('Failed to load draft:', error);
+          this.isLoading.set(false);
+        }
+      });
+  }
+
+
+   private detectMode() {
+    const url = this.router.url;
+    const routeParams = this.route.snapshot.params;
+    
+    if (url.includes('/edit') && routeParams['id']) {
+      this.mode.set('edit');
+      this.opportunityId.set(routeParams['id']);
+      console.log(`Edit mode detected for opportunity: ${routeParams['id']}`);
+    } else {
+      this.mode.set('create');
+      this.opportunityId.set(null);
+      console.log('Create mode detected');
+    }
+  }
+
+  private loadOpportunityForEdit() {
+    const oppId = this.opportunityId();
+    if (!oppId) {
+      this.router.navigate(['/funding/create-opportunity']);
+      return;
+    }
+
+    this.isLoading.set(true);
+    
+    this.opportunityService.loadOpportunityForEdit(oppId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response) => {
+          if (response.success && response.draftData) {
+            this.populateFormFromDraft(response.draftData);
+            this.overallCompletion.set(response.completionPercentage);
+            if (response.lastSaved) {
+              this.lastSavedAt.set(response.lastSaved);
+            }
+            this.updateSectionCompletionsFromService();
+          }
+          this.isLoading.set(false);
+        },
+        error: (error) => {
+          console.error('Failed to load opportunity for editing:', error);
+          this.isLoading.set(false);
+          // Redirect to opportunities list on error
+          this.router.navigate(['/funding/opportunities']);
+        }
+      });
+  }
+private subscribeToServiceState() {
+    // Subscribe to service state updates - using effect for signals
+    effect(() => {
+      const lastSaved = this.opportunityService.lastSavedAt();
+      if (lastSaved) {
+        this.lastSavedAt.set(lastSaved);
+        this.hasUnsavedChanges.set(false);
+      }
+    });
+
+    effect(() => {
+      const completion = this.opportunityService.overallCompletion();
+      this.overallCompletion.set(completion);
+    });
+
+    effect(() => {
+      const completions = this.opportunityService.sectionCompletions();
+      this.sectionCompletions.set({
+        basic: completions['basic-info'] || 0,
+        terms: completions['investment-terms'] || 0,
+        eligibility: completions['eligibility-criteria'] || 0,
+        settings: completions['settings'] || 0
+      });
+    });
   }
 
   private loadDraft() {
@@ -267,34 +380,45 @@ export class CreateOpportunityComponent implements OnInit, OnDestroy {
     });
   }
 
-private subscribeToServiceState() {
-  // Subscribe to service state updates - these are signals, not observables
-  // So we use effect() or computed() instead of pipe()
-  
-  // Watch for changes in service signals and update local signals
-  effect(() => {
-    const lastSaved = this.opportunityService.lastSavedAt();
-    if (lastSaved) {
-      this.lastSavedAt.set(lastSaved);
-      this.hasUnsavedChanges.set(false);
+ // Updated Actions for both modes
+  saveDraft() {
+    const opportunityData = this.buildOpportunityData();
+    
+    if (this.mode() === 'edit') {
+      // In edit mode, save changes to the published opportunity
+      const oppId = this.opportunityId();
+      if (!oppId) return;
+      
+      this.opportunityService.updateOpportunity(oppId, opportunityData)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: (response) => {
+            console.log('Opportunity updated successfully');
+            this.hasUnsavedChanges.set(false);
+            // Clear local storage since we saved to database
+            this.clearLocalStorage();
+          },
+          error: (error) => {
+            console.error('Failed to update opportunity:', error);
+          }
+        });
+    } else {
+      // In create mode, save as draft
+      this.opportunityService.saveDraft(opportunityData, false)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: (response) => {
+            console.log('Draft saved to database successfully');
+            this.hasUnsavedChanges.set(false);
+            // Clear local storage since we saved to database
+            this.clearLocalStorage();
+          },
+          error: (error) => {
+            console.error('Failed to save draft to database:', error);
+          }
+        });
     }
-  });
-
-  effect(() => {
-    const completion = this.opportunityService.overallCompletion();
-    this.overallCompletion.set(completion);
-  });
-
-  effect(() => {
-    const completions = this.opportunityService.sectionCompletions();
-    this.sectionCompletions.set({
-      basic: completions['basic-info'] || 0,
-      terms: completions['investment-terms'] || 0,
-      eligibility: completions['eligibility-criteria'] || 0,
-      settings: completions['settings'] || 0
-    });
-  });
-}
+  }
   private updateSectionCompletionsFromService() {
     const serviceCompletions = this.opportunityService.sectionCompletions();
     this.sectionCompletions.set({
@@ -338,6 +462,7 @@ private subscribeToServiceState() {
       maxApplications: draftData.maxApplications?.toString() || '',
       autoMatch: draftData.autoMatch ?? true,
       isPublic: true
+      
     }));
   }
 
@@ -383,9 +508,7 @@ private subscribeToServiceState() {
     }
   }
 
-  goBack() {
-    this.router.navigate(['/funding/opportunities']);
-  }
+  
 
   updateField(field: keyof OpportunityFormData, event: Event) {
     const target = event.target as HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement;
@@ -479,9 +602,7 @@ private subscribeToServiceState() {
     }
   }
 
-  canPublish(): boolean {
-    return this.canContinue();
-  }
+  
 
   // Step status helpers
   isStepCompleted(stepId: string): boolean {
@@ -597,44 +718,38 @@ private subscribeToServiceState() {
     }
   }
 
-  // Actions - Database saves (user initiated)
-  saveDraft() {
+ publishOpportunity() {
     const opportunityData = this.buildOpportunityData();
     
-    this.opportunityService.saveDraft(opportunityData, false)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (response) => {
-          console.log('Draft saved to database successfully');
-          this.hasUnsavedChanges.set(false);
-          // Clear local storage since we saved to database
-          this.clearLocalStorage();
-        },
-        error: (error) => {
-          console.error('Failed to save draft to database:', error);
-        }
-      });
-  }
-
-  publishOpportunity() {
-    const opportunityData = this.buildOpportunityData();
-    
-    this.opportunityService.publishOpportunity(opportunityData)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (response) => {
-          console.log('Opportunity published successfully');
-          // Clear local storage on successful publish
-          this.clearLocalStorage();
-          this.router.navigate(['/funder/dashboard']);
-        },
-        error: (error) => {
-          console.error('Failed to publish opportunity:', error);
-        }
-      });
+    if (this.mode() === 'edit') {
+      // In edit mode, this is just an update (already published)
+      this.saveDraft();
+    } else {
+      // In create mode, publish new opportunity
+      this.opportunityService.publishOpportunity(opportunityData)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: (response) => {
+            console.log('Opportunity published successfully');
+            // Clear local storage on successful publish
+            this.clearLocalStorage();
+            this.router.navigate(['/funder/dashboard']);
+          },
+          error: (error) => {
+            console.error('Failed to publish opportunity:', error);
+          }
+        });
+    }
   }
 
   deleteDraft() {
+    if (this.mode() === 'edit') {
+      // In edit mode, we don't delete the opportunity, just navigate away
+      this.router.navigate(['/funding/opportunities', this.opportunityId()]);
+      return;
+    }
+
+    // In create mode, delete the draft
     this.opportunityService.deleteDraft()
       .pipe(takeUntil(this.destroy$))
       .subscribe({
@@ -643,47 +758,107 @@ private subscribeToServiceState() {
           // Clear local storage
           this.clearLocalStorage();
           // Reset form
-          this.formData.set({
-            title: '',
-            description: '',
-            shortDescription: '',
-            offerAmount: '',
-            minInvestment: '',
-            maxInvestment: '',
-            currency: 'ZAR',
-            fundingType: '',
-            interestRate: '',
-            equityOffered: '',
-            repaymentTerms: '',
-            securityRequired: '',
-            useOfFunds: '',
-            investmentStructure: '',
-            expectedReturns: '',
-            investmentHorizon: '',
-            exitStrategy: '',
-            applicationDeadline: '',
-            decisionTimeframe: '30',
-            targetIndustries: [],
-            businessStages: [],
-            minRevenue: '',
-            maxRevenue: '',
-            minYearsOperation: '',
-            geographicRestrictions: [],
-            requiresCollateral: false,
-            totalAvailable: '',
-            maxApplications: '',
-            autoMatch: true,
-            isPublic: true
-          });
-          this.overallCompletion.set(0);
-          this.lastSavedAt.set(null);
-          this.hasUnsavedChanges.set(false);
+          this.resetForm();
         },
         error: (error) => {
           console.error('Failed to delete draft:', error);
         }
       });
   }
+
+  clearDraft() {
+    // Clear local storage and reset form (doesn't affect database)
+    this.clearLocalStorage();
+    this.resetForm();
+  }
+
+  private resetForm() {
+    this.formData.set({
+      title: '',
+      description: '',
+      shortDescription: '',
+      offerAmount: '',
+      minInvestment: '',
+      maxInvestment: '',
+      currency: 'ZAR',
+      fundingType: '',
+      interestRate: '',
+      equityOffered: '',
+      repaymentTerms: '',
+      securityRequired: '',
+      useOfFunds: '',
+      investmentStructure: '',
+      expectedReturns: '',
+      investmentHorizon: '',
+      exitStrategy: '',
+      applicationDeadline: '',
+      decisionTimeframe: '30',
+      targetIndustries: [],
+      businessStages: [],
+      minRevenue: '',
+      maxRevenue: '',
+      minYearsOperation: '',
+      geographicRestrictions: [],
+      requiresCollateral: false,
+      totalAvailable: '',
+      maxApplications: '',
+      autoMatch: true,
+      isPublic: true
+    });
+    this.overallCompletion.set(0);
+    this.lastSavedAt.set(null);
+    this.hasUnsavedChanges.set(false);
+  }
+
+  // Helper methods for template
+  isEditMode(): boolean {
+    return this.mode() === 'edit';
+  }
+
+  isCreateMode(): boolean {
+    return this.mode() === 'create';
+  }
+
+  getPageTitle(): string {
+    return this.isEditMode() ? 'Edit Funding Opportunity' : 'Create Funding Opportunity';
+  }
+
+  getPageSubtitle(): string {
+    if (this.isEditMode()) {
+      return 'Update your opportunity details and save changes';
+    }
+    return 'Set up a new investment opportunity for SMEs with AI-powered optimization';
+  }
+
+  getPublishButtonText(): string {
+    return this.isEditMode() ? 'Save Changes' : 'Publish Opportunity';
+  }
+
+  getSaveButtonText(): string {
+    return this.isEditMode() ? 'Save Changes' : 'Save Draft';
+  }
+
+  goBack() {
+    if (this.isEditMode()) {
+      // Go back to opportunity detail page
+      this.router.navigate(['/funding/opportunities', this.opportunityId()]);
+    } else {
+      // Go back to opportunities list
+      this.router.navigate(['/funding/opportunities']);
+    }
+  }
+
+  // Override the validation for edit mode
+  canPublish(): boolean {
+    if (this.isEditMode()) {
+      // In edit mode, we can always save changes
+      return true;
+    }
+    // In create mode, use existing validation
+    return this.canContinue();
+  }
+
+ 
 
   private buildOpportunityData(): Partial<FundingOpportunity> {
     const data = this.formData();

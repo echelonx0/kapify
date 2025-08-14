@@ -12,11 +12,15 @@ import {
   Building2,
   AlertCircle,
   CheckCircle,
-  ArrowRight
+  ArrowRight,
+  Clock,
+  FileText,
+  ClockIcon
 } from 'lucide-angular';
 import { UiButtonComponent } from '../shared/components';
 import { FunderOnboardingService, OnboardingState } from './services/funder-onboarding.service';
 import { OpportunityManagementService } from './services/opportunity-management.service';
+import { FundingOpportunityService } from '../funding/services/funding-opportunity.service';
  
 @Component({
   selector: 'app-funder-dashboard',
@@ -34,6 +38,15 @@ export class FunderDashboardComponent implements OnInit {
   private onboardingService = inject(FunderOnboardingService);
   private managementService = inject(OpportunityManagementService);
   private destroy$ = new Subject<void>();
+private opportunityService = inject(FundingOpportunityService);
+
+ // Add draft state
+  draftSummary = signal<{
+    hasDraft: boolean;
+    completionPercentage: number;
+    lastSaved: string | null;
+    title: string | null;
+  }>({ hasDraft: false, completionPercentage: 0, lastSaved: null, title: null });
 
   // Icons
   PlusIcon = Plus;
@@ -44,6 +57,8 @@ export class FunderDashboardComponent implements OnInit {
   AlertCircleIcon = AlertCircle;
   CheckCircleIcon = CheckCircle;
   ArrowRightIcon = ArrowRight;
+    ClockIcon = ClockIcon;
+     FileTextIcon = FileText;
 
   // State
   onboardingState = signal<OnboardingState | null>(null);
@@ -53,12 +68,79 @@ export class FunderDashboardComponent implements OnInit {
   ngOnInit() {
     this.loadDashboardData();
     this.setupSubscriptions();
+       this.loadDraftSummary(); // Add this line
   }
 
   ngOnDestroy() {
     this.destroy$.next();
     this.destroy$.complete();
   }
+   private loadDraftSummary() {
+    this.opportunityService.getDraftSummary()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (summary) => {
+          this.draftSummary.set(summary);
+        },
+        error: (error) => {
+          console.error('Failed to load draft summary:', error);
+        }
+      });
+  }
+
+  // Navigation methods for draft
+  continueDraft() {
+    this.router.navigate(['/funding/create-opportunity']);
+  }
+
+  deleteDraft() {
+    if (confirm('Are you sure you want to delete your draft? This action cannot be undone.')) {
+      this.opportunityService.clearAllDrafts()
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: () => {
+            console.log('Draft deleted successfully');
+            // Refresh draft summary
+            this.loadDraftSummary();
+          },
+          error: (error) => {
+            console.error('Failed to delete draft:', error);
+          }
+        });
+    }
+  }
+
+    createNewOpportunity() {
+    if (this.draftSummary().hasDraft) {
+      // Ask user what to do with existing draft
+      const action = confirm(
+        'You have an existing draft. Do you want to continue with it?\n\n' +
+        'Click OK to continue your draft, or Cancel to start fresh.'
+      );
+      
+      if (action) {
+        this.continueDraft();
+      } else {
+        // Clear existing draft and create new
+        this.opportunityService.clearAllDrafts()
+          .pipe(takeUntil(this.destroy$))
+          .subscribe({
+            next: () => {
+              this.router.navigate(['/funding/create-opportunity']);
+            },
+            error: (error) => {
+              console.error('Failed to clear draft:', error);
+              // Navigate anyway
+              this.router.navigate(['/funding/create-opportunity']);
+            }
+          });
+      }
+    } else {
+      // No existing draft, proceed normally
+      this.createOpportunity();
+    }
+  }
+
 
   private loadDashboardData() {
     // Load onboarding status
@@ -94,9 +176,63 @@ export class FunderDashboardComponent implements OnInit {
   }
 
   // Navigation methods
+// Helper methods for draft card
+  getDraftTitle(): string {
+    const title = this.draftSummary().title;
+    return title || 'Untitled Opportunity';
+  }
+
+  getDraftLastSavedText(): string {
+    const lastSaved = this.draftSummary().lastSaved;
+    if (!lastSaved) return 'Never saved';
+    
+    const date = new Date(lastSaved);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    
+    if (diffMins < 1) return 'Saved just now';
+    if (diffMins < 60) return `Saved ${diffMins} minutes ago`;
+    
+    const diffHours = Math.floor(diffMins / 60);
+    if (diffHours < 24) return `Saved ${diffHours} hours ago`;
+    
+    const diffDays = Math.floor(diffHours / 24);
+    if (diffDays === 1) return 'Saved yesterday';
+    if (diffDays < 7) return `Saved ${diffDays} days ago`;
+    
+    return `Saved ${date.toLocaleDateString()}`;
+  }
+
+  getDraftCardClasses(): string {
+    const completion = this.draftSummary().completionPercentage;
+    
+    if (completion >= 80) {
+      return 'border-l-green-500 bg-green-50';
+    } else if (completion >= 50) {
+      return 'border-l-blue-500 bg-blue-50';
+    } else {
+      return 'border-l-orange-500 bg-orange-50';
+    }
+  }
+
+  getDraftProgressColor(): string {
+    const completion = this.draftSummary().completionPercentage;
+    
+    if (completion >= 80) {
+      return 'bg-gradient-to-r from-green-500 to-green-600';
+    } else if (completion >= 50) {
+      return 'bg-gradient-to-r from-blue-500 to-blue-600';
+    } else {
+      return 'bg-gradient-to-r from-orange-500 to-orange-600';
+    }
+  }
+
+  // Update existing createOpportunity method
   createOpportunity() {
     if (this.onboardingState()?.canCreateOpportunities) {
-      this.router.navigate(['/funder/opportunities/create']);
+      // Use the new method that checks for existing drafts
+      this.createNewOpportunity();
     } else {
       this.completeOnboarding();
     }

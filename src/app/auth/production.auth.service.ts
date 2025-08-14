@@ -1,10 +1,11 @@
 // src/app/auth/production.auth.service.ts  
 import { Injectable, signal, computed, inject } from '@angular/core';
 import { Router } from '@angular/router';
-import { createClient, SupabaseClient, User, Session } from '@supabase/supabase-js';
+ 
 import { BehaviorSubject, Observable, from, throwError } from 'rxjs';
-import { map, catchError } from 'rxjs/operators';
-import { environment } from '../../environments/environment';
+import { map, catchError } from 'rxjs/operators'; 
+import { SharedSupabaseService } from '../shared/services/supabase.service';
+import { Session, User } from '@supabase/supabase-js';
 
  
 export interface SignUpData {
@@ -52,7 +53,7 @@ export interface UserProfile {
 })
 export class AuthService {
   private router = inject(Router);
-  private supabase: SupabaseClient;
+  private supabaseService = inject(SharedSupabaseService);
   
   // Reactive state
   private userSubject = new BehaviorSubject<UserProfile | null>(null);
@@ -74,21 +75,15 @@ export class AuthService {
   constructor() {
  
     
-    this.supabase = createClient(environment.supabaseUrl, environment.supabaseAnonKey,
-      {
-     auth: {
-    //     debug: true,
-       persistSession: true,
-      }
-   }
+    
   
-  );
+ 
     this.initializeAuth();
   }
 
   private async initializeAuth(): Promise<void> {
     try {
-      const { data: { session }, error } = await this.supabase.auth.getSession();
+      const { data: { session }, error } = await this.supabaseService.auth.getSession();
       
       if (error) {
         console.error('Session initialization error:', error);
@@ -102,7 +97,7 @@ export class AuthService {
         this.clearAuthState();
       }
 
-      this.supabase.auth.onAuthStateChange(async (event, session) => {
+      this.supabaseService.auth.onAuthStateChange(async (event, session) => {
         console.log('Auth state changed:', event, session?.user?.email);
         
         if (session?.user) {
@@ -153,7 +148,7 @@ export class AuthService {
     try {
       // 1. Create Supabase auth user
       console.log('👤 Creating Supabase auth user...');
-      const { data: authData, error: authError } = await this.supabase.auth.signUp({
+      const { data: authData, error: authError } = await this.supabaseService.auth.signUp({
         email: credentials.email,
         password: credentials.password,
         options: {
@@ -180,7 +175,7 @@ export class AuthService {
 
       // 2. Create user profile in database
       console.log('📝 Creating user profile in database...');
-      const { error: profileError } = await this.supabase
+      const { error: profileError } = await this.supabaseService
         .from('users')
         .insert({
           id: authData.user.id,
@@ -203,7 +198,7 @@ export class AuthService {
 
       // 3. Create user_profile entry (optional)
       console.log('📋 Creating user profile metadata...');
-      const { error: userProfileError } = await this.supabase
+      const { error: userProfileError } = await this.supabaseService
         .from('user_profiles')
         .insert({
           user_id: authData.user.id,
@@ -252,7 +247,7 @@ export class AuthService {
   }
 
   private async performLogin(email: string, password: string) {
-    const { data, error } = await this.supabase.auth.signInWithPassword({
+    const { data, error } = await this.supabaseService.auth.signInWithPassword({
       email,
       password
     });
@@ -286,7 +281,7 @@ export class AuthService {
   }
 
   private async performSignUp(credentials: SignUpData) {
-    const { data: authData, error: authError } = await this.supabase.auth.signUp({
+    const { data: authData, error: authError } = await this.supabaseService.auth.signUp({
       email: credentials.email,
       password: credentials.password,
       options: {
@@ -307,7 +302,7 @@ export class AuthService {
       throw new Error('User creation failed');
     }
 
-    const { error: profileError } = await this.supabase
+    const { error: profileError } = await this.supabaseService
       .from('users')
       .insert({
         id: authData.user.id,
@@ -324,7 +319,7 @@ export class AuthService {
       console.error('Profile creation error:', profileError);
     }
 
-    const { error: userProfileError } = await this.supabase
+    const { error: userProfileError } = await this.supabaseService
       .from('user_profiles')
       .insert({
         user_id: authData.user.id,
@@ -349,7 +344,7 @@ export class AuthService {
   // Rest of the methods remain the same...
   async signOut(): Promise<void> {
     try {
-      const { error } = await this.supabase.auth.signOut();
+      const { error } = await this.supabaseService.auth.signOut();
       if (error) {
         console.error('SignOut error:', error);
       }
@@ -386,7 +381,7 @@ export class AuthService {
 
   private async buildUserProfile(user: User): Promise<UserProfile> {
     try {
-      const { data: userRecord, error: userError } = await this.supabase
+      const { data: userRecord, error: userError } = await this.supabaseService
         .from('users')
         .select(`
           *,

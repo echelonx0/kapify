@@ -4,10 +4,10 @@
 import { Injectable, signal, inject } from '@angular/core';
 import { Observable, from, throwError, BehaviorSubject } from 'rxjs';
 import { tap, catchError, map } from 'rxjs/operators';
-import { createClient, SupabaseClient } from '@supabase/supabase-js';
-import { environment } from '../../../environments/environment';
+ 
 import { AuthService } from '../../auth/production.auth.service';
 import { FundingOpportunity } from '../../shared/models/funder.models';
+import { SharedSupabaseService } from '../../shared/services/supabase.service';
 
 // Section-based data structures to match existing schema
 interface OpportunitySection {
@@ -59,7 +59,7 @@ interface LoadDraftResponse {
   providedIn: 'root'
 })
 export class FundingOpportunityService {
-  private supabase: SupabaseClient;
+  private supabaseService = inject(SharedSupabaseService) ;
   private authService = inject(AuthService);
 
   // State management
@@ -84,7 +84,7 @@ export class FundingOpportunityService {
   public draftData$ = this.draftDataSubject.asObservable();
 
   constructor() {
-    this.supabase = createClient(environment.supabaseUrl, environment.supabaseAnonKey);
+  
   }
 
   // ===============================
@@ -323,7 +323,7 @@ export class FundingOpportunityService {
       };
 
       // Use upsert to handle existing sections
-      const { data, error } = await this.supabase
+      const { data, error } = await this.supabaseService
         .from('opportunity_drafts')
         .upsert(
           sectionRecord,
@@ -378,7 +378,7 @@ export class FundingOpportunityService {
           organization_id: organizationId
         };
 
-        const { error } = await this.supabase
+        const { error } = await this.supabaseService
           .from('opportunity_drafts')
           .upsert(
             sectionRecord,
@@ -413,7 +413,7 @@ export class FundingOpportunityService {
 
   private async loadDraftFromSupabase(userId: string): Promise<LoadDraftResponse> {
     try {
-      const { data: sections, error } = await this.supabase
+      const { data: sections, error } = await this.supabaseService
         .from('opportunity_drafts')
         .select('*')
         .eq('user_id', userId)
@@ -462,7 +462,7 @@ export class FundingOpportunityService {
 
   private async deleteDraftFromSupabase(userId: string): Promise<{success: boolean}> {
     try {
-      const { error } = await this.supabase
+      const { error } = await this.supabaseService
         .from('opportunity_drafts')
         .delete()
         .eq('user_id', userId);
@@ -532,7 +532,7 @@ export class FundingOpportunityService {
         published_at: new Date().toISOString()
       };
 
-      const { data, error } = await this.supabase
+      const { data, error } = await this.supabaseService
         .from('funding_opportunities')
         .insert(opportunityData)
         .select()
@@ -555,7 +555,7 @@ export class FundingOpportunityService {
 
   private async loadOpportunitiesFromSupabase(userId: string): Promise<any[]> {
     try {
-      const { data, error } = await this.supabase
+      const { data, error } = await this.supabaseService
         .from('funding_opportunities')
         .select('*')
         .eq('created_by', userId)
@@ -576,9 +576,110 @@ export class FundingOpportunityService {
   // ===============================
 
 private async getOrCreateTempOrganizationId(userId: string): Promise<string> {
-  // Generate proper UUID for organization until proper organization setup
-  // This will be replaced when you implement organization management
-  return crypto.randomUUID();
+  try {
+    // First, try to find an existing organization for this user
+    const { data: existingOrg, error: findError } = await this.supabaseService
+      .from('funder_organizations')
+      .select('id')
+      .eq('user_id', userId)
+      .single();
+
+    if (!findError && existingOrg) {
+      console.log('Using existing organization:', existingOrg.id);
+      return existingOrg.id;
+    }
+
+    // If no organization exists, create a temporary one
+    console.log('Creating temporary organization for user:', userId);
+    
+    const tempOrgData = {
+      id: crypto.randomUUID(),
+      user_id: userId,
+      name: 'Temporary Organization',
+      organization_type: 'other',
+      description: 'Temporary organization created for opportunity drafts',
+      website: null,
+      phone: null,
+      address: null,
+      city: null,
+      country: 'South Africa',
+      registration_number: null,
+      tax_number: null,
+      is_verified: false,
+      verification_status: 'pending',
+      verification_documents: {},
+      status: 'active',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+
+    const { data: newOrg, error: createError } = await this.supabaseService
+      .from('funder_organizations')
+      .insert(tempOrgData)
+      .select('id')
+      .single();
+
+    if (createError) {
+      console.error('Failed to create temporary organization:', createError);
+      throw new Error(`Failed to create organization: ${createError.message}`);
+    }
+
+    console.log('Created temporary organization:', newOrg.id);
+    return newOrg.id;
+
+  } catch (error: any) {
+    console.error('Error getting/creating organization ID:', error);
+    
+    // Fallback: try to find any organization for this user (in case of race conditions)
+    try {
+      const { data: fallbackOrg } = await this.supabaseService
+        .from('funder_organizations')
+        .select('id')
+        .eq('user_id', userId)
+        .limit(1)
+        .single();
+
+      if (fallbackOrg) {
+        console.log('Using fallback organization:', fallbackOrg.id);
+        return fallbackOrg.id;
+      }
+    } catch (fallbackError) {
+      console.error('Fallback organization lookup failed:', fallbackError);
+    }
+    
+    throw new Error('Unable to create or find organization for user. Please complete your organization setup first.');
+  }
+}
+
+// Also add this helper method to check if user has a proper organization
+async checkUserOrganization(userId: string): Promise<{
+  hasOrganization: boolean;
+  organizationId: string | null;
+  isTemporary: boolean;
+}> {
+  try {
+    const { data: org, error } = await this.supabaseService
+      .from('funder_organizations')
+      .select('id, name')
+      .eq('user_id', userId)
+      .single();
+
+    if (error || !org) {
+      return { hasOrganization: false, organizationId: null, isTemporary: false };
+    }
+
+    const isTemporary = org.name === 'Temporary Organization';
+    
+    return {
+      hasOrganization: true,
+      organizationId: org.id,
+      isTemporary
+    };
+
+  } catch (error) {
+    console.error('Error checking user organization:', error);
+    return { hasOrganization: false, organizationId: null, isTemporary: false };
+  }
 }
 
   private splitFormDataIntoSections(formData: Partial<FundingOpportunity>): Record<string, any> {
@@ -705,7 +806,7 @@ private async getOrCreateTempOrganizationId(userId: string): Promise<string> {
 
   private async calculateOverallCompletion(userId: string): Promise<number> {
     try {
-      const { data: sections, error } = await this.supabase
+      const { data: sections, error } = await this.supabaseService
         .from('opportunity_drafts')
         .select('section_type, completion_percentage')
         .eq('user_id', userId);
@@ -1005,7 +1106,7 @@ clearAllDrafts(): Observable<{success: boolean}> {
 
 private async loadPublishedOpportunity(opportunityId: string, userId: string): Promise<LoadDraftResponse> {
   try {
-    const { data: opportunity, error } = await this.supabase
+    const { data: opportunity, error } = await this.supabaseService
       .from('funding_opportunities')
       .select('*')
       .eq('id', opportunityId)
@@ -1071,7 +1172,7 @@ private async updatePublishedOpportunity(
       updated_at: new Date().toISOString()
     };
 
-    const { data, error } = await this.supabase
+    const { data, error } = await this.supabaseService
       .from('funding_opportunities')
       .update(updateData)
       .eq('id', opportunityId)
@@ -1270,7 +1371,7 @@ hasDraft(): Observable<boolean> {
 private async checkForDraftData(userId: string): Promise<boolean> {
   try {
     // Check database draft
-    const { data: dbSections, error } = await this.supabase
+    const { data: dbSections, error } = await this.supabaseService
       .from('opportunity_drafts')
       .select('id')
       .eq('user_id', userId)
