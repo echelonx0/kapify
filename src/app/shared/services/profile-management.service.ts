@@ -4,7 +4,7 @@
 import { Injectable, inject, signal, computed } from '@angular/core';
 import { Observable, BehaviorSubject, throwError, of } from 'rxjs';
 import { map, tap, catchError } from 'rxjs/operators';
-import { createClient, SupabaseClient } from '@supabase/supabase-js';
+ 
 import { 
   User, 
   UserType,
@@ -13,7 +13,10 @@ import {
   UserProfile,
 } from '../models/user.models';
 import { AuthService } from '../../auth/production.auth.service';
+import { createClient } from '@supabase/supabase-js';
 import { environment } from '../../../environments/environment';
+import { SharedSupabaseService } from './supabase.service';
+ 
 
 export interface UserProfileData {
   user: User;
@@ -34,7 +37,7 @@ export interface ProfileUpdateRequest {
 })
 export class ProfileManagementService {
   private authService = inject(AuthService);
-  private supabase: SupabaseClient;
+   private supabaseService = inject(SharedSupabaseService); // Use shared service
   
   // State management
   private profileDataSubject = new BehaviorSubject<UserProfileData | null>(null);
@@ -81,7 +84,7 @@ export class ProfileManagementService {
 
   constructor() {
     // Initialize Supabase client
-    this.supabase = createClient(environment.supabaseUrl, environment.supabaseAnonKey);
+ 
     
     // Initialize from auth service if available
     const currentAuth = this.authService.user();
@@ -137,14 +140,14 @@ export class ProfileManagementService {
     return new Observable(observer => {
       Promise.all([
         // Load user from database
-        this.supabase
+        this.supabaseService
           .from('users')
           .select('*')
           .eq('id', userId)
           .single(),
         
         // Load user profile from database
-        this.supabase
+        this.supabaseService
           .from('user_profiles')
           .select('*')
           .eq('user_id', userId)
@@ -228,14 +231,14 @@ uploadProfilePicture(file: File): Observable<string> {
   return new Observable(observer => {
     const fileName = `${currentAuth.id}/profile-picture-${Date.now()}.${file.name.split('.').pop()}`;
     
-    this.supabase.storage
+    this.supabaseService.storage
       .from('profile-pictures')
       .upload(fileName, file)
       .then(({ data, error }) => {
         if (error) throw error;
         
         // Get public URL
-        const { data: { publicUrl } } = this.supabase.storage
+        const { data: { publicUrl } } = this.supabaseService.storage
           .from('profile-pictures')
           .getPublicUrl(fileName);
         
@@ -285,7 +288,7 @@ getOrganizationTeam(): Observable<OrganizationUser[]> {
   if (!org) return throwError(() => new Error('No organization found'));
 
   return new Observable(observer => {
-    this.supabase
+    this.supabaseService
       .from('organization_users')
       .select('*, users(*)')
       .eq('organization_id', org.id)
@@ -318,7 +321,7 @@ updateTeamMember(userId: string, updates: Partial<OrganizationUser>): Observable
   if (!org) return throwError(() => new Error('No organization found'));
 
   return new Observable(observer => {
-    this.supabase
+    this.supabaseService
       .from('organization_users')
       .update(updates)
       .eq('user_id', userId)
@@ -340,7 +343,7 @@ removeTeamMember(userId: string): Observable<void> {
   if (!org) return throwError(() => new Error('No organization found'));
 
   return new Observable(observer => {
-    this.supabase
+    this.supabaseService
       .from('organization_users')
       .delete()
       .eq('user_id', userId)
@@ -420,7 +423,7 @@ getAccountTierDisplayName(tier: string): string {
     return new Observable(observer => {
       Promise.all([
         // Upsert user
-        this.supabase
+        this.supabaseService
           .from('users')
           .upsert({
             id: profileData.user.id,
@@ -434,7 +437,7 @@ getAccountTierDisplayName(tier: string): string {
           }),
         
         // Upsert profile
-        this.supabase
+        this.supabaseService
           .from('user_profiles')
           .upsert({
             user_id: profileData.profile.userId,

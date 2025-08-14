@@ -2,9 +2,9 @@
 import { Injectable, signal, inject } from '@angular/core';
 import { Observable, from, throwError, BehaviorSubject } from 'rxjs';
 import { tap, catchError, map } from 'rxjs/operators';
-import { createClient, SupabaseClient } from '@supabase/supabase-js';
-import { environment } from '../../../environments/environment';
+ 
 import { AuthService } from '../../auth/production.auth.service'; 
+import { SharedSupabaseService } from '../../shared/services/supabase.service';
 
 // Management-specific interfaces
 interface OpportunityListItem {
@@ -60,7 +60,7 @@ interface StatusUpdateRequest {
   providedIn: 'root'
 })
 export class OpportunityManagementService {
-  private supabase: SupabaseClient;
+   private supabaseService = inject(SharedSupabaseService); // Use shared service
   private authService = inject(AuthService);
 
   // State management
@@ -75,7 +75,7 @@ export class OpportunityManagementService {
   analytics$ = this.analyticsSubject.asObservable();
 
   constructor() {
-    this.supabase = createClient(environment.supabaseUrl, environment.supabaseAnonKey);
+  
   }
 
   // ===============================
@@ -108,7 +108,7 @@ export class OpportunityManagementService {
 
   private async fetchUserOpportunities(userId: string): Promise<OpportunityListItem[]> {
     try {
-      const { data, error } = await this.supabase
+      const { data, error } = await this.supabaseService
         .from('funding_opportunities')
         .select(`
           id, title, status, funding_type, total_available, amount_deployed,
@@ -187,7 +187,7 @@ export class OpportunityManagementService {
         updateData.closed_at = new Date().toISOString();
       }
 
-      const { data, error } = await this.supabase
+      const { data, error } = await this.supabaseService
         .from('funding_opportunities')
         .update(updateData)
         .eq('id', request.opportunityId)
@@ -227,7 +227,7 @@ export class OpportunityManagementService {
   }
 
   private async isAlreadyPublished(opportunityId: string): Promise<boolean> {
-    const { data } = await this.supabase
+    const { data } = await this.supabaseService
       .from('funding_opportunities')
       .select('published_at')
       .eq('id', opportunityId)
@@ -286,7 +286,7 @@ export class OpportunityManagementService {
       }
 
       // Fetch opportunity summary data
-      const { data: opportunities, error: oppsError } = await this.supabase
+      const { data: opportunities, error: oppsError } = await this.supabaseService
         .from('funding_opportunities')
         .select('*')
         .eq('created_by', userId)
@@ -352,7 +352,7 @@ export class OpportunityManagementService {
       const monthStart = new Date(current.getFullYear(), current.getMonth(), 1);
       const monthEnd = new Date(current.getFullYear(), current.getMonth() + 1, 0);
       
-      const { data } = await this.supabase
+      const { data } = await this.supabaseService
         .from('funding_opportunities')
         .select('view_count, application_count, amount_deployed')
         .eq('created_by', userId)
@@ -381,7 +381,7 @@ export class OpportunityManagementService {
   private async fetchRecentActivity(userId: string): Promise<ActivityItem[]> {
     // This would ideally come from a dedicated activity log table
     // For now, we'll generate from opportunity updates
-    const { data } = await this.supabase
+    const { data } = await this.supabaseService
       .from('funding_opportunities')
       .select('id, title, status, updated_at, published_at')
       .eq('created_by', userId)
@@ -433,7 +433,7 @@ export class OpportunityManagementService {
     userId: string
   ): Promise<{success: boolean, updated: number, failed: number}> {
     try {
-      const { data, error } = await this.supabase
+      const { data, error } = await this.supabaseService
         .from('funding_opportunities')
         .update({ 
           status: newStatus, 
@@ -491,7 +491,7 @@ export class OpportunityManagementService {
   ): Promise<{success: boolean, newOpportunityId: string}> {
     try {
       // Fetch original opportunity
-      const { data: original, error: fetchError } = await this.supabase
+      const { data: original, error: fetchError } = await this.supabaseService
         .from('funding_opportunities')
         .select('*')
         .eq('id', opportunityId)
@@ -521,7 +521,7 @@ export class OpportunityManagementService {
         updated_at: new Date().toISOString()
       };
 
-      const { error: insertError } = await this.supabase
+      const { error: insertError } = await this.supabaseService
         .from('funding_opportunities')
         .insert(duplicateData);
 
@@ -549,7 +549,7 @@ export class OpportunityManagementService {
   }
 
   incrementViewCount(opportunityId: string): Observable<void> {
-    return from(this.supabase.rpc('increment_opportunity_views', { 
+    return from(this.supabaseService.rpc('increment_opportunity_views', { 
       opportunity_id: opportunityId 
     })).pipe(
       map(() => void 0),
