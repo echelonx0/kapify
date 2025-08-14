@@ -461,7 +461,7 @@ interface SectionState {
 export class LegalInfoFormComponent implements OnInit, OnDestroy {
   protected onboardingService = inject(FunderOnboardingService);
   private destroy$ = new Subject<void>();
-  private autoSaveSubject = new Subject<void>();
+ 
 
   // Icons
   FileTextIcon = FileText;
@@ -534,12 +534,7 @@ export class LegalInfoFormComponent implements OnInit, OnDestroy {
 
   private setupSmartSectionExpansion() {
     // Auto-expand next section when current one is completed
-    this.autoSaveSubject
-      .pipe(
-        takeUntil(this.destroy$),
-        debounceTime(5000)
-      )
-      .subscribe(() => {
+ 
         const current = this.expandedSections();
         
         if (this.isLegalInfoComplete() && current.legal && !current.address) {
@@ -555,7 +550,7 @@ export class LegalInfoFormComponent implements OnInit, OnDestroy {
             scale: true
           }));
         }
-      });
+ 
   }
 
   private populateFormFromOrganization(org: Partial<FunderOrganization>) {
