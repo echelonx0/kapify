@@ -99,15 +99,6 @@ private async fetchActiveOpportunities(): Promise<FundingOpportunity[]> {
     throw error;
   }
 }
-
-// Also restore the other methods:
-// - performSearch()
-// - fetchOpportunityById() 
-// - fetchMatchingOpportunities()
-// 
-// Remove the enrichWithOrganizationData() method completely
-
-  // TEMPORARY METHOD: Fetch organization data separately to avoid RLS issues
   // TODO: Remove this once RLS policies are properly configured
   private async enrichWithOrganizationData(opportunities: any[]): Promise<any[]> {
     if (!opportunities.length) return opportunities;
@@ -120,8 +111,6 @@ private async fetchActiveOpportunities(): Promise<FundingOpportunity[]> {
         return opportunities.map(opp => ({ ...opp, funder_organizations: null }));
       }
 
-      // Fetch organization data separately
-      // This might still fail if RLS is too restrictive, but let's try
       const { data: organizations, error: orgError } = await this.supabase
         .from('funder_organizations')
         .select('id, name, organization_type, website, description, is_verified')

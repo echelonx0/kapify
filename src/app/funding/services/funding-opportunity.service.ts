@@ -253,31 +253,67 @@ export class FundingOpportunityService {
   /**
    * Publish opportunity from draft or form data
    */
-  publishOpportunity(formData: Partial<FundingOpportunity>): Observable<PublishOpportunityResponse> {
-    this.isPublishing.set(true);
-    this.error.set(null);
+/**
+ * Publish opportunity from draft or form data
+ */
+publishOpportunity(formData: Partial<FundingOpportunity>): Observable<PublishOpportunityResponse> {
+  console.log('=== PUBLISH OPPORTUNITY SERVICE START ===');
+  console.log('Input formData:', JSON.stringify(formData, null, 2));
+  console.log('Current isPublishing state:', this.isPublishing());
+  
+  this.isPublishing.set(true);
+  this.error.set(null);
+  console.log('Set isPublishing to true, cleared error');
 
-    const currentAuth = this.authService.user();
-    if (!currentAuth) {
-      this.isPublishing.set(false);
-      return throwError(() => new Error('User not authenticated'));
-    }
-
-    return from(this.publishToSupabase(currentAuth.id, formData)).pipe(
-      tap(response => {
-        this.isPublishing.set(false);
-        // Clear draft after successful publish
-        this.deleteDraft().subscribe();
-        console.log('Opportunity published successfully');
-      }),
-      catchError(error => {
-        this.error.set('Failed to publish opportunity');
-        this.isPublishing.set(false);
-        console.error('Publish opportunity error:', error);
-        return throwError(() => error);
-      })
-    );
+  const currentAuth = this.authService.user();
+  console.log('Current auth user:', currentAuth ? { id: currentAuth.id, email: currentAuth.email } : 'null');
+  
+  if (!currentAuth) {
+    console.error('❌ User not authenticated, aborting publish');
+    this.isPublishing.set(false);
+    return throwError(() => new Error('User not authenticated'));
   }
+
+  console.log('🚀 Starting publishToSupabase with userId:', currentAuth.id);
+  
+  return from(this.publishToSupabase(currentAuth.id, formData)).pipe(
+    tap(response => {
+      console.log('✅ PublishToSupabase successful, response:', response);
+      this.isPublishing.set(false);
+      console.log('Set isPublishing to false');
+      
+      // Clear draft after successful publish - with error handling
+      console.log('🧹 Starting draft cleanup...');
+      this.deleteDraft().subscribe({
+        next: () => {
+          console.log('✅ Draft deleted successfully after publish');
+        },
+        error: (deleteError) => {
+          console.warn('⚠️ Failed to delete draft after publish (non-critical):', deleteError);
+        }
+      });
+      
+      console.log('✅ Opportunity published successfully');
+    }),
+    catchError(error => {
+      console.error('❌ Publish opportunity error caught in pipe:', error);
+      console.error('Error details:', {
+        message: error.message,
+        code: error.code,
+        details: error.details,
+        hint: error.hint,
+        stack: error.stack
+      });
+      
+      this.error.set('Failed to publish opportunity');
+      this.isPublishing.set(false);
+      console.log('Set isPublishing to false due to error');
+      console.log('Set error message to: "Failed to publish opportunity"');
+      
+      return throwError(() => error);
+    })
+  );
+}
 
   /**
    * Load published opportunities for user
@@ -481,77 +517,169 @@ export class FundingOpportunityService {
   // PRIVATE METHODS - PUBLISHING
   // ===============================
 
-  private async publishToSupabase(
-    userId: string, 
-    formData: Partial<FundingOpportunity>
-  ): Promise<PublishOpportunityResponse> {
-    try {
-      // Generate temporary organization ID
-      const organizationId = await this.getOrCreateTempOrganizationId(userId);
-      
-      const opportunityData = {
-        id: crypto.randomUUID(),
-        organization_id: organizationId,
-        created_by: userId,
-        title: formData.title,
-        description: formData.description,
-        short_description: formData.shortDescription,
-        target_company_profile: formData.targetCompanyProfile,
-        offer_amount: formData.offerAmount || 0,
-        min_investment: formData.minInvestment || 0,
-        max_investment: formData.maxInvestment || 0,
-        currency: formData.currency || 'ZAR',
-        funding_type: formData.fundingType,
-        interest_rate: formData.interestRate,
-        equity_offered: formData.equityOffered,
-        repayment_terms: formData.repaymentTerms,
-        security_required: formData.securityRequired,
-        use_of_funds: formData.useOfFunds,
-        investment_structure: formData.investmentStructure,
-        expected_returns: formData.expectedReturns,
-        investment_horizon: formData.investmentHorizon,
-        exit_strategy: formData.exitStrategy,
-        application_deadline: formData.applicationDeadline?.toISOString(),
-        decision_timeframe: formData.decisionTimeframe || 30,
-        application_process: formData.applicationProcess || {},
-        eligibility_criteria: formData.eligibilityCriteria || {},
-        status: 'active',
-        total_available: formData.totalAvailable || 0,
-        amount_committed: 0,
-        amount_deployed: 0,
-        max_applications: formData.maxApplications,
-        current_applications: 0,
-        view_count: 0,
-        application_count: 0,
-        auto_match: formData.autoMatch ?? true,
-        match_criteria: formData.matchCriteria,
-        deal_lead: userId,
-        deal_team: [userId],
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-        published_at: new Date().toISOString()
-      };
+private async publishToSupabase(
+  userId: string, 
+  formData: Partial<FundingOpportunity>
+): Promise<PublishOpportunityResponse> {
+  try {
+    console.log('=== PUBLISH TO SUPABASE START ===');
+    console.log('userId:', userId);
+    console.log('formData received:', JSON.stringify(formData, null, 2));
 
-      const { data, error } = await this.supabaseService
-        .from('funding_opportunities')
-        .insert(opportunityData)
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      return {
-        success: true,
-        opportunityId: data.id,
-        publishedAt: data.published_at,
-        message: 'Opportunity published successfully'
-      };
-
-    } catch (error: any) {
-      console.error('Error publishing opportunity:', error);
-      throw new Error(`Failed to publish opportunity: ${error.message}`);
+    // Validate required fields before attempting to publish
+    console.log('🔍 Validating required fields...');
+    
+    if (!formData.title?.trim()) {
+      console.error('❌ Validation failed: Title is missing');
+      throw new Error('Title is required');
     }
+    console.log('✅ Title valid:', formData.title);
+    
+    if (!formData.description?.trim()) {
+      console.error('❌ Validation failed: Description is missing');
+      throw new Error('Description is required');
+    }
+    console.log('✅ Description valid (length):', formData.description.length);
+    
+    if (!formData.fundingType) {
+      console.error('❌ Validation failed: Funding type is missing');
+      throw new Error('Funding type is required');
+    }
+    console.log('✅ Funding type valid:', formData.fundingType);
+    
+    if (!formData.offerAmount || formData.offerAmount <= 0) {
+      console.error('❌ Validation failed: Invalid offer amount:', formData.offerAmount);
+      throw new Error('Valid offer amount is required');
+    }
+    console.log('✅ Offer amount valid:', formData.offerAmount);
+    
+    if (!formData.totalAvailable || formData.totalAvailable <= 0) {
+      console.error('❌ Validation failed: Invalid total available:', formData.totalAvailable);
+      throw new Error('Valid total available amount is required');
+    }
+    console.log('✅ Total available valid:', formData.totalAvailable);
+
+    // Ensure investment amounts are valid
+    const minInvestment = formData.minInvestment || 0;
+    const maxInvestment = formData.maxInvestment || 0;
+    console.log('Investment amounts - Min:', minInvestment, 'Max:', maxInvestment);
+    
+    if (minInvestment > 0 && maxInvestment > 0 && maxInvestment < minInvestment) {
+      console.error('❌ Validation failed: Max investment < Min investment');
+      throw new Error('Maximum investment must be greater than or equal to minimum investment');
+    }
+    console.log('✅ Investment amounts valid');
+
+    // Generate temporary organization ID
+    console.log('🏢 Getting organization ID...');
+    const organizationId = await this.getOrCreateTempOrganizationId(userId);
+    console.log('✅ Organization ID obtained:', organizationId);
+    
+    const opportunityData = {
+      id: crypto.randomUUID(),
+      organization_id: organizationId,
+      created_by: userId,
+      title: formData.title,
+      description: formData.description,
+      short_description: formData.shortDescription,
+      target_company_profile: formData.targetCompanyProfile,
+      offer_amount: formData.offerAmount || 0,
+      min_investment: formData.minInvestment || 0,
+      max_investment: formData.maxInvestment || 0,
+      currency: formData.currency || 'ZAR',
+      funding_type: formData.fundingType,
+      interest_rate: formData.interestRate,
+      equity_offered: formData.equityOffered,
+      repayment_terms: formData.repaymentTerms,
+      security_required: formData.securityRequired,
+      use_of_funds: formData.useOfFunds,
+      investment_structure: formData.investmentStructure,
+      expected_returns: formData.expectedReturns,
+      investment_horizon: formData.investmentHorizon,
+      exit_strategy: formData.exitStrategy,
+      application_deadline: formData.applicationDeadline?.toISOString(),
+      decision_timeframe: formData.decisionTimeframe || 30,
+      application_process: formData.applicationProcess || {},
+      eligibility_criteria: formData.eligibilityCriteria || {},
+      status: 'active',
+      total_available: formData.totalAvailable || 0,
+      amount_committed: 0,
+      amount_deployed: 0,
+      max_applications: formData.maxApplications,
+      current_applications: 0,
+      view_count: 0,
+      application_count: 0,
+      auto_match: formData.autoMatch ?? true,
+      match_criteria: formData.matchCriteria,
+      deal_lead: userId,
+      deal_team: [userId],
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      published_at: new Date().toISOString()
+    };
+
+    console.log('📝 Prepared opportunity data for insert:', JSON.stringify(opportunityData, null, 2));
+    console.log('🔍 Key validation checks:');
+    console.log('  - min_investment:', opportunityData.min_investment);
+    console.log('  - max_investment:', opportunityData.max_investment);
+    console.log('  - offer_amount:', opportunityData.offer_amount);
+    console.log('  - total_available:', opportunityData.total_available);
+    console.log('  - Check constraint (max >= min):', opportunityData.max_investment >= opportunityData.min_investment);
+
+    console.log('💾 Inserting into Supabase...');
+    const { data, error } = await this.supabaseService
+      .from('funding_opportunities')
+      .insert(opportunityData)
+      .select()
+      .single();
+
+    if (error) {
+      console.error('❌ Supabase insert error:', error);
+      console.error('Error details:', {
+        message: error.message,
+        code: error.code,
+        details: error.details,
+        hint: error.hint
+      });
+      throw error;
+    }
+
+    console.log('✅ Supabase insert successful!');
+    console.log('Inserted data:', data);
+
+    const response = {
+      success: true,
+      opportunityId: data.id,
+      publishedAt: data.published_at,
+      message: 'Opportunity published successfully'
+    };
+    
+    console.log('📤 Returning response:', response);
+    console.log('=== PUBLISH TO SUPABASE END ===');
+    
+    return response;
+
+  } catch (error: any) {
+    console.error('=== PUBLISH TO SUPABASE ERROR ===');
+    console.error('❌ Error publishing opportunity:', error);
+    console.error('Error type:', typeof error);
+    console.error('Error constructor:', error.constructor.name);
+    console.error('Error message:', error.message);
+    console.error('Error stack:', error.stack);
+    
+    if (error.code) {
+      console.error('Error code:', error.code);
+    }
+    if (error.details) {
+      console.error('Error details:', error.details);
+    }
+    if (error.hint) {
+      console.error('Error hint:', error.hint);
+    }
+    
+    throw new Error(`Failed to publish opportunity: ${error.message}`);
   }
+}
 
   private async loadOpportunitiesFromSupabase(userId: string): Promise<any[]> {
     try {

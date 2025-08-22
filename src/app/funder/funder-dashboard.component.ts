@@ -1,5 +1,5 @@
 // src/app/funder/components/funder-dashboard.component.ts
-import { Component, signal, OnInit, inject } from '@angular/core';
+import { Component, signal, OnInit, OnDestroy, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { Subject, takeUntil } from 'rxjs';
@@ -28,19 +28,18 @@ import { FundingOpportunityService } from '../funding/services/funding-opportuni
   imports: [
     CommonModule,
     UiButtonComponent,
-   
     LucideAngularModule
   ],
   templateUrl: 'funder-dashboard.component.html'
 })
-export class FunderDashboardComponent implements OnInit {
+export class FunderDashboardComponent implements OnInit, OnDestroy {
   private router = inject(Router);
   private onboardingService = inject(FunderOnboardingService);
   private managementService = inject(OpportunityManagementService);
+  private opportunityService = inject(FundingOpportunityService);
   private destroy$ = new Subject<void>();
-private opportunityService = inject(FundingOpportunityService);
 
- // Add draft state
+  // Add draft state
   draftSummary = signal<{
     hasDraft: boolean;
     completionPercentage: number;
@@ -57,8 +56,8 @@ private opportunityService = inject(FundingOpportunityService);
   AlertCircleIcon = AlertCircle;
   CheckCircleIcon = CheckCircle;
   ArrowRightIcon = ArrowRight;
-    ClockIcon = ClockIcon;
-     FileTextIcon = FileText;
+  ClockIcon = ClockIcon;
+  FileTextIcon = FileText;
 
   // State
   onboardingState = signal<OnboardingState | null>(null);
@@ -68,14 +67,15 @@ private opportunityService = inject(FundingOpportunityService);
   ngOnInit() {
     this.loadDashboardData();
     this.setupSubscriptions();
-       this.loadDraftSummary(); // Add this line
+    this.loadDraftSummary();
   }
 
   ngOnDestroy() {
     this.destroy$.next();
     this.destroy$.complete();
   }
-   private loadDraftSummary() {
+
+  private loadDraftSummary() {
     this.opportunityService.getDraftSummary()
       .pipe(takeUntil(this.destroy$))
       .subscribe({
@@ -88,11 +88,19 @@ private opportunityService = inject(FundingOpportunityService);
       });
   }
 
-  // Navigation methods for draft
+  // FIXED: Renamed methods to prevent infinite recursion
+  
+  /**
+   * Navigate to continue existing draft
+   */
   continueDraft() {
+    console.log('Continuing existing draft...');
     this.router.navigate(['/funding/create-opportunity']);
   }
 
+  /**
+   * Delete existing draft
+   */
   deleteDraft() {
     if (confirm('Are you sure you want to delete your draft? This action cannot be undone.')) {
       this.opportunityService.clearAllDrafts()
@@ -100,8 +108,7 @@ private opportunityService = inject(FundingOpportunityService);
         .subscribe({
           next: () => {
             console.log('Draft deleted successfully');
-            // Refresh draft summary
-            this.loadDraftSummary();
+            this.loadDraftSummary(); // Refresh draft summary
           },
           error: (error) => {
             console.error('Failed to delete draft:', error);
@@ -110,7 +117,12 @@ private opportunityService = inject(FundingOpportunityService);
     }
   }
 
-    createNewOpportunity() {
+  /**
+   * Handle creating new opportunity with draft check
+   */
+  handleCreateOpportunity() {
+    console.log('Handle create opportunity triggered');
+    
     if (this.draftSummary().hasDraft) {
       // Ask user what to do with existing draft
       const action = confirm(
@@ -122,25 +134,71 @@ private opportunityService = inject(FundingOpportunityService);
         this.continueDraft();
       } else {
         // Clear existing draft and create new
-        this.opportunityService.clearAllDrafts()
-          .pipe(takeUntil(this.destroy$))
-          .subscribe({
-            next: () => {
-              this.router.navigate(['/funding/create-opportunity']);
-            },
-            error: (error) => {
-              console.error('Failed to clear draft:', error);
-              // Navigate anyway
-              this.router.navigate(['/funding/create-opportunity']);
-            }
-          });
+        this.clearDraftAndStartFresh();
       }
     } else {
       // No existing draft, proceed normally
-      this.createOpportunity();
+      this.navigateToCreateOpportunity();
     }
   }
 
+  /**
+   * Clear draft and start fresh
+   */
+  private clearDraftAndStartFresh() {
+    this.opportunityService.clearAllDrafts()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          console.log('Draft cleared, navigating to create opportunity');
+          this.navigateToCreateOpportunity();
+        },
+        error: (error) => {
+          console.error('Failed to clear draft:', error);
+          // Navigate anyway
+          this.navigateToCreateOpportunity();
+        }
+      });
+  }
+
+  /**
+   * Navigate to create opportunity page
+   */
+  private navigateToCreateOpportunity() {
+    console.log('Navigating to create opportunity page...');
+    
+    try {
+      this.router.navigate(['/funding/create-opportunity']);
+    } catch (error) {
+      console.error('Navigation error:', error);
+      // Fallback navigation
+      window.location.href = '/funding/create-opportunity';
+    }
+  }
+
+  /**
+   * Main create opportunity method (called from template)
+   * FIXED: No longer calls itself recursively
+   */
+  createOpportunity() {
+    console.log('Create opportunity method called');
+    
+    if (this.onboardingState()?.canCreateOpportunities) {
+      // Check for existing drafts first
+      this.handleCreateOpportunity();
+    } else {
+      // Complete onboarding first
+      this.completeOnboarding();
+    }
+  }
+
+  /**
+   * Alternative method for creating new opportunity (from button)
+   */
+  createNewOpportunity() {
+    console.log('Create new opportunity method called');
+    this.handleCreateOpportunity();
+  }
 
   private loadDashboardData() {
     // Load onboarding status
@@ -176,7 +234,34 @@ private opportunityService = inject(FundingOpportunityService);
   }
 
   // Navigation methods
-// Helper methods for draft card
+  viewAllOpportunities() {
+    this.router.navigate(['/funding/opportunities']);
+  }
+
+  viewOpportunity(opportunityId: string) {
+    this.router.navigate(['/funding/opportunities', opportunityId]);
+  }
+
+  viewAnalytics() {
+    // this.router.navigate(['/funder/analytics']);
+  }
+
+  editOrganization() {
+    this.router.navigate(['/funder/onboarding']);
+  }
+
+  completeOnboarding() {
+    console.log('Completing onboarding...');
+    this.router.navigate(['/funder/onboarding']);
+  }
+
+  improveProfile() {
+    this.router.navigate(['/funder/onboarding'], { 
+      fragment: 'verification' 
+    });
+  }
+
+  // Helper methods for draft card
   getDraftTitle(): string {
     const title = this.draftSummary().title;
     return title || 'Untitled Opportunity';
@@ -226,43 +311,6 @@ private opportunityService = inject(FundingOpportunityService);
     } else {
       return 'bg-gradient-to-r from-orange-500 to-orange-600';
     }
-  }
-
-  // Update existing createOpportunity method
-  createOpportunity() {
-    if (this.onboardingState()?.canCreateOpportunities) {
-      // Use the new method that checks for existing drafts
-      this.createNewOpportunity();
-    } else {
-      this.completeOnboarding();
-    }
-  }
-
-  viewAllOpportunities() {
-    this.router.navigate(['/funding/opportunities']);
-  }
-
-  viewOpportunity(opportunityId: string) {
-    this.router.navigate(['/funding/opportunities', opportunityId]);
-  }
-
-  viewAnalytics() {
-    // this.router.navigate(['/funder/analytics']);
-  }
-
-  editOrganization() {
-    this.router.navigate(['/funder/onboarding']);
-  }
-
-  completeOnboarding() {
-    console.log('...Completing')
-    this.router.navigate(['/funder/onboarding']);
-  }
-
-  improveProfile() {
-    this.router.navigate(['/funder/onboarding'], { 
-      fragment: 'verification' 
-    });
   }
 
   // Helper methods
@@ -381,6 +429,3 @@ private opportunityService = inject(FundingOpportunityService);
     return new Date(date).toLocaleDateString();
   }
 }
-
-// Update the backend service to link opportunities to organization
-// src/app/funder/services/funder-opportunity-backend.service.ts - ADD THIS METHOD

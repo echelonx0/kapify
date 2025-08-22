@@ -1,103 +1,70 @@
-<div class="  mx-auto p-6">
+<div class="mx-auto p-6">
   <!-- Header -->
-
-  <!-- Replace the existing header section in your create-opportunity.component.html -->
-
-<!-- Header -->
-<div class="mb-8">
-  <div class="flex items-center justify-between mb-6">
-    <div class="flex items-center space-x-3">
-      <button 
-        class="flex items-center text-gray-600 hover:text-gray-900 transition-colors group"
-        (click)="goBack()"
-      >
-        <lucide-icon [img]="ArrowLeftIcon" [size]="16" class="mr-2 group-hover:-translate-x-1 transition-transform"></lucide-icon>
-        @if (isEditMode()) {
-          Back to Opportunity
-        } @else {
-          Back to Opportunities
-        }
-      </button>
-    </div>
-    <div class="flex items-center space-x-3">
-      <!-- Save Status Indicators -->
-      @if (showDatabaseSaveStatus()) {
-        <div class="flex items-center text-sm text-green-600">
-          <lucide-icon [img]="CheckIcon" [size]="14" class="mr-1"></lucide-icon>
-          {{ getLastSavedText() }}
-        </div>
-      }
-      
-      @if (showLocalSaveStatus()) {
-        <div class="flex items-center text-sm text-blue-600">
-          <lucide-icon [img]="ClockIcon" [size]="14" class="mr-1"></lucide-icon>
-          {{ getLocalSaveText() }}
-        </div>
-      }
-      
-      @if (showUnsavedIndicator()) {
-        <div class="flex items-center text-sm text-orange-600">
-          <lucide-icon [img]="AlertCircleIcon" [size]="14" class="mr-1"></lucide-icon>
-          Unsaved changes
-        </div>
-      }
-
-      <button class="px-4 py-2 text-sm text-gray-600 hover:text-gray-900 transition-colors">
-        <lucide-icon [img]="EyeIcon" [size]="16" class="mr-2 inline"></lucide-icon>
-        Preview
-      </button>
-      <button class="px-4 py-2 text-sm text-gray-600 hover:text-gray-900 transition-colors">
-        <lucide-icon [img]="HelpCircleIcon" [size]="16" class="mr-2 inline"></lucide-icon>
-        Help
-      </button>
-    </div>
-  </div>
-  
-  <div>
-    <div class="flex items-center gap-3 mb-2">
-      <h1 class="text-3xl font-bold text-gray-900">{{ getPageTitle() }}</h1>
-      @if (isEditMode()) {
-        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-          Editing
-        </span>
-      } @else {
-        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-          New Draft
-        </span>
-      }
-    </div>
-    <p class="text-gray-600">{{ getPageSubtitle() }}</p>
-  </div>
-</div>
-
-  <!-- <div class="mb-8">
+  <div class="mb-8">
     <div class="flex items-center justify-between mb-6">
       <div class="flex items-center space-x-3">
         <button 
           class="flex items-center text-gray-600 hover:text-gray-900 transition-colors group"
           (click)="goBack()"
         >
-          <lucide-icon [img]="ArrowLeftIcon" [size]="16" class="mr-2 group-hover:-translate-x-1 transition-transform"></lucide-icon>
-          Back to Opportunities
+          <lucide-angular [img]="ArrowLeftIcon" [size]="16" class="mr-2 group-hover:-translate-x-1 transition-transform"></lucide-angular>
+          @if (isEditMode()) {
+            Back 
+          } @else {
+            Go back
+          }
         </button>
       </div>
       <div class="flex items-center space-x-3">
+        <!-- Save Status Indicators -->
+        @if (showDatabaseSaveStatus()) {
+          <div class="flex items-center text-sm text-green-600">
+            <lucide-angular [img]="CheckIcon" [size]="14" class="mr-1"></lucide-angular>
+            {{ getLastSavedText() }}
+          </div>
+        }
+        
+        @if (showLocalSaveStatus()) {
+          <div class="flex items-center text-sm text-blue-600">
+            <lucide-angular [img]="ClockIcon" [size]="14" class="mr-1"></lucide-angular>
+            {{ getLocalSaveText() }}
+          </div>
+        }
+        
+        @if (showUnsavedIndicator()) {
+          <div class="flex items-center text-sm text-orange-600">
+            <lucide-angular [img]="AlertCircleIcon" [size]="14" class="mr-1"></lucide-angular>
+            Unsaved changes
+          </div>
+        }
+
         <button class="px-4 py-2 text-sm text-gray-600 hover:text-gray-900 transition-colors">
-          <lucide-icon [img]="EyeIcon" [size]="16" class="mr-2 inline"></lucide-icon>
+          <lucide-angular [img]="EyeIcon" [size]="16" class="mr-2 inline"></lucide-angular>
           Preview
         </button>
         <button class="px-4 py-2 text-sm text-gray-600 hover:text-gray-900 transition-colors">
-          <lucide-icon [img]="HelpCircleIcon" [size]="16" class="mr-2 inline"></lucide-icon>
+          <lucide-angular [img]="HelpCircleIcon" [size]="16" class="mr-2 inline"></lucide-angular>
           Help
         </button>
       </div>
     </div>
     
     <div>
-      <h1 class="text-3xl font-bold text-gray-900 mb-2">Create Funding Opportunity</h1>
-      <p class="text-gray-600">Set up a new investment opportunity for SMEs with AI-powered optimization</p>
+      <div class="flex items-center gap-3 mb-2">
+        <h1 class="text-3xl font-bold text-gray-900">{{ getPageTitle() }}</h1>
+        @if (isEditMode()) {
+          <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+            Editing
+          </span>
+        } @else {
+          <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+            New Draft
+          </span>
+        }
+      </div>
+      <p class="text-gray-600">{{ getPageSubtitle() }}</p>
     </div>
-  </div> -->
+  </div>
 
   <div class="grid grid-cols-1 lg:grid-cols-5 gap-8">
     <!-- Left Sidebar - Steps Navigation -->
@@ -113,7 +80,7 @@
             >
               <div [class]="getStepIconClasses(step.id)">
                 @if (isStepCompleted(step.id)) {
-                  <lucide-icon [img]="CheckIcon" [size]="16" class="text-white"></lucide-icon>
+                  <lucide-angular [img]="CheckIcon" [size]="16" class="text-white"></lucide-angular>
                 } @else {
                   <span class="text-xs font-semibold">{{ i + 1 }}</span>
                 }
@@ -149,7 +116,7 @@
         <div class="p-6 border-b border-gray-200 bg-gradient-to-r from-primary-50 to-indigo-50">
           <div class="flex items-center space-x-4">
             <div class="w-12 h-12 bg-primary-100 rounded-xl flex items-center justify-center">
-              <lucide-icon [img]="getCurrentStepIcon()" [size]="24" class="text-primary-600"></lucide-icon>
+              <lucide-angular [img]="getCurrentStepIcon()" [size]="24" class="text-primary-600"></lucide-angular>
             </div>
             <div>
               <h2 class="text-xl font-semibold text-gray-900">{{ getCurrentStepTitle() }}</h2>
@@ -158,12 +125,33 @@
           </div>
         </div>
 
+        <!-- Current Step Validation Errors -->
+        @if (hasCurrentStepErrors()) {
+          <div class="p-4 bg-red-50 border-b border-red-200">
+            <div class="flex">
+              <lucide-angular [img]="AlertCircleIcon" [size]="20" class="text-red-500 mt-0.5 mr-3"></lucide-angular>
+              <div>
+                <h4 class="text-sm font-medium text-red-800">Please fix the following issues:</h4>
+                <ul class="mt-2 text-sm text-red-700 space-y-1">
+                  @for (error of currentStepErrors(); track error.field) {
+                    <li class="flex items-center">
+                      <span class="w-1.5 h-1.5 bg-red-400 rounded-full mr-2"></span>
+                      {{ error.message }}
+                    </li>
+                  }
+                </ul>
+              </div>
+            </div>
+          </div>
+        }
+
         <!-- Form Content -->
         <div class="p-6 space-y-8" [@stepTransition]>
 
-            <!-- Step: Basic Info -->
+          <!-- Step: Basic Info -->
           @if (currentStep() === 'basic') {
             <div class="space-y-6">
+              <!-- Title Field -->
               <div class="space-y-2">
                 <label class="block text-sm font-semibold text-gray-700">
                   Opportunity Title <span class="text-red-500">*</span>
@@ -173,10 +161,16 @@
                   placeholder="e.g., Growth Capital for Tech Startups"
                   [value]="formData().title"
                   (input)="updateField('title', $event)"
-                  class="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-sm transition-all"
+                  [class]="getFieldClasses('title')"
                 >
+                @if (getFieldError('title'); as error) {
+                  <p class="text-sm" [class.text-red-600]="error.type === 'error'" [class.text-yellow-600]="error.type === 'warning'">
+                    {{ error.message }}
+                  </p>
+                }
               </div>
 
+              <!-- Short Description Field -->
               <div class="space-y-2">
                 <label class="block text-sm font-semibold text-gray-700">
                   Short Description <span class="text-red-500">*</span>
@@ -187,11 +181,21 @@
                   [value]="formData().shortDescription"
                   (input)="updateField('shortDescription', $event)"
                   maxlength="150"
-                  class="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-sm transition-all"
+                  [class]="getFieldClasses('shortDescription')"
                 >
-                <p class="text-xs text-gray-500">{{ formData().shortDescription.length }}/150 characters</p>
+                <div class="flex justify-between">
+                  @if (getFieldError('shortDescription'); as error) {
+                    <p class="text-sm" [class.text-red-600]="error.type === 'error'" [class.text-yellow-600]="error.type === 'warning'">
+                      {{ error.message }}
+                    </p>
+                  } @else {
+                    <span></span>
+                  }
+                  <p class="text-xs text-gray-500">{{ formData().shortDescription.length }}/150 characters</p>
+                </div>
               </div>
 
+              <!-- Full Description Field -->
               <div class="space-y-2">
                 <label class="block text-sm font-semibold text-gray-700">
                   Full Description <span class="text-red-500">*</span>
@@ -201,15 +205,19 @@
                   placeholder="Detailed description of your funding opportunity, investment criteria, and what you're looking for in potential partners..."
                   [value]="formData().description"
                   (input)="updateField('description', $event)"
-                  class="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-sm transition-all resize-none"
+                  [class]="getFieldClasses('description')"
+                  class="resize-none"
                 ></textarea>
+                @if (getFieldError('description'); as error) {
+                  <p class="text-sm" [class.text-red-600]="error.type === 'error'" [class.text-yellow-600]="error.type === 'warning'">
+                    {{ error.message }}
+                  </p>
+                }
               </div>
             </div>
           }
-    
-        <!-- Investment terms -->
 
-        <!-- Step: Investment Terms -->
+          <!-- Step: Investment Terms -->
           @if (currentStep() === 'terms') {
             <div class="space-y-8">
               <!-- Funding Type Selection -->
@@ -227,9 +235,11 @@
                       (change)="updateField('fundingType', $event)"
                       class="sr-only peer"
                     >
-                    <div class="flex items-center p-4 border border-gray-200 rounded-lg hover:border-primary-300 peer-checked:border-primary-500 peer-checked:bg-primary-50 transition-all">
+                    <div class="flex items-center p-4 border border-gray-200 rounded-lg hover:border-primary-300 peer-checked:border-primary-500 peer-checked:bg-primary-50 transition-all"
+                         [class.border-red-300]="hasFieldError('fundingType')"
+                         [class.hover:border-red-400]="hasFieldError('fundingType')">
                       <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center mr-3">
-                        <lucide-icon [img]="TrendingUpIcon" [size]="16" class="text-green-600"></lucide-icon>
+                        <lucide-angular [img]="TrendingUpIcon" [size]="16" class="text-green-600"></lucide-angular>
                       </div>
                       <div>
                         <div class="font-medium text-gray-900">Debt</div>
@@ -247,9 +257,11 @@
                       (change)="updateField('fundingType', $event)"
                       class="sr-only peer"
                     >
-                    <div class="flex items-center p-4 border border-gray-200 rounded-lg hover:border-primary-300 peer-checked:border-primary-500 peer-checked:bg-primary-50 transition-all">
+                    <div class="flex items-center p-4 border border-gray-200 rounded-lg hover:border-primary-300 peer-checked:border-primary-500 peer-checked:bg-primary-50 transition-all"
+                         [class.border-red-300]="hasFieldError('fundingType')"
+                         [class.hover:border-red-400]="hasFieldError('fundingType')">
                       <div class="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center mr-3">
-                        <lucide-icon [img]="PieChartIcon" [size]="16" class="text-purple-600"></lucide-icon>
+                        <lucide-angular [img]="PieChartIcon" [size]="16" class="text-purple-600"></lucide-angular>
                       </div>
                       <div>
                         <div class="font-medium text-gray-900">Equity</div>
@@ -267,9 +279,11 @@
                       (change)="updateField('fundingType', $event)"
                       class="sr-only peer"
                     >
-                    <div class="flex items-center p-4 border border-gray-200 rounded-lg hover:border-primary-300 peer-checked:border-primary-500 peer-checked:bg-primary-50 transition-all">
+                    <div class="flex items-center p-4 border border-gray-200 rounded-lg hover:border-primary-300 peer-checked:border-primary-500 peer-checked:bg-primary-50 transition-all"
+                         [class.border-red-300]="hasFieldError('fundingType')"
+                         [class.hover:border-red-400]="hasFieldError('fundingType')">
                       <div class="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center mr-3">
-                        <lucide-icon [img]="RefreshCwIcon" [size]="16" class="text-orange-600"></lucide-icon>
+                        <lucide-angular [img]="RefreshCwIcon" [size]="16" class="text-orange-600"></lucide-angular>
                       </div>
                       <div>
                         <div class="font-medium text-gray-900">Convertible</div>
@@ -278,6 +292,9 @@
                     </div>
                   </label>
                 </div>
+                @if (getFieldError('fundingType'); as error) {
+                  <p class="text-sm text-red-600">{{ error.message }}</p>
+                }
               </div>
 
               <!-- Investment Amounts -->
@@ -285,6 +302,7 @@
                 <h3 class="text-lg font-semibold text-gray-900">Investment Structure</h3>
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <!-- Total Available -->
                   <div class="space-y-2">
                     <label class="block text-sm font-semibold text-gray-700">
                       Total Available <span class="text-red-500">*</span>
@@ -294,14 +312,22 @@
                       <input 
                         type="text" 
                         placeholder="5,000,000"
-                        [value]="formData().totalAvailable"
-                        (input)="updateField('totalAvailable', $event)"
-                        class="block w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-sm transition-all"
+                        [value]="formatNumberWithCommas(formData().totalAvailable)"
+                        (input)="onNumberInput('totalAvailable', $event)"
+                        [class]="getFieldClasses('totalAvailable')"
+                        class="pl-12"
                       >
                     </div>
-                    <p class="text-xs text-gray-500">Total funding pool available</p>
+                    @if (getFieldError('totalAvailable'); as error) {
+                      <p class="text-sm" [class.text-red-600]="error.type === 'error'" [class.text-yellow-600]="error.type === 'warning'">
+                        {{ error.message }}
+                      </p>
+                    } @else {
+                      <p class="text-xs text-gray-500">Total funding pool available</p>
+                    }
                   </div>
 
+                  <!-- Typical Investment -->
                   <div class="space-y-2">
                     <label class="block text-sm font-semibold text-gray-700">
                       Typical Investment <span class="text-red-500">*</span>
@@ -311,16 +337,24 @@
                       <input 
                         type="text" 
                         placeholder="500,000"
-                        [value]="formData().offerAmount"
-                        (input)="updateField('offerAmount', $event)"
-                        class="block w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-sm transition-all"
+                        [value]="formatNumberWithCommas(formData().offerAmount)"
+                        (input)="onNumberInput('offerAmount', $event)"
+                        [class]="getFieldClasses('offerAmount')"
+                        class="pl-12"
                       >
                     </div>
-                    <p class="text-xs text-gray-500">Expected per-business investment</p>
+                    @if (getFieldError('offerAmount'); as error) {
+                      <p class="text-sm" [class.text-red-600]="error.type === 'error'" [class.text-yellow-600]="error.type === 'warning'">
+                        {{ error.message }}
+                      </p>
+                    } @else {
+                      <p class="text-xs text-gray-500">Expected per-business investment</p>
+                    }
                   </div>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <!-- Minimum Investment -->
                   <div class="space-y-2">
                     <label class="block text-sm font-semibold text-gray-700">Minimum Investment</label>
                     <div class="relative">
@@ -328,13 +362,22 @@
                       <input 
                         type="text" 
                         placeholder="100,000"
-                        [value]="formData().minInvestment"
-                        (input)="updateField('minInvestment', $event)"
-                        class="block w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-sm transition-all"
+                        [value]="formatNumberWithCommas(formData().minInvestment)"
+                        (input)="onNumberInput('minInvestment', $event)"
+                        [class]="getFieldClasses('minInvestment')"
+                        class="pl-12"
                       >
                     </div>
+                    @if (getFieldError('minInvestment'); as error) {
+                      <p class="text-sm" [class.text-red-600]="error.type === 'error'" [class.text-yellow-600]="error.type === 'warning'">
+                        {{ error.message }}
+                      </p>
+                    } @else {
+                      <p class="text-xs text-gray-500">Minimum amount investors can contribute</p>
+                    }
                   </div>
 
+                  <!-- Maximum Investment -->
                   <div class="space-y-2">
                     <label class="block text-sm font-semibold text-gray-700">Maximum Investment</label>
                     <div class="relative">
@@ -342,20 +385,47 @@
                       <input 
                         type="text" 
                         placeholder="2,000,000"
-                        [value]="formData().maxInvestment"
-                        (input)="updateField('maxInvestment', $event)"
-                        class="block w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-sm transition-all"
+                        [value]="formatNumberWithCommas(formData().maxInvestment)"
+                        (input)="onNumberInput('maxInvestment', $event)"
+                        [class]="getFieldClasses('maxInvestment')"
+                        class="pl-12"
                       >
                     </div>
+                    @if (getFieldError('maxInvestment'); as error) {
+                      <p class="text-sm" [class.text-red-600]="error.type === 'error'" [class.text-yellow-600]="error.type === 'warning'">
+                        {{ error.message }}
+                      </p>
+                    } @else {
+                      <p class="text-xs text-gray-500">Maximum amount investors can contribute</p>
+                    }
                   </div>
                 </div>
+
+                <!-- Investment Validation Summary -->
+                @if (currentStepErrors().length > 0) {
+                  <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+                    <div class="flex">
+                      <lucide-angular [img]="AlertCircleIcon" [size]="20" class="text-red-500 mr-3 mt-0.5"></lucide-angular>
+                      <div>
+                        <h4 class="text-sm font-medium text-red-800 mb-2">Investment Amount Issues</h4>
+                        <ul class="text-sm text-red-700 space-y-1">
+                          @for (error of currentStepErrors(); track error.field) {
+                            @if (error.field.includes('Investment') || error.field.includes('Amount') || error.field.includes('Available')) {
+                              <li>• {{ error.message }}</li>
+                            }
+                          }
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                }
               </div>
 
-              <!-- Terms Section -->
+              <!-- Terms Section based on funding type -->
               @if (formData().fundingType === 'debt') {
                 <div class="bg-gray-50 rounded-xl p-6 space-y-4">
                   <div class="flex items-center space-x-2">
-                    <lucide-icon [img]="FileTextIcon" [size]="20" class="text-gray-600"></lucide-icon>
+                    <lucide-angular [img]="FileTextIcon" [size]="20" class="text-gray-600"></lucide-angular>
                     <h4 class="text-lg font-semibold text-gray-900">Debt Terms</h4>
                   </div>
                   
@@ -368,7 +438,7 @@
                           placeholder="12.5"
                           [value]="formData().interestRate"
                           (input)="updateField('interestRate', $event)"
-                          class="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-sm transition-all"
+                          [class]="getFieldClasses('interestRate')"
                         >
                         <span class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm">%</span>
                       </div>
@@ -379,7 +449,7 @@
                       <select 
                         [value]="formData().repaymentTerms"
                         (change)="updateField('repaymentTerms', $event)"
-                        class="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-sm transition-all"
+                        [class]="getFieldClasses('repaymentTerms')"
                       >
                         <option value="">Select terms</option>
                         <option value="monthly">Monthly payments</option>
@@ -397,7 +467,8 @@
                       placeholder="Describe any collateral, guarantees, or security requirements..."
                       [value]="formData().securityRequired"
                       (input)="updateField('securityRequired', $event)"
-                      class="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-sm transition-all resize-none"
+                      [class]="getFieldClasses('securityRequired')"
+                      class="resize-none"
                     ></textarea>
                   </div>
                 </div>
@@ -406,7 +477,7 @@
               @if (formData().fundingType === 'equity') {
                 <div class="bg-purple-50 rounded-xl p-6 space-y-4">
                   <div class="flex items-center space-x-2">
-                    <lucide-icon [img]="PieChartIcon" [size]="20" class="text-purple-600"></lucide-icon>
+                    <lucide-angular [img]="PieChartIcon" [size]="20" class="text-purple-600"></lucide-angular>
                     <h4 class="text-lg font-semibold text-gray-900">Equity Terms</h4>
                   </div>
                   
@@ -419,7 +490,7 @@
                           placeholder="15"
                           [value]="formData().equityOffered"
                           (input)="updateField('equityOffered', $event)"
-                          class="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-sm transition-all"
+                          [class]="getFieldClasses('equityOffered')"
                         >
                         <span class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm">%</span>
                       </div>
@@ -433,7 +504,7 @@
                           placeholder="25"
                           [value]="formData().expectedReturns"
                           (input)="updateField('expectedReturns', $event)"
-                          class="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-sm transition-all"
+                          [class]="getFieldClasses('expectedReturns')"
                         >
                         <span class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm">% IRR</span>
                       </div>
@@ -447,7 +518,8 @@
                       placeholder="Describe your preferred exit strategy and timeline..."
                       [value]="formData().exitStrategy"
                       (input)="updateField('exitStrategy', $event)"
-                      class="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-sm transition-all resize-none"
+                      [class]="getFieldClasses('exitStrategy')"
+                      class="resize-none"
                     ></textarea>
                   </div>
                 </div>
@@ -480,7 +552,6 @@
             </div>
           }
 
-
           <!-- Step: Eligibility Criteria -->
           @if (currentStep() === 'eligibility') {
             <div class="space-y-6">
@@ -505,6 +576,7 @@
               </div>
 
               <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Minimum Revenue -->
                 <div class="space-y-2">
                   <label class="block text-sm font-semibold text-gray-700">Minimum Annual Revenue</label>
                   <div class="relative">
@@ -512,13 +584,20 @@
                     <input 
                       type="text" 
                       placeholder="1,000,000"
-                      [value]="formData().minRevenue"
-                      (input)="updateField('minRevenue', $event)"
-                      class="block w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-sm transition-all"
+                      [value]="formatNumberWithCommas(formData().minRevenue)"
+                      (input)="onNumberInput('minRevenue', $event)"
+                      [class]="getFieldClasses('minRevenue')"
+                      class="pl-12"
                     >
                   </div>
+                  @if (getFieldError('minRevenue'); as error) {
+                    <p class="text-sm" [class.text-red-600]="error.type === 'error'" [class.text-yellow-600]="error.type === 'warning'">
+                      {{ error.message }}
+                    </p>
+                  }
                 </div>
 
+                <!-- Maximum Revenue -->
                 <div class="space-y-2">
                   <label class="block text-sm font-semibold text-gray-700">Maximum Annual Revenue</label>
                   <div class="relative">
@@ -526,11 +605,17 @@
                     <input 
                       type="text" 
                       placeholder="50,000,000"
-                      [value]="formData().maxRevenue"
-                      (input)="updateField('maxRevenue', $event)"
-                      class="block w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-sm transition-all"
+                      [value]="formatNumberWithCommas(formData().maxRevenue)"
+                      (input)="onNumberInput('maxRevenue', $event)"
+                      [class]="getFieldClasses('maxRevenue')"
+                      class="pl-12"
                     >
                   </div>
+                  @if (getFieldError('maxRevenue'); as error) {
+                    <p class="text-sm" [class.text-red-600]="error.type === 'error'" [class.text-yellow-600]="error.type === 'warning'">
+                      {{ error.message }}
+                    </p>
+                  }
                 </div>
               </div>
 
@@ -539,7 +624,7 @@
                 <select 
                   [value]="formData().minYearsOperation"
                   (change)="updateField('minYearsOperation', $event)"
-                  class="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-sm transition-all"
+                  [class]="getFieldClasses('minYearsOperation')"
                 >
                   <option value="">No minimum</option>
                   <option value="1">1 year</option>
@@ -570,7 +655,6 @@
               </div>
             </div>
           }
-
 
           <!-- Step: Settings -->
           @if (currentStep() === 'settings') {
@@ -617,19 +701,29 @@
                       type="date" 
                       [value]="formData().applicationDeadline"
                       (input)="updateField('applicationDeadline', $event)"
-                      class="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-sm transition-all"
+                      [class]="getFieldClasses('applicationDeadline')"
                     >
+                    @if (getFieldError('applicationDeadline'); as error) {
+                      <p class="text-sm" [class.text-red-600]="error.type === 'error'" [class.text-yellow-600]="error.type === 'warning'">
+                        {{ error.message }}
+                      </p>
+                    }
                   </div>
 
                   <div class="space-y-2">
                     <label class="block text-sm font-semibold text-gray-700">Maximum Applications</label>
                     <input 
-                      type="number" 
+                      type="text" 
                       placeholder="No limit"
-                      [value]="formData().maxApplications"
-                      (input)="updateField('maxApplications', $event)"
-                      class="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-sm transition-all"
+                      [value]="formatNumberWithCommas(formData().maxApplications)"
+                      (input)="onNumberInput('maxApplications', $event)"
+                      [class]="getFieldClasses('maxApplications')"
                     >
+                    @if (getFieldError('maxApplications'); as error) {
+                      <p class="text-sm" [class.text-red-600]="error.type === 'error'" [class.text-yellow-600]="error.type === 'warning'">
+                        {{ error.message }}
+                      </p>
+                    }
                   </div>
                 </div>
               </div>
@@ -639,6 +733,27 @@
           <!-- Step: Review -->
           @if (currentStep() === 'review') {
             <div class="space-y-6">
+              <!-- Validation Summary -->
+              @if (validationErrors().length > 0) {
+                <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                  <div class="flex">
+                    <lucide-angular [img]="AlertCircleIcon" [size]="20" class="text-yellow-500 mr-3 mt-0.5"></lucide-angular>
+                    <div>
+                      <h4 class="text-sm font-medium text-yellow-800 mb-2">Review Required</h4>
+                      <p class="text-sm text-yellow-700 mb-3">Please review the following items before publishing:</p>
+                      <ul class="text-sm text-yellow-700 space-y-1">
+                        @for (error of validationErrors(); track error.field) {
+                          <li class="flex items-center">
+                            <span class="w-1.5 h-1.5 bg-yellow-400 rounded-full mr-2"></span>
+                            {{ error.message }}
+                          </li>
+                        }
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              }
+
               <div class="bg-gray-50 rounded-xl p-6">
                 <h4 class="font-medium text-gray-900 mb-4">Opportunity Summary</h4>
                 
@@ -693,7 +808,8 @@
 
               <div class="bg-green-50 border border-green-200 rounded-lg p-4">
                 <div class="flex">
-                  <div class="ml-3">
+                  <lucide-angular [img]="CheckIcon" [size]="20" class="text-green-500 mr-3 mt-0.5"></lucide-angular>
+                  <div>
                     <h4 class="text-sm font-medium text-green-800">Ready to Publish</h4>
                     <p class="mt-1 text-sm text-green-700">
                       Once published, qualified SMEs will be able to view and apply for this opportunity.
@@ -707,104 +823,33 @@
         </div>
 
         <!-- Form Actions -->
-         <!-- Replace the existing form actions section in your create-opportunity.component.html -->
-
-<!-- Form Actions -->
-<div class="px-6 py-4 bg-gray-50 border-t border-gray-200 flex items-center justify-between">
-  <div class="flex items-center space-x-3">
-    <button 
-      class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-all"
-      [disabled]="currentStep() === 'basic'"
-      (click)="previousStep()"
-    >
-      <lucide-icon [img]="ArrowLeftIcon" [size]="16" class="mr-2 inline"></lucide-icon>
-      Previous
-    </button>
-    
-    <button 
-      class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-all"
-      (click)="goBack()"
-    >
-      Cancel
-    </button>
-
-    <!-- Additional actions for different modes -->
-    @if (isCreateMode()) {
-      <button 
-        class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-all"
-        (click)="clearDraft()"
-        title="Clear form and start over"
-      >
-        Clear Form
-      </button>
-    }
-  </div>
-
-  <div class="flex items-center space-x-3">
-    <button 
-      class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-all"
-      (click)="saveDraft()"
-      [disabled]="isSaving()"
-    >
-      <lucide-icon [img]="SaveIcon" [size]="16" class="mr-2 inline"></lucide-icon>
-      @if (isSaving()) {
-        Saving...
-      } @else {
-        {{ getSaveButtonText() }}
-      }
-    </button>
-
-    @if (currentStep() === 'review') {
-      <button 
-        class="px-6 py-2 bg-primary-600 border border-transparent rounded-lg text-sm font-medium text-white hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 flex items-center transition-all"
-        (click)="publishOpportunity()"
-        [disabled]="!canPublish() || isPublishing()"
-      >
-        @if (isPublishing()) {
-          <lucide-icon [img]="RefreshCwIcon" [size]="16" class="mr-2 animate-spin"></lucide-icon>
-          @if (isEditMode()) {
-            Saving Changes...
-          } @else {
-            Publishing...
-          }
-        } @else {
-          @if (isEditMode()) {
-            <lucide-icon [img]="SaveIcon" [size]="16" class="mr-2"></lucide-icon>
-            Save Changes
-          } @else {
-            <lucide-icon [img]="CheckIcon" [size]="16" class="mr-2"></lucide-icon>
-            Publish Opportunity
-          }
-        }
-      </button>
-    } @else {
-      <button 
-        class="px-6 py-2 bg-primary-600 border border-transparent rounded-lg text-sm font-medium text-white hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 flex items-center transition-all"
-        (click)="nextStep()"
-        [disabled]="!canContinue()"
-      >
-        Continue
-        <lucide-icon [img]="ArrowRightIcon" [size]="16" class="ml-2"></lucide-icon>
-      </button>
-    }
-  </div>
-</div>
-        <!-- <div class="px-6 py-4 bg-gray-50 border-t border-gray-200 flex items-center justify-between">
+        <div class="px-6 py-4 bg-gray-50 border-t border-gray-200 flex items-center justify-between">
           <div class="flex items-center space-x-3">
             <button 
               class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-all"
               [disabled]="currentStep() === 'basic'"
               (click)="previousStep()"
             >
-              <lucide-icon [img]="ArrowLeftIcon" [size]="16" class="mr-2 inline"></lucide-icon>
+              <lucide-angular [img]="ArrowLeftIcon" [size]="16" class="mr-2 inline"></lucide-angular>
               Previous
             </button>
+            
             <button 
               class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-all"
               (click)="goBack()"
             >
               Cancel
             </button>
+
+            @if (isCreateMode()) {
+              <button 
+                class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-all"
+                (click)="clearDraft()"
+                title="Clear form and start over"
+              >
+                Clear Form
+              </button>
+            }
           </div>
 
           <div class="flex items-center space-x-3">
@@ -813,11 +858,11 @@
               (click)="saveDraft()"
               [disabled]="isSaving()"
             >
-              <lucide-icon [img]="SaveIcon" [size]="16" class="mr-2 inline"></lucide-icon>
+              <lucide-angular [img]="SaveIcon" [size]="16" class="mr-2 inline"></lucide-angular>
               @if (isSaving()) {
                 Saving...
               } @else {
-                Save Draft
+                {{ getSaveButtonText() }}
               }
             </button>
 
@@ -828,9 +873,20 @@
                 [disabled]="!canPublish() || isPublishing()"
               >
                 @if (isPublishing()) {
-                  Publishing...
+                  <lucide-angular [img]="RefreshCwIcon" [size]="16" class="mr-2 animate-spin"></lucide-angular>
+                  @if (isEditMode()) {
+                    Saving Changes...
+                  } @else {
+                    Publishing...
+                  }
                 } @else {
-                  Publish Opportunity
+                  @if (isEditMode()) {
+                    <lucide-angular [img]="SaveIcon" [size]="16" class="mr-2"></lucide-angular>
+                    Save Changes
+                  } @else {
+                    <lucide-angular [img]="CheckIcon" [size]="16" class="mr-2"></lucide-angular>
+                    Publish Opportunity
+                  }
                 }
               </button>
             } @else {
@@ -840,11 +896,11 @@
                 [disabled]="!canContinue()"
               >
                 Continue
-                <lucide-icon [img]="ArrowRightIcon" [size]="16" class="ml-2"></lucide-icon>
+                <lucide-angular [img]="ArrowRightIcon" [size]="16" class="ml-2"></lucide-angular>
               </button>
             }
           </div>
-        </div> -->
+        </div>
       </div>
     </div>
 

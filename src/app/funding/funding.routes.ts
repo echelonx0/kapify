@@ -15,7 +15,7 @@ export const fundingRoutes: Routes = [
       },
       { 
         path: 'opportunities', 
-        loadComponent: () => import('./funding-opportunities.component').then(c => c.FundingOpportunitiesComponent),
+        loadComponent: () => import('./funding-opportunities/funding-opportunities.component').then(c => c.FundingOpportunitiesComponent),
         title: 'Funding Opportunities - Kapify'
       },
       { 

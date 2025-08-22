@@ -19,12 +19,14 @@
     "@angular/platform-browser": "^19.0.0",
     "@angular/platform-browser-dynamic": "^19.0.0",
     "@angular/router": "^19.0.0",
-    "@supabase/supabase-js": "^2.54.0",
+    "@supabase/supabase-js": "^2.38.4",
     "jsonwebtoken": "^9.0.2",
     "lucide-angular": "^0.536.0",
+    "papaparse": "^5.5.3",
     "rxjs": "~7.8.0",
     "three": "^0.179.1",
     "tslib": "^2.3.0",
+    "xlsx": "^0.18.5",
     "zone.js": "~0.15.0"
   },
   "devDependencies": {
@@ -32,6 +34,7 @@
     "@angular/cli": "^19.0.5",
     "@angular/compiler-cli": "^19.0.0",
     "@types/jasmine": "~5.1.0",
+    "@types/papaparse": "^5.3.16",
     "@types/three": "^0.179.0",
     "autoprefixer": "^10.4.21",
     "jasmine-core": "~5.4.0",
