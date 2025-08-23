@@ -30,7 +30,7 @@ export const applicationRoutes: Routes = [
   },
       { 
         path: ':id', 
-        loadComponent: () => import('./components/application-detail.component').then(c => c.ApplicationDetailLayoutComponent),
+        loadComponent: () => import('../funder/application-details/application-detail.component').then(c => c.ApplicationDetailLayoutComponent),
         title: 'Application Details - Kapify'
       }
     ]

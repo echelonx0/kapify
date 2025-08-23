@@ -13,14 +13,15 @@ import {
   AlertCircle,
   CheckCircle,
   ArrowRight,
-  Clock,
+ 
   FileText,
   ClockIcon
 } from 'lucide-angular';
-import { UiButtonComponent } from '../shared/components';
-import { FunderOnboardingService, OnboardingState } from './services/funder-onboarding.service';
-import { OpportunityManagementService } from './services/opportunity-management.service';
-import { FundingOpportunityService } from '../funding/services/funding-opportunity.service';
+import { FundingOpportunityService } from '../../funding/services/funding-opportunity.service';
+import { UiButtonComponent } from '../../shared/components';
+import { FunderOnboardingService, OnboardingState } from '../services/funder-onboarding.service';
+import { OpportunityManagementService } from '../services/opportunity-management.service';
+ 
  
 @Component({
   selector: 'app-funder-dashboard',

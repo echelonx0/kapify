@@ -9,7 +9,8 @@ import { UiButtonComponent, UiProgressComponent, UiCardComponent, UiStatusBadgeC
 import { Application, ApplicationStatus } from '../../shared/models/application.models';
  
 import { SWOTAnalysis } from '../../shared/models/swot.models';
-import { ApplicationService } from '../services/applications.service';
+import { ApplicationService } from '../../applications/services/applications.service';
+ 
  
 
 interface ApplicationSection {
