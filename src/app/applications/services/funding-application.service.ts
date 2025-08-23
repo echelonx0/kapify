@@ -4,7 +4,7 @@ import { Injectable, signal, computed, inject, OnDestroy } from '@angular/core';
 import { FundingApplicationProfile, FundingApplicationStep } from '../models/funding-application.models';
 import { FundingApplicationBackendService } from './funding-application-backend.service';
 import { AuthService } from '../../auth/production.auth.service';
-import { interval, Subscription, Subject } from 'rxjs';
+import { Subscription, Subject } from 'rxjs';
 import { debounceTime, takeUntil } from 'rxjs/operators';
 
 @Injectable({

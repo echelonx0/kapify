@@ -16,11 +16,18 @@ export const applicationRoutes: Routes = [
         loadComponent: () => import('./components/applications-home.component').then(c => c.ApplicationsHomeComponent),
         title: 'Applications - Kapify'
       },
-      { 
-        path: 'new', 
-        loadComponent: () => import('./components/new-application/application-form.component').then(c => c.ApplicationFormComponent),
-        title: 'New Application - Kapify'
-      },
+    {
+    path: 'new',
+    loadComponent: () => 
+      import('./components/new-application/opportunity-application.component').then(m => m.OpportunityApplicationFormComponent),
+    title: 'New Application'
+  },
+  {
+    path: 'new/:opportunityId',
+    loadComponent: () => 
+      import('./components/new-application/opportunity-application.component').then(m => m.OpportunityApplicationFormComponent),
+    title: 'Apply for Opportunity'
+  },
       { 
         path: ':id', 
         loadComponent: () => import('./components/application-detail.component').then(c => c.ApplicationDetailLayoutComponent),
