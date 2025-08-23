@@ -18,7 +18,7 @@ export const applicationRoutes: Routes = [
       },
       { 
         path: 'new', 
-        loadComponent: () => import('./components/application-form.component').then(c => c.ApplicationFormComponent),
+        loadComponent: () => import('./components/new-application/application-form.component').then(c => c.ApplicationFormComponent),
         title: 'New Application - Kapify'
       },
       { 
