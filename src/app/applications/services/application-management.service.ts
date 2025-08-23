@@ -1,391 +1,610 @@
-// // src/app/shared/services/application-profile-management.service.ts
-// import { Injectable, inject, signal } from '@angular/core';
-// import { HttpClient } from '@angular/common/http';
-// import { Observable, throwError } from 'rxjs';
-// import { tap, catchError, map } from 'rxjs/operators';
-// import { AuthService } from '../../auth/production.auth.service';
-// import { ApplicationProfileData } from './funding-profile.service';
- 
+// src/app/funder/services/application-management.service.ts
+import { Injectable, inject, signal } from '@angular/core';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { Observable, from, throwError } from 'rxjs';
+import { map, tap, catchError } from 'rxjs/operators';
+import { AuthService } from '../../auth/production.auth.service';
+import { environment } from '../../../environments/environment';
 
-// // Backend response interfaces
-// export interface BusinessPlanSectionData {
-//   sectionType: string;
-//   data: Record<string, any>;
-//   completed: boolean;
-//   completionPercentage: number;
-//   createdAt: string;
-//   updatedAt: string;
-// }
+// Application interfaces
+export interface FundingApplication {
+  id: string;
+  applicantId: string;
+  opportunityId: string;
+  title: string;
+  description?: string;
+  status: 'draft' | 'submitted' | 'under_review' | 'approved' | 'rejected' | 'withdrawn';
+  stage: 'initial_review' | 'due_diligence' | 'investment_committee' | 'documentation' | 'completed';
+  formData: Record<string, any>;
+  documents: Record<string, any>;
+  reviewNotes: ReviewNote[];
+  terms?: Record<string, any>;
+  submittedAt?: Date;
+  reviewStartedAt?: Date;
+  reviewedAt?: Date;
+  decidedAt?: Date;
+  createdAt: Date;
+  updatedAt: Date;
 
-// export interface BackendProfileResponse {
-//   sections: BusinessPlanSectionData[];
-// }
+  // Joined data from other tables
+  applicant?: ApplicantInfo;
+  opportunity?: OpportunityInfo;
+}
 
-// export interface SaveSectionResponse {
-//   section: BusinessPlanSectionData;
-//   overallCompletion: number;
-//   message: string;
-// }
+export interface ReviewNote {
+  id: string;
+  reviewerId: string;
+  reviewerName: string;
+  note: string;
+  type: 'internal' | 'external' | 'request_info';
+  createdAt: Date;
+  isRead?: boolean;
+}
 
-// export interface SaveCompleteProfileResponse {
-//   success: boolean;
-//   profileId: string;
-//   overallCompletion: number;
-//   savedSections: string[];
-//   message: string;
-// }
+export interface ApplicantInfo {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  companyName?: string;
+  industry?: string;
+  registrationNumber?: string;
+}
 
-// @Injectable({
-//   providedIn: 'root'
-// })
-// export class FundingApplicationBackendService {
-//   private http = inject(HttpClient);
-//   private authService = inject(AuthService);
-//   private readonly API_BASE = 'http://localhost:3000/api';
-  
-//   // Only track backend operations
-//   isLoading = signal<boolean>(false);
-//   isSaving = signal<boolean>(false);
-//   error = signal<string | null>(null);
-//   lastSavedAt = signal<Date | null>(null);
+export interface OpportunityInfo {
+  id: string;
+  title: string;
+  fundingType: string;
+  offerAmount: number;
+  currency: string;
+  organizationId: string;
+}
 
-//   constructor() {}
+export interface ApplicationStats {
+  total: number;
+  byStatus: Record<string, number>;
+  byStage: Record<string, number>;
+  recentActivity: number; // applications updated in last 7 days
+  averageProcessingTime: number; // days
+}
 
-//   // Load saved profile from backend (initial load only)
-//   loadSavedProfile(): Observable<ApplicationProfileData> {
-//     this.isLoading.set(true);
-//     this.error.set(null);
+export interface ApplicationFilter {
+  status?: string[];
+  stage?: string[];
+  dateRange?: {
+    start: Date;
+    end: Date;
+  };
+  searchQuery?: string;
+}
+
+@Injectable({
+  providedIn: 'root'
+})
+export class ApplicationManagementService {
+  private supabase: SupabaseClient;
+  private authService = inject(AuthService);
+
+  // Loading states
+  isLoading = signal<boolean>(false);
+  isUpdating = signal<boolean>(false);
+  error = signal<string | null>(null);
+
+  constructor() {
+    this.supabase = createClient(environment.supabaseUrl, environment.supabaseAnonKey);
+  }
+
+  // ===============================
+  // FETCH APPLICATIONS
+  // ===============================
+
+  /**
+   * Get all applications for a specific opportunity
+   */
+  getApplicationsByOpportunity(opportunityId: string): Observable<FundingApplication[]> {
+    this.isLoading.set(true);
+    this.error.set(null);
+
+    return from(this.fetchApplicationsFromSupabase(opportunityId)).pipe(
+      tap(() => this.isLoading.set(false)),
+      catchError(error => {
+        this.error.set('Failed to load applications');
+        this.isLoading.set(false);
+        console.error('Error loading applications:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  /**
+   * Get all applications for opportunities in the funder's organization
+   */
+  getApplicationsByOrganization(organizationId: string, filter?: ApplicationFilter): Observable<FundingApplication[]> {
+    this.isLoading.set(true);
+    this.error.set(null);
+
+    return from(this.fetchApplicationsByOrganization(organizationId, filter)).pipe(
+      tap(() => this.isLoading.set(false)),
+      catchError(error => {
+        this.error.set('Failed to load organization applications');
+        this.isLoading.set(false);
+        console.error('Error loading organization applications:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  /**
+   * Get a single application with full details
+   */
+  getApplicationById(applicationId: string): Observable<FundingApplication> {
+    this.isLoading.set(true);
+    this.error.set(null);
+
+    return from(this.fetchApplicationById(applicationId)).pipe(
+      tap(() => this.isLoading.set(false)),
+      catchError(error => {
+        this.error.set('Failed to load application details');
+        this.isLoading.set(false);
+        console.error('Error loading application:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  // ===============================
+  // UPDATE APPLICATION STATUS
+  // ===============================
+
+  /**
+   * Update application status and stage
+   */
+  updateApplicationStatus(
+    applicationId: string, 
+    status: FundingApplication['status'], 
+    stage?: FundingApplication['stage'],
+    reviewNote?: string
+  ): Observable<FundingApplication> {
+    this.isUpdating.set(true);
+    this.error.set(null);
+
+    const currentUser = this.authService.user();
+    if (!currentUser) {
+      this.isUpdating.set(false);
+      return throwError(() => new Error('User not authenticated'));
+    }
+
+    return from(this.updateApplicationInSupabase(applicationId, status, stage, currentUser, reviewNote)).pipe(
+      tap(() => this.isUpdating.set(false)),
+      catchError(error => {
+        this.error.set('Failed to update application status');
+        this.isUpdating.set(false);
+        console.error('Error updating application:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  /**
+   * Add review note to application
+   */
+  addReviewNote(
+    applicationId: string, 
+    note: string, 
+    type: ReviewNote['type'] = 'internal'
+  ): Observable<FundingApplication> {
+    this.error.set(null);
+    const currentUser = this.authService.user();
+    if (!currentUser) {
+      return throwError(() => new Error('User not authenticated'));
+    }
+
+    return from(this.addReviewNoteToSupabase(applicationId, note, type, currentUser)).pipe(
+      catchError(error => {
+        this.error.set('Failed to add review note');
+        console.error('Error adding review note:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  /**
+   * Request additional information from applicant
+   */
+  requestAdditionalInfo(applicationId: string, requestMessage: string): Observable<FundingApplication> {
+    // This will add a review note of type 'request_info' and potentially send notification
+    return this.addReviewNote(applicationId, requestMessage, 'request_info').pipe(
+      tap(() => {
+        // Here you could trigger email notification to applicant
+        console.log('Additional information requested for application:', applicationId);
+      })
+    );
+  }
+
+  // ===============================
+  // STATISTICS
+  // ===============================
+
+  /**
+   * Get application statistics for an opportunity or organization
+   */
+  getApplicationStats(opportunityId?: string, organizationId?: string): Observable<ApplicationStats> {
+    return from(this.fetchApplicationStats(opportunityId, organizationId)).pipe(
+      catchError(error => {
+        this.error.set('Failed to load application statistics');
+        console.error('Error loading stats:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  // ===============================
+  // PRIVATE SUPABASE METHODS
+  // ===============================
+
+  private async fetchApplicationsFromSupabase(opportunityId: string): Promise<FundingApplication[]> {
+    try {
+      const { data, error } = await this.supabase
+        .from('applications')
+        .select(`
+          *,
+          applicant:applicant_id (
+            id,
+            raw_user_meta_data
+          ),
+          opportunity:opportunity_id (
+            id,
+            title,
+            funding_type,
+            offer_amount,
+            currency,
+            organization_id
+          )
+        `)
+        .eq('opportunity_id', opportunityId)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        throw new Error(`Supabase error: ${error.message}`);
+      }
+
+      return this.transformApplicationsData(data || []);
+    } catch (error) {
+      console.error('Error fetching applications from Supabase:', error);
+      throw error;
+    }
+  }
+
+  private async fetchApplicationsByOrganization(
+    organizationId: string, 
+    filter?: ApplicationFilter
+  ): Promise<FundingApplication[]> {
+    try {
+      let query = this.supabase
+        .from('applications')
+        .select(`
+          *,
+          applicant:applicant_id (
+            id,
+            raw_user_meta_data
+          ),
+          opportunity:opportunity_id!inner (
+            id,
+            title,
+            funding_type,
+            offer_amount,
+            currency,
+            organization_id
+          )
+        `)
+        .eq('opportunity.organization_id', organizationId);
+
+      // Apply filters
+      if (filter?.status?.length) {
+        query = query.in('status', filter.status);
+      }
+
+      if (filter?.stage?.length) {
+        query = query.in('stage', filter.stage);
+      }
+
+      if (filter?.dateRange) {
+        query = query
+          .gte('created_at', filter.dateRange.start.toISOString())
+          .lte('created_at', filter.dateRange.end.toISOString());
+      }
+
+      const { data, error } = await query.order('created_at', { ascending: false });
+
+      if (error) {
+        throw new Error(`Supabase error: ${error.message}`);
+      }
+
+      let applications = this.transformApplicationsData(data || []);
+
+      // Apply search filter (client-side for now)
+      if (filter?.searchQuery) {
+        const searchLower = filter.searchQuery.toLowerCase();
+        applications = applications.filter(app =>
+          app.title.toLowerCase().includes(searchLower) ||
+          app.applicant?.firstName?.toLowerCase().includes(searchLower) ||
+          app.applicant?.lastName?.toLowerCase().includes(searchLower) ||
+          app.applicant?.companyName?.toLowerCase().includes(searchLower)
+        );
+      }
+
+      return applications;
+    } catch (error) {
+      console.error('Error fetching organization applications:', error);
+      throw error;
+    }
+  }
+
+  private async fetchApplicationById(applicationId: string): Promise<FundingApplication> {
+    try {
+      const { data, error } = await this.supabase
+        .from('applications')
+        .select(`
+          *,
+          applicant:applicant_id (
+            id,
+            raw_user_meta_data
+          ),
+          opportunity:opportunity_id (
+            id,
+            title,
+            funding_type,
+            offer_amount,
+            currency,
+            organization_id
+          )
+        `)
+        .eq('id', applicationId)
+        .single();
+
+      if (error) {
+        throw new Error(`Supabase error: ${error.message}`);
+      }
+
+      if (!data) {
+        throw new Error('Application not found');
+      }
+
+      return this.transformApplicationData(data);
+    } catch (error) {
+      console.error('Error fetching application by ID:', error);
+      throw error;
+    }
+  }
+
+  private async updateApplicationInSupabase(
+    applicationId: string,
+    status: FundingApplication['status'],
+    stage?: FundingApplication['stage'],
+    reviewer?: any,
+    reviewNote?: string
+  ): Promise<FundingApplication> {
+    try {
+      const updateData: any = {
+        status,
+        updated_at: new Date().toISOString()
+      };
+
+      if (stage) {
+        updateData.stage = stage;
+      }
+
+      // Set timestamp fields based on status
+      if (status === 'under_review' && !updateData.review_started_at) {
+        updateData.review_started_at = new Date().toISOString();
+      }
+      
+      if (status === 'approved' || status === 'rejected') {
+        updateData.decided_at = new Date().toISOString();
+        updateData.reviewed_at = new Date().toISOString();
+      }
+
+      const { data, error } = await this.supabase
+        .from('applications')
+        .update(updateData)
+        .eq('id', applicationId)
+        .select()
+        .single();
+
+      if (error) {
+        throw new Error(`Failed to update application: ${error.message}`);
+      }
+
+      // Add review note if provided
+      if (reviewNote && reviewer) {
+        await this.addReviewNoteToSupabase(applicationId, reviewNote, 'internal', reviewer);
+      }
+
+      return this.transformApplicationData(data);
+    } catch (error) {
+      console.error('Error updating application in Supabase:', error);
+      throw error;
+    }
+  }
+
+  private async addReviewNoteToSupabase(
+    applicationId: string,
+    note: string,
+    type: ReviewNote['type'],
+    reviewer: any
+  ): Promise<FundingApplication> {
+    try {
+      // Get current application
+      const { data: currentApp, error: fetchError } = await this.supabase
+        .from('applications')
+        .select('review_notes')
+        .eq('id', applicationId)
+        .single();
+
+      if (fetchError) {
+        throw new Error(`Failed to fetch application: ${fetchError.message}`);
+      }
+
+      // Create new review note
+      const newNote: ReviewNote = {
+        id: `note_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        reviewerId: reviewer.id,
+        reviewerName: `${reviewer.firstName} ${reviewer.lastName}`.trim() || reviewer.email,
+        note,
+        type,
+        createdAt: new Date(),
+        isRead: false
+      };
+
+      // Append to existing notes
+      const existingNotes = currentApp.review_notes || [];
+      const updatedNotes = [...existingNotes, newNote];
+
+      // Update application
+      const { data, error } = await this.supabase
+        .from('applications')
+        .update({
+          review_notes: updatedNotes,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', applicationId)
+        .select()
+        .single();
+
+      if (error) {
+        throw new Error(`Failed to add review note: ${error.message}`);
+      }
+
+      return this.transformApplicationData(data);
+    } catch (error) {
+      console.error('Error adding review note to Supabase:', error);
+      throw error;
+    }
+  }
+
+  private async fetchApplicationStats(
+    opportunityId?: string,
+    organizationId?: string
+  ): Promise<ApplicationStats> {
+    try {
+      let query = this.supabase.from('applications').select('status, stage, created_at, updated_at');
+
+      if (opportunityId) {
+        query = query.eq('opportunity_id', opportunityId);
+      } else if (organizationId) {
+        // Join with opportunities table to filter by organization
+        query = this.supabase
+          .from('applications')
+          .select('status, stage, created_at, updated_at, opportunity:opportunity_id!inner(organization_id)')
+          .eq('opportunity.organization_id', organizationId);
+      }
+
+      const { data, error } = await query;
+
+      if (error) {
+        throw new Error(`Failed to fetch stats: ${error.message}`);
+      }
+
+      return this.calculateStats(data || []);
+    } catch (error) {
+      console.error('Error fetching application stats:', error);
+      throw error;
+    }
+  }
+
+  // ===============================
+  // DATA TRANSFORMATION
+  // ===============================
+
+  private transformApplicationsData(rawData: any[]): FundingApplication[] {
+    return rawData.map(item => this.transformApplicationData(item));
+  }
+
+  private transformApplicationData(rawData: any): FundingApplication {
+    const applicantData = rawData.applicant?.raw_user_meta_data || {};
     
-//     const currentAuth = this.authService.user();
-//     if (!currentAuth) {
-//       this.isLoading.set(false);
-//       return throwError(() => new Error('User not authenticated'));
-//     }
+    return {
+      id: rawData.id,
+      applicantId: rawData.applicant_id,
+      opportunityId: rawData.opportunity_id,
+      title: rawData.title,
+      description: rawData.description,
+      status: rawData.status,
+      stage: rawData.stage,
+      formData: rawData.form_data || {},
+      documents: rawData.documents || {},
+      reviewNotes: rawData.review_notes || [],
+      terms: rawData.terms || {},
+      submittedAt: rawData.submitted_at ? new Date(rawData.submitted_at) : undefined,
+      reviewStartedAt: rawData.review_started_at ? new Date(rawData.review_started_at) : undefined,
+      reviewedAt: rawData.reviewed_at ? new Date(rawData.reviewed_at) : undefined,
+      decidedAt: rawData.decided_at ? new Date(rawData.decided_at) : undefined,
+      createdAt: new Date(rawData.created_at),
+      updatedAt: new Date(rawData.updated_at),
+      applicant: {
+        id: rawData.applicant?.id,
+        firstName: applicantData.firstName || '',
+        lastName: applicantData.lastName || '',
+        email: applicantData.email || rawData.applicant?.email || '',
+        companyName: applicantData.companyName,
+        industry: applicantData.industry,
+        registrationNumber: applicantData.registrationNumber
+      },
+      opportunity: rawData.opportunity ? {
+        id: rawData.opportunity.id,
+        title: rawData.opportunity.title,
+        fundingType: rawData.opportunity.funding_type,
+        offerAmount: rawData.opportunity.offer_amount,
+        currency: rawData.opportunity.currency,
+        organizationId: rawData.opportunity.organization_id
+      } : undefined
+    };
+  }
 
-//     return this.http.get<BackendProfileResponse>(`${this.API_BASE}/users/${currentAuth.id}/business-plan`).pipe(
-//       tap(() => this.isLoading.set(false)),
-//       map(response => this.transformBackendToLocal(response)),
-//       catchError(error => {
-//         this.error.set('Failed to load saved profile data');
-//         this.isLoading.set(false);
-//         console.error('Load profile error:', error);
-//         return throwError(() => error);
-//       })
-//     );
-//   }
-
-//   // Save complete profile to backend (final submission)
-//   saveCompleteProfile(profileData: ApplicationProfileData): Observable<SaveCompleteProfileResponse> {
-//     this.isSaving.set(true);
-//     this.error.set(null);
+  private calculateStats(applications: any[]): ApplicationStats {
+    const total = applications.length;
+    const byStatus: Record<string, number> = {};
+    const byStage: Record<string, number> = {};
     
-//     const currentAuth = this.authService.user();
-//     if (!currentAuth) {
-//       this.isSaving.set(false);
-//       return throwError(() => new Error('User not authenticated'));
-//     }
-
-//     // Transform local data structure to backend format
-//     const backendPayload = this.transformLocalToBackend(profileData);
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    let recentActivity = 0;
     
-//     return this.saveAllSections(currentAuth.id, backendPayload).pipe(
-//       tap(response => {
-//         this.isSaving.set(false);
-//         this.lastSavedAt.set(new Date());
-//         console.log('Complete profile saved successfully:', response);
-//       }),
-//       catchError(error => {
-//         this.error.set('Failed to save complete profile');
-//         this.isSaving.set(false);
-//         console.error('Save complete profile error:', error);
-//         return throwError(() => error);
-//       })
-//     );
-//   }
+    let totalProcessingTime = 0;
+    let completedApplications = 0;
 
-//   // Save draft section (manual save during process)
-//   saveDraftSection(sectionType: string, sectionData: Record<string, any>, completed: boolean = false): Observable<SaveSectionResponse> {
-//     this.error.set(null);
-    
-//     const currentAuth = this.authService.user();
-//     if (!currentAuth) {
-//       return throwError(() => new Error('User not authenticated'));
-//     }
+    applications.forEach(app => {
+      // Count by status
+      byStatus[app.status] = (byStatus[app.status] || 0) + 1;
+      
+      // Count by stage
+      byStage[app.stage] = (byStage[app.stage] || 0) + 1;
+      
+      // Recent activity
+      const updatedAt = new Date(app.updated_at);
+      if (updatedAt >= sevenDaysAgo) {
+        recentActivity++;
+      }
+      
+      // Processing time for completed applications
+      if ((app.status === 'approved' || app.status === 'rejected') && app.created_at && app.updated_at) {
+        const created = new Date(app.created_at);
+        const completed = new Date(app.updated_at);
+        const processingDays = Math.ceil((completed.getTime() - created.getTime()) / (1000 * 60 * 60 * 24));
+        totalProcessingTime += processingDays;
+        completedApplications++;
+      }
+    });
 
-//     const completionPercentage = this.calculateSectionCompletion(sectionData, completed);
-    
-//     const payload = {
-//       data: sectionData,
-//       completed,
-//       completionPercentage
-//     };
+    const averageProcessingTime = completedApplications > 0 ? 
+      Math.round(totalProcessingTime / completedApplications) : 0;
 
-//     return this.http.patch<SaveSectionResponse>(
-//       `${this.API_BASE}/users/${currentAuth.id}/business-plan/${sectionType}`,
-//       payload
-//     ).pipe(
-//       tap(response => {
-//         console.log(`Section ${sectionType} saved as draft:`, response);
-//       }),
-//       catchError(error => {
-//         this.error.set(`Failed to save ${sectionType} section`);
-//         console.error(`Save ${sectionType} section error:`, error);
-//         return throwError(() => error);
-//       })
-//     );
-//   }
-
-//   // Auto-save functionality (periodic backup)
-//   autoSaveProfile(profileData: ApplicationProfileData): Observable<SaveCompleteProfileResponse> {
-//     const currentAuth = this.authService.user();
-//     if (!currentAuth) {
-//       return throwError(() => new Error('User not authenticated'));
-//     }
-
-//     const backendPayload = this.transformLocalToBackend(profileData);
-    
-//     return this.saveAllSections(currentAuth.id, backendPayload, true).pipe(
-//       tap(response => {
-//         this.lastSavedAt.set(new Date());
-//         console.log('Auto-save completed:', response);
-//       }),
-//       catchError(error => {
-//         console.error('Auto-save failed:', error);
-//         return throwError(() => error);
-//       })
-//     );
-//   }
-
-//   // Submit profile for review (final action)
-//   submitProfileForReview(profileData: ApplicationProfileData): Observable<{success: boolean, applicationId: string}> {
-//     this.isSaving.set(true);
-//     this.error.set(null);
-    
-//     const currentAuth = this.authService.user();
-//     if (!currentAuth) {
-//       this.isSaving.set(false);
-//       return throwError(() => new Error('User not authenticated'));
-//     }
-
-//     // First save complete profile
-//     return this.saveCompleteProfile(profileData).pipe(
-//       // Then submit for review
-//       map(saveResponse => {
-//         // In production, this would trigger the review process
-//         return {
-//           success: true,
-//           applicationId: saveResponse.profileId
-//         };
-//       }),
-//       tap(response => {
-//         this.isSaving.set(false);
-//         console.log('Profile submitted for review:', response);
-//       }),
-//       catchError(error => {
-//         this.error.set('Failed to submit profile for review');
-//         this.isSaving.set(false);
-//         return throwError(() => error);
-//       })
-//     );
-//   }
-
-//   // Delete draft data
-//   clearSavedProfile(): Observable<{success: boolean}> {
-//     const currentAuth = this.authService.user();
-//     if (!currentAuth) {
-//       return throwError(() => new Error('User not authenticated'));
-//     }
-
-//     return this.http.delete<{success: boolean}>(`${this.API_BASE}/users/${currentAuth.id}/business-plan`).pipe(
-//       tap(() => {
-//         this.lastSavedAt.set(null);
-//         console.log('Saved profile data cleared');
-//       }),
-//       catchError(error => {
-//         this.error.set('Failed to clear saved profile');
-//         return throwError(() => error);
-//       })
-//     );
-//   }
-
-//   // Private helper methods
-//   private saveAllSections(userId: string, sections: Array<{sectionType: string, data: Record<string, any>, completed: boolean}>, isAutoSave: boolean = false): Observable<SaveCompleteProfileResponse> {
-//     // Create array of save requests
-//     const saveRequests = sections.map(section => 
-//       this.http.patch<SaveSectionResponse>(
-//         `${this.API_BASE}/users/${userId}/business-plan/${section.sectionType}`,
-//         {
-//           data: section.data,
-//           completed: section.completed,
-//           completionPercentage: this.calculateSectionCompletion(section.data, section.completed)
-//         }
-//       )
-//     );
-
-//     // Execute all saves in parallel
-//     return new Observable<SaveCompleteProfileResponse>(observer => {
-//       Promise.all(saveRequests.map(req => req.toPromise()))
-//         .then(responses => {
-//           const savedSections = responses.map(r => r!.section.sectionType);
-//           const overallCompletion = Math.max(...responses.map(r => r!.overallCompletion || 0));
-          
-//           observer.next({
-//             success: true,
-//             profileId: `profile_${userId}_${Date.now()}`,
-//             overallCompletion,
-//             savedSections,
-//             message: isAutoSave ? 'Profile auto-saved successfully' : 'Profile saved successfully'
-//           });
-//           observer.complete();
-//         })
-//         .catch(error => {
-//           observer.error(error);
-//         });
-//     });
-//   }
-
-//   private transformLocalToBackend(profileData: ApplicationProfileData): Array<{sectionType: string, data: Record<string, any>, completed: boolean}> {
-//     const sections: Array<{sectionType: string, data: Record<string, any>, completed: boolean}> = [];
-
-//     if (profileData.adminInformation) {
-//       sections.push({
-//         sectionType: 'admin',
-//         data: profileData.adminInformation,
-//         completed: this.isAdminInformationComplete(profileData.adminInformation)
-//       });
-//     }
-
-//     if (profileData.documents) {
-//       sections.push({
-//         sectionType: 'documents',
-//         data: profileData.documents,
-//         completed: this.isDocumentsComplete(profileData.documents)
-//       });
-//     }
-
-//     if (profileData.businessReview) {
-//       sections.push({
-//         sectionType: 'business-review',
-//         data: profileData.businessReview,
-//         completed: this.isBusinessReviewComplete(profileData.businessReview)
-//       });
-//     }
-
-//     if (profileData.swotAnalysis) {
-//       sections.push({
-//         sectionType: 'swot',
-//         data: profileData.swotAnalysis as Record<string, any>,
-//         completed: this.isSwotAnalysisComplete(profileData.swotAnalysis)
-//       });
-//     }
-
-//     if (profileData.managementGovernance) {
-//       sections.push({
-//         sectionType: 'management',
-//         data: profileData.managementGovernance as Record<string, any>,
-//         completed: this.isManagementGovernanceComplete(profileData.managementGovernance)
-//       });
-//     }
-
-//     if (profileData.businessPlan) {
-//       sections.push({
-//         sectionType: 'business-plan',
-//         data: profileData.businessPlan,
-//         completed: this.isBusinessPlanComplete(profileData.businessPlan)
-//       });
-//     }
-
-//     if (profileData.financialAnalysis) {
-//       sections.push({
-//         sectionType: 'financial',
-//         data: profileData.financialAnalysis,
-//         completed: this.isFinancialAnalysisComplete(profileData.financialAnalysis)
-//       });
-//     }
-
-//     return sections;
-//   }
-
-//   private transformBackendToLocal(response: BackendProfileResponse): ApplicationProfileData {
-//     const profileData: ApplicationProfileData = {};
-
-//     response.sections.forEach(section => {
-//       switch(section.sectionType) {
-//         case 'admin':
-//           profileData.adminInformation = section.data;
-//           break;
-//         case 'documents':
-//           profileData.documents = section.data;
-//           break;
-//         case 'business-review':
-//           profileData.businessReview = section.data;
-//           break;
-//         case 'swot':
-//           profileData.swotAnalysis = section.data as any;
-//           break;
-//         case 'management':
-//           profileData.managementGovernance = section.data as any;
-//           break;
-//         case 'business-plan':
-//           profileData.businessPlan = section.data;
-//           break;
-//         case 'financial':
-//           profileData.financialAnalysis = section.data;
-//           break;
-//       }
-//     });
-
-//     return profileData;
-//   }
-
-//   private calculateSectionCompletion(data: Record<string, any>, completed: boolean): number {
-//     if (completed) return 100;
-    
-//     const fields = Object.values(data);
-//     const filledFields = fields.filter(value => 
-//       value !== null && 
-//       value !== undefined && 
-//       value !== '' && 
-//       (Array.isArray(value) ? value.length > 0 : true)
-//     ).length;
-    
-//     return fields.length > 0 ? Math.round((filledFields / fields.length) * 100) : 0;
-//   }
-
-//   // Validation methods (same as before)
-//   private isAdminInformationComplete(data: Record<string, any>): boolean {
-//     const requiredFields = ['companyName', 'registrationNumber', 'industry', 'foundedYear'];
-//     return requiredFields.every(field => data[field] && data[field].toString().trim() !== '');
-//   }
-
-//   private isDocumentsComplete(data: Record<string, any>): boolean {
-//     const requiredDocs = ['businessRegistration', 'taxClearance', 'financialStatements'];
-//     return requiredDocs.every(doc => data[doc]);
-//   }
-
-//   private isBusinessReviewComplete(data: Record<string, any>): boolean {
-//     const requiredFields = ['businessModel', 'targetMarket', 'competitiveAdvantage'];
-//     return requiredFields.every(field => data[field] && data[field].toString().trim() !== '');
-//   }
-
-//   private isSwotAnalysisComplete(data: {strengths: string[], weaknesses: string[], opportunities: string[], threats: string[]}): boolean {
-//     return data.strengths?.length >= 2 && 
-//            data.weaknesses?.length >= 2 && 
-//            data.opportunities?.length >= 2 && 
-//            data.threats?.length >= 2;
-//   }
-
-//   private isManagementGovernanceComplete(data: Record<string, any>): boolean {
-//     return data['managementTeam']?.length >= 1 && data['boardOfDirectors']?.length >= 1;
-//   }
-
-//   private isBusinessPlanComplete(data: Record<string, any>): boolean {
-//     const requiredSections = ['executiveSummary', 'marketAnalysis', 'financialProjections'];
-//     return requiredSections.every(section => data[section] && data[section].toString().trim() !== '');
-//   }
-
-//   private isFinancialAnalysisComplete(data: Record<string, any>): boolean {
-//     const requiredFields = ['currentRevenue', 'projectedRevenue', 'fundingRequired'];
-//     return requiredFields.every(field => data[field] !== null && data[field] !== undefined);
-//   }
-// }
+    return {
+      total,
+      byStatus,
+      byStage,
+      recentActivity,
+      averageProcessingTime
+    };
+  }
+}

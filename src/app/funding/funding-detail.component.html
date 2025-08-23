@@ -3,6 +3,8 @@
   <div class="ml-16">
  
     <main class="p-6 max-w-6xl mx-auto">
+    
+
       @if (isLoading()) {
         <div class="bg-white rounded-lg border border-neutral-200 p-12 text-center">
           <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mx-auto mb-4"></div>
@@ -20,7 +22,17 @@
             </div>
             
             <div class="flex-1">
-              <h1 class="text-3xl font-bold text-neutral-900 mb-2">{{ opportunity()!.title }}</h1>
+              <div class="flex items-center space-x-3 mb-2">
+                <h1 class="text-3xl font-bold text-neutral-900">{{ opportunity()!.title }}</h1>
+                
+                <!-- User Type Indicator -->
+                @if (canManageOpportunity()) {
+                  <span class="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-green-100 text-green-800">
+                    <lucide-icon [img]="UsersIcon" [size]="12" class="mr-1" />
+                    Your Opportunity
+                  </span>
+                }
+              </div>
               
               <!-- Funding Types Tags -->
               <div class="flex items-center space-x-2 mb-4">
@@ -41,22 +53,23 @@
 
             <!-- Action Buttons -->
             <div class="flex flex-col space-y-3">
-              @if (isOwner(opportunity()!)) {
+              @if (canManageOpportunity()) {
                 <ui-button variant="primary" (clicked)="manageApplications()">
                   <lucide-icon [img]="UsersIcon" [size]="16" class="mr-2" />
                   Manage Applications
                 </ui-button>
+              } @else if (canApplyToOpportunity()) {
+                <ui-button variant="primary" (clicked)="applyNow()">
+                  Apply Now
+                </ui-button>
+              } @else if (!currentUser()) {
+                <ui-button variant="outline" (clicked)="redirectToLogin()">
+                  Login to Apply
+                </ui-button>
               } @else {
-                @if (hasExistingApplication()) {
-                  <ui-button variant="outline" (clicked)="viewApplication()">
-                    <lucide-icon [img]="FileTextIcon" [size]="16" class="mr-2" />
-                    View Application
-                  </ui-button>
-                } @else {
-                  <ui-button variant="primary" (clicked)="applyNow()">
-                    Apply Now
-                  </ui-button>
-                }
+                <ui-button variant="outline" [disabled]="true" title="Only SME users can apply for funding">
+                  Not Eligible
+                </ui-button>
               }
               
               <ui-button variant="outline" (clicked)="goBack()">

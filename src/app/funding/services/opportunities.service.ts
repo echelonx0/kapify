@@ -71,8 +71,7 @@ export class SMEOpportunitiesService {
 
 private async fetchActiveOpportunities(): Promise<FundingOpportunity[]> {
   try {
-    // RESTORED: Original working query with organization join
-    // This should work now that RLS is temporarily disabled
+   console.log('Fetching active opportunities from Supabase...');
     const { data, error } = await this.supabase
       .from('funding_opportunities')
       .select(`
@@ -92,7 +91,7 @@ private async fetchActiveOpportunities(): Promise<FundingOpportunity[]> {
     if (error) {
       throw new Error(`Failed to fetch opportunities: ${error.message}`);
     }
-
+console.log(`Fetched ${data?.length || 0} opportunities`);
     return (data || []).map(item => this.transformDatabaseToLocal(item));
   } catch (error) {
     console.error('Error fetching active opportunities:', error);

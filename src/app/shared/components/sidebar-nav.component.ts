@@ -164,10 +164,11 @@ export class SidebarNavComponent implements OnInit {
   // Navigation items with potential badges
   private navItems: NavItem[] = [
     { label: 'Home', icon: Home, route: '/dashboard/home', userTypes: ['sme', 'funder'] },
-    { label: 'Profile', icon: User, route: '/dashboard/profile', userTypes: ['sme'] },
-    { label: 'Applications', icon: FileText, route: '/applications', userTypes: ['sme', 'funder'], badge: 2 },  
+    { label: 'Profile', icon: User, route: '/dashboard/profile', userTypes: ['sme',] },
+   
     { label: 'Funding Opportunities', icon: DollarSign, route: '/funding', userTypes: ['sme'] },
-    { label: 'Funder Dashboard', icon: Building, route: '/dashboard/funder-dashboard', userTypes: ['funder'] },
+    { label: 'Manage', icon: Building, route: '/dashboard/funder-dashboard', userTypes: ['funder'] },
+   { label: 'Applications', icon: FileText, route: '/applications', userTypes: ['sme', 'funder'], badge: 2 },  
   ];
 
   visibleNavItems = computed(() => {

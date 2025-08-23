@@ -1,5 +1,5 @@
 // src/app/funding/opportunity-details.component.ts
-import { Component, signal, OnInit } from '@angular/core';
+import { Component, signal, OnInit, inject, computed } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { SidebarNavComponent } from '../shared/components/sidebar-nav.component';
@@ -9,7 +9,7 @@ import { LucideAngularModule, ArrowLeft, Building2, DollarSign, Calendar, MapPin
  
 import { FundingOpportunity } from '../shared/models/funder.models';
 import { SMEOpportunitiesService } from './services/opportunities.service';
-
+import { AuthService } from '../auth/production.auth.service';
 
 @Component({
   selector: 'app-opportunity-details',
@@ -17,7 +17,6 @@ import { SMEOpportunitiesService } from './services/opportunities.service';
   imports: [
     CommonModule,
     SidebarNavComponent,
-    
     UiButtonComponent,
     UiCardComponent,
     LucideAngularModule
@@ -25,6 +24,12 @@ import { SMEOpportunitiesService } from './services/opportunities.service';
   templateUrl: 'funding-detail.component.html'
 })
 export class OpportunityDetailsComponent implements OnInit {
+  // Services
+  private router = inject(Router);
+  private route = inject(ActivatedRoute);
+  private opportunitiesService = inject(SMEOpportunitiesService);
+  private authService = inject(AuthService);
+
   // Icons
   ArrowLeftIcon = ArrowLeft;
   Building2Icon = Building2;
@@ -39,16 +44,9 @@ export class OpportunityDetailsComponent implements OnInit {
   // State
   opportunity = signal<FundingOpportunity | null>(null);
   isLoading = signal(true);
-  
-  // Mock user state
-  currentUserId = 'user-001';
-  userApplications = signal<string[]>(['opp-001']);
 
-  constructor(
-    private router: Router,
-    private route: ActivatedRoute,
-    private opportunitiesService: SMEOpportunitiesService
-  ) {}
+  // Computed user context
+  currentUser = computed(() => this.authService.user());
 
   ngOnInit() {
     const opportunityId = this.route.snapshot.paramMap.get('id');
@@ -71,6 +69,30 @@ export class OpportunityDetailsComponent implements OnInit {
     });
   }
 
+  // ===============================
+  // PERMISSION METHODS
+  // ===============================
+
+  canApplyToOpportunity(): boolean {
+    const user = this.currentUser();
+    return !!(user && user.userType === 'sme');
+  }
+
+  canManageOpportunity(): boolean {
+    const user = this.currentUser();
+    const opp = this.opportunity();
+    if (!user || !opp || user.userType !== 'funder') return false;
+    
+    // Simple check - user is the deal lead
+    return opp.dealLead === user.id;
+  }
+
+  getUserTypeLabel(): string {
+    const user = this.currentUser();
+    if (!user) return 'Guest';
+    return user.userType === 'sme' ? 'SME' : user.userType === 'funder' ? 'Funder' : 'User';
+  }
+
   // Navigation methods
   goBack() {
     this.router.navigate(['/funding/opportunities']);
@@ -89,23 +111,25 @@ export class OpportunityDetailsComponent implements OnInit {
     this.router.navigate(['/applications']);
   }
 
-  manageApplications() {
-    const opp = this.opportunity();
-    if (opp) {
-      this.router.navigate(['/funder-dashboard/opportunities', opp.id, 'applications']);
-    }
+manageApplications() {
+  const opp = this.opportunity();
+  if (opp?.id) {
+    this.router.navigate([
+      '/funder/opportunities',
+      opp.id,
+      'applications'
+    ]);
+  }
+}
+
+
+  redirectToLogin() {
+    this.router.navigate(['/auth/login'], {
+      queryParams: { returnUrl: this.router.url }
+    });
   }
 
   // Helper methods
-  isOwner(opportunity: FundingOpportunity): boolean {
-    return opportunity.dealLead === this.currentUserId;
-  }
-
-  hasExistingApplication(): boolean {
-    const opp = this.opportunity();
-    return opp ? this.userApplications().includes(opp.id) : false;
-  }
-
   getInitials(title: string): string {
     return title
       .split(' ')
