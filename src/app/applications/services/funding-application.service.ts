@@ -1,5 +1,3 @@
- 
-// src/app/profile/services/funding-application.service.ts - FIXED DATABASE SAVING
 import { Injectable, signal, computed, inject, OnDestroy } from '@angular/core';
 import { FundingApplicationProfile, FundingApplicationStep } from '../models/funding-application.models';
 import { FundingApplicationBackendService } from './funding-application-backend.service';

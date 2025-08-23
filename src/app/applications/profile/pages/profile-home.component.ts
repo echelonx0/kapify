@@ -25,7 +25,6 @@ import { Activity } from '../../services/activity.service';
     UiProgressComponent,
     UiStatusBadgeComponent,
     ActivityFeedComponent,
-    // ThreeDViewerComponent,
     RouterModule,
   ],
   templateUrl:'profile-home.component.html',
@@ -63,7 +62,7 @@ export class ProfileHomeComponent implements OnInit {
   // Company contact info
   email = 'info@bokamosoas.co.za';
 currentImage: string = '';
-  // REAL DATA: Connected to actual backend service
+ 
   completionPercentage = computed(() => this.fundingApplicationService.completion());
   completedSteps = computed(() => this.fundingApplicationService.completedSteps());
   totalSteps = computed(() => this.fundingApplicationService.steps.length);

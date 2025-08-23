@@ -2,9 +2,8 @@
 // src/app/profile/services/funding-application-backend.service.ts - FIXED FOR SUPABASE
 
 import { Injectable, inject, signal } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, throwError, from } from 'rxjs';
-import { tap, catchError, map, switchMap } from 'rxjs/operators';
+import { tap, catchError, switchMap } from 'rxjs/operators';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { AuthService } from '../../auth/production.auth.service';
 import { FundingApplicationProfile } from '../models/funding-application.models';

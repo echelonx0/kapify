@@ -9,6 +9,7 @@ import { Location } from '@angular/common';
 import { SMEOpportunitiesService } from '../../../funding/services/opportunities.service';
 import { FundingOpportunity } from '../../../shared/models/funder.models';
 import { FundingApplicationProfileService, ProfileData } from '../../services/funding-profile.service';
+import { FundingApplicationBackendService } from '../../services/funding-application-backend.service';
 
 interface CoverInformation {
   requestedAmount: string;
@@ -37,6 +38,8 @@ export class OpportunityApplicationFormComponent implements OnInit {
   private location = inject(Location);
   private profileService = inject(FundingApplicationProfileService);
   private opportunitiesService = inject(SMEOpportunitiesService);
+  private fundingApplicationBackendService = inject(FundingApplicationBackendService);
+
 
   // Icons
   ArrowLeftIcon = ArrowLeft;
@@ -102,7 +105,6 @@ export class OpportunityApplicationFormComponent implements OnInit {
     } else {
       this.loadAvailableOpportunities();
     }
-    
     // Load user's existing profile data
     this.loadUserProfile();
   }
@@ -147,30 +149,94 @@ export class OpportunityApplicationFormComponent implements OnInit {
     });
   }
 
-  private loadUserProfile() {
-    // Get user's existing profile data
-    const profileData = this.profileService.data();
-    this.userProfile.set(profileData);
+ private loadUserProfile() {
+    // Load both local and backend data
+    const localProfile = this.profileService.data();
     
-    // Calculate completeness
-    this.calculateProfileCompleteness(profileData);
+    // Get backend data and calculate real completion
+    this.fundingApplicationBackendService.loadSavedProfile().subscribe({
+      next: (backendProfile) => {
+        const mergedProfile = this.mergeProfileData(localProfile, backendProfile);
+        this.userProfile.set(mergedProfile);
+        this.profileCompleteness.set(this.calculateRealCompletion(mergedProfile));
+      },
+      error: () => {
+        // Fallback to local data if backend fails
+        this.userProfile.set(localProfile);
+        this.profileCompleteness.set(this.calculateRealCompletion(localProfile));
+      }
+    });
   }
 
-  private calculateProfileCompleteness(profile: Partial<ProfileData>) {
-    const requiredSections = [
-      profile.personalInfo,
-      profile.businessInfo,
-      profile.financialInfo,
-      profile.fundingInfo,
-      profile.documents
-    ];
-    
-    const completedSections = requiredSections.filter(section => 
-      section && Object.keys(section).length > 0
-    ).length;
-    
-    const completeness = Math.round((completedSections / requiredSections.length) * 100);
-    this.profileCompleteness.set(completeness);
+  private mergeProfileData(localProfile: any, backendProfile: any): any {
+    // Simple merge - backend takes priority if it exists
+    return {
+      companyInfo: backendProfile.companyInfo || localProfile.companyInfo,
+      supportingDocuments: backendProfile.supportingDocuments || localProfile.supportingDocuments,
+      businessAssessment: backendProfile.businessAssessment || localProfile.businessAssessment,
+      swotAnalysis: backendProfile.swotAnalysis || localProfile.swotAnalysis,
+      managementStructure: backendProfile.managementStructure || localProfile.managementStructure,
+      businessStrategy: backendProfile.businessStrategy || localProfile.businessStrategy,
+      financialProfile: backendProfile.financialProfile || localProfile.financialProfile
+    };
+  }
+
+  private calculateRealCompletion(profile: any): number {
+    let completedSections = 0;
+    const totalSections = 7;
+
+    // Company Info - check required fields
+    if (profile.companyInfo?.companyName && profile.companyInfo?.registrationNumber && 
+        profile.companyInfo?.industryType && profile.companyInfo?.foundingYear) {
+      completedSections++;
+    }
+
+    // Supporting Documents - use existing validator
+    if (profile.supportingDocuments) {
+      try {
+        // Use the DocumentValidator from the models if available
+        const hasRequiredDocs = profile.supportingDocuments.companyProfile && 
+                               profile.supportingDocuments.currentYearFinancials &&
+                               profile.supportingDocuments.financialProjections;
+        if (hasRequiredDocs) completedSections++;
+      } catch {
+        // Fallback: just check if any documents exist
+        if (Object.keys(profile.supportingDocuments).length > 0) completedSections++;
+      }
+    }
+
+    // Business Assessment
+    if (profile.businessAssessment?.businessModel && profile.businessAssessment?.valueProposition && 
+        profile.businessAssessment?.targetMarkets?.length > 0) {
+      completedSections++;
+    }
+
+    // SWOT Analysis - minimum 2 items each
+    if (profile.swotAnalysis?.strengths?.length >= 2 && profile.swotAnalysis?.weaknesses?.length >= 2 &&
+        profile.swotAnalysis?.opportunities?.length >= 2 && profile.swotAnalysis?.threats?.length >= 2) {
+      completedSections++;
+    }
+
+    // Management Structure - at least 1 member
+    if (profile.managementStructure?.executiveTeam?.length >= 1 || 
+        profile.managementStructure?.managementTeam?.length >= 1) {
+      completedSections++;
+    }
+
+    // Business Strategy
+    if (profile.businessStrategy?.executiveSummary && profile.businessStrategy?.missionStatement && 
+        profile.businessStrategy?.fundingRequirements) {
+      completedSections++;
+    }
+
+    // Financial Profile
+    if (profile.financialProfile?.monthlyRevenue !== undefined && 
+        profile.financialProfile?.monthlyCosts !== undefined && 
+        profile.financialProfile?.currentAssets !== undefined) {
+      completedSections++;
+    }
+
+    return Math.round((completedSections / totalSections) * 100);
   }
 
   // ===============================
@@ -193,10 +259,24 @@ export class OpportunityApplicationFormComponent implements OnInit {
     });
   }
 
-  // ===============================
-  // FORM HANDLERS
-  // ===============================
+  private calculateProfileCompleteness(profile: Partial<ProfileData>) {
+    const requiredSections = [
+      profile.personalInfo,
+      profile.businessInfo,
+      profile.financialInfo,
+      profile.fundingInfo,
+      profile.documents
+    ];
+    
+    const completedSections = requiredSections.filter(section => 
+      section && Object.keys(section).length > 0
+    ).length;
+    
+    const completeness = Math.round((completedSections / requiredSections.length) * 100);
+    this.profileCompleteness.set(completeness);
+  }
 
+ 
   updateCoverInformation(field: keyof CoverInformation, value: string) {
     this.coverInformation.update(current => ({
       ...current,
@@ -422,3 +502,4 @@ export class OpportunityApplicationFormComponent implements OnInit {
     return `Organization ${opportunity.organizationId}`;
   }
 }
+

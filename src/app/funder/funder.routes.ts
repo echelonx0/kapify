@@ -11,8 +11,6 @@ export const funderRoutes: Routes = [
         path: 'dashboard',
         loadComponent: () => import('./dashboard/funder-dashboard.component').then(m => m.FunderDashboardComponent)
       },
-      
-      // UPDATED: Onboarding with proper step separation
       {
         path: 'onboarding',
         loadComponent: () => 
