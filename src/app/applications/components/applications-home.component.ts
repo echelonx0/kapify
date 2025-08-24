@@ -18,7 +18,7 @@ import {
   X
 } from 'lucide-angular';
 import { UiCardComponent, UiButtonComponent, UiStatusBadgeComponent } from '../../shared/components';
-import { ActivityInboxComponent } from './activity-inbox.component';
+import { ActivityInboxComponent } from '../../shared/components/messaging/messaging.component';
  
 
 interface Application {
