@@ -1,3 +1,4 @@
+<!-- src/app/applications/components/new-application/opportunity-application.component.html - CLEANED VERSION -->
 <div class="max-w-6xl mx-auto">
   <!-- Header -->
   <div class="mb-10 mt-10 border-b border-neutral-200 pb-6">
@@ -13,12 +14,10 @@
           <lucide-icon [img]="ArrowLeftIcon" [size]="16" class="mr-2" />
           Back
         </ui-button>
-        <div>
+        <!-- <div>
           <h1 class="text-2xl font-bold text-neutral-900">Apply for Funding</h1>
-          @if (selectedOpportunity(); as opportunity) {
-            <p class="text-sm text-neutral-600">{{ opportunity.title }}</p>
-          }
-        </div>
+        
+        </div> -->
       </div>
 
       <!-- Right side: Save Draft -->
@@ -30,6 +29,7 @@
           [disabled]="isSaving()"
         >
           @if (isSaving()) {
+            <lucide-icon [img]="ClockIcon" [size]="16" class="mr-2" />
             Saving...
           } @else {
             Save Draft
@@ -39,28 +39,34 @@
     </div>
   </div>
 
-  <!-- Progress Steps -->
-  <div class="mb-8">
-    <div class="flex items-center justify-between">
-      @for (step of steps(); track step.id) {
+  <!-- Progress Steps - SIMPLIFIED -->
+<!-- Progress Steps - FIXED LAYOUT -->
+<div class="mb-8">
+  <div class="flex items-center justify-between w-full">
+    @for (step of steps(); track step.id) {
+      <div class="flex items-center flex-1">
+        <!-- Step Circle and Content -->
         <div class="flex items-center">
           <div [class]="getStepClasses(step.id)">
             {{ step.number }}
           </div>
           <div class="ml-3">
-            <p [class]="getStepTextClasses(step.id)">{{ step.title }}</p>
+            <p [class]="getStepTextClasses(step.id)" class="font-medium">{{ step.title }}</p>
             <p class="text-xs text-neutral-500">{{ step.description }}</p>
           </div>
-          @if (step.id !== 'review-submit') {
-            <div class="w-16 h-0.5 bg-neutral-200 ml-8"></div>
-          }
         </div>
-      }
-    </div>
+        
+        <!-- Connector Line (except for last step) -->
+        @if (step.id !== 'review-submit') {
+          <div class="flex-1 h-0.5 bg-neutral-200 mx-8"></div>
+        }
+      </div>
+    }
   </div>
+</div>
 
   <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-    <!-- Main Content -->
+    <!-- Main Content - NO PROFILE VALIDATION -->
     <div class="lg:col-span-2">
       <ui-card>
         @if (error()) {
@@ -87,6 +93,7 @@
 
               @if (isLoading()) {
                 <div class="text-center py-12">
+                  <div class="animate-spin w-8 h-8 border-2 border-primary-500 border-t-transparent rounded-full mx-auto mb-4"></div>
                   <p class="text-neutral-500">Loading opportunities...</p>
                 </div>
               } @else if (availableOpportunities().length === 0) {
@@ -100,7 +107,7 @@
                 <div class="space-y-4">
                   @for (opportunity of availableOpportunities(); track opportunity.id) {
                     <div 
-                      class="border rounded-lg p-4 cursor-pointer transition-colors hover:border-primary-300"
+                      class="border rounded-lg p-4 cursor-pointer transition-all duration-200 hover:border-primary-300 hover:shadow-sm"
                       [class.border-primary-500]="selectedOpportunity()?.id === opportunity.id"
                       [class.bg-primary-50]="selectedOpportunity()?.id === opportunity.id"
                       (click)="selectOpportunity(opportunity)"
@@ -110,9 +117,9 @@
                           <h4 class="font-medium text-neutral-900">{{ opportunity.title }}</h4>
                           <p class="text-sm text-neutral-600 mt-1">{{ opportunity.shortDescription }}</p>
                           <div class="flex items-center space-x-4 mt-2 text-sm text-neutral-500">
-                            <span>{{ opportunity.fundingType | titlecase }}</span>
+                            <span class="capitalize">{{ opportunity.fundingType }}</span>
                             <span>{{ formatCurrency(opportunity.minInvestment) }} - {{ formatCurrency(opportunity.maxInvestment) }}</span>
-                           <span>{{ getOrganizationName(opportunity) }}</span>
+                            <span>{{ getOrganizationName(opportunity) }}</span>
                           </div>
                         </div>
                         @if (selectedOpportunity()?.id === opportunity.id) {
@@ -126,118 +133,11 @@
             </div>
           }
 
-          @case ('review-profile') {
-            <div class="space-y-6">
-              <div class="flex items-center space-x-3 mb-6">
-                <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-                  <lucide-icon [img]="FileTextIcon" [size]="20" class="text-green-600" />
-                </div>
-                <div>
-                  <h3 class="text-lg font-semibold text-neutral-900">Review Your Profile</h3>
-                  <p class="text-sm text-neutral-600">Verify your business information is complete and up-to-date</p>
-                </div>
-              </div>
-
-              <!-- Profile Completeness -->
-              <div class="bg-neutral-50 rounded-lg p-4">
-                <div class="flex items-center justify-between mb-2">
-                  <span class="text-sm font-medium text-neutral-700">Profile Completeness</span>
-                  <span [class]="getProfileCompletionColor()" class="text-sm font-medium">
-                    {{ profileCompleteness() }}%
-                  </span>
-                </div>
-                <div class="w-full bg-neutral-200 rounded-full h-2">
-                  <div 
-                    class="bg-primary-500 h-2 rounded-full transition-all"
-                    [style.width.%]="profileCompleteness()"
-                  ></div>
-                </div>
-                @if (profileCompleteness() < 70) {
-                  <p class="text-sm text-orange-600 mt-2">
-                    Your profile needs to be at least 70% complete to apply. Please update your profile first.
-                  </p>
-                }
-              </div>
-
-              <!-- Profile Sections -->
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div class="border rounded-lg p-4">
-                  <div class="flex items-center justify-between">
-                    <h4 class="font-medium text-neutral-900">Personal Information</h4>
-                    @if (userProfile()?.personalInfo) {
-                      <lucide-icon [img]="CheckCircleIcon" [size]="16" class="text-green-500" />
-                    } @else {
-                      <span class="text-xs text-orange-600">Incomplete</span>
-                    }
-                  </div>
-                  @if (userProfile()?.personalInfo; as info) {
-                    <p class="text-sm text-neutral-600 mt-2">{{ info.firstName }} {{ info.lastName }}</p>
-                    <p class="text-sm text-neutral-600">{{ info.email }}</p>
-                  }
-                </div>
-
-                <div class="border rounded-lg p-4">
-                  <div class="flex items-center justify-between">
-                    <h4 class="font-medium text-neutral-900">Business Information</h4>
-                    @if (userProfile()?.businessInfo) {
-                      <lucide-icon [img]="CheckCircleIcon" [size]="16" class="text-green-500" />
-                    } @else {
-                      <span class="text-xs text-orange-600">Incomplete</span>
-                    }
-                  </div>
-                  @if (userProfile()?.businessInfo; as info) {
-                    <p class="text-sm text-neutral-600 mt-2">{{ info.companyName }}</p>
-                    <p class="text-sm text-neutral-600">{{ info.industry }}</p>
-                  }
-                </div>
-
-                <div class="border rounded-lg p-4">
-                  <div class="flex items-center justify-between">
-                    <h4 class="font-medium text-neutral-900">Financial Information</h4>
-                    @if (userProfile()?.financialInfo) {
-                      <lucide-icon [img]="CheckCircleIcon" [size]="16" class="text-green-500" />
-                    } @else {
-                      <span class="text-xs text-orange-600">Incomplete</span>
-                    }
-                  </div>
-                </div>
-
-                <div class="border rounded-lg p-4">
-                  <div class="flex items-center justify-between">
-                    <h4 class="font-medium text-neutral-900">Documents</h4>
-                    @if (userProfile()?.documents) {
-                      <lucide-icon [img]="CheckCircleIcon" [size]="16" class="text-green-500" />
-                    } @else {
-                      <span class="text-xs text-orange-600">Incomplete</span>
-                    }
-                  </div>
-                </div>
-              </div>
-
-              @if (profileCompleteness() < 100) {
-                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                  <div class="flex items-start">
-                    <lucide-icon [img]="AlertCircleIcon" [size]="20" class="text-blue-600 mt-0.5 mr-3" />
-                    <div>
-                      <p class="text-sm font-medium text-blue-800">Complete Your Profile</p>
-                      <p class="text-sm text-blue-700 mt-1">
-                        Having a complete profile increases your chances of approval.
-                      </p>
-                      <ui-button variant="outline" size="sm" class="mt-3" (click)="editProfile()">
-                        Update Profile
-                      </ui-button>
-                    </div>
-                  </div>
-                </div>
-              }
-            </div>
-          }
-
-          @case ('cover-information') {
+          @case ('application-details') {
             <div class="space-y-6">
               <div class="flex items-center space-x-3 mb-6">
                 <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
-                  <lucide-icon [img]="DollarSignIcon" [size]="20" class="text-purple-600" />
+                  <lucide-icon [img]="FileTextIcon" [size]="20" class="text-purple-600" />
                 </div>
                 <div>
                   <h3 class="text-lg font-semibold text-neutral-900">Application Details</h3>
@@ -326,8 +226,8 @@
           @case ('review-submit') {
             <div class="space-y-6">
               <div class="flex items-center space-x-3 mb-6">
-                <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                  <lucide-icon [img]="CheckCircleIcon" [size]="20" class="text-blue-600" />
+                <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                  <lucide-icon [img]="CheckCircleIcon" [size]="20" class="text-green-600" />
                 </div>
                 <div>
                   <h3 class="text-lg font-semibold text-neutral-900">Review & Submit</h3>
@@ -346,11 +246,11 @@
                   </div>
                   <div>
                     <span class="text-neutral-500">Funder:</span>
-                 <div class="font-medium">{{ getOrganizationName(selectedOpportunity()!) }}</div>
+                    <div class="font-medium">{{ getOrganizationName(selectedOpportunity()!) }}</div>
                   </div>
                   <div>
                     <span class="text-neutral-500">Requested Amount:</span>
-                    <div class="font-medium">{{ formatCurrency(parseFloat(coverInformation().requestedAmount || '0')) }}</div>
+                    <div class="font-medium">{{ formatCurrency(requestedAmountAsNumber()) }}</div>
                   </div>
                   <div>
                     <span class="text-neutral-500">Funding Type:</span>
@@ -373,13 +273,26 @@
                 }
               </div>
 
-              <!-- AI Assessment Placeholder -->
+              <!-- Profile Attachment Confirmation - SIMPLE VERSION -->
+              <div class="bg-green-50 border border-green-200 rounded-lg p-4">
+                <div class="flex items-start">
+                  <lucide-icon [img]="CheckCircleIcon" [size]="20" class="text-green-600 mt-0.5 mr-3" />
+                  <div>
+                    <p class="text-sm font-medium text-green-800">Business Profile Attached</p>
+                    <p class="text-sm text-green-700 mt-1">
+                      Your complete business profile ({{ profileCompletion() }}% complete) will be included with this application.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- AI Assessment Preview -->
               <div class="border-2 border-dashed border-neutral-300 rounded-lg p-8">
                 <div class="text-center">
                   <div class="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full mx-auto mb-4 flex items-center justify-center">
-                    <lucide-icon [img]="BuildingIcon" [size]="24" class="text-white" />
+                    <lucide-icon [img]="DollarSignIcon" [size]="24" class="text-white" />
                   </div>
-                  <h4 class="text-lg font-medium text-neutral-900 mb-2">AI Assessment</h4>
+                  <h4 class="text-lg font-medium text-neutral-900 mb-2">AI Assessment Ready</h4>
                   <p class="text-neutral-600 mb-4">
                     Our AI will evaluate your application against this opportunity's criteria once submitted.
                   </p>
@@ -398,19 +311,6 @@
                 </div>
               </div>
 
-              <!-- Profile Attachment -->
-              <div class="bg-green-50 border border-green-200 rounded-lg p-4">
-                <div class="flex items-start">
-                  <lucide-icon [img]="CheckCircleIcon" [size]="20" class="text-green-600 mt-0.5 mr-3" />
-                  <div>
-                    <p class="text-sm font-medium text-green-800">Complete Business Profile Attached</p>
-                    <p class="text-sm text-green-700 mt-1">
-                      Your full business profile ({{ profileCompleteness() }}% complete) will be included with this application.
-                    </p>
-                  </div>
-                </div>
-              </div>
-
               <!-- Terms and Conditions -->
               <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
                 <div class="flex items-start">
@@ -418,7 +318,7 @@
                   <div>
                     <h4 class="text-sm font-medium text-yellow-800">Before You Submit</h4>
                     <ul class="mt-1 text-sm text-yellow-700 space-y-1">
-                      <li>• This application will be reviewed by the Funder</li>
+                      <li>• This application will be reviewed by the funder</li>
                       <li>• Review typically takes {{ selectedOpportunity()?.decisionTimeframe || 30 }} days</li>
                       <li>• You may be contacted for additional information</li>
                       <li>• All information provided must be accurate and up-to-date</li>
@@ -447,6 +347,7 @@
           <div class="flex items-center space-x-3">
             <ui-button variant="outline" (click)="saveDraft()" [disabled]="isSaving()">
               @if (isSaving()) {
+                <lucide-icon [img]="ClockIcon" [size]="16" class="mr-2" />
                 Saving...
               } @else {
                 Save Draft
@@ -460,6 +361,7 @@
                 [disabled]="!canContinue() || isSubmitting()"
               >
                 @if (isSubmitting()) {
+                  <lucide-icon [img]="ClockIcon" [size]="16" class="mr-2" />
                   Submitting...
                 } @else {
                   Submit Application
@@ -482,7 +384,7 @@
           <div class="space-y-4">
             <div>
               <h3 class="font-medium text-neutral-900">Selected Opportunity</h3>
-              <p class="text-sm text-neutral-600">Org Name here</p>
+              <p class="text-sm text-neutral-600">{{ getOrganizationName(opportunity) }}</p>
             </div>
 
             <div class="bg-neutral-50 rounded-lg p-4">
@@ -551,6 +453,16 @@
                 </div>
               }
             </div>
+          </div>
+        </ui-card>
+      } @else {
+        <!-- No Opportunity Selected State -->
+        <ui-card class="sticky top-6">
+          <div class="text-center py-8">
+            <div class="w-12 h-12 bg-gray-100 rounded-lg mx-auto mb-3 flex items-center justify-center">
+              <lucide-icon [img]="BuildingIcon" [size]="24" class="text-gray-400" />
+            </div>
+            <p class="text-sm text-gray-500">Select an opportunity to view details</p>
           </div>
         </ui-card>
       }

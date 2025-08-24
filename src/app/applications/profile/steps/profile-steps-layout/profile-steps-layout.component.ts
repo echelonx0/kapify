@@ -2,7 +2,7 @@
 import { Component, signal, OnInit, inject, HostListener } from '@angular/core';
 import { Router, RouterOutlet } from '@angular/router';
 import { LucideAngularModule, ArrowLeft, Check, Building, FileText, BarChart3, Target, Users, TrendingUp, DollarSign, Home, Clock, AlertCircle, CheckCircle, Menu, X } from 'lucide-angular';
-import { UiButtonComponent, UiCardComponent } from '../../../../shared/components';
+import { UiButtonComponent } from '../../../../shared/components';
 import { FundingApplicationProfileService } from '../../../services/funding-profile.service';
 import { CommonModule } from '@angular/common';
 

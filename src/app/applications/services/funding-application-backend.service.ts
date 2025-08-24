@@ -8,6 +8,7 @@ import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { AuthService } from '../../auth/production.auth.service';
 import { FundingApplicationProfile } from '../models/funding-application.models';
 import { environment } from '../../../environments/environment';
+import { SharedSupabaseService } from '../../shared/services/supabase.service';
 
 // Backend response interfaces
 export interface FundingApplicationSectionData {
@@ -54,7 +55,7 @@ export interface SubmitApplicationResponse {
 })
 export class FundingApplicationBackendService {
   private authService = inject(AuthService);
-  private supabase: SupabaseClient;
+  private supabase = inject(SharedSupabaseService);
   
   // Loading and error states
   isLoading = signal<boolean>(false);
@@ -63,7 +64,7 @@ export class FundingApplicationBackendService {
   lastSavedAt = signal<Date | null>(null);
 
   constructor() {
-    this.supabase = createClient(environment.supabaseUrl, environment.supabaseAnonKey);
+  
   }
 
   // ===============================
@@ -90,6 +91,36 @@ export class FundingApplicationBackendService {
       })
     );
   }
+
+  private async debugAuthContext(): Promise<void> {
+  try {
+    // Check Angular auth service
+    const currentAuth = this.authService.user();
+    console.log('🔍 Angular Auth User:', currentAuth);
+
+    // Check Supabase auth directly
+    const { data: { user }, error } = await this.supabase.auth.getUser();
+    console.log('🔍 Supabase Auth User:', user);
+    console.log('🔍 Supabase Auth Error:', error);
+
+    // Test RLS context with a simple query
+    const { data: testData, error: testError } = await this.supabase
+      .from('business_plan_sections')
+      .select('user_id')
+      .limit(1);
+    
+    console.log('🔍 Test Query Result:', testData);
+    console.log('🔍 Test Query Error:', testError);
+
+    // Check if there's a session
+    const { data: { session }, error: sessionError } = await this.supabase.auth.getSession();
+    console.log('🔍 Supabase Session:', session);
+    console.log('🔍 Session Error:', sessionError);
+
+  } catch (error) {
+    console.error('🚨 Debug Auth Context Error:', error);
+  }
+}
 
   private async loadFromSupabase(userId: string): Promise<FundingApplicationProfile> {
     try {
@@ -209,6 +240,10 @@ export class FundingApplicationBackendService {
     completionPercentage: number
   ): Promise<SaveSectionResponse> {
     try {
+
+       // ADD THIS DEBUG CALL
+    await this.debugAuthContext();
+    console.log('🔍 Attempting to save for userId:', userId);
       const sectionData = {
         user_id: userId,
         section_type: sectionType,

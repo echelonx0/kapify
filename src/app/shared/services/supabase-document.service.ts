@@ -1,10 +1,10 @@
 // src/app/shared/services/supabase-document.service.ts - FIXED FOR YOUR COMPONENT
-import { Injectable, signal, inject } from '@angular/core';
-import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { Injectable, signal, inject } from '@angular/core'; 
 import { Observable, from, throwError, BehaviorSubject } from 'rxjs';
 import { tap, catchError, map, switchMap } from 'rxjs/operators';
 import { AuthService } from '../../auth/production.auth.service';
 import { environment } from '../../../environments/environment';
+import { SharedSupabaseService } from './supabase.service';
 
 export interface DocumentUploadResult {
   id: string;
@@ -22,7 +22,7 @@ export interface DocumentMetadata {
   id: string;
   userId: string;
   applicationId?: string;
-  documentKey: string; // Changed from documentType to match your component
+  documentKey: string;  
   originalName: string;
   fileName: string;
   filePath: string;
@@ -47,7 +47,7 @@ export interface UploadProgress {
 })
 export class SupabaseDocumentService {
   private authService = inject(AuthService);
-  private supabase: SupabaseClient;
+  private supabase = inject(SharedSupabaseService);
   
   // Upload progress tracking
   private uploadProgressSubject = new BehaviorSubject<Map<string, UploadProgress>>(new Map());
@@ -62,7 +62,7 @@ export class SupabaseDocumentService {
   private readonly ALLOWED_TYPES = environment.storage?.allowedTypes || ['pdf', 'doc', 'docx', 'jpg', 'jpeg', 'png', 'xls', 'xlsx'];
 
   constructor() {
-    this.supabase = createClient(environment.supabaseUrl, environment.supabaseAnonKey);
+   
   }
 
   // ===============================

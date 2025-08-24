@@ -1,15 +1,16 @@
-// src/app/applications/components/opportunity-application-form.component.ts
+ 
+// src/app/applications/components/new-application/opportunity-application.component.ts - CLEANED VERSION
 import { Component, signal, computed, inject, OnInit } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { UiButtonComponent, UiCardComponent } from '../../../shared/components';
-import { LucideAngularModule, ArrowLeft, Building, DollarSign, FileText, CheckCircle, AlertCircle } from 'lucide-angular';
+import { LucideAngularModule, ArrowLeft, Building, DollarSign, FileText, CheckCircle, AlertCircle, Clock } from 'lucide-angular';
 import { Location } from '@angular/common';
 import { SMEOpportunitiesService } from '../../../funding/services/opportunities.service';
 import { FundingOpportunity } from '../../../shared/models/funder.models';
-import { FundingApplicationProfileService, ProfileData } from '../../services/funding-profile.service';
 import { FundingApplicationBackendService } from '../../services/funding-application-backend.service';
+import { GlobalProfileValidationService } from '../../../shared/services/global-profile-validation.service';
 
 interface CoverInformation {
   requestedAmount: string;
@@ -17,6 +18,13 @@ interface CoverInformation {
   useOfFunds: string;
   timeline: string;
   opportunityAlignment: string;
+}
+
+interface ApplicationStep {
+  id: string;
+  number: number;
+  title: string;
+  description: string;
 }
 
 @Component({
@@ -36,10 +44,9 @@ export class OpportunityApplicationFormComponent implements OnInit {
   private router = inject(Router);
   private route = inject(ActivatedRoute);
   private location = inject(Location);
-  private profileService = inject(FundingApplicationProfileService);
   private opportunitiesService = inject(SMEOpportunitiesService);
   private fundingApplicationBackendService = inject(FundingApplicationBackendService);
-
+  private profileValidationService = inject(GlobalProfileValidationService);
 
   // Icons
   ArrowLeftIcon = ArrowLeft;
@@ -48,21 +55,18 @@ export class OpportunityApplicationFormComponent implements OnInit {
   FileTextIcon = FileText;
   CheckCircleIcon = CheckCircle;
   AlertCircleIcon = AlertCircle;
+  ClockIcon = Clock;
 
-  // State
-  currentStep = signal<'select-opportunity' | 'review-profile' | 'cover-information' | 'review-submit'>('select-opportunity');
+  // State - SIMPLIFIED, NO PROFILE VALIDATION
+  currentStep = signal<'select-opportunity' | 'application-details' | 'review-submit'>('select-opportunity');
   isLoading = signal(false);
   isSaving = signal(false);
   isSubmitting = signal(false);
   error = signal<string | null>(null);
 
   // Data
-  selectedOpportunity = signal<FundingOpportunity | null>(null);
   availableOpportunities = signal<FundingOpportunity[]>([]);
-  userProfile = signal<Partial<ProfileData> | null>(null);
-  profileCompleteness = signal(0);
-  
-  // Cover information form data
+  selectedOpportunity = signal<FundingOpportunity | null>(null);
   coverInformation = signal<CoverInformation>({
     requestedAmount: '',
     purposeStatement: '',
@@ -71,30 +75,44 @@ export class OpportunityApplicationFormComponent implements OnInit {
     opportunityAlignment: ''
   });
 
-  // Steps configuration
-  steps = signal([
-    { id: 'select-opportunity', number: 1, title: 'Select Opportunity', description: 'Choose funding opportunity' },
-    { id: 'review-profile', number: 2, title: 'Review Profile', description: 'Verify your business data' },
-    { id: 'cover-information', number: 3, title: 'Application Details', description: 'Opportunity-specific information' },
-    { id: 'review-submit', number: 4, title: 'Review & Submit', description: 'Final submission' }
+  // Steps configuration - SIMPLIFIED
+  steps = signal<ApplicationStep[]>([
+    {
+      id: 'select-opportunity',
+      number: 1,
+      title: 'Choose Opportunity',
+      description: 'Select the funding opportunity'
+    },
+    {
+      id: 'application-details',
+      number: 2,
+      title: 'Application Details',
+      description: 'Provide application-specific information'
+    },
+    {
+      id: 'review-submit',
+      number: 3,
+      title: 'Review & Submit',
+      description: 'Final review and submission'
+    }
   ]);
 
   // Computed properties
   canContinue = computed(() => {
-    const current = this.currentStep();
-    switch (current) {
+    switch (this.currentStep()) {
       case 'select-opportunity':
         return !!this.selectedOpportunity();
-      case 'review-profile':
-        return this.profileCompleteness() >= 70; // Minimum 70% complete
-      case 'cover-information':
-        return this.isCoverInformationValid();
+      case 'application-details':
+        return this.isApplicationDetailsValid();
       case 'review-submit':
         return true;
       default:
         return false;
     }
   });
+
+  // Profile completion from global service - READ ONLY, NO VALIDATION UI
+  profileCompletion = computed(() => this.profileValidationService.completion());
 
   ngOnInit() {
     // Check if opportunity ID was passed in route
@@ -105,12 +123,10 @@ export class OpportunityApplicationFormComponent implements OnInit {
     } else {
       this.loadAvailableOpportunities();
     }
-    // Load user's existing profile data
-    this.loadUserProfile();
   }
 
   // ===============================
-  // DATA LOADING
+  // DATA LOADING - SIMPLIFIED
   // ===============================
 
   private loadAvailableOpportunities() {
@@ -135,7 +151,7 @@ export class OpportunityApplicationFormComponent implements OnInit {
         if (opportunity) {
           this.selectedOpportunity.set(opportunity);
           this.initializeCoverInformation(opportunity);
-          this.currentStep.set('review-profile'); // Skip opportunity selection
+          this.currentStep.set('application-details'); // Skip opportunity selection
         } else {
           this.error.set('Opportunity not found');
         }
@@ -149,98 +165,95 @@ export class OpportunityApplicationFormComponent implements OnInit {
     });
   }
 
- private loadUserProfile() {
-    // Load both local and backend data
-    const localProfile = this.profileService.data();
-    
-    // Get backend data and calculate real completion
-    this.fundingApplicationBackendService.loadSavedProfile().subscribe({
-      next: (backendProfile) => {
-        const mergedProfile = this.mergeProfileData(localProfile, backendProfile);
-        this.userProfile.set(mergedProfile);
-        this.profileCompleteness.set(this.calculateRealCompletion(mergedProfile));
-      },
-      error: () => {
-        // Fallback to local data if backend fails
-        this.userProfile.set(localProfile);
-        this.profileCompleteness.set(this.calculateRealCompletion(localProfile));
-      }
-    });
-  }
-
-  private mergeProfileData(localProfile: any, backendProfile: any): any {
-    // Simple merge - backend takes priority if it exists
-    return {
-      companyInfo: backendProfile.companyInfo || localProfile.companyInfo,
-      supportingDocuments: backendProfile.supportingDocuments || localProfile.supportingDocuments,
-      businessAssessment: backendProfile.businessAssessment || localProfile.businessAssessment,
-      swotAnalysis: backendProfile.swotAnalysis || localProfile.swotAnalysis,
-      managementStructure: backendProfile.managementStructure || localProfile.managementStructure,
-      businessStrategy: backendProfile.businessStrategy || localProfile.businessStrategy,
-      financialProfile: backendProfile.financialProfile || localProfile.financialProfile
-    };
-  }
-
-  private calculateRealCompletion(profile: any): number {
-    let completedSections = 0;
-    const totalSections = 7;
-
-    // Company Info - check required fields
-    if (profile.companyInfo?.companyName && profile.companyInfo?.registrationNumber && 
-        profile.companyInfo?.industryType && profile.companyInfo?.foundingYear) {
-      completedSections++;
-    }
-
-    // Supporting Documents - use existing validator
-    if (profile.supportingDocuments) {
-      try {
-        // Use the DocumentValidator from the models if available
-        const hasRequiredDocs = profile.supportingDocuments.companyProfile && 
-                               profile.supportingDocuments.currentYearFinancials &&
-                               profile.supportingDocuments.financialProjections;
-        if (hasRequiredDocs) completedSections++;
-      } catch {
-        // Fallback: just check if any documents exist
-        if (Object.keys(profile.supportingDocuments).length > 0) completedSections++;
-      }
-    }
-
-    // Business Assessment
-    if (profile.businessAssessment?.businessModel && profile.businessAssessment?.valueProposition && 
-        profile.businessAssessment?.targetMarkets?.length > 0) {
-      completedSections++;
-    }
-
-    // SWOT Analysis - minimum 2 items each
-    if (profile.swotAnalysis?.strengths?.length >= 2 && profile.swotAnalysis?.weaknesses?.length >= 2 &&
-        profile.swotAnalysis?.opportunities?.length >= 2 && profile.swotAnalysis?.threats?.length >= 2) {
-      completedSections++;
-    }
-
-    // Management Structure - at least 1 member
-    if (profile.managementStructure?.executiveTeam?.length >= 1 || 
-        profile.managementStructure?.managementTeam?.length >= 1) {
-      completedSections++;
-    }
-
-    // Business Strategy
-    if (profile.businessStrategy?.executiveSummary && profile.businessStrategy?.missionStatement && 
-        profile.businessStrategy?.fundingRequirements) {
-      completedSections++;
-    }
-
-    // Financial Profile
-    if (profile.financialProfile?.monthlyRevenue !== undefined && 
-        profile.financialProfile?.monthlyCosts !== undefined && 
-        profile.financialProfile?.currentAssets !== undefined) {
-      completedSections++;
-    }
-
-    return Math.round((completedSections / totalSections) * 100);
+  private initializeCoverInformation(opportunity: FundingOpportunity) {
+    this.coverInformation.update(current => ({
+      ...current,
+      requestedAmount: opportunity.minInvestment?.toString() || '',
+      timeline: 'Within 3 months',
+      opportunityAlignment: `This opportunity aligns with our business goals for ${opportunity.fundingType} funding.`
+    }));
   }
 
   // ===============================
-  // OPPORTUNITY SELECTION
+  // STEP NAVIGATION - SIMPLIFIED
+  // ===============================
+
+  nextStep() {
+    const current = this.currentStep();
+    
+    if (current === 'select-opportunity' && this.selectedOpportunity()) {
+      this.currentStep.set('application-details');
+    } else if (current === 'application-details' && this.isApplicationDetailsValid()) {
+      this.currentStep.set('review-submit');
+    }
+  }
+
+  previousStep() {
+    const current = this.currentStep();
+    
+    if (current === 'review-submit') {
+      this.currentStep.set('application-details');
+    } else if (current === 'application-details') {
+      this.currentStep.set('select-opportunity');
+    }
+  }
+
+  goToStep(stepId: string) {
+    // Validate if user can navigate to this step
+    if (stepId === 'select-opportunity' || 
+        (stepId === 'application-details' && this.selectedOpportunity()) ||
+        (stepId === 'review-submit' && this.selectedOpportunity() && this.isApplicationDetailsValid())) {
+      this.currentStep.set(stepId as any);
+    }
+  }
+
+  // ===============================
+  // FORM VALIDATION - APPLICATION ONLY
+  // ===============================
+
+  private isApplicationDetailsValid(): boolean {
+    const info = this.coverInformation();
+    const opportunity = this.selectedOpportunity();
+    
+    if (!info.requestedAmount || !info.purposeStatement || !info.useOfFunds) {
+      return false;
+    }
+
+    // Validate amount is within range
+    const amount = parseFloat(info.requestedAmount);
+    if (opportunity) {
+      return amount >= opportunity.minInvestment && amount <= opportunity.maxInvestment;
+    }
+
+    return true;
+  }
+
+  getAmountValidationMessage(): string | null {
+    const info = this.coverInformation();
+    const opportunity = this.selectedOpportunity();
+    
+    if (!info.requestedAmount || !opportunity) {
+      return null;
+    }
+
+    const amount = parseFloat(info.requestedAmount);
+    if (isNaN(amount)) {
+      return 'Please enter a valid amount';
+    }
+
+    if (amount < opportunity.minInvestment) {
+      return `Amount must be at least ${this.formatCurrency(opportunity.minInvestment)}`;
+    }
+
+    if (amount > opportunity.maxInvestment) {
+      return `Amount cannot exceed ${this.formatCurrency(opportunity.maxInvestment)}`;
+    }
+
+    return null;
+  }
+
+  // ===============================
+  // EVENT HANDLERS - SIMPLIFIED
   // ===============================
 
   selectOpportunity(opportunity: FundingOpportunity) {
@@ -248,111 +261,104 @@ export class OpportunityApplicationFormComponent implements OnInit {
     this.initializeCoverInformation(opportunity);
   }
 
-  private initializeCoverInformation(opportunity: FundingOpportunity) {
-    // Pre-populate with smart defaults
-    this.coverInformation.set({
-      requestedAmount: opportunity.minInvestment.toString(),
-      purposeStatement: '',
-      useOfFunds: opportunity.useOfFunds || '',
-      timeline: '',
-      opportunityAlignment: ''
-    });
-  }
-
-  private calculateProfileCompleteness(profile: Partial<ProfileData>) {
-    const requiredSections = [
-      profile.personalInfo,
-      profile.businessInfo,
-      profile.financialInfo,
-      profile.fundingInfo,
-      profile.documents
-    ];
-    
-    const completedSections = requiredSections.filter(section => 
-      section && Object.keys(section).length > 0
-    ).length;
-    
-    const completeness = Math.round((completedSections / requiredSections.length) * 100);
-    this.profileCompleteness.set(completeness);
-  }
-
- 
-  updateCoverInformation(field: keyof CoverInformation, value: string) {
-    this.coverInformation.update(current => ({
-      ...current,
-      [field]: value
-    }));
-  }
-
+  // Form input handlers
   onRequestedAmountChange(event: Event) {
     const target = event.target as HTMLInputElement;
-    this.updateCoverInformation('requestedAmount', target.value);
+    this.coverInformation.update(current => ({
+      ...current,
+      requestedAmount: target.value
+    }));
   }
 
   onPurposeStatementChange(event: Event) {
     const target = event.target as HTMLTextAreaElement;
-    this.updateCoverInformation('purposeStatement', target.value);
+    this.coverInformation.update(current => ({
+      ...current,
+      purposeStatement: target.value
+    }));
   }
 
   onUseOfFundsChange(event: Event) {
     const target = event.target as HTMLTextAreaElement;
-    this.updateCoverInformation('useOfFunds', target.value);
+    this.coverInformation.update(current => ({
+      ...current,
+      useOfFunds: target.value
+    }));
   }
 
   onTimelineChange(event: Event) {
     const target = event.target as HTMLInputElement;
-    this.updateCoverInformation('timeline', target.value);
+    this.coverInformation.update(current => ({
+      ...current,
+      timeline: target.value
+    }));
   }
 
   onOpportunityAlignmentChange(event: Event) {
     const target = event.target as HTMLTextAreaElement;
-    this.updateCoverInformation('opportunityAlignment', target.value);
+    this.coverInformation.update(current => ({
+      ...current,
+      opportunityAlignment: target.value
+    }));
   }
 
   // ===============================
-  // VALIDATION
+  // ACTIONS - SIMPLIFIED
   // ===============================
 
-  private isCoverInformationValid(): boolean {
-    const cover = this.coverInformation();
-    const opportunity = this.selectedOpportunity();
-    
-    if (!cover.requestedAmount || !cover.purposeStatement || !cover.useOfFunds) {
-      return false;
-    }
+  async saveDraft() {
+    if (!this.selectedOpportunity()) return;
 
-    // Check amount is within opportunity range
-    if (opportunity) {
-      const amount = parseFloat(cover.requestedAmount);
-      if (amount < opportunity.minInvestment || amount > opportunity.maxInvestment) {
-        return false;
-      }
-    }
-
-    return true;
-  }
-
-  // ===============================
-  // NAVIGATION
-  // ===============================
-
-  nextStep() {
-    const current = this.currentStep();
-    const stepOrder = ['select-opportunity', 'review-profile', 'cover-information', 'review-submit'];
-    const currentIndex = stepOrder.indexOf(current);
-    
-    if (currentIndex < stepOrder.length - 1) {
-      this.currentStep.set(stepOrder[currentIndex + 1] as any);
+    this.isSaving.set(true);
+    try {
+      // Save draft to localStorage for now
+      const draftData = {
+        opportunityId: this.selectedOpportunity()!.id,
+        coverInformation: this.coverInformation(),
+        savedAt: new Date().toISOString()
+      };
+      
+      localStorage.setItem('application_draft', JSON.stringify(draftData));
+      console.log('Draft saved successfully');
+    } catch (error) {
+      console.error('Failed to save draft:', error);
+    } finally {
+      this.isSaving.set(false);
     }
   }
 
-  previousStep() {
-    const current = this.currentStep();
-    const stepOrder = ['select-opportunity', 'review-profile', 'cover-information', 'review-submit'];
-    const currentIndex = stepOrder.indexOf(current);
-    
-    if (currentIndex > 0) {
-      this.currentStep.set(stepOrder[currentIndex - 1] as any);
+  async submitApplication() {
+    if (!this.selectedOpportunity() || !this.isApplicationDetailsValid()) {
+      return;
+    }
+
+    this.isSubmitting.set(true);
+    try {
+      // Prepare application data
+      const applicationData = {
+        opportunityId: this.selectedOpportunity()!.id,
+        coverInformation: this.coverInformation(),
+        profileCompletion: this.profileCompletion(), // Include completion percentage
+        submittedAt: new Date().toISOString(),
+        status: 'submitted'
+      };
+
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      // Navigate to success page
+      this.router.navigate(['/applications/submitted'], {
+        queryParams: { 
+          opportunityId: this.selectedOpportunity()!.id,
+          applicationId: `app_${Date.now()}`
+        }
+      });
+
+    } catch (error) {
+      this.error.set('Failed to submit application');
+      console.error('Submit application error:', error);
+    } finally {
+      this.isSubmitting.set(false);
     }
   }
 
@@ -360,87 +366,37 @@ export class OpportunityApplicationFormComponent implements OnInit {
     this.location.back();
   }
 
-  // ===============================
-  // ACTIONS
-  // ===============================
-
-  saveDraft() {
-    this.isSaving.set(true);
-    
-    // TODO: Implement save draft functionality
-    // This should save the current state without submitting
-    setTimeout(() => {
-      this.isSaving.set(false);
-      console.log('Draft saved:', {
-        opportunity: this.selectedOpportunity()?.id,
-        coverInformation: this.coverInformation()
-      });
-    }, 1000);
-  }
-
-  submitApplication() {
-    if (!this.selectedOpportunity()) {
-      this.error.set('No opportunity selected');
-      return;
-    }
-
-    this.isSubmitting.set(true);
-    
-    const applicationData = {
-      opportunityId: this.selectedOpportunity()!.id,
-      profileData: this.userProfile(),
-      coverInformation: this.coverInformation(),
-      submittedAt: new Date()
-    };
-
-    // TODO: Submit to backend service
-    setTimeout(() => {
-      this.isSubmitting.set(false);
-      console.log('Application submitted:', applicationData);
-      
-      // Navigate to applications list or success page
-      this.router.navigate(['/applications'], {
-        queryParams: { submitted: 'true' }
-      });
-    }, 2000);
-  }
-
-  editProfile() {
-    // Navigate to profile editing
-    this.router.navigate(['/profile']);
-  }
+  // Computed properties for better template handling
+  requestedAmountAsNumber = computed(() => {
+    const amount = this.coverInformation().requestedAmount;
+    return amount ? parseFloat(amount) : 0;
+  });
 
   // ===============================
-  // UI HELPERS
+  // UI HELPERS - SIMPLIFIED
   // ===============================
 
   getStepClasses(stepId: string): string {
+    const isActive = this.currentStep() === stepId;
+    const step = this.steps().find(s => s.id === stepId);
+    const stepIndex = this.steps().findIndex(s => s.id === stepId);
+    const currentIndex = this.steps().findIndex(s => s.id === this.currentStep());
+    const isCompleted = stepIndex < currentIndex;
+
     const baseClasses = 'w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium';
-    const current = this.currentStep();
-    const stepOrder = ['select-opportunity', 'review-profile', 'cover-information', 'review-submit'];
-    const currentIndex = stepOrder.indexOf(current);
-    const stepIndex = stepOrder.indexOf(stepId);
-    
-    if (stepIndex < currentIndex) {
+
+    if (isCompleted) {
       return `${baseClasses} bg-green-500 text-white`;
-    } else if (stepIndex === currentIndex) {
+    } else if (isActive) {
       return `${baseClasses} bg-primary-500 text-white`;
     } else {
-      return `${baseClasses} bg-neutral-200 text-neutral-500`;
+      return `${baseClasses} bg-gray-200 text-gray-600`;
     }
   }
 
   getStepTextClasses(stepId: string): string {
-    const current = this.currentStep();
-    const stepOrder = ['select-opportunity', 'review-profile', 'cover-information', 'review-submit'];
-    const currentIndex = stepOrder.indexOf(current);
-    const stepIndex = stepOrder.indexOf(stepId);
-    
-    if (stepIndex <= currentIndex) {
-      return 'text-sm font-medium text-neutral-900';
-    } else {
-      return 'text-sm font-medium text-neutral-500';
-    }
+    const isActive = this.currentStep() === stepId;
+    return isActive ? 'font-medium text-primary-600' : 'text-gray-600';
   }
 
   formatCurrency(amount: number): string {
@@ -452,54 +408,9 @@ export class OpportunityApplicationFormComponent implements OnInit {
     }).format(amount);
   }
 
-  getAmountValidationMessage(): string {
-    const opportunity = this.selectedOpportunity();
-    const amount = parseFloat(this.coverInformation().requestedAmount);
-    
-    if (!opportunity) return '';
-    
-    if (amount < opportunity.minInvestment) {
-      return `Minimum amount is ${this.formatCurrency(opportunity.minInvestment)}`;
-    }
-    
-    if (amount > opportunity.maxInvestment) {
-      return `Maximum amount is ${this.formatCurrency(opportunity.maxInvestment)}`;
-    }
-    
-    return '';
-  }
+  
 
-  getProfileCompletionColor(): string {
-    const completeness = this.profileCompleteness();
-    if (completeness >= 90) return 'text-green-600';
-    if (completeness >= 70) return 'text-yellow-600';
-    return 'text-red-600';
-  }
-
-  // ===============================
-  // UTILITY METHODS (Added to fix template errors)
-  // ===============================
-
-  /**
-   * Converts string to number using parseFloat
-   * Made available to template
-   */
-  parseFloat(value: string): number {
-    return parseFloat(value);
-  }
-
-  /**
-   * Get organization name for an opportunity
-   * For now returns a placeholder until organization data is properly loaded
-   */
   getOrganizationName(opportunity: FundingOpportunity): string {
-    // TODO: Replace with actual organization lookup by organizationId
-    // This could involve:
-    // 1. Loading organization data alongside opportunities
-    // 2. Creating a service to fetch organization names
-    // 3. Caching organization data
-    
-    return `Organization ${opportunity.organizationId}`;
+     return 'Private Funder';
   }
 }
-

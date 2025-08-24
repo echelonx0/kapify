@@ -34,18 +34,19 @@
         <aside class="hidden lg:flex w-80 bg-white border-r border-neutral-200 flex-col sticky top-0 h-screen">
           <!-- Header -->
           <div class="p-6 border-b border-neutral-200">
-            <!-- Breadcrumb -->
-            <div class="flex items-center text-sm text-neutral-600 mb-3">
-              <button (click)="goToProfileHome()" class="hover:text-primary-600 transition-colors">
-                <lucide-icon [img]="HomeIcon" [size]="16" class="mr-1" />
-                Profile
-              </button>
-              <span class="mx-2">/</span>
-              <span class="text-neutral-900 font-medium">Funding Application</span>
-            </div>
+          <!-- Breadcrumb -->
+        <div class="flex items-center text-sm text-neutral-600 mb-3">
+          <button (click)="goToProfileHome()" class="flex items-center hover:text-primary-600 transition-colors">
+            <lucide-icon [img]="HomeIcon" [size]="16" class="mr-1" />
+          </button>
+          <span class="mx-2">/</span>
+          <span class="text-neutral-900 font-medium">Funding Application</span>
+        </div>
+
             
             <!-- Overall Progress -->
-            <div class="space-y-3">
+             <!-- TODO Later: Re-enable overall progress section if needed -->
+            <!-- <div class="space-y-3">
               <div class="flex items-center justify-between">
                 <h1 class="text-lg font-semibold text-neutral-900">Application Progress</h1>
                 <span class="text-sm font-medium text-primary-600">{{ getOverallProgress() }}%</span>
@@ -62,7 +63,7 @@
                 <span class="text-neutral-600">{{ getCompletedSteps() }} of {{ getTotalSteps() }} sections complete</span>
                 <span class="text-neutral-500">~{{ getRemainingTime() }} remaining</span>
               </div>
-            </div>
+            </div> -->
           </div>
 
           <!-- Step Navigation -->
