@@ -24,14 +24,9 @@
   <div class="grid grid-cols-12 gap-6 h-full">
     <!-- Main Content Area (Left) -->
     <div class="col-span-8">
-      <!-- 3D Viewer Component -->
+ 
       <div class="main-content-area mb-8" style="height: 400px;">
-        <!-- <app-three-d-viewer 
-          [objUrl]="'models/scene.gltf'"
-          [modelScale]="2"
-          [autoRotate]="true"
-          [showMeshSphere]="true">
-        </app-three-d-viewer> -->
+  
    <div class="mb-4">
         <img 
           [src]="currentImage" 
@@ -55,16 +50,7 @@
     <div class="col-span-4 space-y-6">
       <!-- Profile Progress Card - REAL DATA -->
       <ui-card title="Profile Progress" [hasActions]="true" marginBottom="mb-6">
-        <!-- <div slot="actions" class="text-sm text-gray-500">
-          {{ completedSteps() }} of {{ totalSteps() }} completed
-          @if (lastSavedAt()) {
-            <div class="text-xs text-green-600 mt-1">
-              ✓ Saved {{ getLastSavedText() }}
-            </div>
-          }
-        </div> -->
-
-        <!-- Progress Bar - REAL DATA -->
+     
         <div class="mb-6">
           <div class="flex items-center justify-between mb-2">
             <span class="text-sm font-medium text-gray-700">Overall Completion</span>
@@ -304,8 +290,3 @@
   </div>
 </div>
 
-<!-- Helper method to format last saved time -->
-<!-- @if (false) {
- 
-  <div>{{ getLastSavedText() }}</div>
-} -->

@@ -10,9 +10,10 @@ import { UiProgressComponent } from '../../../shared/components/ui-progress.comp
 import { UiStatusBadgeComponent } from '../../../shared/components/ui-status-badge.component';
  
 import { AuthService } from '../../../auth/production.auth.service';
-import { ActivityFeedComponent } from '../../components/activity-feed.component';
-import { Activity } from '../../../shared/services/activity.service';
+import { ActivityFeedComponent } from '../../../shared/components/activity-feed/activity-feed.component';
+ 
  import { FundingProfileSetupService } from '../../services/funding-profile-setup.service';
+import { Activity } from '../../../shared/services/database-activity.service';
 
 @Component({
   selector: 'app-profile-home',
@@ -111,6 +112,7 @@ currentImage: string = '';
 
   primaryButtonText = computed(() => {
     const user = this.authService.user();
+    console.log('User data:', user);  
     return user?.userType === 'funder' 
       ? 'View Portfolio' 
       : 'Explore Opportunities';
@@ -379,9 +381,10 @@ currentImage: string = '';
   viewOpportunities() {
     const user = this.authService.user();
     if (user?.userType === 'funder') {
-      this.router.navigate(['/dashboard/portfolio']);
+      this.router.navigate(['/funder/applications']);
     } else {
-      this.router.navigate(['/opportunities']);
+      this.router.navigate(['/funding/opportunities']);
+
     }
   }
 
