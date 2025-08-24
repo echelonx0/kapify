@@ -154,7 +154,7 @@ export interface ProfileStep {
 })
 export class FundingApplicationProfileService {
   private profileData = signal<Partial<ProfileData>>({});
-  private currentStep = signal<string>('company-info'); // Updated to match new route names
+  private currentStep = signal<string>('company-info');  
   private lastSaved = signal<Date | null>(null);
   private isSaving = signal<boolean>(false);
   

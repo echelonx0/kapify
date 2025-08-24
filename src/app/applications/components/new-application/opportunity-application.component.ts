@@ -9,7 +9,7 @@ import { LucideAngularModule, ArrowLeft, Building, DollarSign, FileText, CheckCi
 import { Location } from '@angular/common';
 import { SMEOpportunitiesService } from '../../../funding/services/opportunities.service';
 import { FundingOpportunity } from '../../../shared/models/funder.models';
-import { FundingApplicationBackendService } from '../../services/funding-application-backend.service';
+import { FundingProfileBackendService } from '../../services/funding-profile-backend.service';
 import { GlobalProfileValidationService } from '../../../shared/services/global-profile-validation.service';
 
 interface CoverInformation {
@@ -45,7 +45,7 @@ export class OpportunityApplicationFormComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private location = inject(Location);
   private opportunitiesService = inject(SMEOpportunitiesService);
-  private fundingApplicationBackendService = inject(FundingApplicationBackendService);
+  private fundingApplicationBackendService = inject(FundingProfileBackendService);
   private profileValidationService = inject(GlobalProfileValidationService);
 
   // Icons

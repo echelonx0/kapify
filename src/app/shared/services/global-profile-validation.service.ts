@@ -1,7 +1,7 @@
 // src/app/shared/services/global-profile-validation.service.ts
 import { Injectable, inject, computed, signal } from '@angular/core';
 import { Router } from '@angular/router';
-import { FundingApplicationService } from '../../applications/services/funding-application.service';
+import { FundingProfileSetupService } from '../../applications/services/funding-profile-setup.service';
  
 // Configurable completion requirements
 export const COMPLETION_REQUIREMENTS = {
@@ -25,7 +25,7 @@ export interface ProfileValidationResult {
   providedIn: 'root' 
 })
 export class GlobalProfileValidationService {
-  private fundingApplicationService = inject(FundingApplicationService);
+  private fundingApplicationService = inject(FundingProfileSetupService);
   private router = inject(Router);
 
   // Centralized completion data

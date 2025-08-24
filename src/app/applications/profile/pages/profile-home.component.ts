@@ -11,8 +11,8 @@ import { UiStatusBadgeComponent } from '../../../shared/components/ui-status-bad
  
 import { AuthService } from '../../../auth/production.auth.service';
 import { ActivityFeedComponent } from '../../components/activity-feed.component';
-import { Activity } from '../../services/activity.service';
- import { FundingApplicationService } from '../../services/funding-application.service';
+import { Activity } from '../../../shared/services/activity.service';
+ import { FundingProfileSetupService } from '../../services/funding-profile-setup.service';
 
 @Component({
   selector: 'app-profile-home',
@@ -39,7 +39,7 @@ import { Activity } from '../../services/activity.service';
   `]
 })
 export class ProfileHomeComponent implements OnInit {
-  private fundingApplicationService = inject(FundingApplicationService); // FIXED: Correct service
+  private fundingApplicationService = inject(FundingProfileSetupService); // FIXED: Correct service
   private authService = inject(AuthService);
   private router = inject(Router);
 

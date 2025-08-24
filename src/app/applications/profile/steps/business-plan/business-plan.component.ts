@@ -9,7 +9,7 @@ import { UiTextareaComponent } from '../../../../shared/components/ui-textarea.c
 import { interval, Subscription } from 'rxjs';
 import { takeWhile } from 'rxjs/operators';
  
-import { FundingApplicationService } from '../../../services/funding-application.service';
+import { FundingProfileSetupService } from '../../../services/funding-profile-setup.service';
 import { BusinessStrategy, FinancialProjection } from '../../../models/funding-application.models';
 
 interface BusinessPlanSection {
@@ -40,7 +40,7 @@ interface BusinessPlanSection {
 export class BusinessPlanComponent implements OnInit, OnDestroy {
   @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
 
-  private fundingApplicationService = inject(FundingApplicationService);
+  private fundingApplicationService = inject(FundingProfileSetupService);
   private fb = inject(FormBuilder);
 
   // Icons

@@ -1,6 +1,6 @@
 import { Injectable, signal, computed, inject, OnDestroy } from '@angular/core';
 import { FundingApplicationProfile, FundingApplicationStep } from '../models/funding-application.models';
-import { FundingApplicationBackendService } from './funding-application-backend.service';
+import { FundingProfileBackendService } from './funding-profile-backend.service';
 import { AuthService } from '../../auth/production.auth.service';
 import { Subscription, Subject } from 'rxjs';
 import { debounceTime, takeUntil } from 'rxjs/operators';
@@ -8,8 +8,8 @@ import { debounceTime, takeUntil } from 'rxjs/operators';
 @Injectable({
   providedIn: 'root'
 })
-export class FundingApplicationService implements OnDestroy {
-  private readonly backendService = inject(FundingApplicationBackendService);
+export class FundingProfileSetupService implements OnDestroy {
+  private readonly backendService = inject(FundingProfileBackendService);
   private readonly authService = inject(AuthService);
   
   // Core application data

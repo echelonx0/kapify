@@ -261,7 +261,7 @@ import { UiInputComponent, UiButtonComponent } from '../../../../shared/componen
 import { interval, Subscription } from 'rxjs';
 import { takeWhile } from 'rxjs/operators';
 import { ManagementStructure } from '../../../models/funding-application.models';
-import { FundingApplicationService } from '../../../services/funding-application.service';
+import { FundingProfileSetupService } from '../../../services/funding-profile-setup.service';
 
 interface LocalManagementMember {
   id: string;
@@ -298,7 +298,7 @@ type SectionStates = Record<SectionKey, boolean>;
   templateUrl: 'management-governance.component.html'
 })
 export class ManagementGovernanceComponent implements OnInit, OnDestroy {
-  private fundingApplicationService = inject(FundingApplicationService);
+  private fundingApplicationService = inject(FundingProfileSetupService);
   private fb = inject(FormBuilder);
 
   // State signals

@@ -5,7 +5,7 @@ import { Component, signal, OnInit, OnDestroy, inject, HostListener } from '@ang
 import { LucideAngularModule, Upload, FileText, CheckCircle, X, Download, Trash2, ChevronDown, ChevronUp, Save, Clock, AlertCircle, RefreshCw, Eye, Plus } from 'lucide-angular';
 import { interval, Subscription } from 'rxjs';
 import { takeWhile } from 'rxjs/operators';
-import { FundingApplicationService } from '../../../services/funding-application.service';
+import { FundingProfileSetupService } from '../../../services/funding-profile-setup.service';
 import { SupabaseDocumentService, DocumentMetadata } from '../../../../shared/services/supabase-document.service';
 import { UiCardComponent, UiButtonComponent } from '../../../../shared/components';
 import { CommonModule } from '@angular/common';
@@ -47,7 +47,7 @@ interface UploadStatus {
   templateUrl: './documents-upload.component.html'
 })
 export class DocumentsUploadComponent implements OnInit, OnDestroy {
-  private fundingApplicationService = inject(FundingApplicationService);
+  private fundingApplicationService = inject(FundingProfileSetupService);
   private supabaseDocumentService = inject(SupabaseDocumentService);
 
   // State signals

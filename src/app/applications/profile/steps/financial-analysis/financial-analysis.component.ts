@@ -292,7 +292,7 @@ import { LucideAngularModule, Upload, Download, FileSpreadsheet, Save, Clock, Ed
 import { interval, Subscription, Subject } from 'rxjs';
 import { debounceTime, takeWhile, takeUntil } from 'rxjs/operators';
 import { FinancialProfile } from '../../../models/funding-application.models';
-import { FundingApplicationService } from '../../../services/funding-application.service';
+import { FundingProfileSetupService } from '../../../services/funding-profile-setup.service';
 
 interface FinancialRowData {
   label: string;
@@ -311,7 +311,7 @@ interface FinancialRatioData extends FinancialRowData {
   templateUrl: 'financial-analysis.component.html'
 })
 export class FinancialAnalysisComponent implements OnInit, OnDestroy {
-  private fundingApplicationService = inject(FundingApplicationService);
+  private fundingApplicationService = inject(FundingProfileSetupService);
 
   // State signals
   isSaving = signal(false);

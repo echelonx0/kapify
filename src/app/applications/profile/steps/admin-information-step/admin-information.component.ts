@@ -6,7 +6,7 @@ import { UiInputComponent, UiButtonComponent } from '../../../../shared/componen
  
 import { interval, Subscription } from 'rxjs';
 import { takeWhile } from 'rxjs/operators';
-import { FundingApplicationService } from '../../../services/funding-application.service';
+import { FundingProfileSetupService } from '../../../services/funding-profile-setup.service';
 import { CompanyInformation } from '../../../models/funding-application.models';
 
 interface Shareholder {
@@ -30,7 +30,7 @@ interface SectionStates {
   templateUrl: 'admin-information.component.html'
 })
 export class AdminInformationComponent implements OnInit, OnDestroy {
-  private fundingApplicationService = inject(FundingApplicationService);
+  private fundingApplicationService = inject(FundingProfileSetupService);
   private fb = inject(FormBuilder);
 
   adminForm: FormGroup;

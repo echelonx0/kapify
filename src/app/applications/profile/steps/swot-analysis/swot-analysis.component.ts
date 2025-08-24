@@ -10,7 +10,7 @@ import { UiButtonComponent, UiCardComponent, UiInputComponent } from '../../../.
 import { UiSectionCardComponent } from '../../../../shared/components/ui-section-card.component';
 import { UiTextareaComponent } from '../../../../shared/components/ui-textarea.component';
 import { SWOTAnalysis } from '../../../models/funding-application.models';
-import { FundingApplicationService } from '../../../services/funding-application.service';
+import { FundingProfileSetupService } from '../../../services/funding-profile-setup.service';
 
 type SWOTCategory = 'strengths' | 'weaknesses' | 'opportunities' | 'threats';
 
@@ -46,7 +46,7 @@ interface SWOTSection {
   templateUrl: 'swot-analysis.component.html'
 })
 export class SWOTAnalysisComponent implements OnInit, OnDestroy {
-  private fundingApplicationService = inject(FundingApplicationService);
+  private fundingApplicationService = inject(FundingProfileSetupService);
   private fb = inject(FormBuilder);
 
   // Icons

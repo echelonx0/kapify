@@ -4,10 +4,10 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { Observable, throwError, from } from 'rxjs';
 import { tap, catchError, switchMap } from 'rxjs/operators';
-import { createClient, SupabaseClient } from '@supabase/supabase-js';
+ 
 import { AuthService } from '../../auth/production.auth.service';
 import { FundingApplicationProfile } from '../models/funding-application.models';
-import { environment } from '../../../environments/environment';
+ 
 import { SharedSupabaseService } from '../../shared/services/supabase.service';
 
 // Backend response interfaces
@@ -53,7 +53,7 @@ export interface SubmitApplicationResponse {
 @Injectable({
   providedIn: 'root'
 })
-export class FundingApplicationBackendService {
+export class FundingProfileBackendService {
   private authService = inject(AuthService);
   private supabase = inject(SharedSupabaseService);
   

@@ -3,7 +3,7 @@ import { Component, input, output, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { LucideAngularModule, Filter, MoreHorizontal, TrendingUp, TrendingDown, Users, Settings, Heart, CreditCard } from 'lucide-angular';
 import { UiCardComponent, UiButtonComponent } from '../../shared/components';
-import { ActivityService, Activity } from '../services/activity.service';
+import { ActivityService, Activity } from '../../shared/services/activity.service';
 import { Observable } from 'rxjs';
 
 @Component({

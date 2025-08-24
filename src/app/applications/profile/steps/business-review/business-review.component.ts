@@ -7,7 +7,7 @@ import { interval, Subscription } from 'rxjs';
 import { takeWhile } from 'rxjs/operators';
 import { UiButtonComponent } from '../../../../shared/components';
 import { BusinessAssessment } from '../../../models/funding-application.models';
-import { FundingApplicationService } from '../../../services/funding-application.service';
+import { FundingProfileSetupService } from '../../../services/funding-profile-setup.service';
  
 
 interface SectionStates {
@@ -22,7 +22,7 @@ interface SectionStates {
   templateUrl: 'business-review.component.html'
 })
 export class BusinessReviewComponent implements OnInit, OnDestroy {
-  private fundingApplicationService = inject(FundingApplicationService);
+  private fundingApplicationService = inject(FundingProfileSetupService);
   private fb = inject(FormBuilder);
 
   businessAssessmentForm: FormGroup;

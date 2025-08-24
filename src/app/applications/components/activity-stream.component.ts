@@ -1,5 +1,5 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { Activity, ActivityService } from '../services/activity.service';
+import { Activity, ActivityService } from '../../shared/services/activity.service';
 
 @Component({
   selector: 'app-activity-stream',
