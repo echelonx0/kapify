@@ -1,5 +1,5 @@
-<!-- src/app/profile/pages/profile-home.component.html - CONNECTED TO REAL BACKEND DATA -->
-<div class="min-h-screen p-6">
+<!-- src/app/profile/pages/profile-home.component.html - Fixed for extra wide screens -->
+<div class="min-h-screen p-6 ml-16 mr-10">
   <!-- Top Funding Banner - Using real data -->
   <div class="gradient-bg rounded-xl p-6 mb-6 text-white">
     <div class="flex items-center justify-between">
@@ -25,26 +25,27 @@
     <!-- Main Content Area (Left) -->
     <div class="col-span-8">
  
-      <div class="main-content-area mb-8" style="height: 400px;">
-  
-   <div class="mb-4">
-        <img 
-          [src]="currentImage" 
-          alt="Workshop or Webinar" 
-          class="rounded-lg w-full h-auto object-cover"
-        >
-      </div>
+      <!-- Fixed main content area with responsive height and proper spacing -->
+      <div class="main-content-area mb-8" style="min-height: 400px; max-height: 500px;">
+        <div class="mb-6">
+          <img 
+            [src]="currentImage" 
+            alt="Workshop or Webinar" 
+            class="rounded-lg w-full h-auto object-cover"
+            style="max-height: 450px;"
+          >
+        </div>
       </div>
 
-      <!-- Integrated Activity Feed Widget -->
-     <div class="mt-12">
+      <!-- Integrated Activity Feed Widget with increased top margin for wide screens -->
+      <div class="mt-16 lg:mt-20 xl:mt-24 2xl:mt-32">
         <app-activity-feed
           (viewAllClicked)="viewAllActivities()"
           (activityClicked)="onActivityClicked($event)"
           class="mb-6">
         </app-activity-feed>
+      </div>
     </div>
-  </div>
 
     <!-- Right Sidebar Cards -->
     <div class="col-span-4 space-y-6">
@@ -289,4 +290,3 @@
     </div>
   </div>
 </div>
-

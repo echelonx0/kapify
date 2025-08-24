@@ -1,5 +1,3 @@
- 
-
 // applications-home.component.ts
 import { Component, signal, computed, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
@@ -15,28 +13,29 @@ import {
   Filter,
   Eye,
   Search,
-  X
+  X,
+  BookOpen,
+  Users,
+  Target,
+  CheckCircle,
+  ArrowRight,
+  Lightbulb,
+  Shield,
+  Zap
 } from 'lucide-angular';
 import { UiButtonComponent } from '../../shared/components';
 import { ActivityInboxComponent } from '../../shared/components/messaging/messaging.component';
- 
- 
 
-interface Application {
+interface OnboardingCard {
   id: string;
   title: string;
-  applicationNumber: string;
-  status: 'draft' | 'submitted' | 'under_review' | 'approved' | 'rejected' | 'withdrawn';
-  fundingType: 'equity' | 'debt' | 'grant' | 'mezzanine';
-  requestedAmount: number;
-  currency: string;
-  currentStage: string;
-  description?: string;
-  matchScore?: number;
-  createdAt: Date;
-  updatedAt: Date;
-  submittedAt?: Date;
-  reviewNotes: any[];
+  description: string;
+  icon: any;
+  type: 'info' | 'action' | 'feature';
+  actionText?: string;
+  actionRoute?: string;
+  completed?: boolean;
+  color: string;
 }
 
 @Component({
@@ -46,12 +45,10 @@ interface Application {
     CommonModule,
     FormsModule,
     LucideAngularModule,
- 
     UiButtonComponent,
- 
     ActivityInboxComponent
   ],
-  templateUrl: 'kapify-dashboard.component.html',
+  templateUrl: './kapify-dashboard.component.html',
   styles: [`
     .line-clamp-2 {
       display: -webkit-box;
@@ -72,197 +69,165 @@ export class KapifyDashboard implements OnInit {
   EyeIcon = Eye;
   SearchIcon = Search;
   XIcon = X;
+  BookOpenIcon = BookOpen;
+  UsersIcon = Users;
+  TargetIcon = Target;
+  CheckCircleIcon = CheckCircle;
+  ArrowRightIcon = ArrowRight;
+  LightbulbIcon = Lightbulb;
+  ShieldIcon = Shield;
+  ZapIcon = Zap;
 
   // State
   isLoading = signal(false);
-  showFilters = signal(false);
-  applications = signal<Application[]>([]);
 
-  // Filters
-  searchQuery = signal('');
-  statusFilter = signal('');
-  fundingTypeFilter = signal('');
-
-  // Mock data
-  private mockApplications: Application[] = [
+  // Onboarding cards data
+  private onboardingData: OnboardingCard[] = [
     {
-      id: 'app-001',
-      title: 'Tech Startup Growth Capital Application',
-      applicationNumber: 'APP-2025-001',
-      status: 'under_review',
-      fundingType: 'equity',
-      requestedAmount: 2500000,
-      currency: 'ZAR',
-      currentStage: 'Due Diligence',
-      description: 'Seeking growth capital to expand our AI-powered logistics platform across South Africa.',
-      matchScore: 85,
-      createdAt: new Date('2025-01-15'),
-      updatedAt: new Date('2025-08-01'),
-      submittedAt: new Date('2025-02-01'),
-      reviewNotes: []
+      id: 'how-it-works',
+      title: 'How Kapify Works',
+      description: 'Kapify connects your business with the right funding partners through our intelligent matching system. Complete your profile, get matched with suitable funders, and track your application progress all in one place.',
+      icon: this.BookOpenIcon,
+      type: 'info',
+      actionText: 'Learn the Process',
+      actionRoute: '/how-it-works',
+      color: 'blue'
     },
     {
-      id: 'app-002',
-      title: 'Manufacturing Equipment Finance',
-      applicationNumber: 'APP-2025-002',
-      status: 'approved',
-      fundingType: 'debt',
-      requestedAmount: 5000000,
-      currency: 'ZAR',
-      currentStage: 'Documentation',
-      description: 'Equipment financing for new production line to meet increased demand.',
-      matchScore: 92,
-      createdAt: new Date('2025-02-01'),
-      updatedAt: new Date('2025-08-05'),
-      submittedAt: new Date('2025-02-15'),
-      reviewNotes: []
+      id: 'funding-types',
+      title: 'Explore Funding Types',
+      description: 'Discover different funding options available including equity investment, debt financing, grants, and mezzanine funding. Each type has unique benefits depending on your business stage and needs.',
+      icon: this.DollarSignIcon,
+      type: 'feature',
+      actionText: 'View Funding Options',
+      actionRoute: '/funding-types',
+      color: 'green'
     },
+    // {
+    //   id: 'success-stories',
+    //   title: 'Success Stories',
+    //   description: 'Read how other South African businesses have successfully raised capital through Kapify. Learn from their experiences and get inspired by their funding journeys.',
+    //   icon: this.TrendingUpIcon,
+    //   type: 'info',
+    //   actionText: 'Read Stories',
+    //   actionRoute: '/success-stories',
+    //   color: 'purple'
+    // },
     {
-      id: 'app-003',
-      title: 'AgriTech Innovation Grant',
-      applicationNumber: 'APP-2025-003',
-      status: 'submitted',
-      fundingType: 'grant',
-      requestedAmount: 1000000,
-      currency: 'ZAR',
-      currentStage: 'Initial Review',
-      description: 'Grant funding for developing sustainable farming technology for smallholder farmers.',
-      matchScore: 78,
-      createdAt: new Date('2025-03-01'),
-      updatedAt: new Date('2025-08-03'),
-      submittedAt: new Date('2025-03-15'),
-      reviewNotes: []
-    }
+      id: 'complete-profile',
+      title: 'Complete Your Business Profile',
+      description: 'A complete profile increases your chances of getting matched with the right funders by 300%. Add your business information, financial data, and growth plans.',
+      icon: this.TargetIcon,
+      type: 'action',
+      actionText: 'Complete Profile',
+      actionRoute: '/dashboard/profile',
+      color: 'orange'
+    },
+    // {
+    //   id: 'security-compliance',
+    //   title: 'Security & Compliance',
+    //   description: 'Your data is protected with bank-level security. We comply with POPIA and international data protection standards to keep your business information safe.',
+    //   icon: this.ShieldIcon,
+    //   type: 'info',
+    //   actionText: 'Learn About Security',
+    //   actionRoute: '/security',
+    //   color: 'blue'
+    // },
+    // {
+    //   id: 'expert-support',
+    //   title: 'Expert Support Available',
+    //   description: 'Our funding specialists are ready to help you navigate the application process. Get personalized guidance to maximize your funding potential.',
+    //   icon: this.UsersIcon,
+    //   type: 'action',
+    //   actionText: 'Contact Support',
+    //   actionRoute: '/support',
+    //   color: 'green'
+    // },
+    // {
+    //   id: 'tips-best-practices',
+    //   title: 'Funding Tips & Best Practices',
+    //   description: 'Learn insider tips on creating compelling applications, preparing for investor meetings, and negotiating terms. Our guides are written by experienced funding professionals.',
+    //   icon: this.LightbulbIcon,
+    //   type: 'info',
+    //   actionText: 'View Tips',
+    //   actionRoute: '/tips',
+    //   color: 'yellow'
+    // }
   ];
+
+  onboardingCards = signal<OnboardingCard[]>(this.onboardingData);
 
   constructor(private router: Router) {}
 
   ngOnInit() {
-    this.loadApplications();
+    // Initialize component
   }
 
-  // Computed properties
-  filteredApplications = computed(() => {
-    let filtered = this.applications();
-
-    if (this.searchQuery()) {
-      const query = this.searchQuery().toLowerCase();
-      filtered = filtered.filter(app => 
-        app.title.toLowerCase().includes(query) ||
-        app.applicationNumber.toLowerCase().includes(query) ||
-        app.description?.toLowerCase().includes(query)
-      );
-    }
-
-    if (this.statusFilter()) {
-      filtered = filtered.filter(app => app.status === this.statusFilter());
-    }
-
-    if (this.fundingTypeFilter()) {
-      filtered = filtered.filter(app => app.fundingType === this.fundingTypeFilter());
-    }
-
-    return filtered;
-  });
-
+  // Computed properties for stats (repurposed as requested)
   stats = computed(() => {
-    const apps = this.applications();
     return {
-      total: apps.length,
-      underReview: apps.filter(app => app.status === 'under_review').length,
-      approved: apps.filter(app => app.status === 'approved').length,
-      rejected: apps.filter(app => app.status === 'rejected').length
+      total: 0, // Will be updated when user has applications
+      funders: 250, // Number of active funders on platform
+      successRate: 87, // Platform success rate
+      totalFunded: 2.4 // Billion ZAR funded through platform
     };
   });
-
-  hasActiveFilters = computed(() => {
-    return !!(this.searchQuery() || this.statusFilter() || this.fundingTypeFilter());
-  });
-
-  private loadApplications() {
-    this.isLoading.set(true);
-    // Simulate API call
-    setTimeout(() => {
-      this.applications.set(this.mockApplications);
-      this.isLoading.set(false);
-    }, 1000);
-  }
 
   // Actions
-  toggleFilters() {
-    this.showFilters.update(current => !current);
+  learnMore() {
+    this.router.navigate(['/how-it-works']);
   }
 
-  clearFilters() {
-    this.searchQuery.set('');
-    this.statusFilter.set('');
-    this.fundingTypeFilter.set('');
+  startApplication() {
+    this.router.navigate(['/funding/applications/new']);
   }
 
-  createNewApplication() {
-    this.router.navigate(['/applications/new']);
+  handleCardAction(card: OnboardingCard) {
+    if (card.actionRoute) {
+      this.router.navigate([card.actionRoute]);
+    }
   }
 
-  viewApplication(id: string) {
-    this.router.navigate(['/applications', id]);
-  }
-
-  // Utility methods
-  getStatusText(status: string): string {
-    const statusMap: Record<string, string> = {
-      draft: 'Draft',
-      submitted: 'Submitted',
-      under_review: 'Under Review',
-      approved: 'Approved',
-      rejected: 'Rejected',
-      withdrawn: 'Withdrawn'
-    };
-    return statusMap[status] || status;
-  }
-
-  getStatusBadgeClass(status: string): string {
+  // Utility methods for card styling
+  getCardBorderClass(color: string): string {
     const classMap: Record<string, string> = {
-      draft: 'bg-gray-100 text-gray-800',
-      submitted: 'bg-green-100 text-green-800',
-      under_review: 'bg-yellow-100 text-yellow-800',
-      approved: 'bg-green-100 text-green-800',
-      rejected: 'bg-red-100 text-red-800',
-      withdrawn: 'bg-gray-100 text-gray-800'
+      blue: 'hover:border-blue-200',
+      green: 'hover:border-green-200',
+      purple: 'hover:border-purple-200',
+      orange: 'hover:border-orange-200',
+      yellow: 'hover:border-yellow-200'
     };
-    return classMap[status] || 'bg-gray-100 text-gray-800';
+    return classMap[color] || 'hover:border-gray-200';
   }
 
-  getApplicationProgress(application: Application): number {
-    const progressMap: Record<string, number> = {
-      draft: 10,
-      submitted: 25,
-      under_review: 60,
-      approved: 100,
-      rejected: 100,
-      withdrawn: 0
+  getCardIconClass(color: string): string {
+    const classMap: Record<string, string> = {
+      blue: 'bg-blue-100',
+      green: 'bg-green-100',
+      purple: 'bg-purple-100',
+      orange: 'bg-orange-100',
+      yellow: 'bg-yellow-100'
     };
-    return progressMap[application.status] || 0;
+    return classMap[color] || 'bg-gray-100';
   }
 
-  formatCurrency(amount: number, currency: string): string {
+  getCardIconTextClass(color: string): string {
+    const classMap: Record<string, string> = {
+      blue: 'text-blue-600',
+      green: 'text-green-600',
+      purple: 'text-purple-600',
+      orange: 'text-orange-600',
+      yellow: 'text-yellow-600'
+    };
+    return classMap[color] || 'text-gray-600';
+  }
+
+  formatTotalFunded(): string {
     return new Intl.NumberFormat('en-ZA', {
       style: 'currency',
-      currency: currency,
+      currency: 'ZAR',
       notation: 'compact',
       maximumFractionDigits: 1
-    }).format(amount);
-  }
-
-  formatDate(date: Date): string {
-    return new Intl.DateTimeFormat('en-ZA', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric'
-    }).format(date);
-  }
-
-  formatTotalRequested(): string {
-    const total = this.applications().reduce((sum, app) => sum + app.requestedAmount, 0);
-    return this.formatCurrency(total, 'ZAR');
+    }).format(2400000000); // 2.4 billion
   }
 }

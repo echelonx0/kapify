@@ -1,4 +1,4 @@
-   <div class="min-h-screen bg-neutral-50">
+<div class="min-h-screen bg-neutral-50">
       <!-- Mobile Header -->
       <header class="lg:hidden bg-white border-b border-neutral-200 px-4 py-3 sticky top-0 z-40">
         <div class="flex items-center justify-between">
@@ -30,22 +30,103 @@
       </header>
 
       <div class="flex">
-        <!-- Desktop Sidebar -->
-        <aside class="hidden lg:flex w-80 bg-white border-r border-neutral-200 flex-col sticky top-0 h-screen">
+        <!-- Main Content Area - Now on the left -->
+        <main class="flex-1 flex flex-col min-h-screen lg:min-h-0">
+          <!-- Desktop Content Header -->
+          <header class="hidden lg:block bg-white border-b border-neutral-200 px-8 py-6 sticky top-0 z-30">
+            <div class="max-w-4xl mx-auto">
+              <!-- Breadcrumb -->
+              <div class="flex items-center text-sm text-neutral-600 mb-3">
+                <button (click)="goToProfileHome()" class="flex items-center hover:text-primary-600 transition-colors">
+                  <lucide-icon [img]="HomeIcon" [size]="16" class="mr-1" />
+                </button>
+                <span class="mx-2">/</span>
+                <span class="text-neutral-900 font-medium">Funding Application</span>
+              </div>
+
+              <div class="flex items-center justify-between">
+                <div>
+                  <h1 class="text-2xl font-bold text-neutral-900">{{ getCurrentStepTitle() }}</h1>
+                  <p class="text-neutral-600 mt-1">{{ getCurrentStepDescription() }}</p>
+                </div>
+                
+                <!-- Step Progress Indicator -->
+                <div class="text-right">
+                  <div class="text-sm text-neutral-500">Step {{ getCurrentStepNumber() }} of {{ getTotalSteps() }}</div>
+                  <div class="text-xs text-neutral-400">{{ getCurrentStepEstimatedTime() }}</div>
+                </div>
+              </div>
+            </div>
+          </header>
+
+          <!-- Content Body -->
+          <div class="flex-1 overflow-y-auto">
+            <div class="max-w-4xl mx-auto px-4 lg:px-8 py-6">
+              <router-outlet />
+            </div>
+          </div>
+
+          <!-- Action Footer -->
+          <footer class="bg-white border-t border-neutral-200 px-4 lg:px-8 py-4 sticky bottom-0">
+            <div class="max-w-4xl mx-auto flex items-center justify-between">
+              <!-- Back Button -->
+              @if (!isFirstStep()) {
+                <ui-button variant="outline" (clicked)="previousStep()">
+                  <lucide-icon [img]="ArrowLeftIcon" [size]="16" class="mr-2" />
+                  <span class="hidden sm:inline">Back</span>
+                </ui-button>
+              } @else {
+                <div></div>
+              }
+              
+              <!-- Primary Actions -->
+              <div class="flex items-center space-x-3">
+                @if (isLastStep()) {
+                  <ui-button 
+                    variant="primary"
+                    size="lg"
+                    (clicked)="submitProfile()"
+                    [disabled]="!canSubmit() || isSubmitting()"
+                  >
+                    @if (isSubmitting()) {
+                      <lucide-icon [img]="ClockIcon" [size]="16" class="mr-2 animate-spin" />
+                      <span class="hidden sm:inline">Submitting...</span>
+                      <span class="sm:hidden">...</span>
+                    } @else {
+                      <span class="hidden sm:inline">Submit Application</span>
+                      <span class="sm:hidden">Submit</span>
+                    }
+                  </ui-button>
+                } @else {
+                  <ui-button 
+                    variant="primary"
+                    size="lg"
+                    (clicked)="saveAndContinue()"
+                    [disabled]="isSaving()"
+                  >
+                    @if (isSaving()) {
+                      <lucide-icon [img]="ClockIcon" [size]="16" class="mr-2 animate-spin" />
+                      <span class="hidden sm:inline">Saving...</span>
+                      <span class="sm:hidden">...</span>
+                    } @else {
+                      <span class="hidden sm:inline">Continue</span>
+                      <span class="sm:hidden">Next</span>
+                    }
+                  </ui-button>
+                }
+              </div>
+            </div>
+          </footer>
+        </main>
+
+        <!-- Desktop Sidebar - Now on the right -->
+        <aside class="hidden lg:flex w-80 bg-white border-l border-neutral-200 flex-col sticky top-0 h-screen z-40">
           <!-- Header -->
           <div class="p-6 border-b border-neutral-200">
-          <!-- Breadcrumb -->
-        <div class="flex items-center text-sm text-neutral-600 mb-3">
-          <button (click)="goToProfileHome()" class="flex items-center hover:text-primary-600 transition-colors">
-            <lucide-icon [img]="HomeIcon" [size]="16" class="mr-1" />
-          </button>
-          <span class="mx-2">/</span>
-          <span class="text-neutral-900 font-medium">Funding Application</span>
-        </div>
-
+            <h2 class="text-lg font-semibold text-neutral-900 mb-4">Application Steps</h2>
             
             <!-- Overall Progress -->
-             <!-- TODO Later: Re-enable overall progress section if needed -->
+            <!-- TODO Later: Re-enable overall progress section if needed -->
             <!-- <div class="space-y-3">
               <div class="flex items-center justify-between">
                 <h1 class="text-lg font-semibold text-neutral-900">Application Progress</h1>
@@ -169,87 +250,6 @@
             }
           </div>
         </aside>
-
-        <!-- Main Content Area -->
-        <main class="flex-1 flex flex-col min-h-screen lg:min-h-0">
-          <!-- Desktop Content Header -->
-        <!-- Desktop Content Header -->
-<header class="hidden lg:block bg-white border-b border-neutral-200 px-8 py-6 sticky top-0 z-40">
-  <div class="max-w-4xl mx-auto">
-    <div class="flex items-center justify-between">
-      <div>
-        <h1 class="text-2xl font-bold text-neutral-900">{{ getCurrentStepTitle() }}</h1>
-        <p class="text-neutral-600 mt-1">{{ getCurrentStepDescription() }}</p>
-      </div>
-      
-      <!-- Step Progress Indicator -->
-      <div class="text-right">
-        <div class="text-sm text-neutral-500">Step {{ getCurrentStepNumber() }} of {{ getTotalSteps() }}</div>
-        <div class="text-xs text-neutral-400">{{ getCurrentStepEstimatedTime() }}</div>
-      </div>
-    </div>
-  </div>
-</header>
-
-          <!-- Content Body -->
-          <div class="flex-1 overflow-y-auto">
-            <div class="max-w-4xl mx-auto px-4 lg:px-8 py-6">
-              <router-outlet />
-            </div>
-          </div>
-
-          <!-- Action Footer -->
-          <footer class="bg-white border-t border-neutral-200 px-4 lg:px-8 py-4 sticky bottom-0">
-            <div class="max-w-4xl mx-auto flex items-center justify-between">
-              <!-- Back Button -->
-              @if (!isFirstStep()) {
-                <ui-button variant="outline" (clicked)="previousStep()">
-                  <lucide-icon [img]="ArrowLeftIcon" [size]="16" class="mr-2" />
-                  <span class="hidden sm:inline">Back</span>
-                </ui-button>
-              } @else {
-                <div></div>
-              }
-              
-              <!-- Primary Actions -->
-              <div class="flex items-center space-x-3">
-                @if (isLastStep()) {
-                  <ui-button 
-                    variant="primary"
-                    size="lg"
-                    (clicked)="submitProfile()"
-                    [disabled]="!canSubmit() || isSubmitting()"
-                  >
-                    @if (isSubmitting()) {
-                      <lucide-icon [img]="ClockIcon" [size]="16" class="mr-2 animate-spin" />
-                      <span class="hidden sm:inline">Submitting...</span>
-                      <span class="sm:hidden">...</span>
-                    } @else {
-                      <span class="hidden sm:inline">Submit Application</span>
-                      <span class="sm:hidden">Submit</span>
-                    }
-                  </ui-button>
-                } @else {
-                  <ui-button 
-                    variant="primary"
-                    size="lg"
-                    (clicked)="saveAndContinue()"
-                    [disabled]="isSaving()"
-                  >
-                    @if (isSaving()) {
-                      <lucide-icon [img]="ClockIcon" [size]="16" class="mr-2 animate-spin" />
-                      <span class="hidden sm:inline">Saving...</span>
-                      <span class="sm:hidden">...</span>
-                    } @else {
-                      <span class="hidden sm:inline">Continue</span>
-                      <span class="sm:hidden">Next</span>
-                    }
-                  </ui-button>
-                }
-              </div>
-            </div>
-          </footer>
-        </main>
       </div>
 
       <!-- Mobile Navigation Overlay -->

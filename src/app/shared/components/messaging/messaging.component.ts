@@ -1,4 +1,4 @@
-// src/app/shared/components/activity-inbox.component.ts
+// src/app/shared/components/messaging.component.ts
 import { Component, signal, computed, OnInit, ElementRef, ViewChild, AfterViewChecked } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';

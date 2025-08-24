@@ -12,16 +12,18 @@ import { Subject } from 'rxjs';
   standalone: true,
   imports: [RouterOutlet, SidebarNavComponent, DashboardHeaderComponent, CommonModule],
   template: `
-    <div class="min-h-screen bg-neutral-50 overflow-hidden">
-      <!-- Show sidebar only for non-home routes -->
-      <sidebar-nav   />
+    <div class="min-h-screen bg-neutral-50 flex">
+      <!-- Sidebar - always visible -->
+      <sidebar-nav />
       
-      <!-- Main Content -->
+      <!-- Main Content Area -->
       <div [class]="contentClass()">
-        <!-- Show header only for non-home routes -->
-        <dashboard-header   />
+        <!-- Sticky Header -->
+        <div class="sticky top-0 z-10 bg-neutral-50 border-b border-gray-200">
+          <dashboard-header />
+        </div>
         
-        <!-- Page Content -->
+        <!-- Page Content - Let each route handle its own scrolling -->
         <main [class]="mainClass()">
           <router-outlet />
         </main>
@@ -32,6 +34,9 @@ import { Subject } from 'rxjs';
 export class DashboardLayoutComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
   private currentUrl = signal('');
+  
+  // Option to conditionally show/hide header (currently disabled)
+  private showHeaderConditionally = false;
 
   constructor(private router: Router) {}
 
@@ -60,11 +65,19 @@ export class DashboardLayoutComponent implements OnInit, OnDestroy {
     return url === '/dashboard/home' || url === '/dashboard';
   });
 
+  // Keep the option to conditionally show header available
+  shouldShowHeader = computed(() => {
+    if (!this.showHeaderConditionally) {
+      return true; // Always show header when conditional display is disabled
+    }
+    return !this.isHomeRoute(); // Show header only for non-home routes when conditional
+  });
+
   contentClass = computed(() => {
-    return this.isHomeRoute() ? '' : 'ml-16';
+    return this.isHomeRoute() ? 'flex-1 flex flex-col' : 'flex-1 flex flex-col ml-16';
   });
 
   mainClass = computed(() => {
-    return this.isHomeRoute() ? 'h-screen overflow-hidden' : 'p-6';
+    return this.isHomeRoute() ? 'flex-1' : 'flex-1';
   });
 }

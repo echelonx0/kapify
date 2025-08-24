@@ -1,4 +1,3 @@
- 
 // src/app/profile/steps/swot-analysis.component.ts
 import { Component, signal, OnInit, OnDestroy, computed, inject } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
@@ -28,6 +27,7 @@ interface SWOTSection {
   color: string;
   bgColor: string;
   items: SWOTItem[];
+  expanded: boolean; // Add expanded state to each section
 }
 
 @Component({
@@ -43,7 +43,8 @@ interface SWOTSection {
     UiTextareaComponent,
     UiSectionCardComponent
   ],
-  templateUrl: 'swot-analysis.component.html'
+  templateUrl: 'swot-analysis.component.html',
+  styleUrls: ['swot-analysis.component.css']
 })
 export class SWOTAnalysisComponent implements OnInit, OnDestroy {
   private fundingApplicationService = inject(FundingProfileSetupService);
@@ -69,7 +70,7 @@ export class SWOTAnalysisComponent implements OnInit, OnDestroy {
   // Computed values - Fixed null safety
   itemForm = computed(() => this.itemFormBuilder() || this.createEmptyForm());
   
-  // SWOT data
+  // SWOT data with expanded state
   swotSections = signal<SWOTSection[]>([
     {
       category: 'strengths',
@@ -78,7 +79,8 @@ export class SWOTAnalysisComponent implements OnInit, OnDestroy {
       icon: TrendingUp,
       color: 'text-green-600',
       bgColor: 'bg-green-50',
-      items: []
+      items: [],
+      expanded: true // Start with first section expanded
     },
     {
       category: 'weaknesses',
@@ -87,7 +89,8 @@ export class SWOTAnalysisComponent implements OnInit, OnDestroy {
       icon: TrendingDown,
       color: 'text-red-600',
       bgColor: 'bg-red-50',
-      items: []
+      items: [],
+      expanded: false
     },
     {
       category: 'opportunities',
@@ -96,7 +99,8 @@ export class SWOTAnalysisComponent implements OnInit, OnDestroy {
       icon: Target,
       color: 'text-blue-600',
       bgColor: 'bg-blue-50',
-      items: []
+      items: [],
+      expanded: false
     },
     {
       category: 'threats',
@@ -105,7 +109,8 @@ export class SWOTAnalysisComponent implements OnInit, OnDestroy {
       icon: AlertTriangle,
       color: 'text-orange-600',
       bgColor: 'bg-orange-50',
-      items: []
+      items: [],
+      expanded: false
     }
   ]);
 
@@ -125,6 +130,29 @@ export class SWOTAnalysisComponent implements OnInit, OnDestroy {
     if (this.debounceTimer) {
       clearTimeout(this.debounceTimer);
     }
+  }
+
+  // ===============================
+  // SECTION TOGGLE FUNCTIONALITY
+  // ===============================
+
+  toggleSection(category: SWOTCategory) {
+    const sections = this.swotSections();
+    const sectionIndex = sections.findIndex(s => s.category === category);
+    
+    if (sectionIndex !== -1) {
+      // Close active form if this section is being collapsed
+      if (sections[sectionIndex].expanded && this.activeForm() === category) {
+        this.cancelAddItem();
+      }
+      
+      sections[sectionIndex].expanded = !sections[sectionIndex].expanded;
+      this.swotSections.set([...sections]);
+    }
+  }
+
+  isSectionExpanded(category: SWOTCategory): boolean {
+    return this.swotSections().find(s => s.category === category)?.expanded || false;
   }
 
   // ===============================
@@ -165,6 +193,11 @@ export class SWOTAnalysisComponent implements OnInit, OnDestroy {
         case 'threats':
           section.items = mapStringsToItems(data.threats || []);
           break;
+      }
+      
+      // Expand sections that have data
+      if (section.items.length > 0) {
+        section.expanded = true;
       }
     });
 
@@ -303,6 +336,14 @@ export class SWOTAnalysisComponent implements OnInit, OnDestroy {
   }
 
   startAddItem(category: SWOTCategory) {
+    // Ensure the section is expanded when adding an item
+    const sections = this.swotSections();
+    const sectionIndex = sections.findIndex(s => s.category === category);
+    if (sectionIndex !== -1 && !sections[sectionIndex].expanded) {
+      sections[sectionIndex].expanded = true;
+      this.swotSections.set([...sections]);
+    }
+    
     this.activeForm.set(category);
     this.itemFormBuilder.set(this.fb.group({
       title: ['', [Validators.required, Validators.minLength(3)]],
@@ -430,33 +471,32 @@ export class SWOTAnalysisComponent implements OnInit, OnDestroy {
     return sections.every(section => section.items.length >= 2);
   }
 
-// Replace the getMinimumItemsNeeded method with this fixed version:
+  getMinimumItemsNeeded(): { category: SWOTCategory; needed: number; displayName: string }[] {
+    const sections = this.swotSections();
+    const minimumRequired = 2;
+    
+    // Proper singular forms for each category
+    const singularForms: Record<SWOTCategory, string> = {
+      'strengths': 'strength',
+      'weaknesses': 'weakness', 
+      'opportunities': 'opportunity',
+      'threats': 'threat'
+    };
+    
+    return sections
+      .filter(section => section.items.length < minimumRequired)
+      .map(section => {
+        const needed = minimumRequired - section.items.length;
+        return {
+          category: section.category,
+          needed: needed,
+          displayName: needed > 1 
+            ? section.category // Use plural for multiple items
+            : singularForms[section.category] // Use proper singular
+        };
+      });
+  }
 
-getMinimumItemsNeeded(): { category: SWOTCategory; needed: number; displayName: string }[] {
-  const sections = this.swotSections();
-  const minimumRequired = 2;
-  
-  // Proper singular forms for each category
-  const singularForms: Record<SWOTCategory, string> = {
-    'strengths': 'strength',
-    'weaknesses': 'weakness', 
-    'opportunities': 'opportunity',
-    'threats': 'threat'
-  };
-  
-  return sections
-    .filter(section => section.items.length < minimumRequired)
-    .map(section => {
-      const needed = minimumRequired - section.items.length;
-      return {
-        category: section.category,
-        needed: needed,
-        displayName: needed > 1 
-          ? section.category // Use plural for multiple items
-          : singularForms[section.category] // Use proper singular
-      };
-    });
-}
   // ===============================
   // NAVIGATION METHODS
   // ===============================

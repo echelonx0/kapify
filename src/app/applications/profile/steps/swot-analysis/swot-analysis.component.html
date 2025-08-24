@@ -1,9 +1,8 @@
 <!-- src/app/profile/steps/swot-analysis.component.html -->
-<div class="space-y-6 pb-20">
+<div class="space-y-8 pb-20">
   
-
   <!-- Auto-save Status Header -->
-  <div class="bg-white rounded-lg border border-neutral-200 p-4">
+  <div class="bg-white rounded-lg border border-neutral-200 p-4 shadow-sm">
     <div class="flex items-center justify-between">
       <div class="text-sm text-neutral-600">
         Strategic analysis for investment evaluation
@@ -40,18 +39,18 @@
   </div>
 
   <!-- Progress Indicator -->
-  <div class="bg-white rounded-lg border border-neutral-200 p-4">
-    <div class="flex items-center justify-between mb-2">
+  <div class="bg-white rounded-lg border border-neutral-200 p-6 shadow-sm">
+    <div class="flex items-center justify-between mb-3">
       <span class="text-sm font-medium text-neutral-700">Overall Progress</span>
       <span class="text-sm text-neutral-600">{{ getCompletionPercentage() }}%</span>
     </div>
     <div class="w-full bg-neutral-200 rounded-full h-2">
       <div 
-        class="bg-slate-500 h-2 rounded-full transition-all duration-300" 
+        class="bg-slate-500 h-2 rounded-full transition-all duration-500 ease-out" 
         [style.width.%]="getCompletionPercentage()"
       ></div>
     </div>
-    <div class="grid grid-cols-4 gap-2 mt-3">
+    <div class="grid grid-cols-4 gap-2 mt-4">
       @for (section of swotSections(); track section.category) {
         <div class="text-center">
           <div class="text-xs font-medium" [class]="section.color">{{ section.title }}</div>
@@ -62,17 +61,17 @@
 
     <!-- Completion Requirements -->
     @if (!isSWOTComplete()) {
-      <div class="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-        <div class="flex items-start space-x-2">
-          <lucide-icon [img]="InfoIcon" [size]="16" class="text-yellow-600 mt-0.5" />
+      <div class="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+        <div class="flex items-start space-x-3">
+          <lucide-icon [img]="InfoIcon" [size]="16" class="text-yellow-600 mt-0.5 flex-shrink-0" />
           <div>
             <p class="text-sm font-medium text-yellow-800">Complete Your SWOT Analysis</p>
             <p class="text-sm text-yellow-700 mt-1">
               Add at least 2 items to each category for a comprehensive analysis. Missing items:
             </p>
-            <ul class="text-xs text-yellow-600 mt-1 space-y-1">
+            <ul class="text-xs text-yellow-600 mt-2 space-y-1">
               @for (missing of getMinimumItemsNeeded(); track missing.category) {
-                <li>• {{ missing.needed }} more {{ missing.category.replace('s', '') }}{{ missing.needed > 1 ? 's' : '' }}</li>
+                <li>• {{ missing.needed }} more {{ missing.displayName }}{{ missing.needed > 1 ? 's' : '' }}</li>
               }
             </ul>
           </div>
@@ -83,190 +82,254 @@
 
   <!-- SWOT Sections -->
   @for (section of swotSections(); track section.category) {
-    <ui-section-card 
-      [title]="section.title" 
-      [description]="section.description"
-      [expanded]="true"
-      [completed]="section.items.length >= 2"
-      [hasData]="section.items.length > 0"
-      [required]="true"
-    >
-      <lucide-icon slot="icon" [img]="section.icon" [size]="16" />
-      
-      <div class="space-y-4">
-        <!-- Existing Items -->
-        @if (section.items.length > 0) {
-          <div class="space-y-3">
-            @for (item of section.items; track $index) {
-              <div class="border border-neutral-200 rounded-lg p-4" [class]="section.bgColor">
-                <div class="flex items-start justify-between">
-                  <div class="flex-1">
-                    <div class="flex items-center space-x-2 mb-2">
-                      <lucide-icon [img]="section.icon" [size]="16" [class]="section.color" />
-                      <h4 class="font-medium text-neutral-900">{{ item.title }}</h4>
-                      <span 
-                        class="px-2 py-1 text-xs rounded-full"
-                        [class]="getImpactClass(item.impact)"
-                      >
-                        {{ item.impact | titlecase }} Impact
-                      </span>
-                    </div>
-                    <p class="text-sm text-neutral-600">{{ item.description }}</p>
-                  </div>
-                  <ui-button 
-                    variant="ghost" 
-                    size="sm"
-                    (clicked)="removeItem(section.category, $index)"
-                  >
-                    <lucide-icon [img]="XIcon" [size]="16" />
-                  </ui-button>
-                </div>
-              </div>
-            }
-          </div>
-        } @else {
-          <div class="text-center py-8 border-2 border-dashed border-neutral-200 rounded-lg">
-            <lucide-icon [img]="section.icon" [size]="48" class="mx-auto text-neutral-400 mb-2" />
-            <p class="text-neutral-500">No {{ section.title.toLowerCase() }} added yet</p>
-            <p class="text-sm text-neutral-400 mt-1">{{ getEmptyStateMessage(section.category) }}</p>
-          </div>
-        }
-
-        <!-- Add New Item Form with top spacing on buttons -->
-        @if (getActiveForm() === section.category) {
-          <form [formGroup]="itemForm()" (ngSubmit)="addItem(section.category)" class="border border-neutral-200 rounded-lg p-4 bg-neutral-50">
-            <div class="space-y-4">
-              <div>
-                <label class="block text-sm font-medium text-neutral-700 mb-1">
-                  {{ section.title.slice(0, -1) }} Title *
-                </label>
-                <ui-input
-                  formControlName="title"
-                  [placeholder]="getPlaceholder(section.category, 'title')"
-                />
-              </div>
-              
-              <div>
-                <label class="block text-sm font-medium text-neutral-700 mb-1">
-                  Description *
-                </label>
-                <ui-textarea
-                  formControlName="description"
-                  [placeholder]="getPlaceholder(section.category, 'description')"
-                  [rows]="3"
-                />
-              </div>
-              
-              <div>
-                <label class="block text-sm font-medium text-neutral-700 mb-2">
-                  Impact Level *
-                </label>
-                <select 
-                  formControlName="impact"
-                  class="w-full border border-neutral-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-slate-500"
-                >
-                  <option value="">Select impact level</option>
-                  <option value="low">Low Impact</option>
-                  <option value="medium">Medium Impact</option>
-                  <option value="high">High Impact</option>
-                </select>
-              </div>
-              
-              <!-- Buttons with top spacing -->
-              <div class="flex mb-4 items-center justify-end space-x-3">
-                <ui-button 
-                  variant="outline" 
-                  type="button"
-                  (clicked)="cancelAddItem()"
-                  class="mt-6"
-                >
-                  Cancel
-                </ui-button>
-                <ui-button 
-                  variant="primary"
-                  type="submit"
-                  [disabled]="!isFormValid()"
-                  class="mt-6"
-                >
-                  Save {{ section.title  }}
-                </ui-button>
-              </div>
+    <div class="bg-white rounded-lg border border-neutral-200 shadow-sm overflow-hidden transition-all duration-200">
+      <!-- Section Header - Always Visible -->
+      <div 
+        class="p-6 cursor-pointer hover:bg-neutral-50 transition-colors duration-200 border-b border-neutral-100"
+        (click)="toggleSection(section.category)"
+      >
+        <div class="flex items-center justify-between">
+          <div class="flex items-center space-x-3">
+            <div class="p-2 rounded-lg" [class]="section.bgColor">
+              <lucide-icon [img]="section.icon" [size]="20" [class]="section.color" />
             </div>
-          </form>
-        } @else {
-        <div class="mt-4">
-            <ui-button 
-            variant="outline" 
-            (clicked)="startAddItem(section.category)"
-            class="w-full mt-4"
-          >
-            <lucide-icon [img]="PlusIcon" [size]="16" class="mr-2" />
-            New {{ section.title}}
-          </ui-button>
+            <div>
+              <h3 class="text-lg font-semibold text-neutral-900">{{ section.title }}</h3>
+              <p class="text-sm text-neutral-600 mt-1">{{ section.description }}</p>
+            </div>
+          </div>
+          <div class="flex items-center space-x-3">
+            <!-- Status Indicators -->
+            <div class="flex items-center space-x-2">
+              @if (section.items.length >= 2) {
+                <div class="flex items-center space-x-1">
+                  <lucide-icon [img]="CheckCircleIcon" [size]="16" class="text-green-500" />
+                  <span class="text-xs text-green-600 font-medium">Complete</span>
+                </div>
+              } @else if (section.items.length > 0) {
+                <div class="flex items-center space-x-1">
+                  <div class="w-2 h-2 bg-yellow-400 rounded-full"></div>
+                  <span class="text-xs text-yellow-600 font-medium">In Progress</span>
+                </div>
+              } @else {
+                <span class="text-xs text-neutral-400">Empty</span>
+              }
+              
+              <span class="text-sm text-neutral-500">{{ section.items.length }} items</span>
+            </div>
+            
+            <!-- Toggle Chevron -->
+            <div class="transition-transform duration-200" 
+                 [class.rotate-180]="isSectionExpanded(section.category)">
+              <svg class="w-5 h-5 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+              </svg>
+            </div>
+          </div>
         </div>
-        }
       </div>
-    </ui-section-card>
+      
+      <!-- Section Content - Collapsible -->
+      <div class="overflow-hidden transition-all duration-300 ease-in-out"
+           [class.max-h-0]="!isSectionExpanded(section.category)"
+           [class.max-h-[2000px]]="isSectionExpanded(section.category)">
+        <div class="p-6 space-y-4">
+          <!-- Existing Items -->
+          @if (section.items.length > 0) {
+            <div class="space-y-3">
+              @for (item of section.items; track $index) {
+                <div class="border border-neutral-200 rounded-lg p-4 transition-all duration-200 hover:shadow-sm" 
+                     [class]="section.bgColor">
+                  <div class="flex items-start justify-between">
+                    <div class="flex-1">
+                      <div class="flex items-center space-x-2 mb-2">
+                        <lucide-icon [img]="section.icon" [size]="16" [class]="section.color" />
+                        <h4 class="font-medium text-neutral-900">{{ item.title }}</h4>
+                        <span 
+                          class="px-2 py-1 text-xs rounded-full font-medium"
+                          [class]="getImpactClass(item.impact)"
+                        >
+                          {{ item.impact | titlecase }} Impact
+                        </span>
+                      </div>
+                      <p class="text-sm text-neutral-600 leading-relaxed">{{ item.description }}</p>
+                    </div>
+                    <ui-button 
+                      variant="ghost" 
+                      size="sm"
+                      (clicked)="removeItem(section.category, $index)"
+                      class="ml-3 opacity-60 hover:opacity-100 transition-opacity"
+                    >
+                      <lucide-icon [img]="XIcon" [size]="16" />
+                    </ui-button>
+                  </div>
+                </div>
+              }
+            </div>
+          } @else {
+            <div class="text-center py-12 border-2 border-dashed border-neutral-200 rounded-lg">
+              <lucide-icon [img]="section.icon" [size]="48" class="mx-auto text-neutral-400 mb-3" />
+              <p class="text-neutral-500 font-medium">No {{ section.title.toLowerCase() }} added yet</p>
+              <p class="text-sm text-neutral-400 mt-1">{{ getEmptyStateMessage(section.category) }}</p>
+            </div>
+          }
+
+          <!-- Add New Item Form -->
+          @if (getActiveForm() === section.category) {
+            <div class="border border-neutral-200 rounded-lg p-5 bg-neutral-50 animate-in slide-in-from-top-1 duration-300">
+              <form [formGroup]="itemForm()" (ngSubmit)="addItem(section.category)">
+                <div class="space-y-4">
+                  <div>
+                    <label class="block text-sm font-medium text-neutral-700 mb-2">
+                      {{ section.title.slice(0, -1) }} Title *
+                    </label>
+                    <ui-input
+                      formControlName="title"
+                      [placeholder]="getPlaceholder(section.category, 'title')"
+                      class="transition-all duration-200 focus-within:ring-2 focus-within:ring-slate-500/20"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label class="block text-sm font-medium text-neutral-700 mb-2">
+                      Description *
+                    </label>
+                    <ui-textarea
+                      formControlName="description"
+                      [placeholder]="getPlaceholder(section.category, 'description')"
+                      [rows]="3"
+                      class="transition-all duration-200 focus-within:ring-2 focus-within:ring-slate-500/20"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label class="block text-sm font-medium text-neutral-700 mb-2">
+                      Impact Level *
+                    </label>
+                    <select 
+                      formControlName="impact"
+                      class="w-full border border-neutral-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-slate-500 transition-all duration-200"
+                    >
+                      <option value="">Select impact level</option>
+                      <option value="low">Low Impact</option>
+                      <option value="medium">Medium Impact</option>
+                      <option value="high">High Impact</option>
+                    </select>
+                  </div>
+                  
+                  <!-- Form Buttons -->
+                  <div class="flex items-center justify-end space-x-3 pt-4">
+                    <ui-button 
+                      variant="outline" 
+                      type="button"
+                      (clicked)="cancelAddItem()"
+                    >
+                      Cancel
+                    </ui-button>
+                    <ui-button 
+                      variant="primary"
+                      type="submit"
+                      [disabled]="!isFormValid()"
+                    >
+                      Save {{ section.title.slice(0, -1) }}
+                    </ui-button>
+                  </div>
+                </div>
+              </form>
+            </div>
+          } @else {
+            <div class="mt-4">
+              <ui-button 
+                variant="outline" 
+                (clicked)="startAddItem(section.category)"
+                class="w-full transition-all duration-200 hover:scale-[1.01]"
+              >
+                <lucide-icon [img]="PlusIcon" [size]="16" class="mr-2" />
+                Add {{ section.title.slice(0, -1) }}
+              </ui-button>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
   }
 
-  <!-- Summary & Insights -->
+  <!-- SWOT Summary & Insights -->
   @if (hasAnyItems()) {
-    <ui-card>
-      <h3 class="text-lg font-semibold text-neutral-900 mb-4">SWOT Summary</h3>
-      <div class="grid grid-cols-2 gap-6">
+    <div class="bg-white rounded-lg border border-neutral-200 p-6 shadow-sm">
+      <h3 class="text-lg font-semibold text-neutral-900 mb-6 flex items-center">
+        <lucide-icon [img]="CheckCircleIcon" [size]="20" class="text-slate-600 mr-2" />
+        SWOT Summary
+      </h3>
+      
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
         <div>
-          <h4 class="font-medium text-neutral-900 mb-2 flex items-center">
-            <lucide-icon [img]="CheckCircleIcon" [size]="16" class="text-green-600 mr-2" />
+          <h4 class="font-medium text-neutral-900 mb-4 flex items-center">
+            <div class="w-3 h-3 bg-green-500 rounded-full mr-2"></div>
             Internal Factors
           </h4>
-          <div class="space-y-2 text-sm">
-            <div class="flex justify-between">
-              <span class="text-neutral-600">Strengths:</span>
-              <span class="font-medium">{{ getItemCount('strengths') }} identified</span>
+          <div class="space-y-3">
+            <div class="flex items-center justify-between p-3 bg-green-50 rounded-lg border border-green-100">
+              <div class="flex items-center space-x-2">
+                <lucide-icon [img]="TrendingUpIcon" [size]="16" class="text-green-600" />
+                <span class="text-sm font-medium text-neutral-700">Strengths:</span>
+              </div>
+              <span class="text-sm font-bold text-green-700">{{ getItemCount('strengths') }} identified</span>
             </div>
-            <div class="flex justify-between">
-              <span class="text-neutral-600">Weaknesses:</span>
-              <span class="font-medium">{{ getItemCount('weaknesses') }} identified</span>
+            <div class="flex items-center justify-between p-3 bg-red-50 rounded-lg border border-red-100">
+              <div class="flex items-center space-x-2">
+      
+                <span class="text-sm font-medium text-neutral-700">Weaknesses:</span>
+              </div>
+              <span class="text-sm font-bold text-red-700">{{ getItemCount('weaknesses') }} identified</span>
             </div>
           </div>
         </div>
         
         <div>
-          <h4 class="font-medium text-neutral-900 mb-2 flex items-center">
-            <lucide-icon [img]="InfoIcon" [size]="16" class="text-slate-600 mr-2" />
+          <h4 class="font-medium text-neutral-900 mb-4 flex items-center">
+            <div class="w-3 h-3 bg-blue-500 rounded-full mr-2"></div>
             External Factors
           </h4>
-          <div class="space-y-2 text-sm">
-            <div class="flex justify-between">
-              <span class="text-neutral-600">Opportunities:</span>
-              <span class="font-medium">{{ getItemCount('opportunities') }} identified</span>
+          <div class="space-y-3">
+            <div class="flex items-center justify-between p-3 bg-blue-50 rounded-lg border border-blue-100">
+              <div class="flex items-center space-x-2">
+             
+                <span class="text-sm font-medium text-neutral-700">Opportunities:</span>
+              </div>
+              <span class="text-sm font-bold text-blue-700">{{ getItemCount('opportunities') }} identified</span>
             </div>
-            <div class="flex justify-between">
-              <span class="text-neutral-600">Threats:</span>
-              <span class="font-medium">{{ getItemCount('threats') }} identified</span>
+            <div class="flex items-center justify-between p-3 bg-orange-50 rounded-lg border border-orange-100">
+              <div class="flex items-center space-x-2">
+           
+                <span class="text-sm font-medium text-neutral-700">Threats:</span>
+              </div>
+              <span class="text-sm font-bold text-orange-700">{{ getItemCount('threats') }} identified</span>
             </div>
           </div>
         </div>
       </div>
       
       @if (isSWOTComplete()) {
-        <div class="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+        <div class="mt-6 p-4 bg-green-50 border border-green-200 rounded-lg">
           <div class="flex items-center">
-            <lucide-icon [img]="CheckCircleIcon" [size]="16" class="text-green-600 mr-2" />
-            <span class="text-sm font-medium text-green-800">SWOT Analysis Complete</span>
+            <lucide-icon [img]="CheckCircleIcon" [size]="20" class="text-green-600 mr-3" />
+            <div>
+              <span class="text-sm font-medium text-green-800">SWOT Analysis Complete</span>
+              <p class="text-sm text-green-700 mt-1">
+                You have successfully identified key factors across all SWOT categories. This analysis will help inform your strategic planning and funding applications.
+              </p>
+            </div>
           </div>
-          <p class="text-sm text-green-700 mt-1">
-            You have successfully identified key factors across all SWOT categories. This analysis will help inform your strategic planning and funding applications.
-          </p>
         </div>
       }
-    </ui-card>
+    </div>
   }
 
   <!-- Final auto-save indicator -->
   @if (isSaving()) {
     <div class="text-sm text-neutral-500 flex items-center justify-center">
-      <div class="w-2 h-2 bg-primary-500 rounded-full animate-pulse mr-2"></div>
+      <div class="w-2 h-2 bg-slate-500 rounded-full animate-pulse mr-2"></div>
       Saving changes...
     </div>
   } @else if (lastSaved()) {
@@ -276,7 +339,7 @@
   }
 
   <!-- Navigation -->
-  <div class="flex justify-between pt-6">
+  <div class="flex justify-between pt-8 border-t border-neutral-200">
     <ui-button variant="outline" (clicked)="goBack()">
       ← Back
     </ui-button>
@@ -284,6 +347,7 @@
       variant="primary" 
       (clicked)="saveAndContinue()"
       [disabled]="isSaving()"
+      class="transition-all duration-200 hover:scale-105"
     >
       @if (isSWOTComplete()) {
         Save and Continue →
