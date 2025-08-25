@@ -14,7 +14,10 @@ import { DashboardHeaderComponent } from '../shared/components/dashboard-header.
       
       <!-- Main Content -->
       <div class="ml-16">
-        <dashboard-header />
+        <!-- Sticky Header -->
+        <div class="sticky top-0 z-40">
+          <dashboard-header />
+        </div>
         
         <!-- Page Content -->
         <main class="ml-16">

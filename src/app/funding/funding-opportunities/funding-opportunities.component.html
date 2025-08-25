@@ -1,25 +1,91 @@
-<div class="min-h-screen bg-neutral-50 mr-6 mt-6">
+<div class="min-h-screen bg-gradient-to-br from-neutral-50 to-primary-50/30 mr-6 mt-6">
   <sidebar-nav />
 
-  <!-- Header with Gradient -->
-  <div class="rounded-lg p-8 mb-8 bg-gradient-to-r from-slate-600 via-slate-500 to-slate-400 text-white">
+  <!-- Enhanced Header -->
+  <div class="rounded-xl p-8 mb-8 bg-gradient-to-r from-primary-600 via-primary-500 to-primary-400 text-white shadow-xl">
     <h1 class="text-3xl font-bold mb-2">Kapify Funding Marketplace</h1>
-    <!-- <p class="max-w-2xl text-sm">
-      Automate the first stages in funding research and application by connecting SMEs with funders, saving hundreds of millions of Rands in administrative costs each year.
+    <p class="max-w-3xl text-primary-100 leading-relaxed">
+      Connect with South African funders and accelerate your growth through intelligent matching.
     </p>
-    <p class="mt-2 text-sm font-medium">
-      💰 Make Kapify part of your fundraising strategy. Kapify constantly combines your financing requirements with qualifying criteria from hundreds of South African funders and givers. 
-      There's no need to go through numerous lists of funders; let Kapify handle the hard work for you.
-    </p> -->
+  </div>
+
+  <!-- Quick Category Filters -->
+  <div class="mb-8">
+    <h2 class="text-xl font-semibold text-neutral-900 mb-4">Browse by Category</h2>
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+      <button (click)="selectedFundingType.set('equity'); applyFilters()" 
+              class="p-4 rounded-xl bg-gradient-to-br from-slate-500 to-slate-600 text-white shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-0.5 group">
+        <div class="text-center">
+          <div class="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center mx-auto mb-2 group-hover:scale-110 transition-transform">
+            <lucide-icon [img]="BuildingIcon" [size]="20" />
+          </div>
+          <div class="font-medium text-sm">Equity</div>
+        </div>
+      </button>
+      
+      <button (click)="selectedFundingType.set('debt'); applyFilters()"
+              class="p-4 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-0.5 group">
+        <div class="text-center">
+          <div class="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center mx-auto mb-2 group-hover:scale-110 transition-transform">
+            <lucide-icon [img]="DollarSignIcon" [size]="20" />
+          </div>
+          <div class="font-medium text-sm">Debt</div>
+        </div>
+      </button>
+      
+      <button (click)="selectedFundingType.set('grant'); applyFilters()"
+              class="p-4 rounded-xl bg-gradient-to-br from-green-500 to-green-600 text-white shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-0.5 group">
+        <div class="text-center">
+          <div class="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center mx-auto mb-2 group-hover:scale-110 transition-transform">
+            <lucide-icon [img]="FileTextIcon" [size]="20" />
+          </div>
+          <div class="font-medium text-sm">Grants</div>
+        </div>
+      </button>
+      
+      <button (click)="selectedFundingType.set('mezzanine'); applyFilters()"
+              class="p-4 rounded-xl bg-gradient-to-br from-orange-500 to-orange-600 text-white shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-0.5 group">
+        <div class="text-center">
+          <div class="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center mx-auto mb-2 group-hover:scale-110 transition-transform">
+            <lucide-icon [img]="TrendingUpIcon" [size]="20" />
+          </div>
+          <div class="font-medium text-sm">Mezzanine</div>
+        </div>
+      </button>
+      
+      <button (click)="selectedFundingType.set('convertible'); applyFilters()"
+              class="p-4 rounded-xl bg-gradient-to-br from-indigo-500 to-indigo-600 text-white shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-0.5 group">
+        <div class="text-center">
+          <div class="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center mx-auto mb-2 group-hover:scale-110 transition-transform">
+            <lucide-icon [img]="RefreshCwIcon" [size]="20" />
+          </div>
+          <div class="font-medium text-sm">Convertible</div>
+        </div>
+      </button>
+    </div>
   </div>
 
   <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
-    <!-- Left: Main Opportunities List -->
+    <!-- Main Opportunities List -->
     <main class="lg:col-span-3 space-y-6">
+      
+      <!-- Enhanced Search -->
+      <div class="bg-white rounded-xl shadow-lg border border-neutral-200 p-4">
+        <div class="relative">
+          <lucide-icon [img]="SearchIcon" [size]="18" class="absolute left-4 top-3.5 text-neutral-400" />
+          <input
+            type="text"
+            placeholder="Search funding opportunities..."
+            [value]="searchQuery()"
+            (input)="onSearchChange($event)"
+            class="block w-full pl-12 pr-4 py-3 border-2 border-neutral-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all"
+          />
+        </div>
+      </div>
 
       <!-- Loading State -->
       @if (isLoading()) {
-        <div class="bg-white rounded-lg border border-neutral-200 p-12 text-center">
+        <div class="bg-white rounded-xl border border-neutral-200 p-12 text-center shadow-sm">
           <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mx-auto mb-4"></div>
           <p class="text-neutral-600">Loading opportunities...</p>
         </div>
@@ -27,7 +93,7 @@
 
       <!-- Empty State -->
       @if (!isLoading() && filteredOpportunities().length === 0) {
-        <div class="bg-white rounded-lg border border-neutral-200 p-12 text-center">
+        <div class="bg-white rounded-xl border border-neutral-200 p-12 text-center shadow-sm">
           <div class="w-16 h-16 bg-neutral-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <lucide-icon [img]="SearchIcon" [size]="24" class="text-neutral-400" />
           </div>
@@ -39,74 +105,125 @@
         </div>
       }
 
-      <!-- Opportunities List -->
+      <!-- Enhanced Opportunities List -->
       @if (!isLoading() && filteredOpportunities().length > 0) {
         <div class="space-y-6">
           @for (opportunity of filteredOpportunities(); track opportunity.id) {
-            <div class="bg-white rounded-lg border border-neutral-200 p-6 hover:shadow-md transition-shadow">
-              <div class="flex items-start justify-between">
-                <!-- Info -->
-                <div class="flex-1">
-                  <div class="flex items-center space-x-4 mb-4">
-                    <!-- Placeholder Logo -->
-                    <img src="/images/hero.png" alt="logo"
-                         class="w-16 h-16 object-cover rounded-lg border" />
-                    <div class="flex-1">
-                      <h3 class="text-xl font-bold text-neutral-900 mb-1">
-                        {{ opportunity.title }}
-                      </h3>
-                      <div class="flex items-center space-x-2 mb-2">
-                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
-                              [class]="getFundingTypeClasses(opportunity.fundingType)">
-                          {{ formatFundingType(opportunity.fundingType) }}
-                        </span>
-                        @for (industry of opportunity.eligibilityCriteria.industries.slice(0, 3); track industry) {
-                          <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-neutral-100 text-neutral-800">
-                            {{ formatIndustry(industry) }}
+            <div class="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border border-neutral-100 overflow-hidden group">
+              <!-- Funding Type Header Bar -->
+              <div class="h-1.5 bg-gradient-to-r" [class]="getFundingTypeClasses(opportunity.fundingType).includes('slate') ? 'from-slate-400 to-slate-600' : 
+                       getFundingTypeClasses(opportunity.fundingType).includes('blue') ? 'from-blue-400 to-blue-600' :
+                       getFundingTypeClasses(opportunity.fundingType).includes('green') ? 'from-green-400 to-green-600' :
+                       getFundingTypeClasses(opportunity.fundingType).includes('orange') ? 'from-orange-400 to-orange-600' :
+                       'from-indigo-400 to-indigo-600'"></div>
+              
+              <div class="p-6">
+                <div class="flex items-start justify-between">
+                  <!-- Info -->
+                  <div class="flex-1">
+                    <div class="flex items-center space-x-4 mb-4">
+                      <!-- Enhanced Logo -->
+                      <div class="w-16 h-16 bg-gradient-to-br from-neutral-100 to-neutral-200 rounded-xl flex items-center justify-center border-2 border-white shadow-sm">
+                        <span class="text-lg font-bold text-neutral-600">{{ getInitials(opportunity.title) }}</span>
+                      </div>
+                      <div class="flex-1">
+                        <h3 class="text-xl font-bold text-neutral-900 mb-1 group-hover:text-primary-600 transition-colors">
+                          {{ opportunity.title }}
+                        </h3>
+                        <div class="flex items-center flex-wrap gap-2 mb-2">
+                          <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium"
+                                [class]="getFundingTypeClasses(opportunity.fundingType)">
+                            {{ formatFundingType(opportunity.fundingType) }}
                           </span>
-                        }
-                      </div>
-                    </div>
-                  </div>
-
-                  <p class="text-neutral-600 mb-4">{{ opportunity.shortDescription }}</p>
-
-                  <!-- Key Details -->
-                  <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div class="flex items-center space-x-2">
-                      <lucide-icon [img]="DollarSignIcon" [size]="16" class="text-neutral-400" />
-                      <div>
-                        <div class="text-sm font-medium text-neutral-900">
-                          {{ opportunity.currency }} {{ formatAmount(opportunity.minInvestment) }} - {{ formatAmount(opportunity.maxInvestment) }}
+                          @for (industry of opportunity.eligibilityCriteria.industries.slice(0, 2); track industry) {
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-neutral-100 text-neutral-700">
+                              {{ formatIndustry(industry) }}
+                            </span>
+                          }
                         </div>
-                        <div class="text-xs text-neutral-500">Investment Range</div>
                       </div>
                     </div>
-                    <div class="flex items-center space-x-2">
-                      <lucide-icon [img]="CalendarIcon" [size]="16" class="text-neutral-400" />
-                      <div>
-                        <div class="text-sm font-medium text-neutral-900">{{ opportunity.decisionTimeframe }} days</div>
-                        <div class="text-xs text-neutral-500">Decision Timeline</div>
+
+                    <p class="text-neutral-600 mb-4 leading-relaxed">{{ opportunity.shortDescription }}</p>
+
+                    <!-- Enhanced Key Details -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                      <div class="flex items-center space-x-3 p-3 bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg border border-green-100">
+                        <div class="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center">
+                          <lucide-icon [img]="DollarSignIcon" [size]="16" class="text-white" />
+                        </div>
+                        <div>
+                          <div class="text-sm font-semibold text-neutral-900">
+                            {{ opportunity.currency }} {{ formatAmount(opportunity.minInvestment) }} - {{ formatAmount(opportunity.maxInvestment) }}
+                          </div>
+                          <div class="text-xs text-neutral-500">Investment Range</div>
+                        </div>
+                      </div>
+                      
+                      <div class="flex items-center space-x-3 p-3 bg-gradient-to-br from-blue-50 to-sky-50 rounded-lg border border-blue-100">
+                        <div class="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center">
+                          <lucide-icon [img]="CalendarIcon" [size]="16" class="text-white" />
+                        </div>
+                        <div>
+                          <div class="text-sm font-semibold text-neutral-900">{{ opportunity.decisionTimeframe }} days</div>
+                          <div class="text-xs text-neutral-500">Decision Timeline</div>
+                        </div>
+                      </div>
+                      
+                      <div class="flex items-center space-x-3 p-3 bg-gradient-to-br from-indigo-50 to-slate-50 rounded-lg border border-indigo-100">
+                        <div class="w-8 h-8 bg-indigo-500 rounded-lg flex items-center justify-center">
+                          <lucide-icon [img]="UsersIcon" [size]="16" class="text-white" />
+                        </div>
+                        <div>
+                          <div class="text-sm font-semibold text-neutral-900">{{ opportunity.currentApplications }}/{{ opportunity.maxApplications || '∞' }}</div>
+                          <div class="text-xs text-neutral-500">Applications</div>
+                        </div>
                       </div>
                     </div>
-                    <div class="flex items-center space-x-2">
-                      <lucide-icon [img]="UsersIcon" [size]="16" class="text-neutral-400" />
-                      <div>
-                        <div class="text-sm font-medium text-neutral-900">{{ opportunity.currentApplications }}/{{ opportunity.maxApplications || '∞' }}</div>
-                        <div class="text-xs text-neutral-500">Applications</div>
+
+                    <!-- Progress Bar -->
+                    <div class="mb-4">
+                      <div class="flex justify-between items-center mb-2">
+                        <span class="text-sm font-medium text-neutral-700">Funding Progress</span>
+                        <span class="text-sm text-neutral-500">{{ getProgressPercentage(opportunity) }}%</span>
+                      </div>
+                      <div class="w-full bg-neutral-200 rounded-full h-2">
+                        <div class="h-2 rounded-full transition-all duration-300 bg-gradient-to-r"
+                             [class]="getFundingTypeClasses(opportunity.fundingType).includes('slate') ? 'from-slate-400 to-slate-600' : 
+                                    getFundingTypeClasses(opportunity.fundingType).includes('blue') ? 'from-blue-400 to-blue-600' :
+                                    getFundingTypeClasses(opportunity.fundingType).includes('green') ? 'from-green-400 to-green-600' :
+                                    getFundingTypeClasses(opportunity.fundingType).includes('orange') ? 'from-orange-400 to-orange-600' :
+                                    'from-indigo-400 to-indigo-600'"
+                             [style.width.%]="getProgressPercentage(opportunity)"></div>
                       </div>
                     </div>
                   </div>
-                </div>
 
-                <!-- Actions -->
-                <div class="flex flex-col space-y-2 ml-6">
-                  <ui-button variant="primary" (clicked)="applyToOpportunity(opportunity.id)">
-                    Apply Now
-                  </ui-button>
-                  <ui-button variant="outline" (clicked)="viewOpportunityDetails(opportunity.id)">
-                    View Details
-                  </ui-button>
+                  <!-- Enhanced Action Buttons -->
+                  <div class="flex flex-col space-y-3 ml-6">
+                    @if (canApplyToOpportunity()) {
+                      <ui-button variant="primary" (clicked)="applyToOpportunity(opportunity.id)"
+                                class="bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 transform hover:-translate-y-0.5 transition-all shadow-lg hover:shadow-xl">
+                        Apply Now
+                      </ui-button>
+                    } @else {
+                      <ui-button variant="outline" (clicked)="redirectToLogin()"
+                                class="border-2 hover:border-primary-500 hover:text-primary-600">
+                        Sign in to Apply
+                      </ui-button>
+                    }
+                    <ui-button variant="outline" (clicked)="viewOpportunityDetails(opportunity.id)"
+                              class="border-2 hover:border-neutral-400 hover:bg-neutral-50">
+                      <lucide-icon [img]="EyeIcon" [size]="16" class="mr-2" />
+                      View Details
+                    </ui-button>
+                    @if (canManageOpportunity(opportunity)) {
+                      <ui-button variant="outline" (clicked)="manageApplications(opportunity.id)"
+                                class="border-2 border-orange-200 text-orange-600 hover:border-orange-500 hover:bg-orange-50">
+                        Manage
+                      </ui-button>
+                    }
+                  </div>
                 </div>
               </div>
             </div>
@@ -115,88 +232,177 @@
       }
     </main>
 
-    <!-- Right: Filters + Dummy Content -->
+    <!-- Enhanced Sidebar -->
     <aside class="space-y-6">
-      <!-- Search & Filters -->
-      <div class="bg-white rounded-lg border border-neutral-200 p-4">
-        <div class="relative mb-4">
-          <lucide-icon [img]="SearchIcon" [size]="16" class="absolute left-3 top-2.5 text-neutral-400" />
-          <input
-            type="text"
-            placeholder="Search funding opportunities..."
-            [value]="searchQuery()"
-            (input)="onSearchChange($event)"
-            class="block w-full pl-10 pr-3 py-2 border border-neutral-300 rounded-md sm:text-sm focus:ring-primary-500 focus:border-primary-500"
-          />
+      <!-- Enhanced Filters -->
+      <div class="bg-white rounded-xl shadow-lg border border-neutral-200 overflow-hidden">
+        <div class="bg-gradient-to-r from-primary-500 to-primary-600 px-6 py-4">
+          <h3 class="text-lg font-semibold text-white flex items-center">
+            <lucide-icon [img]="FilterIcon" [size]="18" class="mr-2" />
+            Filter Opportunities
+          </h3>
         </div>
+        
+        <div class="p-6 space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-neutral-700 mb-2">Funding Type</label>
+            <select [value]="selectedFundingType()" (change)="onFundingTypeChange($event)"
+                    class="w-full px-4 py-3 border-2 border-neutral-200 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all">
+              <option value="">All Types</option>
+              <option value="equity">Equity</option>
+              <option value="debt">Debt</option>
+              <option value="mezzanine">Mezzanine</option>
+              <option value="grant">Grant</option>
+              <option value="convertible">Convertible</option>
+            </select>
+          </div>
 
-        <div class="space-y-4">
-          <select [value]="selectedFundingType()" (change)="onFundingTypeChange($event)"
-                  class="w-full px-3 py-2 border rounded-md">
-            <option value="">All Types</option>
-            <option value="equity">Equity</option>
-            <option value="debt">Debt</option>
-            <option value="mezzanine">Mezzanine</option>
-            <option value="grant">Grant</option>
-            <option value="convertible">Convertible</option>
-          </select>
+          <div>
+            <label class="block text-sm font-medium text-neutral-700 mb-2">Industry</label>
+            <select [value]="selectedIndustry()" (change)="onIndustryChange($event)"
+                    class="w-full px-4 py-3 border-2 border-neutral-200 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all">
+              <option value="">All Industries</option>
+              <option value="technology">Technology</option>
+              <option value="manufacturing">Manufacturing</option>
+              <option value="retail">Retail</option>
+            </select>
+          </div>
 
-          <select [value]="selectedIndustry()" (change)="onIndustryChange($event)"
-                  class="w-full px-3 py-2 border rounded-md">
-            <option value="">All Industries</option>
-            <option value="technology">Technology</option>
-            <option value="manufacturing">Manufacturing</option>
-            <option value="retail">Retail</option>
-          </select>
+          <div>
+            <label class="block text-sm font-medium text-neutral-700 mb-2">Currency</label>
+            <select [value]="selectedCurrency()" (change)="onCurrencyChange($event)"
+                    class="w-full px-4 py-3 border-2 border-neutral-200 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all">
+              <option value="">All Currencies</option>
+              <option value="ZAR">ZAR</option>
+              <option value="USD">USD</option>
+              <option value="EUR">EUR</option>
+            </select>
+          </div>
 
-          <div class="flex space-x-2">
-            <input type="number" placeholder="Min"
-                   [value]="minAmount()" (input)="onMinAmountChange($event)"
-                   class="w-1/2 px-3 py-2 border rounded-md" />
-            <input type="number" placeholder="Max"
-                   [value]="maxAmount()" (input)="onMaxAmountChange($event)"
-                   class="w-1/2 px-3 py-2 border rounded-md" />
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-sm font-medium text-neutral-700 mb-2">Min Amount</label>
+              <input type="number" placeholder="0"
+                     [value]="minAmount()" (input)="onMinAmountChange($event)"
+                     class="w-full px-4 py-3 border-2 border-neutral-200 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-neutral-700 mb-2">Max Amount</label>
+              <input type="number" placeholder="Any"
+                     [value]="maxAmount()" (input)="onMaxAmountChange($event)"
+                     class="w-full px-4 py-3 border-2 border-neutral-200 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all" />
+            </div>
+          </div>
+
+          <div class="flex space-x-3 pt-4">
+            <ui-button variant="primary" (clicked)="applyFilters()"
+                      class="flex-1 bg-gradient-to-r from-primary-500 to-primary-600">
+              Apply Filters
+            </ui-button>
+            <ui-button variant="outline" (clicked)="clearFilters()"
+                      class="px-4 border-2">
+              <lucide-icon [img]="RefreshCwIcon" [size]="16" />
+            </ui-button>
           </div>
         </div>
       </div>
 
-      <!-- Dummy Sidebar Content -->
-      <div class="bg-white rounded-lg border border-neutral-200 p-4">
-        <h4 class="font-medium mb-2">Latest Insights</h4>
-        <ul class="space-y-2 text-sm text-neutral-600">
-          <li>How SMEs can prepare for funding</li>
-          <li>Top 10 grant programs in 2025</li>
-          <li>Equity vs Debt: What’s best for growth?</li>
-        </ul>
-
-
-
+      <!-- Latest Insights -->
+      <div class="bg-white rounded-xl shadow-lg border border-neutral-200 overflow-hidden">
+        <div class="bg-gradient-to-r from-green-500 to-emerald-600 px-6 py-4">
+          <h3 class="text-lg font-semibold text-white flex items-center">
+            <lucide-icon [img]="FileTextIcon" [size]="18" class="mr-2" />
+            Latest Insights
+          </h3>
+        </div>
+        
+        <div class="p-6">
+          <ul class="space-y-4">
+            <li class="group cursor-pointer p-3 rounded-lg hover:bg-neutral-50 transition-colors">
+              <div class="flex items-start space-x-3">
+                <div class="w-8 h-8 bg-primary-100 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <lucide-icon [img]="FileTextIcon" [size]="16" class="text-primary-600" />
+                </div>
+                <div>
+                  <div class="font-medium text-neutral-900 group-hover:text-primary-600 transition-colors text-sm">
+                    How SMEs can prepare for funding
+                  </div>
+                  <div class="text-xs text-neutral-500 mt-1">Complete preparation guide</div>
+                </div>
+              </div>
+            </li>
+            
+            <li class="group cursor-pointer p-3 rounded-lg hover:bg-neutral-50 transition-colors">
+              <div class="flex items-start space-x-3">
+                <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <lucide-icon [img]="TrendingUpIcon" [size]="16" class="text-green-600" />
+                </div>
+                <div>
+                  <div class="font-medium text-neutral-900 group-hover:text-primary-600 transition-colors text-sm">
+                    Top 10 grant programs in 2025
+                  </div>
+                  <div class="text-xs text-neutral-500 mt-1">Latest opportunities</div>
+                </div>
+              </div>
+            </li>
+            
+            <li class="group cursor-pointer p-3 rounded-lg hover:bg-neutral-50 transition-colors">
+              <div class="flex items-start space-x-3">
+                <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <lucide-icon [img]="DollarSignIcon" [size]="16" class="text-blue-600" />
+                </div>
+                <div>
+                  <div class="font-medium text-neutral-900 group-hover:text-primary-600 transition-colors text-sm">
+                    Equity vs Debt: What's best for growth?
+                  </div>
+                  <div class="text-xs text-neutral-500 mt-1">Strategic comparison</div>
+                </div>
+              </div>
+            </li>
+          </ul>
+        </div>
       </div>
 
-              <!-- Inline Subscribe Box -->
-<div class="subscribe-box max-w-4xl mx-auto mt-12 p-6 rounded-2xl shadow-md bg-white border border-gray-200">
-  <h2 class="text-xl font-semibold text-gray-900 mb-2">
-    Stay Updated
-  </h2>
-  <p class="text-gray-600 mb-4">
-    Subscribe to receive the latest insights, updates, and tips straight to your inbox.
-  </p>
-  
-  <form class="flex flex-col sm:flex-row gap-3">
-    <input 
-      type="email" 
-      placeholder="Enter your email" 
-      class="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-      required
-    >
-    <button 
-      type="submit" 
-      class="px-6 py-3 rounded-lg bg-primary-600 text-white font-medium hover:bg-blue-700 transition"
-    >
-      Subscribe
-    </button>
-  </form>
-</div>
+      <!-- Enhanced Newsletter -->
+      <div class="bg-gradient-to-br from-primary-500 via-primary-600 to-primary-700 rounded-xl shadow-xl text-white overflow-hidden">
+        <div class="p-8">
+          <div class="text-center mb-6">
+            <div class="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4">
+              <lucide-icon [img]="AlertCircleIcon" [size]="24" />
+            </div>
+            <h3 class="text-xl font-bold mb-2">Stay Updated</h3>
+            <p class="text-primary-100 text-sm leading-relaxed">
+              Get the latest funding opportunities and expert insights delivered to your inbox.
+            </p>
+          </div>
+          
+          <div class="space-y-4">
+            <input 
+              type="email" 
+              placeholder="Enter your email address"
+              class="w-full px-4 py-3 rounded-lg bg-white/10 border border-white/20 placeholder-white/70 text-white focus:bg-white/20 focus:outline-none focus:ring-2 focus:ring-white/30 transition-all"
+            >
+            <button class="w-full bg-white text-primary-600 py-3 rounded-lg font-semibold hover:bg-neutral-100 transition-all transform hover:-translate-y-0.5">
+              Subscribe Now
+            </button>
+          </div>
+          
+          <div class="flex items-center justify-center space-x-6 mt-6 pt-6 border-t border-white/20 text-center">
+            <div>
+              <div class="text-lg font-bold">5,000+</div>
+              <div class="text-xs text-primary-200">SMEs</div>
+            </div>
+            <div>
+              <div class="text-lg font-bold">Weekly</div>
+              <div class="text-xs text-primary-200">Updates</div>
+            </div>
+          </div>
+          
+          <div class="text-center mt-4">
+            <p class="text-xs text-primary-200">No spam, unsubscribe anytime</p>
+          </div>
+        </div>
+      </div>
     </aside>
   </div>
 </div>
