@@ -14,24 +14,24 @@ import { ProfileManagementService, UserProfileData } from '../../shared/services
 
 type SettingsTab = 'personal' | 'members' | 'integrations' | 'billing';
 
-interface TeamMemberDisplay {
-  id: string;
-  name: string;
-  email: string;
-  dateAdded: string;
-  lastActive: string;
-  role: string;
-  avatar?: string;
-  isOnline?: boolean;
-}
+// interface TeamMemberDisplay {
+//   id: string;
+//   name: string;
+//   email: string;
+//   dateAdded: string;
+//   lastActive: string;
+//   role: string;
+//   avatar?: string;
+//   isOnline?: boolean;
+// }
 
-interface PendingInviteDisplay {
-  id: string;
-  name: string;
-  email: string;
-  dateSent: string;
-  role: string;
-}
+// interface PendingInviteDisplay {
+//   id: string;
+//   name: string;
+//   email: string;
+//   dateSent: string;
+//   role: string;
+// }
 
 @Component({
   selector: 'app-settings',

@@ -1,5 +1,4 @@
  
-
 // applications-home.component.ts
 import { Component, signal, computed, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
@@ -17,7 +16,7 @@ import {
   Search,
   X
 } from 'lucide-angular';
-import { UiCardComponent, UiButtonComponent, UiStatusBadgeComponent } from '../../shared/components';
+import { UiButtonComponent } from '../../shared/components';
 import { ActivityInboxComponent } from '../../shared/components/messaging/messaging.component';
  
 
@@ -82,6 +81,9 @@ export class ApplicationsHomeComponent implements OnInit {
   statusFilter = signal('');
   fundingTypeFilter = signal('');
 
+  //TODO: Fetch All Applications for USER From Supabase
+  // If user is FUNDING ORG, fetch all applications submitted to their opportunities
+  // If user is APPLICANT, fetch all applications they have submitted or drafts
   // Mock data
   private mockApplications: Application[] = [
     {

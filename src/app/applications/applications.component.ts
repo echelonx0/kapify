@@ -23,7 +23,7 @@ import { DashboardHeaderComponent } from '../shared/components/dashboard-header.
     </main>
   </div>
 </div>
-
+ 
   `,
   styles: [`
     :host {

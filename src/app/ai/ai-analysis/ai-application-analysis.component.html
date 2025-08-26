@@ -1,21 +1,13 @@
 <!-- src/app/applications/components/ai-analysis/ai-application-analysis.component.html -->
-<ui-card class="bg-gradient-to-br from-blue-50 to-purple-50 border-blue-200">
+<ui-card class="bg-gradient-to-br from-blue-50 to-slate-50 border-blue-200">
   <div class="space-y-6">
-    <!-- Header -->
-    <div class="flex items-center space-x-3">
-      <div class="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-        <lucide-icon [img]="BotIcon" [size]="20" class="text-white" />
-      </div>
-      <div>
-        <h3 class="text-lg font-semibold text-neutral-900">AI Analysis</h3>
-        <p class="text-sm text-neutral-600">Intelligent assessment powered by advanced AI</p>
-      </div>
-    </div>
+ 
+ 
 
     @if (!analysisResult() && !isAnalyzing()) {
       <!-- Pre-Analysis State -->
       <div class="text-center py-6">
-        <div class="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full mx-auto mb-4 flex items-center justify-center">
+        <div class="w-16 h-16 bg-gradient-to-r from-blue-500 to-slate-600 rounded-full mx-auto mb-4 flex items-center justify-center">
           <lucide-icon [img]="SparklesIcon" [size]="24" class="text-white" />
         </div>
         <h4 class="text-lg font-medium text-neutral-900 mb-2">Ready for AI Analysis</h4>
@@ -40,7 +32,7 @@
           </div>
           <div class="bg-white/60 rounded-lg p-3">
             <div class="flex items-center justify-center mb-2">
-              <lucide-icon [img]="AwardIcon" [size]="16" class="text-purple-600" />
+              <lucide-icon [img]="AwardIcon" [size]="16" class="text-slate-600" />
             </div>
             <p class="font-medium">Strengths & Areas</p>
             <p class="text-neutral-600">Detailed insights</p>
@@ -71,7 +63,7 @@
       <!-- Analyzing State -->
       <div class="text-center py-8">
         <div class="relative">
-          <div class="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full mx-auto mb-4 flex items-center justify-center">
+          <div class="w-16 h-16 bg-gradient-to-r from-blue-500 to-slate-600 rounded-full mx-auto mb-4 flex items-center justify-center">
             <lucide-icon [img]="Loader2Icon" [size]="24" class="text-white animate-spin" />
           </div>
           <div class="absolute inset-0 w-16 h-16 mx-auto rounded-full border-4 border-blue-200 animate-pulse"></div>
@@ -86,7 +78,7 @@
             <span class="font-medium">{{ analysisProgress() }}%</span>
           </div>
           <div class="w-full bg-neutral-200 rounded-full h-2">
-            <div class="bg-gradient-to-r from-blue-500 to-purple-600 h-2 rounded-full transition-all duration-300" 
+            <div class="bg-gradient-to-r from-blue-500 to-slate-600 h-2 rounded-full transition-all duration-300" 
                  [style.width.%]="analysisProgress()"></div>
           </div>
           <p class="text-xs text-neutral-500 mt-2">{{ currentAnalysisStep() }}</p>

@@ -1,6 +1,6 @@
 <div class="h-screen bg-gray-50 flex">
   <!-- Left Side - Onboarding Content (60%) -->
-  <div class="w-3/5 flex flex-col">
+  <div class="w-3/5 flex flex-col h-screen">
     <!-- Stats Section - Fixed -->
     <div class="bg-white border-b border-gray-200 p-6 flex-shrink-0">
       <div class="grid grid-cols-4 gap-6">
@@ -38,7 +38,7 @@
       </div>
     </div>
 
-    <!-- Scrollable Cards Section - Independent scrolling -->
+    <!-- Scrollable Cards Section -->
     <div class="flex-1 overflow-y-auto">
       <div class="p-6 space-y-4">
         @for (card of onboardingCards(); track card.id) {
@@ -66,7 +66,7 @@
             
             <!-- Card Action -->
             @if (card.actionText && !card.completed) {
-              <div class="mt-4 pt-4 border-t border-gray-100">
+              <div class="mt-2 pt-4 border-t border-gray-100">
                 <ui-button 
                   variant="outline" 
                   size="sm" 
@@ -84,12 +84,12 @@
         <div class="bg-gradient-to-r from-green-500 to-green-600 rounded-lg p-8 text-white mt-8">
           <div class="flex items-center justify-between">
             <div>
-              <h3 class="text-xl font-bold mb-2">Ready to Get Started?</h3>
+              <h3 class="text-xl font-bold mb-2">Explore Kapify Subscription</h3>
               <p class="text-green-100 mb-4 max-w-md">
-                Join thousands of businesses that have successfully secured funding through Kapify.
+               Get Expanded features and Tooling.
               </p>
               <ui-button variant="outline" (clicked)="startApplication()" class="bg-white text-green-600 border-white hover:bg-green-50">
-                Start Your Application
+                Start Your Subscription
                 <lucide-icon [img]="ArrowRightIcon" [size]="16" class="ml-2" />
               </ui-button>
             </div>
@@ -102,9 +102,10 @@
     </div>
   </div>
 
-  <!-- Right Side - Activity Inbox (40%) - Fixed container with independent scrolling -->
-  <div class="w-2/5 border-l border-gray-200 flex flex-col h-screen overflow-hidden">
-    <div class="h-full">
+  <!-- Right Side - Activity Inbox (40%) -->
+  <div class="w-2/5 border-l border-gray-200 flex flex-col h-screen">
+    <!-- Independent Scroll -->
+    <div class="flex-1 overflow-y-auto">
       <app-activity-inbox />
     </div>
   </div>

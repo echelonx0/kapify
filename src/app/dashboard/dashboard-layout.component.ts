@@ -23,13 +23,20 @@ import { Subject } from 'rxjs';
           <dashboard-header />
         </div>
         
-        <!-- Page Content - Let each route handle its own scrolling -->
-        <main [class]="mainClass()">
+        <!-- Page Content   -->
+        <main class="flex-1 overflow-y-auto">
           <router-outlet />
         </main>
       </div>
     </div>
-  `
+  `,
+  // styles: [`
+  //   :host {
+  //     display: block;
+  //     height: 100vh;
+  //     overflow: hidden;
+  //   }
+  // `]
 })
 export class DashboardLayoutComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
@@ -74,7 +81,7 @@ export class DashboardLayoutComponent implements OnInit, OnDestroy {
   });
 
   contentClass = computed(() => {
-    return this.isHomeRoute() ? 'flex-1 flex flex-col' : 'flex-1 flex flex-col ml-16';
+    return this.isHomeRoute() ? 'flex-1 flex flex-col' : 'flex-1 flex flex-col ';
   });
 
   mainClass = computed(() => {

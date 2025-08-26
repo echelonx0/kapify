@@ -140,7 +140,7 @@
           @case ('application-details') {
          <div class="space-y-8">
   <div class="flex items-center space-x-3 mb-6">
-    <div class="w-10 h-10 bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg flex items-center justify-center shadow-lg">
+    <div class="w-10 h-10 bg-gradient-to-br from-slate-500 to-slate-600 rounded-lg flex items-center justify-center shadow-lg">
       <lucide-icon [img]="FileTextIcon" [size]="20" class="text-white" />
     </div>
     <div>
@@ -308,7 +308,7 @@
           @case ('ai-analysis') {
             <div class="space-y-6">
               <div class="flex items-center space-x-3 mb-6">
-                <div class="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center shadow-lg">
+                <div class="w-10 h-10 bg-gradient-to-r from-blue-500 to-slate-600 rounded-lg flex items-center justify-center shadow-lg">
                   <lucide-icon [img]="DollarSignIcon" [size]="20" class="text-white" />
                 </div>
                 <div>
@@ -394,9 +394,9 @@
 
               <!-- Enhanced AI Analysis Summary -->
               @if (aiAnalysisResult()) {
-                <div class="bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 border-2 border-blue-200 rounded-xl p-6 hover:shadow-lg transition-shadow">
+                <div class="bg-gradient-to-r from-blue-50 via-indigo-50 to-slate-50 border-2 border-blue-200 rounded-xl p-6 hover:shadow-lg transition-shadow">
                   <div class="flex items-center space-x-3 mb-4">
-                    <div class="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+                    <div class="w-8 h-8 bg-gradient-to-r from-blue-500 to-slate-600 rounded-lg flex items-center justify-center">
                       <lucide-icon [img]="DollarSignIcon" [size]="16" class="text-white" />
                     </div>
                     <div>
@@ -415,7 +415,7 @@
                       <div class="text-xs text-neutral-600 font-medium">Success Rate</div>
                     </div>
                     <div class="bg-white/80 backdrop-blur rounded-lg p-4 text-center hover:bg-white/90 transition-colors">
-                      <div class="text-sm font-bold text-purple-600 capitalize">{{ aiAnalysisResult().competitivePositioning }}</div>
+                      <div class="text-sm font-bold text-slate-600 capitalize">{{ aiAnalysisResult().competitivePositioning }}</div>
                       <div class="text-xs text-neutral-600 font-medium">Position</div>
                     </div>
                   </div>
@@ -498,7 +498,7 @@
               </ui-button>
             } @else {
               <ui-button variant="primary" (click)="nextStep()" [disabled]="!canContinue()" 
-                        class="bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 hover:scale-105 transition-all shadow-lg hover:shadow-xl">
+                        class="bg-gradient-to-r from-primary-500 rounded to-primary-600 hover:from-primary-600 hover:to-primary-700 hover:scale-105 transition-all shadow-lg hover:shadow-xl">
                 @if (currentStep() === 'application-details') {
                   Continue to AI Analysis
                 } @else if (currentStep() === 'ai-analysis') {
@@ -597,9 +597,9 @@
 
             <!-- Enhanced AI Analysis Sidebar Info -->
             @if (currentStep() === 'ai-analysis' || aiAnalysisResult()) {
-              <div class="bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 border-2 border-blue-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+              <div class="bg-gradient-to-br from-blue-50 via-indigo-50 to-slate-50 border-2 border-blue-200 rounded-lg p-4 hover:shadow-md transition-shadow">
                 <div class="flex items-center space-x-2 mb-3">
-                  <div class="w-6 h-6 bg-gradient-to-r from-blue-500 to-purple-600 rounded flex items-center justify-center">
+                  <div class="w-6 h-6 bg-gradient-to-r from-blue-500 to-slate-600 rounded flex items-center justify-center">
                     <lucide-icon [img]="DollarSignIcon" [size]="12" class="text-white" />
                   </div>
                   <h4 class="font-medium text-neutral-900">AI Insights</h4>
@@ -636,7 +636,7 @@
                     <div class="bg-white/60 backdrop-blur rounded p-3">
                       <div class="flex justify-between items-center">
                         <span class="text-neutral-600 text-sm">Position:</span>
-                        <span class="font-medium capitalize text-purple-600 text-sm bg-purple-100 px-2 py-1 rounded-full">{{ aiAnalysisResult().competitivePositioning }}</span>
+                        <span class="font-medium capitalize text-slate-600 text-sm bg-slate-100 px-2 py-1 rounded-full">{{ aiAnalysisResult().competitivePositioning }}</span>
                       </div>
                     </div>
                   </div>

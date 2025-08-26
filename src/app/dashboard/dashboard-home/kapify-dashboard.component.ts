@@ -113,16 +113,16 @@ export class KapifyDashboard implements OnInit {
     //   actionRoute: '/success-stories',
     //   color: 'purple'
     // },
-    {
-      id: 'complete-profile',
-      title: 'Complete Your Business Profile',
-      description: 'A complete profile increases your chances of getting matched with the right funders by 300%. Add your business information, financial data, and growth plans.',
-      icon: this.TargetIcon,
-      type: 'action',
-      actionText: 'Complete Profile',
-      actionRoute: '/dashboard/profile',
-      color: 'orange'
-    },
+    // {
+    //   id: 'complete-profile',
+    //   title: 'Complete Your Business Profile',
+    //   description: 'A complete profile increases your chances of getting matched with the right funders by 300%. Add your business information, financial data, and growth plans.',
+    //   icon: this.TargetIcon,
+    //   type: 'action',
+    //   actionText: 'Complete Profile',
+    //   actionRoute: '/dashboard/profile',
+    //   color: 'orange'
+    // },
     // {
     //   id: 'security-compliance',
     //   title: 'Security & Compliance',
