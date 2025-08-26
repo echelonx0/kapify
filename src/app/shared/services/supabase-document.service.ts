@@ -4,7 +4,7 @@ import { Observable, from, throwError, BehaviorSubject } from 'rxjs';
 import { tap, catchError, map, switchMap } from 'rxjs/operators';
 import { AuthService } from '../../auth/production.auth.service';
 import { environment } from '../../../environments/environment';
-import { SharedSupabaseService } from './supabase.service';
+import { SharedSupabaseService } from './shared-supabase.service';
 
 export interface DocumentUploadResult {
   id: string;

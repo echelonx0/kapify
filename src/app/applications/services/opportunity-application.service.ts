@@ -1,13 +1,14 @@
 // src/app/applications/services/opportunity-application.service.ts
 import { Injectable, inject, signal } from '@angular/core';
 import { Observable, from, throwError, BehaviorSubject } from 'rxjs';
-import { tap, catchError, switchMap } from 'rxjs/operators';
-import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { tap, catchError } from 'rxjs/operators';
+ 
 import { AuthService } from '../../auth/production.auth.service';
-import { environment } from '../../../environments/environment';
+ 
  
 import { FundingOpportunity } from '../../shared/models/funder.models';
 import { ProfileData, FundingApplicationProfileService } from './funding-profile.service';
+import { SharedSupabaseService } from '../../shared/services/shared-supabase.service';
 
 // Application interfaces
 export interface OpportunityApplication {
@@ -76,7 +77,7 @@ export interface ApplicationDraft {
   providedIn: 'root'
 })
 export class OpportunityApplicationService {
-  private supabase: SupabaseClient;
+  private supabase = inject(SharedSupabaseService);
   private authService = inject(AuthService);
   private profileService = inject(FundingApplicationProfileService);
 
@@ -95,7 +96,7 @@ export class OpportunityApplicationService {
   drafts$ = this.draftsSubject.asObservable();
 
   constructor() {
-    this.supabase = createClient(environment.supabaseUrl, environment.supabaseAnonKey);
+   
     this.loadUserApplications();
     this.loadDrafts();
   }
@@ -128,6 +129,7 @@ export class OpportunityApplicationService {
   }
 
   private async fetchUserApplications(userId: string): Promise<OpportunityApplication[]> {
+    console.log('Fetching applications for user:', userId);
     try {
       const { data, error } = await this.supabase
         .from('applications')
@@ -150,8 +152,8 @@ export class OpportunityApplicationService {
       if (error) {
         throw new Error(`Failed to fetch applications: ${error.message}`);
       }
-
-      return (data || []).map(item => this.transformDatabaseToLocal(item));
+console.log('Fetched applications data:', data);
+      return (data || []).map((item: any) => this.transformDatabaseToLocal(item));
     } catch (error) {
       console.error('Error fetching user applications:', error);
       throw error;

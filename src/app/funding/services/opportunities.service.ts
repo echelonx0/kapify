@@ -1,7 +1,7 @@
 // src/app/funding/services/sme-opportunities.service.ts
 import { Injectable, signal, inject } from '@angular/core';
 import { Observable, from, throwError, BehaviorSubject } from 'rxjs';
-import { tap, catchError, map } from 'rxjs/operators';
+import { tap, catchError } from 'rxjs/operators';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { environment } from '../../../environments/environment';
 import { AuthService } from '../../auth/production.auth.service';

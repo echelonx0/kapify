@@ -6,7 +6,7 @@ import * as XLSX from 'xlsx';
 import Papa from 'papaparse';
 
 import { AuthService } from '../../auth/production.auth.service';
-import { SharedSupabaseService } from '../../shared/services/supabase.service';
+import { SharedSupabaseService } from '../../shared/services/shared-supabase.service';
 import { FunderOnboardingService } from './funder-onboarding.service';
  
 

@@ -13,9 +13,8 @@ import {
   UserProfile,
 } from '../models/user.models';
 import { AuthService } from '../../auth/production.auth.service';
-import { createClient } from '@supabase/supabase-js';
-import { environment } from '../../../environments/environment';
-import { SharedSupabaseService } from './supabase.service';
+ 
+import { SharedSupabaseService } from './shared-supabase.service';
  
 
 export interface UserProfileData {

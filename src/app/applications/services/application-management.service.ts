@@ -1,10 +1,11 @@
 // src/app/funder/services/application-management.service.ts
-import { Injectable, inject, signal } from '@angular/core';
+import { Inject, Injectable, inject, signal } from '@angular/core';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { Observable, from, throwError } from 'rxjs';
-import { map, tap, catchError } from 'rxjs/operators';
+import { tap, catchError } from 'rxjs/operators';
 import { AuthService } from '../../auth/production.auth.service';
-import { environment } from '../../../environments/environment';
+import { SharedSupabaseService } from '../../shared/services/shared-supabase.service';
+ 
 
 // Application interfaces
 export interface FundingApplication {
@@ -82,7 +83,7 @@ export interface ApplicationFilter {
   providedIn: 'root'
 })
 export class ApplicationManagementService {
-  private supabase: SupabaseClient;
+  private supabase = Inject(SharedSupabaseService);
   private authService = inject(AuthService);
 
   // Loading states
@@ -91,7 +92,7 @@ export class ApplicationManagementService {
   error = signal<string | null>(null);
 
   constructor() {
-    this.supabase = createClient(environment.supabaseUrl, environment.supabaseAnonKey);
+     
   }
 
   // ===============================

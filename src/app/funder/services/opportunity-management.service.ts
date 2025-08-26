@@ -4,7 +4,7 @@ import { Observable, from, throwError, BehaviorSubject } from 'rxjs';
 import { tap, catchError, map } from 'rxjs/operators';
  
 import { AuthService } from '../../auth/production.auth.service'; 
-import { SharedSupabaseService } from '../../shared/services/supabase.service';
+import { SharedSupabaseService } from '../../shared/services/shared-supabase.service';
 
 // Management-specific interfaces
 interface OpportunityListItem {

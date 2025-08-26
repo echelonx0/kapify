@@ -7,7 +7,7 @@ import { tap, catchError, map } from 'rxjs/operators';
  
 import { AuthService } from '../../auth/production.auth.service';
 import { FundingOpportunity } from '../../shared/models/funder.models';
-import { SharedSupabaseService } from '../../shared/services/supabase.service';
+import { SharedSupabaseService } from '../../shared/services/shared-supabase.service';
 
 // Section-based data structures to match existing schema
 interface OpportunitySection {

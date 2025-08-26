@@ -8,7 +8,7 @@ import { tap, catchError, switchMap } from 'rxjs/operators';
 import { AuthService } from '../../auth/production.auth.service';
 import { FundingApplicationProfile } from '../models/funding-application.models';
  
-import { SharedSupabaseService } from '../../shared/services/supabase.service';
+import { SharedSupabaseService } from '../../shared/services/shared-supabase.service';
 
 // Backend response interfaces
 export interface FundingApplicationSectionData {

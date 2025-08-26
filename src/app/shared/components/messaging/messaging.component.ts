@@ -79,7 +79,7 @@ interface MessageThread {
 })
 export class ActivityInboxComponent implements OnInit, AfterViewChecked {
   @ViewChild('messagesContainer') messagesContainer!: ElementRef;
-
+ 
   // Icons
   SendIcon = Send;
   PaperclipIcon = Paperclip;

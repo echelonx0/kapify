@@ -4,7 +4,7 @@ import { Observable, from, throwError, BehaviorSubject } from 'rxjs';
 import { tap, catchError  } from 'rxjs/operators';
 import { AuthService } from '../../auth/production.auth.service';
 import { Application, ApplicationStatus, ReviewNote } from '../../shared/models/application.models';
-import { SharedSupabaseService } from '../../shared/services/supabase.service';
+import { SharedSupabaseService } from '../../shared/services/shared-supabase.service';
  
 
 // Database interfaces that match the Supabase schema

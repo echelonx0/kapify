@@ -6,7 +6,7 @@ import { Router } from '@angular/router';
  
 import { BehaviorSubject, Observable, from, throwError, timer } from 'rxjs';
 import { map, catchError, timeout, retry } from 'rxjs/operators'; 
-import { SharedSupabaseService } from '../shared/services/supabase.service';
+import { SharedSupabaseService } from '../shared/services/shared-supabase.service';
 import { Session, User } from '@supabase/supabase-js';
 
  

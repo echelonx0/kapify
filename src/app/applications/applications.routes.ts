@@ -13,7 +13,7 @@ export const applicationRoutes: Routes = [
       },
       { 
         path: 'home', 
-        loadComponent: () => import('./components/applications-home.component').then(c => c.ApplicationsHomeComponent),
+        loadComponent: () => import('./components/applications-home/applications-home.component').then(c => c.ApplicationsHomeComponent),
         title: 'Applications - Kapify'
       },
     {

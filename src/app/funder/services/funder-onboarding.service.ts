@@ -5,7 +5,7 @@ import { Injectable, signal, inject } from '@angular/core';
 import { Observable, from, throwError, of, BehaviorSubject, timer } from 'rxjs';
 import { tap, catchError, switchMap, take } from 'rxjs/operators';
 import { AuthService } from '../../auth/production.auth.service';
-import { SharedSupabaseService } from '../../shared/services/supabase.service';
+import { SharedSupabaseService } from '../../shared/services/shared-supabase.service';
 
 export interface FunderOrganization {
   id?: string;

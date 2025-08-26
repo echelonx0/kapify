@@ -1,10 +1,10 @@
 // src/app/shared/services/database-activity.service.ts
 import { Injectable, inject, signal } from '@angular/core';
 import { Observable, from, throwError, BehaviorSubject } from 'rxjs';
-import { tap, catchError, map } from 'rxjs/operators';
+import { tap, catchError } from 'rxjs/operators';
  
 import { AuthService } from '../../auth/production.auth.service';
-import { SharedSupabaseService } from './supabase.service';
+import { SharedSupabaseService } from './shared-supabase.service';
 
 // Updated Activity interface to match database schema
 export interface Activity {
