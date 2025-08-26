@@ -1,4 +1,3 @@
- 
 // src/app/funding/services/sme-opportunities.service.ts
 import { Injectable, signal, inject } from '@angular/core';
 import { Observable, from, throwError, BehaviorSubject } from 'rxjs';
@@ -67,37 +66,38 @@ export class SMEOpportunitiesService {
     );
   }
 
-// Once you disable RLS, update your fetchActiveOpportunities method to this:
+  // Once you disable RLS, update your fetchActiveOpportunities method to this:
+  private async fetchActiveOpportunities(): Promise<FundingOpportunity[]> {
+    try {
+      console.log('Fetching active opportunities from Supabase...');
+      const { data, error } = await this.supabase
+        .from('funding_opportunities')
+        .select(`
+          *,
+          funder_organizations!funding_opportunities_organization_id_fkey (
+            name,
+            organization_type,
+            website,
+            description,
+            is_verified
+          )
+        `)
+        .eq('status', 'active')
+        .not('published_at', 'is', null)
+        .order('published_at', { ascending: false });
 
-private async fetchActiveOpportunities(): Promise<FundingOpportunity[]> {
-  try {
-   console.log('Fetching active opportunities from Supabase...');
-    const { data, error } = await this.supabase
-      .from('funding_opportunities')
-      .select(`
-        *,
-        funder_organizations!funding_opportunities_organization_id_fkey (
-          name,
-          organization_type,
-          website,
-          description,
-          is_verified
-        )
-      `)
-      .eq('status', 'active')
-      .not('published_at', 'is', null)
-      .order('published_at', { ascending: false });
-
-    if (error) {
-      throw new Error(`Failed to fetch opportunities: ${error.message}`);
+      if (error) {
+        throw new Error(`Failed to fetch opportunities: ${error.message}`);
+      }
+      console.log(`Fetched ${data?.length || 0} opportunities`);
+      
+      return (data || []).map(item => this.transformDatabaseToLocal(item));
+    } catch (error) {
+      console.error('Error fetching active opportunities:', error);
+      throw error;
     }
-console.log(`Fetched ${data?.length || 0} opportunities`);
-    return (data || []).map(item => this.transformDatabaseToLocal(item));
-  } catch (error) {
-    console.error('Error fetching active opportunities:', error);
-    throw error;
   }
-}
+
   // TODO: Remove this once RLS policies are properly configured
   private async enrichWithOrganizationData(opportunities: any[]): Promise<any[]> {
     if (!opportunities.length) return opportunities;
@@ -441,7 +441,7 @@ console.log(`Fetched ${data?.length || 0} opportunities`);
   }
 
   // ===============================
-  // DATA TRANSFORMATION
+  // DATA TRANSFORMATION - UPDATED WITH NEW FIELDS
   // ===============================
 
   private transformDatabaseToLocal(dbOpportunity: any): FundingOpportunity {
@@ -486,12 +486,19 @@ console.log(`Fetched ${data?.length || 0} opportunities`);
       dealTeam: dbOpportunity.deal_team || [],
       autoMatch: dbOpportunity.auto_match,
       matchCriteria: dbOpportunity.match_criteria,
+      
+      // NEW FIELDS - Transform from snake_case to camelCase
+      fundingOpportunityImageUrl: dbOpportunity.funding_opportunity_image_url,
+      fundingOpportunityVideoUrl: dbOpportunity.funding_opportunity_video_url,
+      funderOrganizationName: dbOpportunity.funder_organization_name,
+      funderOrganizationLogoUrl: dbOpportunity.funder_organization_logo_url,
+      
       createdAt: new Date(dbOpportunity.created_at),
       updatedAt: new Date(dbOpportunity.updated_at),
       publishedAt: dbOpportunity.published_at ? new Date(dbOpportunity.published_at) : undefined,
       
       // Add organization info for display (may be null if organization fetch failed)
-      organizationName: org?.name || 'Unknown Organization',
+      organizationName: org?.name || dbOpportunity.funder_organization_name || 'Unknown Organization',
       organizationType: org?.organization_type || 'Unknown',
       organizationVerified: org?.is_verified || false
     } as FundingOpportunity;
@@ -511,39 +518,3 @@ console.log(`Fetched ${data?.length || 0} opportunities`);
     this.error.set(null);
   }
 }
-
-/*
-TODO LIST - RLS FIX REQUIRED:
-
-1. Fix RLS policies to allow SME users to access:
-   - funder_organizations table for public organization info
-   - users table for organization ownership validation
-
-2. Once RLS is fixed, restore the joins in these methods:
-   - fetchActiveOpportunities()
-   - performSearch()
-   - fetchOpportunityById() 
-   - fetchMatchingOpportunities()
-
-3. Remove the enrichWithOrganizationData() workaround method
-
-4. Original working join query to restore:
-   .select(`
-     *,
-     funder_organizations!funding_opportunities_organization_id_fkey (
-       name,
-       organization_type,
-       website,
-       description,
-       is_verified
-     )
-   `)
-
-5. Test that all functionality works with proper joins restored
-
-CURRENT STATUS: 
-- Service works without organization details
-- Organization names show as "Unknown Organization" 
-- All core functionality (search, filter, view) works
-- Performance is slightly worse due to separate queries
-*/

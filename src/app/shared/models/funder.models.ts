@@ -157,7 +157,12 @@ export interface FundingOpportunity {
   id: string;
   fundId: string;
   organizationId: string;
-  
+
+  // New
+  fundingOpportunityImageUrl: string;
+  fundingOpportunityVideoUrl: string;
+  funderOrganizationName: string;
+  funderOrganizationLogoUrl: string;
   // Opportunity details
   title: string;
   description: string;

@@ -613,6 +613,10 @@ private async publishToSupabase(
       match_criteria: formData.matchCriteria,
       deal_lead: userId,
       deal_team: [userId],
+       funding_opportunity_image_url: formData.fundingOpportunityImageUrl,
+      funding_opportunity_video_url: formData.fundingOpportunityVideoUrl,
+      funder_organization_name: formData.funderOrganizationName,
+      funder_organization_logo_url: formData.funderOrganizationLogoUrl,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
       published_at: new Date().toISOString()
@@ -816,7 +820,11 @@ async checkUserOrganization(userId: string): Promise<{
         title: formData.title,
         description: formData.description,
         shortDescription: formData.shortDescription,
-        targetCompanyProfile: formData.targetCompanyProfile
+        targetCompanyProfile: formData.targetCompanyProfile,
+           fundingOpportunityImageUrl: formData.fundingOpportunityImageUrl,
+      fundingOpportunityVideoUrl: formData.fundingOpportunityVideoUrl,
+      funderOrganizationName: formData.funderOrganizationName,
+      funderOrganizationLogoUrl: formData.funderOrganizationLogoUrl,
       },
       'investment-terms': {
         offerAmount: formData.offerAmount,
@@ -863,7 +871,11 @@ async checkUserOrganization(userId: string): Promise<{
             title: data['title'],
             description: data['description'],
             shortDescription: data['shortDescription'],
-            targetCompanyProfile: data['targetCompanyProfile']
+            targetCompanyProfile: data['targetCompanyProfile'],
+             fundingOpportunityImageUrl: data['fundingOpportunityImageUrl'],
+          fundingOpportunityVideoUrl: data['fundingOpportunityVideoUrl'],
+          funderOrganizationName: data['funderOrganizationName'],
+          funderOrganizationLogoUrl: data['funderOrganizationLogoUrl'],
           });
           break;
           
@@ -995,12 +1007,20 @@ async checkUserOrganization(userId: string): Promise<{
       conversionRate: dbData.conversion_rate,
       dealLead: dbData.deal_lead,
       dealTeam: dbData.deal_team,
+      
       autoMatch: dbData.auto_match,
       matchCriteria: dbData.match_criteria,
       createdAt: new Date(dbData.created_at),
       updatedAt: new Date(dbData.updated_at),
       publishedAt: dbData.published_at ? new Date(dbData.published_at) : undefined,
-      closedAt: dbData.closed_at ? new Date(dbData.closed_at) : undefined
+      closedAt: dbData.closed_at ? new Date(dbData.closed_at) : undefined,
+
+      // ADD NEW FIELDS HERE
+    fundingOpportunityImageUrl: dbData.funding_opportunity_image_url,
+    fundingOpportunityVideoUrl: dbData.funding_opportunity_video_url,
+    funderOrganizationName: dbData.funder_organization_name,
+    funderOrganizationLogoUrl: dbData.funder_organization_logo_url,
+
     };
   }
 
@@ -1297,6 +1317,10 @@ private async updatePublishedOpportunity(
       max_applications: formData.maxApplications,
       auto_match: formData.autoMatch,
       match_criteria: formData.matchCriteria,
+       funding_opportunity_image_url: formData.fundingOpportunityImageUrl,
+      funding_opportunity_video_url: formData.fundingOpportunityVideoUrl,
+      funder_organization_name: formData.funderOrganizationName,
+      funder_organization_logo_url: formData.funderOrganizationLogoUrl,
       updated_at: new Date().toISOString()
     };
 
@@ -1432,7 +1456,12 @@ private transformDbToFormData(dbOpportunity: any): Partial<FundingOpportunity> {
     maxApplications: dbOpportunity.max_applications,
     autoMatch: dbOpportunity.auto_match,
     matchCriteria: dbOpportunity.match_criteria,
-    status: dbOpportunity.status
+    status: dbOpportunity.status,
+     // ADD NEW FIELDS HERE
+    fundingOpportunityImageUrl: dbOpportunity.funding_opportunity_image_url,
+    fundingOpportunityVideoUrl: dbOpportunity.funding_opportunity_video_url,
+    funderOrganizationName: dbOpportunity.funder_organization_name,
+    funderOrganizationLogoUrl: dbOpportunity.funder_organization_logo_url
   };
 }
 

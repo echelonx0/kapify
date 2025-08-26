@@ -1,5 +1,5 @@
 // src/app/funder/components/import-opportunity/import-opportunity.component.ts
-import { Component, inject, signal, OnInit, OnDestroy, EventEmitter, Output } from '@angular/core';
+import { Component, signal, OnInit, OnDestroy, EventEmitter, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Subject } from 'rxjs';

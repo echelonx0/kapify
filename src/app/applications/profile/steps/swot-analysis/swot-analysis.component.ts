@@ -5,8 +5,8 @@ import { LucideAngularModule, Plus, X, TrendingUp, TrendingDown, Target, AlertTr
 import { CommonModule } from '@angular/common'; 
 import { interval, Subscription } from 'rxjs';
 import { takeWhile } from 'rxjs/operators';
-import { UiButtonComponent, UiCardComponent, UiInputComponent } from '../../../../shared/components';
-import { UiSectionCardComponent } from '../../../../shared/components/ui-section-card.component';
+import { UiButtonComponent,  UiInputComponent } from '../../../../shared/components';
+ 
 import { UiTextareaComponent } from '../../../../shared/components/ui-textarea.component';
 import { SWOTAnalysis } from '../../../models/funding-application.models';
 import { FundingProfileSetupService } from '../../../services/funding-profile-setup.service';
@@ -38,10 +38,10 @@ interface SWOTSection {
     ReactiveFormsModule,
     LucideAngularModule,
     UiButtonComponent,
-    UiCardComponent,
+  
     UiInputComponent,
     UiTextareaComponent,
-    UiSectionCardComponent
+    // UiSectionCardComponent
   ],
   templateUrl: 'swot-analysis.component.html',
   styleUrls: ['swot-analysis.component.css']
