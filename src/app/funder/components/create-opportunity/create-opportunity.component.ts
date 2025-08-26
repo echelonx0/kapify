@@ -16,6 +16,12 @@ interface OpportunityFormData {
   title: string;
   description: string;
   shortDescription: string;
+
+    // NEW: Media & Branding fields
+  fundingOpportunityImageUrl: string;
+  fundingOpportunityVideoUrl: string;
+  funderOrganizationName: string;
+  funderOrganizationLogoUrl: string;
   
   // Investment terms
   offerAmount: string;
@@ -152,6 +158,12 @@ export class CreateOpportunityComponent implements OnInit, OnDestroy {
     title: '',
     description: '',
     shortDescription: '',
+
+     // NEW: Media & Branding fields
+  fundingOpportunityImageUrl: '',
+  fundingOpportunityVideoUrl: '',
+  funderOrganizationName: '',
+  funderOrganizationLogoUrl: '', 
     offerAmount: '',
     minInvestment: '',
     maxInvestment: '',
@@ -248,44 +260,64 @@ export class CreateOpportunityComponent implements OnInit, OnDestroy {
   // VALIDATION METHODS
   // ===============================
 
-  private validateForm(data: OpportunityFormData): void {
-    const errors: ValidationError[] = [];
 
-    // Basic validation
-    if (!data.title.trim()) {
-      errors.push({ field: 'title', message: 'Title is required', type: 'error' });
-    } else if (data.title.length < 5) {
-      errors.push({ field: 'title', message: 'Title must be at least 5 characters', type: 'warning' });
-    }
+// Update your validateForm method to include URL validation
+private validateForm(data: OpportunityFormData): void {
+  const errors: ValidationError[] = [];
 
-    if (!data.shortDescription.trim()) {
-      errors.push({ field: 'shortDescription', message: 'Short description is required', type: 'error' });
-    }
-
-    if (!data.description.trim()) {
-      errors.push({ field: 'description', message: 'Description is required', type: 'error' });
-    }
-
-    // Investment terms validation
-    if (data.fundingType && this.isTermsStepActive()) {
-      errors.push(...this.validateInvestmentAmounts(data));
-    }
-
-    // Eligibility validation
-    if (data.minRevenue && data.maxRevenue) {
-      const minRev = this.parseNumberValue(data.minRevenue);
-      const maxRev = this.parseNumberValue(data.maxRevenue);
-      if (minRev > 0 && maxRev > 0 && maxRev < minRev) {
-        errors.push({ 
-          field: 'maxRevenue', 
-          message: 'Maximum revenue must be greater than minimum revenue', 
-          type: 'error' 
-        });
-      }
-    }
-
-    this.validationErrors.set(errors);
+  // Basic validation
+  if (!data.title.trim()) {
+    errors.push({ field: 'title', message: 'Title is required', type: 'error' });
+  } else if (data.title.length < 5) {
+    errors.push({ field: 'title', message: 'Title must be at least 5 characters', type: 'warning' });
   }
+
+  if (!data.shortDescription.trim()) {
+    errors.push({ field: 'shortDescription', message: 'Short description is required', type: 'error' });
+  }
+
+  if (!data.description.trim()) {
+    errors.push({ field: 'description', message: 'Description is required', type: 'error' });
+  }
+
+  // NEW: URL validations
+  if (data.fundingOpportunityImageUrl && !this.validateUrl(data.fundingOpportunityImageUrl)) {
+    errors.push({ field: 'fundingOpportunityImageUrl', message: 'Please enter a valid image URL', type: 'error' });
+  }
+
+  if (data.fundingOpportunityVideoUrl && !this.validateUrl(data.fundingOpportunityVideoUrl)) {
+    errors.push({ field: 'fundingOpportunityVideoUrl', message: 'Please enter a valid video URL', type: 'error' });
+  }
+
+  if (data.funderOrganizationLogoUrl && !this.validateUrl(data.funderOrganizationLogoUrl)) {
+    errors.push({ field: 'funderOrganizationLogoUrl', message: 'Please enter a valid logo URL', type: 'error' });
+  }
+
+  if (data.funderOrganizationName && data.funderOrganizationName.length > 100) {
+    errors.push({ field: 'funderOrganizationName', message: 'Organization name should be 100 characters or less', type: 'warning' });
+  }
+
+  // Investment terms validation
+  if (data.fundingType && this.isTermsStepActive()) {
+    errors.push(...this.validateInvestmentAmounts(data));
+  }
+
+  // Eligibility validation
+  if (data.minRevenue && data.maxRevenue) {
+    const minRev = this.parseNumberValue(data.minRevenue);
+    const maxRev = this.parseNumberValue(data.maxRevenue);
+    if (minRev > 0 && maxRev > 0 && maxRev < minRev) {
+      errors.push({ 
+        field: 'maxRevenue', 
+        message: 'Maximum revenue must be greater than minimum revenue', 
+        type: 'error' 
+      });
+    }
+  }
+
+  this.validationErrors.set(errors);
+}
+
 
   private validateInvestmentAmounts(data: OpportunityFormData): ValidationError[] {
     const errors: ValidationError[] = [];
@@ -358,6 +390,11 @@ export class CreateOpportunityComponent implements OnInit, OnDestroy {
       'title': 'basic',
       'shortDescription': 'basic',
       'description': 'basic',
+      // ADD to getFieldStep method:
+      'fundingOpportunityImageUrl': 'basic',
+      'fundingOpportunityVideoUrl': 'basic', 
+      'funderOrganizationName': 'basic',
+      'funderOrganizationLogoUrl': 'basic',
       'fundingType': 'terms',
       'offerAmount': 'terms',
       'minInvestment': 'terms',
@@ -604,6 +641,11 @@ export class CreateOpportunityComponent implements OnInit, OnDestroy {
       title: data.title.trim(),
       description: data.description.trim(),
       shortDescription: data.shortDescription.trim(),
+      // MISSING from your buildOpportunityData method:
+      fundingOpportunityImageUrl: data.fundingOpportunityImageUrl?.trim() || undefined,
+      fundingOpportunityVideoUrl: data.fundingOpportunityVideoUrl?.trim() || undefined,
+      funderOrganizationName: data.funderOrganizationName?.trim() || undefined,
+      funderOrganizationLogoUrl: data.funderOrganizationLogoUrl?.trim() || undefined,
       offerAmount,
       minInvestment: finalMinInvestment,
       maxInvestment: finalMaxInvestment,
@@ -735,6 +777,12 @@ export class CreateOpportunityComponent implements OnInit, OnDestroy {
       title: draftData.title || '',
       description: draftData.description || '',
       shortDescription: draftData.shortDescription || '',
+      // NEW: Include media fields
+    fundingOpportunityImageUrl: draftData.fundingOpportunityImageUrl || '',
+    fundingOpportunityVideoUrl: draftData.fundingOpportunityVideoUrl || '',
+    funderOrganizationName: draftData.funderOrganizationName || '',
+    funderOrganizationLogoUrl: draftData.funderOrganizationLogoUrl || '',
+
       offerAmount: draftData.offerAmount?.toString() || '',
       minInvestment: draftData.minInvestment?.toString() || '',
       maxInvestment: draftData.maxInvestment?.toString() || '',
@@ -927,6 +975,11 @@ export class CreateOpportunityComponent implements OnInit, OnDestroy {
       description: '',
       shortDescription: '',
       offerAmount: '',
+       // NEW: Media & Branding fields
+      fundingOpportunityImageUrl: '',
+      fundingOpportunityVideoUrl: '',
+      funderOrganizationName: '',
+      funderOrganizationLogoUrl: '',
       minInvestment: '',
       maxInvestment: '',
       currency: 'ZAR',
@@ -1021,16 +1074,25 @@ export class CreateOpportunityComponent implements OnInit, OnDestroy {
     return step?.title || '';
   }
 
-  getCurrentStepSubtitle(): string {
-    const subtitles = {
-      basic: 'Define the core details about your funding opportunity',
-      terms: 'Define the financial structure and investment parameters',
-      eligibility: 'Set criteria for who can apply',
-      settings: 'Configure visibility and application process',
-      review: 'Review your opportunity before publishing'
-    };
-    return subtitles[this.currentStep()] || '';
-  }
+getCurrentStepSubtitle(): string {
+  const subtitles = {
+    basic: 'Define the core details and add media to enhance your funding opportunity',
+    terms: 'Define the financial structure and investment parameters',
+    eligibility: 'Set criteria for who can apply',
+    settings: 'Configure visibility and application process',
+    review: 'Review your opportunity before publishing'
+  };
+  return subtitles[this.currentStep()] || '';
+}
+
+// Add this helper method to check if media content exists
+hasMediaContent(): boolean {
+  const data = this.formData();
+  return !!(data.fundingOpportunityImageUrl || 
+            data.fundingOpportunityVideoUrl || 
+            data.funderOrganizationName || 
+            data.funderOrganizationLogoUrl);
+}
 
   isStepCompleted(stepId: string): boolean {
     const completions = this.sectionCompletions();
@@ -1148,4 +1210,28 @@ export class CreateOpportunityComponent implements OnInit, OnDestroy {
   showUnsavedIndicator(): boolean {
     return this.hasUnsavedChanges();
   }
+
+
+  // Add this new method for URL validation
+private validateUrl(url: string): boolean {
+  if (!url) return true; // Empty URLs are valid (optional fields)
+  try {
+    const urlObj = new URL(url);
+    return ['http:', 'https:'].includes(urlObj.protocol);
+  } catch {
+    return false;
+  }
+}
+
+// Add this method for image error handling
+onImageError(field: keyof OpportunityFormData) {
+  const errors = this.validationErrors().filter(error => error.field !== field);
+  errors.push({
+    field,
+    message: 'Invalid image URL or image failed to load',
+    type: 'warning'
+  });
+  this.validationErrors.set(errors);
+}
+
 }

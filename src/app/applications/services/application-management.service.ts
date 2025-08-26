@@ -83,7 +83,7 @@ export interface ApplicationFilter {
   providedIn: 'root'
 })
 export class ApplicationManagementService {
-  private supabase = Inject(SharedSupabaseService);
+  private supabase = inject(SharedSupabaseService);
   private authService = inject(AuthService);
 
   // Loading states
