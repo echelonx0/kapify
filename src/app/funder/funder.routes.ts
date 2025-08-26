@@ -23,7 +23,7 @@ export const funderRoutes: Routes = [
           {
             path: 'welcome',
             loadComponent: () =>
-              import('./components/funder-organization-onboarding.component').then(m => m.OrganizationOnboardingComponent)
+              import('./onboarding-welcome/funder-organization-onboarding.component').then(m => m.OrganizationOnboardingComponent)
           },
           
           // STEP 1: Basic Information (name, type, description, contact)

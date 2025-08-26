@@ -2,10 +2,10 @@
 import { Injectable, signal, inject } from '@angular/core';
 import { Observable, from, of, throwError } from 'rxjs';
 import { tap, catchError, switchMap } from 'rxjs/operators';
-import { createClient, SupabaseClient } from '@supabase/supabase-js';
-import { environment } from '../../../environments/environment';
+ 
 import { AuthService } from '../../auth/production.auth.service';
-import { FundingOpportunity, FundType, FundStatus } from '../../shared/models/funder.models';
+import { FundingOpportunity} from '../../shared/models/funder.models';
+import { SharedSupabaseService } from '../../shared/services/shared-supabase.service';
 
 // Backend data structures to match Supabase schema
 interface OpportunitySection {
@@ -42,7 +42,7 @@ interface LoadOpportunityResponse {
   providedIn: 'root'
 })
 export class FunderOpportunityBackendService {
-  private supabase: SupabaseClient;
+  private supabase = inject(SharedSupabaseService);
   private authService = inject(AuthService);
 
   // State management
@@ -53,7 +53,7 @@ export class FunderOpportunityBackendService {
   lastSavedAt = signal<string | null>(null);
 
   constructor() {
-    this.supabase = createClient(environment.supabaseUrl, environment.supabaseAnonKey);
+   
   }
 
   // ===============================

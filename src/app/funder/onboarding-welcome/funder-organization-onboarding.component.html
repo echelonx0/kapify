@@ -265,32 +265,33 @@
         </ul>
       </div>
 
-      <div class="space-y-4 max-w-sm mx-auto">
-        <ui-button 
-          variant="primary" 
-          size="lg" 
-          class="w-full"
-          (clicked)="requestVerification()"
-          [disabled]="onboardingService.isSaving()"
-        >
-          @if (onboardingService.isSaving()) {
-            <lucide-icon [img]="SparklesIcon" [size]="16" class="mr-2 animate-spin" />
-            Submitting...
-          } @else {
-            <lucide-icon [img]="ShieldIcon" [size]="16" class="mr-2" />
-            Request Verification
-          }
-        </ui-button>
-        
-        <ui-button 
-          variant="outline" 
-          size="lg" 
-          class="w-full"
-          (clicked)="skipVerification()"
-        >
-          Skip for Now
-        </ui-button>
-      </div>
+   <div class="flex flex-col gap-4 max-w-sm mx-auto">
+  <ui-button 
+    variant="primary" 
+    size="lg" 
+    class="w-full"
+    (clicked)="requestVerification()"
+    [disabled]="onboardingService.isSaving()"
+  >
+    @if (onboardingService.isSaving()) {
+      <lucide-icon [img]="SparklesIcon" [size]="16" class="mr-2 animate-spin" />
+      Submitting...
+    } @else {
+      <lucide-icon [img]="ShieldIcon" [size]="16" class="mr-2" />
+      Request Verification
+    }
+  </ui-button>
+  
+  <ui-button 
+    variant="outline" 
+    size="lg" 
+    class="w-full"
+    (clicked)="skipVerification()"
+  >
+    Skip for Now
+  </ui-button>
+</div>
+
 
       <!-- Info Box -->
       <div class="mt-8 p-4 bg-neutral-50 rounded-lg max-w-md mx-auto">

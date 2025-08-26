@@ -1,15 +1,12 @@
- 
- 
-// src/app/auth/production.auth.service.ts  
+// src/app/auth/production.auth.service.ts - ENHANCED WITH ORGANIZATION CREATION
 import { Injectable, signal, computed, inject } from '@angular/core';
 import { Router } from '@angular/router';
- 
-import { BehaviorSubject, Observable, from, throwError, timer } from 'rxjs';
-import { map, catchError, timeout, retry } from 'rxjs/operators'; 
+import { BehaviorSubject, Observable, from, of, throwError, timer } from 'rxjs';
+import { map, catchError, timeout, retry, tap } from 'rxjs/operators'; 
 import { SharedSupabaseService } from '../shared/services/shared-supabase.service';
+import { OrganizationSetupService } from '../shared/services/organization-setup.service';
 import { Session, User } from '@supabase/supabase-js';
 
- 
 export interface SignUpData {
   email: string;
   password: string;
@@ -48,6 +45,14 @@ export interface UserProfile {
   avatarUrl?: string;
   isVerified: boolean;
   createdAt: string;
+  organizationId?: string; // Add organization context
+}
+
+export interface RegistrationResult {
+  user: UserProfile | null;
+  error: string | null;
+  organizationId?: string;
+  organizationCreated?: boolean;
 }
 
 @Injectable({
@@ -56,6 +61,7 @@ export interface UserProfile {
 export class AuthService {
   private router = inject(Router);
   private supabaseService = inject(SharedSupabaseService);
+  private organizationSetupService = inject(OrganizationSetupService);
   
   // Reactive state
   private userSubject = new BehaviorSubject<UserProfile | null>(null);
@@ -80,7 +86,7 @@ export class AuthService {
 
   private async initializeAuth(): Promise<void> {
     try {
-      console.log('🔐 Initializing auth...');
+      console.log('Initializing auth...');
       
       // Wait for Supabase client to be ready
       await this.supabaseService.getClient();
@@ -96,14 +102,13 @@ export class AuthService {
       const { data: { session }, error } = sessionResult;
       
       if (error) {
-        // Handle lock errors gracefully
         if (error.message?.includes('NavigatorLockAcquireTimeoutError') || 
             error.message?.includes('lock')) {
-          console.warn('⚠️ Lock timeout occurred, continuing without session');
+          console.warn('Lock timeout occurred, continuing without session');
           this.clearAuthState();
           return;
         }
-        console.error('❌ Session initialization error:', error);
+        console.error('Session initialization error:', error);
         this.clearAuthState();
         return;
       }
@@ -117,7 +122,7 @@ export class AuthService {
       // Set up auth state change listener with error handling
       this.supabaseService.auth.onAuthStateChange(async (event, session) => {
         try {
-          console.log('🔄 Auth state changed:', event, session?.user?.email);
+          console.log('Auth state changed:', event, session?.user?.email);
           
           if (session?.user) {
             await this.setUserSession(session);
@@ -128,22 +133,20 @@ export class AuthService {
             }
           }
         } catch (stateChangeError: any) {
-          console.error('❌ Error in auth state change handler:', stateChangeError);
-          // Don't clear auth state on listener errors unless critical
+          console.error('Error in auth state change handler:', stateChangeError);
           if (stateChangeError?.message?.includes('lock')) {
-            console.warn('⚠️ Lock error in state change, continuing...');
+            console.warn('Lock error in state change, continuing...');
           }
         }
       });
 
     } catch (error: any) {
-      // Handle initialization errors gracefully
       if (error.message?.includes('NavigatorLockAcquireTimeoutError') || 
           error.message?.includes('lock') ||
           error.message?.includes('timeout')) {
-        console.warn('⚠️ Auth initialization timeout/lock error, continuing without session');
+        console.warn('Auth initialization timeout/lock error, continuing without session');
       } else {
-        console.error('❌ Auth initialization failed:', error);
+        console.error('Auth initialization failed:', error);
       }
       this.clearAuthState();
     } finally {
@@ -152,22 +155,24 @@ export class AuthService {
     }
   }
 
-  // Register method with improved error handling
-  register(credentials: RegisterRequest): Observable<{ user: UserProfile | null; error: string | null }> {
-    return from(this.performRegister(credentials)).pipe(
-      timeout(30000), // 30 second timeout
+  // ===============================
+  // ENHANCED REGISTRATION WITH ORGANIZATION CREATION
+  // ===============================
+
+  register(credentials: RegisterRequest): Observable<RegistrationResult> {
+    return from(this.performEnhancedRegister(credentials)).pipe(
+      timeout(45000), // Increased timeout for organization creation
       retry({
         count: 2,
         delay: (error) => {
-          // Retry on lock errors but not on validation errors
           if (error.message?.includes('lock') || error.message?.includes('timeout')) {
-            return timer(1000); // Retry after 1 second
+            return timer(1000);
           }
-          throw error; // Don't retry validation errors
+          throw error;
         }
       }),
       catchError(error => {
-        console.error('❌ Register error:', error);
+        console.error('Register error:', error);
         let errorMessage = 'Registration failed';
         
         if (error.message?.includes('lock')) {
@@ -180,14 +185,15 @@ export class AuthService {
         
         return throwError(() => ({
           user: null,
-          error: errorMessage
+          error: errorMessage,
+          organizationCreated: false
         }));
       })
     );
   }
 
-  private async performRegister(credentials: RegisterRequest) {
-    console.log('🚀 Starting registration process...');
+  private async performEnhancedRegister(credentials: RegisterRequest): Promise<RegistrationResult> {
+    console.log('Starting enhanced registration process...');
     
     // Validate terms agreement
     if (!credentials.agreeToTerms) {
@@ -200,8 +206,8 @@ export class AuthService {
     }
 
     try {
-      // 1. Create Supabase auth user with timeout
-      console.log('👤 Creating Supabase auth user...');
+      // 1. Create Supabase auth user
+      console.log('Creating Supabase auth user...');
       
       const authResult = await Promise.race([
         this.supabaseService.auth.signUp({
@@ -218,14 +224,14 @@ export class AuthService {
           }
         }),
         new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('Auth signup timeout')), 15000)
+          setTimeout(() => reject(new Error('Auth signup timeout')), 20000)
         )
       ]) as any;
 
       const { data: authData, error: authError } = authResult;
 
       if (authError) {
-        console.error('❌ Supabase auth error:', authError);
+        console.error('Supabase auth error:', authError);
         throw new Error(`Authentication failed: ${authError.message}`);
       }
 
@@ -233,10 +239,10 @@ export class AuthService {
         throw new Error('User creation failed - no user returned from Supabase');
       }
 
-      console.log('✅ Supabase auth user created:', authData.user.id);
+      console.log('Supabase auth user created:', authData.user.id);
 
       // 2. Create user profile in database
-      console.log('📝 Creating user profile in database...');
+      console.log('Creating user profile in database...');
       const { error: profileError } = await this.supabaseService
         .from('users')
         .insert({
@@ -252,14 +258,14 @@ export class AuthService {
         });
 
       if (profileError) {
-        console.error('❌ Profile creation error:', profileError);
+        console.error('Profile creation error:', profileError);
         throw new Error(`Failed to create user profile: ${profileError.message}`);
       }
 
-      console.log('✅ User profile created successfully');
+      console.log('User profile created successfully');
 
-      // 3. Create user_profile entry (optional)
-      console.log('📋 Creating user profile metadata...');
+      // 3. Create user_profile entry
+      console.log('Creating user profile metadata...');
       const { error: userProfileError } = await this.supabaseService
         .from('user_profiles')
         .insert({
@@ -272,32 +278,155 @@ export class AuthService {
         });
 
       if (userProfileError) {
-        console.error('⚠️ User profile metadata creation failed:', userProfileError);
-        console.log('💡 User profile metadata can be created later');
+        console.error('User profile metadata creation failed:', userProfileError);
+        console.log('User profile metadata can be created later');
       } else {
-        console.log('✅ User profile metadata created successfully');
+        console.log('User profile metadata created successfully');
       }
 
-      // 4. Build and return user profile
-      console.log('🏗️ Building user profile object...');
-      const userProfile = await this.buildUserProfile(authData.user);
+      // 4. CREATE ORGANIZATION - This is the key addition
+      console.log('Creating organization for user...');
+      let organizationId: string | undefined;
+      let organizationCreated = false;
+
+      try {
+        const orgSetupResult = await this.organizationSetupService.createOrganizationForUser({
+          userId: authData.user.id,
+          userType: credentials.userType,
+          firstName: credentials.firstName,
+          lastName: credentials.lastName,
+          email: credentials.email,
+          phone: credentials.phone,
+          companyName: credentials.companyName
+        }).toPromise();
+
+        if (orgSetupResult?.success) {
+          organizationId = orgSetupResult.organization.id;
+          organizationCreated = true;
+          console.log('Organization created successfully:', organizationId);
+        } else {
+          console.warn('Organization creation failed:', orgSetupResult?.message);
+        }
+      } catch (orgError: any) {
+        console.error('Organization creation failed:', orgError);
+        // Don't fail registration if org creation fails - user can complete later
+        console.log('Registration will continue without organization');
+      }
+
+      // 5. Build and return user profile with organization context
+      console.log('Building enhanced user profile object...');
+      const userProfile = await this.buildEnhancedUserProfile(authData.user, organizationId);
       
-      console.log('🎉 Registration completed successfully!');
+      console.log('Enhanced registration completed successfully!');
       return {
         user: userProfile,
-        error: null
+        error: null,
+        organizationId,
+        organizationCreated
       };
 
     } catch (error: any) {
-      console.error('💥 Registration failed:', error);
+      console.error('Enhanced registration failed:', error);
       throw error;
     }
   }
 
-  // Login method with better error handling
-  login(credentials: LoginRequest): Observable<{ user: UserProfile | null; error: string | null }> {
-    return from(this.performLogin(credentials.email, credentials.password)).pipe(
-      timeout(15000), // 15 second timeout
+  // ===============================
+  // ENHANCED USER PROFILE BUILDING
+  // ===============================
+
+  private async buildEnhancedUserProfile(user: User, organizationId?: string): Promise<UserProfile> {
+    try {
+      const { data: userRecord, error: userError } = await this.supabaseService
+        .from('users')
+        .select(`
+          *,
+          user_profiles (
+            profile_step,
+            completion_percentage,
+            avatar_url,
+            is_verified
+          )
+        `)
+        .eq('id', user.id)
+        .single();
+
+      if (userError || !userRecord) {
+        console.warn('User record not found, creating from auth data');
+        return this.createEnhancedProfileFromAuthUser(user, organizationId);
+      }
+
+      // If no organizationId provided, try to get it from database
+      let finalOrganizationId = organizationId;
+      if (!finalOrganizationId) {
+        const orgResult = await this.getUserOrganizationId(user.id);
+        finalOrganizationId = orgResult || undefined;
+      }
+
+      return {
+        id: user.id,
+        email: userRecord.email,
+        firstName: userRecord.first_name,
+        lastName: userRecord.last_name,
+        phone: userRecord.phone,
+        userType: userRecord.user_type,
+        profileStep: userRecord.user_profiles?.[0]?.profile_step || 0,
+        completionPercentage: userRecord.user_profiles?.[0]?.completion_percentage || 0,
+        avatarUrl: userRecord.user_profiles?.[0]?.avatar_url,
+        isVerified: userRecord.user_profiles?.[0]?.is_verified || false,
+        createdAt: userRecord.created_at,
+        organizationId: finalOrganizationId
+      };
+
+    } catch (error) {
+      console.error('Error building enhanced user profile:', error);
+      return this.createEnhancedProfileFromAuthUser(user, organizationId);
+    }
+  }
+
+  private createEnhancedProfileFromAuthUser(user: User, organizationId?: string): UserProfile {
+    const metadata = user.user_metadata || {};
+    return {
+      id: user.id,
+      email: user.email!,
+      firstName: metadata['first_name'] || 'User',
+      lastName: metadata['last_name'] || '',
+      phone: metadata['phone'],
+      userType: metadata['user_type'] || 'sme',
+      profileStep: 0,
+      completionPercentage: 0,
+      isVerified: false,
+      createdAt: user.created_at,
+      organizationId
+    };
+  }
+
+  private async getUserOrganizationId(userId: string): Promise<string | null> {
+    try {
+      const { data, error } = await this.supabaseService
+        .from('organization_users')
+        .select('organization_id')
+        .eq('user_id', userId)
+        .maybeSingle();
+
+      if (error || !data) {
+        return null;
+      }
+
+      return data.organization_id;
+    } catch (error) {
+      console.error('Error getting user organization ID:', error);
+      return null;
+    }
+  }
+
+  // ===============================
+  // ENHANCED LOGIN WITH ORGANIZATION CONTEXT
+  // ===============================
+
+  login(credentials: LoginRequest): Observable<RegistrationResult> {
+    return from(this.performEnhancedLogin(credentials.email, credentials.password)).pipe(
+      timeout(15000),
       retry({
         count: 2,
         delay: (error) => {
@@ -308,7 +437,7 @@ export class AuthService {
         }
       }),
       catchError(error => {
-        console.error('❌ Login error:', error);
+        console.error('Login error:', error);
         let errorMessage = 'Login failed';
         
         if (error.message?.includes('lock')) {
@@ -321,13 +450,14 @@ export class AuthService {
         
         return throwError(() => ({
           user: null,
-          error: errorMessage
+          error: errorMessage,
+          organizationCreated: false
         }));
       })
     );
   }
 
-  private async performLogin(email: string, password: string) {
+  private async performEnhancedLogin(email: string, password: string): Promise<RegistrationResult> {
     const loginResult = await Promise.race([
       this.supabaseService.auth.signInWithPassword({
         email,
@@ -348,27 +478,91 @@ export class AuthService {
       throw new Error('Login failed');
     }
 
+    // Build enhanced user profile with organization context
+    const userProfile = await this.buildEnhancedUserProfile(data.user);
+
     return {
-      user: await this.buildUserProfile(data.user),
-      error: null
+      user: userProfile,
+      error: null,
+      organizationId: userProfile.organizationId,
+      organizationCreated: !!userProfile.organizationId
     };
   }
 
-  // Legacy signUp method (keeping for compatibility)
-  signUp(credentials: SignUpData): Observable<{ user: UserProfile | null; error: string | null }> {
-    return from(this.performSignUp(credentials)).pipe(
-      timeout(30000),
+  // ===============================
+  // ORGANIZATION UTILITIES
+  // ===============================
+
+  // Check if current user has organization
+  userHasOrganization(): boolean {
+    const user = this.user();
+    return !!(user?.organizationId);
+  }
+
+  // Get current user's organization ID
+  getCurrentUserOrganizationId(): string | null {
+    const user = this.user();
+    return user?.organizationId || null;
+  }
+
+  // Ensure current user has organization (migration utility)
+  ensureCurrentUserHasOrganization(): Observable<{ success: boolean; organizationId?: string }> {
+    const user = this.user();
+    if (!user) {
+      return throwError(() => new Error('No authenticated user'));
+    }
+
+    if (user.organizationId) {
+      return of({ success: true, organizationId: user.organizationId });
+    }
+
+    // Create organization for existing user
+    console.log('Creating organization for existing user:', user.id);
+    
+    return this.organizationSetupService.createOrganizationForUser({
+      userId: user.id,
+      userType: user.userType as 'sme' | 'funder' | 'consultant',
+      firstName: user.firstName,
+      lastName: user.lastName,
+      email: user.email,
+      phone: user.phone
+    }).pipe(
+      tap(result => {
+        if (result.success) {
+          // Update current user with organization ID
+          const updatedUser = { ...user, organizationId: result.organization.id };
+          this.user.set(updatedUser);
+          this.userSubject.next(updatedUser);
+          console.log('User organization context updated:', result.organization.id);
+        }
+      }),
+      map(result => ({
+        success: result.success,
+        organizationId: result.organization?.id
+      }))
+    );
+  }
+
+  // ===============================
+  // EXISTING METHODS (Updated with organization context)
+  // ===============================
+
+  // Legacy signUp method with organization creation
+  signUp(credentials: SignUpData): Observable<RegistrationResult> {
+    return from(this.performEnhancedSignUp(credentials)).pipe(
+      timeout(45000),
       catchError(error => {
         console.error('SignUp error:', error);
         return throwError(() => ({
           user: null,
-          error: error.message || 'Registration failed'
+          error: error.message || 'Registration failed',
+          organizationCreated: false
         }));
       })
     );
   }
 
-  private async performSignUp(credentials: SignUpData) {
+  private async performEnhancedSignUp(credentials: SignUpData): Promise<RegistrationResult> {
     const { data: authData, error: authError } = await this.supabaseService.auth.signUp({
       email: credentials.email,
       password: credentials.password,
@@ -390,6 +584,7 @@ export class AuthService {
       throw new Error('User creation failed');
     }
 
+    // Create user profile
     const { error: profileError } = await this.supabaseService
       .from('users')
       .insert({
@@ -422,9 +617,34 @@ export class AuthService {
       console.error('User profile creation error:', userProfileError);
     }
 
+    // Create organization
+    let organizationId: string | undefined;
+    let organizationCreated = false;
+
+    try {
+      const orgSetupResult = await this.organizationSetupService.createOrganizationForUser({
+        userId: authData.user.id,
+        userType: credentials.userType,
+        firstName: credentials.firstName,
+        lastName: credentials.lastName,
+        email: credentials.email,
+        phone: credentials.phone
+      }).toPromise();
+
+      if (orgSetupResult?.success) {
+        organizationId = orgSetupResult.organization.id;
+        organizationCreated = true;
+        console.log('Organization created for signUp user:', organizationId);
+      }
+    } catch (orgError: any) {
+      console.error('Organization creation failed in signUp:', orgError);
+    }
+
     return {
-      user: await this.buildUserProfile(authData.user),
-      error: null
+      user: await this.buildEnhancedUserProfile(authData.user, organizationId),
+      error: null,
+      organizationId,
+      organizationCreated
     };
   }
 
@@ -449,11 +669,11 @@ export class AuthService {
       this.session.set(session);
       this.sessionSubject.next(session);
 
-      const userProfile = await this.buildUserProfile(session.user);
+      const userProfile = await this.buildEnhancedUserProfile(session.user);
       this.user.set(userProfile);
       this.userSubject.next(userProfile);
 
-      console.log('✅ User session established:', userProfile.email);
+      console.log('Enhanced user session established:', userProfile.email);
     } catch (error) {
       console.error('Failed to set user session:', error);
       this.clearAuthState();
@@ -465,63 +685,6 @@ export class AuthService {
     this.session.set(null);
     this.userSubject.next(null);
     this.sessionSubject.next(null);
-  }
-
-  private async buildUserProfile(user: User): Promise<UserProfile> {
-    try {
-      const { data: userRecord, error: userError } = await this.supabaseService
-        .from('users')
-        .select(`
-          *,
-          user_profiles (
-            profile_step,
-            completion_percentage,
-            avatar_url,
-            is_verified
-          )
-        `)
-        .eq('id', user.id)
-        .single();
-
-      if (userError || !userRecord) {
-        console.warn('User record not found, creating from auth data');
-        return this.createProfileFromAuthUser(user);
-      }
-
-      return {
-        id: user.id,
-        email: userRecord.email,
-        firstName: userRecord.first_name,
-        lastName: userRecord.last_name,
-        phone: userRecord.phone,
-        userType: userRecord.user_type,
-        profileStep: userRecord.user_profiles?.[0]?.profile_step || 0,
-        completionPercentage: userRecord.user_profiles?.[0]?.completion_percentage || 0,
-        avatarUrl: userRecord.user_profiles?.[0]?.avatar_url,
-        isVerified: userRecord.user_profiles?.[0]?.is_verified || false,
-        createdAt: userRecord.created_at
-      };
-
-    } catch (error) {
-      console.error('Error building user profile:', error);
-      return this.createProfileFromAuthUser(user);
-    }
-  }
-
-  private createProfileFromAuthUser(user: User): UserProfile {
-    const metadata = user.user_metadata || {};
-    return {
-      id: user.id,
-      email: user.email!,
-      firstName: metadata['first_name'] || 'User',
-      lastName: metadata['last_name'] || '',
-      phone: metadata['phone'],
-      userType: metadata['user_type'] || 'sme',
-      profileStep: 0,
-      completionPercentage: 0,
-      isVerified: false,
-      createdAt: user.created_at
-    };
   }
 
   getAccessToken(): string | null {

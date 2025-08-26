@@ -17,7 +17,8 @@ import {
   FileText
 } from 'lucide-angular';
 import { UiButtonComponent} from '../../shared/components'; 
-import { FunderOnboardingService, FunderOrganization } from '../services/funder-onboarding.service';
+import { FunderOnboardingService } from '../services/funder-onboarding.service';
+import { FunderOrganization } from '../../shared/models/user.models';
 
 interface BasicInfoFormData {
   name: string;

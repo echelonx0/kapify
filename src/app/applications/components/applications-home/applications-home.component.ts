@@ -30,6 +30,7 @@ import { AuthService } from '../../../auth/production.auth.service';
 // Import services based on user type
 import { OpportunityApplicationService, OpportunityApplication } from '../../services/opportunity-application.service';
 import { ApplicationManagementService, FundingApplication } from '../../services/application-management.service';
+import { ProfileManagementService } from '../../../shared/services/profile-management.service';
  
 interface ApplicationData {
   id: string;
@@ -82,7 +83,8 @@ export class ApplicationsHomeComponent implements OnInit, OnDestroy {
   private smeApplicationService = inject(OpportunityApplicationService);
   private funderApplicationService = inject(ApplicationManagementService);
   private destroy$ = new Subject<void>();
-
+   private profileService = inject(ProfileManagementService);
+  currentOrganization = this.profileService.currentOrganization;
   // Icons
   FileTextIcon = FileText;
   ClockIcon = Clock;
@@ -129,23 +131,7 @@ export class ApplicationsHomeComponent implements OnInit, OnDestroy {
   // DATA LOADING
   // ===============================
 
-  loadApplications() {
-    const user = this.currentUser();
-    if (!user) {
-      this.error.set('User not authenticated');
-      return;
-    }
-
-    this.isLoading.set(true);
-    this.error.set(null);
-    console.log('The user is a:', this.userType());
-
-    if (this.isFunder()) {
-      this.loadFunderApplications(user.id);
-    } else {
-      this.loadSMEApplications();
-    }
-  }
+ 
 
   private loadSMEApplications() {
     this.smeApplicationService.loadUserApplications()
@@ -171,45 +157,90 @@ export class ApplicationsHomeComponent implements OnInit, OnDestroy {
       });
   }
 
-  private loadFunderApplications(userId: string) {
-    // For funders, we need to get applications for opportunities in their organization
-    // This requires knowing the user's organization ID
-    const user = this.currentUser();
-    if (!user) return;
+// Fix for the loadFunderApplications method in your applications-home.component.ts
 
-    // For now, we'll use a placeholder organization ID 
-    // In production, this should come from user profile or organization service
-    const organizationId = 'user-org-id'; // TODO: Get from user profile
-
-    this.funderApplicationService.getApplicationsByOrganization(organizationId)
-      .pipe(
-        takeUntil(this.destroy$),
-        catchError(error => {
-          this.error.set('Failed to load organization applications');
-          this.isLoading.set(false);
-          console.error('Funder applications load error:', error);
-          throw error;
-        })
-      )
-      .subscribe({
-        next: (funderApplications: FundingApplication[]) => {
-          const applicationData = funderApplications.map(app => this.transformFunderApplication(app));
-          this.applications.set(applicationData);
-          this.isLoading.set(false);
-        },
-        error: () => {
-          this.applications.set([]);
-          this.isLoading.set(false);
-        }
-      });
+// Replace the existing loadFunderApplications method with this:
+private loadFunderApplications(userId: string) {
+  // Get the organization ID from ProfileService
+  const organizationId = this.currentOrganization()?.id; // Call the signal to get the value
+  
+  if (!organizationId) {
+    console.error('No organization ID found for funder');
+    this.error.set('Please complete your organization setup to view applications.');
+    this.isLoading.set(false);
+    return;
   }
+
+  console.log('Loading applications for organization:', organizationId);
+
+  this.funderApplicationService.getApplicationsByOrganization(organizationId)
+    .pipe(
+      takeUntil(this.destroy$),
+      catchError(error => {
+        this.error.set('Failed to load organization applications');
+        this.isLoading.set(false);
+        console.error('Funder applications load error:', error);
+        throw error;
+      })
+    )
+    .subscribe({
+      next: (funderApplications: FundingApplication[]) => {
+        const applicationData = funderApplications.map(app => this.transformFunderApplication(app));
+        this.applications.set(applicationData);
+        this.isLoading.set(false);
+      },
+      error: () => {
+        this.applications.set([]);
+        this.isLoading.set(false);
+      }
+    });
+}
+
+// Also update the loadApplications method to ensure profile data is loaded:
+loadApplications() {
+  const user = this.currentUser();
+  if (!user) {
+    this.error.set('User not authenticated');
+    return;
+  }
+
+  this.isLoading.set(true);
+  this.error.set(null);
+  console.log('The user is a:', this.userType());
+
+  if (this.isFunder()) {
+    // For funders, ensure we have organization data first
+    const orgId = this.currentOrganization()?.id;
+    
+    if (!orgId) {
+      // Try to load profile data first
+      this.profileService.loadProfileData()
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: () => {
+            // After profile loads, try again
+            this.loadFunderApplications(user.id);
+          },
+          error: (error) => {
+            console.error('Failed to load profile data:', error);
+            this.error.set('Please complete your organization setup.');
+            this.isLoading.set(false);
+          }
+        });
+    } else {
+      this.loadFunderApplications(user.id);
+    }
+  } else {
+    this.loadSMEApplications();
+  }
+}
 
   // ===============================
   // DATA TRANSFORMATION
   // ===============================
 
   private transformSMEApplication(app: OpportunityApplication): ApplicationData {
-    return {
+    return { 
       id: app.id,
       title: app.title,
       applicationNumber: `APP-${app.id.slice(-6).toUpperCase()}`,

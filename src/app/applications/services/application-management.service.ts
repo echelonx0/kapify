@@ -1,6 +1,5 @@
 // src/app/funder/services/application-management.service.ts
-import { Inject, Injectable, inject, signal } from '@angular/core';
-import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import {  Injectable, inject, signal } from '@angular/core';
 import { Observable, from, throwError } from 'rxjs';
 import { tap, catchError } from 'rxjs/operators';
 import { AuthService } from '../../auth/production.auth.service';
@@ -276,70 +275,66 @@ export class ApplicationManagementService {
     }
   }
 
-  private async fetchApplicationsByOrganization(
-    organizationId: string, 
-    filter?: ApplicationFilter
-  ): Promise<FundingApplication[]> {
-    try {
-      let query = this.supabase
-        .from('applications')
-        .select(`
-          *,
-          applicant:applicant_id (
-            id,
-            raw_user_meta_data
-          ),
-          opportunity:opportunity_id!inner (
-            id,
-            title,
-            funding_type,
-            offer_amount,
-            currency,
-            organization_id
-          )
-        `)
-        .eq('opportunity.organization_id', organizationId);
+private async fetchApplicationsByOrganization(
+  organizationId: string, 
+  filter?: ApplicationFilter
+): Promise<FundingApplication[]> {
+  try {
+    let query = this.supabase
+      .from('applications')
+      .select(`
+        *,
+        opportunity:opportunity_id!inner (
+          id,
+          title,
+          funding_type,
+          offer_amount,
+          currency,
+          organization_id
+        )
+      `)
+      .eq('opportunity.organization_id', organizationId)
+      .not('status', 'in', '("draft","withdrawn")'); // exclude draft + withdrawn
 
-      // Apply filters
-      if (filter?.status?.length) {
-        query = query.in('status', filter.status);
-      }
-
-      if (filter?.stage?.length) {
-        query = query.in('stage', filter.stage);
-      }
-
-      if (filter?.dateRange) {
-        query = query
-          .gte('created_at', filter.dateRange.start.toISOString())
-          .lte('created_at', filter.dateRange.end.toISOString());
-      }
-
-      const { data, error } = await query.order('created_at', { ascending: false });
-
-      if (error) {
-        throw new Error(`Supabase error: ${error.message}`);
-      }
-
-      let applications = this.transformApplicationsData(data || []);
-
-      // Apply search filter (client-side for now)
-      if (filter?.searchQuery) {
-        const searchLower = filter.searchQuery.toLowerCase();
-        applications = applications.filter(app =>
-          app.title.toLowerCase().includes(searchLower) ||
-          app.applicant?.firstName?.toLowerCase().includes(searchLower) ||
-          app.applicant?.lastName?.toLowerCase().includes(searchLower) ||
-          app.applicant?.companyName?.toLowerCase().includes(searchLower)
-        );
-      }
-
-      return applications;
-    } catch (error) {
-      console.error('Error fetching organization applications:', error);
-      throw error;
+    // Apply filters
+    if (filter?.status?.length) {
+      query = query.in('status', filter.status);
     }
+
+    if (filter?.stage?.length) {
+      query = query.in('stage', filter.stage);
+    }
+
+    if (filter?.dateRange) {
+      query = query
+        .gte('created_at', filter.dateRange.start.toISOString())
+        .lte('created_at', filter.dateRange.end.toISOString());
+    }
+
+    const { data, error } = await query.order('created_at', { ascending: false });
+
+    if (error) {
+      throw new Error(`Supabase error: ${error.message}`);
+    }
+
+    let applications = this.transformApplicationsData(data || []);
+
+    // Apply search filter (client-side for now)
+    if (filter?.searchQuery) {
+      const searchLower = filter.searchQuery.toLowerCase();
+      applications = applications.filter(app =>
+        app.title.toLowerCase().includes(searchLower) ||
+        app.opportunity?.title?.toLowerCase().includes(searchLower)
+      );
+    }
+
+    return applications;
+  } catch (error) {
+    console.error('Error fetching organization applications:', error);
+    throw error;
   }
+}
+
 
   private async fetchApplicationById(applicationId: string): Promise<FundingApplication> {
     try {

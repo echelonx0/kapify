@@ -100,7 +100,7 @@ export class SettingsComponent implements OnInit {
   });
 
   billingDetails = computed(() => {
-    // Mock billing details since we don't have this in the real user model yet
+    // Mock billing details 
     // TODO: Replace with real billing data when billing system is implemented
     const user = this.currentUser();
     const org = this.currentOrganization();

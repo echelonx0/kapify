@@ -10,6 +10,7 @@ import { FundingOpportunity } from '../../../shared/models/funder.models';
 import { trigger, transition, style, animate } from '@angular/animations';
 import { AiAssistantComponent } from '../ai-assistant/ai-assistant.component'; 
 import { FundingOpportunityService } from '../../../funding/services/funding-opportunity.service';
+import { ProfileManagementService } from '../../../shared/services/profile-management.service';
 
 interface OpportunityFormData {
   // Basic details
@@ -105,7 +106,7 @@ export class CreateOpportunityComponent implements OnInit, OnDestroy {
   private localAutoSaveSubject = new Subject<OpportunityFormData>();
   private opportunityService = inject(FundingOpportunityService);
   private route = inject(ActivatedRoute);
-
+ private profileService = inject(ProfileManagementService);
   // Icons
   ArrowLeftIcon = ArrowLeft;
   TargetIcon = Target;
@@ -160,10 +161,10 @@ export class CreateOpportunityComponent implements OnInit, OnDestroy {
     shortDescription: '',
 
      // NEW: Media & Branding fields
-  fundingOpportunityImageUrl: '',
-  fundingOpportunityVideoUrl: '',
-  funderOrganizationName: '',
-  funderOrganizationLogoUrl: '', 
+      fundingOpportunityImageUrl: '',
+      fundingOpportunityVideoUrl: '',
+      funderOrganizationName: '',
+      funderOrganizationLogoUrl: '', 
     offerAmount: '',
     minInvestment: '',
     maxInvestment: '',
@@ -241,6 +242,19 @@ export class CreateOpportunityComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
+
+    // Organization validation
+    const orgId = this.profileService.getCurrentOrganizationId();
+    if (!orgId) {
+      this.router.navigate(['/funder/onboarding']);
+      return;
+    }
+    
+    if (!this.profileService.canCreateOpportunities()) {
+      this.router.navigate(['/funder/complete-setup']);
+      return;
+    }
+    
     this.detectMode();
     this.setupLocalAutoSave();
   
@@ -612,14 +626,14 @@ private validateForm(data: OpportunityFormData): void {
 
     
     const data = this.formData();
-    console.log('Raw form data:', data);
-  console.log('Offer amount raw:', data.offerAmount);
-  console.log('Min investment raw:', data.minInvestment);
-  console.log('Max investment raw:', data.maxInvestment);
+ 
 
    
-  
- 
+   const orgId = this.profileService.getCurrentOrganizationId();
+  // Fix the null/undefined mismatch
+  if (!orgId) {
+    throw new Error('No organization found - cannot create opportunity');
+  }
     // Convert and validate amounts - ensure proper number conversion
     const offerAmount = Math.max(0, this.parseNumberValue(data.offerAmount));
     const minInvestment = this.parseNumberValue(data.minInvestment);
@@ -646,6 +660,8 @@ private validateForm(data: OpportunityFormData): void {
       fundingOpportunityVideoUrl: data.fundingOpportunityVideoUrl?.trim() || undefined,
       funderOrganizationName: data.funderOrganizationName?.trim() || undefined,
       funderOrganizationLogoUrl: data.funderOrganizationLogoUrl?.trim() || undefined,
+      fundId: orgId,  
+        organizationId: orgId, // Add this too for full scoping
       offerAmount,
       minInvestment: finalMinInvestment,
       maxInvestment: finalMaxInvestment,
