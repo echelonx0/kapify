@@ -8,7 +8,7 @@ import { debounceTime, takeWhile, takeUntil } from 'rxjs/operators';
  
 import { SupabaseDocumentService } from '../../../../shared/services/supabase-document.service';
 import * as XLSX from 'xlsx';
-import { SMEProfileStepsService } from '../../../services/funding-steps.service';
+import { SMEProfileStepsService } from '../../../services/sme-profile-steps.service';
 
 interface FinancialRowData {
   label: string;

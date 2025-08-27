@@ -3,7 +3,7 @@
 import { Component, signal, OnInit } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { UiInputComponent, UiCardComponent } from '../../../shared/components';
-import { SMEProfileStepsService } from '../../services/funding-steps.service';
+import { SMEProfileStepsService } from '../../services/sme-profile-steps.service';
 
 
 @Component({

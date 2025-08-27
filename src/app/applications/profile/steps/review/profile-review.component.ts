@@ -1,3 +1,4 @@
+ 
 // src/app/profile/steps/review/profile-review.component.ts
 import { Component, signal, computed, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -5,12 +6,12 @@ import { Router } from '@angular/router';
 import { LucideAngularModule, 
   CheckCircle, AlertCircle, Clock, Building, FileText, 
   BarChart3, Target, Users, TrendingUp, DollarSign, 
-  Download, Edit, Eye, Sparkles, ArrowRight 
+  Download, Edit, Eye, Sparkles, ArrowRight
 } from 'lucide-angular';
-import { UiCardComponent, UiButtonComponent } from '../../../../shared/components';
-import { SMEProfileStepsService } from '../../../services/sme-profile-steps.service';
+import { UiCardComponent, UiButtonComponent } from '../../../../shared/components'; 
 import { ProfileDataTransformerService } from '../../../services/profile-data-transformer.service';
-import { AIApplicationAnalysisComponent } from '../../../applications/components/ai-analysis/ai-application-analysis.component';
+import { AIApplicationAnalysisComponent } from '../../../../ai/ai-analysis/ai-application-analysis.component';
+import { SMEProfileStepsService } from '../../../services/sme-profile-steps.service';
 
 interface SectionSummary {
   stepId: string;
@@ -31,6 +32,13 @@ interface ProfileOverview {
   monthlyRevenue: string;
   requestedFunding: string;
   completionPercentage: number;
+  readinessScore: number;
+}
+
+interface ProfileReadiness {
+  level: 'excellent' | 'good' | 'fair' | 'poor';
+  message: string;
+  recommendations: string[];
   readinessScore: number;
 }
 
@@ -97,6 +105,7 @@ export class ProfileReviewComponent implements OnInit {
   private buildProfileOverview(): ProfileOverview {
     const data = this.profileData();
     const completion = this.completionSummary();
+    const readiness = this.assessProfileReadiness();
     
     return {
       companyName: data.businessInfo?.companyName || 'Not specified',
@@ -106,7 +115,7 @@ export class ProfileReviewComponent implements OnInit {
       monthlyRevenue: data.financialInfo?.monthlyRevenue || 'Not specified',
       requestedFunding: data.fundingInfo?.amountRequired || 'Not specified',
       completionPercentage: completion.percentage,
-      readinessScore: this.calculateReadinessScore()
+      readinessScore: readiness.readinessScore
     };
   }
 
@@ -137,42 +146,42 @@ export class ProfileReviewComponent implements OnInit {
   }
 
   private buildCompanyInfoSummary(step: any, data: any): SectionSummary {
-    const businessInfo = data.businessInfo;
-    const personalInfo = data.personalInfo;
+    const businessInfo = data.businessInfo || {};
+    const personalInfo = data.personalInfo || {};
     
     const keyData = [
       { 
         label: 'Company Name', 
-        value: businessInfo?.companyName || 'Not provided',
-        status: businessInfo?.companyName ? 'complete' : 'incomplete'
+        value: businessInfo.companyName || 'Not provided',
+        status: (businessInfo.companyName ? 'complete' : 'incomplete') as 'complete' | 'incomplete'
       },
       { 
         label: 'Registration Number', 
-        value: businessInfo?.registrationNumber || 'Not provided',
-        status: businessInfo?.registrationNumber ? 'complete' : 'incomplete'
+        value: businessInfo.registrationNumber || 'Not provided',
+        status: (businessInfo.registrationNumber ? 'complete' : 'incomplete') as 'complete' | 'incomplete'
       },
       { 
         label: 'Industry', 
-        value: businessInfo?.industry || 'Not provided',
-        status: businessInfo?.industry ? 'complete' : 'incomplete'
+        value: businessInfo.industry || 'Not provided',
+        status: (businessInfo.industry ? 'complete' : 'incomplete') as 'complete' | 'incomplete'
       },
       { 
         label: 'Contact Person', 
-        value: personalInfo?.firstName ? `${personalInfo.firstName} ${personalInfo.lastName || ''}` : 'Not provided',
-        status: personalInfo?.firstName ? 'complete' : 'incomplete'
+        value: personalInfo.firstName ? `${personalInfo.firstName} ${personalInfo.lastName || ''}`.trim() : 'Not provided',
+        status: (personalInfo.firstName ? 'complete' : 'incomplete') as 'complete' | 'incomplete'
       }
     ];
 
     const missingItems = [];
-    if (!businessInfo?.companyName) missingItems.push('Company name');
-    if (!businessInfo?.registrationNumber) missingItems.push('Registration number');
-    if (!businessInfo?.industry) missingItems.push('Industry type');
-    if (!personalInfo?.firstName) missingItems.push('Contact person details');
+    if (!businessInfo.companyName) missingItems.push('Company name');
+    if (!businessInfo.registrationNumber) missingItems.push('Registration number');
+    if (!businessInfo.industry) missingItems.push('Industry type');
+    if (!personalInfo.firstName) missingItems.push('Contact person details');
 
     return {
       stepId: step.id,
       title: step.title,
-      icon: BuildingIcon,
+      icon: Building,
       completed: step.completed,
       completionPercentage: this.calculateSectionCompletion(keyData),
       keyData,
@@ -188,29 +197,29 @@ export class ProfileReviewComponent implements OnInit {
       { 
         label: 'Total Documents', 
         value: `${docCount} uploaded`,
-        status: docCount > 0 ? 'complete' : 'incomplete'
+        status: (docCount > 0 ? 'complete' : 'incomplete') as 'complete' | 'incomplete'
       },
       { 
         label: 'Company Registration', 
-        value: docs.companyProfile || docs.companyRegistration ? 'Uploaded' : 'Missing',
-        status: (docs.companyProfile || docs.companyRegistration) ? 'complete' : 'incomplete'
+        value: docs.companyProfile || docs.cipDocument ? 'Uploaded' : 'Missing',
+        status: (docs.companyProfile || docs.cipDocument ? 'complete' : 'incomplete') as 'complete' | 'incomplete'
       },
       { 
         label: 'Financial Statements', 
-        value: docs.currentYearFinancials || docs.financialStatements ? 'Uploaded' : 'Missing',
-        status: (docs.currentYearFinancials || docs.financialStatements) ? 'complete' : 'incomplete'
+        value: docs.financialStatements ? 'Uploaded' : 'Missing',
+        status: (docs.financialStatements ? 'complete' : 'incomplete') as 'complete' | 'incomplete'
       }
     ];
 
     const missingItems = [];
-    if (!docs.companyProfile && !docs.companyRegistration) missingItems.push('Company registration document');
-    if (!docs.currentYearFinancials && !docs.financialStatements) missingItems.push('Financial statements');
+    if (!docs.companyProfile && !docs.cipDocument) missingItems.push('Company registration document');
+    if (!docs.financialStatements) missingItems.push('Financial statements');
     if (!docs.taxPin && !docs.taxClearance) missingItems.push('Tax compliance documents');
 
     return {
       stepId: step.id,
       title: step.title,
-      icon: FileTextIcon,
+      icon: FileText,
       completed: step.completed,
       completionPercentage: this.calculateSectionCompletion(keyData),
       keyData,
@@ -225,17 +234,17 @@ export class ProfileReviewComponent implements OnInit {
       { 
         label: 'Business Model', 
         value: assessment.businessModel ? 'Defined' : 'Not defined',
-        status: assessment.businessModel ? 'complete' : 'incomplete'
+        status: (assessment.businessModel ? 'complete' : 'incomplete') as 'complete' | 'incomplete'
       },
       { 
         label: 'Target Markets', 
         value: assessment.targetMarkets?.length > 0 ? `${assessment.targetMarkets.length} markets` : 'Not specified',
-        status: assessment.targetMarkets?.length > 0 ? 'complete' : 'incomplete'
+        status: (assessment.targetMarkets?.length > 0 ? 'complete' : 'incomplete') as 'complete' | 'incomplete'
       },
       { 
         label: 'Value Proposition', 
         value: assessment.valueProposition ? 'Defined' : 'Not defined',
-        status: assessment.valueProposition ? 'complete' : 'incomplete'
+        status: (assessment.valueProposition ? 'complete' : 'incomplete') as 'complete' | 'incomplete'
       }
     ];
 
@@ -247,7 +256,7 @@ export class ProfileReviewComponent implements OnInit {
     return {
       stepId: step.id,
       title: step.title,
-      icon: BarChart3Icon,
+      icon: BarChart3,
       completed: step.completed,
       completionPercentage: this.calculateSectionCompletion(keyData),
       keyData,
@@ -256,28 +265,33 @@ export class ProfileReviewComponent implements OnInit {
   }
 
   private buildSwotAnalysisSummary(step: any, data: any): SectionSummary {
-    const swot = data.swotAnalysis || {};
+    const swot = data.swotAnalysis || { 
+      strengths: [], 
+      weaknesses: [], 
+      opportunities: [], 
+      threats: [] 
+    };
     
     const keyData = [
       { 
         label: 'Strengths', 
         value: swot.strengths?.length > 0 ? `${swot.strengths.length} identified` : 'None listed',
-        status: swot.strengths?.length >= 2 ? 'complete' : 'incomplete'
+        status: (swot.strengths?.length >= 2 ? 'complete' : 'incomplete') as 'complete' | 'incomplete'
       },
       { 
         label: 'Weaknesses', 
         value: swot.weaknesses?.length > 0 ? `${swot.weaknesses.length} identified` : 'None listed',
-        status: swot.weaknesses?.length >= 2 ? 'complete' : 'incomplete'
+        status: (swot.weaknesses?.length >= 2 ? 'complete' : 'incomplete') as 'complete' | 'incomplete'
       },
       { 
         label: 'Opportunities', 
         value: swot.opportunities?.length > 0 ? `${swot.opportunities.length} identified` : 'None listed',
-        status: swot.opportunities?.length >= 2 ? 'complete' : 'incomplete'
+        status: (swot.opportunities?.length >= 2 ? 'complete' : 'incomplete') as 'complete' | 'incomplete'
       },
       { 
         label: 'Threats', 
         value: swot.threats?.length > 0 ? `${swot.threats.length} identified` : 'None listed',
-        status: swot.threats?.length >= 2 ? 'complete' : 'incomplete'
+        status: (swot.threats?.length >= 2 ? 'complete' : 'incomplete') as 'complete' | 'incomplete'
       }
     ];
 
@@ -290,7 +304,7 @@ export class ProfileReviewComponent implements OnInit {
     return {
       stepId: step.id,
       title: step.title,
-      icon: TargetIcon,
+      icon: Target,
       completed: step.completed,
       completionPercentage: this.calculateSectionCompletion(keyData),
       keyData,
@@ -305,12 +319,12 @@ export class ProfileReviewComponent implements OnInit {
       { 
         label: 'Management Team', 
         value: management.managementTeam?.length > 0 ? `${management.managementTeam.length} members` : 'Not defined',
-        status: management.managementTeam?.length > 0 ? 'complete' : 'incomplete'
+        status: (management.managementTeam?.length > 0 ? 'complete' : 'incomplete') as 'complete' | 'incomplete'
       },
       { 
         label: 'Board of Directors', 
         value: management.boardOfDirectors?.length > 0 ? `${management.boardOfDirectors.length} members` : 'Not defined',
-        status: management.boardOfDirectors?.length > 0 ? 'complete' : 'incomplete'
+        status: (management.boardOfDirectors?.length > 0 ? 'complete' : 'incomplete') as 'complete' | 'incomplete'
       }
     ];
 
@@ -322,7 +336,7 @@ export class ProfileReviewComponent implements OnInit {
     return {
       stepId: step.id,
       title: step.title,
-      icon: UsersIcon,
+      icon: Users,
       completed: step.completed,
       completionPercentage: this.calculateSectionCompletion(keyData),
       keyData,
@@ -337,17 +351,17 @@ export class ProfileReviewComponent implements OnInit {
       { 
         label: 'Mission Statement', 
         value: strategy.missionStatement ? 'Defined' : 'Not defined',
-        status: strategy.missionStatement ? 'complete' : 'incomplete'
+        status: (strategy.missionStatement ? 'complete' : 'incomplete') as 'complete' | 'incomplete'
       },
       { 
         label: 'Strategic Objectives', 
         value: strategy.strategicObjectives?.length > 0 ? `${strategy.strategicObjectives.length} objectives` : 'Not defined',
-        status: strategy.strategicObjectives?.length > 0 ? 'complete' : 'incomplete'
+        status: (strategy.strategicObjectives?.length > 0 ? 'complete' : 'incomplete') as 'complete' | 'incomplete'
       },
       { 
         label: 'Growth Strategy', 
         value: strategy.expansionPlans ? 'Defined' : 'Not defined',
-        status: strategy.expansionPlans ? 'complete' : 'incomplete'
+        status: (strategy.expansionPlans ? 'complete' : 'incomplete') as 'complete' | 'incomplete'
       }
     ];
 
@@ -361,7 +375,7 @@ export class ProfileReviewComponent implements OnInit {
     return {
       stepId: step.id,
       title: step.title,
-      icon: TrendingUpIcon,
+      icon: TrendingUp,
       completed: step.completed,
       completionPercentage: this.calculateSectionCompletion(keyData),
       keyData,
@@ -372,28 +386,28 @@ export class ProfileReviewComponent implements OnInit {
   private buildFinancialProfileSummary(step: any, data: any): SectionSummary {
     const financialInfo = data.financialInfo || {};
     const financialAnalysis = data.financialAnalysis || {};
-    const fundingInfo = data.fundingInfo || {};
+    const fundingInfo = data.fundingInfo || { amountRequired: '', purposeOfFunding: '' };
     
     const keyData = [
       { 
         label: 'Monthly Revenue', 
         value: financialInfo.monthlyRevenue ? `R${financialInfo.monthlyRevenue}` : 'Not provided',
-        status: financialInfo.monthlyRevenue ? 'complete' : 'incomplete'
+        status: (financialInfo.monthlyRevenue ? 'complete' : 'incomplete') as 'complete' | 'incomplete'
       },
       { 
         label: 'Financial Template', 
         value: financialAnalysis.uploadedFile ? 'Uploaded' : 'Not uploaded',
-        status: financialAnalysis.uploadedFile ? 'complete' : 'warning'
+        status: (financialAnalysis.uploadedFile ? 'complete' : 'warning') as 'complete' | 'warning'
       },
       { 
         label: 'Funding Required', 
         value: fundingInfo.amountRequired ? `R${fundingInfo.amountRequired}` : 'Not specified',
-        status: fundingInfo.amountRequired ? 'complete' : 'incomplete'
+        status: (fundingInfo.amountRequired ? 'complete' : 'incomplete') as 'complete' | 'incomplete'
       },
       { 
         label: 'Purpose of Funding', 
         value: fundingInfo.purposeOfFunding ? 'Specified' : 'Not specified',
-        status: fundingInfo.purposeOfFunding ? 'complete' : 'incomplete'
+        status: (fundingInfo.purposeOfFunding ? 'complete' : 'incomplete') as 'complete' | 'incomplete'
       }
     ];
 
@@ -408,7 +422,7 @@ export class ProfileReviewComponent implements OnInit {
     return {
       stepId: step.id,
       title: step.title,
-      icon: DollarSignIcon,
+      icon: DollarSign,
       completed: step.completed,
       completionPercentage: this.calculateSectionCompletion(keyData),
       keyData,
@@ -420,7 +434,7 @@ export class ProfileReviewComponent implements OnInit {
     return {
       stepId: step.id,
       title: step.title,
-      icon: ClockIcon,
+      icon: Clock,
       completed: step.completed,
       completionPercentage: step.completed ? 100 : 0,
       keyData: [],
@@ -438,62 +452,59 @@ export class ProfileReviewComponent implements OnInit {
     return Math.round((completeItems / keyData.length) * 100);
   }
 
+
+  
   private calculateReadinessScore(): number {
-    const data = this.profileData();
-    let score = 0;
-    let maxScore = 100;
+  const data = this.profileData();
+  let score = 0;
 
-    // Company information (20 points)
-    if (data.businessInfo?.companyName) score += 5;
-    if (data.businessInfo?.registrationNumber) score += 5;
-    if (data.businessInfo?.industry) score += 5;
-    if (data.personalInfo?.firstName) score += 5;
+  // Company information (20 points)
+  if (data.businessInfo?.companyName) score += 5;
+  if (data.businessInfo?.registrationNumber) score += 5;
+  if (data.businessInfo?.industry) score += 5;
+  if (data.personalInfo?.firstName) score += 5;
 
-    // Documents (15 points)
-    const docs = data.supportingDocuments || data.documents || {};
-    if (Object.keys(docs).length > 0) score += 5;
-    if (docs.companyProfile || docs.companyRegistration) score += 5;
-    if (docs.currentYearFinancials || docs.financialStatements) score += 5;
+  // Documents (15 points) - Type cast to any to bypass TypeScript errors
+  const docs = data.supportingDocuments || data.documents || {} as any;
+  if (Object.keys(docs).length > 0) score += 5;
+  if (docs.companyProfile || docs.cipDocument) score += 5;
+  if (docs.financialStatements) score += 5;
 
-    // Business assessment (15 points)
-    const assessment = data.businessReview || {};
-    if (assessment.businessModel) score += 5;
-    if (assessment.targetMarkets?.length > 0) score += 5;
-    if (assessment.valueProposition) score += 5;
+  // Business assessment (15 points) - Type cast to any
+  const assessment = data.businessReview || {} as any;
+  if (assessment.businessModel) score += 5;
+  if (assessment.targetMarkets?.length > 0) score += 5;
+  if (assessment.valueProposition) score += 5;
 
-    // SWOT analysis (10 points)
-    const swot = data.swotAnalysis || {};
-    if (swot.strengths?.length >= 2) score += 2.5;
-    if (swot.weaknesses?.length >= 2) score += 2.5;
-    if (swot.opportunities?.length >= 2) score += 2.5;
-    if (swot.threats?.length >= 2) score += 2.5;
+  // SWOT analysis (10 points) - Type cast to any
+  const swot = data.swotAnalysis || {} as any;
+  if (swot.strengths?.length >= 2) score += 2.5;
+  if (swot.weaknesses?.length >= 2) score += 2.5;
+  if (swot.opportunities?.length >= 2) score += 2.5;
+  if (swot.threats?.length >= 2) score += 2.5;
 
-    // Management (10 points)
-    const management = data.managementGovernance || {};
-    if (management.managementTeam?.length > 0) score += 10;
+  // Management (10 points) - Type cast to any
+  const management = data.managementGovernance || {} as any;
+  if (management.managementTeam?.length > 0) score += 10;
 
-    // Strategy (15 points)
-    const strategy = data.businessPlan || {};
-    if (strategy.missionStatement) score += 5;
-    if (strategy.strategicObjectives?.length > 0) score += 5;
-    if (strategy.expansionPlans) score += 5;
+  // Strategy (15 points) - Type cast to any
+  const strategy = data.businessPlan || {} as any;
+  if (strategy.missionStatement) score += 5;
+  if (strategy.strategicObjectives?.length > 0) score += 5;
+  if (strategy.expansionPlans) score += 5;
 
-    // Financial (15 points)
-    const financial = data.financialInfo || {};
-    const fundingInfo = data.fundingInfo || {};
-    if (financial.monthlyRevenue) score += 5;
-    if (fundingInfo.amountRequired) score += 5;
-    if (fundingInfo.purposeOfFunding) score += 5;
+  // Financial (15 points) - Type cast to any
+  const financial = data.financialInfo || {} as any;
+  const fundingInfo = data.fundingInfo || {} as any;
+  if (financial.monthlyRevenue) score += 5;
+  if (fundingInfo.amountRequired) score += 5;
+  if (fundingInfo.purposeOfFunding) score += 5;
 
-    return Math.round((score / maxScore) * 100);
-  }
+  return Math.round((score / 100) * 100);
+}
 
-  private assessProfileReadiness(): {
-    level: 'excellent' | 'good' | 'fair' | 'poor';
-    message: string;
-    recommendations: string[];
-  } {
-    const score = this.readinessAssessment().readinessScore;
+  private assessProfileReadiness(): ProfileReadiness {
+    const score = this.calculateReadinessScore();
     const completion = this.completionSummary();
 
     if (score >= 90 && completion.isComplete) {
@@ -504,7 +515,8 @@ export class ProfileReviewComponent implements OnInit {
           'Consider downloading a complete profile report',
           'You can now confidently apply to funding opportunities',
           'Keep your financial data updated regularly'
-        ]
+        ],
+        readinessScore: score
       };
     } else if (score >= 70) {
       return {
@@ -514,7 +526,8 @@ export class ProfileReviewComponent implements OnInit {
           'Complete any missing required sections',
           'Add more detail to strengthen your application',
           'Consider uploading additional supporting documents'
-        ]
+        ],
+        readinessScore: score
       };
     } else if (score >= 50) {
       return {
@@ -524,7 +537,8 @@ export class ProfileReviewComponent implements OnInit {
           'Focus on completing all required sections first',
           'Develop a comprehensive business strategy',
           'Ensure all financial information is accurate and complete'
-        ]
+        ],
+        readinessScore: score
       };
     } else {
       return {
@@ -534,7 +548,8 @@ export class ProfileReviewComponent implements OnInit {
           'Start with basic company information and documents',
           'Develop your business model and strategy',
           'Consider seeking business development assistance'
-        ]
+        ],
+        readinessScore: score
       };
     }
   }
@@ -553,15 +568,15 @@ export class ProfileReviewComponent implements OnInit {
 
   getSectionIcon(stepId: string): any {
     const iconMap: { [key: string]: any } = {
-      'company-info': BuildingIcon,
-      'documents': FileTextIcon,
-      'business-assessment': BarChart3Icon,
-      'swot-analysis': TargetIcon,
-      'management': UsersIcon,
-      'business-strategy': TrendingUpIcon,
-      'financial-profile': DollarSignIcon
+      'company-info': Building,
+      'documents': FileText,
+      'business-assessment': BarChart3,
+      'swot-analysis': Target,
+      'management': Users,
+      'business-strategy': TrendingUp,
+      'financial-profile': DollarSign
     };
-    return iconMap[stepId] || ClockIcon;
+    return iconMap[stepId] || Clock;
   }
 
   getCompletionStatusClass(percentage: number): string {
@@ -783,14 +798,31 @@ END OF REPORT
 
   // Method for AI analysis component
   getCoverInformation(): any {
-    const fundingInfo = this.profileData().fundingInfo || {};
+    const fundingInfo = this.profileData().fundingInfo || { 
+  amountRequired: '', 
+  purposeOfFunding: '', 
+  timelineRequired: '' 
+};
     
     return {
       requestedAmount: fundingInfo.amountRequired || '',
       purposeStatement: fundingInfo.purposeOfFunding || '',
       useOfFunds: fundingInfo.purposeOfFunding || '', // Could be more specific
       timeline: fundingInfo.timelineRequired || '',
-      opportunityAlignment: '' // Would be populated when applying to specific opportunities
+      opportunityAlignment: ''  
     };
   }
+
+  onAnalysisCompleted(result: any) {
+  console.log('AI Analysis completed:', result);
+  // Handle analysis results
+}
+
+onImprovementRequested() {
+  // Navigate to first incomplete section or show improvement suggestions
+  const incompleteSections = this.sectionSummaries().filter(s => !s.completed);
+  if (incompleteSections.length > 0) {
+    this.editSection(incompleteSections[0].stepId);
+  }
+}
 }

@@ -3,7 +3,7 @@
 import { Component, signal, OnInit } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { UiInputComponent, UiCardComponent, UiButtonComponent } from '../../../shared/components';
-import { SMEProfileStepsService, ProfileData } from '../../services/funding-steps.service';
+import { SMEProfileStepsService, ProfileData } from '../../services/sme-profile-steps.service';
 
 @Component({
   selector: 'app-personal-info',

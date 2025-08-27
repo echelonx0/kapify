@@ -1,9 +1,9 @@
 // src/app/profile/steps/profile-steps-layout/profile-steps-layout.component.html - RESPONSIVE TEMPLATE
 import { Component, signal, OnInit, inject, HostListener } from '@angular/core';
 import { Router, RouterOutlet } from '@angular/router';
-import { LucideAngularModule, ArrowLeft, Check, Building, FileText, BarChart3, Target, Users, TrendingUp, DollarSign, Home, Clock, AlertCircle, CheckCircle, Menu, X } from 'lucide-angular';
+import { LucideAngularModule, ArrowLeft, Check, Building, FileText, BarChart3, Target, Users, TrendingUp, DollarSign, Home, Clock, AlertCircle, CheckCircle, Menu, X, Eye } from 'lucide-angular';
 import { UiButtonComponent } from '../../../../shared/components';
-import { SMEProfileStepsService } from '../../../services/funding-steps.service';
+import { SMEProfileStepsService } from '../../../services/sme-profile-steps.service';
 import { CommonModule } from '@angular/common';
 
 @Component({
@@ -83,7 +83,7 @@ export class  ProfileStepsLayoutComponent implements OnInit {
   MenuIcon = Menu;
   XIcon = X;
 
-  // Step Configuration (same as before)
+  // Step Configuration 
   private stepInfo = [
     {
       id: 'company-info',
@@ -153,7 +153,16 @@ export class  ProfileStepsLayoutComponent implements OnInit {
       estimatedTime: '18 min',
       priority: 'high' as const,
       dependencies: ['documents']
-    }
+    },
+    {
+  id: 'review',
+  title: 'Review & Analysis', 
+  shortTitle: 'Review',
+  description: 'Review your complete profile and get AI insights',
+  icon: Eye, // or Sparkles
+  estimatedTime: '5 min',
+  priority: 'low' as const
+}
   ];
 
   @HostListener('window:resize', ['$event'])

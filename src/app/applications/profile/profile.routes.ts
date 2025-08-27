@@ -65,7 +65,11 @@ export const profileRoutes: Routes = [
             loadComponent: () => import('./steps/financial-analysis/financial-analysis.component').then(c => c.FinancialAnalysisComponent),
             title: 'Financial Profile - Funding Application'
           },
-
+{ 
+  path: 'review', 
+  loadComponent: () => import('./steps/review/profile-review.component').then(c => c.ProfileReviewComponent),
+  title: 'Review & Analysis - Funding Application'
+},
           // ===============================
           // LEGACY ROUTES (BACKWARD COMPATIBILITY)
           // Keep these for existing bookmarks/links
@@ -123,36 +127,4 @@ export const profileRoutes: Routes = [
     ]
   }
 ];
-
-// ===============================
-// MIGRATION NOTES
-// ===============================
-
-/*
-ROUTE MIGRATION PLAN:
-
-Phase 1 (Current): Dual routes with redirects
-- New routes: /profile/steps/company-info, /business-assessment, etc.
-- Legacy routes: /profile/steps/admin, /business-review, etc. → redirect to new
-- All existing bookmarks/links continue to work
-
-Phase 2 (After 6 months): Remove legacy routes
-- Remove all redirects
-- Update any remaining internal links
-- Remove commented OLD code
-
-NEW NAMING CONVENTION FOR SME FUNDING:
-✅ admin → company-info (Company Information)
-✅ documents → documents (Supporting Documents) 
-✅ business-review → business-assessment (Business Assessment)
-✅ swot → swot-analysis (Strategic Analysis)
-✅ management → management (Leadership & Governance)
-✅ business-plan → business-strategy (Business Strategy)  
-✅ financial → financial-profile (Financial Profile)
-
-BENEFITS:
-- Clearer intent for SME funding context
-- Better SEO with descriptive URLs
-- Professional terminology for business users
-- Scalable naming for different application types
-*/
+ 
