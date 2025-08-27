@@ -22,7 +22,19 @@ import { SMEOpportunitiesService } from '../services/opportunities.service';
     UiButtonComponent,
     LucideAngularModule
   ],
-  templateUrl: 'funding-opportunities.component.html'
+  templateUrl: 'funding-opportunities.component.html',
+  styles: [`
+    @keyframes gradient {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.animate-gradient {
+  background-size: 200% 200%;
+  animation: gradient 10s ease infinite;
+}
+`]
 })
 export class FundingOpportunitiesComponent implements OnInit, OnDestroy {
   // Services
