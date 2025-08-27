@@ -22,17 +22,19 @@ interface NavItem {
   template: `
     <nav class="fixed left-0 top-0 h-full w-16 hover:w-64 bg-white border-r border-neutral-200 flex flex-col py-4 z-40 transition-all duration-300 ease-in-out group shadow-lg">
       <!-- Logo Section -->
-      <div class="flex items-center justify-center group-hover:justify-start group-hover:px-4 mb-8">
-        <button 
-          (click)="goToDashboard()"
-          class="w-10 h-10 bg-primary-500 rounded-xl flex items-center justify-center hover:bg-primary-600 transition-colors flex-shrink-0"
-        >
-          <span class="text-white font-bold text-lg">K</span>
-        </button>
-        <span class="ml-3 font-bold text-xl text-neutral-900 opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">
-          Kapify
-        </span>
-      </div>
+ 
+   <div class="flex items-center w-full mb-8 px-0 group-hover:px-4">
+  <button 
+    (click)="goToDashboard()"
+    class="w-10 h-10 bg-primary-500 rounded-xl flex items-center justify-center hover:bg-primary-600 transition-colors flex-shrink-0 ml-3"
+  >
+    <span class="text-white font-bold text-lg">K</span>
+  </button>
+  <span class="ml-3 font-bold text-xl text-neutral-900 opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">
+    Kapify
+  </span>
+</div>
+
 
       <!-- User Profile Section -->
  
