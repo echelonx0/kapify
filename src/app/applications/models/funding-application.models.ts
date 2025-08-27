@@ -1,15 +1,15 @@
 // src/app/profile/models/funding-application.models.ts
 export interface FundingApplicationProfile {
-  // Company Information (formerly admin)
+  // Company Information  
   companyInfo?: CompanyInformation;
   
-  // Supporting Documents (unchanged)
+  // Supporting Documents  
   supportingDocuments?: SupportingDocuments;
   
-  // Business Assessment (formerly business-review)
+  // Business Assessment  
   businessAssessment?: BusinessAssessment;
   
-  // Strategic Analysis (formerly swot)
+  // Strategic Analysis 
   swotAnalysis?: SWOTAnalysis;
   
   // Leadership & Governance (formerly management)

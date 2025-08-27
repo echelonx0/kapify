@@ -1,10 +1,15 @@
 // src/app/applications/components/ai-analysis/ai-application-analysis.component.ts
-import { Component, Input, Output, EventEmitter, signal, computed } from '@angular/core';
+import { Component, Input, Output, EventEmitter, signal, computed, inject, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { LucideAngularModule, Bot, Sparkles, TrendingUp, AlertTriangle, CheckCircle, Loader2, Target, Award, Shield } from 'lucide-angular';
+import { LucideAngularModule, Bot, Sparkles, TrendingUp, AlertTriangle, CheckCircle, Loader2, Target, Award, Shield, RefreshCw, XCircle } from 'lucide-angular';
+import { Subject, takeUntil } from 'rxjs';
 import { UiButtonComponent, UiCardComponent } from '../../shared/components';
 import { FundingOpportunity } from '../../shared/models/funder.models';
+import { AIAnalysisService, AIAnalysisRequest } from '../services/ai-analysis.service';
+import { FundingApplicationProfile } from '../../applications/models/funding-application.models';
+
  
+
 interface AIAnalysisResult {
   matchScore: number;
   strengths: string[];
@@ -19,6 +24,7 @@ interface AIAnalysisResult {
     impact: string;
   }>;
   generatedAt: Date;
+  modelVersion?: string;
 }
 
 interface CoverInformation {
@@ -40,14 +46,21 @@ interface CoverInformation {
   ],
   templateUrl: './ai-application-analysis.component.html'
 })
-export class AIApplicationAnalysisComponent {
+export class AIApplicationAnalysisComponent implements OnDestroy {
   @Input() opportunity: FundingOpportunity | null = null;
   @Input() applicationData: CoverInformation | null = null;
+  @Input() applicationId: string | null = null;  
+  @Input()
+  businessProfile!: FundingApplicationProfile;  
   @Input() isSubmitted = false;
   
   @Output() analysisCompleted = new EventEmitter<AIAnalysisResult>();
   @Output() improvementRequested = new EventEmitter<void>();
   @Output() proceedRequested = new EventEmitter<void>();
+
+  // Services
+  private aiAnalysisService = inject(AIAnalysisService);
+  private destroy$ = new Subject<void>();
 
   // Icons
   BotIcon = Bot;
@@ -59,9 +72,14 @@ export class AIApplicationAnalysisComponent {
   TargetIcon = Target;
   AwardIcon = Award;
   ShieldIcon = Shield;
+  RefreshCwIcon = RefreshCw;
+  XCircleIcon = XCircle;
 
-  // State
-  isAnalyzing = signal(false);
+  // State from AI service
+  isAnalyzing = computed(() => this.aiAnalysisService.isAnalyzing());
+  analysisError = computed(() => this.aiAnalysisService.error());
+  
+  // Local state
   analysisResult = signal<AIAnalysisResult | null>(null);
   analysisProgress = signal(0);
   currentAnalysisStep = signal('');
@@ -71,110 +89,136 @@ export class AIApplicationAnalysisComponent {
     if (!this.opportunity || !this.applicationData) return false;
     
     const data = this.applicationData;
-    return !!(data.requestedAmount && data.purposeStatement && data.useOfFunds);
+    return !!(
+      data.requestedAmount && 
+      parseFloat(data.requestedAmount) > 0 &&
+      data.purposeStatement?.trim() && 
+      data.useOfFunds?.trim()
+    );
   });
 
+  hasError = computed(() => !!this.analysisError());
+  
+  constructor() {
+    console.log('AI Application Analysis Component initialized with real AI service');
+  }
+
+  ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
   async startAnalysis() {
-    if (!this.canAnalyze()) return;
+    if (!this.canAnalyze()) {
+      console.warn('Cannot analyze - missing required data');
+      return;
+    }
 
-    this.isAnalyzing.set(true);
-    this.analysisProgress.set(0);
+    const request = this.buildAnalysisRequest();
+    if (!request) {
+      console.error('Failed to build analysis request');
+      return;
+    }
+
+    // Clear previous results and errors
     this.analysisResult.set(null);
+    this.aiAnalysisService.clearError();
+    
+    // Start progress simulation
+    this.startProgressSimulation();
 
-    try {
-      // Simulate progressive analysis steps
-      await this.runAnalysisSteps();
-      
-      // Generate analysis results
-      const result = await this.generateAnalysisResults();
-      
-      this.analysisResult.set(result);
-      this.analysisCompleted.emit(result);
-      
-    } catch (error) {
-      console.error('Analysis failed:', error);
-    } finally {
-      this.isAnalyzing.set(false);
-    }
+    // Call real AI analysis service
+    this.aiAnalysisService.analyzeApplication(request)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (result) => {
+          // Transform service result to component format
+          const transformedResult = this.transformServiceResult(result);
+          this.analysisResult.set(transformedResult);
+          this.analysisCompleted.emit(transformedResult);
+          this.completeProgress();
+          console.log('AI Analysis completed:', result);
+        },
+        error: (error) => {
+          console.error('AI Analysis failed:', error);
+          this.analysisProgress.set(0);
+          this.currentAnalysisStep.set('');
+          // Error is already set in the service
+        }
+      });
   }
 
-  private async runAnalysisSteps() {
-    const steps = [
-      { progress: 20, step: 'Analyzing application completeness...' },
-      { progress: 40, step: 'Matching against opportunity criteria...' },
-      { progress: 60, step: 'Evaluating financial requirements...' },
-      { progress: 80, step: 'Assessing success probability...' },
-      { progress: 100, step: 'Generating insights and recommendations...' }
-    ];
+  private buildAnalysisRequest(): AIAnalysisRequest | null {
+    const opportunity = this.opportunity;
+    const applicationData = this.applicationData;
 
-    for (const { progress, step } of steps) {
-      this.currentAnalysisStep.set(step);
-      this.analysisProgress.set(progress);
-      await new Promise(resolve => setTimeout(resolve, 800));
+    if (!opportunity || !applicationData) {
+      return null;
     }
-  }
-
-  private async generateAnalysisResults(): Promise<AIAnalysisResult> {
-    const opportunity = this.opportunity!;
-    const application = this.applicationData!;
-    
-    const requestedAmount = parseFloat(application.requestedAmount);
-    const isAmountAppropriate = requestedAmount >= opportunity.minInvestment && 
-                               requestedAmount <= opportunity.maxInvestment;
-    
-    // Calculate match score based on various factors
-    let matchScore = 60; // Base score
-    
-    if (isAmountAppropriate) matchScore += 15;
-    if (application.purposeStatement.length > 100) matchScore += 10;
-    if (application.useOfFunds.length > 100) matchScore += 10;
-    if (application.opportunityAlignment.length > 50) matchScore += 5;
-    
-    // Add some randomness for demonstration
-    matchScore = Math.min(95, matchScore + Math.random() * 10);
 
     return {
-      matchScore: Math.round(matchScore),
-      successProbability: Math.round(matchScore * 0.8 + Math.random() * 20),
-      competitivePositioning: matchScore >= 80 ? 'strong' : matchScore >= 60 ? 'moderate' : 'weak',
-      
-      strengths: [
-        'Clear funding purpose and business case',
-        'Appropriate funding amount for opportunity',
-        'Well-structured use of funds breakdown',
-        'Strong alignment with opportunity criteria'
-      ].slice(0, Math.floor(matchScore / 25) + 1),
-      
-      improvementAreas: [
-        'Provide more detailed financial projections',
-        'Include market analysis and competitive landscape',
-        'Expand on risk mitigation strategies',
-        'Add timeline milestones and key metrics'
-      ].slice(0, Math.floor((100 - matchScore) / 20) + 1),
-      
-      recommendations: [
-        'Consider adding more specific financial projections',
-        'Include letters of intent or customer commitments',
-        'Provide detailed implementation timeline',
-        'Add risk assessment and mitigation plans'
-      ],
-      
-      riskFactors: matchScore < 70 ? [
-        {
-          factor: 'Limited financial detail',
-          severity: 'medium' as const,
-          impact: 'May require additional financial documentation'
-        }
-      ] : [],
-      
-      keyInsights: [
-        'Application shows strong potential for approval',
-        'Funding amount is well-justified for stated purpose',
-        'Business case aligns with funder priorities'
-      ],
-      
-      generatedAt: new Date()
+      opportunity,
+      applicationData: {
+        requestedAmount: applicationData.requestedAmount || '0',
+        purposeStatement: applicationData.purposeStatement || '',
+        useOfFunds: applicationData.useOfFunds || '',
+        timeline: applicationData.timeline || '',
+        opportunityAlignment: applicationData.opportunityAlignment || ''
+      },
+      businessProfile: this.businessProfile
     };
+  }
+
+  private transformServiceResult(serviceResult: any): AIAnalysisResult {
+    return {
+      matchScore: serviceResult.matchScore || 0,
+      successProbability: serviceResult.successProbability || 0,
+      competitivePositioning: serviceResult.competitivePositioning || 'weak',
+      strengths: serviceResult.strengths || [],
+      improvementAreas: serviceResult.improvementAreas || [],
+      keyInsights: serviceResult.keyInsights || [],
+      recommendations: serviceResult.recommendations || [],
+      riskFactors: serviceResult.riskFactors || [],
+      generatedAt: serviceResult.generatedAt || new Date(),
+      modelVersion: serviceResult.modelVersion
+    };
+  }
+
+  // Progress simulation for better UX
+  private startProgressSimulation() {
+    const steps = [
+      { progress: 15, step: 'Preparing application data...' },
+      { progress: 30, step: 'Analyzing opportunity match...' },
+      { progress: 50, step: 'Evaluating financial requirements...' },
+      { progress: 70, step: 'Assessing success probability...' },
+      { progress: 85, step: 'Generating insights...' }
+    ];
+
+    let currentStepIndex = 0;
+    
+    const updateProgress = () => {
+      if (currentStepIndex < steps.length && this.isAnalyzing()) {
+        const step = steps[currentStepIndex];
+        this.analysisProgress.set(step.progress);
+        this.currentAnalysisStep.set(step.step);
+        
+        currentStepIndex++;
+        setTimeout(updateProgress, 800 + Math.random() * 400); // Vary timing
+      }
+    };
+
+    updateProgress();
+  }
+
+  private completeProgress() {
+    this.analysisProgress.set(100);
+    this.currentAnalysisStep.set('Analysis complete!');
+    
+    // Clear progress after a moment
+    setTimeout(() => {
+      this.analysisProgress.set(0);
+      this.currentAnalysisStep.set('');
+    }, 1000);
   }
 
   refreshAnalysis() {
@@ -189,7 +233,40 @@ export class AIApplicationAnalysisComponent {
     this.proceedRequested.emit();
   }
 
-  // UI Helper Methods
+  // Error handling methods
+  retryAnalysis() {
+    this.aiAnalysisService.clearError();
+    this.startAnalysis();
+  }
+
+  getErrorMessage(): string {
+    return this.analysisError() || 'An unexpected error occurred';
+  }
+
+  clearError() {
+    this.aiAnalysisService.clearError();
+  }
+
+  // Validation helper
+  getCannotAnalyzeReason(): string {
+    if (!this.opportunity) return 'No opportunity data available';
+    if (!this.applicationData) return 'No application data available';
+    
+    const data = this.applicationData;
+    if (!data.requestedAmount || parseFloat(data.requestedAmount) <= 0) {
+      return 'Please specify a valid requested amount';
+    }
+    if (!data.purposeStatement?.trim()) {
+      return 'Please provide a purpose statement';
+    }
+    if (!data.useOfFunds?.trim()) {
+      return 'Please describe how you will use the funds';
+    }
+    
+    return 'Complete required fields to enable analysis';
+  }
+
+  // UI Helper Methods (unchanged from original)
   getScoreBarClass(score: number): string {
     if (score >= 80) return 'bg-gradient-to-r from-green-500 to-green-600';
     if (score >= 60) return 'bg-gradient-to-r from-orange-500 to-orange-600';
@@ -216,7 +293,23 @@ export class AIApplicationAnalysisComponent {
   }
 
   formatTime(date: Date): string {
-    return new Intl.RelativeTimeFormat('en', { numeric: 'auto' })
-      .format(Math.floor((date.getTime() - Date.now()) / 60000), 'minute');
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    
+    if (diffMins < 1) return 'just now';
+    if (diffMins < 60) return `${diffMins} minutes ago`;
+    
+    const diffHours = Math.floor(diffMins / 60);
+    if (diffHours < 24) return `${diffHours} hours ago`;
+    
+    const diffDays = Math.floor(diffHours / 24);
+    return `${diffDays} days ago`;
+  }
+
+  // Check if using real AI (for display purposes)
+  isUsingRealAI(): boolean {
+    const result = this.analysisResult();
+    return result?.modelVersion === 'gemini-2.5-flash';
   }
 }

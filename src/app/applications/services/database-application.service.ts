@@ -7,7 +7,7 @@ import { Application, ApplicationStatus, ReviewNote } from '../../shared/models/
 import { SharedSupabaseService } from '../../shared/services/shared-supabase.service';
  
 
-// Database interfaces that match the Supabase schema
+// Database  
 interface DatabaseApplication {
   id: string;
   applicant_id: string;

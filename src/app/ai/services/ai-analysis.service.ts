@@ -1,7 +1,15 @@
-// src/app/applications/services/ai-analysis.service.ts
-import { Injectable, signal } from '@angular/core';
-import { Observable, of, delay, map } from 'rxjs';
+// src/app/ai/services/ai-analysis.service.ts
+// Background processing - user doesn't wait, gets notified when ready
+
+import { Injectable, inject, signal } from '@angular/core';
+import { Observable, of, from, throwError, timer } from 'rxjs';
+import { switchMap, takeWhile, map, catchError, tap } from 'rxjs/operators';
+
+import { SharedSupabaseService } from '../../shared/services/shared-supabase.service';
+import { AuthService } from '../../auth/production.auth.service';
+import { ProfileManagementService } from '../../shared/services/profile-management.service';
 import { FundingOpportunity } from '../../shared/models/funder.models';
+import { FundingApplicationProfile } from '../../applications/models/funding-application.models';
 
 export interface AIAnalysisRequest {
   opportunity: FundingOpportunity;
@@ -12,372 +20,240 @@ export interface AIAnalysisRequest {
     timeline: string;
     opportunityAlignment: string;
   };
-  businessProfile?: any; // Optional business profile data
+  businessProfile: FundingApplicationProfile;
 }
 
 export interface AIAnalysisResult {
-  matchScore: number; // 0-100
+  matchScore: number;
   strengths: string[];
   improvementAreas: string[];
-  successProbability: number; // 0-100
+  successProbability: number;
   competitivePositioning: 'strong' | 'moderate' | 'weak';
   keyInsights: string[];
   recommendations: string[];
-  riskFactors: Array<{
-    factor: string;
-    severity: 'low' | 'medium' | 'high';
-    impact: string;
-  }>;
+  riskFactors: Array<{ factor: string; severity: 'low' | 'medium' | 'high'; impact: string }>;
   generatedAt: Date;
   analysisId: string;
+  modelVersion: string;
 }
 
-@Injectable({
-  providedIn: 'root'
-})
+@Injectable({ providedIn: 'root' })
 export class AIAnalysisService {
-  // Loading states
+  private supabase = inject(SharedSupabaseService);
+  private authService = inject(AuthService);
+  private profileService = inject(ProfileManagementService);
+
+  // Signals for UI
   isAnalyzing = signal<boolean>(false);
   error = signal<string | null>(null);
+  analysisProgress = signal<number>(0);
+  latestResult = signal<AIAnalysisResult | null>(null);
 
-  // Analysis cache to avoid re-running identical analyses
   private analysisCache = new Map<string, AIAnalysisResult>();
 
-  constructor() {}
+  constructor() {
+    console.log('AI Analysis Service initialized - Background processing mode');
+  }
 
   /**
-   * Perform comprehensive AI analysis of funding application
+   * Fire-and-forget analysis: returns immediately, results come later
    */
   analyzeApplication(request: AIAnalysisRequest): Observable<AIAnalysisResult> {
     this.isAnalyzing.set(true);
     this.error.set(null);
+    this.analysisProgress.set(0);
 
-    // Generate cache key from request data
     const cacheKey = this.generateCacheKey(request);
-    
-    // Check cache first
     if (this.analysisCache.has(cacheKey)) {
       this.isAnalyzing.set(false);
-      return of(this.analysisCache.get(cacheKey)!);
+      const cached = this.analysisCache.get(cacheKey)!;
+      this.latestResult.set(cached);
+      return of(cached);
     }
 
-    // Simulate AI analysis with progressive steps
-    return this.performAnalysis(request).pipe(
-      delay(3000), // Simulate API call time
-      map(result => {
-        // Cache the result
-        this.analysisCache.set(cacheKey, result);
+    return this.startBackgroundAnalysis(request).pipe(
+      switchMap(({ jobId, immediateResult }) => {
+        if (immediateResult) {
+          return of(this.handleResult(immediateResult, cacheKey));
+        }
+        return this.pollForResults(jobId, cacheKey);
+      }),
+      catchError((error) => {
         this.isAnalyzing.set(false);
-        return result;
+        this.analysisProgress.set(0);
+        this.error.set(this.getErrorMessage(error));
+        console.error('AI Analysis failed:', error);
+        return throwError(() => error);
       })
     );
   }
 
-  /**
-   * Perform quick match score analysis
-   */
-  quickMatchAnalysis(request: AIAnalysisRequest): Observable<{ matchScore: number; quickInsights: string[] }> {
-    return this.calculateMatchScore(request).pipe(
-      delay(1000),
-      map(score => ({
-        matchScore: score,
-        quickInsights: this.generateQuickInsights(request, score)
-      }))
+  private startBackgroundAnalysis(
+    request: AIAnalysisRequest
+  ): Observable<{ jobId: string; immediateResult?: any }> {
+    const user = this.authService.user();
+    if (!user) {
+      return throwError(() => new Error('User not authenticated'));
+    }
+
+    const edgeFunctionRequest = {
+      ...this.buildEdgeFunctionRequest(request),
+      backgroundMode: true
+    };
+
+    return from(
+      this.supabase.functions.invoke('analyse-fund-application', {
+        body: edgeFunctionRequest
+      })
+    ).pipe(
+      map(({ data, error }) => {
+        if (error) throw error;
+        if (data.result) {
+          return { jobId: 'immediate', immediateResult: data.result };
+        }
+        return { jobId: data.jobId };
+      })
     );
   }
 
-  /**
-   * Clear analysis cache
-   */
-  clearCache(): void {
-    this.analysisCache.clear();
+  private pollForResults(jobId: string, cacheKey: string): Observable<AIAnalysisResult> {
+    return timer(0, 5000).pipe(
+      switchMap(() => this.checkAnalysisStatus(jobId)),
+      tap(status => {
+        if (status.progress) this.analysisProgress.set(status.progress);
+      }),
+      takeWhile(status => status.status !== 'completed' && status.status !== 'failed', true),
+      switchMap(status => {
+        if (status.status === 'completed') {
+          return this.getAnalysisResults(jobId).pipe(
+            map(result => this.handleResult(result, cacheKey))
+          );
+        } else if (status.status === 'failed') {
+          throw new Error(status.error || 'Analysis failed');
+        }
+        return of(null as any); // still processing
+      }),
+      catchError((error) => throwError(() => error))
+    );
   }
 
-  /**
-   * Get cached analysis result
-   */
-  getCachedAnalysis(request: AIAnalysisRequest): AIAnalysisResult | null {
-    const cacheKey = this.generateCacheKey(request);
-    return this.analysisCache.get(cacheKey) || null;
+  private checkAnalysisStatus(
+    jobId: string
+  ): Observable<{ status: string; progress?: number; error?: string }> {
+    return from(
+      this.supabase.functions.invoke('check-analysis-status', { body: { jobId } })
+    ).pipe(
+      map(({ data, error }) => {
+        if (error) throw error;
+        return data;
+      })
+    );
   }
 
-  // ===============================
-  // PRIVATE ANALYSIS METHODS
-  // ===============================
-
-  private performAnalysis(request: AIAnalysisRequest): Observable<AIAnalysisResult> {
-    const { opportunity, applicationData } = request;
-    
-    // Calculate match score based on various factors
-    const matchScore = this.calculateDetailedMatchScore(request);
-    const successProbability = this.calculateSuccessProbability(request, matchScore);
-    const competitivePositioning = this.determineCompetitivePositioning(matchScore);
-    
-    const result: AIAnalysisResult = {
-      matchScore,
-      successProbability,
-      competitivePositioning,
-      strengths: this.identifyStrengths(request, matchScore),
-      improvementAreas: this.identifyImprovementAreas(request, matchScore),
-      keyInsights: this.generateKeyInsights(request, matchScore),
-      recommendations: this.generateRecommendations(request, matchScore),
-      riskFactors: this.assessRiskFactors(request, matchScore),
-      generatedAt: new Date(),
-      analysisId: this.generateAnalysisId()
-    };
-
-    return of(result);
+  private getAnalysisResults(jobId: string): Observable<AIAnalysisResult> {
+    return from(
+      this.supabase.functions.invoke('get-analysis-results', { body: { jobId } })
+    ).pipe(
+      map(({ data, error }) => {
+        if (error) throw error;
+        return this.transformAIResponseToResult(data, null);
+      })
+    );
   }
 
-  private calculateDetailedMatchScore(request: AIAnalysisRequest): number {
-    const { opportunity, applicationData } = request;
-    let score = 50; // Base score
+  private handleResult(result: AIAnalysisResult, cacheKey: string): AIAnalysisResult {
+    this.isAnalyzing.set(false);
+    this.analysisProgress.set(100);
+    this.error.set(null);
+    this.analysisCache.set(cacheKey, result);
+    this.latestResult.set(result);
+    return result;
+  }
 
-    // Amount appropriateness (15 points)
-    const requestedAmount = parseFloat(applicationData.requestedAmount);
-    if (requestedAmount >= opportunity.minInvestment && requestedAmount <= opportunity.maxInvestment) {
-      score += 15;
-      
-      // Bonus for optimal amount (within 25-75% of range)
-      const range = opportunity.maxInvestment - opportunity.minInvestment;
-      const position = (requestedAmount - opportunity.minInvestment) / range;
-      if (position >= 0.25 && position <= 0.75) {
-        score += 5;
+  // --- Helpers and unchanged methods from your original service ---
+
+  private buildEdgeFunctionRequest(request: AIAnalysisRequest): any {
+    const profile = this.profileService.currentProfile();
+    const organization = this.profileService.currentOrganization();
+
+    return {
+      applicationId: `temp_${Date.now()}`,
+      applicationData: {
+        requestedAmount: parseFloat(request.applicationData.requestedAmount) || 0,
+        purposeStatement: request.applicationData.purposeStatement || '',
+        useOfFunds: request.applicationData.useOfFunds || '',
+        timeline: request.applicationData.timeline || '',
+        opportunityAlignment: request.applicationData.opportunityAlignment || ''
+      },
+      opportunityData: {
+        id: request.opportunity.id,
+        title: request.opportunity.title,
+        fundingType: request.opportunity.fundingType,
+        minInvestment: request.opportunity.minInvestment,
+        maxInvestment: request.opportunity.maxInvestment,
+        currency: request.opportunity.currency,
+        eligibilityCriteria: request.opportunity.eligibilityCriteria,
+        decisionTimeframe: request.opportunity.decisionTimeframe,
+        totalAvailable: request.opportunity.totalAvailable
+      },
+      applicantProfile: {
+        businessInfo: {
+          companyName: organization?.name || 'Business Name',
+          industry: this.extractIndustry(request.businessProfile, organization),
+          businessStage: this.extractBusinessStage(organization),
+          yearsInOperation: this.extractYearsInOperation(organization),
+          employeeCount: organization?.employeeCount || 1
+        },
+        financials: {
+          annualRevenue: this.extractAnnualRevenue(request.businessProfile),
+          monthlyRevenue: this.extractMonthlyRevenue(request.businessProfile),
+          profitMargin: this.extractProfitMargin(request.businessProfile),
+          cashFlow: this.extractCashFlow(request.businessProfile)
+        },
+        completionPercentage: profile?.completionPercentage || 0
       }
-    } else {
-      score -= 10; // Penalty for out-of-range amount
-    }
-
-    // Purpose statement quality (15 points)
-    const purposeLength = applicationData.purposeStatement.length;
-    if (purposeLength > 200) score += 15;
-    else if (purposeLength > 100) score += 10;
-    else if (purposeLength > 50) score += 5;
-
-    // Use of funds specificity (15 points)
-    const useOfFundsLength = applicationData.useOfFunds.length;
-    const hasSpecificKeywords = /equipment|inventory|marketing|expansion|hiring|technology/i.test(applicationData.useOfFunds);
-    if (useOfFundsLength > 200 && hasSpecificKeywords) score += 15;
-    else if (useOfFundsLength > 100) score += 10;
-    else if (useOfFundsLength > 50) score += 5;
-
-    // Timeline specificity (5 points)
-    if (applicationData.timeline && applicationData.timeline.length > 10) score += 5;
-
-    // Opportunity alignment (10 points)
-    if (applicationData.opportunityAlignment && applicationData.opportunityAlignment.length > 50) score += 10;
-
-    // Add some controlled randomness for realism (±5 points)
-    score += (Math.random() - 0.5) * 10;
-
-    return Math.round(Math.max(10, Math.min(95, score)));
+    };
   }
 
-  private calculateMatchScore(request: AIAnalysisRequest): Observable<number> {
-    // Simplified version for quick analysis
-    const score = this.calculateDetailedMatchScore(request);
-    return of(score);
+  private transformAIResponseToResult(
+    aiResult: any,
+    _originalRequest: AIAnalysisRequest | null
+  ): AIAnalysisResult {
+    return {
+      matchScore: aiResult.matchScore || 0,
+      successProbability: aiResult.successProbability || 0,
+      competitivePositioning: aiResult.competitivePositioning || 'weak',
+      strengths: aiResult.strengths || [],
+      improvementAreas: aiResult.improvementAreas || [],
+      keyInsights: aiResult.keyInsights || [],
+      recommendations: aiResult.recommendations || [],
+      riskFactors: aiResult.riskFactors || [],
+      generatedAt: new Date(aiResult.generatedAt) || new Date(),
+      analysisId: `ai_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      modelVersion: aiResult.modelVersion || 'gemini-2.5-flash'
+    };
   }
 
-  private calculateSuccessProbability(request: AIAnalysisRequest, matchScore: number): number {
-    // Success probability based on match score with some additional factors
-    let probability = matchScore * 0.8; // Base probability from match score
-
-    // Funding type adjustments
-    if (request.opportunity.fundingType === 'equity') {
-      probability *= 0.7; // Equity funding is more competitive
-    } else if (request.opportunity.fundingType === 'debt') {
-      probability *= 1.1; // Debt might be more accessible
-    } else if (request.opportunity.fundingType === 'convertible') {
-      probability *= 0.8; // Convertible notes are moderately competitive
+  private getErrorMessage(error: any): string {
+    if (error.name === 'TimeoutError') {
+      return 'AI analysis is taking longer than expected. Please try again.';
     }
-
-    // Amount vs. available funding adjustment
-    const requestedAmount = parseFloat(request.applicationData.requestedAmount);
-    if (requestedAmount < request.opportunity.minInvestment * 1.5) {
-      probability *= 1.05; // Smaller amounts have higher success rate
+    if (error.message?.includes('Unauthorized')) {
+      return 'Authentication required. Please log in and try again.';
     }
-
-    return Math.round(Math.max(5, Math.min(95, probability)));
-  }
-
-  private determineCompetitivePositioning(matchScore: number): 'strong' | 'moderate' | 'weak' {
-    if (matchScore >= 80) return 'strong';
-    if (matchScore >= 60) return 'moderate';
-    return 'weak';
-  }
-
-  private identifyStrengths(request: AIAnalysisRequest, matchScore: number): string[] {
-    const strengths: string[] = [];
-    const { opportunity, applicationData } = request;
-
-    // Amount-based strengths
-    const requestedAmount = parseFloat(applicationData.requestedAmount);
-    if (requestedAmount >= opportunity.minInvestment && requestedAmount <= opportunity.maxInvestment) {
-      strengths.push('Funding amount is well within opportunity parameters');
+    if (error.message?.includes('Quota exceeded') || error.message?.includes('rate limit')) {
+      return 'AI service quota exceeded. Please try again later.';
     }
-
-    // Content quality strengths
-    if (applicationData.purposeStatement.length > 150) {
-      strengths.push('Clear and comprehensive purpose statement');
+    if (error.message?.includes('Invalid API key')) {
+      return 'AI service configuration error. Please contact support.';
     }
-
-    if (applicationData.useOfFunds.length > 150) {
-      strengths.push('Detailed breakdown of fund utilization');
+    if (error.message) {
+      return error.message;
     }
-
-    // Opportunity alignment
-    if (applicationData.opportunityAlignment && applicationData.opportunityAlignment.length > 100) {
-      strengths.push('Strong alignment with opportunity objectives');
+    if (error.error?.message) {
+      return error.error.message;
     }
-
-    // Timeline specificity
-    if (applicationData.timeline && applicationData.timeline.includes('month')) {
-      strengths.push('Realistic and specific timeline provided');
-    }
-
-    // Score-based strengths
-    if (matchScore >= 85) {
-      strengths.push('Exceptional match for this opportunity');
-    } else if (matchScore >= 75) {
-      strengths.push('Strong overall application quality');
-    }
-
-    return strengths.slice(0, 4); // Limit to top 4 strengths
-  }
-
-  private identifyImprovementAreas(request: AIAnalysisRequest, matchScore: number): string[] {
-    const areas: string[] = [];
-    const { applicationData } = request;
-
-    // Content improvements
-    if (applicationData.purposeStatement.length < 100) {
-      areas.push('Expand purpose statement with more business details');
-    }
-
-    if (applicationData.useOfFunds.length < 100) {
-      areas.push('Provide more specific breakdown of fund allocation');
-    }
-
-    if (!applicationData.timeline || applicationData.timeline.length < 20) {
-      areas.push('Include detailed implementation timeline');
-    }
-
-    // Always relevant improvements
-    areas.push('Add financial projections and ROI estimates');
-    areas.push('Include market analysis and competitive positioning');
-
-    if (matchScore < 70) {
-      areas.push('Consider revising funding amount based on business needs');
-      areas.push('Strengthen business case with supporting evidence');
-    }
-
-    return areas.slice(0, 4); // Limit to top 4 areas
-  }
-
-  private generateKeyInsights(request: AIAnalysisRequest, matchScore: number): string[] {
-    const insights: string[] = [];
-    const { opportunity, applicationData } = request;
-
-    if (matchScore >= 80) {
-      insights.push('Your application demonstrates strong potential for approval');
-    } else if (matchScore >= 60) {
-      insights.push('Application shows good alignment but has room for improvement');
-    } else {
-      insights.push('Application needs significant enhancement to be competitive');
-    }
-
-    // Funding type insights
-    if (opportunity.fundingType === 'equity') {
-      insights.push('Equity funding typically requires strong growth potential and scalability');
-    } else if (opportunity.fundingType === 'debt') {
-      insights.push('Debt funding approval will depend heavily on financial creditworthiness and cash flow');
-    } else if (opportunity.fundingType === 'convertible') {
-      insights.push('Convertible funding offers flexibility but requires clear conversion terms');
-    } else if (opportunity.fundingType === 'mezzanine') {
-      insights.push('Mezzanine financing typically requires established revenue and growth trajectory');
-    }
-
-    // Amount insights
-    const requestedAmount = parseFloat(applicationData.requestedAmount);
-    const midpoint = (opportunity.minInvestment + opportunity.maxInvestment) / 2;
-    if (requestedAmount > midpoint) {
-      insights.push('Requesting above-average amount may require stronger justification');
-    } else {
-      insights.push('Conservative funding request may improve approval odds');
-    }
-
-    return insights;
-  }
-
-  private generateRecommendations(request: AIAnalysisRequest, matchScore: number): string[] {
-    const recommendations: string[] = [];
-
-    // Score-based recommendations
-    if (matchScore < 60) {
-      recommendations.push('Consider significantly enhancing your application before submission');
-      recommendations.push('Seek feedback from business advisors or consultants');
-    } else if (matchScore < 80) {
-      recommendations.push('Address improvement areas to strengthen your position');
-      recommendations.push('Consider adding supporting documentation');
-    } else {
-      recommendations.push('Your application is strong - proceed with confidence');
-      recommendations.push('Review for any final polish before submission');
-    }
-
-    // General recommendations
-    recommendations.push('Prepare for potential follow-up questions from funders');
-    recommendations.push('Have financial documents ready for due diligence');
-
-    return recommendations;
-  }
-
-  private assessRiskFactors(request: AIAnalysisRequest, matchScore: number): Array<{
-    factor: string;
-    severity: 'low' | 'medium' | 'high';
-    impact: string;
-  }> {
-    const risks = [];
-
-    if (matchScore < 50) {
-      risks.push({
-        factor: 'Low application quality',
-        severity: 'high' as const,
-        impact: 'May result in immediate rejection without review'
-      });
-    } else if (matchScore < 70) {
-      risks.push({
-        factor: 'Competitive disadvantage',
-        severity: 'medium' as const,
-        impact: 'May be outcompeted by stronger applications'
-      });
-    }
-
-    // Amount-based risks
-    const requestedAmount = parseFloat(request.applicationData.requestedAmount);
-    if (requestedAmount > request.opportunity.maxInvestment) {
-      risks.push({
-        factor: 'Amount exceeds opportunity limit',
-        severity: 'high' as const,
-        impact: 'Application may be automatically disqualified'
-      });
-    }
-
-    return risks;
-  }
-
-  private generateQuickInsights(request: AIAnalysisRequest, matchScore: number): string[] {
-    const insights = [];
-    
-    if (matchScore >= 80) {
-      insights.push('Strong match - proceed with confidence');
-    } else if (matchScore >= 60) {
-      insights.push('Good potential - consider improvements');
-    } else {
-      insights.push('Needs enhancement before submission');
-    }
-
-    return insights;
+    return 'AI analysis service is temporarily unavailable. Please try again later.';
   }
 
   private generateCacheKey(request: AIAnalysisRequest): string {
@@ -387,10 +263,121 @@ export class AIAnalysisService {
       purposeStatement: request.applicationData.purposeStatement?.substring(0, 50),
       useOfFunds: request.applicationData.useOfFunds?.substring(0, 50)
     });
-    return btoa(key); // Base64 encode for cleaner cache keys
+    return btoa(key);
   }
 
-  private generateAnalysisId(): string {
-    return 'analysis_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+  // Profile extraction methods
+  private extractIndustry(businessProfile: any, organization: any): string {
+    if (businessProfile?.industry) return businessProfile.industry;
+    if (organization?.organizationType) {
+      const typeToIndustry: Record<string, string> = {
+        investment_fund: 'Financial Services',
+        bank: 'Financial Services',
+        technology: 'Technology',
+        manufacturing: 'Manufacturing',
+        retail: 'Retail',
+        healthcare: 'Healthcare'
+      };
+      return typeToIndustry[organization.organizationType] || 'Technology';
+    }
+    return 'Technology';
+  }
+
+  private extractBusinessStage(organization: any): string {
+    const yearsInOperation = this.extractYearsInOperation(organization);
+    if (yearsInOperation <= 2) return 'startup';
+    if (yearsInOperation <= 5) return 'early-stage';
+    if (yearsInOperation <= 10) return 'growth';
+    return 'mature';
+  }
+
+  private extractYearsInOperation(organization: any): number {
+    if (organization?.foundedYear) {
+      return new Date().getFullYear() - organization.foundedYear;
+    }
+    return 3;
+  }
+
+  private extractAnnualRevenue(businessProfile: any): number {
+    if (businessProfile?.financials?.annualRevenue) {
+      return businessProfile.financials.annualRevenue;
+    }
+    return 2000000;
+  }
+
+  private extractMonthlyRevenue(businessProfile: any): number {
+    return this.extractAnnualRevenue(businessProfile) / 12;
+  }
+
+  private extractProfitMargin(businessProfile: any): number {
+    if (businessProfile?.financials?.profitMargin) {
+      return businessProfile.financials.profitMargin;
+    }
+    return 15;
+  }
+
+  private extractCashFlow(businessProfile: any): number {
+    return this.extractMonthlyRevenue(businessProfile) * 0.1;
+  }
+
+  // Utility methods
+  clearCache(): void {
+    this.analysisCache.clear();
+  }
+
+  getCachedAnalysis(request: AIAnalysisRequest): AIAnalysisResult | null {
+    const cacheKey = this.generateCacheKey(request);
+    return this.analysisCache.get(cacheKey) || null;
+  }
+
+  clearError(): void {
+    this.error.set(null);
+  }
+
+  canAnalyze(request: AIAnalysisRequest): boolean {
+    return !!(
+      request.opportunity &&
+      request.applicationData &&
+      request.applicationData.requestedAmount &&
+      parseFloat(request.applicationData.requestedAmount) > 0 &&
+      request.applicationData.purposeStatement?.trim() &&
+      request.applicationData.useOfFunds?.trim()
+    );
+  }
+
+  getAnalysisReadinessIssues(request: AIAnalysisRequest): string[] {
+    const issues: string[] = [];
+
+    if (!request.opportunity) {
+      issues.push('No opportunity data available');
+    }
+    if (!request.applicationData) {
+      issues.push('No application data available');
+      return issues;
+    }
+    if (!request.applicationData.requestedAmount || parseFloat(request.applicationData.requestedAmount) <= 0) {
+      issues.push('Valid requested amount required');
+    }
+    if (!request.applicationData.purposeStatement?.trim()) {
+      issues.push('Purpose statement required');
+    }
+    if (!request.applicationData.useOfFunds?.trim()) {
+      issues.push('Use of funds description required');
+    }
+    return issues;
+  }
+
+  getServiceStatus(): {
+    cacheSize: number;
+    isAnalyzing: boolean;
+    hasError: boolean;
+    errorMessage: string | null;
+  } {
+    return {
+      cacheSize: this.analysisCache.size,
+      isAnalyzing: this.isAnalyzing(),
+      hasError: !!this.error(),
+      errorMessage: this.error()
+    };
   }
 }

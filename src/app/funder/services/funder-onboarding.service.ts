@@ -3,7 +3,7 @@ import { Observable, from, throwError, of, BehaviorSubject, timer } from 'rxjs';
 import { tap, catchError, switchMap, take } from 'rxjs/operators';
 import { AuthService } from '../../auth/production.auth.service';
 import { SharedSupabaseService } from '../../shared/services/shared-supabase.service';
-import { DEFAULT_PERMISSIONS, FunderOrganization, Organization, OrganizationType } from '../../shared/models/user.models';
+import { FunderOrganization, Organization, OrganizationType } from '../../shared/models/user.models';
  
 // Simplified interface for onboarding (extends Organization)
 export interface FunderOnboardingData extends Omit<Organization, 'id' | 'createdAt' | 'updatedAt'> {

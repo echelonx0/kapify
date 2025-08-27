@@ -4,10 +4,8 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { Observable, throwError, from } from 'rxjs';
 import { tap, catchError, switchMap } from 'rxjs/operators';
- 
 import { AuthService } from '../../auth/production.auth.service';
 import { FundingApplicationProfile } from '../models/funding-application.models';
- 
 import { SharedSupabaseService } from '../../shared/services/shared-supabase.service';
 
 // Backend response interfaces
@@ -63,9 +61,7 @@ export class FundingProfileBackendService {
   error = signal<string | null>(null);
   lastSavedAt = signal<Date | null>(null);
 
-  constructor() {
-  
-  }
+ 
 
   // ===============================
   // LOAD SAVED APPLICATION

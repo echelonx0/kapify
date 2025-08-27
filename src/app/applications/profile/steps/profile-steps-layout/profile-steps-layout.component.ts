@@ -3,7 +3,7 @@ import { Component, signal, OnInit, inject, HostListener } from '@angular/core';
 import { Router, RouterOutlet } from '@angular/router';
 import { LucideAngularModule, ArrowLeft, Check, Building, FileText, BarChart3, Target, Users, TrendingUp, DollarSign, Home, Clock, AlertCircle, CheckCircle, Menu, X } from 'lucide-angular';
 import { UiButtonComponent } from '../../../../shared/components';
-import { FundingApplicationProfileService } from '../../../services/funding-profile.service';
+import { SMEProfileStepsService } from '../../../services/funding-steps.service';
 import { CommonModule } from '@angular/common';
 
 @Component({
@@ -64,7 +64,7 @@ import { CommonModule } from '@angular/common';
 })
 export class  ProfileStepsLayoutComponent implements OnInit {
   private router = inject(Router);
-  public profileService = inject(FundingApplicationProfileService);
+  public profileService = inject(SMEProfileStepsService);
 
   // State
   isSaving = signal(false);
@@ -94,7 +94,7 @@ export class  ProfileStepsLayoutComponent implements OnInit {
       estimatedTime: '10 min',
       priority: 'high' as const
     },
-    {
+    { 
       id: 'documents',
       title: 'Supporting Documents',
       shortTitle: 'Documents',
@@ -142,7 +142,7 @@ export class  ProfileStepsLayoutComponent implements OnInit {
       icon: TrendingUp,
       estimatedTime: '25 min',
       priority: 'medium' as const,
-      dependencies: ['business-assessment', 'swot-analysis']
+      dependencies: [ 'swot-analysis']
     },
     {
       id: 'financial-profile',

@@ -7,8 +7,9 @@ import { AuthService } from '../../auth/production.auth.service';
  
  
 import { FundingOpportunity } from '../../shared/models/funder.models';
-import { ProfileData, FundingApplicationProfileService } from './funding-profile.service';
+import { SMEProfileStepsService } from './funding-steps.service';
 import { SharedSupabaseService } from '../../shared/services/shared-supabase.service';
+import { ProfileData } from '../models/profile.models';
 
 // Application interfaces
 export interface OpportunityApplication {
@@ -79,7 +80,7 @@ export interface ApplicationDraft {
 export class OpportunityApplicationService {
   private supabase = inject(SharedSupabaseService);
   private authService = inject(AuthService);
-  private profileService = inject(FundingApplicationProfileService);
+  private profileService = inject(SMEProfileStepsService);
 
   // State management
   isLoading = signal(false);

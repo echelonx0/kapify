@@ -145,11 +145,11 @@ export class ApplicationsHomeComponent implements OnInit, OnDestroy {
         })
       )
       .subscribe({
-        next: (smeApplications: OpportunityApplication[]) => {
-          const applicationData = smeApplications.map(app => this.transformSMEApplication(app));
-          this.applications.set(applicationData);
-          this.isLoading.set(false);
-        },
+   next: (smeApplications: OpportunityApplication[]) => {
+  const applicationData = smeApplications.map(app => this.transformSMEApplication(app));
+  this.applications.set(this.mergeDrafts(applicationData));
+  this.isLoading.set(false);
+},
         error: () => {
           this.applications.set([]);
           this.isLoading.set(false);
@@ -184,11 +184,11 @@ private loadFunderApplications(userId: string) {
       })
     )
     .subscribe({
-      next: (funderApplications: FundingApplication[]) => {
-        const applicationData = funderApplications.map(app => this.transformFunderApplication(app));
-        this.applications.set(applicationData);
-        this.isLoading.set(false);
-      },
+next: (funderApplications: FundingApplication[]) => {
+  const applicationData = funderApplications.map(app => this.transformFunderApplication(app));
+  this.applications.set(this.mergeDrafts(applicationData));
+  this.isLoading.set(false);
+},
       error: () => {
         this.applications.set([]);
         this.isLoading.set(false);
@@ -340,6 +340,33 @@ loadApplications() {
     return !!(this.searchQuery() || this.statusFilter() || this.fundingTypeFilter());
   });
 
+  /**
+ * Merge draft applications for the same opportunity.
+ * Keeps only the most recent draft (by updatedAt).
+ */
+private mergeDrafts(applications: ApplicationData[]): ApplicationData[] {
+  const draftMap = new Map<string, ApplicationData>();
+  const finalList: ApplicationData[] = [];
+
+  for (const app of applications) {
+    if (app.status === 'draft' && app.opportunityId) {
+      const existing = draftMap.get(app.opportunityId);
+      if (!existing || new Date(app.updatedAt) > new Date(existing.updatedAt)) {
+        draftMap.set(app.opportunityId, app);
+      }
+    } else {
+      // Non-draft applications are added directly
+      finalList.push(app);
+    }
+  }
+
+  // Add the latest drafts
+  draftMap.forEach(draft => finalList.push(draft));
+
+  // Optional: sort by updatedAt desc so newest apps are first
+  return finalList.sort((a, b) => +new Date(b.updatedAt) - +new Date(a.updatedAt));
+}
+
   // ===============================
   // USER ACTIONS
   // ===============================
@@ -367,9 +394,35 @@ loadApplications() {
     this.router.navigate(['/applications', id]);
   }
 
-  continueApplication(id: string) {
-    this.router.navigate(['/applications', id, 'edit']);
+  continueApplication(applicationId: string) {
+  const app = this.applications().find(a => a.id === applicationId);
+
+  if (!app) {
+    console.warn('Application not found; redirecting to new application page.');
+    this.router.navigate(['/applications/new']);
+    return;
   }
+
+  // If it's a draft, open the new-application form for that opportunity
+  if (app.status === 'draft') {
+    if (app.opportunityId) {
+      // navigate to route that already exists: /applications/new/:opportunityId
+      this.router.navigate(['/applications/new', app.opportunityId], {
+        queryParams: { edit: 'true', applicationId: app.id }
+      });
+    } else {
+      // fallback: no opportunityId — open generic new with query params
+      this.router.navigate(['/applications/new'], {
+        queryParams: { edit: 'true', applicationId: app.id }
+      });
+    }
+    return;
+  }
+
+  // If not a draft, take user to the normal view page
+  this.viewApplication(applicationId);
+}
+
 
   // Funder Actions
   reviewApplication(id: string) {

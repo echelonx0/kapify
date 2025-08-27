@@ -121,6 +121,11 @@ export class SharedSupabaseService {
     return this.client.storage;
   }
 
+    // Add functions support for Edge Functions
+  get functions() {
+    return this.client.functions;
+  }
+
   // Static cleanup method
   static cleanup() {
     if (SharedSupabaseService.instance) {

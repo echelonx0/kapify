@@ -1,298 +1,14 @@
-// // src/app/profile/steps/financial-analysis/financial-analysis.component.ts
-// import { Component, signal, OnInit } from '@angular/core';
-// import { FormsModule } from '@angular/forms';
-// import { UiCardComponent, UiButtonComponent } from '../../../../shared/components';
-// import { LucideAngularModule, Upload, Download, FileSpreadsheet } from 'lucide-angular';
-// import { FundingApplicationProfileService } from '../../../services/funding-profile.service';
-
-// interface FinancialData {
-//   incomeStatement: any[];
-//   financialRatios: any[];
-//   template?: File;
-// }
-
-// @Component({
-//   selector: 'app-financial-analysis',
-//   standalone: true,
-//   imports: [FormsModule, UiCardComponent, UiButtonComponent, LucideAngularModule],
-//   templateUrl: 'financial-analysis.component.html'
-// })
-// export class FinancialAnalysisComponent implements OnInit {
-//   isSaving = signal(false);
-//   uploadedTemplate = signal<File | null>(null);
-//   notesText = '';
-
-//   // Icons
-//   UploadIcon = Upload;
-//   DownloadIcon = Download;
-//   FileSpreadsheetIcon = FileSpreadsheet;
-
-//   constructor(private profileService: FundingApplicationProfileService) {}
-
-//   ngOnInit() {
-//     this.loadExistingData();
-//   }
-
-//   hasFinancialData(): boolean {
-//     return !!this.uploadedTemplate() || this.incomeStatementData().length > 0;
-//   }
-
-//   onDragOver(event: DragEvent) {
-//     event.preventDefault();
-//     event.stopPropagation();
-//     const target = event.currentTarget as HTMLElement;
-//     target.classList.add('border-primary-500', 'bg-primary-100');
-//   }
-
-//   onDragLeave(event: DragEvent) {
-//     event.preventDefault();
-//     event.stopPropagation();
-//     const target = event.currentTarget as HTMLElement;
-//     target.classList.remove('border-primary-500', 'bg-primary-100');
-//   }
-
-//   onDrop(event: DragEvent) {
-//     event.preventDefault();
-//     event.stopPropagation();
-    
-//     const target = event.currentTarget as HTMLElement;
-//     target.classList.remove('border-primary-500', 'bg-primary-100');
-    
-//     const files = event.dataTransfer?.files;
-//     if (files && files.length > 0) {
-//       this.processFile(files[0]);
-//     }
-//   }
-
-//   onFileSelected(event: Event) {
-//     const input = event.target as HTMLInputElement;
-//     const file = input.files?.[0];
-    
-//     if (file) {
-//       this.processFile(file);
-//       input.value = '';
-//     }
-//   }
-
-//   private async processFile(file: File) {
-//     // Validate file type
-//     const allowedTypes = ['.xlsx', '.xls'];
-//     const fileExtension = '.' + file.name.split('.').pop()?.toLowerCase();
-    
-//     if (!allowedTypes.includes(fileExtension)) {
-//       alert('Please upload only Excel files (.xlsx, .xls)');
-//       return;
-//     }
-
-//     // Validate file size (10MB limit)
-//     if (file.size > 10 * 1024 * 1024) {
-//       alert('File size must be less than 10MB');
-//       return;
-//     }
-
-//     this.isSaving.set(true);
-    
-//     // Simulate processing
-//     await new Promise(resolve => setTimeout(resolve, 1000));
-    
-//     this.uploadedTemplate.set(file);
-//     this.isSaving.set(false);
-//     this.saveData();
-//   }
-
-//   removeTemplate() {
-//     this.uploadedTemplate.set(null);
-//     this.saveData();
-//   }
-
-//   downloadTemplate() {
-//     // In a real app, this would download the actual template
-//     const templateUrl = '/assets/templates/financial_analysis_template.xlsx';
-//     const a = document.createElement('a');
-//     a.href = templateUrl;
-//     a.download = 'financial_analysis_template.xlsx';
-//     a.click();
-//   }
-
-//   triggerFileUpload() {
-//     const input = document.createElement('input');
-//     input.type = 'file';
-//     input.accept = '.xlsx,.xls';
-//     input.onchange = (e) => this.onFileSelected(e);
-//     input.click();
-//   }
-
-//   formatFileSize(bytes: number): string {
-//     if (bytes === 0) return '0 Bytes';
-//     const k = 1024;
-//     const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-//     const i = Math.floor(Math.log(bytes) / Math.log(k));
-//     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-//   }
-
-//   formatCurrency(value: number): string {
-//     if (value === 0 || value === null || value === undefined) return '-';
-//     return new Intl.NumberFormat('en-ZA', {
-//       style: 'decimal',
-//       minimumFractionDigits: 2,
-//       maximumFractionDigits: 2
-//     }).format(value);
-//   }
-
-//   formatRatio(value: number, type?: string): string {
-//     if (value === 0 || value === null || value === undefined) return '-';
-    
-//     if (type === 'percentage') {
-//       return `${(value * 100).toFixed(1)}%`;
-//     }
-    
-//     return value.toFixed(2);
-//   }
-
-//   incomeStatementData() {
-//     return [
-//       {
-//         label: 'Revenue',
-//         values: [5555515.16, 6210626.81, 6189967.14, 8119722.90, 9375145.83, 10265784.69, 11241034.23, 12488226.98, 13674608.55]
-//       },
-//       {
-//         label: 'Cost of sales',
-//         values: [-2639980.80, -3075502.40, -3003372.06, -3487583.38, -4120564.10, -4666004.46, -4929418.33, -5809523.19, -6461526.03]
-//       },
-//       {
-//         label: 'Gross Profit',
-//         values: [2915534.36, 3135124.42, 3186595.08, 4632139.52, 5254581.74, 5599780.23, 6311615.90, 6678703.79, 7213082.52]
-//       },
-//       {
-//         label: 'Administrative expenses',
-//         values: [0, 0, 0, 0, 0, 0, 0, 0, 0]
-//       },
-//       {
-//         label: 'Other Operating Expenses (Excl depreciation & amortisation)',
-//         values: [-1054934.91, -1037830.14, -1132436.08, -1259120.85, -1347259.31, -1441567.46, -1542477.18, -1650450.58, -1765982.12]
-//       },
-//       {
-//         label: 'Salaries & Staff Cost',
-//         values: [-1350632.18, -1272114.31, -1460489.10, -1585527.36, -1680659.00, -1781498.54, -1888388.45, -2001691.76, -2121793.27]
-//       },
-//       {
-//         label: 'EBITDA',
-//         values: [509967.27, 825179.97, 593669.90, 1787491.31, 2226663.43, 2376714.23, 2880750.27, 3026561.45, 3325307.13]
-//       },
-//       {
-//         label: 'Interest Income',
-//         values: [63888.42, 69318.94, 83182.73, 41591.36, 11744.63, 0, 11275.00, 42646.45, 0]
-//       }
-//     ];
-//   }
-
-//   financialRatiosData() {
-//     return [
-//       {
-//         label: 'Return on Equity (ROE)',
-//         values: [0.06, 0.11, 0.07, 0.12, 0.10, 0.12, 0.16, 0.14, 0.13],
-//         type: 'ratio'
-//       },
-//       {
-//         label: 'Debt Equity Ratio (Total liabilities)',
-//         values: [0.69, 0.56, 0.43, 1.05, 0.80, 0.49, 0.29, 0.47, 0.34],
-//         type: 'ratio'
-//       },
-//       {
-//         label: 'Current Ratio',
-//         values: [1.41, 1.61, 1.78, 0.97, 1.11, 1.13, 1.11, 1.29, 1.62],
-//         type: 'ratio'
-//       },
-//       {
-//         label: 'Acid Test Ratio (Quick Ratio)',
-//         values: [1.41, 1.61, 1.78, 0.97, 1.11, 1.13, 1.11, 1.29, 1.62],
-//         type: 'ratio'
-//       },
-//       {
-//         label: 'Equity Investment Value',
-//         values: [0, 0, 0, 0, 0, 0, 0, 0, 0],
-//         type: 'ratio'
-//       },
-//       {
-//         label: 'Return on Investment (ROI)',
-//         values: [6.2, 11.1, 7.5, 11.5, 10.0, 11.9, 16.1, 13.7, 13.4],
-//         type: 'percentage'
-//       },
-//       {
-//         label: 'Sales Growth',
-//         values: [0.0, 11.8, -0.3, 31.2, 15.5, 9.5, 9.5, 11.1, 9.5],
-//         type: 'percentage'
-//       },
-//       {
-//         label: 'Gross profit margin',
-//         values: [52.5, 50.5, 51.5, 57.0, 56.0, 54.5, 56.1, 53.5, 52.7],
-//         type: 'percentage'
-//       },
-//       {
-//         label: 'Cost to Income ratio',
-//         values: [43.3, 37.2, 41.9, 35.0, 32.3, 31.4, 30.5, 29.2, 28.4],
-//         type: 'percentage'
-//       },
-//       {
-//         label: 'Operating margin (EBITDA)',
-//         values: [9.2, 13.3, 9.6, 22.0, 23.8, 23.2, 25.6, 24.2, 24.3],
-//         type: 'percentage'
-//       },
-//       {
-//         label: 'Interest Cover Ratio',
-//         values: [3.87, 7.94, 8.98, 5.85, 6.11, 8.35, 14.72, 10.06, 12.24],
-//         type: 'ratio'
-//       },
-//       {
-//         label: 'Net Operating Profit Margin',
-//         values: [3.7, 6.7, 4.9, 6.5, 5.4, 6.7, 9.8, 8.7, 8.9],
-//         type: 'percentage'
-//       }
-//     ];
-//   }
-
-//   async saveNotes() {
-//     this.isSaving.set(true);
-//     await new Promise(resolve => setTimeout(resolve, 300));
-//     this.saveData();
-//     this.isSaving.set(false);
-//   }
-
-//   private loadExistingData() {
-//     // Load existing data from profile service
-//     const existingData = this.profileService.data().financialAnalysis;
-//     if (existingData) {
-//       this.notesText = existingData['notes'] || '';
-//       if (existingData['template']) {
-//         this.uploadedTemplate.set(existingData['template']);
-//       }
-//     }
-//   }
-
-//   private async saveData() {
-//     const financialAnalysisData = {
-//       template: this.uploadedTemplate(),
-//       notes: this.notesText,
-//       incomeStatement: this.incomeStatementData(),
-//       financialRatios: this.financialRatiosData(),
-//       lastUpdated: new Date().toISOString()
-//     };
-    
-//     // Update profile service
-//     this.profileService.updateFinancialAnalysis?.(financialAnalysisData);
-//   }
-// }
-
-// src/app/profile/steps/financial-analysis/financial-analysis.component.ts
+// src/app/profile/steps/financial-analysis/financial-analysis.component.ts - FIXED WITH REAL EXCEL PARSING
 import { Component, signal, OnInit, OnDestroy, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { UiCardComponent, UiButtonComponent } from '../../../../shared/components';
-import { LucideAngularModule, Upload, Download, FileSpreadsheet, Save, Clock, Edit2 } from 'lucide-angular';
- 
+import { LucideAngularModule, Upload, Download, FileSpreadsheet, Save, Clock, Edit2, AlertCircle, CheckCircle, X } from 'lucide-angular';
 import { interval, Subscription, Subject } from 'rxjs';
 import { debounceTime, takeWhile, takeUntil } from 'rxjs/operators';
-import { FinancialProfile } from '../../../models/funding-application.models';
-import { FundingProfileSetupService } from '../../../services/funding-profile-setup.service';
+ 
+import { SupabaseDocumentService } from '../../../../shared/services/supabase-document.service';
+import * as XLSX from 'xlsx';
+import { SMEProfileStepsService } from '../../../services/funding-steps.service';
 
 interface FinancialRowData {
   label: string;
@@ -304,6 +20,54 @@ interface FinancialRatioData extends FinancialRowData {
   type: 'ratio' | 'percentage' | 'currency';
 }
 
+interface ParsedFinancialData {
+  incomeStatement: FinancialRowData[];
+  financialRatios: FinancialRatioData[];
+  columnHeaders: string[];
+  lastUpdated: string;
+  uploadedFile?: {
+    documentKey: string;
+    fileName: string;
+    publicUrl: string;
+  };
+}
+
+interface ValidationResult {
+  isValid: boolean;
+  errors: string[];
+  warnings: string[];
+}
+
+// Expected template structure for validation
+const EXPECTED_INCOME_STATEMENT_ROWS = [
+  'Revenue',
+  'Cost of sales', 
+  'Gross Profit',
+  'Administrative expenses',
+  'Other Operating Expenses (Excl depreciation & amortisation)',
+  'Salaries & Staff Cost',
+  'EBITDA',
+  'Interest Income',
+  'Finances Cost',
+  'Depreciation & Amortisation',
+  'Profit before tax'
+];
+
+const EXPECTED_RATIO_ROWS = [
+  'Return on Equity (ROE)',
+  'Debt Equity Ratio (Total liabilities)',
+  'Current Ratio',
+  'Acid Test Ratio (Quick Ratio)',
+  'Equity Investment Value',
+  'Return on Investment (ROI)',
+  'Sales Growth',
+  'Gross profit margin',
+  'Cost to Income ratio',
+  'Operating margin (EBITDA)',
+  'Interest Cover Ratio',
+  'Net Operating Profit Margin'
+];
+
 @Component({
   selector: 'app-financial-analysis',
   standalone: true,
@@ -311,18 +75,29 @@ interface FinancialRatioData extends FinancialRowData {
   templateUrl: 'financial-analysis.component.html'
 })
 export class FinancialAnalysisComponent implements OnInit, OnDestroy {
-  private fundingApplicationService = inject(FundingProfileSetupService);
+  private profileService = inject(SMEProfileStepsService);
+  private documentService = inject(SupabaseDocumentService);
 
   // State signals
   isSaving = signal(false);
+  isUploading = signal(false);
   lastSaved = signal<Date | null>(null);
   uploadedTemplate = signal<File | null>(null);
   editingMode = signal(false);
   notesText = '';
+  
+  // Parsing state
+  isParsingFile = signal(false);
+  parseError = signal<string | null>(null);
+  parseWarnings = signal<string[]>([]);
 
   // Data signals
   incomeStatementData = signal<FinancialRowData[]>([]);
   financialRatiosData = signal<FinancialRatioData[]>([]);
+  columnHeaders = signal<string[]>([]);
+  
+  // Existing financial data from profile
+  existingData = signal<ParsedFinancialData | null>(null);
 
   // Icons
   UploadIcon = Upload;
@@ -331,6 +106,9 @@ export class FinancialAnalysisComponent implements OnInit, OnDestroy {
   SaveIcon = Save;
   ClockIcon = Clock;
   EditIcon = Edit2;
+  AlertCircleIcon = AlertCircle;
+  CheckCircleIcon = CheckCircle;
+  XIcon = X;
 
   // Auto-save management
   private autoSaveSubscription?: Subscription;
@@ -349,242 +127,106 @@ export class FinancialAnalysisComponent implements OnInit, OnDestroy {
   }
 
   // ===============================
-  // AUTO-SAVE SETUP
-  // ===============================
-
-  private setupAutoSave() {
-    // Auto-save every 30 seconds when data changes
-    this.autoSaveSubscription = interval(30000).pipe(
-      takeWhile(() => true),
-      takeUntil(this.destroy$)
-    ).subscribe(() => {
-      if (this.hasFinancialData() && !this.isSaving()) {
-        this.saveData(false);
-      }
-    });
-
-    // Debounced save on data changes (2 seconds)
-    this.dataChangeSubject.pipe(
-      debounceTime(2000),
-      takeUntil(this.destroy$)
-    ).subscribe(() => {
-      if (this.hasFinancialData() && !this.isSaving()) {
-        this.saveData(false);
-      }
-    });
-  }
-
-  private triggerDataChange() {
-    this.dataChangeSubject.next();
-  }
-
-  async saveManually() {
-    await this.saveData(true);
-  }
-
-  // ===============================
-  // DATA LOADING & SAVING
+  // DATA LOADING & INITIALIZATION
   // ===============================
 
   private loadExistingData() {
-    const existingData = this.fundingApplicationService.data().financialProfile;
-    if (existingData) {
-      this.populateFromExistingData(existingData);
-    } else {
-      this.initializeDefaultData();
-    }
-  }
-
-  private populateFromExistingData(data: FinancialProfile) {
-    // Load notes
-    this.notesText = data.historicalFinancials?.[0]?.toString() || ''; // Adapt as needed
-
-    // Load financial projections if they exist
-    if (data.projectedRevenue && data.projectedRevenue.length > 0) {
-      this.loadFinancialDataFromProfile(data);
-    } else {
-      this.initializeDefaultData();
-    }
-  }
-
-  private loadFinancialDataFromProfile(data: FinancialProfile) {
-    // Transform FinancialProfile data to display format
-    // This would be more complex in real implementation
-    this.initializeDefaultData();
-    this.triggerDataChange();
-  }
-
-  private initializeDefaultData() {
-    // Initialize with empty data structure matching CSV format
-    this.incomeStatementData.set([
-      { label: 'Revenue', values: new Array(9).fill(0), editable: true },
-      { label: 'Cost of sales', values: new Array(9).fill(0), editable: true },
-      { label: 'Gross Profit', values: new Array(9).fill(0), editable: false }, // Calculated
-      { label: 'Administrative expenses', values: new Array(9).fill(0), editable: true },
-      { label: 'Other Operating Expenses (Excl depreciation & amortisation)', values: new Array(9).fill(0), editable: true },
-      { label: 'Salaries & Staff Cost', values: new Array(9).fill(0), editable: true },
-      { label: 'EBITDA', values: new Array(9).fill(0), editable: false }, // Calculated
-      { label: 'Interest Income', values: new Array(9).fill(0), editable: true },
-      { label: 'Finances Cost', values: new Array(9).fill(0), editable: true },
-      { label: 'Depreciation & Amortisation', values: new Array(9).fill(0), editable: true },
-      { label: 'Profit before tax', values: new Array(9).fill(0), editable: false } // Calculated
-    ]);
-
-    this.financialRatiosData.set([
-      { label: 'Return on Equity (ROE)', values: new Array(9).fill(0), type: 'ratio', editable: false },
-      { label: 'Debt Equity Ratio (Total liabilities)', values: new Array(9).fill(0), type: 'ratio', editable: false },
-      { label: 'Current Ratio', values: new Array(9).fill(0), type: 'ratio', editable: true },
-      { label: 'Acid Test Ratio (Quick Ratio)', values: new Array(9).fill(0), type: 'ratio', editable: true },
-      { label: 'Equity Investment Value', values: new Array(9).fill(0), type: 'currency', editable: true },
-      { label: 'Return on Investment (ROI)', values: new Array(9).fill(0), type: 'percentage', editable: false },
-      { label: 'Sales Growth', values: new Array(9).fill(0), type: 'percentage', editable: false },
-      { label: 'Gross profit margin', values: new Array(9).fill(0), type: 'percentage', editable: false },
-      { label: 'Cost to Income ratio', values: new Array(9).fill(0), type: 'percentage', editable: false },
-      { label: 'Operating margin (EBITDA)', values: new Array(9).fill(0), type: 'percentage', editable: false },
-      { label: 'Interest Cover Ratio', values: new Array(9).fill(0), type: 'ratio', editable: false },
-      { label: 'Net Operating Profit Margin', values: new Array(9).fill(0), type: 'percentage', editable: false }
-    ]);
-  }
-
-  private async saveData(isManual: boolean = false) {
-    if (this.isSaving()) return;
-
-    this.isSaving.set(true);
-
-    try {
-      const financialProfileData = this.buildFinancialProfileData();
-      this.fundingApplicationService.updateFinancialProfile(financialProfileData);
-
-      if (isManual) {
-        await this.fundingApplicationService.saveCurrentProgress();
-      }
-
-      this.lastSaved.set(new Date());
-    } catch (error) {
-      console.error('Failed to save financial analysis:', error);
-    } finally {
-      this.isSaving.set(false);
-    }
-  }
-
-  private buildFinancialProfileData(): FinancialProfile {
-    const currentYear = new Date().getFullYear();
+    const profileData = this.profileService.data();
+    const financialAnalysis = profileData.financialAnalysis;
     
-    // Extract revenue data for projections
-    const revenueRow = this.incomeStatementData().find(row => row.label === 'Revenue');
-    const profitRow = this.incomeStatementData().find(row => row.label === 'Profit before tax');
-
-    return {
-      // Historical data (first 4 years)
-      historicalFinancials: [
-        {
-          year: currentYear - 3,
-          revenue: revenueRow?.values[0] || 0,
-          grossProfit: this.incomeStatementData().find(row => row.label === 'Gross Profit')?.values[0] || 0,
-          netProfit: profitRow?.values[0] || 0,
-          assets: 0, // Would need additional data
-          liabilities: 0, // Would need additional data
-          cashFlow: this.incomeStatementData().find(row => row.label === 'EBITDA')?.values[0] || 0
-        },
-        {
-          year: currentYear - 2,
-          revenue: revenueRow?.values[1] || 0,
-          grossProfit: this.incomeStatementData().find(row => row.label === 'Gross Profit')?.values[1] || 0,
-          netProfit: profitRow?.values[1] || 0,
-          assets: 0,
-          liabilities: 0,
-          cashFlow: this.incomeStatementData().find(row => row.label === 'EBITDA')?.values[1] || 0
-        },
-        {
-          year: currentYear - 1,
-          revenue: revenueRow?.values[2] || 0,
-          grossProfit: this.incomeStatementData().find(row => row.label === 'Gross Profit')?.values[2] || 0,
-          netProfit: profitRow?.values[2] || 0,
-          assets: 0,
-          liabilities: 0,
-          cashFlow: this.incomeStatementData().find(row => row.label === 'EBITDA')?.values[2] || 0
-        }
-      ],
-
-      // Current financial position
-      currentAssets: 0, // Would need balance sheet data
-      currentLiabilities: 0,
-      netWorth: 0,
-      monthlyRevenue: (revenueRow?.values[3] || 0) / 12,
-      monthlyCosts: (this.incomeStatementData().find(row => row.label === 'Cost of sales')?.values[3] || 0) / 12,
-      cashFlow: this.incomeStatementData().find(row => row.label === 'EBITDA')?.values[3] || 0,
-
-      // Financial projections (remaining years)
-      projectedRevenue: [
-        {
-          year: currentYear + 1,
-          optimistic: (revenueRow?.values[4] || 0) * 1.1,
-          realistic: revenueRow?.values[4] || 0,
-          pessimistic: (revenueRow?.values[4] || 0) * 0.9,
-          assumptions: 'Based on historical growth trends'
-        },
-        {
-          year: currentYear + 2,
-          optimistic: (revenueRow?.values[5] || 0) * 1.1,
-          realistic: revenueRow?.values[5] || 0,
-          pessimistic: (revenueRow?.values[5] || 0) * 0.9,
-          assumptions: 'Market expansion and product development'
-        }
-      ],
-
-      projectedProfitability: [
-        {
-          year: currentYear + 1,
-          optimistic: (profitRow?.values[4] || 0) * 1.15,
-          realistic: profitRow?.values[4] || 0,
-          pessimistic: (profitRow?.values[4] || 0) * 0.85,
-          assumptions: 'Operational efficiency improvements'
-        }
-      ],
-
-      cashFlowProjections: [
-        {
-          month: 1,
-          year: currentYear + 1,
-          inflow: (revenueRow?.values[4] || 0) / 12,
-          outflow: (this.incomeStatementData().find(row => row.label === 'Cost of sales')?.values[4] || 0) / 12,
-          netCashFlow: 0,
-          cumulativeCashFlow: 0
-        }
-      ],
-
-      // Financial ratios
-      profitMargin: this.calculateProfitMargin(),
-      debtToEquity: this.getFinancialRatio('Debt Equity Ratio (Total liabilities)', 3),
-      currentRatio: this.getFinancialRatio('Current Ratio', 3),
-      returnOnAssets: this.getFinancialRatio('Return on Investment (ROI)', 3) / 100,
-
-      // Banking information would be collected elsewhere
-      primaryBank: '',
-      bankingHistory: 0,
-      creditFacilities: [],
-      creditRating: undefined
-    };
+    if (financialAnalysis && this.isValidFinancialData(financialAnalysis)) {
+      this.existingData.set(financialAnalysis as ParsedFinancialData);
+      this.loadFromExistingData(financialAnalysis as ParsedFinancialData);
+      console.log('✅ Loaded existing financial data');
+      console.log('Existing Data:', financialAnalysis);
+    } else {
+      this.initializeEmptyData();
+      console.log('ℹ️ No existing financial data, initialized empty structure');
+    }
   }
 
-  private calculateProfitMargin(): number {
-    const revenue = this.incomeStatementData().find(row => row.label === 'Revenue')?.values[3] || 0;
-    const profit = this.incomeStatementData().find(row => row.label === 'Profit before tax')?.values[3] || 0;
-    return revenue > 0 ? (profit / revenue) * 100 : 0;
+  private isValidFinancialData(data: any): boolean {
+    return data && 
+           data.incomeStatement && 
+           Array.isArray(data.incomeStatement) && 
+           data.financialRatios && 
+           Array.isArray(data.financialRatios);
   }
 
-  private getFinancialRatio(ratioName: string, yearIndex: number): number {
-    return this.financialRatiosData().find(row => row.label === ratioName)?.values[yearIndex] || 0;
+  private loadFromExistingData(data: ParsedFinancialData) {
+    this.incomeStatementData.set(data.incomeStatement || []);
+    this.financialRatiosData.set(data.financialRatios || []);
+    this.columnHeaders.set(data.columnHeaders || []);
+    this.notesText = ''; // Notes would be stored separately
+    
+    // Check if we have an uploaded file reference
+    if (data.uploadedFile) {
+      console.log('📄 Found reference to uploaded file:', data.uploadedFile.fileName);
+    }
+  }
+
+  private initializeEmptyData() {
+    const currentYear = new Date().getFullYear();
+    const headers = [
+      `${currentYear - 3}`, 
+      `${currentYear - 2}`, 
+      `${currentYear - 1}`, 
+      `${currentYear}`, 
+      `${currentYear + 1}`, 
+      `${currentYear + 2}`, 
+      `${currentYear + 3}`, 
+      `${currentYear + 4}`, 
+      `${currentYear + 5}`
+    ];
+    
+    this.columnHeaders.set(headers);
+
+    // Initialize empty income statement
+    this.incomeStatementData.set(
+      EXPECTED_INCOME_STATEMENT_ROWS.map(label => ({
+        label,
+        values: new Array(9).fill(0),
+        editable: !this.isCalculatedField(label)
+      }))
+    );
+
+    // Initialize empty financial ratios
+    this.financialRatiosData.set(
+      EXPECTED_RATIO_ROWS.map(label => ({
+        label,
+        values: new Array(9).fill(0),
+        type: this.getRatioType(label),
+        editable: !this.isCalculatedRatio(label)
+      }))
+    );
+  }
+
+  private isCalculatedField(label: string): boolean {
+    return ['Gross Profit', 'EBITDA', 'Profit before tax'].includes(label);
+  }
+
+  private isCalculatedRatio(label: string): boolean {
+    return [
+      'Return on Equity (ROE)',
+      'Return on Investment (ROI)', 
+      'Sales Growth',
+      'Gross profit margin',
+      'Cost to Income ratio',
+      'Operating margin (EBITDA)',
+      'Interest Cover Ratio',
+      'Net Operating Profit Margin'
+    ].includes(label);
+  }
+
+  private getRatioType(label: string): 'ratio' | 'percentage' | 'currency' {
+    if (label.includes('Equity Investment Value')) return 'currency';
+    if (label.includes('margin') || label.includes('Growth') || label.includes('ROE') || label.includes('ROI')) return 'percentage';
+    return 'ratio';
   }
 
   // ===============================
-  // FILE HANDLING
+  // FILE UPLOAD & PARSING - REAL IMPLEMENTATION
   // ===============================
-
-  hasFinancialData(): boolean {
-    return !!this.uploadedTemplate() || 
-           this.incomeStatementData().some(row => row.values.some(val => val !== 0));
-  }
 
   onDragOver(event: DragEvent) {
     event.preventDefault();
@@ -623,97 +265,429 @@ export class FinancialAnalysisComponent implements OnInit, OnDestroy {
     }
   }
 
-  private async processFile(file: File) {
-    // Validate file type
-    const allowedTypes = ['.xlsx', '.xls', '.csv'];
-    const fileExtension = '.' + file.name.split('.').pop()?.toLowerCase();
-    
-    if (!allowedTypes.includes(fileExtension)) {
-      alert('Please upload only Excel files (.xlsx, .xls) or CSV files');
-      return;
-    }
-
-    // Validate file size (10MB limit)
-    if (file.size > 10 * 1024 * 1024) {
-      alert('File size must be less than 10MB');
-      return;
-    }
-
-    this.isSaving.set(true);
-    
-    try {
-      // In a real implementation, you would parse the Excel/CSV file here
-      // For now, we'll load sample data
-      await this.parseFinancialFile(file);
-      
-      this.uploadedTemplate.set(file);
-      this.triggerDataChange();
-    } catch (error) {
-      console.error('Error processing file:', error);
-      alert('Error processing file. Please check the format and try again.');
-    } finally {
-      this.isSaving.set(false);
-    }
-  }
-
-  private async parseFinancialFile(file: File): Promise<void> {
-    // Simulate file parsing with sample data from your CSV
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    // Load sample data that matches your CSV structure
-    this.incomeStatementData.set([
-      { label: 'Revenue', values: [5555515.16, 6210626.81, 6189967.14, 8119722.90, 9375145.83, 10265784.69, 11241034.23, 12488226.98, 13674608.55], editable: true },
-      { label: 'Cost of sales', values: [-2639980.80, -3075502.40, -3003372.06, -3487583.38, -4120564.10, -4666004.46, -4929418.33, -5809523.19, -6461526.03], editable: true },
-      { label: 'Gross Profit', values: [2915534.36, 3135124.42, 3186595.08, 4632139.52, 5254581.74, 5599780.23, 6311615.90, 6678703.79, 7213082.52], editable: false },
-      { label: 'Administrative expenses', values: [0, 0, 0, 0, 0, 0, 0, 0, 0], editable: true },
-      { label: 'Other Operating Expenses (Excl depreciation & amortisation)', values: [-1054934.91, -1037830.14, -1132436.08, -1259120.85, -1347259.31, -1441567.46, -1542477.18, -1650450.58, -1765982.12], editable: true },
-      { label: 'Salaries & Staff Cost', values: [-1350632.18, -1272114.31, -1460489.10, -1585527.36, -1680659.00, -1781498.54, -1888388.45, -2001691.76, -2121793.27], editable: true },
-      { label: 'EBITDA', values: [509967.27, 825179.97, 593669.90, 1787491.31, 2226663.43, 2376714.23, 2880750.27, 3026561.45, 3325307.13], editable: false },
-      { label: 'Interest Income', values: [63888.42, 69318.94, 83182.73, 41591.36, 11744.63, 0, 11275.00, 42646.45, 0], editable: true }
-    ]);
-
-    this.financialRatiosData.set([
-      { label: 'Return on Equity (ROE)', values: [0.06, 0.11, 0.07, 0.12, 0.10, 0.12, 0.16, 0.14, 0.13], type: 'ratio', editable: false },
-      { label: 'Debt Equity Ratio (Total liabilities)', values: [0.69, 0.56, 0.43, 1.05, 0.80, 0.49, 0.29, 0.47, 0.34], type: 'ratio', editable: false },
-      { label: 'Current Ratio', values: [1.41, 1.61, 1.78, 0.97, 1.11, 1.13, 1.11, 1.29, 1.62], type: 'ratio', editable: true },
-      { label: 'Acid Test Ratio (Quick Ratio)', values: [1.41, 1.61, 1.78, 0.97, 1.11, 1.13, 1.11, 1.29, 1.62], type: 'ratio', editable: true },
-      { label: 'Equity Investment Value', values: [0, 0, 0, 0, 0, 0, 0, 0, 0], type: 'currency', editable: true },
-      { label: 'Return on Investment (ROI)', values: [6.2, 11.1, 7.5, 11.5, 10.0, 11.9, 16.1, 13.7, 13.4], type: 'percentage', editable: false },
-      { label: 'Sales Growth', values: [0.0, 11.8, -0.3, 31.2, 15.5, 9.5, 9.5, 11.1, 9.5], type: 'percentage', editable: false },
-      { label: 'Gross profit margin', values: [52.5, 50.5, 51.5, 57.0, 56.0, 54.5, 56.1, 53.5, 52.7], type: 'percentage', editable: false },
-      { label: 'Cost to Income ratio', values: [43.3, 37.2, 41.9, 35.0, 32.3, 31.4, 30.5, 29.2, 28.4], type: 'percentage', editable: false },
-      { label: 'Operating margin (EBITDA)', values: [9.2, 13.3, 9.6, 22.0, 23.8, 23.2, 25.6, 24.2, 24.3], type: 'percentage', editable: false },
-      { label: 'Interest Cover Ratio', values: [3.87, 7.94, 8.98, 5.85, 6.11, 8.35, 14.72, 10.06, 12.24], type: 'ratio', editable: false },
-      { label: 'Net Operating Profit Margin', values: [3.7, 6.7, 4.9, 6.5, 5.4, 6.7, 9.8, 8.7, 8.9], type: 'percentage', editable: false }
-    ]);
-  }
-
-  removeTemplate() {
-    this.uploadedTemplate.set(null);
-    this.initializeDefaultData();
-    this.triggerDataChange();
-  }
-
-  downloadTemplate() {
-    const templateUrl = '/assets/templates/financial_analysis_template.xlsx';
-    const a = document.createElement('a');
-    a.href = templateUrl;
-    a.download = 'financial_analysis_template.xlsx';
-    a.click();
-  }
-
   triggerFileUpload() {
     const input = document.createElement('input');
     input.type = 'file';
-    input.accept = '.xlsx,.xls,.csv';
+    input.accept = '.xlsx,.xls';
     input.onchange = (e) => this.onFileSelected(e);
     input.click();
   }
 
+  
+
+  private async uploadFileToStorage(file: File): Promise<any> {
+    return new Promise((resolve, reject) => {
+      this.documentService.uploadDocument(
+        file, 
+        'financial-template', 
+        undefined, 
+        'financial'
+      ).subscribe({
+        next: (result) => resolve(result),
+        error: (error) => reject(new Error(`File upload failed: ${error.message}`))
+      });
+    });
+  }
+ 
+
+private extractDataDirectlyFromSheet(worksheet: XLSX.WorkSheet, range: XLSX.Range, uploadResult: any): ParsedFinancialData {
+  // Extract headers from first row
+  const headers: string[] = [];
+  for (let col = 1; col <= Math.min(range.e.c, 20); col++) { // Limit to 20 columns max
+    const cellAddress = XLSX.utils.encode_cell({ r: 0, c: col });
+    const cell = worksheet[cellAddress];
+    if (cell?.v) {
+      headers.push(cell.v.toString().trim());
+    }
+  }
+  
+  if (headers.length === 0) {
+    throw new Error('No column headers found');
+  }
+  
+  const incomeStatement: FinancialRowData[] = [];
+  const financialRatios: FinancialRatioData[] = [];
+  
+  // Process rows efficiently - limit range to reasonable bounds
+  const maxRows = Math.min(range.e.r, 100); // Process max 100 rows
+  
+  for (let row = 1; row <= maxRows; row++) {
+    // Get label from first column
+    const labelCell = worksheet[XLSX.utils.encode_cell({ r: row, c: 0 })];
+    if (!labelCell?.v) continue;
+    
+    const label = labelCell.v.toString().trim();
+    if (!label) continue;
+    
+    // Extract values efficiently
+    const values: number[] = [];
+    for (let col = 1; col <= headers.length && col <= range.e.c; col++) {
+      const cellAddress = XLSX.utils.encode_cell({ r: row, c: col });
+      const cell = worksheet[cellAddress];
+      
+      let numValue = 0;
+      if (cell?.v !== undefined) {
+        if (typeof cell.v === 'number') {
+          numValue = cell.v;
+        } else {
+          const parsed = parseFloat(cell.v.toString());
+          numValue = isNaN(parsed) ? 0 : parsed;
+        }
+      }
+      values.push(numValue);
+    }
+    
+    // Ensure values array matches header count
+    while (values.length < headers.length) values.push(0);
+    
+    // Categorize by exact label matching
+    if (EXPECTED_INCOME_STATEMENT_ROWS.includes(label)) {
+      incomeStatement.push({
+        label,
+        values,
+        editable: !this.isCalculatedField(label)
+      });
+    } else if (EXPECTED_RATIO_ROWS.includes(label)) {
+      financialRatios.push({
+        label,
+        values,
+        type: this.getRatioType(label),
+        editable: !this.isCalculatedRatio(label)
+      });
+    }
+    
+    // Early exit if we have all expected rows
+    if (incomeStatement.length >= EXPECTED_INCOME_STATEMENT_ROWS.length && 
+        financialRatios.length >= EXPECTED_RATIO_ROWS.length) {
+      break;
+    }
+  }
+  
+  return {
+    incomeStatement,
+    financialRatios,
+    columnHeaders: headers,
+    lastUpdated: new Date().toISOString(),
+    uploadedFile: {
+      documentKey: uploadResult.documentKey,
+      fileName: uploadResult.fileName,
+      publicUrl: uploadResult.publicUrl
+    }
+  };
+}
+
+ 
+
+// Replace extractDataFromWorksheet with this optimized method
+private extractDataFromJsonArray(jsonData: (string | number)[][], uploadResult: any): ParsedFinancialData {
+  if (jsonData.length === 0) {
+    throw new Error('Excel file is empty');
+  }
+  
+  // Get headers from first row
+  const headers = jsonData[0].slice(1).map(h => h?.toString() || '').filter(h => h);
+  
+  if (headers.length === 0) {
+    throw new Error('No column headers found');
+  }
+  
+  console.log(`📊 Found ${headers.length} columns: ${headers.join(', ')}`);
+  
+  const incomeStatement: FinancialRowData[] = [];
+  const financialRatios: FinancialRatioData[] = [];
+  
+  // Process all rows in one pass
+  for (let i = 1; i < jsonData.length; i++) {
+    const row = jsonData[i];
+    if (!row || row.length === 0) continue;
+    
+    const label = row[0]?.toString()?.trim();
+    if (!label) continue;
+    
+    // Extract numeric values efficiently
+    const values = row.slice(1, headers.length + 1).map(val => {
+      if (typeof val === 'number') return val;
+      const num = parseFloat(val?.toString() || '0');
+      return isNaN(num) ? 0 : num;
+    });
+    
+    // Pad or trim values to match header count
+    while (values.length < headers.length) values.push(0);
+    if (values.length > headers.length) values.splice(headers.length);
+    
+    // Categorize by label matching
+    if (EXPECTED_INCOME_STATEMENT_ROWS.includes(label)) {
+      incomeStatement.push({
+        label,
+        values,
+        editable: !this.isCalculatedField(label)
+      });
+    } else if (EXPECTED_RATIO_ROWS.includes(label)) {
+      financialRatios.push({
+        label,
+        values,
+        type: this.getRatioType(label),
+        editable: !this.isCalculatedRatio(label)
+      });
+    }
+  }
+  
+  console.log(`📊 Processed ${incomeStatement.length} income statement rows, ${financialRatios.length} ratio rows`);
+  
+  return {
+    incomeStatement,
+    financialRatios,
+    columnHeaders: headers,
+    lastUpdated: new Date().toISOString(),
+    uploadedFile: {
+      documentKey: uploadResult.documentKey,
+      fileName: uploadResult.fileName,
+      publicUrl: uploadResult.publicUrl
+    }
+  };
+}
+ 
+
+// Add this for better user feedback
+getProcessingStatusText(): string {
+  if (this.isParsingFile()) return 'Processing Excel file...';
+  if (this.isUploading()) return 'Uploading to storage...';
+  return 'Choose File';
+}
+
+  private extractDataFromWorksheet(worksheet: XLSX.WorkSheet, range: XLSX.Range, uploadResult: any): ParsedFinancialData {
+    // Find column headers (typically in row 1 or 2)
+    const headers: string[] = [];
+    for (let col = 1; col <= range.e.c; col++) {
+      const cellAddress = XLSX.utils.encode_cell({ r: 0, c: col }); // Row 0 (first row)
+      const cell = worksheet[cellAddress];
+      if (cell && cell.v) {
+        headers.push(cell.v.toString());
+      }
+    }
+    
+    if (headers.length === 0) {
+      throw new Error('No column headers found in the first row');
+    }
+
+    // Extract income statement data
+    const incomeStatement: FinancialRowData[] = [];
+    const financialRatios: FinancialRatioData[] = [];
+    
+    let currentSection: 'income' | 'ratios' | 'unknown' = 'unknown';
+    
+    for (let row = 1; row <= range.e.r; row++) {
+      const labelCell = worksheet[XLSX.utils.encode_cell({ r: row, c: 0 })];
+      if (!labelCell || !labelCell.v) continue;
+      
+      const label = labelCell.v.toString().trim();
+      
+      // Determine section based on label
+      if (EXPECTED_INCOME_STATEMENT_ROWS.includes(label)) {
+        currentSection = 'income';
+      } else if (EXPECTED_RATIO_ROWS.includes(label)) {
+        currentSection = 'ratios';
+      }
+      
+      // Extract values for this row
+      const values: number[] = [];
+      for (let col = 1; col < headers.length + 1 && col <= range.e.c; col++) {
+        const cellAddress = XLSX.utils.encode_cell({ r: row, c: col });
+        const cell = worksheet[cellAddress];
+        const numValue = cell?.v ? parseFloat(cell.v.toString()) : 0;
+        values.push(isNaN(numValue) ? 0 : numValue);
+      }
+      
+      // Add to appropriate section
+      if (currentSection === 'income') {
+        incomeStatement.push({
+          label,
+          values,
+          editable: !this.isCalculatedField(label)
+        });
+      } else if (currentSection === 'ratios') {
+        financialRatios.push({
+          label,
+          values,
+          type: this.getRatioType(label),
+          editable: !this.isCalculatedRatio(label)
+        });
+      }
+    }
+    
+    return {
+      incomeStatement,
+      financialRatios,
+      columnHeaders: headers,
+      lastUpdated: new Date().toISOString(),
+      uploadedFile: {
+        documentKey: uploadResult.documentKey,
+        fileName: uploadResult.fileName,
+        publicUrl: uploadResult.publicUrl
+      }
+    };
+  }
+
+  private validateParsedData(data: ParsedFinancialData): ValidationResult {
+    const errors: string[] = [];
+    const warnings: string[] = [];
+    
+    // Check if we have the expected income statement rows
+    const foundIncomeLabels = data.incomeStatement.map(row => row.label);
+    const missingIncome = EXPECTED_INCOME_STATEMENT_ROWS.filter(expected => 
+      !foundIncomeLabels.includes(expected)
+    );
+    
+    if (missingIncome.length > 0) {
+      errors.push(`Missing income statement rows: ${missingIncome.join(', ')}`);
+    }
+    
+    // Check if we have the expected ratio rows
+    const foundRatioLabels = data.financialRatios.map(row => row.label);
+    const missingRatios = EXPECTED_RATIO_ROWS.filter(expected => 
+      !foundRatioLabels.includes(expected)
+    );
+    
+    if (missingRatios.length > 0) {
+      errors.push(`Missing financial ratio rows: ${missingRatios.join(', ')}`);
+    }
+    
+    // Check column count (should have 9 time periods)
+    if (data.columnHeaders.length !== 9) {
+      warnings.push(`Expected 9 time periods, found ${data.columnHeaders.length}`);
+    }
+    
+    // Check for empty data
+    const hasData = data.incomeStatement.some(row => row.values.some(val => val !== 0)) ||
+                    data.financialRatios.some(row => row.values.some(val => val !== 0));
+    
+    if (!hasData) {
+      warnings.push('No financial data found in the template');
+    }
+    
+    return {
+      isValid: errors.length === 0,
+      errors,
+      warnings
+    };
+  }
+
+  private applyParsedData(data: ParsedFinancialData) {
+    this.incomeStatementData.set(data.incomeStatement);
+    this.financialRatiosData.set(data.financialRatios);
+    this.columnHeaders.set(data.columnHeaders);
+    
+    // Recalculate derived fields
+    this.recalculateFields();
+  }
+
   // ===============================
-  // EDITING FUNCTIONALITY
+  // FILE MANAGEMENT
   // ===============================
 
+  removeTemplate() {
+    this.uploadedTemplate.set(null);
+    this.parseError.set(null);
+    this.parseWarnings.set([]);
+    
+    const existing = this.existingData();
+    if (existing?.uploadedFile) {
+      // Remove file from storage
+      this.documentService.deleteDocumentByKey('financial-template').subscribe({
+        next: () => console.log('✅ Financial template file deleted'),
+        error: (error) => console.warn('⚠️ Failed to delete file from storage:', error)
+      });
+    }
+    
+    this.initializeEmptyData();
+    this.triggerDataChange();
+  }
+
+ // Fixed downloadTemplate and createTemplateData methods
+
+downloadTemplate() {
+  // Create and download the Excel template
+  const templateData = this.createTemplateData();
+  const wb = XLSX.utils.book_new();
+  const ws = XLSX.utils.aoa_to_sheet(templateData);
+  
+  XLSX.utils.book_append_sheet(wb, ws, 'Financial Analysis');
+  XLSX.writeFile(wb, 'financial_analysis_template.xlsx');
+}
+
+private createTemplateData(): (string | number)[][] {
+  const headers: (string | number)[] = ['Item', 'Y-3', 'Y-2', 'Y-1', 'Current', 'P+1', 'P+2', 'P+3', 'P+4', 'P+5'];
+  const data: (string | number)[][] = [headers];
+  
+  // Add income statement section
+  data.push(['INCOME STATEMENT', '', '', '', '', '', '', '', '', '']);
+  EXPECTED_INCOME_STATEMENT_ROWS.forEach(label => {
+    data.push([label, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
+  });
+  
+  // Add spacing
+  data.push(['', '', '', '', '', '', '', '', '', '']);
+  
+  // Add financial ratios section
+  data.push(['FINANCIAL RATIOS', '', '', '', '', '', '', '', '', '']);
+  EXPECTED_RATIO_ROWS.forEach(label => {
+    data.push([label, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
+  });
+  
+  return data;
+}
+
+  downloadCurrentData() {
+    if (!this.hasFinancialData()) {
+      console.warn('No financial data to download');
+      return;
+    }
+    
+    // Create Excel file with current data
+    const exportData = this.createExportData();
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.aoa_to_sheet(exportData);
+    
+    XLSX.utils.book_append_sheet(wb, ws, 'Financial Analysis');
+    
+    const fileName = `financial_analysis_${new Date().toISOString().split('T')[0]}.xlsx`;
+    XLSX.writeFile(wb, fileName);
+  }
+
+private createExportData(): (string | number)[][] {
+  const headers: (string | number)[] = ['Item', ...this.columnHeaders()];
+  const data: (string | number)[][] = [headers];
+  
+  // Add income statement
+  data.push(['INCOME STATEMENT', '', '', '', '', '', '', '', '', '']);
+  this.incomeStatementData().forEach(row => {
+    data.push([row.label, ...row.values]);
+  });
+  
+  // Add spacing
+  data.push(['', '', '', '', '', '', '', '', '', '']);
+  
+  // Add financial ratios
+  data.push(['FINANCIAL RATIOS', '', '', '', '', '', '', '', '', '']);
+  this.financialRatiosData().forEach(row => {
+    data.push([row.label, ...row.values]);
+  });
+  
+  return data;
+}
+
+  // ===============================
+  // DATA EDITING & CALCULATIONS
+  // ===============================
+
+  // Add to your component
+onCellBlur(event: Event, rowIndex: number, colIndex: number, isRatio: boolean = false) {
+  const input = event.target as HTMLInputElement;
+  if (input && input.value !== '') {
+    const numValue = parseFloat(input.value) || 0;
+    this.updateCellValue(rowIndex, colIndex, numValue, isRatio);
+  }
+}
   toggleEditMode() {
     this.editingMode.set(!this.editingMode());
   }
@@ -739,7 +713,7 @@ export class FinancialAnalysisComponent implements OnInit, OnDestroy {
         newData[rowIndex].values[colIndex] = newValue;
         
         // Recalculate dependent fields
-        this.recalculateFields(newData);
+        this.recalculateFields();
         return newData;
       });
     }
@@ -747,39 +721,129 @@ export class FinancialAnalysisComponent implements OnInit, OnDestroy {
     this.triggerDataChange();
   }
 
-  private recalculateFields(data: FinancialRowData[]) {
-    // Recalculate Gross Profit = Revenue - Cost of sales
-    const revenueRow = data.find(row => row.label === 'Revenue');
-    const costRow = data.find(row => row.label === 'Cost of sales');
-    const grossProfitRow = data.find(row => row.label === 'Gross Profit');
+  private recalculateFields() {
+    const incomeData = this.incomeStatementData();
     
+    // Find relevant rows
+    const revenueRow = incomeData.find(row => row.label === 'Revenue');
+    const costRow = incomeData.find(row => row.label === 'Cost of sales');
+    const grossProfitRow = incomeData.find(row => row.label === 'Gross Profit');
+    const adminRow = incomeData.find(row => row.label === 'Administrative expenses');
+    const opExpRow = incomeData.find(row => row.label === 'Other Operating Expenses (Excl depreciation & amortisation)');
+    const salariesRow = incomeData.find(row => row.label === 'Salaries & Staff Cost');
+    const ebitdaRow = incomeData.find(row => row.label === 'EBITDA');
+    const interestIncomeRow = incomeData.find(row => row.label === 'Interest Income');
+    const financesCostRow = incomeData.find(row => row.label === 'Finances Cost');
+    const depreciationRow = incomeData.find(row => row.label === 'Depreciation & Amortisation');
+    const profitBeforeTaxRow = incomeData.find(row => row.label === 'Profit before tax');
+    
+    // Recalculate Gross Profit = Revenue - Cost of sales
     if (revenueRow && costRow && grossProfitRow) {
-      grossProfitRow.values = revenueRow.values.map((revenue, i) => revenue + costRow.values[i]); // Cost is negative
+      grossProfitRow.values = revenueRow.values.map((revenue, i) => revenue + costRow.values[i]); // Cost is typically negative
     }
 
-    // Recalculate EBITDA
-    const adminRow = data.find(row => row.label === 'Administrative expenses');
-    const opExpRow = data.find(row => row.label === 'Other Operating Expenses (Excl depreciation & amortisation)');
-    const salariesRow = data.find(row => row.label === 'Salaries & Staff Cost');
-    const ebitdaRow = data.find(row => row.label === 'EBITDA');
-    
+    // Recalculate EBITDA = Gross Profit - Administrative expenses - Other Operating Expenses - Salaries & Staff Cost
     if (grossProfitRow && adminRow && opExpRow && salariesRow && ebitdaRow) {
       ebitdaRow.values = grossProfitRow.values.map((grossProfit, i) => 
         grossProfit + adminRow.values[i] + opExpRow.values[i] + salariesRow.values[i]
       );
     }
+
+    // Recalculate Profit before tax = EBITDA + Interest Income - Finances Cost - Depreciation & Amortisation
+    if (ebitdaRow && interestIncomeRow && financesCostRow && depreciationRow && profitBeforeTaxRow) {
+      profitBeforeTaxRow.values = ebitdaRow.values.map((ebitda, i) => 
+        ebitda + (interestIncomeRow.values[i] || 0) + (financesCostRow.values[i] || 0) + (depreciationRow.values[i] || 0)
+      );
+    }
+
+    // Update the signal with recalculated data
+    this.incomeStatementData.set([...incomeData]);
   }
 
   // ===============================
-  // FORMATTING HELPERS
+  // AUTO-SAVE FUNCTIONALITY
   // ===============================
 
-  formatFileSize(bytes: number): string {
-    if (bytes === 0) return '0 Bytes';
-    const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  private setupAutoSave() {
+    // Auto-save every 30 seconds when data changes
+    this.autoSaveSubscription = interval(30000).pipe(
+      takeWhile(() => true),
+      takeUntil(this.destroy$)
+    ).subscribe(() => {
+      if (this.hasFinancialData() && !this.isSaving()) {
+        this.saveData(false);
+      }
+    });
+
+    // Debounced save on data changes (2 seconds)
+    this.dataChangeSubject.pipe(
+      debounceTime(2000),
+      takeUntil(this.destroy$)
+    ).subscribe(() => {
+      if (this.hasFinancialData() && !this.isSaving()) {
+        this.saveData(false);
+      }
+    });
+  }
+
+  private triggerDataChange() {
+    this.dataChangeSubject.next();
+  }
+
+  async saveManually() {
+    await this.saveData(true);
+  }
+
+  private async saveData(isManual: boolean = false) {
+    if (this.isSaving()) return;
+
+    this.isSaving.set(true);
+    
+    try {
+      const financialData = this.buildFinancialProfileData();
+      this.profileService.updateFinancialAnalysis(financialData);
+      
+      if (isManual) {
+        await this.profileService.saveCurrentProgress();
+      }
+      
+      this.lastSaved.set(new Date());
+      console.log(`✅ Financial data ${isManual ? 'manually' : 'auto'} saved successfully`);
+      
+    } catch (error) {
+      console.error('❌ Failed to save financial analysis:', error);
+      if (isManual) {
+        this.parseError.set('Failed to save data. Please try again.');
+      }
+    } finally {
+      this.isSaving.set(false);
+    }
+  }
+
+  private buildFinancialProfileData(): ParsedFinancialData {
+    const uploadedFile = this.existingData()?.uploadedFile || (this.uploadedTemplate() ? {
+      documentKey: 'financial-template',
+      fileName: this.uploadedTemplate()?.name || 'financial_template.xlsx',
+      publicUrl: ''
+    } : undefined);
+
+    return {
+      incomeStatement: this.incomeStatementData(),
+      financialRatios: this.financialRatiosData(),
+      columnHeaders: this.columnHeaders(),
+      lastUpdated: new Date().toISOString(),
+      uploadedFile
+    };
+  }
+
+  // ===============================
+  // UTILITY & FORMATTING METHODS
+  // ===============================
+
+  hasFinancialData(): boolean {
+    return this.incomeStatementData().some(row => row.values.some(val => val !== 0)) ||
+           this.financialRatiosData().some(row => row.values.some(val => val !== 0)) ||
+           !!this.uploadedTemplate();
   }
 
   formatCurrency(value: number): string {
@@ -798,11 +862,19 @@ export class FinancialAnalysisComponent implements OnInit, OnDestroy {
       return `${value.toFixed(1)}%`;
     }
     
+    if (type === 'currency') {
+      return this.formatCurrency(value);
+    }
+    
     return value.toFixed(2);
   }
 
-  async saveNotes() {
-    this.triggerDataChange();
+  formatFileSize(bytes: number): string {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   }
 
   getLastSavedText(): string {
@@ -821,4 +893,166 @@ export class FinancialAnalysisComponent implements OnInit, OnDestroy {
     
     return saved.toLocaleDateString();
   }
+
+  // Check if file is currently being processed
+  isProcessingFile(): boolean {
+    return this.isParsingFile() || this.isUploading();
+  }
+
+ 
+
+  // Clear all errors and warnings
+  clearErrors() {
+    this.parseError.set(null);
+    this.parseWarnings.set([]);
+  }
+
+  // Check if template structure is valid
+  hasValidTemplate(): boolean {
+    const incomeData = this.incomeStatementData();
+    const ratioData = this.financialRatiosData();
+    
+    return incomeData.length > 0 && 
+           ratioData.length > 0 && 
+           incomeData.some(row => EXPECTED_INCOME_STATEMENT_ROWS.includes(row.label)) &&
+           ratioData.some(row => EXPECTED_RATIO_ROWS.includes(row.label));
+  }
+
+  // Get completion percentage for financial data
+  getCompletionPercentage(): number {
+    if (!this.hasFinancialData()) return 0;
+    
+    const totalCells = (this.incomeStatementData().length + this.financialRatiosData().length) * 9;
+    const filledCells = [...this.incomeStatementData(), ...this.financialRatiosData()]
+      .reduce((count, row) => count + row.values.filter(val => val !== 0).length, 0);
+    
+    return Math.round((filledCells / totalCells) * 100);
+  }
+
+  async saveNotes() {
+    // Notes can be saved as part of the financial data
+    this.triggerDataChange();
+  }
+
+
+
+
+  // Replace your parseExcelFile and extractDataFromJsonArray methods with these optimized versions
+
+private async parseExcelFile(file: File, uploadResult: any): Promise<ParsedFinancialData> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    
+    reader.onload = (e) => {
+      try {
+        const data = new Uint8Array(e.target?.result as ArrayBuffer);
+        
+        // Use minimal parsing options for speed
+        const workbook = XLSX.read(data, { 
+          type: 'array',
+          cellStyles: false,
+         
+          sheetStubs: false,
+          bookVBA: false
+        });
+        
+        if (workbook.SheetNames.length === 0) {
+          reject(new Error('Excel file contains no worksheets'));
+          return;
+        }
+        
+        const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+        
+        // Get the actual range to avoid processing empty cells
+        const range = XLSX.utils.decode_range(worksheet['!ref'] || 'A1:Z100');
+        
+        // Process data directly from worksheet cells for better performance
+        const parsedData = this.extractDataDirectlyFromSheet(worksheet, range, uploadResult);
+        resolve(parsedData);
+        
+      } catch (error) {
+        reject(new Error(`Excel parsing failed: ${error instanceof Error ? error.message : 'Unknown error'}`));
+      }
+    };
+    
+    reader.onerror = () => reject(new Error('Failed to read file'));
+    reader.readAsArrayBuffer(file);
+  });
+}
+
+ 
+
+// Add timeout protection to processFile method
+private async processFile(file: File) {
+  const allowedTypes = ['.xlsx', '.xls'];
+  const fileExtension = '.' + file.name.split('.').pop()?.toLowerCase();
+  
+  if (!allowedTypes.includes(fileExtension)) {
+    this.parseError.set('Please upload only Excel files (.xlsx, .xls)');
+    return;
+  }
+
+  if (file.size > 10 * 1024 * 1024) {
+    this.parseError.set('File size must be less than 10MB');
+    return;
+  }
+
+  this.isParsingFile.set(true);
+  this.parseError.set(null);
+  this.parseWarnings.set([]);
+  
+  // Add timeout protection
+  const timeoutMs = 30000; // 30 second timeout
+  let timeoutId: any;
+  
+  const timeoutPromise = new Promise((_, reject) => {
+    timeoutId = setTimeout(() => {
+      reject(new Error('File processing timed out. Please try a smaller file or contact support.'));
+    }, timeoutMs);
+  });
+  
+  try {
+    // Step 1: Upload
+    const uploadResult = await Promise.race([
+      this.uploadFileToStorage(file),
+      timeoutPromise
+    ]);
+    
+    clearTimeout(timeoutId);
+    
+    // Step 2: Parse with timeout
+    const parseTimeoutId = setTimeout(() => {
+      throw new Error('Excel parsing timed out. File may be too complex.');
+    }, 15000);
+    
+    const parsedData = await this.parseExcelFile(file, uploadResult);
+    clearTimeout(parseTimeoutId);
+    
+    // Step 3: Validate
+    const validation = this.validateParsedData(parsedData);
+    
+    if (!validation.isValid) {
+      this.parseError.set(`Template validation failed: ${validation.errors.join(', ')}`);
+      return;
+    }
+    
+    if (validation.warnings.length > 0) {
+      this.parseWarnings.set(validation.warnings);
+    }
+    
+    // Step 4: Apply data
+    this.applyParsedData(parsedData);
+    this.uploadedTemplate.set(file);
+    this.triggerDataChange();
+    
+    console.log('✅ Financial data processed successfully');
+    
+  } catch (error) {
+    console.error('❌ Error processing financial file:', error);
+    this.parseError.set(error instanceof Error ? error.message : 'Failed to process file');
+  } finally {
+    clearTimeout(timeoutId);
+    this.isParsingFile.set(false);
+  }
+}
 }

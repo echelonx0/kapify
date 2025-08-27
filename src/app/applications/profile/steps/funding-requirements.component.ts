@@ -3,7 +3,7 @@
 import { Component, signal, OnInit } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { UiInputComponent, UiCardComponent } from '../../../shared/components';
-import { FundingApplicationProfileService } from '../../services/funding-profile.service';
+import { SMEProfileStepsService } from '../../services/funding-steps.service';
 
 
 @Component({
@@ -138,7 +138,7 @@ export class FundingRequirementsComponent implements OnInit {
 
   constructor(
     private fb: FormBuilder,
-    private profileService: FundingApplicationProfileService
+    private profileService: SMEProfileStepsService
   ) {
     this.fundingForm = this.fb.group({
       amountRequired: ['', [Validators.required]],

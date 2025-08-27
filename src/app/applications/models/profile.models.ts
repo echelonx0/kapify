@@ -1,8 +1,6 @@
-import { ManagementMember, BoardMember, CommitteeMember } from "./funding-steps.service";
-
 export interface ApplicationProfileData {
   adminInformation?: Record<string, any>;
-  documents?: Record<string, any>;
+  supportingDocuments?: Record<string, any>;  
   businessReview?: Record<string, any>;
   swotAnalysis?: {
     strengths: string[];
@@ -80,7 +78,7 @@ export interface ProfileData {
     taxClearance?: File;
   };
 
-    // New sections
+  // New sections
   managementGovernance?: {
     managementTeam: ManagementMember[];
     boardOfDirectors: BoardMember[];
@@ -100,11 +98,9 @@ export interface ProfileData {
   
   businessPlan?: {
     // Business plan fields
-
-    
   };
 
-    // Add this new property
+  // Add this new property
   financialAnalysis?: {
     template?: File;
     notes?: string;
@@ -112,4 +108,40 @@ export interface ProfileData {
     financialRatios?: any[];
     lastUpdated?: string;
   };
+
+  // Add supporting documents for new component
+  supportingDocuments?: Record<string, any>;
+}
+
+export interface ManagementMember {
+  id: string;
+  fullName: string;
+  role: string;
+  qualification: string;
+  yearsOfExperience: number;
+}
+
+export interface BoardMember {
+  id: string;
+  fullName: string;
+  role: string;
+  independent: boolean;
+  appointmentDate: string;
+}
+
+export interface CommitteeMember {
+  id: string;
+  fullName: string;
+  committee: string;
+  role: string;
+}
+
+export interface ProfileStep {
+  id: string;
+  title: string;
+  description: string;
+  completed: boolean;
+  required: boolean;
+  estimatedTime?: string;
+  priority?: 'high' | 'medium' | 'low';
 }
