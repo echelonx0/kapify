@@ -1,4 +1,4 @@
-// src/app/auth/production.auth.service.ts - ENHANCED WITH ORGANIZATION CREATION
+// src/app/auth/production.auth.service.ts  
 import { Injectable, signal, computed, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { BehaviorSubject, Observable, from, of, throwError, timer } from 'rxjs';
@@ -197,7 +197,7 @@ export class AuthService {
     
     // Validate terms agreement
     if (!credentials.agreeToTerms) {
-      throw new Error('You must agree to the terms and conditions');
+      throw new Error('You need to accept the terms and conditions');
     }
 
     // Validate password confirmation

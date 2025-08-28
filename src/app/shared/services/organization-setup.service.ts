@@ -2,7 +2,6 @@
 import { Injectable, inject } from '@angular/core';
 import { Observable, from, throwError, of } from 'rxjs';
 import { switchMap,  catchError, map } from 'rxjs/operators';
-
 import { SharedSupabaseService } from './shared-supabase.service';
 import { Organization, OrganizationType, DEFAULT_PERMISSIONS } from '../models/user.models';
  
