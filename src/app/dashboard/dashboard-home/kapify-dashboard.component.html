@@ -37,7 +37,7 @@
             </div>
           </div>
         </div>
-
+ 
         <!-- Scrollable Cards Section -->
         <div class="flex-1 overflow-y-auto">
           <div class="p-6 space-y-4">
@@ -108,7 +108,7 @@
 <!-- Right Side - Dynamic Panel (40%) -->
 <div class="w-2/5 h-screen flex flex-col">
   <app-right-panel 
-    [content]="rightPanelContent" 
+    [content]="rightPanelContent()" 
     (contentChange)="onRightPanelContentChange($event)" 
     class="flex-1 overflow-y-auto" />
 </div>

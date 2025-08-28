@@ -20,7 +20,7 @@ interface NavItem {
   template: `
     <div class="min-h-screen bg-gray-50 flex">
       <!-- Sidebar -->
-      <div class="bg-gray-900 text-white w-64 flex-shrink-0">
+      <div class="bg-slate-900 text-white w-64 flex-shrink-0">
         <!-- Header -->
         <div class="p-6 border-b border-gray-700">
           <h1 class="text-xl font-bold">Kapify Admin</h1>

@@ -1,5 +1,5 @@
-// right-panel.component.ts
-import { Component, signal, Input, Output, EventEmitter, OnDestroy } from '@angular/core';
+// right-panel.component.ts - FIXED VERSION
+import { Component, signal, Input, Output, EventEmitter, OnDestroy, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { LucideAngularModule, X, ArrowLeft } from 'lucide-angular';
 import { ActivityInboxComponent } from '../../shared/components/messaging/messaging.component';
@@ -29,7 +29,7 @@ interface PanelContentConfig {
     ActivityInboxComponent
   ],
   template: `
- <div class="border-l border-gray-200 flex flex-col h-full bg-white">
+    <div class="border-l border-gray-200 flex flex-col h-full bg-white">
       <!-- Panel Header -->
       <div class="flex-shrink-0 border-b border-gray-200 p-4">
         <div class="flex items-center justify-between">
@@ -116,7 +116,7 @@ interface PanelContentConfig {
                     <div class="flex items-start space-x-3">
                       <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
                            [class]="fundingType.iconBg">
-                     
+                        <span class="text-xs font-bold" [class]="fundingType.iconColor">{{ fundingType.icon }}</span>
                       </div>
                       <div class="flex-1">
                         <h4 class="font-medium text-gray-900">{{ fundingType.title }}</h4>
@@ -194,12 +194,25 @@ interface PanelContentConfig {
                   </div>
                   <p class="text-sm text-purple-700">International security management standards</p>
                 </div>
+
+                <div class="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                  <h4 class="font-medium text-yellow-800 mb-2">Data Protection Promise</h4>
+                  <p class="text-sm text-yellow-700">
+                    Your business data is never shared without explicit permission. 
+                    We use advanced encryption and access controls to ensure your 
+                    sensitive financial information remains confidential.
+                  </p>
+                </div>
               </div>
             </div>
           }
           @default {
             <div class="p-6 text-center text-gray-500">
-              <p>Content not available</p>
+              <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <span class="text-2xl">📋</span>
+              </div>
+              <h3 class="font-medium text-gray-900 mb-2">Welcome to Kapify</h3>
+              <p class="text-sm">Click on any card to learn more about our platform and funding process.</p>
             </div>
           }
         }
@@ -220,15 +233,26 @@ interface PanelContentConfig {
   `
 })
 export class RightPanelComponent implements OnDestroy {
-  @Input() content = signal<RightPanelContent>('activity-inbox');
+  // Fix: Use regular @Input() instead of signal for content
+  @Input() content: RightPanelContent = 'activity-inbox';
   @Output() contentChange = new EventEmitter<RightPanelContent>();
 
   // Icons
   XIcon = X;
   ArrowLeftIcon = ArrowLeft;
 
-  // Current content and config
-  currentContent = this.content;
+  // Create internal signal that syncs with the input
+  private _currentContent = signal<RightPanelContent>('activity-inbox');
+
+  constructor() {
+    // Effect to sync input changes with internal signal
+    effect(() => {
+      this._currentContent.set(this.content);
+    });
+  }
+
+  // Expose the current content as a computed signal
+  currentContent = this._currentContent.asReadonly();
 
   // Panel configurations
   private panelConfigs: Record<RightPanelContent, PanelContentConfig> = {
@@ -284,7 +308,7 @@ export class RightPanelComponent implements OnDestroy {
       description: 'Traditional loans with fixed repayment terms. Retain full ownership of your business.',
       range: 'R100K - R50M',
       term: '1-7 years',
-      icon: 'file-text',
+      icon: '💰',
       iconBg: 'bg-blue-100',
       iconColor: 'text-blue-600'
     },
@@ -294,7 +318,7 @@ export class RightPanelComponent implements OnDestroy {
       description: 'Exchange ownership stake for capital investment. No repayment required.',
       range: 'R500K - R500M',
       term: '5-10 years',
-      icon: 'pie-chart',
+      icon: '📊',
       iconBg: 'bg-green-100',
       iconColor: 'text-green-600'
     },
@@ -304,9 +328,19 @@ export class RightPanelComponent implements OnDestroy {
       description: 'Hybrid of debt and equity financing with conversion options.',
       range: 'R2M - R100M',
       term: '3-7 years',
-      icon: 'trending-up',
+      icon: '📈',
       iconBg: 'bg-purple-100',
       iconColor: 'text-purple-600'
+    },
+    {
+      id: 'grants',
+      title: 'Government Grants',
+      description: 'Non-repayable funding from government programs and development agencies.',
+      range: 'R50K - R5M',
+      term: 'No repayment',
+      icon: '🏛️',
+      iconBg: 'bg-orange-100',
+      iconColor: 'text-orange-600'
     }
   ];
 
@@ -321,7 +355,7 @@ export class RightPanelComponent implements OnDestroy {
     {
       id: '2',
       title: 'Know Your Numbers',
-      content: 'Be able to explain every line item in your financial statements and justify your projections.',
+      content: 'Be able to explain every line item in your financial statements and justify your projections confidently.',
       action: null
     },
     {
@@ -329,6 +363,18 @@ export class RightPanelComponent implements OnDestroy {
       title: 'Build Relationships Early',
       content: 'Start networking with potential funders before you need the money. Relationships take time to build.',
       action: 'Find Networking Events'
+    },
+    {
+      id: '4',
+      title: 'Perfect Your Pitch',
+      content: 'A compelling pitch deck should tell a story: problem, solution, market, traction, team, and ask.',
+      action: 'View Pitch Templates'
+    },
+    {
+      id: '5',
+      title: 'Show Market Validation',
+      content: 'Demonstrate demand through customer testimonials, pilot programs, or pre-orders.',
+      action: null
     }
   ];
 
@@ -337,8 +383,15 @@ export class RightPanelComponent implements OnDestroy {
   }
 
   closePanel() {
-    this.currentContent.set('activity-inbox');
+    this._currentContent.set('activity-inbox');
     this.contentChange.emit('activity-inbox');
+  }
+
+  // Fix: Add ngOnChanges to handle input changes properly
+  ngOnChanges() {
+    if (this.content) {
+      this._currentContent.set(this.content);
+    }
   }
 
   ngOnDestroy() {
