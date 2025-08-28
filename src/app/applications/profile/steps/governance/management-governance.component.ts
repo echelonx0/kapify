@@ -1,4 +1,3 @@
- 
 // src/app/profile/steps/governance/management-governance.component.ts
 import { Component, signal, OnInit, OnDestroy, inject } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, FormsModule } from '@angular/forms';
@@ -54,6 +53,10 @@ export class ManagementGovernanceComponent implements OnInit, OnDestroy {
   editingMemberType = signal<SectionKey>('management');
   editingMemberId = signal<string | null>(null);
   managementSearchTerm = '';
+  
+  // Yes/No question states
+  hasBoard = signal(true);
+  hasManagementCommittee = signal(true);
 
   memberForm: FormGroup;
 
@@ -71,7 +74,7 @@ export class ManagementGovernanceComponent implements OnInit, OnDestroy {
 
   // Auto-save subscription
   private autoSaveSubscription?: Subscription;
-    private debounceTimer?: ReturnType<typeof setTimeout>;
+  private debounceTimer?: ReturnType<typeof setTimeout>;
 
   // Icons
   ChevronDownIcon = ChevronDown;
@@ -117,11 +120,17 @@ export class ManagementGovernanceComponent implements OnInit, OnDestroy {
     const existingData = this.fundingApplicationService.data().managementStructure;
     if (existingData) {
       this.populateFromManagementStructure(existingData);
+      // Set yes/no states based on existing data with proper null checks
+      this.hasBoard.set(Boolean(existingData.boardOfDirectors?.length));
+      this.hasManagementCommittee.set(Boolean(existingData.advisors?.length));
     } else {
       // Load mock data for demonstration
       this.managementTeam.set([
         
       ]);
+      // Default to true for new applications
+      this.hasBoard.set(true);
+      this.hasManagementCommittee.set(true);
     }
   }
 
@@ -163,9 +172,17 @@ export class ManagementGovernanceComponent implements OnInit, OnDestroy {
       this.boardOfDirectors.set(boardData);
     }
 
-    // Note: managementCommittee would need to be added to the ManagementStructure interface
-    // For now, initialize as empty
-    this.managementCommittee.set([]);
+    // Convert advisors to committee members
+    if (data.advisors) {
+      const committeeData: LocalCommitteeMember[] = data.advisors.map(advisor => ({
+        id: advisor.id,
+        fullName: advisor.fullName,
+        committee: advisor.expertise,
+        role: 'Advisor',
+        description: advisor.contribution
+      }));
+      this.managementCommittee.set(committeeData);
+    }
   }
 
   private setupAutoSave() {
@@ -177,8 +194,6 @@ export class ManagementGovernanceComponent implements OnInit, OnDestroy {
         this.saveData(false);
       }
     });
-
-    
   }
 
   private debouncedSave() {
@@ -220,8 +235,8 @@ export class ManagementGovernanceComponent implements OnInit, OnDestroy {
 
   private buildManagementStructureData(): ManagementStructure {
     const managementData = this.managementTeam();
-    const boardData = this.boardOfDirectors();
-    const committeeData = this.managementCommittee();
+    const boardData = this.hasBoard() ? this.boardOfDirectors() : [];
+    const committeeData = this.hasManagementCommittee() ? this.managementCommittee() : [];
 
     return {
       // Convert local management team to executive team format
@@ -250,7 +265,7 @@ export class ManagementGovernanceComponent implements OnInit, OnDestroy {
         reportsTo: undefined // Would need to add this field
       })),
 
-      // Convert board of directors
+      // Convert board of directors (only if hasBoard is true)
       boardOfDirectors: boardData.map(board => ({
         id: board.id,
         fullName: board.fullName,
@@ -267,7 +282,7 @@ export class ManagementGovernanceComponent implements OnInit, OnDestroy {
       reportingStructure: 'Hierarchical reporting to board of directors',
 
       // Advisory support (would be populated from committee data if needed)
-      advisors: this.managementCommittee().map(committee => ({
+      advisors: committeeData.map(committee => ({
         id: committee.id,
         fullName: committee.fullName,
         expertise: committee.committee,
@@ -300,11 +315,61 @@ export class ManagementGovernanceComponent implements OnInit, OnDestroy {
   }
 
   private buildGovernanceDescription(): string {
-    const boardCount = this.boardOfDirectors().length;
+    const boardCount = this.hasBoard() ? this.boardOfDirectors().length : 0;
     const managementCount = this.managementTeam().length;
-    const committeeCount = this.managementCommittee().length;
+    const committeeCount = this.hasManagementCommittee() ? this.managementCommittee().length : 0;
 
-    return `Governance structure includes ${boardCount} board members, ${managementCount} management team members, and ${committeeCount} committee members. Board provides strategic oversight while management handles day-to-day operations.`;
+    let description = `Governance structure includes ${managementCount} management team members`;
+    
+    if (this.hasBoard()) {
+      description += `, ${boardCount} board members`;
+    }
+    
+    if (this.hasManagementCommittee()) {
+      description += `, and ${committeeCount} committee members`;
+    }
+    
+    description += '. ';
+    
+    if (this.hasBoard()) {
+      description += 'Board provides strategic oversight while management handles day-to-day operations.';
+    } else {
+      description += 'Management team handles both strategic and operational decisions.';
+    }
+
+    return description;
+  }
+
+  // ===============================
+  // YES/NO QUESTION METHODS
+  // ===============================
+
+  setHasBoard(value: boolean) {
+    this.hasBoard.set(value);
+    if (!value) {
+      // Clear board data when set to No
+      this.boardOfDirectors.set([]);
+      // Collapse the section
+      this.sectionStates.update(current => ({
+        ...current,
+        board: false
+      }));
+    }
+    this.debouncedSave();
+  }
+
+  setHasManagementCommittee(value: boolean) {
+    this.hasManagementCommittee.set(value);
+    if (!value) {
+      // Clear committee data when set to No
+      this.managementCommittee.set([]);
+      // Collapse the section
+      this.sectionStates.update(current => ({
+        ...current,
+        committee: false
+      }));
+    }
+    this.debouncedSave();
   }
 
   // ===============================
@@ -316,6 +381,10 @@ export class ManagementGovernanceComponent implements OnInit, OnDestroy {
   }
 
   toggleSection(sectionId: SectionKey) {
+    // Don't allow toggling sections if the yes/no question is set to No
+    if (sectionId === 'board' && !this.hasBoard()) return;
+    if (sectionId === 'committee' && !this.hasManagementCommittee()) return;
+    
     this.sectionStates.update(current => ({
       ...current,
       [sectionId]: !current[sectionId]
@@ -334,8 +403,15 @@ export class ManagementGovernanceComponent implements OnInit, OnDestroy {
 
   hasData(): boolean {
     return this.managementTeam().length > 0 || 
-           this.boardOfDirectors().length > 0 || 
-           this.managementCommittee().length > 0;
+           (this.hasBoard() && this.boardOfDirectors().length > 0) || 
+           (this.hasManagementCommittee() && this.managementCommittee().length > 0);
+  }
+
+  getTotalMembersCount(): number {
+    let count = this.managementTeam().length;
+    if (this.hasBoard()) count += this.boardOfDirectors().length;
+    if (this.hasManagementCommittee()) count += this.managementCommittee().length;
+    return count;
   }
 
   getLastSavedText(): string {
@@ -388,6 +464,7 @@ export class ManagementGovernanceComponent implements OnInit, OnDestroy {
   // ===============================
 
   addBoardMember() {
+    if (!this.hasBoard()) return;
     this.editingMemberType.set('board');
     this.editingMemberId.set(null);
     this.memberForm.reset();
@@ -395,6 +472,7 @@ export class ManagementGovernanceComponent implements OnInit, OnDestroy {
   }
 
   editBoardMember(id: string) {
+    if (!this.hasBoard()) return;
     const member = this.boardOfDirectors().find(m => m.id === id);
     if (member) {
       this.editingMemberType.set('board');
@@ -405,6 +483,7 @@ export class ManagementGovernanceComponent implements OnInit, OnDestroy {
   }
 
   deleteBoardMember(id: string) {
+    if (!this.hasBoard()) return;
     if (confirm('Are you sure you want to delete this board member?')) {
       this.boardOfDirectors.update(current => current.filter(m => m.id !== id));
       this.saveData();
@@ -416,6 +495,7 @@ export class ManagementGovernanceComponent implements OnInit, OnDestroy {
   // ===============================
 
   addCommitteeMember() {
+    if (!this.hasManagementCommittee()) return;
     this.editingMemberType.set('committee');
     this.editingMemberId.set(null);
     this.memberForm.reset();
@@ -423,6 +503,7 @@ export class ManagementGovernanceComponent implements OnInit, OnDestroy {
   }
 
   editCommitteeMember(id: string) {
+    if (!this.hasManagementCommittee()) return;
     const member = this.managementCommittee().find(m => m.id === id);
     if (member) {
       this.editingMemberType.set('committee');
@@ -433,6 +514,7 @@ export class ManagementGovernanceComponent implements OnInit, OnDestroy {
   }
 
   deleteCommitteeMember(id: string) {
+    if (!this.hasManagementCommittee()) return;
     if (confirm('Are you sure you want to delete this committee member?')) {
       this.managementCommittee.update(current => current.filter(m => m.id !== id));
       this.saveData();
@@ -459,6 +541,10 @@ export class ManagementGovernanceComponent implements OnInit, OnDestroy {
 
       const type = this.editingMemberType();
       const isEditing = !!this.editingMemberId();
+
+      // Check permissions before saving
+      if (type === 'board' && !this.hasBoard()) return;
+      if (type === 'committee' && !this.hasManagementCommittee()) return;
 
       if (type === 'management') {
         if (isEditing) {

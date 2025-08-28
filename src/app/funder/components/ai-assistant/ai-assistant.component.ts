@@ -1,7 +1,8 @@
 // src/app/funder/components/ai-assistant.component.ts
-import { Component, Input } from '@angular/core';
+import { Component, inject, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { LucideAngularModule, Sparkles, Lightbulb, TrendingUp, Copy, Calculator, FileText, HelpCircle } from 'lucide-angular';
+import { Router } from '@angular/router';
 
 interface FormData {
   fundingType: string;
@@ -65,11 +66,11 @@ interface FormData {
             <h4 class="text-sm font-semibold text-gray-900">Quick Actions</h4>
             <button 
               class="w-full text-left p-3 border border-gray-200 rounded-lg hover:border-primary-300 hover:bg-primary-50 transition-all group"
-              (click)="copyFromTemplate()"
+              (click)="importFromTemplate()"
             >
               <div class="flex items-center space-x-3">
                 <lucide-icon [img]="CopyIcon" [size]="16" class="text-gray-400 group-hover:text-primary-600"></lucide-icon>
-                <span class="text-sm text-gray-700 group-hover:text-primary-700">Copy from template</span>
+                <span class="text-sm text-gray-700 group-hover:text-primary-700">Import from Template</span>
               </div>
             </button>
             <button 
@@ -131,7 +132,7 @@ export class AiAssistantComponent {
   @Input() currentStep: string = 'basic';
   @Input() formData: FormData = {} as FormData;
   @Input() completionPercentage: number = 0;
-
+  private router = inject(Router);
   // Icons
   SparklesIcon = Sparkles;
   LightbulbIcon = Lightbulb;
@@ -167,9 +168,8 @@ export class AiAssistantComponent {
     console.log('Applying AI suggestion...');
   }
 
-  copyFromTemplate(): void {
-    // TODO: Implement template copying logic
-    console.log('Copying from template...');
+  importFromTemplate(): void {
+    this.router.navigate(['/funder/opportunities/import']);
   }
 
   calculateReturns(): void {

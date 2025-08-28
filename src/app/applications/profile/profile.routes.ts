@@ -65,11 +65,11 @@ export const profileRoutes: Routes = [
             loadComponent: () => import('./steps/financial-analysis/financial-analysis.component').then(c => c.FinancialAnalysisComponent),
             title: 'Financial Profile - Funding Application'
           },
-{ 
-  path: 'review', 
-  loadComponent: () => import('./steps/review/profile-review.component').then(c => c.ProfileReviewComponent),
-  title: 'Review & Analysis - Funding Application'
-},
+          { 
+            path: 'review', 
+            loadComponent: () => import('./steps/review/profile-review.component').then(c => c.ProfileReviewComponent),
+            title: 'Review & Analysis - Funding Application'
+          },
           // ===============================
           // LEGACY ROUTES (BACKWARD COMPATIBILITY)
           // Keep these for existing bookmarks/links

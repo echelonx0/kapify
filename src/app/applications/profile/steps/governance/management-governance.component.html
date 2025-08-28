@@ -1,12 +1,11 @@
 <!-- src/app/profile/steps/governance/management-governance.component.html -->
 <div class="space-y-6">
  
-
   <!-- Auto-save Status Header -->
   <div class="bg-white rounded-lg border border-neutral-200 p-4">
     <div class="flex items-center justify-between">
       <div class="text-sm text-neutral-600">
-        Management structure and governance information for funding assessment
+        Management structure and governance information  
       </div>
       <div class="flex items-center space-x-4">
         <!-- Auto-save status -->
@@ -135,139 +134,211 @@
     }
   </div>
 
-  <!-- Board of Directors Section -->
+  <!-- Board of Directors Question & Section -->
   <div class="bg-white rounded-lg border border-neutral-200">
-    <button
-      type="button"
-      (click)="toggleSection('board')"
-      class="w-full px-6 py-4 text-left flex items-center justify-between hover:bg-neutral-50 transition-colors"
-    >
-      <div>
-        <h3 class="text-lg font-semibold text-neutral-900">Board of Directors</h3>
-        <p class="text-sm text-neutral-600 mt-1">Detail the composition of your board of directors.</p>
+    <!-- Question Header -->
+    <div class="px-6 py-4 border-b border-neutral-200">
+      <h3 class="text-lg font-semibold text-neutral-900 mb-3">Does the company have a Board of Directors?</h3>
+      <div class="flex space-x-4">
+        <label class="flex items-center">
+          <input
+            type="radio"
+            name="hasBoard"
+            [value]="true"
+            [checked]="hasBoard()"
+            (change)="setHasBoard(true)"
+            class="w-4 h-4 text-primary-600 border-neutral-300 focus:ring-primary-500"
+          />
+          <span class="ml-2 text-sm text-neutral-700">Yes</span>
+        </label>
+        <label class="flex items-center">
+          <input
+            type="radio"
+            name="hasBoard"
+            [value]="false"
+            [checked]="!hasBoard()"
+            (change)="setHasBoard(false)"
+            class="w-4 h-4 text-primary-600 border-neutral-300 focus:ring-primary-500"
+          />
+          <span class="ml-2 text-sm text-neutral-700">No</span>
+        </label>
       </div>
-      <lucide-icon 
-        [img]="getSectionExpanded('board') ? ChevronUpIcon : ChevronDownIcon" 
-        [size]="20" 
-        class="text-neutral-400"
-      />
-    </button>
+    </div>
 
-    @if (getSectionExpanded('board')) {
-      <div class="px-6 pb-6 border-t border-neutral-200">
-        <div class="mt-4">
-          <div class="flex items-center justify-between mb-4">
-            <div class="text-sm text-neutral-600">
-              Board composition and director information
+    <!-- Board Details Section -->
+    @if (hasBoard()) {
+      <button
+        type="button"
+        (click)="toggleSection('board')"
+        class="w-full px-6 py-4 text-left flex items-center justify-between hover:bg-neutral-50 transition-colors"
+      >
+        <div>
+          <h4 class="text-base font-medium text-neutral-900">Board of Directors Details</h4>
+          <p class="text-sm text-neutral-600 mt-1">Detail the composition of your board of directors.</p>
+        </div>
+        <lucide-icon 
+          [img]="getSectionExpanded('board') ? ChevronUpIcon : ChevronDownIcon" 
+          [size]="20" 
+          class="text-neutral-400"
+        />
+      </button>
+
+      @if (getSectionExpanded('board')) {
+        <div class="px-6 pb-6 border-t border-neutral-200">
+          <div class="mt-4">
+            <div class="flex items-center justify-between mb-4">
+              <div class="text-sm text-neutral-600">
+                Board composition and director information
+              </div>
+              <ui-button variant="primary" size="sm" (clicked)="addBoardMember()">
+                <lucide-icon [img]="PlusIcon" [size]="16" class="mr-2" />
+                Add Director
+              </ui-button>
             </div>
-            <ui-button variant="primary" size="sm" (clicked)="addBoardMember()">
-              <lucide-icon [img]="PlusIcon" [size]="16" class="mr-2" />
-              Add Director
-            </ui-button>
-          </div>
 
-          @for (member of boardOfDirectors(); track member.id) {
-            <div class="border border-neutral-200 rounded-lg p-4 mb-4">
-              <div class="flex justify-between items-start">
-                <div class="flex-1">
-                  <h4 class="font-medium text-neutral-900">{{ member.fullName }}</h4>
-                  <p class="text-sm text-neutral-600">{{ member.role }}</p>
-                  <div class="mt-2 flex items-center space-x-4 text-xs text-neutral-500">
-                    <span>Appointed: {{ member.appointmentDate }}</span>
-                    @if (member.independent) {
-                      <span class="bg-green-100 text-green-700 px-2 py-1 rounded">Independent</span>
-                    }
+            @for (member of boardOfDirectors(); track member.id) {
+              <div class="border border-neutral-200 rounded-lg p-4 mb-4">
+                <div class="flex justify-between items-start">
+                  <div class="flex-1">
+                    <h4 class="font-medium text-neutral-900">{{ member.fullName }}</h4>
+                    <p class="text-sm text-neutral-600">{{ member.role }}</p>
+                    <div class="mt-2 flex items-center space-x-4 text-xs text-neutral-500">
+                      <span>Appointed: {{ member.appointmentDate }}</span>
+                      @if (member.independent) {
+                        <span class="bg-green-100 text-green-700 px-2 py-1 rounded">Independent</span>
+                      }
+                    </div>
+                  </div>
+                  <div class="flex space-x-2">
+                    <button
+                      (click)="editBoardMember(member.id)"
+                      class="text-primary-600 hover:text-primary-700 text-sm"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      (click)="deleteBoardMember(member.id)"
+                      class="text-red-600 hover:text-red-700 text-sm"
+                    >
+                      Delete
+                    </button>
                   </div>
                 </div>
-                <div class="flex space-x-2">
-                  <button
-                    (click)="editBoardMember(member.id)"
-                    class="text-primary-600 hover:text-primary-700 text-sm"
-                  >
-                    Edit
-                  </button>
-                  <button
-                    (click)="deleteBoardMember(member.id)"
-                    class="text-red-600 hover:text-red-700 text-sm"
-                  >
-                    Delete
-                  </button>
-                </div>
               </div>
-            </div>
-          } @empty {
-            <div class="text-center py-8 text-neutral-500">
-              <p class="text-sm">No board members added yet.</p>
-            </div>
-          }
+            } @empty {
+              <div class="text-center py-8 text-neutral-500">
+                <p class="text-sm">No board members added yet.</p>
+              </div>
+            }
+          </div>
         </div>
+      }
+    } @else {
+      <div class="px-6 py-4 bg-neutral-50 text-sm text-neutral-500">
+        Board of Directors section is not applicable for this company.
       </div>
     }
   </div>
 
-  <!-- Management Committee Section -->
+  <!-- Management Committee Question & Section -->
   <div class="bg-white rounded-lg border border-neutral-200">
-    <button
-      type="button"
-      (click)="toggleSection('committee')"
-      class="w-full px-6 py-4 text-left flex items-center justify-between hover:bg-neutral-50 transition-colors"
-    >
-      <div>
-        <h3 class="text-lg font-semibold text-neutral-900">Management Committee</h3>
-        <p class="text-sm text-neutral-600 mt-1">Outline any management committee within your organization.</p>
+    <!-- Question Header -->
+    <div class="px-6 py-4 border-b border-neutral-200">
+      <h3 class="text-lg font-semibold text-neutral-900 mb-3">Does the company have a Management Committee?</h3>
+      <div class="flex space-x-4">
+        <label class="flex items-center">
+          <input
+            type="radio"
+            name="hasCommittee"
+            [value]="true"
+            [checked]="hasManagementCommittee()"
+            (change)="setHasManagementCommittee(true)"
+            class="w-4 h-4 text-primary-600 border-neutral-300 focus:ring-primary-500"
+          />
+          <span class="ml-2 text-sm text-neutral-700">Yes</span>
+        </label>
+        <label class="flex items-center">
+          <input
+            type="radio"
+            name="hasCommittee"
+            [value]="false"
+            [checked]="!hasManagementCommittee()"
+            (change)="setHasManagementCommittee(false)"
+            class="w-4 h-4 text-primary-600 border-neutral-300 focus:ring-primary-500"
+          />
+          <span class="ml-2 text-sm text-neutral-700">No</span>
+        </label>
       </div>
-      <lucide-icon 
-        [img]="getSectionExpanded('committee') ? ChevronUpIcon : ChevronDownIcon" 
-        [size]="20" 
-        class="text-neutral-400"
-      />
-    </button>
+    </div>
 
-    @if (getSectionExpanded('committee')) {
-      <div class="px-6 pb-6 border-t border-neutral-200">
-        <div class="mt-4">
-          <div class="flex items-center justify-between mb-4">
-            <div class="text-sm text-neutral-600">
-              Committee structure and member responsibilities
+    <!-- Committee Details Section -->
+    @if (hasManagementCommittee()) {
+      <button
+        type="button"
+        (click)="toggleSection('committee')"
+        class="w-full px-6 py-4 text-left flex items-center justify-between hover:bg-neutral-50 transition-colors"
+      >
+        <div>
+          <h4 class="text-base font-medium text-neutral-900">Management Committee Details</h4>
+          <p class="text-sm text-neutral-600 mt-1">Outline any management committee within your organization.</p>
+        </div>
+        <lucide-icon 
+          [img]="getSectionExpanded('committee') ? ChevronUpIcon : ChevronDownIcon" 
+          [size]="20" 
+          class="text-neutral-400"
+        />
+      </button>
+
+      @if (getSectionExpanded('committee')) {
+        <div class="px-6 pb-6 border-t border-neutral-200">
+          <div class="mt-4">
+            <div class="flex items-center justify-between mb-4">
+              <div class="text-sm text-neutral-600">
+                Committee structure and member responsibilities
+              </div>
+              <ui-button variant="primary" size="sm" (clicked)="addCommitteeMember()">
+                <lucide-icon [img]="PlusIcon" [size]="16" class="mr-2" />
+                Add Committee Member
+              </ui-button>
             </div>
-            <ui-button variant="primary" size="sm" (clicked)="addCommitteeMember()">
-              <lucide-icon [img]="PlusIcon" [size]="16" class="mr-2" />
-              Add Committee Member
-            </ui-button>
-          </div>
 
-          @for (member of managementCommittee(); track member.id) {
-            <div class="border border-neutral-200 rounded-lg p-4 mb-4">
-              <div class="flex justify-between items-start">
-                <div class="flex-1">
-                  <h4 class="font-medium text-neutral-900">{{ member.fullName }}</h4>
-                  <p class="text-sm text-neutral-600">{{ member.role }} - {{ member.committee }}</p>
-                  @if (member.description) {
-                    <p class="text-xs text-neutral-500 mt-1">{{ member.description }}</p>
-                  }
-                </div>
-                <div class="flex space-x-2">
-                  <button
-                    (click)="editCommitteeMember(member.id)"
-                    class="text-primary-600 hover:text-primary-700 text-sm"
-                  >
-                    Edit
-                  </button>
-                  <button
-                    (click)="deleteCommitteeMember(member.id)"
-                    class="text-red-600 hover:text-red-700 text-sm"
-                  >
-                    Delete
-                  </button>
+            @for (member of managementCommittee(); track member.id) {
+              <div class="border border-neutral-200 rounded-lg p-4 mb-4">
+                <div class="flex justify-between items-start">
+                  <div class="flex-1">
+                    <h4 class="font-medium text-neutral-900">{{ member.fullName }}</h4>
+                    <p class="text-sm text-neutral-600">{{ member.role }} - {{ member.committee }}</p>
+                    @if (member.description) {
+                      <p class="text-xs text-neutral-500 mt-1">{{ member.description }}</p>
+                    }
+                  </div>
+                  <div class="flex space-x-2">
+                    <button
+                      (click)="editCommitteeMember(member.id)"
+                      class="text-primary-600 hover:text-primary-700 text-sm"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      (click)="deleteCommitteeMember(member.id)"
+                      class="text-red-600 hover:text-red-700 text-sm"
+                    >
+                      Delete
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
-          } @empty {
-            <div class="text-center py-8 text-neutral-500">
-              <p class="text-sm">No committee members added yet.</p>
-            </div>
-          }
+            } @empty {
+              <div class="text-center py-8 text-neutral-500">
+                <p class="text-sm">No committee members added yet.</p>
+              </div>
+            }
+          </div>
         </div>
+      }
+    } @else {
+      <div class="px-6 py-4 bg-neutral-50 text-sm text-neutral-500">
+        Management Committee section is not applicable for this company.
       </div>
     }
   </div>
@@ -286,7 +357,7 @@
         @if (hasData()) {
           <div class="flex items-center space-x-2 text-green-600">
             <div class="w-2 h-2 bg-green-500 rounded-full"></div>
-            <span class="font-medium text-sm">{{ managementTeam().length + boardOfDirectors().length + managementCommittee().length }} members added</span>
+            <span class="font-medium text-sm">{{ getTotalMembersCount() }} members added</span>
           </div>
         } @else {
           <div class="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-sm font-medium">
@@ -337,12 +408,22 @@
           />
           
           @if (editingMemberType() === 'management') {
-            <ui-input
-              label="Qualification"
-              placeholder="Masters Degree"
-              formControlName="qualification"
-              [required]="true"
-            />
+            <div>
+              <label class="block text-sm font-medium text-neutral-700 mb-2">Qualification</label>
+              <select
+                formControlName="qualification"
+                class="block w-full px-3 py-2 border border-neutral-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+                required
+              >
+                <option value="">Select qualification</option>
+                <option value="High School Diploma">High School Diploma</option>
+                <option value="Bachelors Degree">Bachelor's Degree</option>
+                <option value="Masters Degree">Master's Degree</option>
+                <option value="Doctorate (PhD)">Doctorate (PhD)</option>
+                <option value="Professional Certification">Professional Certification</option>
+              </select>
+            </div>
+
             <ui-input
               label="Years of Experience"
               type="number"

@@ -2,7 +2,7 @@
 import { Component, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, NavigationEnd } from '@angular/router';
-import { LucideAngularModule, Bell } from 'lucide-angular';
+import { LucideAngularModule, Bell, Settings } from 'lucide-angular';
 import { filter, map, startWith } from 'rxjs/operators';
 import { ProfileManagementService } from '../services/profile-management.service';
 
@@ -26,13 +26,25 @@ interface RouteConfig {
             {{ currentRouteConfig().description }}
           </p>
         </div>
-        
+     
         <div class="flex items-center space-x-4">
           <!-- Notifications -->
           <button class="relative p-2 text-neutral-500 hover:text-neutral-700 hover:bg-neutral-50 rounded-lg transition-colors">
             <lucide-icon [img]="BellIcon" [size]="20" />
             <span class="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
           </button>
+          
+          <!-- Admin button (only for specific email) -->
+          @if (isAdminUser()) {
+            <button 
+              (click)="goToAdmin()" 
+              class="flex items-center px-3 py-2 rounded-lg bg-slate-600 text-white hover:bg-slate-700 transition-colors"
+              [disabled]="isNavigating"
+            >
+              <lucide-icon [img]="SettingsIcon" [size]="18" class="mr-2" />
+              {{ isNavigating ? 'Loading...' : 'Admin Console' }}
+            </button>
+          }
           
           <!-- User Avatar & Name -->
           <div class="flex items-center space-x-3">
@@ -69,12 +81,24 @@ export class DashboardHeaderComponent {
   private profileService = inject(ProfileManagementService);
   
   BellIcon = Bell;
+  SettingsIcon = Settings;
+  
+  // Navigation state
+  isNavigating = false;
 
   // Route configurations
   private routeConfigs: Record<string, RouteConfig> = {
     '/dashboard': {
       title: 'Welcome back, {{name}}!',
       description: 'Track your applications, explore new opportunities, and manage your business profile.'
+    },
+    '/administrator': {
+      title: 'Admin Console',
+      description: 'Manage users, system settings, and monitor platform performance.'
+    },
+    '/administrator/dashboard': {
+      title: 'Admin Dashboard',
+      description: 'Overview of system metrics, user activity, and key performance indicators.'
     },
     '/profile': {
       title: 'Your Profile',
@@ -176,6 +200,28 @@ export class DashboardHeaderComponent {
           console.error('Failed to load user profile for header:', error);
         }
       });
+    }
+  }
+
+  isAdminUser = computed(() => {
+    const user = this.currentUser();
+    return user?.email === 'zivaigwe@gmail.com';
+  });
+
+  async goToAdmin() {
+    if (this.isNavigating) return;
+    
+    this.isNavigating = true;
+    console.log('Navigating to admin console');
+    
+    try {
+      // Navigate to the full admin dashboard path
+      await this.router.navigate(['/administrator/dashboard']);
+      console.log('Navigation to admin console completed');
+    } catch (error) {
+      console.error('Navigation to admin console failed:', error);
+    } finally {
+      this.isNavigating = false;
     }
   }
 }

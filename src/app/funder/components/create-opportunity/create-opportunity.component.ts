@@ -11,6 +11,8 @@ import { trigger, transition, style, animate } from '@angular/animations';
 import { AiAssistantComponent } from '../ai-assistant/ai-assistant.component'; 
 import { FundingOpportunityService } from '../../../funding/services/funding-opportunity.service';
 import { ProfileManagementService } from '../../../shared/services/profile-management.service';
+import { AuthService } from '../../../auth/production.auth.service';
+import { OnboardingState } from '../../services/funder-onboarding.service';
 
 interface OpportunityFormData {
   // Basic details
@@ -107,6 +109,8 @@ export class CreateOpportunityComponent implements OnInit, OnDestroy {
   private opportunityService = inject(FundingOpportunityService);
   private route = inject(ActivatedRoute);
  private profileService = inject(ProfileManagementService);
+ private authService = inject(AuthService);
+   onboardingState = signal<OnboardingState | null>(null);
   // Icons
   ArrowLeftIcon = ArrowLeft;
   TargetIcon = Target;
@@ -244,16 +248,17 @@ export class CreateOpportunityComponent implements OnInit, OnDestroy {
   ngOnInit() {
 
     // Organization validation
-    const orgId = this.profileService.getCurrentOrganizationId();
-    if (!orgId) {
-      this.router.navigate(['/funder/onboarding']);
-      return;
-    }
+    // const orgId = this.authService.getCurrentUserOrganizationId();
+    // console.log('Current organization ID:', orgId);
+    // if (!orgId) {
+    //   this.router.navigate(['/funder/onboarding']);
+    //   return;
+    // }
     
-    if (!this.profileService.canCreateOpportunities()) {
-      this.router.navigate(['/funder/complete-setup']);
-      return;
-    }
+    // if (!this.profileService.canCreateOpportunities()) {
+    //   this.router.navigate(['/funder/complete-setup']);
+    //   return;
+    // }
     
     this.detectMode();
     this.setupLocalAutoSave();

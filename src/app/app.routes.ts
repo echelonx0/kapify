@@ -30,6 +30,13 @@ export const routes: Routes = [
     title: 'Create Account - Kapify'
   },
 
+  // Admin routes (MOVE THIS UP - before other protected routes)
+  {
+    path: 'administrator',
+    // canActivate: [AuthGuard],
+    loadChildren: () => import('./admin/admin.routes').then(m => m.adminRoutes)
+  },
+
   // Protected routes (require authentication)
   { 
     path: 'dashboard',
@@ -65,7 +72,7 @@ export const routes: Routes = [
     canActivate: [AuthGuard, RoleGuard],
     loadChildren: () => import('./funder/funder.routes').then(m => m.funderRoutes)
   },
-
-  // Catch all
+ 
+  // Catch all (ALWAYS LAST)
   { path: '**', redirectTo: '', pathMatch: 'full' }
 ];

@@ -225,6 +225,7 @@ export class  ProfileStepsLayoutComponent implements OnInit {
     return this.profileService.steps.find(step => step.id === stepId);
   }
 
+  
   getCurrentStepTitle(): string {
     const currentStep = this.profileService.steps[this.profileService.currentStepIndex()];
     const stepInfo = this.stepInfo.find(s => s.id === currentStep?.id);

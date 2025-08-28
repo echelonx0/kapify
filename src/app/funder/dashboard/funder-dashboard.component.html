@@ -292,6 +292,16 @@
                 </div>
                 <span class="font-medium text-gray-900 group-hover:text-blue-600 transition-colors">Create Opportunity</span>
               </button>
+
+                <button 
+                class="w-full flex items-center justify-start p-4 border border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-all group"
+                (click)="importOpportunity()"
+              >
+                <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mr-4 group-hover:bg-blue-200 transition-colors">
+                  <lucide-icon [img]="PlusIcon" [size]="18" class="text-blue-600" />
+                </div>
+                <span class="font-medium text-gray-900 group-hover:text-blue-600 transition-colors">Import Opportunity</span>
+              </button>
             }
             
             <button 

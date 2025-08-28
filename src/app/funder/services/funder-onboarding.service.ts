@@ -136,100 +136,7 @@ export class FunderOnboardingService {
       percentage
     };
   }
-  // Save to unified organizations table
-  // saveToDatabase(): Observable<{ success: boolean; organizationId?: string }> {
-  //   const user = this.authService.user();
-  //   if (!user) {
-  //     this.error.set('Please log in to save');
-  //     return throwError(() => new Error('Not authenticated'));
-  //   }
-
-  //   const data = this.organizationData();
-  //   if (!data.name?.trim()) {
-  //     this.error.set('Organization name is required');
-  //     return throwError(() => new Error('Name required'));
-  //   }
-
-  //   this.isSaving.set(true);
-  //   this.error.set(null);
-
-  //   // Map to unified organization structure
-  //   const orgData = {
-  //     name: data.name,
-  //     description: data.description || null,
-  //     organization_type: data.organizationType || 'investment_fund',
-  //     status: data.status || 'active',
-  //     website: data.website || null,
-  //     logo_url: data.logoUrl || null,
-  //     legal_name: data.legalName || null,
-  //     registration_number: data.registrationNumber || null,
-  //     tax_number: data.taxNumber || null,
-  //     founded_year: data.foundedYear || null,
-  //     employee_count: this.parseEmployeeCount(data.employeeCount) || null,
-  //     assets_under_management: data.assetsUnderManagement || null,
-  //     is_verified: data.isVerified || false,
-  //     verification_date: data.verificationDate || null,
-  //     email: data.email || null,
-  //     phone: data.phone || null,
-  //     address_line1: data.addressLine1 || null,
-  //     address_line2: data.addressLine2 || null,
-  //     city: data.city || null,
-  //     province: data.province || null,
-  //     postal_code: data.postalCode || null,
-  //     country: data.country || 'South Africa',
-  //     updated_at: new Date().toISOString()
-  //   };
-
-  //   return from(
-  //     this.supabaseService.from('organizations')
-  //       .upsert(orgData)
-  //       .select()
-  //       .single()
-  //   ).pipe(
-  //     switchMap(({ data: orgResult, error: orgError }) => {
-  //       if (orgError) throw orgError;
-        
-  //       // Create or update organization_users relationship
-  //       const orgUserData = {
-  //         user_id: user.id,
-  //         organization_id: orgResult.id,
-  //         role: 'admin',
-  //         permissions: DEFAULT_PERMISSIONS['admin'],
-  //         status: 'active',
-  //         joined_at: new Date().toISOString()
-  //       };
-
-  //       return from(
-  //         this.supabaseService.from('organization_users')
-  //           .upsert(orgUserData, { onConflict: 'user_id,organization_id' })
-  //           .select()
-  //       ).pipe(
-  //         tap(() => {
-  //           // Update local data with org ID
-  //           this.organizationData.update(current => ({
-  //             ...current,
-  //             id: orgResult.id
-  //           }));
-  //           this.saveToLocalStorage();
-  //           this.lastSavedToDatabase.set(new Date());
-  //           this.updateStateFromData();
-  //         }),
-  //         switchMap(() => of({ success: true, organizationId: orgResult.id }))
-  //       );
-  //     }),
-  //     catchError(error => {
-  //       console.error('Save failed:', error);
-  //       this.error.set(error.message || 'Failed to save organization');
-  //       this.isSaving.set(false);
-  //       return throwError(() => error);
-  //     }),
-  //     tap(() => {
-  //       this.isSaving.set(false);
-  //       console.log('Organization saved successfully to unified table');
-  //     })
-  //   );
-  // }
-
+ 
   // In funder-onboarding.service.ts - replace saveToDatabase method
 saveToDatabase(): Observable<{ success: boolean; organizationId?: string }> {
   const user = this.authService.user();
@@ -329,7 +236,7 @@ saveToDatabase(): Observable<{ success: boolean; organizationId?: string }> {
           organizations (*)
         `)
         .eq('user_id', user.id)
-        .eq('role', 'admin')
+        // .eq('role', 'admin')
         .maybeSingle()
     ).pipe(
       tap(({ data, error }) => {

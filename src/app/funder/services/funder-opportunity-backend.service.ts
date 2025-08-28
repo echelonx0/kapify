@@ -199,7 +199,7 @@ private async validateUserCanPublish(userId: string): Promise<boolean> {
     
     // Check organization has required fields completed
     const { data: org, error } = await this.supabase
-      .from('funder_organizations')
+      .from('organizations')
       .select('name, description, organization_type, email, phone, city, province, country')
       .eq('id', organizationId)
       .single();
@@ -674,7 +674,7 @@ publishOpportunity(opportunityData: Partial<FundingOpportunity>): Observable<Pub
 private async getOrganizationId(userId: string): Promise<string> {
   try {
     const { data: organization, error } = await this.supabase
-      .from('funder_organizations')
+      .from('organization_users')
       .select('id, status, is_verified')
       .eq('user_id', userId)
       .single();

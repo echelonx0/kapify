@@ -48,7 +48,7 @@ export interface CompanyInformation {
   regulatoryLicenses: string[];
 }
 
-// src/app/profile/models/funding-application.models.ts - Updated SupportingDocuments Interface
+
 
 export interface SupportingDocuments {
   // Company Documents

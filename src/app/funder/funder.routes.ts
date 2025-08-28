@@ -48,7 +48,11 @@ export const funderRoutes: Routes = [
           }
         ]
       },
-      
+      {
+        path: 'opportunities/import',
+        loadComponent: () =>
+          import('./components/import-opportunity/import-opportunity.component').then(m => m.ImportOpportunityComponent)
+      },   
       {
         path: 'opportunities/create',
         loadComponent: () =>

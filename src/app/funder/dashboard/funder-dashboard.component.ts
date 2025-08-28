@@ -176,13 +176,18 @@ export class FunderDashboardComponent implements OnInit, OnDestroy {
       window.location.href = '/funding/create-opportunity';
     }
   }
-
+  importOpportunity() {
+    console.log('Import opportunity method called');
+    
+       this.router.navigate(['/funder/opportunities/import']);
+  }
   /**
    * Main create opportunity method (called from template)
    * FIXED: No longer calls itself recursively
    */
   createOpportunity() {
     console.log('Create opportunity method called');
+    console.log('Onboarding state:', this.onboardingState());
     
     if (this.onboardingState()?.canCreateOpportunities) {
       // Check for existing drafts first
