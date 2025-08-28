@@ -7,6 +7,7 @@ import { AdminService, AdminStats, AdminUser, AdminOrganization, AdminOpportunit
 import { AuthService } from '../../auth/production.auth.service';
 import { UiButtonComponent, UiCardComponent } from '../../shared/components';
 import { DropdownComponent, DropdownOption } from '../../shared/components/ui/shared-ui-components';
+import { OrganizationsTabComponent } from './components/organisations-tab/organisations-tab.component';
  
 
 type TabType = 'overview' | 'users' | 'organizations' | 'opportunities' | 'activity';
@@ -38,7 +39,8 @@ interface FilterState {
     ReactiveFormsModule, 
     UiButtonComponent, 
     UiCardComponent, 
-    DropdownComponent
+    DropdownComponent,
+    OrganizationsTabComponent
   ],
   templateUrl: './admin-dashboard.component.html',
 })

@@ -1,0 +1,59 @@
+<div class="space-y-4">
+  <!-- Filters -->
+<div class="space-y-4">
+  <!-- Filters -->
+  <div class="flex gap-4">
+ <kapify-dropdown 
+  [options]="getOrganizationStatusOptions()" 
+  [(selectedValue)]="filters.status"
+  (selectionChange)="filterTrigger()"
+></kapify-dropdown>
+
+<kapify-dropdown 
+  [options]="getOrganizationTypeOptions()" 
+  [(selectedValue)]="filters.type"
+  (selectionChange)="filterTrigger()"
+></kapify-dropdown>
+
+
+    <input 
+      type="text" 
+      placeholder="Search organizations..." 
+      [(ngModel)]="filters.search" 
+      (ngModelChange)="filterTrigger()"
+      class="input"
+    />
+  </div>
+
+  <!-- Organization List -->
+  <ui-card *ngFor="let org of filteredOrganizations()" class="p-4 flex justify-between items-center">
+    <div>
+      <h3 class="font-bold">{{ org.name }}</h3>
+      <p>{{ org.city }}, {{ org.country }}</p>
+    </div>
+    <div class="flex gap-2">
+      <ui-button (clicked)="onView(org)" variant="primary">View</ui-button>
+      <ui-button (clicked)="onVerify(org)"  >Verify</ui-button>
+      <ui-button (clicked)="onToggleStatus(org)"  >Toggle Status</ui-button>
+    </div>
+  </ui-card>
+</div>
+
+
+  <!-- Organizations List -->
+  <ui-card *ngFor="let org of filteredOrganizations()">
+    <div class="flex items-center justify-between">
+      <div>
+        <h3 class="text-lg font-semibold">{{ org.name }}</h3>
+        <p class="text-sm text-neutral-500">{{ org.organizationType }} • {{ org.city }}, {{ org.country }}</p>
+      </div>
+      <div class="flex items-center gap-2">
+        <ui-button (click)="view.emit(org)">View</ui-button>
+        <ui-button (click)="verify.emit(org)"  >Verify</ui-button>
+        <ui-button (click)="toggleStatus.emit(org)" >
+          {{ org.status === 'active' ? 'Suspend' : 'Activate' }}
+        </ui-button>
+      </div>
+    </div>
+  </ui-card>
+</div>

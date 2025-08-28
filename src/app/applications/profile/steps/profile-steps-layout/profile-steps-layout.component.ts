@@ -214,7 +214,7 @@ export class  ProfileStepsLayoutComponent implements OnInit {
   }
 
   // ===============================
-  // STEP INFORMATION & NAVIGATION (same as before)
+  // STEP INFORMATION & NAVIGATION  
   // ===============================
 
   getStepInfo() {

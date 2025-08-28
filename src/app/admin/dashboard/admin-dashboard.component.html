@@ -180,8 +180,9 @@
     <!-- Users Tab - Enhanced Design -->
     <div *ngIf="activeTab() === 'users' && !isLoading()">
       <!-- Enhanced Filters Card -->
-      <ui-card title="Filter Users" subtitle="Refine your user search" variant="gradient" class="mb-8">
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+   <div class="mb-4">
+       <ui-card title="Filter Users"   variant="gradient" class="mb-2">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mt-2">
           <div>
             <label class="block text-sm font-semibold text-neutral-700 mb-2">Search Users</label>
             <div class="relative">
@@ -232,6 +233,7 @@
           </div>
         </div>
       </ui-card>
+   </div>
 
       <!-- Enhanced Users Table -->
       <ui-card variant="elevated">
@@ -303,7 +305,8 @@
     <!-- Organizations Tab - Enhanced Design -->
     <div *ngIf="activeTab() === 'organizations' && !isLoading()">
       <!-- Enhanced Filters -->
-      <ui-card title="Filter Organizations" subtitle="Find and manage organizations" variant="gradient" class="mb-8">
+ <div class="mb-4">
+       <ui-card title="Filter Organizations" subtitle="Find and manage organizations" variant="gradient" class="mb-8">
         <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
           <div>
             <label class="block text-sm font-semibold text-neutral-700 mb-2">Search</label>
@@ -355,6 +358,7 @@
           </div>
         </div>
       </ui-card>
+ </div>
 
       <!-- Enhanced Organizations Table -->
       <ui-card variant="elevated">
@@ -404,22 +408,29 @@
                       {{ org.city }}, {{ org.country }}
                     </td>
                     <td class="px-6 py-6 whitespace-nowrap text-right">
-                      <div class="flex items-center justify-end space-x-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div class="flex items-center justify-end space-x-2 opacity-100 group-hover:opacity-90 transition-opacity">
                         <ui-button variant="ghost" size="sm" (clicked)="viewOrganization(org)">View</ui-button>
                         <ui-button 
                           *ngIf="org.status === 'pending_verification'"
-                          variant="ghost" 
+                  
                           size="sm" 
                           (clicked)="verifyOrganization(org)"
                         >
                           Verify
                         </ui-button>
                         <ui-button 
-                          variant="ghost" 
+                   
                           size="sm" 
                           (clicked)="toggleOrganizationStatus(org)"
                         >
                           {{ org.status === 'active' ? 'Suspend' : 'Activate' }}
+                        </ui-button>
+                          <ui-button 
+                   
+                          size="sm" 
+                         
+                        >
+                        Import Opportunity
                         </ui-button>
                       </div>
                     </td>
@@ -435,7 +446,8 @@
     <!-- Opportunities Tab - Enhanced Design -->
     <div *ngIf="activeTab() === 'opportunities' && !isLoading()">
       <!-- Enhanced Filters with Create Button -->
-      <ui-card title="Manage Opportunities" subtitle="Create and filter funding opportunities" variant="gradient" class="mb-8">
+   <div class="mb-4">
+       <ui-card title="Manage Opportunities" subtitle="Create and filter funding opportunities" variant="gradient" class="mb-8">
         <div slot="actions">
           <ui-button
             variant="primary"
@@ -457,7 +469,7 @@
                 [(ngModel)]="filters.opportunities.search"
                 (input)="onFilterChange()"
                 placeholder="Search opportunities..."
-                class="w-full pl-10 pr-4 py-3 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 bg-white/80 backdrop-blur-sm transition-all"
+                class="w-full pl-10 pr-4 py-2 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 bg-white/80 backdrop-blur-sm transition-all"
               />
               <svg class="absolute left-3 top-3.5 w-4 h-4 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
@@ -487,6 +499,7 @@
         </div>
       </ui-card>
 
+   </div>
       <!-- Enhanced Opportunities Table -->
       <ui-card variant="elevated">
         <div class="flow-root">
@@ -532,7 +545,7 @@
                       <ng-template #noDeadline><span class="text-neutral-400">No deadline</span></ng-template>
                     </td>
                     <td class="px-6 py-6 whitespace-nowrap text-right">
-                      <div class="flex items-center justify-end space-x-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div class="flex items-center justify-end space-x-2 opacity-100 group-hover:opacity-80 transition-opacity">
                         <ui-button variant="ghost" size="sm" (clicked)="viewOpportunity(opportunity)">View</ui-button>
                         <ui-button variant="ghost" size="sm" (clicked)="toggleOpportunityStatus(opportunity)">
                           {{ opportunity.status === 'active' ? 'Pause' : 'Activate' }}

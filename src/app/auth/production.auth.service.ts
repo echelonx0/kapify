@@ -2,7 +2,7 @@
 import { Injectable, signal, computed, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { BehaviorSubject, Observable, from, of, throwError, timer } from 'rxjs';
-import { map, catchError, timeout, retry, tap } from 'rxjs/operators'; 
+import { map, catchError, timeout, retry, tap, finalize } from 'rxjs/operators'; 
 import { SharedSupabaseService } from '../shared/services/shared-supabase.service';
 import { OrganizationSetupService } from '../shared/services/organization-setup.service';
 import { Session, User } from '@supabase/supabase-js';
@@ -424,38 +424,52 @@ export class AuthService {
   // ENHANCED LOGIN WITH ORGANIZATION CONTEXT
   // ===============================
 
-  login(credentials: LoginRequest): Observable<RegistrationResult> {
-    return from(this.performEnhancedLogin(credentials.email, credentials.password)).pipe(
-      timeout(15000),
-      retry({
-        count: 2,
-        delay: (error) => {
-          if (error.message?.includes('lock') || error.message?.includes('timeout')) {
-            return timer(1000);
-          }
-          throw error;
+login(credentials: LoginRequest): Observable<RegistrationResult> {
+  this.isLoading.set(true); // 🔹 start loading immediately
+
+  return from(this.performEnhancedLogin(credentials.email, credentials.password)).pipe(
+    timeout(15000),
+    retry({
+      count: 2,
+      delay: (error) => {
+        if (error.message?.includes('lock') || error.message?.includes('timeout')) {
+          return timer(1000);
         }
-      }),
-      catchError(error => {
-        console.error('Login error:', error);
-        let errorMessage = 'Login failed';
-        
-        if (error.message?.includes('lock')) {
-          errorMessage = 'Login is temporarily unavailable. Please try again.';
-        } else if (error.message?.includes('timeout')) {
-          errorMessage = 'Login timed out. Please check your connection and try again.';
-        } else if (error.message) {
-          errorMessage = error.message;
-        }
-        
-        return throwError(() => ({
-          user: null,
-          error: errorMessage,
-          organizationCreated: false
-        }));
-      })
-    );
-  }
+        throw error;
+      }
+    }),
+    tap(result => {
+      // if login succeeds, update signals
+      if (result.user) {
+        this.user.set(result.user);
+        this.userSubject.next(result.user);
+        this.session.set((result as any).session ?? null); // optional
+      }
+    }),
+    catchError(error => {
+      console.error('Login error:', error);
+      let errorMessage = 'Login failed';
+      
+      if (error.message?.includes('lock')) {
+        errorMessage = 'Login is temporarily unavailable. Please try again.';
+      } else if (error.message?.includes('timeout')) {
+        errorMessage = 'Login timed out. Please check your connection and try again.';
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
+      return throwError(() => ({
+        user: null,
+        error: errorMessage,
+        organizationCreated: false
+      }));
+    }),
+    finalize(() => {
+      this.isLoading.set(false); // 🔹 stop loading when request finishes (success or error)
+    })
+  );
+}
+
 
   private async performEnhancedLogin(email: string, password: string): Promise<RegistrationResult> {
     const loginResult = await Promise.race([
