@@ -22,15 +22,14 @@ import {
   RefreshCw,
   AlertCircle
 } from 'lucide-angular';
+import { AuthService } from 'src/app/auth/production.auth.service';
+import { UiButtonComponent } from 'src/app/shared/components';
+import { ActivityInboxComponent } from 'src/app/shared/components/messaging/messaging.component';
+import { ProfileManagementService } from 'src/app/shared/services/profile-management.service';
+import { ApplicationManagementService, FundingApplication } from 'src/app/SMEs/services/application-management.service';
+import { OpportunityApplicationService, OpportunityApplication } from 'src/app/SMEs/services/opportunity-application.service';
 
-import { UiButtonComponent } from '../../../shared/components';
-import { ActivityInboxComponent } from '../../../shared/components/messaging/messaging.component';
-import { AuthService } from '../../../auth/production.auth.service';
-
-// Import services based on user type
-import { OpportunityApplicationService, OpportunityApplication } from '../../services/opportunity-application.service';
-import { ApplicationManagementService, FundingApplication } from '../../services/application-management.service';
-import { ProfileManagementService } from '../../../shared/services/profile-management.service';
+ 
  
 interface ApplicationData {
   id: string;

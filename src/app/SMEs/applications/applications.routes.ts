@@ -28,11 +28,11 @@ export const applicationRoutes: Routes = [
       import('./components/new-application/opportunity-application.component').then(m => m.OpportunityApplicationFormComponent),
     title: 'Apply for Opportunity'
   },
-      { 
-        path: ':id', 
-        loadComponent: () => import('../funder/application-details/application-detail.component').then(c => c.ApplicationDetailLayoutComponent),
-        title: 'Application Details - Kapify'
-      }
+      // { 
+      //   path: ':id', 
+      //   loadComponent: () => import('../applications/components/').then(c => c.ApplicationDetailLayoutComponent),
+      //   title: 'Application Details - Kapify'
+      // }
     ]
   }
 ];

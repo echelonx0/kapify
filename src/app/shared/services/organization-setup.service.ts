@@ -36,16 +36,41 @@ export class OrganizationSetupService {
   // MAIN ORGANIZATION CREATION
   // ===============================
 
-  createOrganizationForUser(request: OrganizationCreationRequest): Observable<OrganizationSetupResult> {
-    console.log('Creating organization for user:', request.userId, request.userType);
+createOrganizationForUser(request: OrganizationCreationRequest): Observable<OrganizationSetupResult> {
+  console.log('Creating organization for user:', request.userId, request.userType);
 
-    return from(this.performOrganizationCreation(request)).pipe(
-      catchError(error => {
-        console.error('Organization creation failed:', error);
-        return throwError(() => new Error(`Organization setup failed: ${error.message}`));
-      })
-    );
-  }
+  // Call the RPC function that bypasses RLS
+  return from(
+this.supabaseService.rpc('create_organization_for_registration', {
+  p_user: request.userId,
+  p_company_name: request.companyName,
+  p_email: request.email,
+  p_phone: request.phone || null,
+  p_type: request.userType || 'sme',
+  p_first_name: request.firstName,
+  p_last_name: request.lastName
+})
+  ).pipe(
+    map(result => {
+      if (!result || !result.data || !result.data[0]) {
+        throw new Error('Organization creation failed via RPC');
+      }
+
+      // Return in the same format your orchestration expects
+      return {
+        success: true,
+       organization: this.mapDatabaseToOrganization(result.data[0]),
+        organizationUserId: request.userId,
+         message: 'Organization created successfully'
+      } as OrganizationSetupResult;
+    }),
+    catchError(error => {
+      console.error('Organization creation failed:', error);
+      return throwError(() => new Error(`Organization setup failed: ${error.message}`));
+    })
+  );
+}
+
 
   private async performOrganizationCreation(request: OrganizationCreationRequest): Promise<OrganizationSetupResult> {
     // Check if user already has an organization
@@ -250,6 +275,7 @@ export class OrganizationSetupService {
         .select()
         .single();
 
+        
       if (error) {
         throw new Error(`Failed to create organization user relationship: ${error.message}`);
       }

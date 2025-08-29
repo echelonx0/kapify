@@ -9,7 +9,8 @@ import { AuthService } from '../../auth/production.auth.service';
 import { FundingOpportunity } from '../../shared/models/funder.models';
 import { SMEProfileStepsService } from './sme-profile-steps.service';
 import { SharedSupabaseService } from '../../shared/services/shared-supabase.service';
-import { ProfileData } from '../models/profile.models';
+import { ProfileData } from '../applications/models/profile.models';
+ 
 
 // Application interfaces
 export interface OpportunityApplication {

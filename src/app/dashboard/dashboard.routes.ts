@@ -9,7 +9,7 @@ export const dashboardRoutes: Routes = [
     children: [
       { path: '', redirectTo: 'home', pathMatch: 'full' as 'full' },
       { path: 'home', loadComponent: () => import('./dashboard-home/kapify-dashboard.component').then(c => c.KapifyDashboard) },
-      { path: 'profile', loadChildren: () => import('../applications/profile/profile.routes').then(m => m.profileRoutes) },
+      { path: 'profile', loadChildren: () => import('../SMEs/profile/profile.routes').then(m => m.profileRoutes) },
       { path: 'funding-opportunities', loadComponent: () => import('../funding/funding-opportunities/funding-opportunities.component').then(c => c.FundingOpportunitiesComponent) },
       { path: 'funder-dashboard', loadComponent: () => import('../funder/dashboard/funder-dashboard.component').then(c => c.FunderDashboardComponent) },
       { path: 'settings', loadComponent: () => import('./pages/settings-page.component').then(c => c.SettingsComponent) },

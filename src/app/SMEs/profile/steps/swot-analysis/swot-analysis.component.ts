@@ -8,8 +8,9 @@ import { takeWhile } from 'rxjs/operators';
 import { UiButtonComponent,  UiInputComponent } from '../../../../shared/components';
  
 import { UiTextareaComponent } from '../../../../shared/components/ui-textarea.component';
-import { SWOTAnalysis } from '../../../models/funding-application.models';
+ 
 import { FundingProfileSetupService } from '../../../services/funding-profile-setup.service';
+import { SWOTAnalysis } from 'src/app/SMEs/applications/models/funding-application.models';
 
 type SWOTCategory = 'strengths' | 'weaknesses' | 'opportunities' | 'threats';
 

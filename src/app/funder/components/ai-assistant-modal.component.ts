@@ -4,7 +4,7 @@ import { CommonModule } from '@angular/common';
 import { LucideAngularModule, Bot, FileSearch, Users, TrendingUp, Shield, X, Loader2, CheckCircle, AlertTriangle } from 'lucide-angular';
 import { UiButtonComponent } from '../../shared/components';
 import { AIAssistantService, AIAnalysisRequest, AIAnalysisResult } from '../../shared/services/ai-assistant.service';
-import { FundingApplication } from '../../applications/services/application-management.service';
+import { FundingApplication } from 'src/app/SMEs/services/application-management.service';
  
 
 interface AIAction {

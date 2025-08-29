@@ -6,8 +6,8 @@ import { Subject, takeUntil } from 'rxjs';
 import { UiButtonComponent, UiCardComponent } from '../../shared/components';
 import { FundingOpportunity } from '../../shared/models/funder.models';
 import { AIAnalysisService, AIAnalysisRequest } from '../services/ai-analysis.service';
-import { FundingApplicationProfile } from '../../applications/models/funding-application.models';
-
+import { FundingApplicationProfile } from 'src/app/SMEs/applications/models/funding-application.models';
+ 
  
 
 interface AIAnalysisResult {

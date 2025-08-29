@@ -1,9 +1,9 @@
-import { Injectable, signal, computed, inject, OnDestroy } from '@angular/core';
-import { FundingApplicationProfile, FundingApplicationStep } from '../models/funding-application.models';
+import { Injectable, signal, computed, inject, OnDestroy } from '@angular/core'; 
 import { FundingProfileBackendService } from './funding-profile-backend.service';
 import { AuthService } from '../../auth/production.auth.service';
 import { Subscription, Subject } from 'rxjs';
 import { debounceTime, takeUntil } from 'rxjs/operators';
+import { FundingApplicationProfile, FundingApplicationStep } from '../applications/models/funding-application.models';
 
 @Injectable({
   providedIn: 'root'

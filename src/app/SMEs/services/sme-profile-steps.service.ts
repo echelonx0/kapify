@@ -617,9 +617,9 @@ import { Injectable, signal, computed, inject } from '@angular/core';
  
 import { FundingProfileBackendService } from './funding-profile-backend.service';
  
-import { AuthService } from '../../auth/production.auth.service';
-import { ProfileData, ProfileStep } from '../models/profile.models';
+import { AuthService } from '../../auth/production.auth.service'; 
 import { ProfileDataTransformerService } from './profile-data-transformer.service';
+import { ProfileData, ProfileStep } from '../applications/models/profile.models';
 
 @Injectable({
   providedIn: 'root'

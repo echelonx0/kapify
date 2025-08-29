@@ -5,8 +5,9 @@ import { LucideAngularModule, Plus, Edit, Trash2, ChevronDown, ChevronUp, Search
 import { UiInputComponent, UiButtonComponent } from '../../../../shared/components'; 
 import { interval, Subscription } from 'rxjs';
 import { takeWhile } from 'rxjs/operators';
-import { ManagementStructure } from '../../../models/funding-application.models';
+ 
 import { FundingProfileSetupService } from '../../../services/funding-profile-setup.service';
+import { ManagementStructure } from 'src/app/SMEs/applications/models/funding-application.models';
 
 interface LocalManagementMember {
   id: string;

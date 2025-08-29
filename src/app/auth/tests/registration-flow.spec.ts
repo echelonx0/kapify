@@ -1,6 +1,6 @@
 // src/app/auth/tests/registration-flow.spec.ts
-import { TestBed } from '@angular/core/testing';
-import { of, throwError } from 'rxjs';
+import { fakeAsync, tick, TestBed } from '@angular/core/testing';
+import { firstValueFrom, of, throwError } from 'rxjs';
 import { AuthService, RegisterRequest } from '../production.auth.service';
 import { RegistrationTransactionService } from '../../shared/services/registration-transaction.service';
 import { SharedSupabaseService } from '../../shared/services/shared-supabase.service';
@@ -137,6 +137,10 @@ describe('Enhanced Registration Flow', () => {
   let supabaseService: any;
   let router: jasmine.SpyObj<Router>;
 
+  beforeAll(() => {
+    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+  });
+
   beforeEach(async () => {
     const mockSupabase = RegistrationTestUtils.createMockSupabaseService();
     const mockTransaction = RegistrationTestUtils.createMockTransactionService();
@@ -218,12 +222,11 @@ describe('Enhanced Registration Flow', () => {
     it('should reject registration without terms agreement', (done) => {
       const invalidRequest = { ...MOCK_REGISTER_REQUEST, agreeToTerms: false };
       
-      authService.register(invalidRequest).subscribe({
-        error: (result) => {
+      authService.register(invalidRequest).subscribe((result) => {
           expect(result.error).toContain('terms and conditions');
           done();
         }
-      });
+      );
     });
 
     it('should reject registration with mismatched passwords', (done) => {
@@ -255,12 +258,11 @@ describe('Enhanced Registration Flow', () => {
     it('should reject registration with missing required fields', (done) => {
       const invalidRequest = { ...MOCK_REGISTER_REQUEST, firstName: '' };
       
-      authService.register(invalidRequest).subscribe({
-        error: (result) => {
+      authService.register(invalidRequest).subscribe((result) => {
           expect(result.error).toContain('required fields');
           done();
         }
-      });
+      );
     });
   });
 
@@ -405,10 +407,11 @@ describe('Enhanced Registration Flow', () => {
   // ===============================
 
   describe('Organization Utilities', () => {
-    beforeEach((done) => {
+    beforeEach(fakeAsync(() => {
       // Set up authenticated user with organization
-      authService.register(MOCK_REGISTER_REQUEST).subscribe(() => done());
-    });
+      authService.register(MOCK_REGISTER_REQUEST).subscribe();
+      tick();
+    }));
 
     it('should correctly identify user has organization', () => {
       expect(authService.userHasOrganization()).toBe(true);

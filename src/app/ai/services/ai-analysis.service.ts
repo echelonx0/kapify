@@ -9,8 +9,8 @@ import { SharedSupabaseService } from '../../shared/services/shared-supabase.ser
 import { AuthService } from '../../auth/production.auth.service';
 import { ProfileManagementService } from '../../shared/services/profile-management.service';
 import { FundingOpportunity } from '../../shared/models/funder.models';
-import { FundingApplicationProfile } from '../../applications/models/funding-application.models';
-
+import { FundingApplicationProfile } from 'src/app/SMEs/applications/models/funding-application.models';
+ 
 export interface AIAnalysisRequest {
   opportunity: FundingOpportunity;
   applicationData: {

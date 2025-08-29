@@ -40,7 +40,7 @@ interface FilterState {
     UiButtonComponent, 
     UiCardComponent, 
     DropdownComponent,
-    OrganizationsTabComponent
+     
   ],
   templateUrl: './admin-dashboard.component.html',
 })

@@ -6,8 +6,9 @@ import { LucideAngularModule, Building, FileText, Save, Clock, ChevronDown, Chev
 import { interval, Subscription } from 'rxjs';
 import { takeWhile } from 'rxjs/operators';
 import { UiButtonComponent } from '../../../../shared/components';
-import { BusinessAssessment } from '../../../models/funding-application.models';
+ 
 import { FundingProfileSetupService } from '../../../services/funding-profile-setup.service';
+import { BusinessAssessment } from 'src/app/SMEs/applications/models/funding-application.models';
  
 
 interface SectionStates {

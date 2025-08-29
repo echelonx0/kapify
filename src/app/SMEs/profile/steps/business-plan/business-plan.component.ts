@@ -10,8 +10,8 @@ import { interval, Subscription } from 'rxjs';
 import { takeWhile } from 'rxjs/operators';
  
 import { FundingProfileSetupService } from '../../../services/funding-profile-setup.service';
-import { BusinessStrategy, FinancialProjection } from '../../../models/funding-application.models';
-
+import { BusinessStrategy, FinancialProjection } from 'src/app/SMEs/applications/models/funding-application.models';
+ 
 interface BusinessPlanSection {
   id: string;
   title: string;

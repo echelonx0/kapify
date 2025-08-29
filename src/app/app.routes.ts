@@ -48,7 +48,7 @@ export const routes: Routes = [
   {
     path: 'profile',
     canActivate: [AuthGuard],
-    loadChildren: () => import('./applications/profile/profile.routes').then(m => m.profileRoutes),
+    loadChildren: () => import('./SMEs/profile/profile.routes').then(m => m.profileRoutes),
     title: 'Profile Setup - Kapify'
   },
 
@@ -56,7 +56,7 @@ export const routes: Routes = [
   {
     path: 'applications',
     canActivate: [AuthGuard],
-    loadChildren: () => import('./applications/applications.routes').then(m => m.applicationRoutes)
+    loadChildren: () => import('./SMEs/applications/applications.routes').then(m => m.applicationRoutes)
   },
 
   // Funding routes

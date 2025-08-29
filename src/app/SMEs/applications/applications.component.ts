@@ -1,9 +1,8 @@
 // src/app/applications/applications.component.ts
 import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import { SidebarNavComponent } from '../shared/components/sidebar-nav.component';
-import { DashboardHeaderComponent } from '../shared/components/dashboard-header.component';
-
+import { DashboardHeaderComponent, SidebarNavComponent } from 'src/app/shared/components';
+ 
 @Component({
   selector: 'app-applications',
   standalone: true,

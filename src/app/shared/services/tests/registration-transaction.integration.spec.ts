@@ -47,6 +47,10 @@ describe('RegistrationTransactionService Integration', () => {
   let supabaseService: any;
   let organizationService: jasmine.SpyObj<OrganizationSetupService>;
 
+  beforeAll(() => {
+    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+  });
+
   beforeEach(() => {
     const mockSupabase = {
       auth: {

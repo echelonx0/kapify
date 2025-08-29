@@ -1,8 +1,10 @@
 // src/app/profile/services/profile-data-transformer.service.ts - FIXED TYPE ISSUES
 import { Injectable } from '@angular/core';
  
-import { FundingApplicationProfile, BusinessAssessment, ManagementStructure, SWOTAnalysis } from '../models/funding-application.models';
-import { ProfileData } from '../models/profile.models';
+ 
+import { ProfileData } from '../applications/models/profile.models';
+import { FundingApplicationProfile, SWOTAnalysis, BusinessAssessment, ManagementStructure } from '../applications/models/funding-application.models';
+ 
 
 @Injectable({
   providedIn: 'root'

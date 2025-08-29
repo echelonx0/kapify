@@ -4,6 +4,8 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ActivatedRoute } from '@angular/router';
 import { of, throwError, delay, from } from 'rxjs';
+import { RouterTestingModule } from '@angular/router/testing';
+import { routes } from '../../../app.routes';
  
 import { By } from '@angular/platform-browser';
  
@@ -129,11 +131,11 @@ describe('Registration Component E2E', () => {
       imports: [
         RegisterComponent,
         ReactiveFormsModule,
-        LucideAngularModule
+        LucideAngularModule,
+        RouterTestingModule.withRoutes(routes)
       ],
       providers: [
         { provide: AuthService, useValue: authSpy },
-        { provide: Router, useValue: routerSpy },
         { 
           provide: ActivatedRoute, 
           useValue: { 

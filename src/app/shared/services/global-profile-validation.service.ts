@@ -1,7 +1,7 @@
 // src/app/shared/services/global-profile-validation.service.ts
 import { Injectable, inject, computed, signal } from '@angular/core';
 import { Router } from '@angular/router';
-import { FundingProfileSetupService } from '../../applications/services/funding-profile-setup.service';
+import { FundingProfileSetupService } from 'src/app/SMEs/services/funding-profile-setup.service';
  
 // Configurable completion requirements
 export const COMPLETION_REQUIREMENTS = {
