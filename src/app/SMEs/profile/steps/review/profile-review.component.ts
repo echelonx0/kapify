@@ -11,8 +11,9 @@ import { LucideAngularModule,
 import { UiCardComponent, UiButtonComponent } from '../../../../shared/components'; 
 import { ProfileDataTransformerService } from '../../../services/profile-data-transformer.service';
 import { AIApplicationAnalysisComponent } from '../../../../ai/ai-analysis/ai-application-analysis.component';
-import { SMEProfileStepsService } from '../../../services/sme-profile-steps.service';
-
+import { FundingProfileSetupService } from 'src/app/SMEs/services/funding-profile-setup.service';
+import { SMEProfileStepsService } from 'src/app/SMEs/services/sme-profile-steps.service';
+ 
 interface SectionSummary {
   stepId: string;
   title: string;
@@ -55,7 +56,8 @@ interface ProfileReadiness {
   templateUrl: './profile-review.component.html'
 })
 export class ProfileReviewComponent implements OnInit {
-  private profileService = inject(SMEProfileStepsService);
+  private profileService = inject(FundingProfileSetupService);
+  private stepCheckerService = inject(SMEProfileStepsService)
   private transformer = inject(ProfileDataTransformerService);
   private router = inject(Router);
 
@@ -81,8 +83,8 @@ export class ProfileReviewComponent implements OnInit {
   showAIAnalysis = signal(false);
   
   // Computed data
-  profileData = computed(() => this.profileService.data());
-  completionSummary = computed(() => this.profileService.getCompletionSummary());
+  profileData = computed(() => this.stepCheckerService.data());
+  completionSummary = computed(() => this.stepCheckerService.getCompletionSummary());
   
   // Derived data
   profileOverview = computed(() => this.buildProfileOverview());

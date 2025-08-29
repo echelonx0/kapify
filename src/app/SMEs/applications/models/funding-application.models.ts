@@ -270,6 +270,22 @@ export interface BusinessAssessment {
   keyPerformanceIndicators: KPI[];
   salesChannels: string[];
   customerRetention?: number;
+
+  //Manpower section
+   hasSpecialistSkills?: boolean;
+  specialistSkillsDetails?: string;
+  isRequiredLabourAvailable?: boolean;
+  labourAvailabilityDetails?: string;
+  hasOrganogram?: boolean;
+  organogramDescription?: string;
+  isStaffUnionised?: boolean;
+  unionDetails?: string;
+  hasSuccessionPlan?: boolean;
+  successionPlanDetails?: string;
+  hasSkillShortfall?: boolean;
+  skillShortfallDetails?: string;
+  hasLabourDisputes?: boolean;
+  labourDisputeDetails?: string;
 }
 
 export interface SWOTAnalysis {

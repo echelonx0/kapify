@@ -7,7 +7,8 @@ import { interval, Subscription } from 'rxjs';
 import { takeWhile } from 'rxjs/operators';
  
 import { FundingProfileSetupService } from '../../../services/funding-profile-setup.service';
-import { ManagementStructure } from 'src/app/SMEs/applications/models/funding-application.models';
+import { BusinessAssessment, ManagementStructure } from 'src/app/SMEs/applications/models/funding-application.models';
+import { ManpowerComponent } from './manpower/manpower.component';
 
 interface LocalManagementMember {
   id: string;
@@ -40,7 +41,8 @@ type SectionStates = Record<SectionKey, boolean>;
 @Component({
   selector: 'app-management-governance',
   standalone: true,
-  imports: [ReactiveFormsModule, LucideAngularModule, UiInputComponent, UiButtonComponent, FormsModule],
+  imports: [ReactiveFormsModule, LucideAngularModule, UiInputComponent,
+     UiButtonComponent, FormsModule, ManpowerComponent],
   templateUrl: 'management-governance.component.html'
 })
 export class ManagementGovernanceComponent implements OnInit, OnDestroy {
@@ -577,4 +579,34 @@ export class ManagementGovernanceComponent implements OnInit, OnDestroy {
       this.saveData();
     }
   }
+
+getManpowerData() {
+const current: Partial<BusinessAssessment> = this.fundingApplicationService.data().businessAssessment || {};
+
+  return {
+    hasSpecialistSkills: current.hasSpecialistSkills ?? false,
+    specialistSkillsDetails: current.specialistSkillsDetails ?? '',
+    isRequiredLabourAvailable: current.isRequiredLabourAvailable ?? true,
+    labourAvailabilityDetails: current.labourAvailabilityDetails ?? '',
+    hasOrganogram: current.hasOrganogram ?? true,
+    organogramDescription: current.organogramDescription ?? '',
+    isStaffUnionised: current.isStaffUnionised ?? false,
+    unionDetails: current.unionDetails ?? '',
+    hasSuccessionPlan: current.hasSuccessionPlan ?? true,
+    successionPlanDetails: current.successionPlanDetails ?? '',
+    hasSkillShortfall: current.hasSkillShortfall ?? false,
+    skillShortfallDetails: current.skillShortfallDetails ?? '',
+    hasLabourDisputes: current.hasLabourDisputes ?? false,
+    labourDisputeDetails: current.labourDisputeDetails ?? ''
+  };
+}
+
+onManpowerDataChanged(manpowerData: any) {
+  const currentAssessment = this.fundingApplicationService.data().businessAssessment || {};
+  const updatedAssessment = {
+    ...currentAssessment,
+    ...manpowerData
+  };
+  this.fundingApplicationService.updateBusinessAssessment(updatedAssessment);
+}
 }

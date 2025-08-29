@@ -3,8 +3,10 @@ import { Component, signal, OnInit, inject, HostListener } from '@angular/core';
 import { Router, RouterOutlet } from '@angular/router';
 import { LucideAngularModule, ArrowLeft, Check, Building, FileText, BarChart3, Target, Users, TrendingUp, DollarSign, Home, Clock, AlertCircle, CheckCircle, Menu, X, Eye } from 'lucide-angular';
 import { UiButtonComponent } from '../../../../shared/components';
-import { SMEProfileStepsService } from '../../../services/sme-profile-steps.service';
+ 
 import { CommonModule } from '@angular/common';
+import { FundingProfileSetupService } from 'src/app/SMEs/services/funding-profile-setup.service';
+import { SMEProfileStepsService } from 'src/app/SMEs/services/sme-profile-steps.service';
 
 @Component({
   selector: 'app-profile-steps-layout',
@@ -64,8 +66,8 @@ import { CommonModule } from '@angular/common';
 })
 export class  ProfileStepsLayoutComponent implements OnInit {
   private router = inject(Router);
-  public profileService = inject(SMEProfileStepsService);
-
+  public profileService = inject(FundingProfileSetupService);
+  private stepCheckerService = inject(SMEProfileStepsService)
   // State
   isSaving = signal(false);
   isSubmitting = signal(false);
@@ -286,7 +288,7 @@ export class  ProfileStepsLayoutComponent implements OnInit {
 
   canAccessStep(step: any, index: number): boolean {
     // Use the service's isStepAccessible method for consistent logic
-    return this.profileService.isStepAccessible(step.id);
+    return this.stepCheckerService.isStepAccessible(step.id);
   }
 
   isCurrentStep(stepId: string): boolean {
@@ -387,7 +389,7 @@ export class  ProfileStepsLayoutComponent implements OnInit {
   async submitProfile() {
     this.isSubmitting.set(true);
     try {
-      const result = await this.profileService.submitProfile();
+      const result = await this.profileService.submitForReview();
       if (result.success) {
         this.router.navigate(['/profile'], { 
           queryParams: { completed: 'true' } 

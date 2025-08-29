@@ -1,5 +1,7 @@
-import { BoardMember, CommitteeMember, ManagementMember } from "../models/profile.models";
+import { BoardMember, ManagementMember } from "../applications/models/funding-application.models";
+import { CommitteeMember } from "../applications/models/profile.models";
 
+ 
  
 export interface ApplicationProfileData {
   adminInformation?: Record<string, any>;

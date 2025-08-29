@@ -343,6 +343,15 @@
     }
   </div>
 
+
+  <!-- Add this after your existing business assessment sections -->
+
+  <div class="mt-4">
+    <app-manpower 
+  [initialData]="getManpowerData()" 
+  (dataChanged)="onManpowerDataChanged($event)">
+</app-manpower>
+  </div>
   <!-- Progress Summary -->
   <div class="bg-white rounded-lg border border-neutral-200 p-4">
     <div class="flex items-center justify-between">
@@ -484,3 +493,4 @@
     </div>
   </div>
 }
+
