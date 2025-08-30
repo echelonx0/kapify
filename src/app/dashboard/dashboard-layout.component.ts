@@ -18,32 +18,24 @@ import { Subject } from 'rxjs';
       
       <!-- Main Content Area -->
       <div [class]="contentClass()">
-        <!-- Sticky Header -->
-        <div class="sticky top-0 z-10 bg-neutral-50 border-b border-gray-200">
-          <dashboard-header />
-        </div>
+        <!-- Conditionally show header -->
+        @if (shouldShowHeader()) {
+          <div class="sticky top-0 z-10 bg-neutral-50 border-b border-gray-200">
+            <dashboard-header />
+          </div>
+        }
         
-        <!-- Page Content   -->
-        <main class="flex-1 overflow-y-auto">
+        <!-- Page Content -->
+        <main [class]="mainClass()">
           <router-outlet />
         </main>
       </div>
     </div>
   `,
-  // styles: [`
-  //   :host {
-  //     display: block;
-  //     height: 100vh;
-  //     overflow: hidden;
-  //   }
-  // `]
 })
 export class DashboardLayoutComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
   private currentUrl = signal('');
-  
-  // Option to conditionally show/hide header (currently disabled)
-  private showHeaderConditionally = false;
 
   constructor(private router: Router) {}
 
@@ -67,24 +59,24 @@ export class DashboardLayoutComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
-  isHomeRoute = computed(() => {
+  isHeaderDisabledRoute = computed(() => {
     const url = this.currentUrl();
-    return url === '/dashboard/home' || url === '/dashboard';
+    // Check for welcome route - it can be /dashboard/welcome or end with /welcome
+    return url.includes('/welcome') || url === '/dashboard/welcome';
   });
 
-  // Keep the option to conditionally show header available
   shouldShowHeader = computed(() => {
-    if (!this.showHeaderConditionally) {
-      return true; // Always show header when conditional display is disabled
-    }
-    return !this.isHomeRoute(); // Show header only for non-home routes when conditional
+    return !this.isHeaderDisabledRoute();
   });
 
   contentClass = computed(() => {
-    return this.isHomeRoute() ? 'flex-1 flex flex-col' : 'flex-1 flex flex-col ';
+    return 'flex-1 flex flex-col';
   });
 
   mainClass = computed(() => {
-    return this.isHomeRoute() ? 'flex-1' : 'flex-1';
+    // For welcome route, make it take full height without scrolling
+    return this.isHeaderDisabledRoute() 
+      ? 'flex-1 overflow-hidden h-screen' 
+      : 'flex-1 overflow-y-auto';
   });
 }
