@@ -1,383 +1,316 @@
-// src/app/ai/services/ai-analysis.service.ts
-// Background processing - user doesn't wait, gets notified when ready
-
+ 
+// src/app/ai/services/ai-analysis.service.ts - UPDATED FOR QUEUE INTEGRATION
 import { Injectable, inject, signal } from '@angular/core';
-import { Observable, of, from, throwError, timer } from 'rxjs';
-import { switchMap, takeWhile, map, catchError, tap } from 'rxjs/operators';
-
-import { SharedSupabaseService } from '../../shared/services/shared-supabase.service';
-import { AuthService } from '../../auth/production.auth.service';
-import { ProfileManagementService } from '../../shared/services/profile-management.service';
+import { Observable, from, BehaviorSubject, throwError } from 'rxjs';
+import { map, catchError } from 'rxjs/operators';
 import { FundingOpportunity } from '../../shared/models/funder.models';
 import { FundingApplicationProfile } from 'src/app/SMEs/applications/models/funding-application.models';
+import { AIAnalysisQueueService } from './ai-analysis-queue.service';
+import { SharedSupabaseService } from 'src/app/shared/services/shared-supabase.service';
  
 export interface AIAnalysisRequest {
-  opportunity: FundingOpportunity;
+  opportunity: FundingOpportunity | null;
   applicationData: {
     requestedAmount: string;
     purposeStatement: string;
     useOfFunds: string;
     timeline: string;
     opportunityAlignment: string;
-  };
+  } | null;
   businessProfile: FundingApplicationProfile;
+  backgroundMode?: boolean;
 }
 
 export interface AIAnalysisResult {
   matchScore: number;
-  strengths: string[];
-  improvementAreas: string[];
   successProbability: number;
   competitivePositioning: 'strong' | 'moderate' | 'weak';
+  strengths: string[];
+  improvementAreas: string[];
+  riskFactors: Array<{
+    factor: string;
+    severity: 'low' | 'medium' | 'high';
+    impact: string;
+  }>;
   keyInsights: string[];
   recommendations: string[];
-  riskFactors: Array<{ factor: string; severity: 'low' | 'medium' | 'high'; impact: string }>;
-  generatedAt: Date;
-  analysisId: string;
-  modelVersion: string;
+  generatedAt: string;
+  modelVersion?: string;
 }
 
-@Injectable({ providedIn: 'root' })
+@Injectable({
+  providedIn: 'root'
+})
 export class AIAnalysisService {
   private supabase = inject(SharedSupabaseService);
-  private authService = inject(AuthService);
-  private profileService = inject(ProfileManagementService);
+  private queueService = inject(AIAnalysisQueueService);
 
-  // Signals for UI
-  isAnalyzing = signal<boolean>(false);
-  error = signal<string | null>(null);
-  analysisProgress = signal<number>(0);
-  latestResult = signal<AIAnalysisResult | null>(null);
+  // State management
+  private isAnalyzingSubject = new BehaviorSubject<boolean>(false);
+  private errorSubject = new BehaviorSubject<string | null>(null);
 
-  private analysisCache = new Map<string, AIAnalysisResult>();
+  // Public observables
+  public isAnalyzing = signal(false);
+  public error = signal<string | null>(null);
 
   constructor() {
-    console.log('AI Analysis Service initialized - Background processing mode');
+    
+
+    // Keep signals in sync with subjects
+    this.isAnalyzingSubject.subscribe(value => this.isAnalyzing.set(value));
+    this.errorSubject.subscribe(value => this.error.set(value));
+  }
+
+  // =======================
+  // MAIN ANALYSIS METHODS
+  // =======================
+
+  /**
+   * Analyze application - supports both immediate and background modes
+   */
+  analyzeApplication(request: AIAnalysisRequest): Observable<AIAnalysisResult | { jobId: string; status: string }> {
+    // Clear previous error
+    this.clearError();
+
+    if (request.backgroundMode) {
+      return this.queueBackgroundAnalysis(request);
+    } else {
+      return this.performImmediateAnalysis(request);
+    }
   }
 
   /**
-   * Fire-and-forget analysis: returns immediately, results come later
+   * Queue analysis for background processing (email delivery)
    */
-  analyzeApplication(request: AIAnalysisRequest): Observable<AIAnalysisResult> {
-    this.isAnalyzing.set(true);
-    this.error.set(null);
-    this.analysisProgress.set(0);
+  private queueBackgroundAnalysis(request: AIAnalysisRequest): Observable<{ jobId: string; status: string }> {
+    const queueRequest = {
+      analysisMode: request.opportunity ? 'opportunity' as const : 'profile' as const,
+      businessProfile: request.businessProfile,
+      opportunity: request.opportunity,
+      applicationData: request.applicationData
+    };
 
-    const cacheKey = this.generateCacheKey(request);
-    if (this.analysisCache.has(cacheKey)) {
-      this.isAnalyzing.set(false);
-      const cached = this.analysisCache.get(cacheKey)!;
-      this.latestResult.set(cached);
-      return of(cached);
-    }
-
-    return this.startBackgroundAnalysis(request).pipe(
-      switchMap(({ jobId, immediateResult }) => {
-        if (immediateResult) {
-          return of(this.handleResult(immediateResult, cacheKey));
-        }
-        return this.pollForResults(jobId, cacheKey);
-      }),
-      catchError((error) => {
-        this.isAnalyzing.set(false);
-        this.analysisProgress.set(0);
-        this.error.set(this.getErrorMessage(error));
-        console.error('AI Analysis failed:', error);
+    return this.queueService.queueAnalysisJob(queueRequest).pipe(
+      catchError(error => {
+        this.setError(`Failed to queue AI analysis: ${error.message || error}`);
         return throwError(() => error);
       })
     );
   }
 
-  private startBackgroundAnalysis(
-    request: AIAnalysisRequest
-  ): Observable<{ jobId: string; immediateResult?: any }> {
-    const user = this.authService.user();
-    if (!user) {
-      return throwError(() => new Error('User not authenticated'));
-    }
+  /**
+   * Perform immediate AI analysis (synchronous)
+   */
+  private performImmediateAnalysis(request: AIAnalysisRequest): Observable<AIAnalysisResult> {
+    this.setAnalyzing(true);
 
-    const edgeFunctionRequest = {
-      ...this.buildEdgeFunctionRequest(request),
-      backgroundMode: true
-    };
-
-    return from(
-      this.supabase.functions.invoke('analyse-fund-application', {
-        body: edgeFunctionRequest
-      })
-    ).pipe(
-      map(({ data, error }) => {
-        if (error) throw error;
-        if (data.result) {
-          return { jobId: 'immediate', immediateResult: data.result };
-        }
-        return { jobId: data.jobId };
-      })
-    );
-  }
-
-  private pollForResults(jobId: string, cacheKey: string): Observable<AIAnalysisResult> {
-    return timer(0, 5000).pipe(
-      switchMap(() => this.checkAnalysisStatus(jobId)),
-      tap(status => {
-        if (status.progress) this.analysisProgress.set(status.progress);
+    return from(this.callAIAnalysisEdgeFunction(request)).pipe(
+      map(result => this.transformAnalysisResult(result)),
+      catchError(error => {
+        const errorMessage = this.getErrorMessage(error);
+        this.setError(errorMessage);
+        return throwError(() => new Error(errorMessage));
       }),
-      takeWhile(status => status.status !== 'completed' && status.status !== 'failed', true),
-      switchMap(status => {
-        if (status.status === 'completed') {
-          return this.getAnalysisResults(jobId).pipe(
-            map(result => this.handleResult(result, cacheKey))
-          );
-        } else if (status.status === 'failed') {
-          throw new Error(status.error || 'Analysis failed');
+      // Always clear analyzing state
+      map(result => {
+        this.setAnalyzing(false);
+        return result;
+      })
+    );
+  }
+
+  /**
+   * Call the Supabase Edge Function for AI analysis
+   */
+  private async callAIAnalysisEdgeFunction(request: AIAnalysisRequest): Promise<any> {
+    try {
+      const { data, error } = await this.supabase.functions.invoke('analyze-application', {
+        body: {
+          analysisMode: request.opportunity ? 'opportunity' : 'profile',
+          businessProfile: request.businessProfile,
+          opportunityData: request.opportunity,
+          applicationData: request.applicationData,
+          applicantProfile: request.businessProfile, // Backward compatibility
+          applicationId: this.generateApplicationId()
+        },
+        headers: {
+          'Content-Type': 'application/json'
         }
-        return of(null as any); // still processing
-      }),
-      catchError((error) => throwError(() => error))
-    );
-  }
+      });
 
-  private checkAnalysisStatus(
-    jobId: string
-  ): Observable<{ status: string; progress?: number; error?: string }> {
-    return from(
-      this.supabase.functions.invoke('check-analysis-status', { body: { jobId } })
-    ).pipe(
-      map(({ data, error }) => {
-        if (error) throw error;
-        return data;
-      })
-    );
-  }
-
-  private getAnalysisResults(jobId: string): Observable<AIAnalysisResult> {
-    return from(
-      this.supabase.functions.invoke('get-analysis-results', { body: { jobId } })
-    ).pipe(
-      map(({ data, error }) => {
-        if (error) throw error;
-        return this.transformAIResponseToResult(data, null);
-      })
-    );
-  }
-
-  private handleResult(result: AIAnalysisResult, cacheKey: string): AIAnalysisResult {
-    this.isAnalyzing.set(false);
-    this.analysisProgress.set(100);
-    this.error.set(null);
-    this.analysisCache.set(cacheKey, result);
-    this.latestResult.set(result);
-    return result;
-  }
-
-  // --- Helpers and unchanged methods from your original service ---
-
-  private buildEdgeFunctionRequest(request: AIAnalysisRequest): any {
-    const profile = this.profileService.currentProfile();
-    const organization = this.profileService.currentOrganization();
-
-    return {
-      applicationId: `temp_${Date.now()}`,
-      applicationData: {
-        requestedAmount: parseFloat(request.applicationData.requestedAmount) || 0,
-        purposeStatement: request.applicationData.purposeStatement || '',
-        useOfFunds: request.applicationData.useOfFunds || '',
-        timeline: request.applicationData.timeline || '',
-        opportunityAlignment: request.applicationData.opportunityAlignment || ''
-      },
-      opportunityData: {
-        id: request.opportunity.id,
-        title: request.opportunity.title,
-        fundingType: request.opportunity.fundingType,
-        minInvestment: request.opportunity.minInvestment,
-        maxInvestment: request.opportunity.maxInvestment,
-        currency: request.opportunity.currency,
-        eligibilityCriteria: request.opportunity.eligibilityCriteria,
-        decisionTimeframe: request.opportunity.decisionTimeframe,
-        totalAvailable: request.opportunity.totalAvailable
-      },
-      applicantProfile: {
-        businessInfo: {
-          companyName: organization?.name || 'Business Name',
-          industry: this.extractIndustry(request.businessProfile, organization),
-          businessStage: this.extractBusinessStage(organization),
-          yearsInOperation: this.extractYearsInOperation(organization),
-          employeeCount: organization?.employeeCount || 1
-        },
-        financials: {
-          annualRevenue: this.extractAnnualRevenue(request.businessProfile),
-          monthlyRevenue: this.extractMonthlyRevenue(request.businessProfile),
-          profitMargin: this.extractProfitMargin(request.businessProfile),
-          cashFlow: this.extractCashFlow(request.businessProfile)
-        },
-        completionPercentage: profile?.completionPercentage || 0
+      if (error) {
+        console.error('Edge Function error:', error);
+        throw new Error(error.message || 'AI analysis failed');
       }
-    };
+
+      if (!data) {
+        throw new Error('No response from AI analysis service');
+      }
+
+      return data;
+
+    } catch (error) {
+      console.error('AI Analysis service error:', error);
+      throw error;
+    }
   }
 
-  private transformAIResponseToResult(
-    aiResult: any,
-    _originalRequest: AIAnalysisRequest | null
-  ): AIAnalysisResult {
+  // =======================
+  // RESULT MANAGEMENT
+  // =======================
+
+  /**
+   * Get user's saved AI analysis results
+   */
+  getSavedAnalysisResults(): Observable<AIAnalysisResult[]> {
+    return this.queueService.getUserAnalysisJobs(20).pipe(
+      map(jobs => jobs
+        .filter(job => job.status === 'completed' && job.result)
+        .map(job => this.transformAnalysisResult(job.result))
+      ),
+      catchError(error => {
+        console.error('Error fetching saved results:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  /**
+   * Get specific analysis result by job ID
+   */
+  getAnalysisResult(jobId: string): Observable<AIAnalysisResult | null> {
+    return this.queueService.getJobStatus(jobId).pipe(
+      map(job => {
+        if (job && job.status === 'completed' && job.result) {
+          return this.transformAnalysisResult(job.result);
+        }
+        return null;
+      }),
+      catchError(error => {
+        console.error('Error fetching analysis result:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  // =======================
+  // REAL-TIME UPDATES
+  // =======================
+
+  /**
+   * Subscribe to AI analysis job updates
+   */
+  subscribeToJobUpdates(callback: (result: AIAnalysisResult) => void): () => void {
+    return this.queueService.subscribeToJobUpdates((job) => {
+      if (job.status === 'completed' && job.result) {
+        const analysisResult = this.transformAnalysisResult(job.result);
+        callback(analysisResult);
+      }
+    });
+  }
+
+  // =======================
+  // STATE MANAGEMENT
+  // =======================
+
+  private setAnalyzing(analyzing: boolean): void {
+    this.isAnalyzingSubject.next(analyzing);
+  }
+
+  private setError(error: string | null): void {
+    this.errorSubject.next(error);
+    if (error) {
+      this.setAnalyzing(false);
+    }
+  }
+
+  clearError(): void {
+    this.setError(null);
+  }
+
+  // =======================
+  // UTILITY METHODS
+  // =======================
+
+  private transformAnalysisResult(data: any): AIAnalysisResult {
     return {
-      matchScore: aiResult.matchScore || 0,
-      successProbability: aiResult.successProbability || 0,
-      competitivePositioning: aiResult.competitivePositioning || 'weak',
-      strengths: aiResult.strengths || [],
-      improvementAreas: aiResult.improvementAreas || [],
-      keyInsights: aiResult.keyInsights || [],
-      recommendations: aiResult.recommendations || [],
-      riskFactors: aiResult.riskFactors || [],
-      generatedAt: new Date(aiResult.generatedAt) || new Date(),
-      analysisId: `ai_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-      modelVersion: aiResult.modelVersion || 'gemini-2.5-flash'
+      matchScore: data.matchScore || 0,
+      successProbability: data.successProbability || 0,
+      competitivePositioning: data.competitivePositioning || 'weak',
+      strengths: Array.isArray(data.strengths) ? data.strengths : [],
+      improvementAreas: Array.isArray(data.improvementAreas) ? data.improvementAreas : [],
+      riskFactors: Array.isArray(data.riskFactors) ? data.riskFactors : [],
+      keyInsights: Array.isArray(data.keyInsights) ? data.keyInsights : [],
+      recommendations: Array.isArray(data.recommendations) ? data.recommendations : [],
+      generatedAt: data.generatedAt || new Date().toISOString(),
+      modelVersion: data.modelVersion
     };
   }
 
   private getErrorMessage(error: any): string {
-    if (error.name === 'TimeoutError') {
-      return 'AI analysis is taking longer than expected. Please try again.';
-    }
-    if (error.message?.includes('Unauthorized')) {
-      return 'Authentication required. Please log in and try again.';
-    }
-    if (error.message?.includes('Quota exceeded') || error.message?.includes('rate limit')) {
-      return 'AI service quota exceeded. Please try again later.';
-    }
-    if (error.message?.includes('Invalid API key')) {
-      return 'AI service configuration error. Please contact support.';
-    }
-    if (error.message) {
-      return error.message;
-    }
-    if (error.error?.message) {
-      return error.error.message;
-    }
-    return 'AI analysis service is temporarily unavailable. Please try again later.';
+    if (typeof error === 'string') return error;
+    if (error?.message) return error.message;
+    if (error?.error) return error.error;
+    return 'An unexpected error occurred during AI analysis';
   }
 
-  private generateCacheKey(request: AIAnalysisRequest): string {
-    const key = JSON.stringify({
-      opportunityId: request.opportunity.id,
-      requestedAmount: request.applicationData.requestedAmount,
-      purposeStatement: request.applicationData.purposeStatement?.substring(0, 50),
-      useOfFunds: request.applicationData.useOfFunds?.substring(0, 50)
-    });
-    return btoa(key);
+  private generateApplicationId(): string {
+    return `temp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
   }
 
-  // Profile extraction methods
-  private extractIndustry(businessProfile: any, organization: any): string {
-    if (businessProfile?.industry) return businessProfile.industry;
-    if (organization?.organizationType) {
-      const typeToIndustry: Record<string, string> = {
-        investment_fund: 'Financial Services',
-        bank: 'Financial Services',
-        technology: 'Technology',
-        manufacturing: 'Manufacturing',
-        retail: 'Retail',
-        healthcare: 'Healthcare'
-      };
-      return typeToIndustry[organization.organizationType] || 'Technology';
-    }
-    return 'Technology';
-  }
+  // =======================
+  // CACHE MANAGEMENT
+  // =======================
 
-  private extractBusinessStage(organization: any): string {
-    const yearsInOperation = this.extractYearsInOperation(organization);
-    if (yearsInOperation <= 2) return 'startup';
-    if (yearsInOperation <= 5) return 'early-stage';
-    if (yearsInOperation <= 10) return 'growth';
-    return 'mature';
-  }
-
-  private extractYearsInOperation(organization: any): number {
-    if (organization?.foundedYear) {
-      return new Date().getFullYear() - organization.foundedYear;
-    }
-    return 3;
-  }
-
-  private extractAnnualRevenue(businessProfile: any): number {
-    if (businessProfile?.financials?.annualRevenue) {
-      return businessProfile.financials.annualRevenue;
-    }
-    return 2000000;
-  }
-
-  private extractMonthlyRevenue(businessProfile: any): number {
-    return this.extractAnnualRevenue(businessProfile) / 12;
-  }
-
-  private extractProfitMargin(businessProfile: any): number {
-    if (businessProfile?.financials?.profitMargin) {
-      return businessProfile.financials.profitMargin;
-    }
-    return 15;
-  }
-
-  private extractCashFlow(businessProfile: any): number {
-    return this.extractMonthlyRevenue(businessProfile) * 0.1;
-  }
-
-  // Utility methods
+  /**
+   * Clear any cached analysis results (if implemented)
+   */
   clearCache(): void {
-    this.analysisCache.clear();
+    // Implementation depends on your caching strategy
+    console.log('AI analysis cache cleared');
   }
 
-  getCachedAnalysis(request: AIAnalysisRequest): AIAnalysisResult | null {
-    const cacheKey = this.generateCacheKey(request);
-    return this.analysisCache.get(cacheKey) || null;
-  }
+  // =======================
+  // HELPER METHODS FOR UI
+  // =======================
 
-  clearError(): void {
-    this.error.set(null);
-  }
-
-  canAnalyze(request: AIAnalysisRequest): boolean {
-    return !!(
-      request.opportunity &&
-      request.applicationData &&
-      request.applicationData.requestedAmount &&
-      parseFloat(request.applicationData.requestedAmount) > 0 &&
-      request.applicationData.purposeStatement?.trim() &&
-      request.applicationData.useOfFunds?.trim()
-    );
-  }
-
-  getAnalysisReadinessIssues(request: AIAnalysisRequest): string[] {
-    const issues: string[] = [];
-
-    if (!request.opportunity) {
-      issues.push('No opportunity data available');
-    }
-    if (!request.applicationData) {
-      issues.push('No application data available');
-      return issues;
-    }
-    if (!request.applicationData.requestedAmount || parseFloat(request.applicationData.requestedAmount) <= 0) {
-      issues.push('Valid requested amount required');
-    }
-    if (!request.applicationData.purposeStatement?.trim()) {
-      issues.push('Purpose statement required');
-    }
-    if (!request.applicationData.useOfFunds?.trim()) {
-      issues.push('Use of funds description required');
-    }
-    return issues;
-  }
-
-  getServiceStatus(): {
-    cacheSize: number;
-    isAnalyzing: boolean;
-    hasError: boolean;
-    errorMessage: string | null;
-  } {
-    return {
-      cacheSize: this.analysisCache.size,
-      isAnalyzing: this.isAnalyzing(),
-      hasError: !!this.error(),
-      errorMessage: this.error()
+  getActivityTypeColor(type: string): string {
+    const colors: Record<string, string> = {
+      'application': 'blue',
+      'funding': 'green',
+      'profile': 'purple',
+      'document': 'orange',
+      'system': 'gray',
+      'partnership': 'indigo',
+      'milestone': 'pink'
     };
+    return colors[type] || 'gray';
+  }
+
+  formatRelativeTime(date: Date): string {
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    
+    if (diffMins < 1) return 'just now';
+    if (diffMins < 60) return `${diffMins}m ago`;
+    
+    const diffHours = Math.floor(diffMins / 60);
+    if (diffHours < 24) return `${diffHours}h ago`;
+    
+    const diffDays = Math.floor(diffHours / 24);
+    if (diffDays < 7) return `${diffDays}d ago`;
+    
+    const diffWeeks = Math.floor(diffDays / 7);
+    return `${diffWeeks}w ago`;
+  }
+
+  formatAmount(amount: number): string {
+    return new Intl.NumberFormat('en-ZA', {
+      style: 'currency',
+      currency: 'ZAR',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    }).format(amount);
   }
 }

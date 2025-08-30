@@ -3,7 +3,8 @@ import { Component, signal } from '@angular/core';
 import { LucideAngularModule, Info, X, CheckCircle, Clock, Lock } from 'lucide-angular';
  
 import { CommonModule } from '@angular/common';
-import { UiButtonComponent } from '../../shared/components';
+import { UiButtonComponent } from 'src/app/shared/components';
+ 
 
 @Component({
   selector: 'app-navigation-help',

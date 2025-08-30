@@ -2,9 +2,9 @@
 import { Component, signal, input, computed, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { LucideAngularModule, MessageSquare, Send, User, Clock } from 'lucide-angular';
-import { UiButtonComponent, UiCardComponent } from '../../shared/components';
-import { UiTextareaComponent } from '../../shared/components/ui-textarea.component';
-import { ApplicationCommentsService } from '../sections/application-comments.service';
+ import { ApplicationCommentsService } from '../sections/application-comments.service';
+import { UiButtonComponent, UiCardComponent } from 'src/app/shared/components';
+import { UiTextareaComponent } from 'src/app/shared/components/ui-textarea.component';
 
 
 interface SectionComment {

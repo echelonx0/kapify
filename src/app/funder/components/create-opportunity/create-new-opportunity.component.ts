@@ -9,7 +9,7 @@ import { LucideAngularModule, ArrowLeft, Target, DollarSign, Users, Settings, Fi
 import { FundingOpportunity } from '../../../shared/models/funder.models';
 import { trigger, transition, style, animate } from '@angular/animations';
 import { FundingOpportunityService } from '../../../funding/services/funding-opportunity.service';
-import { AiAssistantComponent } from '../ai-assistant/ai-assistant.component';
+import { AiAssistantComponent } from '../../../ai/ai-assistant/ai-assistant.component';
 
 // Import step components
 import { BasicInfoStepComponent } from './steps/basic-info-step.component';

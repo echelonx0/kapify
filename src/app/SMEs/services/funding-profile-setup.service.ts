@@ -4,7 +4,8 @@ import { AuthService } from '../../auth/production.auth.service';
 import { Subscription, Subject } from 'rxjs';
 import { debounceTime, takeUntil } from 'rxjs/operators';
 import { FundingApplicationProfile, FundingApplicationStep } from '../applications/models/funding-application.models';
-
+import { firstValueFrom } from 'rxjs';
+import { timeout } from 'rxjs/operators';
 @Injectable({
   providedIn: 'root'
 })
@@ -34,6 +35,10 @@ export class FundingProfileSetupService implements OnDestroy {
   readonly lastSavedAt = this.lastSaved.asReadonly();
   readonly lastSavedLocallyAt = this.lastSavedLocally.asReadonly();
   
+
+  private isSaving = signal<boolean>(false);
+readonly saving = this.isSaving.asReadonly();
+
   // Application steps for SME funding
   readonly steps: FundingApplicationStep[] = [
     { 
@@ -124,7 +129,7 @@ export class FundingProfileSetupService implements OnDestroy {
   }
 
   // ===============================
-  // DATA UPDATE METHODS - FIXED TO SAVE TO DATABASE
+  // DATA UPDATE METHODS 
   // ===============================
 
   updateCompanyInfo(data: any) {
@@ -134,7 +139,7 @@ export class FundingProfileSetupService implements OnDestroy {
     }));
     this.markStepCompleted('company-info');
     this.saveToLocalStorage(); // Save locally immediately
-    this.triggerDataChange(); // This will trigger database save
+    this.triggerDataChange(); // Trigger database save
   }
 
   updateSupportingDocuments(data: any) {
@@ -240,7 +245,8 @@ export class FundingProfileSetupService implements OnDestroy {
       this.loadFromLocalStorage();
       
       // Then try to load from backend (slower, but authoritative)
-      const savedData = await this.backendService.loadSavedProfile().toPromise();
+      
+      const savedData = await firstValueFrom(this.backendService.loadSavedProfile());
       
       if (savedData) {
         // Merge backend data with local data (local takes precedence for newer changes)
@@ -266,11 +272,13 @@ export class FundingProfileSetupService implements OnDestroy {
       const currentData = this.applicationData();
       
       if (!force && this.isDataEmpty(currentData)) {
-        return true; // No need to save empty data
+        return true;  
       }
 
       console.log('🔄 Saving to backend...', currentData);
-      const response = await this.backendService.saveCompleteProfile(currentData).toPromise();
+      const response = await firstValueFrom(this.backendService.saveCompleteProfile(currentData).pipe(
+        timeout(30000)  
+      ));
       
       if (response?.success) {
         this.lastSaved.set(new Date());
@@ -286,10 +294,17 @@ export class FundingProfileSetupService implements OnDestroy {
     }
   }
 
-  // FIX: Add this method that components call for manual saves
-  async saveCurrentProgress(): Promise<boolean> {
-    return await this.saveToBackend(true);
+async saveCurrentProgress(): Promise<boolean> {
+  if (this.isSaving()) return false; // Prevent concurrent saves
+  
+  this.isSaving.set(true);
+  try {
+    const result = await this.saveToBackend(true);
+    return result;
+  } finally {
+    this.isSaving.set(false);
   }
+}
 
   async saveSectionToBackend(sectionId: string): Promise<boolean> {
     try {
@@ -297,11 +312,11 @@ export class FundingProfileSetupService implements OnDestroy {
       const isCompleted = this.isStepCompleted(sectionId);
       
       console.log(`🔄 Saving section ${sectionId} to backend...`, sectionData);
-      const response = await this.backendService.saveDraftSection(
+      const response =  await firstValueFrom( this.backendService.saveDraftSection(
         sectionId, 
         sectionData, 
         isCompleted
-      ).toPromise();
+      ));
       
       if (response?.section) {
         this.lastSaved.set(new Date());
@@ -322,7 +337,7 @@ export class FundingProfileSetupService implements OnDestroy {
         return { success: false, error: 'Application is not complete' };
       }
 
-      const response = await this.backendService.submitProfileForReview(this.applicationData()).toPromise();
+      const response = await firstValueFrom(this.backendService.submitProfileForReview(this.applicationData()));
       
       if (response?.success) {
         return { success: true, applicationId: response.applicationId };
@@ -349,22 +364,24 @@ export class FundingProfileSetupService implements OnDestroy {
     });
   }
 
-  private async performAutoSave() {
-    const user = this.authService.user();
-    if (!user) return;
+private async performAutoSave() {
+  if (this.isSaving()) return; // Don't auto-save during manual save
+  
+  const user = this.authService.user();
+  if (!user) return;
 
-    const currentData = this.applicationData();
-    if (this.isDataEmpty(currentData)) return;
+  const currentData = this.applicationData();
+  if (this.isDataEmpty(currentData)) return;
 
-    try {
-      console.log('🔄 Auto-saving to backend...');
-      await this.backendService.autoSaveProfile(currentData).toPromise();
-      this.lastSaved.set(new Date());
-      console.log('✅ Auto-save completed successfully');
-    } catch (error) {
-      console.error('❌ Auto-save failed:', error);
-    }
+  try {
+    console.log('Auto-saving to backend...');
+    await firstValueFrom(this.backendService.autoSaveProfile(currentData));
+    this.lastSaved.set(new Date());
+    console.log('Auto-save completed successfully');
+  } catch (error) {
+    console.error('Auto-save failed:', error);
   }
+}
 
   private triggerDataChange() {
     this.updateCompletionFromData();
@@ -545,6 +562,7 @@ export class FundingProfileSetupService implements OnDestroy {
     const success = await this.saveToBackend(true);
     if (success) {
       console.log('✅ Application saved successfully');
+      return true;  
     }
     return success;
   }

@@ -1,5 +1,5 @@
 // src/app/profile/steps/swot-analysis.component.ts
-import { Component, signal, OnInit, OnDestroy, computed, inject } from '@angular/core';
+import { Component, signal, OnInit, OnDestroy, computed, inject, Signal } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { LucideAngularModule, Plus, X, TrendingUp, TrendingDown, Target, AlertTriangle, CheckCircle, Info, Save, Clock } from 'lucide-angular';
 import { CommonModule } from '@angular/common'; 
@@ -61,7 +61,7 @@ export class SWOTAnalysisComponent implements OnInit, OnDestroy {
   ClockIcon = Clock;
 
   // State signals
-  isSaving = signal(false);
+ isSaving = signal(false);
   lastSaved = signal<Date | null>(null);
   
   // Form state
@@ -122,8 +122,12 @@ export class SWOTAnalysisComponent implements OnInit, OnDestroy {
   constructor() {}
 
   ngOnInit() {
-    this.loadExistingData();
-    this.setupAutoSave();
+ 
+  this.loadExistingData();
+  this.setupAutoSave();
+ 
+
+    
   }
 
   ngOnDestroy() {
@@ -231,27 +235,28 @@ export class SWOTAnalysisComponent implements OnInit, OnDestroy {
     await this.saveData(true);
   }
 
-  private async saveData(isManual: boolean = false) {
-    if (this.isSaving()) return;
-
-    this.isSaving.set(true);
+private async saveData(isManual: boolean = false) {
+  if (this.isSaving()) return;
+ 
+  
+  try {
+    const swotData = this.buildSWOTAnalysisData();
     
-    try {
-      const swotData = this.buildSWOTAnalysisData();
+    if (isManual) {
+      // Clear any pending auto-save, then do manual save
       this.fundingApplicationService.updateSwotAnalysis(swotData);
-      
-      if (isManual) {
-        // Force save to backend for manual saves
-        await this.fundingApplicationService.saveCurrentProgress();
-      }
-      
-      this.lastSaved.set(new Date());
-    } catch (error) {
-      console.error('Failed to save SWOT analysis:', error);
-    } finally {
-      this.isSaving.set(false);
+      await this.fundingApplicationService.saveCurrentProgress();
+    } else {
+      // Just update data for auto-save
+      this.fundingApplicationService.updateSwotAnalysis(swotData);
     }
-  }
+    
+    this.lastSaved.set(new Date());
+  } catch (error) {
+    console.error('Failed to save SWOT analysis:', error);
+    throw error; // Let component handle the error
+  }  
+}
 
   private buildSWOTAnalysisData(): SWOTAnalysis {
     const sections = this.swotSections();

@@ -17,12 +17,9 @@ import { GlobalProfileValidationService } from 'src/app/shared/services/global-p
 import { ProfileManagementService } from 'src/app/shared/services/profile-management.service';
 import { DatabaseApplicationService } from 'src/app/SMEs/services/database-application.service';
  
-
-// UPDATED IMPORT - Use our new integrated AI component
  
-// ADD: Import profile service for business data
  
-interface CoverInformation {
+export interface CoverInformation {
   requestedAmount: string;
   purposeStatement: string;
   useOfFunds: string;

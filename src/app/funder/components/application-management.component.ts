@@ -23,7 +23,7 @@ import {
 
 import { UiButtonComponent, UiCardComponent } from '../../shared/components';
 import { SidebarNavComponent } from '../../shared/components/sidebar-nav.component';
-import { AIAssistantModalComponent } from './ai-assistant-modal.component'; 
+import { AIAssistantModalComponent } from '../../ai/ai-assistant-modal.component'; 
 import { AuthService } from '../../auth/production.auth.service';
 import { SMEOpportunitiesService } from '../../funding/services/opportunities.service';
 import { FundingOpportunity } from '../../shared/models/funder.models';

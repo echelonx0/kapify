@@ -13,7 +13,7 @@ export interface AIAnalysisRequest {
   };
 }
 
-export interface AIAnalysisResult {
+  interface AIAnalysisResult {
   analysisType: string;
   summary: string;
   keyFindings: string[];

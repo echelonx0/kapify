@@ -121,6 +121,9 @@ export class SharedSupabaseService {
     return this.client.storage;
   }
 
+    get channel() {
+    return this.client.channel.bind(this.client);
+  }
     // Add functions support for Edge Functions
   get functions() {
     return this.client.functions;
