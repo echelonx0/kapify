@@ -4,33 +4,11 @@ import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { 
-  LucideAngularModule, 
-  Users, 
-  Building, 
-  DollarSign, 
-  FileText, 
-  TrendingUp, 
-  Activity, 
-  Mail, 
-  UserPlus, 
-  Send, 
-  Settings, 
-  Download,
-  Filter,
-  Search,
-  Plus,
-  Eye,
-  MoreVertical,
-  Bell,
-  RefreshCw,
-  BarChart3,
-  PieChart,
-  Calendar,
-  MessageSquare
+  LucideAngularModule,  
 } from 'lucide-angular';
 import { AdminService, AdminStats, AdminUser, AdminOrganization, AdminOpportunity } from '../services/admin.service';
 import { AuthService } from '../../auth/production.auth.service';
-import { UiButtonComponent, UiCardComponent } from '../../shared/components';
+import { UiButtonComponent } from '../../shared/components';
 import { DropdownComponent, DropdownOption } from '../../shared/components/ui/shared-ui-components';
 
 type TabType = 'overview' | 'users' | 'organizations' | 'opportunities' | 'analytics';
@@ -58,7 +36,7 @@ interface FilterState {
     ReactiveFormsModule, 
     LucideAngularModule,
     UiButtonComponent, 
-    UiCardComponent, 
+   
     DropdownComponent
   ],
   template: `

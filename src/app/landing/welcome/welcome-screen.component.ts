@@ -4,9 +4,9 @@ import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { 
   LucideAngularModule, 
-  CheckCircle, 
+  Check, 
   ArrowRight, 
-  User, 
+  UserCheck, 
   FileText, 
   Search, 
   TrendingUp,
@@ -16,7 +16,10 @@ import {
   Target,
   Play,
   MessageCircle,
-  HelpCircle
+  HelpCircle,
+  User,
+  Pause,
+  Volume2
 } from 'lucide-angular';
 import { AuthService } from 'src/app/auth/production.auth.service';
 import { UiButtonComponent } from 'src/app/shared/components';
@@ -85,6 +88,62 @@ interface OnboardingCard {
     .animate-progress-fill {
       animation: progress-fill 1.5s ease-out both;
     }
+
+    .video-container {
+      position: relative;
+      border-radius: 0.75rem;
+      overflow: hidden;
+      background: #000;
+      cursor: pointer;
+    }
+
+    .video-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(45deg, rgba(0,0,0,0.3), rgba(0,0,0,0.1));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease;
+    }
+
+    .video-overlay:hover {
+      background: linear-gradient(45deg, rgba(0,0,0,0.5), rgba(0,0,0,0.2));
+    }
+
+    .play-button {
+      background: rgba(255,255,255,0.9);
+      border-radius: 50%;
+      width: 60px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease;
+      backdrop-filter: blur(10px);
+    }
+
+    .play-button:hover {
+      background: rgba(255,255,255,1);
+      transform: scale(1.1);
+    }
+
+    .video-controls {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: linear-gradient(transparent, rgba(0,0,0,0.7));
+      padding: 20px 16px 16px;
+      color: white;
+    }
+
+    .expanded-card {
+      min-height: 140px;
+    }
   `]
 })
 export class WelcomeScreenComponent implements OnInit {
@@ -93,6 +152,28 @@ export class WelcomeScreenComponent implements OnInit {
 
   // State
   profileCompletion = signal(25);
+  isVideoPlaying = signal(false);
+  videoElement: HTMLVideoElement | null = null;
+
+  // Icon references
+  readonly icons = {
+    check: Check,
+    arrowRight: ArrowRight,
+    user: User,
+    userCheck: UserCheck,
+    fileText: FileText,
+    search: Search,
+    trendingUp: TrendingUp,
+    shield: Shield,
+    zap: Zap,
+    users: Users,
+    target: Target,
+    play: Play,
+    pause: Pause,
+    volume2: Volume2,
+    messageCircle: MessageCircle,
+    helpCircle: HelpCircle
+  };
 
   // Welcome steps data
   welcomeSteps = signal<WelcomeStep[]>([
@@ -100,28 +181,28 @@ export class WelcomeScreenComponent implements OnInit {
       id: 'account-created',
       title: 'Account Created',
       description: 'Your Kapify account is ready to use',
-      icon: 'check-circle',
+      icon: this.icons.check,
       completed: true
     },
     {
       id: 'profile-setup',
       title: 'Complete Your Business Profile',
       description: 'Add your company details and business information',
-      icon: 'user',
+      icon: this.icons.user,
       completed: false
     },
     {
       id: 'explore-funding',
       title: 'Discover Funding Options',
       description: 'Browse opportunities that match your business',
-      icon: 'search',
+      icon: this.icons.search,
       completed: false
     },
     {
       id: 'apply-funding',
       title: 'Submit Your First Application',
       description: 'Apply for funding that fits your needs',
-      icon: 'file-text',
+      icon: this.icons.fileText,
       completed: false
     }
   ]);
@@ -132,7 +213,7 @@ export class WelcomeScreenComponent implements OnInit {
       id: 'intelligent-matching',
       title: 'Intelligent Matching',
       description: 'Our AI-powered system matches your business with the most suitable funding opportunities based on your profile and needs.',
-      icon: 'target',
+      icon: this.icons.target,
       color: 'blue',
       action: 'Learn How It Works'
     },
@@ -140,7 +221,7 @@ export class WelcomeScreenComponent implements OnInit {
       id: 'comprehensive-database',
       title: 'Comprehensive Database',
       description: 'Access thousands of funding opportunities from banks, investors, government programs, and private lenders across South Africa.',
-      icon: 'search',
+      icon: this.icons.search,
       color: 'green',
       action: 'Browse Opportunities'
     },
@@ -148,7 +229,7 @@ export class WelcomeScreenComponent implements OnInit {
       id: 'application-tracking',
       title: 'Application Tracking',
       description: 'Monitor all your funding applications in one place with real-time status updates and communication tools.',
-      icon: 'trending-up',
+      icon: this.icons.trendingUp,
       color: 'purple',
       action: 'See Dashboard'
     },
@@ -156,7 +237,7 @@ export class WelcomeScreenComponent implements OnInit {
       id: 'expert-guidance',
       title: 'Expert Guidance',
       description: 'Get tips, best practices, and insights from funding experts to improve your application success rate.',
-      icon: 'users',
+      icon: this.icons.users,
       color: 'orange',
       action: 'Get Tips'
     },
@@ -164,7 +245,7 @@ export class WelcomeScreenComponent implements OnInit {
       id: 'secure-platform',
       title: 'Bank-Level Security',
       description: 'Your business data is protected with enterprise-grade security and compliance with local data protection laws.',
-      icon: 'shield',
+      icon: this.icons.shield,
       color: 'red',
       action: 'Learn About Security'
     },
@@ -172,7 +253,7 @@ export class WelcomeScreenComponent implements OnInit {
       id: 'fast-applications',
       title: 'Streamlined Process',
       description: 'Apply to multiple funding sources quickly with reusable profiles and automated form filling.',
-      icon: 'zap',
+      icon: this.icons.zap,
       color: 'yellow',
       action: 'Start Applying'
     }
@@ -220,6 +301,26 @@ export class WelcomeScreenComponent implements OnInit {
   skipToMainApp(): void {
     localStorage.setItem('welcomeCompleted', 'true');
     this.router.navigate(['/dashboard']);
+  }
+
+  toggleVideo(): void {
+    if (!this.videoElement) {
+      this.videoElement = document.querySelector('#platform-video') as HTMLVideoElement;
+    }
+
+    if (this.videoElement) {
+      if (this.isVideoPlaying()) {
+        this.videoElement.pause();
+        this.isVideoPlaying.set(false);
+      } else {
+        this.videoElement.play();
+        this.isVideoPlaying.set(true);
+      }
+    }
+  }
+
+  onVideoEnded(): void {
+    this.isVideoPlaying.set(false);
   }
 
   // Computed properties

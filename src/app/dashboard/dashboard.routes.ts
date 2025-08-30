@@ -7,7 +7,7 @@ export const dashboardRoutes: Routes = [
     path: '',
     loadComponent: () => import('./dashboard-layout.component').then(c => c.DashboardLayoutComponent),
     children: [
-      { path: '', redirectTo: 'welcome', pathMatch: 'full' as 'full' },
+      { path: '', redirectTo: 'home', pathMatch: 'full' as 'full' },
       { path: 'home', loadComponent: () => import('./dashboard-home/kapify-dashboard.component').then(c => c.KapifyDashboard) },
         { path: 'welcome', loadComponent: () => import('../landing/welcome/welcome-screen.component').then(c => c.WelcomeScreenComponent) },
       { path: 'profile', loadChildren: () => import('../SMEs/profile/profile.routes').then(m => m.profileRoutes) },

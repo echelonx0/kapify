@@ -27,16 +27,16 @@ export const adminRoutes: Routes = [
         title: 'Admin Dashboard - Kapify'
       },
 
-        {
-        path: 'admin',
-        loadComponent: async () => {
-          console.log('Loading AdminDashboardComponent...');
-          const m = await import('./dashboard/admin.component');
-          console.log('AdminDashboardComponent loaded:', m.KapifyAdminDashboard);
-          return m.KapifyAdminDashboard;
-        },
-        title: 'Admin Dashboard - Kapify'
-      }
+      //   {
+      //   path: 'admin',
+      //   loadComponent: async () => {
+      //     console.log('Loading AdminDashboardComponent...');
+      //     const m = await import('./dashboard/admin.component');
+      //     console.log('AdminDashboardComponent loaded:', m.KapifyAdminDashboard);
+      //     return m.KapifyAdminDashboard;
+      //   },
+      //   title: 'Admin Dashboard - Kapify'
+      // }
     ]
   }
 ];
