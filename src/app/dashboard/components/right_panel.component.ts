@@ -2,7 +2,7 @@
 import { Component, signal, Input, Output, EventEmitter, OnDestroy, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { LucideAngularModule, X, ArrowLeft } from 'lucide-angular';
-import { ActivityInboxComponent } from '../../shared/components/messaging/messaging.component';
+import { ActivityInboxComponent } from '../../messaging/messaging/messaging.component';
 
 export type RightPanelContent = 
   | 'activity-inbox'

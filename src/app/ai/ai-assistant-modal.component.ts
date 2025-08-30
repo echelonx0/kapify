@@ -2,7 +2,7 @@
 import { Component, Input, Output, EventEmitter, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { LucideAngularModule, Bot, FileSearch, Users, TrendingUp, Shield, X, Loader2, CheckCircle, AlertTriangle } from 'lucide-angular';
-import { UiButtonComponent } from '../shared/components';
+ 
 import { AIAssistantService, AIAnalysisRequest, } from './services/ai-assistant.service';
 import { FundingApplication } from 'src/app/SMEs/services/application-management.service';
 import { AIAnalysisResult } from 'src/app/ai/services/ai-analysis.service';
@@ -24,7 +24,7 @@ interface AIAction {
   imports: [
     CommonModule,
     LucideAngularModule,
-    UiButtonComponent
+  
   ],
   template: `
  

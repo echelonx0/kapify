@@ -1,0 +1,230 @@
+<div class="h-full flex flex-col bg-white">
+  <!-- Inbox Header -->
+  <div class="px-6 py-4 border-b border-gray-200 flex-shrink-0">
+    <div class="flex items-center justify-between">
+      <div>
+        <h2 class="text-lg font-semibold text-gray-900">Activity</h2>
+        <p class="text-sm text-gray-600">Recent updates and messages</p>
+      </div>
+      
+      @if (!selectedThread()) {
+        <div class="flex items-center space-x-2">
+          <div class="relative">
+            <input
+              type="text"
+              placeholder="Search..."
+              [(ngModel)]="searchQuery"
+              class="w-32 px-3 py-1 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+            />
+            <lucide-icon [img]="SearchIcon" [size]="14" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+          </div>
+        </div>
+      } @else {
+        <button
+          (click)="closeThread()"
+          class="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+        >
+          <lucide-icon [img]="ArrowLeftIcon" [size]="20" class="text-gray-600" />
+        </button>
+      }
+    </div>
+  </div>
+
+  <!-- Content Area -->
+  <div class="flex-1 overflow-hidden">
+    @if (!selectedThread()) {
+      <!-- Thread List View -->
+      <div class="h-full overflow-y-auto">
+        @if (isLoading()) {
+          <div class="flex items-center justify-center py-12 text-gray-500">
+            <div class="text-center">
+              <div class="animate-spin w-8 h-8 border-2 border-green-500 border-t-transparent rounded-full mx-auto mb-2"></div>
+              <p class="text-lg font-medium">Loading messages...</p>
+            </div>
+          </div>
+        } @else {
+          @for (thread of filteredThreads(); track thread.id) {
+            <div 
+              class="border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition-all duration-200 transform hover:scale-[1.02]"
+              (click)="selectThread(thread)"
+            >
+              <div class="px-6 py-4">
+                <div class="flex items-start space-x-3">
+                  <!-- Avatar -->
+                  <div class="flex-shrink-0">
+                    @if (thread.lastMessage?.user?.avatar) {
+                      <img 
+                        [src]="thread.lastMessage?.user?.avatar" 
+                        [alt]="thread.lastMessage?.user?.name || 'User'" 
+                        class="w-10 h-10 rounded-full ring-2 ring-white shadow-sm"
+                      >
+                    } @else {
+                      <div class="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center text-white font-medium shadow-sm">
+                        {{ thread.lastMessage?.user?.initials || 'U' }}
+                      </div>
+                    }
+                    @if (thread.unreadCount > 0) {
+                      <div class="w-3 h-3 bg-red-500 rounded-full -mt-1 -mr-1 border-2 border-white"></div>
+                    }
+                  </div>
+
+                  <!-- Message Preview -->
+                  <div class="flex-1 min-w-0">
+                    <div class="flex items-center justify-between mb-1">
+                      <p class="text-sm font-medium text-gray-900 truncate">
+                        {{ thread.lastMessage?.user?.name || 'Unknown User' }}
+                      </p>
+                      <div class="flex items-center space-x-2">
+                        @if (thread.messageCount > 1) {
+                          <span class="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
+                            {{ thread.messageCount }}
+                          </span>
+                        }
+                        <span class="text-xs text-gray-500">
+                          {{ thread.lastMessage ? getTimeAgo(thread.lastMessage.created_at) : '' }}
+                        </span>
+                      </div>
+                    </div>
+                    
+                    <p class="text-sm text-gray-600 truncate mb-1">{{ thread.subject }}</p>
+                    <p class="text-xs text-gray-500 line-clamp-2">{{ thread.lastMessage?.content || '' }}</p>
+                    
+                    @if (thread.lastMessage?.projectName) {
+                      <div class="mt-2">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                          {{ thread.lastMessage?.projectName }}
+                        </span>
+                      </div>
+                    }
+                  </div>
+                </div>
+              </div>
+            </div>
+          }
+
+          @if (filteredThreads().length === 0 && !isLoading()) {
+            <div class="flex items-center justify-center py-12 text-gray-500">
+              <div class="text-center">
+                <p class="text-lg font-medium mb-2">No messages found</p>
+                <p class="text-sm">Try adjusting your search criteria</p>
+              </div>
+            </div>
+          }
+        }
+      </div>
+    } @else {
+      <!-- Thread Detail View -->
+      <div class="h-full flex flex-col">
+        <!-- Thread Header -->
+        <div class="px-6 py-4 border-b border-gray-200 flex-shrink-0 bg-gray-50">
+          <div class="flex items-center space-x-3">
+            <div class="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center text-white text-sm font-medium">
+              {{ selectedThread()!.participants[0].initials || 'U' }}
+            </div>
+            <div class="flex-1">
+              <h3 class="font-medium text-gray-900">{{ selectedThread()!.subject }}</h3>
+              <p class="text-sm text-gray-600">{{ getParticipantsList(selectedThread()!) }}</p>
+            </div>
+            <button class="p-2 hover:bg-gray-200 rounded-lg transition-colors">
+              <lucide-icon [img]="MoreVerticalIcon" [size]="16" class="text-gray-600" />
+            </button>
+          </div>
+        </div>
+
+        <!-- Messages -->
+        <div class="flex-1 overflow-y-auto p-4 space-y-4" #messagesContainer>
+          @for (message of selectedThread()!.messages; track message.id; let isLast = $last) {
+            <div 
+              class="animate-slide-in opacity-0"
+              [style.animation-delay]="($index * 50) + 'ms'"
+              [class.self-message]="isCurrentUserMessage(message)"
+            >
+              @if (isCurrentUserMessage(message)) {
+                <!-- Sent Message -->
+                <div class="flex justify-end">
+                  <div class="max-w-xs lg:max-w-md">
+                    <div class="bg-green-600 text-white rounded-lg px-4 py-2 shadow-sm">
+                      <p class="text-sm">{{ message.content }}</p>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-1 text-right">
+                      {{ getTimeAgo(message.created_at) }}
+                    </p>
+                  </div>
+                </div>
+              } @else {
+                <!-- Received Message -->
+                <div class="flex space-x-3">
+                  <div class="flex-shrink-0">
+                    <div class="w-8 h-8 bg-gray-400 rounded-full flex items-center justify-center text-white text-sm font-medium">
+                      {{ message.user?.initials || 'U' }}
+                    </div>
+                  </div>
+                  <div class="flex-1 max-w-xs lg:max-w-md">
+                    <div class="bg-gray-100 rounded-lg px-4 py-2 shadow-sm">
+                      <div class="flex items-center space-x-2 mb-1">
+                        <span class="text-sm font-medium text-gray-900">{{ message.user?.name || 'Unknown' }}</span>
+                        @if (message.user?.role) {
+                          <span class="text-xs text-gray-500 bg-gray-200 px-2 py-0.5 rounded-full">
+                            {{ message.user?.role }}
+                          </span>
+                        }
+                      </div>
+                      <p class="text-sm text-gray-700">{{ message.content }}</p>
+                      
+                      @if (message.message_type === 'file') {
+                        <div class="mt-2 flex items-center space-x-2 text-xs text-gray-500">
+                          <lucide-icon [img]="PaperclipIcon" [size]="12" />
+                          <span>File attachment</span>
+                        </div>
+                      }
+                    </div>
+                    <p class="text-xs text-gray-500 mt-1">
+                      {{ getTimeAgo(message.created_at) }}
+                    </p>
+                  </div>
+                </div>
+              }
+            </div>
+          }
+        </div>
+
+        <!-- Message Input -->
+        <div class="border-t border-gray-200 p-4 flex-shrink-0 bg-white">
+          <div class="flex items-end space-x-3">
+            <div class="flex-1">
+              <textarea
+                [(ngModel)]="replyMessage"
+                (keydown)="onEnterKey($event)"
+                placeholder="Type your reply..."
+                rows="2"
+                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none text-sm"
+              ></textarea>
+            </div>
+            <div class="flex items-center space-x-2">
+              <button
+                class="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                title="Attach file"
+              >
+                <lucide-icon [img]="PaperclipIcon" [size]="18" />
+              </button>
+              <button
+                class="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                title="Add emoji"
+              >
+                <lucide-icon [img]="SmileIcon" [size]="18" />
+              </button>
+              <button
+                (click)="sendReply()"
+                [disabled]="!replyMessage().trim()"
+                class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm font-medium"
+              >
+                <lucide-icon [img]="SendIcon" [size]="16" class="mr-1" />
+                Send
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+  </div>
+</div>

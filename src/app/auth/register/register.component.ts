@@ -1,7 +1,3 @@
- 
-
-// src/app/auth/register.component.ts - UPDATED FOR ENHANCED AUTH SERVICE
-
 import { Component, signal, inject, computed, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, AbstractControl } from '@angular/forms';
@@ -295,7 +291,7 @@ export class RegisterComponent implements OnDestroy {
           console.log('Registration successful, navigating to dashboard');
           
           setTimeout(() => {
-            this.router.navigate(['/dashboard']);
+            this.router.navigate(['/dashboard/welcome']);
           }, 1500);
         } else {
           this.error.set(response.error || 'Registration failed. Please try again.');
