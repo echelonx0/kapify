@@ -13,6 +13,7 @@ import { ProfileDataTransformerService } from '../../../services/profile-data-tr
 import { AIApplicationAnalysisComponent } from '../../../../ai/ai-analysis/ai-application-analysis.component';
 import { FundingProfileSetupService } from 'src/app/SMEs/services/funding-profile-setup.service';
 import { SMEProfileStepsService } from 'src/app/SMEs/services/sme-profile-steps.service';
+import { EnhancedAIAnalysisComponent } from 'src/app/ai/ai-analysis/enhanced-ai-analysis.component';
  
 interface SectionSummary {
   stepId: string;
@@ -51,7 +52,7 @@ interface ProfileReadiness {
     LucideAngularModule, 
     UiCardComponent, 
     UiButtonComponent,
-    AIApplicationAnalysisComponent
+    EnhancedAIAnalysisComponent
   ],
   templateUrl: './profile-review.component.html'
 })
@@ -91,6 +92,8 @@ export class ProfileReviewComponent implements OnInit {
   sectionSummaries = computed(() => this.buildSectionSummaries());
   readinessAssessment = computed(() => this.assessProfileReadiness());
   businessProfile = computed(() => this.transformer.transformToFundingProfile(this.profileData()));
+  showSuccessMessage: any;
+  showInfoMessage: any;
 
   ngOnInit() {
     // Mark review step as accessed
@@ -825,6 +828,18 @@ onImprovementRequested() {
   const incompleteSections = this.sectionSummaries().filter(s => !s.completed);
   if (incompleteSections.length > 0) {
     this.editSection(incompleteSections[0].stepId);
+  }
+}
+
+// In your profile component
+onProfileAnalysisCompleted(result: any) {
+  console.log('Profile analysis completed:', result);
+  
+  // Optional: Show success message
+  if (result.compatibilityScore >= 70) {
+    this.showSuccessMessage('Your profile shows strong funding readiness!');
+  } else {
+    this.showInfoMessage('Consider completing the recommended improvements for better funding readiness.');
   }
 }
 }

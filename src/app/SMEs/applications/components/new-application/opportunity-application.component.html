@@ -318,14 +318,18 @@
               </div>
 
               <!-- AI Analysis Component -->
-              <app-ai-application-analysis
-                [opportunity]="selectedOpportunity()"
-                [applicationData]="coverInformation()"
-                [isSubmitted]="false"
-                (analysisCompleted)="onAnalysisCompleted($event)"
-                (improvementRequested)="onImprovementRequested()"
-                (proceedRequested)="onProceedRequested()"
-              ></app-ai-application-analysis>
+           <app-enhanced-ai-analysis
+  [opportunity]="selectedOpportunity()"
+  [applicationData]="coverInformation()"
+  [applicationId]="applicationId()"
+  [businessProfile]="businessProfile()"
+  [isSubmitted]="false"
+  [analysisMode]="'opportunity'"
+  (analysisCompleted)="onAnalysisCompleted($event)"
+  (improvementRequested)="onImprovementRequested()"
+  (proceedRequested)="onProceedRequested()">
+</app-enhanced-ai-analysis>
+
             </div>
           }
 

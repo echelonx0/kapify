@@ -163,14 +163,18 @@
 
       @if (showAIAnalysis()) {
         <div class="border-t pt-6">
-          <app-ai-application-analysis
-            [businessProfile]="businessProfile()"
-            [applicationData]="getCoverInformation()"
-            [opportunity]="null"
-            [isSubmitted]="false"
-            (analysisCompleted)="onAnalysisCompleted($event)"
-            (improvementRequested)="onImprovementRequested()"
-          />
+       <!-- In profile review/completion component -->
+<div class="mt-8">
+  <app-enhanced-ai-analysis
+    [opportunity]="null"
+    [applicationData]="null"
+    [applicationId]="null"
+    [businessProfile]="currentProfile()"
+    [isSubmitted]="false"
+    [analysisMode]="'profile'"
+    (analysisCompleted)="onProfileAnalysisCompleted($event)">
+  </app-enhanced-ai-analysis>
+</div>
         </div>
       } @else {
         <div class="text-center py-8">

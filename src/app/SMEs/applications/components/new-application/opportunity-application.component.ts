@@ -16,6 +16,7 @@ import { FundingOpportunity } from 'src/app/shared/models/funder.models';
 import { GlobalProfileValidationService } from 'src/app/shared/services/global-profile-validation.service';
 import { ProfileManagementService } from 'src/app/shared/services/profile-management.service';
 import { DatabaseApplicationService } from 'src/app/SMEs/services/database-application.service';
+import { EnhancedAIAnalysisComponent } from 'src/app/ai/ai-analysis/enhanced-ai-analysis.component';
  
  
  
@@ -43,7 +44,7 @@ interface ApplicationStep {
     UiButtonComponent, 
     UiCardComponent, 
     LucideAngularModule,
-    AIApplicationAnalysisComponent
+    EnhancedAIAnalysisComponent
   ],
   templateUrl: 'opportunity-application.component.html',
   styles: [
