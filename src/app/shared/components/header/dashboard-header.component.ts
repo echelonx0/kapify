@@ -4,7 +4,7 @@ import { CommonModule } from '@angular/common';
 import { Router, NavigationEnd } from '@angular/router';
 import { LucideAngularModule, Bell, Settings } from 'lucide-angular';
 import { filter, map, startWith } from 'rxjs/operators';
-import { ProfileManagementService } from '../services/profile-management.service';
+import { ProfileManagementService } from '../../services/profile-management.service';
 
 interface RouteConfig {
   title: string;
@@ -34,17 +34,7 @@ interface RouteConfig {
             <span class="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
           </button>
           
-          <!-- Admin button (only for specific email) -->
-          @if (isAdminUser()) {
-            <button 
-              (click)="goToAdmin()" 
-              class="flex items-center px-3 py-2 rounded-lg bg-slate-600 text-white hover:bg-slate-700 transition-colors"
-              [disabled]="isNavigating"
-            >
-              <lucide-icon [img]="SettingsIcon" [size]="18" class="mr-2" />
-              {{ isNavigating ? 'Loading...' : 'Admin Console' }}
-            </button>
-          }
+       
           
           <!-- User Avatar & Name -->
           <div class="flex items-center space-x-3">

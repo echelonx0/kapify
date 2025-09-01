@@ -10,7 +10,7 @@ import { LucideAngularModule,
 } from 'lucide-angular';
 import { UiCardComponent, UiButtonComponent } from '../../../../shared/components'; 
 import { ProfileDataTransformerService } from '../../../services/profile-data-transformer.service';
-import { AIApplicationAnalysisComponent } from '../../../../ai/ai-analysis/ai-application-analysis.component';
+
 import { FundingProfileSetupService } from 'src/app/SMEs/services/funding-profile-setup.service';
 import { SMEProfileStepsService } from 'src/app/SMEs/services/sme-profile-steps.service';
 import { EnhancedAIAnalysisComponent } from 'src/app/ai/ai-analysis/enhanced-ai-analysis.component';
@@ -94,6 +94,7 @@ export class ProfileReviewComponent implements OnInit {
   businessProfile = computed(() => this.transformer.transformToFundingProfile(this.profileData()));
   showSuccessMessage: any;
   showInfoMessage: any;
+
 
   ngOnInit() {
     // Mark review step as accessed

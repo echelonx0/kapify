@@ -35,6 +35,8 @@ interface ApplicationStep {
   description: string;
 }
 
+
+
 @Component({
   selector: 'app-opportunity-application-form',
   standalone: true,
@@ -171,6 +173,7 @@ export class OpportunityApplicationFormComponent implements OnInit {
   });
 
   businessProfile = computed(() => {
+    
     const currentProfile = this.profileService.currentProfile();
     const currentOrganization = this.profileService.currentOrganization();
     

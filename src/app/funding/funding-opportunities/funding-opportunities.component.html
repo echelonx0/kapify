@@ -1,5 +1,5 @@
-<div class="min-h-screen bg-gradient-to-br from-neutral-50 to-primary-50/30 mr-6 mt-6">
-  <sidebar-nav />
+<div class="min-h-screen bg-gradient-to-br from-neutral-50 to-primary-50/30 mr-6 mt-6 ml-16 mr-16 ">
+ 
 
   <!-- Header -->
 <div class="relative rounded-xl p-8 mb-8 text-white shadow-2xl overflow-hidden bg-gradient-to-r from-primary-600 via-primary-500 to-primary-400 animate-gradient">
@@ -112,131 +112,21 @@
         </div>
       }
 
-      <!-- Enhanced Opportunities List -->
-      @if (!isLoading() && filteredOpportunities().length > 0) {
-        <div class="space-y-6">
-          @for (opportunity of filteredOpportunities(); track opportunity.id) {
-            <div class="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border border-neutral-100 overflow-hidden group">
-              <!-- Funding Type Header Bar -->
-              <div class="h-1.5 bg-gradient-to-r" [class]="getFundingTypeClasses(opportunity.fundingType).includes('slate') ? 'from-slate-400 to-slate-600' : 
-                       getFundingTypeClasses(opportunity.fundingType).includes('zinc') ? 'from-zinc-400 to-zinc-600' :
-                       getFundingTypeClasses(opportunity.fundingType).includes('green') ? 'from-green-400 to-green-600' :
-                       getFundingTypeClasses(opportunity.fundingType).includes('cyan') ? 'from-cyan-400 to-cyan-600' :
-                       'from-sky-400 to-sky-600'"></div>
-              
-              <div class="p-6">
-                <div class="flex items-start justify-between">
-                  <!-- Info -->
-                  <div class="flex-1">
-                    <div class="flex items-center space-x-4 mb-4">
-                      <!-- Enhanced Logo -->
-                      <div class="w-16 h-16 bg-gradient-to-br from-neutral-100 to-neutral-200 rounded-xl flex items-center justify-center border-2 border-white shadow-sm">
-                        <span class="text-lg font-bold text-neutral-600">{{ getInitials(opportunity.title) }}</span>
-                      </div>
-                      <div class="flex-1">
-                        <h3 class="text-xl font-bold text-neutral-900 mb-1 group-hover:text-primary-600 transition-colors">
-                          {{ opportunity.title }}
-                        </h3>
-                        <div class="flex items-center flex-wrap gap-2 mb-2">
-                          <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium"
-                                [class]="getFundingTypeClasses(opportunity.fundingType)">
-                            {{ formatFundingType(opportunity.fundingType) }}
-                          </span>
-                          @for (industry of opportunity.eligibilityCriteria.industries.slice(0, 2); track industry) {
-                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-neutral-100 text-neutral-700">
-                              {{ formatIndustry(industry) }}
-                            </span>
-                          }
-                        </div>
-                      </div>
-                    </div>
+   <!-- Opportunities List -->
+@if (!isLoading() && filteredOpportunities().length > 0) {
+  <div class="space-y-6">
+    @for (opportunity of filteredOpportunities(); track opportunity.id) {
+      <app-opportunity-card 
+        [opportunity]="opportunity"
+        (apply)="applyToOpportunity($event)"
+        (viewDetails)="viewOpportunityDetails($event)"
+        (manage)="manageApplications($event)"
+        (signInToApply)="redirectToLogin()">
+      </app-opportunity-card>
+    }
+  </div>
+}
 
-                    <p class="text-neutral-600 mb-4 leading-relaxed">{{ opportunity.shortDescription }}</p>
-
-                    <!-- Enhanced Key Details -->
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                      <div class="flex items-center space-x-3 p-3 bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg border border-green-100">
-                        <div class="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center">
-                          <lucide-icon [img]="DollarSignIcon" [size]="16" class="text-white" />
-                        </div>
-                        <div>
-                          <div class="text-sm font-semibold text-neutral-900">
-                            {{ opportunity.currency }} {{ formatAmount(opportunity.minInvestment) }} - {{ formatAmount(opportunity.maxInvestment) }}
-                          </div>
-                          <div class="text-xs text-neutral-500">Investment Range</div>
-                        </div>
-                      </div>
-                      
-                      <div class="flex items-center space-x-3 p-3 bg-gradient-to-br from-zinc-50 to-sky-50 rounded-lg border border-zinc-100">
-                        <div class="w-8 h-8 bg-zinc-500 rounded-lg flex items-center justify-center">
-                          <lucide-icon [img]="CalendarIcon" [size]="16" class="text-white" />
-                        </div>
-                        <div>
-                          <div class="text-sm font-semibold text-neutral-900">{{ opportunity.decisionTimeframe }} days</div>
-                          <div class="text-xs text-neutral-500">Decision Timeline</div>
-                        </div>
-                      </div>
-                      
-                      <div class="flex items-center space-x-3 p-3 bg-gradient-to-br from-sky-50 to-slate-50 rounded-lg border border-sky-100">
-                        <div class="w-8 h-8 bg-sky-500 rounded-lg flex items-center justify-center">
-                          <lucide-icon [img]="UsersIcon" [size]="16" class="text-white" />
-                        </div>
-                        <div>
-                          <div class="text-sm font-semibold text-neutral-900">{{ opportunity.currentApplications }}/{{ opportunity.maxApplications || '∞' }}</div>
-                          <div class="text-xs text-neutral-500">Applications</div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <!-- Progress Bar -->
-                    <div class="mb-4">
-                      <div class="flex justify-between items-center mb-2">
-                        <span class="text-sm font-medium text-neutral-700">Funding Progress</span>
-                        <span class="text-sm text-neutral-500">{{ getProgressPercentage(opportunity) }}%</span>
-                      </div>
-                      <div class="w-full bg-neutral-200 rounded-full h-2">
-                        <div class="h-2 rounded-full transition-all duration-300 bg-gradient-to-r"
-                             [class]="getFundingTypeClasses(opportunity.fundingType).includes('slate') ? 'from-slate-400 to-slate-600' : 
-                                    getFundingTypeClasses(opportunity.fundingType).includes('zinc') ? 'from-zinc-400 to-zinc-600' :
-                                    getFundingTypeClasses(opportunity.fundingType).includes('green') ? 'from-green-400 to-green-600' :
-                                    getFundingTypeClasses(opportunity.fundingType).includes('cyan') ? 'from-cyan-400 to-cyan-600' :
-                                    'from-sky-400 to-sky-600'"
-                             [style.width.%]="getProgressPercentage(opportunity)"></div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- Enhanced Action Buttons -->
-                  <div class="flex flex-col space-y-3 ml-6">
-                    @if (canApplyToOpportunity()) {
-                      <ui-button variant="primary" (clicked)="applyToOpportunity(opportunity.id)"
-                                class="bg-gradient-to-r from-primary-500 to-primary-600 rounded">
-                        Apply Now
-                      </ui-button>
-                    } @else {
-                      <ui-button variant="outline" (clicked)="redirectToLogin()"
-                                class="border-2 hover:border-primary-500 hover:text-primary-600">
-                        Sign in to Apply
-                      </ui-button>
-                    }
-                    <ui-button variant="outline" (clicked)="viewOpportunityDetails(opportunity.id)"
-                              class="rounded">
-                      <lucide-icon [img]="EyeIcon" [size]="16" class="mr-2" />
-                      View Details
-                    </ui-button>
-                    @if (canManageOpportunity(opportunity)) {
-                      <ui-button variant="outline" (clicked)="manageApplications(opportunity.id)"
-                                class="border-2 border-cyan-200 text-cyan-600 hover:border-cyan-500 hover:bg-cyan-50">
-                        Manage
-                      </ui-button>
-                    }
-                  </div>
-                </div>
-              </div>
-            </div>
-          }
-        </div>
-      }
     </main>
 
     <!-- Enhanced Sidebar -->

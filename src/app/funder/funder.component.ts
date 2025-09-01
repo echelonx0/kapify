@@ -1,8 +1,8 @@
 // src/app/funder/funder.component.ts
 import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import { SidebarNavComponent } from '../shared/components/sidebar-nav.component';
-import { DashboardHeaderComponent } from '../shared/components/dashboard-header.component';
+import { SidebarNavComponent } from '../shared/components/sidenav/sidebar-nav.component';
+import { DashboardHeaderComponent } from '../shared/components/header/dashboard-header.component';
 
 @Component({
   selector: 'app-applications',

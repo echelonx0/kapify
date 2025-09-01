@@ -2,7 +2,7 @@
 import { Component, signal, OnInit, inject, computed } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { SidebarNavComponent } from '../shared/components/sidebar-nav.component';
+import { SidebarNavComponent } from '../shared/components/sidenav/sidebar-nav.component';
 
 import { UiButtonComponent, UiCardComponent } from '../shared/components';
 import { LucideAngularModule, ArrowLeft, Building2, DollarSign, Calendar, MapPin, CheckCircle, FileText, Users, Eye } from 'lucide-angular';
@@ -18,7 +18,7 @@ import { AuthService } from '../auth/production.auth.service';
     CommonModule,
     SidebarNavComponent,
     UiButtonComponent,
-    UiCardComponent,
+ 
     LucideAngularModule
   ],
   templateUrl: 'funding-detail.component.html'
@@ -114,6 +114,7 @@ export class OpportunityDetailsComponent implements OnInit {
 manageApplications() {
   const opp = this.opportunity();
   if (opp?.id) {
+
     this.router.navigate([
       '/funder/opportunities',
       opp.id,

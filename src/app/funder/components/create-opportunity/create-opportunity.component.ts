@@ -5,7 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Subject, takeUntil, debounceTime, distinctUntilChanged } from 'rxjs';
 import { LucideAngularModule, ArrowLeft, Target, DollarSign, Users, Settings, FileText, Check, Eye, HelpCircle, Lightbulb, TrendingUp, Copy, Calculator, Sparkles, Save, ArrowRight, PieChart, RefreshCw, DollarSignIcon, FileTextIcon, SettingsIcon, TargetIcon, UsersIcon, ClockIcon, AlertCircleIcon } from 'lucide-angular';
-
+import { Location } from '@angular/common';
 import { FundingOpportunity } from '../../../shared/models/funder.models';
 import { trigger, transition, style, animate } from '@angular/animations';
 import { AiAssistantComponent } from '../../../ai/ai-assistant/ai-assistant.component'; 
@@ -108,7 +108,7 @@ export class CreateOpportunityComponent implements OnInit, OnDestroy {
   private localAutoSaveSubject = new Subject<OpportunityFormData>();
   private opportunityService = inject(FundingOpportunityService);
   private route = inject(ActivatedRoute);
- private profileService = inject(ProfileManagementService);
+ private profileService = inject(ProfileManagementService); 
  private authService = inject(AuthService);
    onboardingState = signal<OnboardingState | null>(null);
   // Icons
@@ -142,6 +142,7 @@ export class CreateOpportunityComponent implements OnInit, OnDestroy {
   lastLocalSave = signal<string | null>(null);
   mode = signal<'create' | 'edit'>('create');
   opportunityId = signal<string | null>(null);
+private location = inject(Location);
 
   // Validation state
   validationErrors = signal<ValidationError[]>([]);
@@ -1063,11 +1064,7 @@ private validateForm(data: OpportunityFormData): void {
   }
 
   goBack() {
-    if (this.isEditMode()) {
-      this.router.navigate(['/funding/opportunities', this.opportunityId()]);
-    } else {
-      this.router.navigate(['/funding/opportunities']);
-    }
+  this.location.back();
   }
 
   getCurrentStepIndex(): number {

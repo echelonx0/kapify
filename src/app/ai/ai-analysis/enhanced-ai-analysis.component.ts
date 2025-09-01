@@ -9,6 +9,7 @@ import { FundingOpportunity } from 'src/app/shared/models/funder.models';
 import { FundingApplicationProfile } from 'src/app/SMEs/applications/models/funding-application.models';
 import { AIAnalysisService, AIAnalysisRequest, AIAnalysisResult } from '../services/ai-analysis.service';
 import { BusinessRulesAnalysisService, BusinessRulesResult } from '../services/business-rules.service';
+import { FundingProfileBackendService } from 'src/app/SMEs/services/funding-profile-backend.service';
  
 export interface CoverInformation {
   requestedAmount: string;
@@ -47,11 +48,17 @@ function isJobResponse(response: AIAnalysisResponse): response is AIAnalysisJobR
   templateUrl: './enhanced-ai-analysis.component.html'
 })
 export class EnhancedAIAnalysisComponent implements OnDestroy {
+
   @Input() opportunity: FundingOpportunity | null = null;
   @Input() applicationData: CoverInformation | null = null;
   @Input() applicationId: string | null = null;  
-  @Input() businessProfile!: FundingApplicationProfile;
+  @Input() businessProfile?: FundingApplicationProfile; 
   @Input() isSubmitted = false;
+    // Inject the service
+  private backendService = inject(FundingProfileBackendService);
+   private loadedProfile = signal<FundingApplicationProfile | null>(null);
+     // Update computed to use loaded or passed profile
+  private currentProfile = computed(() => this.businessProfile || this.loadedProfile());
   
   // Analysis mode: 'profile' for standalone, 'opportunity' for opportunity-specific
   @Input() analysisMode: 'profile' | 'opportunity' = 'opportunity';
@@ -95,6 +102,8 @@ export class EnhancedAIAnalysisComponent implements OnDestroy {
 
   // Computed properties
   canAnalyze = computed(() => {
+     const profile = this.currentProfile();
+    if (!profile) return false;
     if (!this.businessProfile) return false;
     
     if (this.analysisMode === 'opportunity') {
@@ -121,11 +130,29 @@ export class EnhancedAIAnalysisComponent implements OnDestroy {
     console.log('Enhanced AI Analysis Component initialized');
   }
 
+  ngOnInit() {
+  if (!this.businessProfile) {
+    this.loadBusinessProfile();
+  }
+}
   ngOnDestroy() {
     this.destroy$.next();
     this.destroy$.complete();
   }
 
+  private loadBusinessProfile() {
+  this.backendService.loadSavedProfile()
+    .pipe(takeUntil(this.destroy$))
+    .subscribe({
+      next: (profile) => {
+        this.loadedProfile.set(profile);
+      },
+      error: (error) => {
+        console.error('Failed to load business profile:', error);
+        this.analysisError.set('Failed to load business profile');
+      }
+    });
+}
   // =======================
   // MAIN ANALYSIS TRIGGER
   // =======================
@@ -149,26 +176,31 @@ export class EnhancedAIAnalysisComponent implements OnDestroy {
     this.performBusinessRulesAnalysis();
   }
 
-  private performBusinessRulesAnalysis() {
-    const analysisObservable = this.analysisMode === 'profile' 
-      ? this.businessRulesService.analyzeProfile(this.businessProfile)
-      : this.businessRulesService.analyzeApplication(
-          this.businessProfile, 
-          this.opportunity!, 
-          this.applicationData!
-        );
+// Update performBusinessRulesAnalysis
+private performBusinessRulesAnalysis() {
+  const profile = this.currentProfile();
+  if (!profile) return;
 
-    analysisObservable.pipe(takeUntil(this.destroy$)).subscribe({
-      next: (result) => {
-        this.businessRulesResult.set(result);
-        console.log('Business rules analysis completed:', result);
-      },
-      error: (error) => {
-        console.error('Business rules analysis failed:', error);
-        this.analysisError.set('Failed to perform initial analysis');
-      }
-    });
-  }
+  const analysisObservable = this.analysisMode === 'profile' 
+    ? this.businessRulesService.analyzeProfile(profile)
+    : this.businessRulesService.analyzeApplication(
+        profile, 
+        this.opportunity!, 
+        this.applicationData!
+      );
+
+  analysisObservable.pipe(takeUntil(this.destroy$)).subscribe({
+    next: (result) => {
+      this.businessRulesResult.set(result);
+      console.log('Business rules analysis completed:', result);
+    },
+    error: (error) => {
+      console.error('Business rules analysis failed:', error);
+      this.analysisError.set('Failed to perform initial analysis');
+    }
+  });
+}
+
 
   // =======================
   // AI EMAIL ANALYSIS
@@ -217,36 +249,39 @@ export class EnhancedAIAnalysisComponent implements OnDestroy {
       });
   }
 
-  private buildAIAnalysisRequest(): AIAnalysisRequest | null {
-    if (this.analysisMode === 'profile') {
-      // Profile-only analysis
-      return {
-        opportunity: null,
-        applicationData: null,
-        businessProfile: this.businessProfile
-      };
-    }
+private buildAIAnalysisRequest(): AIAnalysisRequest | null {
+  const profile = this.currentProfile();
+  if (!profile) return null;
 
-    // Opportunity-specific analysis
-    const opportunity = this.opportunity;
-    const applicationData = this.applicationData;
-
-    if (!opportunity || !applicationData) {
-      return null;
-    }
-
+  if (this.analysisMode === 'profile') {
+    // Profile-only analysis
     return {
-      opportunity,
-      applicationData: {
-        requestedAmount: applicationData.requestedAmount || '0',
-        purposeStatement: applicationData.purposeStatement || '',
-        useOfFunds: applicationData.useOfFunds || '',
-        timeline: applicationData.timeline || '',
-        opportunityAlignment: applicationData.opportunityAlignment || ''
-      },
-      businessProfile: this.businessProfile
+      opportunity: null,
+      applicationData: null,
+      businessProfile: profile
     };
   }
+
+  // Opportunity-specific analysis
+  const opportunity = this.opportunity;
+  const applicationData = this.applicationData;
+
+  if (!opportunity || !applicationData) {
+    return null;
+  }
+
+  return {
+    opportunity,
+    applicationData: {
+      requestedAmount: applicationData.requestedAmount || '0',
+      purposeStatement: applicationData.purposeStatement || '',
+      useOfFunds: applicationData.useOfFunds || '',
+      timeline: applicationData.timeline || '',
+      opportunityAlignment: applicationData.opportunityAlignment || ''
+    },
+    businessProfile: profile
+  };
+}
 
   // =======================
   // EVENT HANDLERS

@@ -11,6 +11,7 @@ import { AuthService } from '../../auth/production.auth.service';
 import { SidebarNavComponent, UiButtonComponent } from '../../shared/components';
 import { FundingOpportunity } from '../../shared/models/funder.models';
 import { SMEOpportunitiesService } from '../services/opportunities.service';
+import { OpportunityCardComponent } from './components/opportunity-card.component';
 
 @Component({
   selector: 'app-funding-opportunities',
@@ -18,9 +19,10 @@ import { SMEOpportunitiesService } from '../services/opportunities.service';
   imports: [
     CommonModule,
     FormsModule,
-    SidebarNavComponent,  
+   
     UiButtonComponent,
-    LucideAngularModule
+    LucideAngularModule,
+    OpportunityCardComponent
   ],
   templateUrl: 'funding-opportunities.component.html',
   styles: [`

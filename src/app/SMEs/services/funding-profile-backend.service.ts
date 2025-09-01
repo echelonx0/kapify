@@ -8,7 +8,7 @@ import { ActivityService } from '../../shared/services/activity.service';
 import { FundingApplicationProfile } from '../applications/models/funding-application.models';
  
 // Backend response interfaces
-export interface FundingApplicationSectionData {
+export interface FundingApplicationSectionData { 
   sectionType: string;
   data: Record<string, any>;
   completed: boolean;

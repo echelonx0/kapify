@@ -1,435 +1,305 @@
-<div class="min-h-screen bg-neutral-50">
+<div class="min-h-screen bg-gradient-to-br from-slate-50 to-neutral-50">
   <sidebar-nav />
   <div class="ml-16">
- 
     <main class="p-6 max-w-6xl mx-auto">
-    
-
+      
       @if (isLoading()) {
-        <div class="bg-white rounded-lg border border-neutral-200 p-12 text-center">
-          <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mx-auto mb-4"></div>
-          <p class="text-neutral-600">Loading opportunity details...</p>
+        <div class="bg-white rounded-2xl border border-slate-200/60 p-12 text-center shadow-sm animate-pulse">
+          <div class="animate-spin rounded-full h-10 w-10 border-2 border-slate-300 border-t-slate-600 mx-auto mb-4"></div>
+          <p class="text-slate-600">Loading opportunity details...</p>
         </div>
       }
 
       @if (!isLoading() && opportunity()) {
-        <!-- Header with logo -->
-        <div class="bg-white rounded-lg border border-neutral-200 p-6 mb-6">
+        <!-- Enhanced Header with animations -->
+        <div class="bg-white rounded-2xl border border-slate-200/60 p-8 mb-8 shadow-lg hover:shadow-xl transition-all duration-500 animate-fade-in">
+          <!-- Subtle gradient header -->
+          <div class="h-1.5 bg-gradient-to-r from-slate-300 to-slate-400 rounded-t-2xl -mx-8 -mt-8 mb-6"></div>
+          
           <div class="flex items-center space-x-6 mb-6">
-            <!-- Large logo placeholder -->
-            <div class="w-24 h-24 bg-gradient-to-br from-primary-100 to-primary-200 rounded-lg flex items-center justify-center">
-              <span class="text-primary-700 font-bold text-3xl">{{ getInitials(opportunity()!.title) }}</span>
+            <!-- Enhanced logo with hover effect -->
+            <div class="w-24 h-24 bg-gradient-to-br from-slate-100 to-slate-200 rounded-xl flex items-center justify-center border border-slate-200 shadow-sm hover:scale-105 transition-transform duration-300 cursor-pointer group">
+              <span class="text-slate-600 font-bold text-3xl group-hover:text-slate-700 transition-colors duration-300">
+                {{ getInitials(opportunity()!.title) }}
+              </span>
             </div>
             
             <div class="flex-1">
-              <div class="flex items-center space-x-3 mb-2">
-                <h1 class="text-3xl font-bold text-neutral-900">{{ opportunity()!.title }}</h1>
+              <div class="flex items-center space-x-3 mb-2 animate-slide-in-left">
+                <h1 class="text-3xl font-bold text-slate-900 hover:text-slate-700 transition-colors duration-300">
+                  {{ opportunity()!.title }}
+                </h1>
                 
-                <!-- User Type Indicator -->
                 @if (canManageOpportunity()) {
-                  <span class="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-green-100 text-green-800">
+                  <span class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-slate-800 text-white shadow-sm animate-slide-in-right">
                     <lucide-icon [img]="UsersIcon" [size]="12" class="mr-1" />
                     Your Opportunity
                   </span>
                 }
               </div>
               
-              <!-- Funding Types Tags -->
-              <div class="flex items-center space-x-2 mb-4">
-                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium"
-                      [class]="getFundingTypeClasses(opportunity()!.fundingType)">
+              <!-- Enhanced tags with stagger animation -->
+              <div class="flex items-center space-x-3 mb-4 animate-stagger-in">
+                <span class="inline-flex items-center px-4 py-1.5 rounded-full text-sm font-medium bg-slate-800 text-white shadow-sm hover:shadow-md transition-shadow duration-200">
                   {{ formatFundingType(opportunity()!.fundingType) }}
                 </span>
-                @for (industry of opportunity()!.eligibilityCriteria.industries.slice(0, 5); track industry) {
-                  <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-neutral-100 text-neutral-800">
+                @for (industry of opportunity()!.eligibilityCriteria.industries.slice(0, 4); track industry; let i = $index) {
+                  <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-slate-100 text-slate-700 hover:bg-slate-200 transition-colors duration-200"
+                        [style.animation-delay.ms]="i * 100">
                     {{ formatIndustry(industry) }}
                   </span>
                 }
-                @if (opportunity()!.eligibilityCriteria.industries.length > 5) {
-                  <span class="text-sm text-neutral-500">+{{ opportunity()!.eligibilityCriteria.industries.length - 5 }} more</span>
+                @if (opportunity()!.eligibilityCriteria.industries.length > 4) {
+                  <span class="text-sm text-slate-500 animate-fade-in-delayed">
+                    +{{ opportunity()!.eligibilityCriteria.industries.length - 4 }} more
+                  </span>
                 }
               </div>
             </div>
 
-            <!-- Action Buttons -->
-            <div class="flex flex-col space-y-3">
+            <!-- Enhanced action buttons -->
+            <div class="flex flex-col space-y-3 animate-slide-in-right">
               @if (canManageOpportunity()) {
-                <ui-button variant="primary" (clicked)="manageApplications()">
+                <ui-button variant="primary" (clicked)="manageApplications()"
+                          class="bg-primary-600 hover:bg-slate-700 text-white px-6 py-3 rounded-xl font-medium shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-0.5">
                   <lucide-icon [img]="UsersIcon" [size]="16" class="mr-2" />
                   Manage Applications
                 </ui-button>
               } @else if (canApplyToOpportunity()) {
-                <ui-button variant="primary" (clicked)="applyNow()">
+                <ui-button variant="primary" (clicked)="applyNow()"
+                          class="bg-slate-800 hover:bg-slate-700 text-white px-6 py-3 rounded-xl font-medium shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-0.5">
                   Apply Now
                 </ui-button>
               } @else if (!currentUser()) {
-                <ui-button variant="outline" (clicked)="redirectToLogin()">
+                <ui-button variant="outline" (clicked)="redirectToLogin()"
+                          class="bg-white hover:bg-slate-50 text-slate-700 px-6 py-3 rounded-xl font-medium border border-slate-200 hover:border-slate-300 shadow-sm hover:shadow-md transition-all duration-300">
                   Login to Apply
                 </ui-button>
               } @else {
-                <ui-button variant="outline" [disabled]="true" title="Only SME users can apply for funding">
+                <ui-button variant="outline" [disabled]="true" title="Only SME users can apply for funding"
+                          class="bg-slate-100 text-slate-400 px-6 py-3 rounded-xl font-medium border border-slate-200 cursor-not-allowed">
                   Not Eligible
                 </ui-button>
               }
               
-              <ui-button variant="outline" (clicked)="goBack()">
-                <lucide-icon [img]="ArrowLeftIcon" [size]="16" class="mr-2" />
+              <ui-button variant="outline" (clicked)="goBack()"
+                        class="bg-white hover:bg-slate-50 text-slate-700 px-6 py-3 rounded-xl font-medium border border-slate-200 hover:border-slate-300 shadow-sm hover:shadow-md transition-all duration-300 group">
+                <lucide-icon [img]="ArrowLeftIcon" [size]="16" class="mr-2 group-hover:-translate-x-1 transition-transform duration-200" />
                 Back to Opportunities
               </ui-button>
             </div>
           </div>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <!-- Main Content -->
-          <div class="lg:col-span-2 space-y-6">
-            <!-- Investor Information -->
-            <ui-card>
-              <div class="p-6">
-                <h3 class="text-lg font-semibold text-neutral-900 mb-4">Investor</h3>
-                <div class="flex items-center space-x-3">
-                  <lucide-icon [img]="Building2Icon" [size]="20" class="text-neutral-400" />
-                  <span class="text-neutral-900 font-medium">{{ getInvestorName(opportunity()!) }}</span>
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <!-- Main Content with stagger animation -->
+          <div class="lg:col-span-2 space-y-8 animate-stagger-in">
+            
+            <!-- Enhanced cards with hover effects -->
+            <div class="bg-white rounded-2xl border border-slate-200/60 p-6 shadow-lg hover:shadow-xl transition-all duration-500 transform hover:-translate-y-1">
+              <h3 class="text-xl font-semibold text-slate-900 mb-4 flex items-center">
+                <div class="w-8 h-8 bg-slate-100 rounded-lg flex items-center justify-center mr-3">
+                  <lucide-icon [img]="Building2Icon" [size]="16" class="text-slate-600" />
                 </div>
+                Investor
+              </h3>
+              <div class="flex items-center space-x-3 pl-11">
+                <span class="text-slate-700 font-medium">{{ getInvestorName(opportunity()!) }}</span>
               </div>
-            </ui-card>
+            </div>
 
-            <!-- Amount Range -->
-            <ui-card>
-              <div class="p-6">
-                <h3 class="text-lg font-semibold text-neutral-900 mb-4">Amount range</h3>
-                <div class="flex items-center space-x-3">
-                  <lucide-icon [img]="DollarSignIcon" [size]="20" class="text-neutral-400" />
-                  <span class="text-neutral-900 font-medium">
-                    {{ opportunity()!.currency }} {{ formatAmount(opportunity()!.minInvestment) }} - {{ formatAmount(opportunity()!.maxInvestment) }}
+            <!-- Amount Range with enhanced styling -->
+            <div class="bg-white rounded-2xl border border-slate-200/60 p-6 shadow-lg hover:shadow-xl transition-all duration-500 transform hover:-translate-y-1">
+              <h3 class="text-xl font-semibold text-slate-900 mb-4 flex items-center">
+                <div class="w-8 h-8 bg-slate-100 rounded-lg flex items-center justify-center mr-3">
+                  <lucide-icon [img]="DollarSignIcon" [size]="16" class="text-slate-600" />
+                </div>
+                Amount Range
+              </h3>
+              <div class="pl-11">
+                <div class="text-2xl font-bold text-slate-900 mb-1">
+                  {{ opportunity()!.currency }} {{ formatAmount(opportunity()!.minInvestment) }} - {{ formatAmount(opportunity()!.maxInvestment) }}
+                </div>
+                <div class="text-sm text-slate-500">Investment Range</div>
+              </div>
+            </div>
+
+            <!-- About Funding with enhanced layout -->
+            <div class="bg-white rounded-2xl border border-slate-200/60 p-6 shadow-lg hover:shadow-xl transition-all duration-500 transform hover:-translate-y-1">
+              <h3 class="text-xl font-semibold text-slate-900 mb-4 flex items-center">
+                <div class="w-8 h-8 bg-slate-100 rounded-lg flex items-center justify-center mr-3">
+                  <lucide-icon [img]="FileTextIcon" [size]="16" class="text-slate-600" />
+                </div>
+                About Funding
+              </h3>
+              <div class="pl-11">
+                <p class="text-slate-700 leading-relaxed">{{ opportunity()!.description }}</p>
+              </div>
+            </div>
+
+            <!-- Investment Criteria with enhanced checkmarks -->
+            <div class="bg-white rounded-2xl border border-slate-200/60 p-6 shadow-lg hover:shadow-xl transition-all duration-500 transform hover:-translate-y-1">
+              <h3 class="text-xl font-semibold text-slate-900 mb-4">Investment Criteria</h3>
+              <p class="text-slate-600 mb-6 leading-relaxed">
+                Only businesses that meet the criteria set below must apply. Your application will not be considered should you fail to meet one of these criteria.
+              </p>
+              
+              <div class="space-y-4">
+                @if (opportunity()!.eligibilityCriteria.minYearsOperation) {
+                  <div class="flex items-start space-x-4 p-4 bg-slate-50 rounded-xl border border-slate-200/60 hover:bg-slate-100/50 transition-colors duration-300">
+                    <div class="w-6 h-6 bg-slate-600 rounded-full flex items-center justify-center mt-0.5">
+                      <lucide-icon [img]="CheckCircleIcon" [size]="14" class="text-white" />
+                    </div>
+                    <span class="text-slate-700 leading-relaxed">
+                      Minimum {{ opportunity()!.eligibilityCriteria.minYearsOperation }} years of operational track record or a robust feasibility study for startups.
+                    </span>
+                  </div>
+                }
+                
+                @if (opportunity()!.eligibilityCriteria.businessStages.length > 0) {
+                  <div class="flex items-start space-x-4 p-4 bg-slate-50 rounded-xl border border-slate-200/60 hover:bg-slate-100/50 transition-colors duration-300">
+                    <div class="w-6 h-6 bg-slate-600 rounded-full flex items-center justify-center mt-0.5">
+                      <lucide-icon [img]="CheckCircleIcon" [size]="14" class="text-white" />
+                    </div>
+                    <span class="text-slate-700 leading-relaxed">
+                      The proposed project must align with {{ formatBusinessStages(opportunity()!.eligibilityCriteria.businessStages) }} business stages.
+                    </span>
+                  </div>
+                }
+                
+                @if (opportunity()!.eligibilityCriteria.minRevenue) {
+                  <div class="flex items-start space-x-4 p-4 bg-slate-50 rounded-xl border border-slate-200/60 hover:bg-slate-100/50 transition-colors duration-300">
+                    <div class="w-6 h-6 bg-slate-600 rounded-full flex items-center justify-center mt-0.5">
+                      <lucide-icon [img]="CheckCircleIcon" [size]="14" class="text-white" />
+                    </div>
+                    <span class="text-slate-700 leading-relaxed">
+                      Minimum annual revenue of {{ opportunity()!.currency }} {{ formatFullAmount(opportunity()!.eligibilityCriteria.minRevenue!) }}.
+                    </span>
+                  </div>
+                }
+                
+                <div class="flex items-start space-x-4 p-4 bg-slate-50 rounded-xl border border-slate-200/60 hover:bg-slate-100/50 transition-colors duration-300">
+                  <div class="w-6 h-6 bg-slate-600 rounded-full flex items-center justify-center mt-0.5">
+                    <lucide-icon [img]="CheckCircleIcon" [size]="14" class="text-white" />
+                  </div>
+                  <span class="text-slate-700 leading-relaxed">
+                    Submission of recent financial statements, tax compliance certificates, and a detailed budget for the proposed project.
                   </span>
                 </div>
-              </div>
-            </ui-card>
-
-            <!-- About Funding -->
-            <ui-card>
-              <div class="p-6">
-                <h3 class="text-lg font-semibold text-neutral-900 mb-4">About Funding</h3>
-                <div class="flex items-start space-x-3">
-                  <lucide-icon [img]="FileTextIcon" [size]="20" class="text-neutral-400 mt-1" />
-                  <p class="text-neutral-700 leading-relaxed">{{ opportunity()!.description }}</p>
-                </div>
-              </div>
-            </ui-card>
-
-            <!-- Investment Criteria -->
-            <ui-card>
-              <div class="p-6">
-                <h3 class="text-lg font-semibold text-neutral-900 mb-4">Investment Criteria</h3>
-                <p class="text-neutral-600 mb-4">
-                  Only businesses that meet the criteria set below must apply. Your application will not be considered should you fail to meet one of these criterias.
-                </p>
                 
-                <div class="space-y-3">
-                  @if (opportunity()!.eligibilityCriteria.minYearsOperation) {
-                    <div class="flex items-start space-x-3">
-                      <lucide-icon [img]="CheckCircleIcon" [size]="16" class="text-green-500 mt-1" />
-                      <span class="text-neutral-700">
-                        Minimum {{ opportunity()!.eligibilityCriteria.minYearsOperation }} years of operational track record or a robust feasibility study for startups.
-                      </span>
+                @if (opportunity()!.eligibilityCriteria.requiresCollateral) {
+                  <div class="flex items-start space-x-4 p-4 bg-slate-50 rounded-xl border border-slate-200/60 hover:bg-slate-100/50 transition-colors duration-300">
+                    <div class="w-6 h-6 bg-slate-600 rounded-full flex items-center justify-center mt-0.5">
+                      <lucide-icon [img]="CheckCircleIcon" [size]="14" class="text-white" />
                     </div>
-                  }
-                  
-                  @if (opportunity()!.eligibilityCriteria.businessStages.length > 0) {
-                    <div class="flex items-start space-x-3">
-                      <lucide-icon [img]="CheckCircleIcon" [size]="16" class="text-green-500 mt-1" />
-                      <span class="text-neutral-700">
-                        The proposed project must align with {{ formatBusinessStages(opportunity()!.eligibilityCriteria.businessStages) }} business stages.
-                      </span>
-                    </div>
-                  }
-                  
-                  @if (opportunity()!.eligibilityCriteria.minRevenue) {
-                    <div class="flex items-start space-x-3">
-                      <lucide-icon [img]="CheckCircleIcon" [size]="16" class="text-green-500 mt-1" />
-                      <span class="text-neutral-700">
-                        Minimum annual revenue of {{ opportunity()!.currency }} {{ formatFullAmount(opportunity()!.eligibilityCriteria.minRevenue!) }}.
-                      </span>
-                    </div>
-                  }
-                  
-                  <div class="flex items-start space-x-3">
-                    <lucide-icon [img]="CheckCircleIcon" [size]="16" class="text-green-500 mt-1" />
-                    <span class="text-neutral-700">
-                      Submission of recent financial statements, tax compliance certificates, and a detailed budget for the proposed project.
+                    <span class="text-slate-700 leading-relaxed">
+                      Collateral or security requirements must be met.
                     </span>
                   </div>
-                  
-                  <div class="flex items-start space-x-3">
-                    <lucide-icon [img]="CheckCircleIcon" [size]="16" class="text-green-500 mt-1" />
-                    <span class="text-neutral-700">
-                      Clear articulation of how the project benefits the community or environment, with measurable outcomes.
-                    </span>
-                  </div>
-                  
-                  <div class="flex items-start space-x-3">
-                    <lucide-icon [img]="CheckCircleIcon" [size]="16" class="text-green-500 mt-1" />
-                    <span class="text-neutral-700">
-                      Transparent ownership structure and sound governance practices.
-                    </span>
-                  </div>
-                  
-                  @if (opportunity()!.eligibilityCriteria.requiresCollateral) {
-                    <div class="flex items-start space-x-3">
-                      <lucide-icon [img]="CheckCircleIcon" [size]="16" class="text-green-500 mt-1" />
-                      <span class="text-neutral-700">
-                        Collateral or security requirements must be met.
-                      </span>
-                    </div>
-                  }
-                </div>
+                }
               </div>
-            </ui-card>
+            </div>
 
-            <!-- Sectors Funded -->
-            <ui-card>
-              <div class="p-6">
-                <h3 class="text-lg font-semibold text-neutral-900 mb-4">Sectors Funded</h3>
-                <p class="text-neutral-600 mb-4">Below are the sectors/industries that we support.</p>
-                
-                <div class="space-y-3">
-                  @for (industry of opportunity()!.eligibilityCriteria.industries; track industry) {
-                    <div class="flex items-center space-x-3">
-                      <lucide-icon [img]="CheckCircleIcon" [size]="16" class="text-green-500" />
-                      <span class="text-neutral-700">{{ formatIndustryDescription(industry) }}</span>
+            <!-- Sectors with enhanced styling -->
+            <div class="bg-white rounded-2xl border border-slate-200/60 p-6 shadow-lg hover:shadow-xl transition-all duration-500 transform hover:-translate-y-1">
+              <h3 class="text-xl font-semibold text-slate-900 mb-4">Sectors Funded</h3>
+              <p class="text-slate-600 mb-6">Below are the sectors/industries that we support.</p>
+              
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                @for (industry of opportunity()!.eligibilityCriteria.industries; track industry; let i = $index) {
+                  <div class="flex items-center space-x-3 p-3 bg-slate-50 rounded-lg border border-slate-200/60 hover:bg-slate-100 transition-all duration-200"
+                       [style.animation-delay.ms]="i * 50">
+                    <div class="w-5 h-5 bg-slate-600 rounded-full flex items-center justify-center">
+                      <lucide-icon [img]="CheckCircleIcon" [size]="12" class="text-white" />
                     </div>
-                  }
-                </div>
-              </div>
-            </ui-card>
-
-            <!-- Application Process -->
-            @if (opportunity()!.applicationProcess.length > 0) {
-              <ui-card>
-                <div class="p-6">
-                  <h3 class="text-lg font-semibold text-neutral-900 mb-4">Application Process</h3>
-                  <p class="text-neutral-600 mb-4">Our application process consists of the following steps:</p>
-                  
-                  <div class="space-y-4">
-                    @for (step of opportunity()!.applicationProcess; track step.step) {
-                      <div class="border border-neutral-200 rounded-lg p-4">
-                        <div class="flex items-start space-x-3">
-                          <div class="w-8 h-8 bg-primary-100 rounded-full flex items-center justify-center flex-shrink-0">
-                            <span class="text-primary-700 font-medium text-sm">{{ step.step }}</span>
-                          </div>
-                          <div class="flex-1">
-                            <h4 class="font-medium text-neutral-900 mb-1">{{ step.name }}</h4>
-                            <p class="text-neutral-600 text-sm mb-2">{{ step.description }}</p>
-                            
-                            @if (step.requiredDocuments.length > 0) {
-                              <div class="mb-2">
-                                <span class="text-xs font-medium text-neutral-700">Required Documents:</span>
-                                <ul class="mt-1 space-y-1">
-                                  @for (doc of step.requiredDocuments; track doc) {
-                                    <li class="text-xs text-neutral-600 flex items-center space-x-2">
-                                      <div class="w-1 h-1 bg-neutral-400 rounded-full"></div>
-                                      <span>{{ doc }}</span>
-                                    </li>
-                                  }
-                                </ul>
-                              </div>
-                            }
-                            
-                            <div class="flex items-center space-x-4 text-xs text-neutral-500">
-                              <div class="flex items-center space-x-1">
-                                <lucide-icon [img]="CalendarIcon" [size]="12" />
-                                <span>{{ step.timeframe }} days</span>
-                              </div>
-                              @if (step.isOptional) {
-                                <span class="px-2 py-1 bg-blue-100 text-blue-700 rounded">Optional</span>
-                              } @else {
-                                <span class="px-2 py-1 bg-red-100 text-red-700 rounded">Required</span>
-                              }
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    }
+                    <span class="text-slate-700 font-medium">{{ formatIndustryDescription(industry) }}</span>
                   </div>
-                </div>
-              </ui-card>
-            }
+                }
+              </div>
+            </div>
           </div>
 
-          <!-- Sidebar -->
-          <div class="space-y-6">
-            <!-- Key Details -->
-            <ui-card>
-              <div class="p-6">
-                <h3 class="text-lg font-semibold text-neutral-900 mb-4">Key Details</h3>
+          <!-- Enhanced Sidebar -->
+          <div class="space-y-6 animate-slide-in-right">
+            <!-- Key Details with enhanced styling -->
+            <div class="bg-white rounded-2xl border border-slate-200/60 p-6 shadow-lg hover:shadow-xl transition-all duration-500 sticky top-6">
+              <h3 class="text-xl font-semibold text-slate-900 mb-6">Key Details</h3>
+              
+              <div class="space-y-5">
+                <div class="pb-4 border-b border-slate-100">
+                  <div class="text-sm font-medium text-slate-500 mb-2">Funding Type</div>
+                  <span class="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium bg-slate-800 text-white">
+                    {{ formatFundingType(opportunity()!.fundingType) }}
+                  </span>
+                </div>
+
+                <div class="pb-4 border-b border-slate-100">
+                  <div class="text-sm font-medium text-slate-500 mb-2">Typical Investment</div>
+                  <div class="text-lg font-semibold text-slate-900">
+                    {{ opportunity()!.currency }} {{ formatFullAmount(opportunity()!.offerAmount) }}
+                  </div>
+                </div>
+
+                @if (opportunity()!.interestRate) {
+                  <div class="pb-4 border-b border-slate-100">
+                    <div class="text-sm font-medium text-slate-500 mb-2">Interest Rate</div>
+                    <div class="text-lg font-semibold text-slate-900">{{ opportunity()!.interestRate }}% per annum</div>
+                  </div>
+                }
+
+                <div class="pb-4 border-b border-slate-100">
+                  <div class="text-sm font-medium text-slate-500 mb-2">Decision Timeframe</div>
+                  <div class="text-lg font-semibold text-slate-900">{{ opportunity()!.decisionTimeframe }} days</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Funding Progress with enhanced progress bar -->
+            @if (opportunity()!.totalAvailable > 0) {
+              <div class="bg-white rounded-2xl border border-slate-200/60 p-6 shadow-lg hover:shadow-xl transition-all duration-500">
+                <h3 class="text-xl font-semibold text-slate-900 mb-6">Funding Progress</h3>
                 
                 <div class="space-y-4">
-                  <div>
-                    <div class="text-sm font-medium text-neutral-700 mb-1">Funding Type</div>
-                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
-                          [class]="getFundingTypeClasses(opportunity()!.fundingType)">
-                      {{ formatFundingType(opportunity()!.fundingType) }}
+                  <div class="flex justify-between items-center text-sm">
+                    <span class="text-slate-600">Deployed</span>
+                    <span class="font-semibold text-slate-900">{{ formatFullAmount(opportunity()!.amountDeployed) }}</span>
+                  </div>
+                  
+                  <div class="relative h-3 bg-slate-200 rounded-full overflow-hidden">
+                    <div 
+                      class="absolute inset-y-0 left-0 bg-slate-600 rounded-full transition-all duration-1000 ease-out"
+                      [style.width.%]="getProgressPercentage()"
+                    >
+                      <div class="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent rounded-full"></div>
+                    </div>
+                  </div>
+                  
+                  <div class="flex justify-between items-center text-sm">
+                    <span class="text-slate-600">Total Available</span>
+                    <span class="font-semibold text-slate-900">{{ formatFullAmount(opportunity()!.totalAvailable) }}</span>
+                  </div>
+                  
+                  <div class="text-center">
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-slate-100 text-slate-700">
+                      {{ getProgressPercentage() }}% Complete
                     </span>
                   </div>
-
-                  <div>
-                    <div class="text-sm font-medium text-neutral-700 mb-1">Typical Investment</div>
-                    <div class="text-neutral-900">{{ opportunity()!.currency }} {{ formatFullAmount(opportunity()!.offerAmount) }}</div>
-                  </div>
-
-                  @if (opportunity()!.interestRate) {
-                    <div>
-                      <div class="text-sm font-medium text-neutral-700 mb-1">Interest Rate</div>
-                      <div class="text-neutral-900">{{ opportunity()!.interestRate }}% per annum</div>
-                    </div>
-                  }
-
-                  @if (opportunity()!.equityOffered) {
-                    <div>
-                      <div class="text-sm font-medium text-neutral-700 mb-1">Equity Offered</div>
-                      <div class="text-neutral-900">{{ opportunity()!.equityOffered }}%</div>
-                    </div>
-                  }
-
-                  @if (opportunity()!.expectedReturns) {
-                    <div>
-                      <div class="text-sm font-medium text-neutral-700 mb-1">Expected Returns</div>
-                      <div class="text-neutral-900">{{ opportunity()!.expectedReturns }}% IRR</div>
-                    </div>
-                  }
-
-                  @if (opportunity()!.investmentHorizon) {
-                    <div>
-                      <div class="text-sm font-medium text-neutral-700 mb-1">Investment Horizon</div>
-                      <div class="text-neutral-900">{{ opportunity()!.investmentHorizon }} years</div>
-                    </div>
-                  }
-
-                  <div>
-                    <div class="text-sm font-medium text-neutral-700 mb-1">Decision Timeframe</div>
-                    <div class="text-neutral-900">{{ opportunity()!.decisionTimeframe }} days</div>
-                  </div>
-
-                  @if (opportunity()!.applicationDeadline) {
-                    <div>
-                      <div class="text-sm font-medium text-neutral-700 mb-1">Application Deadline</div>
-                      <div class="text-neutral-900">{{ formatDate(opportunity()!.applicationDeadline!) }}</div>
-                    </div>
-                  }
                 </div>
               </div>
-            </ui-card>
-
-            <!-- Geographic Focus -->
-            @if (hasGeographicRestrictions()) {
-              <ui-card>
-                <div class="p-6">
-                  <h3 class="text-lg font-semibold text-neutral-900 mb-4">Geographic Focus</h3>
-                  <div class="space-y-2">
-                    @for (location of getGeographicRestrictions(); track location) {
-                      <div class="flex items-center space-x-2">
-                        <lucide-icon [img]="MapPinIcon" [size]="14" class="text-neutral-400" />
-                        <span class="text-neutral-700 text-sm">{{ formatLocation(location) }}</span>
-                      </div>
-                    }
-                  </div>
-                </div>
-              </ui-card>
             }
-
-            <!-- Revenue Range -->
-            @if (opportunity()!.eligibilityCriteria.minRevenue || opportunity()!.eligibilityCriteria.maxRevenue) {
-              <ui-card>
-                <div class="p-6">
-                  <h3 class="text-lg font-semibold text-neutral-900 mb-4">Revenue Requirements</h3>
-                  <div class="space-y-2">
-                    @if (opportunity()!.eligibilityCriteria.minRevenue) {
-                      <div>
-                        <div class="text-sm font-medium text-neutral-700">Minimum Revenue</div>
-                        <div class="text-neutral-900">{{ opportunity()!.currency }} {{ formatFullAmount(opportunity()!.eligibilityCriteria.minRevenue!) }}</div>
-                      </div>
-                    }
-                    @if (opportunity()!.eligibilityCriteria.maxRevenue) {
-                      <div>
-                        <div class="text-sm font-medium text-neutral-700">Maximum Revenue</div>
-                        <div class="text-neutral-900">{{ opportunity()!.currency }} {{ formatFullAmount(opportunity()!.eligibilityCriteria.maxRevenue!) }}</div>
-                      </div>
-                    }
-                  </div>
-                </div>
-              </ui-card>
-            }
-
-            <!-- Funding Progress -->
-            @if (opportunity()!.totalAvailable > 0) {
-              <ui-card>
-                <div class="p-6">
-                  <h3 class="text-lg font-semibold text-neutral-900 mb-4">Funding Progress</h3>
-                  
-                  <div class="space-y-3">
-                    <div class="flex justify-between text-sm">
-                      <span class="text-neutral-600">Deployed</span>
-                      <span class="font-medium">{{ formatFullAmount(opportunity()!.amountDeployed) }}</span>
-                    </div>
-                    
-                    <div class="w-full bg-neutral-200 rounded-full h-2">
-                      <div 
-                        class="bg-primary-500 h-2 rounded-full transition-all duration-300"
-                        [style.width.%]="getProgressPercentage()"
-                      ></div>
-                    </div>
-                    
-                    <div class="flex justify-between text-sm">
-                      <span class="text-neutral-600">Total Available</span>
-                      <span class="font-medium">{{ formatFullAmount(opportunity()!.totalAvailable) }}</span>
-                    </div>
-                  </div>
-                </div>
-              </ui-card>
-            }
-
-            <!-- Application Stats -->
-            <ui-card>
-              <div class="p-6">
-                <h3 class="text-lg font-semibold text-neutral-900 mb-4">Application Statistics</h3>
-                
-                <div class="space-y-3">
-                  <div class="flex justify-between">
-                    <span class="text-neutral-600 text-sm">Current Applications</span>
-                    <span class="font-medium">{{ opportunity()!.currentApplications }}</span>
-                  </div>
-                  
-                  @if (opportunity()!.maxApplications) {
-                    <div class="flex justify-between">
-                      <span class="text-neutral-600 text-sm">Maximum Applications</span>
-                      <span class="font-medium">{{ opportunity()!.maxApplications }}</span>
-                    </div>
-                  }
-                  
-                  <div class="flex justify-between">
-                    <span class="text-neutral-600 text-sm">Total Views</span>
-                    <span class="font-medium">{{ opportunity()!.viewCount }}</span>
-                  </div>
-                  
-                  @if (opportunity()!.conversionRate) {
-                    <div class="flex justify-between">
-                      <span class="text-neutral-600 text-sm">Conversion Rate</span>
-                      <span class="font-medium">{{ opportunity()!.conversionRate }}%</span>
-                    </div>
-                  }
-                </div>
-              </div>
-            </ui-card>
           </div>
         </div>
       }
 
       @if (!isLoading() && !opportunity()) {
-        <div class="bg-white rounded-lg border border-neutral-200 p-12 text-center">
-          <h3 class="text-lg font-medium text-neutral-900 mb-2">Opportunity not found</h3>
-          <p class="text-neutral-600 mb-4">The funding opportunity you're looking for doesn't exist or has been removed.</p>
-          <ui-button variant="primary" (clicked)="goBack()">
+        <div class="bg-white rounded-2xl border border-slate-200/60 p-12 text-center shadow-lg animate-fade-in">
+          <div class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <lucide-icon [img]="EyeIcon" [size]="24" class="text-slate-400" />
+          </div>
+          <h3 class="text-xl font-semibold text-slate-900 mb-2">Opportunity not found</h3>
+          <p class="text-slate-600 mb-6">The funding opportunity you're looking for doesn't exist or has been removed.</p>
+          <ui-button variant="primary" (clicked)="goBack()"
+                    class="bg-slate-800 hover:bg-slate-700 text-white px-6 py-3 rounded-xl font-medium shadow-lg hover:shadow-xl transition-all duration-300">
             Back to Opportunities
           </ui-button>
         </div>
@@ -437,3 +307,50 @@
     </main>
   </div>
 </div>
+
+<style>
+  @keyframes fade-in {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes slide-in-left {
+    from { opacity: 0; transform: translateX(-30px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+
+  @keyframes slide-in-right {
+    from { opacity: 0; transform: translateX(30px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+
+  @keyframes stagger-in {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .animate-fade-in {
+    animation: fade-in 0.6s ease-out;
+  }
+
+  .animate-slide-in-left {
+    animation: slide-in-left 0.6s ease-out;
+  }
+
+  .animate-slide-in-right {
+    animation: slide-in-right 0.6s ease-out;
+  }
+
+  .animate-stagger-in > * {
+    animation: stagger-in 0.6s ease-out;
+  }
+
+  .animate-stagger-in > *:nth-child(2) { animation-delay: 0.1s; }
+  .animate-stagger-in > *:nth-child(3) { animation-delay: 0.2s; }
+  .animate-stagger-in > *:nth-child(4) { animation-delay: 0.3s; }
+  .animate-stagger-in > *:nth-child(5) { animation-delay: 0.4s; }
+
+  .animate-fade-in-delayed {
+    animation: fade-in 0.6s ease-out 0.3s both;
+  }
+</style>

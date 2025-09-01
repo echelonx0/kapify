@@ -10,8 +10,8 @@ export { UiInputComponent } from './ui-input.component';
 export { UiStatusBadgeComponent } from './ui-status-badge.component';
 export { UiTooltipComponent } from './ui-tooltip.component';
 export { UiProgressStepComponent } from './ui-progress-step.component';
-export { SidebarNavComponent } from './sidebar-nav.component';
-export { DashboardHeaderComponent } from './dashboard-header.component';
+export { SidebarNavComponent } from './sidenav/sidebar-nav.component';
+export { DashboardHeaderComponent } from './header/dashboard-header.component';
 
 
 // // Usage example in a component:

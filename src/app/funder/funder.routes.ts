@@ -68,7 +68,7 @@ export const funderRoutes: Routes = [
       {
         path: 'opportunities/:opportunityId/applications',
         loadComponent: () =>
-          import('./components/application-management.component').then(m => m.ApplicationManagementComponent),
+          import('./components/applications-management/application-management.component').then(m => m.ApplicationManagementComponent),
         title: 'Manage Applications - Kapify'
       }
     ]

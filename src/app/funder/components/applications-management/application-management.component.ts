@@ -21,12 +21,12 @@ import {
   Calendar
 } from 'lucide-angular';
 
-import { UiButtonComponent, UiCardComponent } from '../../shared/components';
-import { SidebarNavComponent } from '../../shared/components/sidebar-nav.component';
-import { AIAssistantModalComponent } from '../../ai/ai-assistant-modal.component'; 
-import { AuthService } from '../../auth/production.auth.service';
-import { SMEOpportunitiesService } from '../../funding/services/opportunities.service';
-import { FundingOpportunity } from '../../shared/models/funder.models';
+import { UiButtonComponent, UiCardComponent } from '../../../shared/components';
+import { SidebarNavComponent } from '../../../shared/components/sidenav/sidebar-nav.component';
+import { AIAssistantModalComponent } from '../../../ai/ai-assistant-modal.component'; 
+import { AuthService } from '../../../auth/production.auth.service';
+import { SMEOpportunitiesService } from '../../../funding/services/opportunities.service';
+import { FundingOpportunity } from '../../../shared/models/funder.models';
 import { ApplicationManagementService, ApplicationStats, FundingApplication } from 'src/app/SMEs/services/application-management.service';
  
 type TabId = 'overview' | 'all' | 'review-queue' | 'completed';

@@ -2,8 +2,8 @@
 import { Component, computed, signal, OnInit, OnDestroy } from '@angular/core';
 import { Router, RouterOutlet, NavigationEnd } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { SidebarNavComponent } from '../shared/components/sidebar-nav.component';
-import { DashboardHeaderComponent } from '../shared/components/dashboard-header.component';
+import { SidebarNavComponent } from '../shared/components/sidenav/sidebar-nav.component';
+import { DashboardHeaderComponent } from '../shared/components/header/dashboard-header.component';
 import { filter, takeUntil } from 'rxjs/operators';
 import { Subject } from 'rxjs';
 

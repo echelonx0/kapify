@@ -3,9 +3,10 @@ import { Component, computed, signal, inject, OnInit } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { LucideAngularModule, Home, User, FileText, DollarSign, Settings, LogOut, Building, ChevronDown, Bell } from 'lucide-angular';
+import { AuthService } from 'src/app/auth/production.auth.service';
+import { ProfileManagementService } from '../../services/profile-management.service';
  
-import { ProfileManagementService } from '../services/profile-management.service';
-import { AuthService } from '../../auth/production.auth.service';
+ 
 
 interface NavItem {
   label: string;
@@ -163,6 +164,10 @@ export class SidebarNavComponent implements OnInit {
   currentUser = computed(() => this.profileService.currentUser());
   userDisplayName = computed(() => this.profileService.userDisplayName());
 
+ isAdminUser = computed(() => {
+    const user = this.currentUser();
+    return user?.email === 'zivaigwe@gmail.com';
+  });
   // Navigation items with potential badges
   private navItems: NavItem[] = [
     { label: 'Home', icon: Home, route: '/dashboard/home', userTypes: ['sme', 'funder'] },
@@ -171,17 +176,25 @@ export class SidebarNavComponent implements OnInit {
     { label: 'Funding Opportunities', icon: DollarSign, route: '/funding', userTypes: ['sme'] },
     { label: 'Manage', icon: Building, route: '/dashboard/funder-dashboard', userTypes: ['funder'] },
    { label: 'Applications', icon: FileText, route: '/applications', userTypes: ['sme', 'funder'], badge: 2 },  
+   { label: 'Admin Console', icon: Settings, route: '/administrator/dashboard', userTypes: ['sme', 'funder'] }
   ];
 
-  visibleNavItems = computed(() => {
-    const user = this.authService.user();
-    const userType = user?.userType || 'sme';
-    const mappedUserType = this.mapUserTypeForNavigation(userType);
+visibleNavItems = computed(() => {
+  const user = this.authService.user();
+  const userType = user?.userType || 'sme';
+  const mappedUserType = this.mapUserTypeForNavigation(userType);
+  const isAdmin = this.isAdminUser();
+  
+  return this.navItems.filter(item => {
+    // Show admin route only for admin users
+    if (item.route === '/administrator/dashboard') {
+      return isAdmin;
+    }
     
-    return this.navItems.filter(item => 
-      item.userTypes.includes(mappedUserType)
-    );
+    // Show other routes based on user type
+    return item.userTypes.includes(mappedUserType);
   });
+});
 
   ngOnInit() {
     // Load profile data if not already loaded

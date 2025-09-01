@@ -43,7 +43,7 @@ interface UploadStatus {
   selector: 'app-documents-upload',
   standalone: true,
   imports: [UiCardComponent, UiButtonComponent, LucideAngularModule, CommonModule],
-  templateUrl: './documents-upload.component.html'
+  templateUrl: './supporting-documents-upload.component.html'
 })
 export class SupportingDocumentsUploadComponent implements OnInit, OnDestroy {
   private fundingApplicationService = inject(FundingProfileSetupService);
