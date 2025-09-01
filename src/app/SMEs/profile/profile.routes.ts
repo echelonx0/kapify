@@ -37,7 +37,7 @@ export const profileRoutes: Routes = [
           },
           { 
             path: 'documents', 
-            loadComponent: () => import('./steps/documents-upload/documents-upload.component').then(c => c.DocumentsUploadComponent),
+            loadComponent: () => import('./steps/documents-upload/supporting-documents-upload.component').then(c => c.SupportingDocumentsUploadComponent),
             title: 'Supporting Documents - Funding Application'
           },
           { 

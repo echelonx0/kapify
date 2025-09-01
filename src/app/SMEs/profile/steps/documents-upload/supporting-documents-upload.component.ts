@@ -1,6 +1,5 @@
- 
+// src/app/SMEs/profile/steps/documents-upload/supporting-documents-upload.component.ts
 
-// src/app/profile/steps/documents-upload/documents-upload.component.ts
 import { Component, signal, OnInit, OnDestroy, inject, HostListener } from '@angular/core'; 
 import { LucideAngularModule, Upload, FileText, CheckCircle, X, Download, Trash2, ChevronDown, ChevronUp, Save, Clock, AlertCircle, RefreshCw, Eye, Plus } from 'lucide-angular';
 import { interval, Subscription } from 'rxjs';
@@ -46,7 +45,7 @@ interface UploadStatus {
   imports: [UiCardComponent, UiButtonComponent, LucideAngularModule, CommonModule],
   templateUrl: './documents-upload.component.html'
 })
-export class DocumentsUploadComponent implements OnInit, OnDestroy {
+export class SupportingDocumentsUploadComponent implements OnInit, OnDestroy {
   private fundingApplicationService = inject(FundingProfileSetupService);
   private supabaseDocumentService = inject(SupabaseDocumentService);
 
