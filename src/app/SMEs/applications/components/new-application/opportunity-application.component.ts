@@ -7,8 +7,7 @@ import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
  
 import { LucideAngularModule, ArrowLeft, Building, DollarSign, FileText, CheckCircle, AlertCircle, Clock, Eye, TrendingUp, Users } from 'lucide-angular';
-import { Location } from '@angular/common';
-import { AIApplicationAnalysisComponent } from 'src/app/ai/ai-analysis/ai-application-analysis.component';
+import { Location } from '@angular/common'; 
 import { SMEOpportunitiesService } from 'src/app/funding/services/opportunities.service';
 import { UiButtonComponent, UiCardComponent } from 'src/app/shared/components';
 import { Application } from 'src/app/shared/models/application.models';
@@ -638,39 +637,42 @@ export class OpportunityApplicationFormComponent implements OnInit {
     }
   }
 
-  async submitApplication() {
-    if (!this.selectedOpportunity() || !this.isApplicationDetailsValid() || !this.draftApplication()) {
-      return;
-    }
+// Update your submitApplication method in your component
 
-    this.isSubmitting.set(true);
-    this.error.set(null);
-
-    try {
-      await this.saveDraft();
-      
-      if (this.draftApplication()) {
-        const submittedApplication = await this.applicationService.submitApplication(
-          this.draftApplication()!.id
-        ).toPromise();
-        
-        if (submittedApplication) {
-          this.router.navigate(['/applications/submitted'], {
-            queryParams: { 
-              opportunityId: this.selectedOpportunity()!.id,
-              applicationId: submittedApplication.id
-            }
-          });
-        }
-      }
-
-    } catch (error) {
-      this.error.set('Failed to submit application');
-      console.error('Submit application error:', error);
-    } finally {
-      this.isSubmitting.set(false);
-    }
+async submitApplication() {
+  if (!this.selectedOpportunity() || !this.isApplicationDetailsValid() || !this.draftApplication()) {
+    return;
   }
+
+  this.isSubmitting.set(true);
+  this.error.set(null);
+
+  try {
+    await this.saveDraft();
+    
+    if (this.draftApplication()) {
+      // Use the DatabaseApplicationService to submit
+      const submittedApplication = await this.applicationService
+        .submitApplication(this.draftApplication()!.id)
+        .toPromise();
+      
+      if (submittedApplication) {
+        this.router.navigate(['/applications/submitted'], {
+          queryParams: { 
+            opportunityId: this.selectedOpportunity()!.id,
+            applicationId: submittedApplication.id
+          }
+        });
+      }
+    }
+
+  } catch (error) {
+    this.error.set('Failed to submit application');
+    console.error('Submit application error:', error);
+  } finally {
+    this.isSubmitting.set(false);
+  }
+}
 
   goBack() {
     this.location.back();

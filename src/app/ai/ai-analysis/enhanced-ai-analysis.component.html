@@ -1,211 +1,276 @@
 <!-- src/app/shared/components/enhanced-ai-analysis/enhanced-ai-analysis.component.html -->
-<ui-card class="bg-gradient-to-br from-blue-50 to-slate-50 border-blue-200">
-  <div class="space-y-6">
-
-    @if (!showBusinessRules() && !hasError()) {
-      <!-- Pre-Analysis State -->
-      <div class="text-center py-6">
-        <div class="w-16 h-16 bg-gradient-to-r from-blue-500 to-slate-600 rounded-full mx-auto mb-4 flex items-center justify-center">
+<div class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
+  
+  @if (!showBusinessRules() && !hasError()) {
+    <!-- Pre-Analysis State -->
+    <div class="px-8 py-10">
+      <div class="text-center mb-8">
+        <div class="w-16 h-16 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-2xl mx-auto mb-6 flex items-center justify-center shadow-lg">
           <lucide-icon [img]="SparklesIcon" [size]="24" class="text-white" />
         </div>
-        <h4 class="text-lg font-medium text-neutral-900 mb-2">{{ getAnalysisTitle() }}</h4>
-        <p class="text-neutral-600 mb-6 max-w-md mx-auto">
+        <h3 class="text-2xl font-semibold text-gray-900 mb-3">{{ getAnalysisTitle() }}</h3>
+        <p class="text-gray-600 text-lg max-w-2xl mx-auto leading-relaxed">
           {{ getAnalysisDescription() }}
         </p>
+      </div>
+
+      <!-- Analysis Capabilities Grid -->
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+        <div class="text-center">
+          <div class="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center mx-auto mb-3">
+            <lucide-icon [img]="TargetIcon" [size]="20" class="text-blue-600" />
+          </div>
+          <h4 class="font-semibold text-gray-900 mb-1">Instant Analysis</h4>
+          <p class="text-sm text-gray-600">Real-time compatibility assessment</p>
+        </div>
         
-        <div class="grid grid-cols-2 gap-4 mb-6 text-sm">
-          <div class="bg-white/60 rounded-lg p-3">
-            <div class="flex items-center justify-center mb-2">
-              <lucide-icon [img]="TargetIcon" [size]="16" class="text-blue-600" />
-            </div>
-            <p class="font-medium">Instant Analysis</p>
-            <p class="text-neutral-600">Business rules check</p>
+        <div class="text-center">
+          <div class="w-12 h-12 bg-green-50 rounded-xl flex items-center justify-center mx-auto mb-3">
+            <lucide-icon [img]="CheckCircleIcon" [size]="20" class="text-green-600" />
           </div>
-          <div class="bg-white/60 rounded-lg p-3">
-            <div class="flex items-center justify-center mb-2">
-              <lucide-icon [img]="CheckCircleIcon" [size]="16" class="text-green-600" />
-            </div>
-            <p class="font-medium">Eligibility Review</p>
-            <p class="text-neutral-600">Requirements match</p>
+          <h4 class="font-semibold text-gray-900 mb-1">Eligibility Review</h4>
+          <p class="text-sm text-gray-600">Automated requirements validation</p>
+        </div>
+        
+        <div class="text-center">
+          <div class="w-12 h-12 bg-purple-50 rounded-xl flex items-center justify-center mx-auto mb-3">
+            <lucide-icon [img]="FileTextIcon" [size]="20" class="text-purple-600" />
           </div>
-          <div class="bg-white/60 rounded-lg p-3">
-            <div class="flex items-center justify-center mb-2">
-              <lucide-icon [img]="FileTextIcon" [size]="16" class="text-slate-600" />
-            </div>
-            <p class="font-medium">Readiness Score</p>
-            <p class="text-neutral-600">Profile completeness</p>
+          <h4 class="font-semibold text-gray-900 mb-1">Readiness Score</h4>
+          <p class="text-sm text-gray-600">Comprehensive profile evaluation</p>
+        </div>
+        
+        <div class="text-center">
+          <div class="w-12 h-12 bg-amber-50 rounded-xl flex items-center justify-center mx-auto mb-3">
+            <lucide-icon [img]="BotIcon" [size]="20" class="text-amber-600" />
           </div>
-          <div class="bg-white/60 rounded-lg p-3">
-            <div class="flex items-center justify-center mb-2">
-              <lucide-icon [img]="MailIcon" [size]="16" class="text-purple-600" />
+          <h4 class="font-semibold text-gray-900 mb-1">AI Deep Dive</h4>
+          <p class="text-sm text-gray-600">Advanced strategic insights</p>
+        </div>
+      </div>
+
+      <!-- Validation Issues (if any) -->
+      @if (!canAnalyze() && validationIssues().length > 0) {
+        <div class="bg-amber-50 border border-amber-200 rounded-lg p-6 mb-8">
+          <div class="flex items-start space-x-3">
+            <div class="flex-shrink-0">
+              <lucide-icon [img]="AlertTriangleIcon" [size]="20" class="text-amber-600 mt-0.5" />
             </div>
-            <p class="font-medium">AI Deep Dive</p>
-            <p class="text-neutral-600">Optional email analysis</p>
+            <div class="flex-1">
+              <h4 class="font-semibold text-amber-900 mb-2">Requirements Check</h4>
+              <div class="space-y-2">
+                @for (issue of validationIssues(); track $index) {
+                  <div class="flex items-center space-x-2">
+                    <div class="w-1.5 h-1.5 bg-amber-600 rounded-full"></div>
+                    <span class="text-sm text-amber-800">{{ issue }}</span>
+                  </div>
+                }
+              </div>
+            </div>
           </div>
         </div>
+      }
 
-        <ui-button variant="primary" (click)="startAnalysis()" [disabled]="!canAnalyze()">
-          <lucide-icon [img]="SparklesIcon" [size]="16" class="mr-2" />
-          Start Analysis
-        </ui-button>
-
-        @if (!canAnalyze()) {
-          <p class="text-sm text-orange-600 mt-2">
-            {{ getCannotAnalyzeReason() }}
-          </p>
+      <!-- Action Button -->
+      <div class="text-center">
+        @if (isLoadingProfile()) {
+          <div class="inline-flex items-center space-x-3 px-8 py-3 bg-gray-100 rounded-lg">
+            <lucide-icon [img]="Loader2Icon" [size]="16" class="text-gray-600 animate-spin" />
+            <span class="text-gray-600 font-medium">Loading business profile...</span>
+          </div>
+        } @else {
+          <ui-button 
+            variant="primary" 
+            size="lg"
+            (click)="startAnalysis()" 
+            [disabled]="!canAnalyze()"
+            class="px-8 py-3 text-base font-semibold">
+            <lucide-icon [img]="SparklesIcon" [size]="18" class="mr-2" />
+            Begin Analysis
+          </ui-button>
         }
       </div>
-    } 
+    </div>
+  }
 
-    @if (hasError()) {
-      <!-- Error State -->
-      <div class="text-center py-8">
-        <div class="w-16 h-16 bg-red-500 rounded-full mx-auto mb-4 flex items-center justify-center">
-          <lucide-icon [img]="XCircleIcon" [size]="24" class="text-white" />
-        </div>
-        <h4 class="text-lg font-medium text-red-900 mb-2">Analysis Failed</h4>
-        <div class="bg-red-50 border border-red-200 rounded-lg p-4 max-w-md mx-auto mb-6">
-          <p class="text-sm text-red-800">{{ analysisError() }}</p>
-        </div>
-        
-        <div class="flex justify-center space-x-3">
-          <ui-button variant="outline" (click)="clearError()">
-            Dismiss
-          </ui-button>
-          <ui-button variant="primary" (click)="retryAnalysis()">
+  @if (hasError()) {
+    <!-- Error State -->
+    <div class="px-8 py-10 text-center">
+      <div class="w-16 h-16 bg-red-100 rounded-2xl mx-auto mb-6 flex items-center justify-center">
+        <lucide-icon [img]="XCircleIcon" [size]="24" class="text-red-600" />
+      </div>
+      <h3 class="text-xl font-semibold text-gray-900 mb-3">Analysis Error</h3>
+      <div class="bg-red-50 border border-red-200 rounded-lg p-4 max-w-lg mx-auto mb-6">
+        <p class="text-red-800">{{ analysisError() }}</p>
+      </div>
+      
+      <div class="flex justify-center space-x-4">
+        <ui-button variant="outline" (click)="clearError()">
+          Dismiss
+        </ui-button>
+        <ui-button variant="primary" (click)="retryAnalysis()">
+          <lucide-icon [img]="RefreshCwIcon" [size]="16" class="mr-2" />
+          Retry Analysis
+        </ui-button>
+      </div>
+    </div>
+  }
+
+  @if (showBusinessRules()) {
+    <!-- Analysis Results -->
+    <div class="divide-y divide-gray-100">
+      
+      <!-- Header Section -->
+      <div class="px-8 py-6 bg-gradient-to-r from-gray-50 to-gray-100">
+        <div class="flex items-center justify-between">
+          <div>
+            <h3 class="text-xl font-semibold text-gray-900">{{ getAnalysisTitle() }}</h3>
+            <p class="text-gray-600 mt-1">Generated {{ formatTime(businessRulesResult()!.generatedAt) }}</p>
+          </div>
+          <ui-button variant="ghost" size="sm" (click)="refreshAnalysis()">
             <lucide-icon [img]="RefreshCwIcon" [size]="16" class="mr-2" />
-            Retry Analysis
+            Refresh
           </ui-button>
         </div>
       </div>
-    }
 
-    @if (showBusinessRules()) {
-      <!-- Business Rules Results -->
-      <div class="space-y-6">
-        <!-- Overall Score -->
-        <div class="bg-white/60 rounded-lg p-4">
-          <div class="flex items-center justify-between mb-3">
-            <h4 class="font-medium text-neutral-900">{{ getAnalysisTitle() }}</h4>
-            <div class="flex items-center space-x-3">
-              <span [class]="getCompatibilityBadgeClass(businessRulesResult()!.eligibilityStatus)" 
-                    class="capitalize">
-                {{ businessRulesResult()!.eligibilityStatus }}
-              </span>
-              <span class="text-2xl font-bold text-neutral-900">
-                {{ businessRulesResult()!.compatibilityScore }}%
-              </span>
+      <!-- Overall Score Section -->
+      <div class="px-8 py-6">
+        <div class="flex items-center justify-between mb-6">
+          <div class="flex items-center space-x-4">
+            <div class="text-4xl font-bold text-gray-900">
+              {{ businessRulesResult()!.compatibilityScore }}%
             </div>
+            <div>
+              <div [class]="getCompatibilityBadgeClass(businessRulesResult()!.eligibilityStatus)" 
+                   class="capitalize mb-2">
+                {{ businessRulesResult()!.eligibilityStatus }}
+              </div>
+              <p class="text-sm text-gray-600">Overall Compatibility</p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="w-full bg-gray-200 rounded-full h-3 mb-6">
+          <div [class]="getScoreBarClass(businessRulesResult()!.compatibilityScore)" 
+               class="h-3 rounded-full transition-all duration-700 ease-out" 
+               [style.width.%]="businessRulesResult()!.compatibilityScore"></div>
+        </div>
+
+        <!-- Score Breakdown -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-6">
+          <div class="bg-gray-50 rounded-lg p-4">
+            <div class="flex items-center space-x-3 mb-2">
+              <lucide-icon [img]="getMatchQualityIcon(businessRulesResult()!.industryAlignment.match)" 
+                           [size]="18" 
+                           [class]="getMatchQualityClass(businessRulesResult()!.industryAlignment.match)" />
+              <span class="font-semibold text-gray-900">Industry Match</span>
+            </div>
+            <div class="text-2xl font-bold text-gray-900 mb-1">
+              {{ businessRulesResult()!.industryAlignment.score }}/30
+            </div>
+            <p class="text-sm text-gray-600 capitalize">{{ businessRulesResult()!.industryAlignment.match }}</p>
           </div>
           
-          <div class="w-full bg-neutral-200 rounded-full h-3 mb-4">
-            <div [class]="getScoreBarClass(businessRulesResult()!.compatibilityScore)" 
-                 class="h-3 rounded-full transition-all duration-500" 
-                 [style.width.%]="businessRulesResult()!.compatibilityScore"></div>
-          </div>
-
-          <!-- Score Breakdown -->
-          <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-            <div class="flex items-center space-x-2">
-              <lucide-icon [img]="getMatchQualityIcon(businessRulesResult()!.industryAlignment.match)" 
-                           [size]="16" 
-                           [class]="getMatchQualityClass(businessRulesResult()!.industryAlignment.match)" />
-              <div>
-                <p class="font-medium">Industry</p>
-                <p class="text-neutral-600">{{ businessRulesResult()!.industryAlignment.score }}/30</p>
-              </div>
-            </div>
-            
-            <div class="flex items-center space-x-2">
+          <div class="bg-gray-50 rounded-lg p-4">
+            <div class="flex items-center space-x-3 mb-2">
               <lucide-icon [img]="getMatchQualityIcon(businessRulesResult()!.stageCompatibility.match)" 
-                           [size]="16" 
+                           [size]="18" 
                            [class]="getMatchQualityClass(businessRulesResult()!.stageCompatibility.match)" />
-              <div>
-                <p class="font-medium">Stage</p>
-                <p class="text-neutral-600">{{ businessRulesResult()!.stageCompatibility.score }}/25</p>
-              </div>
+              <span class="font-semibold text-gray-900">Stage Match</span>
             </div>
-            
-            <div class="flex items-center space-x-2">
+            <div class="text-2xl font-bold text-gray-900 mb-1">
+              {{ businessRulesResult()!.stageCompatibility.score }}/25
+            </div>
+            <p class="text-sm text-gray-600 capitalize">{{ businessRulesResult()!.stageCompatibility.match }}</p>
+          </div>
+          
+          <div class="bg-gray-50 rounded-lg p-4">
+            <div class="flex items-center space-x-3 mb-2">
               <lucide-icon [img]="businessRulesResult()!.financialReadiness.level === 'strong' ? CheckCircleIcon : 
                                    businessRulesResult()!.financialReadiness.level === 'moderate' ? TargetIcon : AlertTriangleIcon" 
-                           [size]="16" 
+                           [size]="18" 
                            [class]="businessRulesResult()!.financialReadiness.level === 'strong' ? 'text-green-600' : 
                                     businessRulesResult()!.financialReadiness.level === 'moderate' ? 'text-orange-600' : 'text-red-600'" />
-              <div>
-                <p class="font-medium">Financial</p>
-                <p class="text-neutral-600">{{ businessRulesResult()!.financialReadiness.score }}/25</p>
-              </div>
+              <span class="font-semibold text-gray-900">Financial</span>
             </div>
-            
-            <div class="flex items-center space-x-2">
+            <div class="text-2xl font-bold text-gray-900 mb-1">
+              {{ businessRulesResult()!.financialReadiness.score }}/25
+            </div>
+            <p class="text-sm text-gray-600 capitalize">{{ businessRulesResult()!.financialReadiness.level }}</p>
+          </div>
+          
+          <div class="bg-gray-50 rounded-lg p-4">
+            <div class="flex items-center space-x-3 mb-2">
               <lucide-icon [img]="FileTextIcon" 
-                           [size]="16" 
+                           [size]="18" 
                            [class]="businessRulesResult()!.profileCompleteness.score >= 15 ? 'text-green-600' : 
                                     businessRulesResult()!.profileCompleteness.score >= 10 ? 'text-orange-600' : 'text-red-600'" />
-              <div>
-                <p class="font-medium">Complete</p>
-                <p class="text-neutral-600">{{ businessRulesResult()!.profileCompleteness.percentage }}%</p>
-              </div>
+              <span class="font-semibold text-gray-900">Completeness</span>
             </div>
+            <div class="text-2xl font-bold text-gray-900 mb-1">
+              {{ businessRulesResult()!.profileCompleteness.percentage }}%
+            </div>
+            <p class="text-sm text-gray-600">Profile Complete</p>
           </div>
         </div>
+      </div>
 
-        <!-- Key Insights Grid -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <!-- Strengths -->
-          @if (businessRulesResult()!.strengths.length > 0) {
-            <div class="bg-green-50 border border-green-200 rounded-lg p-4">
-              <div class="flex items-center space-x-2 mb-3">
-                <lucide-icon [img]="CheckCircleIcon" [size]="18" class="text-green-600" />
-                <h5 class="font-medium text-green-900">Strengths</h5>
-              </div>
-              <ul class="space-y-2 text-sm">
-                @for (strength of businessRulesResult()!.strengths; track $index) {
-                  <li class="flex items-start space-x-2">
-                    <div class="w-1.5 h-1.5 bg-green-600 rounded-full mt-2 flex-shrink-0"></div>
-                    <span class="text-green-800">{{ strength }}</span>
-                  </li>
-                }
-              </ul>
+      <!-- Insights Section -->
+      <div class="px-8 py-6 space-y-6">
+        
+        <!-- Strengths -->
+        @if (businessRulesResult()!.strengths.length > 0) {
+          <div class="bg-green-50 border-l-4 border-green-400 p-6 rounded-r-lg">
+            <div class="flex items-center space-x-3 mb-4">
+              <lucide-icon [img]="CheckCircleIcon" [size]="20" class="text-green-600" />
+              <h4 class="font-semibold text-green-900 text-lg">Key Strengths</h4>
             </div>
-          }
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+              @for (strength of businessRulesResult()!.strengths; track $index) {
+                <div class="flex items-start space-x-3">
+                  <div class="w-2 h-2 bg-green-500 rounded-full mt-2 flex-shrink-0"></div>
+                  <span class="text-green-800 font-medium">{{ strength }}</span>
+                </div>
+              }
+            </div>
+          </div>
+        }
 
-          <!-- Improvement Areas -->
-          @if (businessRulesResult()!.improvementAreas.length > 0) {
-            <div class="bg-orange-50 border border-orange-200 rounded-lg p-4">
-              <div class="flex items-center space-x-2 mb-3">
-                <lucide-icon [img]="TrendingUpIcon" [size]="18" class="text-orange-600" />
-                <h5 class="font-medium text-orange-900">Improvement Areas</h5>
-              </div>
-              <ul class="space-y-2 text-sm">
-                @for (area of businessRulesResult()!.improvementAreas; track $index) {
-                  <li class="flex items-start space-x-2">
-                    <div class="w-1.5 h-1.5 bg-orange-600 rounded-full mt-2 flex-shrink-0"></div>
-                    <span class="text-orange-800">{{ area }}</span>
-                  </li>
-                }
-              </ul>
+        <!-- Improvement Areas -->
+        @if (businessRulesResult()!.improvementAreas.length > 0) {
+          <div class="bg-amber-50 border-l-4 border-amber-400 p-6 rounded-r-lg">
+            <div class="flex items-center space-x-3 mb-4">
+              <lucide-icon [img]="TrendingUpIcon" [size]="20" class="text-amber-600" />
+              <h4 class="font-semibold text-amber-900 text-lg">Improvement Opportunities</h4>
             </div>
-          }
-        </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+              @for (area of businessRulesResult()!.improvementAreas; track $index) {
+                <div class="flex items-start space-x-3">
+                  <div class="w-2 h-2 bg-amber-500 rounded-full mt-2 flex-shrink-0"></div>
+                  <span class="text-amber-800 font-medium">{{ area }}</span>
+                </div>
+              }
+            </div>
+          </div>
+        }
 
         <!-- Risk Factors -->
         @if (businessRulesResult()!.riskFlags.length > 0) {
-          <div class="bg-red-50 border border-red-200 rounded-lg p-4">
-            <div class="flex items-center space-x-2 mb-3">
-              <lucide-icon [img]="AlertTriangleIcon" [size]="18" class="text-red-600" />
-              <h5 class="font-medium text-red-900">Risk Factors</h5>
+          <div class="bg-red-50 border-l-4 border-red-400 p-6 rounded-r-lg">
+            <div class="flex items-center space-x-3 mb-4">
+              <lucide-icon [img]="AlertTriangleIcon" [size]="20" class="text-red-600" />
+              <h4 class="font-semibold text-red-900 text-lg">Risk Factors</h4>
             </div>
-            <div class="space-y-3">
+            <div class="space-y-4">
               @for (risk of businessRulesResult()!.riskFlags; track $index) {
-                <div class="flex items-start space-x-3">
-                  <div [class]="getRiskSeverityClass(risk.severity)">
+                <div class="flex items-start space-x-4 bg-white rounded-lg p-4 border border-red-200">
+                  <div [class]="getRiskSeverityClass(risk.severity)" class="flex-shrink-0">
                     {{ risk.severity.toUpperCase() }}
                   </div>
-                  <div class="flex-1">
-                    <p class="font-medium text-red-900 text-sm">{{ risk.issue }}</p>
-                    <p class="text-red-700 text-xs">{{ risk.impact }}</p>
+                  <div class="flex-1 min-w-0">
+                    <p class="font-semibold text-red-900 mb-1">{{ risk.issue }}</p>
+                    <p class="text-red-700 text-sm">{{ risk.impact }}</p>
                   </div>
                 </div>
               }
@@ -215,86 +280,112 @@
 
         <!-- Recommendations -->
         @if (businessRulesResult()!.recommendations.length > 0) {
-          <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
-            <div class="flex items-center space-x-2 mb-3">
-              <lucide-icon [img]="TargetIcon" [size]="18" class="text-blue-600" />
-              <h5 class="font-medium text-blue-900">Recommendations</h5>
+          <div class="bg-blue-50 border-l-4 border-blue-400 p-6 rounded-r-lg">
+            <div class="flex items-center space-x-3 mb-4">
+              <lucide-icon [img]="TargetIcon" [size]="20" class="text-blue-600" />
+              <h4 class="font-semibold text-blue-900 text-lg">Strategic Recommendations</h4>
             </div>
-            <ul class="space-y-2 text-sm">
+            <div class="space-y-3">
               @for (recommendation of businessRulesResult()!.recommendations; track $index) {
-                <li class="flex items-start space-x-2">
-                  <div class="w-1.5 h-1.5 bg-blue-600 rounded-full mt-2 flex-shrink-0"></div>
-                  <span class="text-blue-800">{{ recommendation }}</span>
-                </li>
+                <div class="flex items-start space-x-3 bg-white rounded-lg p-4 border border-blue-200">
+                  <div class="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <span class="text-xs font-bold text-blue-600">{{ $index + 1 }}</span>
+                  </div>
+                  <span class="text-blue-800 font-medium">{{ recommendation }}</span>
+                </div>
               }
-            </ul>
+            </div>
           </div>
         }
+      </div>
 
-        <!-- AI Deep Dive Section -->
-        <div class="bg-purple-50 border border-purple-200 rounded-lg p-4">
-          <div class="flex items-center space-x-2 mb-3">
-            <lucide-icon [img]="BotIcon" [size]="18" class="text-purple-600" />
-            <h5 class="font-medium text-purple-900">Want Deeper AI Insights?</h5>
-          </div>
-          <p class="text-sm text-purple-800 mb-4">
-            Get advanced analysis with specific recommendations, competitive positioning, and success probability powered by Gemini AI.
-            We'll email you detailed insights in 5-10 minutes.
-          </p>
+      <!-- AI Deep Dive Section -->
+      <div class="px-8 py-6 bg-gradient-to-br from-purple-50 to-indigo-50 border-t border-gray-100">
+        <div class="max-w-4xl">
+          <div class="flex items-start space-x-4">
+            <div class="w-12 h-12 bg-gradient-to-br from-purple-600 to-indigo-600 rounded-xl flex items-center justify-center flex-shrink-0">
+              <lucide-icon [img]="BotIcon" [size]="20" class="text-white" />
+            </div>
+            <div class="flex-1 min-w-0">
+              <h4 class="text-lg font-semibold text-gray-900 mb-2">Advanced AI Analysis</h4>
+              <p class="text-gray-700 mb-6 leading-relaxed">
+                Unlock deeper insights with our advanced AI analysis. Get personalized strategic recommendations, 
+                competitive positioning analysis, and detailed success probability assessments delivered to your inbox.
+              </p>
 
-          @if (!aiEmailRequested()) {
-            <ui-button variant="outline" size="sm" (click)="requestAIAnalysis()">
-              <lucide-icon [img]="MailIcon" [size]="14" class="mr-2" />
-              Get AI Analysis via Email
-            </ui-button>
-          } @else if (aiEmailSent()) {
-            <div class="flex items-center space-x-2 text-green-700">
-              <lucide-icon [img]="CheckCircleIcon" [size]="16" />
-              <span class="text-sm font-medium">AI analysis queued! Check your email in 5-10 minutes.</span>
-            </div>
-          } @else if (aiEmailError()) {
-            <div class="space-y-2">
-              <div class="flex items-center space-x-2 text-red-700">
-                <lucide-icon [img]="XCircleIcon" [size]="16" />
-                <span class="text-sm">{{ aiEmailError() }}</span>
-              </div>
-              <ui-button variant="outline" size="sm" (click)="retryAIRequest()">
-                <lucide-icon [img]="RefreshCwIcon" [size]="14" class="mr-2" />
-                Try Again
-              </ui-button>
-            </div>
-          } @else {
-            <div class="flex items-center space-x-2 text-blue-700">
-              <lucide-icon [img]="ClockIcon" [size]="16" />
-              <span class="text-sm">Queueing AI analysis...</span>
-            </div>
-          }
-        </div>
-
-        <!-- Actions -->
-        <div class="flex items-center justify-between pt-4 border-t border-neutral-200">
-          <div class="text-xs text-neutral-500">
-            Analysis generated {{ formatTime(businessRulesResult()!.generatedAt) }}
-          </div>
-          <div class="flex space-x-3">
-            <ui-button variant="outline" size="sm" (click)="refreshAnalysis()">
-              <lucide-icon [img]="RefreshCwIcon" [size]="14" class="mr-2" />
-              Refresh Analysis
-            </ui-button>
-            @if (analysisMode === 'opportunity') {
-              @if (businessRulesResult()!.compatibilityScore >= 60) {
-                <ui-button variant="primary" size="sm" (click)="proceedWithApplication()">
-                  Continue Application
+              @if (!aiEmailRequested()) {
+                <ui-button variant="primary" (click)="requestAIAnalysis()" class="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700">
+                  <lucide-icon [img]="MailIcon" [size]="16" class="mr-2" />
+                  Request Detailed Analysis
                 </ui-button>
+                <p class="text-sm text-gray-600 mt-2">Results delivered via email in 5-10 minutes</p>
+              } @else if (aiEmailSent()) {
+                <div class="flex items-center space-x-3 bg-green-100 rounded-lg p-4">
+                  <lucide-icon [img]="CheckCircleIcon" [size]="20" class="text-green-600" />
+                  <div>
+                    <p class="font-semibold text-green-800">Analysis Request Submitted</p>
+                    <p class="text-sm text-green-700">Detailed insights will be delivered to your email within 5-10 minutes.</p>
+                  </div>
+                </div>
+              } @else if (aiEmailError()) {
+                <div class="space-y-4">
+                  <div class="flex items-center space-x-3 bg-red-100 rounded-lg p-4">
+                    <lucide-icon [img]="XCircleIcon" [size]="20" class="text-red-600" />
+                    <div class="flex-1">
+                      <p class="font-semibold text-red-800">Request Failed</p>
+                      <p class="text-sm text-red-700">{{ aiEmailError() }}</p>
+                    </div>
+                  </div>
+                  <ui-button variant="outline" (click)="retryAIRequest()">
+                    <lucide-icon [img]="RefreshCwIcon" [size]="16" class="mr-2" />
+                    Try Again
+                  </ui-button>
+                </div>
               } @else {
-                <ui-button variant="outline" size="sm" (click)="improveApplication()">
-                  Improve Profile First
-                </ui-button>
+                <div class="flex items-center space-x-3 bg-blue-100 rounded-lg p-4">
+                  <lucide-icon [img]="Loader2Icon" [size]="20" class="text-blue-600 animate-spin" />
+                  <div>
+                    <p class="font-semibold text-blue-800">Processing Request</p>
+                    <p class="text-sm text-blue-700">Queueing your AI analysis...</p>
+                  </div>
+                </div>
               }
-            }
+            </div>
           </div>
         </div>
       </div>
-    }
-  </div>
-</ui-card>
+
+      <!-- Action Footer -->
+      <div class="px-8 py-6 bg-gray-50 flex items-center justify-between">
+        <div class="text-sm text-gray-600">
+          <span class="font-medium">Last updated:</span> {{ formatTime(businessRulesResult()!.generatedAt) }}
+        </div>
+        
+        @if (analysisMode === 'opportunity') {
+          <div class="flex space-x-4">
+            @if (businessRulesResult()!.compatibilityScore >= 60) {
+              <ui-button variant="outline" (click)="improveApplication()">
+                <lucide-icon [img]="TrendingUpIcon" [size]="16" class="mr-2" />
+                Optimize Profile
+              </ui-button>
+              <ui-button variant="primary" (click)="proceedWithApplication()" class="bg-green-600 hover:bg-green-700">
+                <lucide-icon [img]="CheckCircleIcon" [size]="16" class="mr-2" />
+                Continue Application
+              </ui-button>
+            } @else {
+              <ui-button  (click)="improveApplication()"  >
+                <lucide-icon [img]="TrendingUpIcon" [size]="16" class="mr-2" />
+                Improve Profile First
+              </ui-button>
+            }
+          </div>
+        } @else {
+          <ui-button variant="outline" (click)="refreshAnalysis()">
+            <lucide-icon [img]="RefreshCwIcon" [size]="16" class="mr-2" />
+            Refresh Analysis
+          </ui-button>
+        }
+      </div>
+    </div>
+  }
+</div>
