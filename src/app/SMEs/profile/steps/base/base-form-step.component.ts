@@ -116,6 +116,37 @@ export abstract class BaseFormStepComponent implements OnInit, OnDestroy {
   }
 
   /**
+   * Save data to the appropriate profile service method based on step ID
+   */
+  private saveToProfileService(stepId: string, data: any): void {
+    switch (stepId) {
+      case 'company-info':
+        this.profileService.updateCompanyInfo(data);
+        break;
+      case 'supporting-documents':
+        this.profileService.updateSupportingDocuments(data);
+        break;
+      case 'business-assessment':
+        this.profileService.updateBusinessAssessment(data);
+        break;
+      case 'swot-analysis':
+        this.profileService.updateSwotAnalysis(data);
+        break;
+      case 'management-structure':
+        this.profileService.updateManagementStructure(data);
+        break;
+      case 'business-strategy':
+        this.profileService.updateBusinessStrategy(data);
+        break;
+      case 'financial-profile':
+        this.profileService.updateFinancialProfile(data);
+        break;
+      default:
+        console.warn(`No update method found for step: ${stepId}`);
+    }
+  }
+
+  /**
    * Called when save fails
    */
   protected onSaveError(error: any): void {
@@ -228,7 +259,7 @@ export abstract class BaseFormStepComponent implements OnInit, OnDestroy {
       data = this.beforeSave(data);
 
       // Save to service
-      await this.profileService.updateStepData(this.getStepId(), data);
+      this.saveToProfileService(this.getStepId(), data);
       
       // Force save to backend for manual saves
       if (isManual) {

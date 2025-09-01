@@ -1,8 +1,7 @@
 // src/app/SMEs/profile/steps/base/base-upload-step.component.ts
 import { signal, computed, inject, Directive, HostListener } from '@angular/core';
-import { FormGroup } from '@angular/forms';
 import { BaseFormStepComponent } from './base-form-step.component'; 
-import { Subscription } from 'rxjs';
+import { Subscription, firstValueFrom } from 'rxjs';
 import { DocumentMetadata, SupabaseDocumentService } from 'src/app/shared/services/supabase-document.service';
 
 export interface UploadDocument {
@@ -232,7 +231,7 @@ export abstract class BaseUploadStepComponent extends BaseFormStepComponent {
     if (!confirm('Are you sure you want to remove this document?')) return;
 
     try {
-      await this.documentService.deleteDocumentByKey(documentKey).toPromise();
+      await firstValueFrom(this.documentService.deleteDocumentByKey(documentKey));
       
       this.updateDocument(documentKey, {
         file: undefined,
@@ -652,8 +651,8 @@ export abstract class BaseUploadStepComponent extends BaseFormStepComponent {
   // CLEANUP
   // ===============================
 
-  protected override cleanup(): void {
-    super.cleanup();
+  override ngOnDestroy(): void {
+    super.ngOnDestroy();
     
     this.progressSubscription?.unsubscribe();
     
