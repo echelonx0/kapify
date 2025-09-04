@@ -3,10 +3,8 @@ import { Component, signal, OnInit, inject, computed } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { SidebarNavComponent } from '../shared/components/sidenav/sidebar-nav.component';
-
-import { UiButtonComponent, UiCardComponent } from '../shared/components';
+import { UiButtonComponent } from '../shared/components';
 import { LucideAngularModule, ArrowLeft, Building2, DollarSign, Calendar, MapPin, CheckCircle, FileText, Users, Eye } from 'lucide-angular';
- 
 import { FundingOpportunity } from '../shared/models/funder.models';
 import { SMEOpportunitiesService } from './services/opportunities.service';
 import { AuthService } from '../auth/production.auth.service';
@@ -18,7 +16,6 @@ import { AuthService } from '../auth/production.auth.service';
     CommonModule,
     SidebarNavComponent,
     UiButtonComponent,
- 
     LucideAngularModule
   ],
   templateUrl: 'funding-detail.component.html'

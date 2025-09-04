@@ -4,7 +4,7 @@ import { Component, Input, Output, EventEmitter, signal, computed, inject, OnDes
 import { CommonModule } from '@angular/common';
 import { LucideAngularModule, Bot, Sparkles, TrendingUp, AlertTriangle, CheckCircle, Loader2, Target, Award, Shield, RefreshCw, XCircle, Mail, Clock, FileText } from 'lucide-angular';
 import { Subject, takeUntil } from 'rxjs';
-import { UiButtonComponent, UiCardComponent } from 'src/app/shared/components';
+import { UiButtonComponent } from 'src/app/shared/components';
 import { FundingOpportunity } from 'src/app/shared/models/funder.models';
 import { FundingApplicationProfile } from 'src/app/SMEs/applications/models/funding-application.models';
 import { AIAnalysisService, AIAnalysisRequest, AIAnalysisResult } from '../services/ai-analysis.service';
@@ -41,7 +41,7 @@ function isJobResponse(response: AIAnalysisResponse): response is AIAnalysisJobR
     CommonModule,
     LucideAngularModule,
     UiButtonComponent,
-    UiCardComponent
+    
   ],
   templateUrl: './enhanced-ai-analysis.component.html'
 })

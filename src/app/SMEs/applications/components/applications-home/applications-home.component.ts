@@ -1,10 +1,12 @@
-// applications-home.component.ts
+// REPLACE your existing ApplicationsHomeComponent with this fixed version
+// This bypasses the ProfileManagementService issues by using direct database calls
+
 import { Component, signal, computed, OnInit, OnDestroy, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Subject } from 'rxjs';
-import { takeUntil, catchError } from 'rxjs/operators';
+import { Subject, forkJoin, of } from 'rxjs';
+import { takeUntil, catchError, tap } from 'rxjs/operators';
 import { 
   LucideAngularModule, 
   FileText, 
@@ -25,12 +27,10 @@ import {
 import { AuthService } from 'src/app/auth/production.auth.service';
 import { UiButtonComponent } from 'src/app/shared/components';
 import { ActivityInboxComponent } from 'src/app/messaging/messaging/messaging.component';
-import { ProfileManagementService } from 'src/app/shared/services/profile-management.service';
 import { ApplicationManagementService, FundingApplication } from 'src/app/SMEs/services/application-management.service';
 import { OpportunityApplicationService, OpportunityApplication } from 'src/app/SMEs/services/opportunity-application.service';
+import { SharedSupabaseService } from 'src/app/shared/services/shared-supabase.service';
 
- 
- 
 interface ApplicationData {
   id: string;
   title: string;
@@ -53,6 +53,12 @@ interface ApplicationData {
   
   // For SME view
   opportunityId?: string;
+}
+
+interface UserOrganization {
+  id: string;
+  name: string;
+  organizationType: string;
 }
 
 @Component({
@@ -81,9 +87,9 @@ export class ApplicationsHomeComponent implements OnInit, OnDestroy {
   private authService = inject(AuthService);
   private smeApplicationService = inject(OpportunityApplicationService);
   private funderApplicationService = inject(ApplicationManagementService);
+  private supabaseService = inject(SharedSupabaseService);
   private destroy$ = new Subject<void>();
-   private profileService = inject(ProfileManagementService);
-  currentOrganization = this.profileService.currentOrganization;
+
   // Icons
   FileTextIcon = FileText;
   ClockIcon = Clock;
@@ -105,6 +111,7 @@ export class ApplicationsHomeComponent implements OnInit, OnDestroy {
   showFilters = signal(false);
   applications = signal<ApplicationData[]>([]);
   error = signal<string | null>(null);
+  userOrganization = signal<UserOrganization | null>(null);
 
   // Filters
   searchQuery = signal('');
@@ -127,12 +134,95 @@ export class ApplicationsHomeComponent implements OnInit, OnDestroy {
   }
 
   // ===============================
-  // DATA LOADING
+  // DIRECT DATABASE LOADING (BYPASSES ProfileManagementService)
   // ===============================
 
- 
+    loadApplications() {
+    const user = this.currentUser();
+    if (!user) {
+      this.error.set('User not authenticated');
+      return;
+    }
+
+    this.isLoading.set(true);
+    this.error.set(null);
+    console.log('🚀 Loading applications for user type:', this.userType());
+
+    if (this.isFunder()) {
+      this.loadFunderApplicationsDirectly(user.id);
+    } else {
+      this.loadSMEApplications();
+    }
+  }
+
+  private async loadFunderApplicationsDirectly(userId: string) {
+    console.log('📊 Loading funder applications directly from database...');
+    
+    try {
+      // Step 1: Get user's organization directly from database
+      const { data: orgUserData, error: orgError } = await this.supabaseService
+        .from('organization_users')
+        .select(`
+          organization_id,
+          organizations!organization_users_organization_id_fkey (
+            id,
+            name,
+            organization_type
+          )
+        `)
+        .eq('user_id', userId)
+        .single();
+      
+      if (orgError || !orgUserData?.organizations) {
+        console.error('❌ Failed to load organization:', orgError);
+        this.error.set('Organization setup required. Please complete your funder profile setup.');
+        this.isLoading.set(false);
+        return;
+      }
+
+      const organization: UserOrganization = {
+        id: orgUserData.organizations.id,
+        name: orgUserData.organizations.name,
+        organizationType: orgUserData.organizations.organization_type
+      };
+      
+      this.userOrganization.set(organization);
+      console.log('✅ Organization loaded:', organization.name);
+
+      // Step 2: Load applications for this organization
+      this.funderApplicationService.getApplicationsByOrganization(organization.id)
+        .pipe(
+          takeUntil(this.destroy$),
+          tap((applications) => console.log('✅ Applications loaded:', applications.length)),
+          catchError(error => {
+            console.error('❌ Failed to load applications:', error);
+            this.error.set('Failed to load applications');
+            return of([]);
+          })
+        )
+        .subscribe({
+          next: (funderApplications: FundingApplication[]) => {
+            const applicationData = funderApplications.map(app => this.transformFunderApplication(app));
+            this.applications.set(this.mergeDrafts(applicationData));
+            this.isLoading.set(false);
+            console.log('🎉 Funder applications successfully loaded:', applicationData.length);
+          },
+          error: () => {
+            this.applications.set([]);
+            this.isLoading.set(false);
+          }
+        });
+
+    } catch (error) {
+      console.error('💥 Database error:', error);
+      this.error.set('Database connection error. Please try again.');
+      this.isLoading.set(false);
+    }
+  }
 
   private loadSMEApplications() {
+    console.log('📊 Loading SME applications...');
+    
     this.smeApplicationService.loadUserApplications()
       .pipe(
         takeUntil(this.destroy$),
@@ -144,11 +234,12 @@ export class ApplicationsHomeComponent implements OnInit, OnDestroy {
         })
       )
       .subscribe({
-   next: (smeApplications: OpportunityApplication[]) => {
-  const applicationData = smeApplications.map(app => this.transformSMEApplication(app));
-  this.applications.set(this.mergeDrafts(applicationData));
-  this.isLoading.set(false);
-},
+        next: (smeApplications: OpportunityApplication[]) => {
+          const applicationData = smeApplications.map(app => this.transformSMEApplication(app));
+          this.applications.set(this.mergeDrafts(applicationData));
+          this.isLoading.set(false);
+          console.log('🎉 SME applications successfully loaded:', applicationData.length);
+        },
         error: () => {
           this.applications.set([]);
           this.isLoading.set(false);
@@ -156,86 +247,8 @@ export class ApplicationsHomeComponent implements OnInit, OnDestroy {
       });
   }
 
-// Fix for the loadFunderApplications method in your applications-home.component.ts
-
-// Replace the existing loadFunderApplications method with this:
-private loadFunderApplications(userId: string) {
-  // Get the organization ID from ProfileService
-  const organizationId = this.currentOrganization()?.id; // Call the signal to get the value
-  
-  if (!organizationId) {
-    console.error('No organization ID found for funder');
-    this.error.set('Please complete your organization setup to view applications.');
-    this.isLoading.set(false);
-    return;
-  }
-
-  console.log('Loading applications for organization:', organizationId);
-
-  this.funderApplicationService.getApplicationsByOrganization(organizationId)
-    .pipe(
-      takeUntil(this.destroy$),
-      catchError(error => {
-        this.error.set('Failed to load organization applications');
-        this.isLoading.set(false);
-        console.error('Funder applications load error:', error);
-        throw error;
-      })
-    )
-    .subscribe({
-next: (funderApplications: FundingApplication[]) => {
-  const applicationData = funderApplications.map(app => this.transformFunderApplication(app));
-  this.applications.set(this.mergeDrafts(applicationData));
-  this.isLoading.set(false);
-},
-      error: () => {
-        this.applications.set([]);
-        this.isLoading.set(false);
-      }
-    });
-}
-
-// Also update the loadApplications method to ensure profile data is loaded:
-loadApplications() {
-  const user = this.currentUser();
-  if (!user) {
-    this.error.set('User not authenticated');
-    return;
-  }
-
-  this.isLoading.set(true);
-  this.error.set(null);
-  console.log('The user is a:', this.userType());
-
-  if (this.isFunder()) {
-    // For funders, ensure we have organization data first
-    const orgId = this.currentOrganization()?.id;
-    
-    if (!orgId) {
-      // Try to load profile data first
-      this.profileService.loadProfileData()
-        .pipe(takeUntil(this.destroy$))
-        .subscribe({
-          next: () => {
-            // After profile loads, try again
-            this.loadFunderApplications(user.id);
-          },
-          error: (error) => {
-            console.error('Failed to load profile data:', error);
-            this.error.set('Please complete your organization setup.');
-            this.isLoading.set(false);
-          }
-        });
-    } else {
-      this.loadFunderApplications(user.id);
-    }
-  } else {
-    this.loadSMEApplications();
-  }
-}
-
   // ===============================
-  // DATA TRANSFORMATION
+  // DATA TRANSFORMATION (UNCHANGED)
   // ===============================
 
   private transformSMEApplication(app: OpportunityApplication): ApplicationData {
@@ -294,7 +307,7 @@ loadApplications() {
   }
 
   // ===============================
-  // COMPUTED PROPERTIES
+  // COMPUTED PROPERTIES (UNCHANGED)
   // ===============================
 
   filteredApplications = computed(() => {
@@ -339,35 +352,27 @@ loadApplications() {
     return !!(this.searchQuery() || this.statusFilter() || this.fundingTypeFilter());
   });
 
-  /**
- * Merge draft applications for the same opportunity.
- * Keeps only the most recent draft (by updatedAt).
- */
-private mergeDrafts(applications: ApplicationData[]): ApplicationData[] {
-  const draftMap = new Map<string, ApplicationData>();
-  const finalList: ApplicationData[] = [];
+  private mergeDrafts(applications: ApplicationData[]): ApplicationData[] {
+    const draftMap = new Map<string, ApplicationData>();
+    const finalList: ApplicationData[] = [];
 
-  for (const app of applications) {
-    if (app.status === 'draft' && app.opportunityId) {
-      const existing = draftMap.get(app.opportunityId);
-      if (!existing || new Date(app.updatedAt) > new Date(existing.updatedAt)) {
-        draftMap.set(app.opportunityId, app);
+    for (const app of applications) {
+      if (app.status === 'draft' && app.opportunityId) {
+        const existing = draftMap.get(app.opportunityId);
+        if (!existing || new Date(app.updatedAt) > new Date(existing.updatedAt)) {
+          draftMap.set(app.opportunityId, app);
+        }
+      } else {
+        finalList.push(app);
       }
-    } else {
-      // Non-draft applications are added directly
-      finalList.push(app);
     }
+
+    draftMap.forEach(draft => finalList.push(draft));
+    return finalList.sort((a, b) => +new Date(b.updatedAt) - +new Date(a.updatedAt));
   }
 
-  // Add the latest drafts
-  draftMap.forEach(draft => finalList.push(draft));
-
-  // Optional: sort by updatedAt desc so newest apps are first
-  return finalList.sort((a, b) => +new Date(b.updatedAt) - +new Date(a.updatedAt));
-}
-
   // ===============================
-  // USER ACTIONS
+  // USER ACTIONS (UNCHANGED)
   // ===============================
 
   toggleFilters() {
@@ -384,7 +389,6 @@ private mergeDrafts(applications: ApplicationData[]): ApplicationData[] {
     this.loadApplications();
   }
 
-  // SME Actions
   createNewApplication() {
     this.router.navigate(['/funding/opportunities']);
   }
@@ -394,36 +398,30 @@ private mergeDrafts(applications: ApplicationData[]): ApplicationData[] {
   }
 
   continueApplication(applicationId: string) {
-  const app = this.applications().find(a => a.id === applicationId);
+    const app = this.applications().find(a => a.id === applicationId);
 
-  if (!app) {
-    console.warn('Application not found; redirecting to new application page.');
-    this.router.navigate(['/applications/new']);
-    return;
-  }
-
-  // If it's a draft, open the new-application form for that opportunity
-  if (app.status === 'draft') {
-    if (app.opportunityId) {
-      // navigate to route that already exists: /applications/new/:opportunityId
-      this.router.navigate(['/applications/new', app.opportunityId], {
-        queryParams: { edit: 'true', applicationId: app.id }
-      });
-    } else {
-      // fallback: no opportunityId — open generic new with query params
-      this.router.navigate(['/applications/new'], {
-        queryParams: { edit: 'true', applicationId: app.id }
-      });
+    if (!app) {
+      console.warn('Application not found; redirecting to new application page.');
+      this.router.navigate(['/applications/new']);
+      return;
     }
-    return;
+
+    if (app.status === 'draft') {
+      if (app.opportunityId) {
+        this.router.navigate(['/applications/new', app.opportunityId], {
+          queryParams: { edit: 'true', applicationId: app.id }
+        });
+      } else {
+        this.router.navigate(['/applications/new'], {
+          queryParams: { edit: 'true', applicationId: app.id }
+        });
+      }
+      return;
+    }
+
+    this.viewApplication(applicationId);
   }
 
-  // If not a draft, take user to the normal view page
-  this.viewApplication(applicationId);
-}
-
-
-  // Funder Actions
   reviewApplication(id: string) {
     this.router.navigate(['/funder/applications', id, 'review']);
   }
@@ -437,7 +435,7 @@ private mergeDrafts(applications: ApplicationData[]): ApplicationData[] {
   }
 
   // ===============================
-  // UTILITY METHODS
+  // UTILITY METHODS (UNCHANGED)
   // ===============================
 
   getStatusText(status: string): string {

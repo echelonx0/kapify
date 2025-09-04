@@ -1,10 +1,9 @@
-// src/app/funder/services/application-management.service.ts
-import {  Injectable, inject, signal } from '@angular/core';
+// src/app/SMEs/services/application-management.service.ts
+import { Injectable, inject, signal } from '@angular/core';
 import { Observable, from, throwError } from 'rxjs';
 import { tap, catchError } from 'rxjs/operators';
 import { AuthService } from '../../auth/production.auth.service';
 import { SharedSupabaseService } from '../../shared/services/shared-supabase.service';
- 
 
 // Application interfaces
 export interface FundingApplication {
@@ -25,8 +24,10 @@ export interface FundingApplication {
   decidedAt?: Date;
   createdAt: Date;
   updatedAt: Date;
+  aiAnalysisStatus?: string;
+  aiMatchScore?: number;
 
-  // Joined data from other tables
+  // Joined data from other tables (loaded separately now)
   applicant?: ApplicantInfo;
   opportunity?: OpportunityInfo;
 }
@@ -64,8 +65,8 @@ export interface ApplicationStats {
   total: number;
   byStatus: Record<string, number>;
   byStage: Record<string, number>;
-  recentActivity: number; // applications updated in last 7 days
-  averageProcessingTime: number; // days
+  recentActivity: number;
+  averageProcessingTime: number;
 }
 
 export interface ApplicationFilter {
@@ -90,58 +91,71 @@ export class ApplicationManagementService {
   isUpdating = signal<boolean>(false);
   error = signal<string | null>(null);
 
-  constructor() {
-     
-  }
-
   // ===============================
-  // FETCH APPLICATIONS
+  // FETCH APPLICATIONS - SIMPLIFIED
   // ===============================
 
   /**
-   * Get all applications for a specific opportunity
+   * Get all applications for a specific opportunity - FIXED VERSION
    */
   getApplicationsByOpportunity(opportunityId: string): Observable<FundingApplication[]> {
     this.isLoading.set(true);
     this.error.set(null);
 
-    return from(this.fetchApplicationsFromSupabase(opportunityId)).pipe(
-      tap(() => this.isLoading.set(false)),
+    console.log('Fetching applications for opportunity:', opportunityId);
+
+    return from(this.fetchApplicationsSimplified(opportunityId)).pipe(
+      tap((apps) => {
+        console.log('Applications loaded:', apps.length);
+        this.isLoading.set(false);
+      }),
       catchError(error => {
+        console.error('Error loading applications:', error);
         this.error.set('Failed to load applications');
         this.isLoading.set(false);
-        console.error('Error loading applications:', error);
         return throwError(() => error);
       })
     );
   }
 
   /**
-   * Get all applications for opportunities in the funder's organization
+   * Get all applications for opportunities in the funder's organization - FIXED VERSION
    */
   getApplicationsByOrganization(organizationId: string, filter?: ApplicationFilter): Observable<FundingApplication[]> {
     this.isLoading.set(true);
     this.error.set(null);
 
+    console.log('Fetching applications for organization:', organizationId);
+
     return from(this.fetchApplicationsByOrganization(organizationId, filter)).pipe(
-      tap(() => this.isLoading.set(false)),
+      tap((apps) => {
+        console.log('Organization applications loaded:', apps.length);
+        this.isLoading.set(false);
+      }),
       catchError(error => {
+        console.error('Error loading organization applications:', error);
         this.error.set('Failed to load organization applications');
         this.isLoading.set(false);
-        console.error('Error loading organization applications:', error);
         return throwError(() => error);
       })
     );
   }
 
   /**
-   * Get a single application with full details
+   * Get applications with full user details (separate call)
+   */
+  getApplicationsWithDetails(opportunityId: string): Observable<FundingApplication[]> {
+    return from(this.fetchApplicationsWithDetails(opportunityId));
+  }
+
+  /**
+   * Get single application by ID - simplified
    */
   getApplicationById(applicationId: string): Observable<FundingApplication> {
     this.isLoading.set(true);
     this.error.set(null);
 
-    return from(this.fetchApplicationById(applicationId)).pipe(
+    return from(this.fetchSingleApplication(applicationId)).pipe(
       tap(() => this.isLoading.set(false)),
       catchError(error => {
         this.error.set('Failed to load application details');
@@ -212,10 +226,8 @@ export class ApplicationManagementService {
    * Request additional information from applicant
    */
   requestAdditionalInfo(applicationId: string, requestMessage: string): Observable<FundingApplication> {
-    // This will add a review note of type 'request_info' and potentially send notification
     return this.addReviewNote(applicationId, requestMessage, 'request_info').pipe(
       tap(() => {
-        // Here you could trigger email notification to applicant
         console.log('Additional information requested for application:', applicationId);
       })
     );
@@ -226,7 +238,7 @@ export class ApplicationManagementService {
   // ===============================
 
   /**
-   * Get application statistics for an opportunity or organization
+   * Get application statistics for an opportunity
    */
   getApplicationStats(opportunityId?: string, organizationId?: string): Observable<ApplicationStats> {
     return from(this.fetchApplicationStats(opportunityId, organizationId)).pipe(
@@ -239,122 +251,203 @@ export class ApplicationManagementService {
   }
 
   // ===============================
-  // PRIVATE SUPABASE METHODS
+  // PRIVATE METHODS - SIMPLIFIED
   // ===============================
 
-  private async fetchApplicationsFromSupabase(opportunityId: string): Promise<FundingApplication[]> {
+  /**
+   * Simplified fetch - just get applications without joins
+   */
+private async fetchApplicationsSimplified(opportunityId: string): Promise<FundingApplication[]> {
     try {
+      console.log('🔍 [DEBUG] Starting fetchApplicationsSimplified');
+      console.log('🎯 [DEBUG] Opportunity ID:', opportunityId);
+      console.log('👤 [DEBUG] Current user:', this.authService.user());
+
+      // Test 1: Raw Supabase query
+      console.log('📊 [DEBUG] Executing Supabase query...');
       const { data, error } = await this.supabase
         .from('applications')
-        .select(`
-          *,
-          applicant:applicant_id (
-            id,
-            raw_user_meta_data
-          ),
-          opportunity:opportunity_id (
-            id,
-            title,
-            funding_type,
-            offer_amount,
-            currency,
-            organization_id
-          )
-        `)
+        .select('*')
         .eq('opportunity_id', opportunityId)
         .order('created_at', { ascending: false });
 
+      console.log('📋 [DEBUG] Raw Supabase response:');
+      console.log('  - Error:', error);
+      console.log('  - Data length:', data?.length || 0);
+      console.log('  - Data sample:', data?.[0]);
+
       if (error) {
+        console.error('🚫 [DEBUG] Supabase error details:', error);
         throw new Error(`Supabase error: ${error.message}`);
       }
 
-      return this.transformApplicationsData(data || []);
+      if (!data) {
+        console.log('⚠️ [DEBUG] Data is null/undefined');
+        return [];
+      }
+
+      if (data.length === 0) {
+        console.log('📭 [DEBUG] Data array is empty');
+        return [];
+      }
+
+      console.log('✅ [DEBUG] Raw applications found:', data.length);
+      console.log('📄 [DEBUG] First application data:', JSON.stringify(data[0], null, 2));
+
+      // Test 2: Transform data
+      console.log('🔄 [DEBUG] Starting data transformation...');
+      const transformedData = this.transformApplicationsData(data);
+      console.log('✅ [DEBUG] Transformed applications:', transformedData.length);
+      console.log('📄 [DEBUG] First transformed application:', JSON.stringify(transformedData[0], null, 2));
+
+      return transformedData;
     } catch (error) {
-      console.error('Error fetching applications from Supabase:', error);
+      console.error('💥 [DEBUG] Error in fetchApplicationsSimplified:', error);
+      console.error('💥 [DEBUG] Error stack:', (error as Error).stack);
       throw error;
     }
   }
 
-private async fetchApplicationsByOrganization(
-  organizationId: string, 
-  filter?: ApplicationFilter
-): Promise<FundingApplication[]> {
-  try {
-    let query = this.supabase
-      .from('applications')
-      .select(`
-        *,
-        opportunity:opportunity_id!inner (
-          id,
-          title,
-          funding_type,
-          offer_amount,
-          currency,
-          organization_id
-        )
-      `)
-      .eq('opportunity.organization_id', organizationId)
-      .not('status', 'in', '("draft","withdrawn")'); // exclude draft + withdrawn
+  /**
+   * Get applications for organization - simplified version
+   */
+  private async fetchApplicationsByOrganization(
+    organizationId: string, 
+    filter?: ApplicationFilter
+  ): Promise<FundingApplication[]> {
+    try {
+      console.log('Querying applications for organization:', organizationId);
 
-    // Apply filters
-    if (filter?.status?.length) {
-      query = query.in('status', filter.status);
+      // First, get opportunities for this organization
+      const { data: opportunities, error: oppError } = await this.supabase
+        .from('funding_opportunities')
+        .select('id')
+        .eq('organization_id', organizationId);
+
+      if (oppError) {
+        throw new Error(`Failed to fetch opportunities: ${oppError.message}`);
+      }
+
+      if (!opportunities || opportunities.length === 0) {
+        console.log('No opportunities found for organization:', organizationId);
+        return [];
+      }
+
+      const opportunityIds = opportunities.map(opp => opp.id);
+      console.log('Found opportunities:', opportunityIds.length);
+
+      // Now get applications for these opportunities
+      let query = this.supabase
+        .from('applications')
+        .select('*')
+        .in('opportunity_id', opportunityIds)
+        .not('status', 'eq', 'withdrawn'); // Exclude withdrawn applications
+
+      // Apply filters
+      if (filter?.status?.length) {
+        query = query.in('status', filter.status);
+      }
+
+      if (filter?.stage?.length) {
+        query = query.in('stage', filter.stage);
+      }
+
+      if (filter?.dateRange) {
+        query = query
+          .gte('created_at', filter.dateRange.start.toISOString())
+          .lte('created_at', filter.dateRange.end.toISOString());
+      }
+
+      const { data, error } = await query.order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Supabase error:', error);
+        throw new Error(`Supabase error: ${error.message}`);
+      }
+
+      if (!data || data.length === 0) {
+        console.log('No applications found for organization opportunities');
+        return [];
+      }
+
+      console.log('Raw applications found:', data.length);
+      let applications = this.transformApplicationsData(data);
+
+      // Apply search filter (client-side)
+      if (filter?.searchQuery) {
+        const searchLower = filter.searchQuery.toLowerCase();
+        applications = applications.filter(app =>
+          app.title.toLowerCase().includes(searchLower) ||
+          app.description?.toLowerCase().includes(searchLower)
+        );
+      }
+
+      return applications;
+    } catch (error) {
+      console.error('Error in fetchApplicationsByOrganization:', error);
+      throw error;
     }
-
-    if (filter?.stage?.length) {
-      query = query.in('stage', filter.stage);
-    }
-
-    if (filter?.dateRange) {
-      query = query
-        .gte('created_at', filter.dateRange.start.toISOString())
-        .lte('created_at', filter.dateRange.end.toISOString());
-    }
-
-    const { data, error } = await query.order('created_at', { ascending: false });
-
-    if (error) {
-      throw new Error(`Supabase error: ${error.message}`);
-    }
-
-    let applications = this.transformApplicationsData(data || []);
-
-    // Apply search filter (client-side for now)
-    if (filter?.searchQuery) {
-      const searchLower = filter.searchQuery.toLowerCase();
-      applications = applications.filter(app =>
-        app.title.toLowerCase().includes(searchLower) ||
-        app.opportunity?.title?.toLowerCase().includes(searchLower)
-      );
-    }
-
-    return applications;
-  } catch (error) {
-    console.error('Error fetching organization applications:', error);
-    throw error;
   }
-}
 
+  /**
+   * Get applications with user details (separate queries)
+   */
+  private async fetchApplicationsWithDetails(opportunityId: string): Promise<FundingApplication[]> {
+    try {
+      // First get applications
+      const applications = await this.fetchApplicationsSimplified(opportunityId);
+      
+      if (applications.length === 0) {
+        return applications;
+      }
 
-  private async fetchApplicationById(applicationId: string): Promise<FundingApplication> {
+      // Get unique applicant IDs
+      const applicantIds = [...new Set(applications.map(app => app.applicantId))];
+      
+      // Fetch applicant details (this might fail due to RLS, but won't block main query)
+      try {
+        const { data: usersData } = await this.supabase
+          .from('profiles')
+          .select('*')
+          .in('id', applicantIds);
+
+        // Map user data to applications
+        if (usersData) {
+          applications.forEach(app => {
+            const userData = usersData.find(u => u.id === app.applicantId);
+            if (userData) {
+              app.applicant = {
+                id: userData.id,
+                firstName: userData.first_name || '',
+                lastName: userData.last_name || '',
+                email: userData.email || '',
+                companyName: userData.company_name,
+                industry: userData.industry,
+                registrationNumber: userData.registration_number
+              };
+            }
+          });
+        }
+      } catch (userError) {
+        console.warn('Could not load user details:', userError);
+        // Continue without user data
+      }
+
+      return applications;
+    } catch (error) {
+      console.error('Error in fetchApplicationsWithDetails:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get single application
+   */
+  private async fetchSingleApplication(applicationId: string): Promise<FundingApplication> {
     try {
       const { data, error } = await this.supabase
         .from('applications')
-        .select(`
-          *,
-          applicant:applicant_id (
-            id,
-            raw_user_meta_data
-          ),
-          opportunity:opportunity_id (
-            id,
-            title,
-            funding_type,
-            offer_amount,
-            currency,
-            organization_id
-          )
-        `)
+        .select('*')
         .eq('id', applicationId)
         .single();
 
@@ -368,7 +461,7 @@ private async fetchApplicationsByOrganization(
 
       return this.transformApplicationData(data);
     } catch (error) {
-      console.error('Error fetching application by ID:', error);
+      console.error('Error fetching single application:', error);
       throw error;
     }
   }
@@ -487,13 +580,8 @@ private async fetchApplicationsByOrganization(
 
       if (opportunityId) {
         query = query.eq('opportunity_id', opportunityId);
-      } else if (organizationId) {
-        // Join with opportunities table to filter by organization
-        query = this.supabase
-          .from('applications')
-          .select('status, stage, created_at, updated_at, opportunity:opportunity_id!inner(organization_id)')
-          .eq('opportunity.organization_id', organizationId);
       }
+      // Note: Organization filtering removed for now - add back when RLS is sorted
 
       const { data, error } = await query;
 
@@ -512,49 +600,61 @@ private async fetchApplicationsByOrganization(
   // DATA TRANSFORMATION
   // ===============================
 
-  private transformApplicationsData(rawData: any[]): FundingApplication[] {
-    return rawData.map(item => this.transformApplicationData(item));
+ private transformApplicationsData(rawData: any[]): FundingApplication[] {
+    console.log('🔄 [DEBUG] transformApplicationsData called with:', rawData.length, 'items');
+    
+    try {
+      const transformed = rawData.map((item, index) => {
+        console.log(`🔄 [DEBUG] Transforming item ${index}:`, item.id);
+        return this.transformApplicationData(item);
+      });
+      
+      console.log('✅ [DEBUG] Successfully transformed', transformed.length, 'applications');
+      return transformed;
+    } catch (error) {
+      console.error('💥 [DEBUG] Error in transformApplicationsData:', error);
+      throw error;
+    }
   }
 
   private transformApplicationData(rawData: any): FundingApplication {
-    const applicantData = rawData.applicant?.raw_user_meta_data || {};
+    console.log('🔄 [DEBUG] Transforming single application:', rawData.id);
     
-    return {
-      id: rawData.id,
-      applicantId: rawData.applicant_id,
-      opportunityId: rawData.opportunity_id,
-      title: rawData.title,
-      description: rawData.description,
-      status: rawData.status,
-      stage: rawData.stage,
-      formData: rawData.form_data || {},
-      documents: rawData.documents || {},
-      reviewNotes: rawData.review_notes || [],
-      terms: rawData.terms || {},
-      submittedAt: rawData.submitted_at ? new Date(rawData.submitted_at) : undefined,
-      reviewStartedAt: rawData.review_started_at ? new Date(rawData.review_started_at) : undefined,
-      reviewedAt: rawData.reviewed_at ? new Date(rawData.reviewed_at) : undefined,
-      decidedAt: rawData.decided_at ? new Date(rawData.decided_at) : undefined,
-      createdAt: new Date(rawData.created_at),
-      updatedAt: new Date(rawData.updated_at),
-      applicant: {
-        id: rawData.applicant?.id,
-        firstName: applicantData.firstName || '',
-        lastName: applicantData.lastName || '',
-        email: applicantData.email || rawData.applicant?.email || '',
-        companyName: applicantData.companyName,
-        industry: applicantData.industry,
-        registrationNumber: applicantData.registrationNumber
-      },
-      opportunity: rawData.opportunity ? {
-        id: rawData.opportunity.id,
-        title: rawData.opportunity.title,
-        fundingType: rawData.opportunity.funding_type,
-        offerAmount: rawData.opportunity.offer_amount,
-        currency: rawData.opportunity.currency,
-        organizationId: rawData.opportunity.organization_id
-      } : undefined
-    };
+    try {
+      const transformed = {
+        id: rawData.id,
+        applicantId: rawData.applicant_id,
+        opportunityId: rawData.opportunity_id,
+        title: rawData.title,
+        description: rawData.description,
+        status: rawData.status,
+        stage: rawData.stage,
+        formData: rawData.form_data || {},
+        documents: rawData.documents || {},
+        reviewNotes: rawData.review_notes || [],
+        terms: rawData.terms || {},
+        submittedAt: rawData.submitted_at ? new Date(rawData.submitted_at) : undefined,
+        reviewStartedAt: rawData.review_started_at ? new Date(rawData.review_started_at) : undefined,
+        reviewedAt: rawData.reviewed_at ? new Date(rawData.reviewed_at) : undefined,
+        decidedAt: rawData.decided_at ? new Date(rawData.decided_at) : undefined,
+        createdAt: new Date(rawData.created_at),
+        updatedAt: new Date(rawData.updated_at),
+        aiAnalysisStatus: rawData.ai_analysis_status,
+        aiMatchScore: rawData.ai_match_score,
+        applicant: {
+          id: rawData.applicant_id,
+          firstName: 'Loading...',
+          lastName: '',
+          email: '',
+        }
+      };
+
+      console.log('✅ [DEBUG] Successfully transformed application:', transformed.id);
+      return transformed;
+    } catch (error) {
+      console.error('💥 [DEBUG] Error transforming single application:', error);
+      throw error;
+    }
   }
 
   private calculateStats(applications: any[]): ApplicationStats {
