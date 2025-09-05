@@ -3,96 +3,7 @@
   <!-- Main Content -->
   <div class="flex-1 p-6">
     <!-- Header -->
-    <div class="mb-8">
-      <div class="flex items-center justify-between mb-4">
-        <div>
-          <h1 class="text-2xl font-bold text-gray-900">
-            @if (isFunder()) {
-              Application Management
-            } @else {
-              My Applications
-            }
-          </h1>
-          <p class="text-gray-600">
-            @if (isFunder()) {
-              Review and manage applications submitted to your opportunities
-            } @else {
-              Track and manage your funding applications  
-            }
-          </p>
-        </div>
-        
-        <div class="flex items-center space-x-3">
-          <!-- Refresh Button -->
-          <button
-            (click)="refreshData()"
-            [disabled]="isLoading()"
-            class="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
-            title="Refresh data"
-          >
-            <lucide-icon 
-              [name]="RefreshCwIcon" 
-              [size]="20"
-              [class.animate-spin]="isLoading()"
-            />
-          </button>
-
-          <!-- Primary Action Button -->
-          <ui-button
-            [variant]="'primary'"
-            (click)="isFunder() ? createOpportunity() : createNewApplication()"
-            class="flex items-center space-x-2"
-          >
-            <lucide-icon [name]="PlusIcon" [size]="20" />
-            <span>{{ getActionButtonText() }}</span>
-          </ui-button>
-        </div>
-      </div>
-
-      <!-- Stats Row -->
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div class="bg-white rounded-lg p-4 shadow-sm border">
-          <div class="flex items-center">
-            <lucide-icon [name]="FileTextIcon" [size]="20" class="text-blue-500" />
-            <div class="ml-3">
-              <p class="text-sm font-medium text-gray-600">Total</p>
-              <p class="text-2xl font-semibold text-gray-900">{{ stats().total }}</p>
-            </div>
-          </div>
-        </div>
-
-        <div class="bg-white rounded-lg p-4 shadow-sm border">
-          <div class="flex items-center">
-            <lucide-icon [name]="ClockIcon" [size]="20" class="text-yellow-500" />
-            <div class="ml-3">
-              <p class="text-sm font-medium text-gray-600">Under Review</p>
-              <p class="text-2xl font-semibold text-gray-900">{{ stats().underReview }}</p>
-            </div>
-          </div>
-        </div>
-
-        <div class="bg-white rounded-lg p-4 shadow-sm border">
-          <div class="flex items-center">
-            <lucide-icon [name]="CheckCircleIcon" [size]="20" class="text-green-500" />
-            <div class="ml-3">
-              <p class="text-sm font-medium text-gray-600">Approved</p>
-              <p class="text-2xl font-semibold text-gray-900">{{ stats().approved }}</p>
-            </div>
-          </div>
-        </div>
-
-        <div class="bg-white rounded-lg p-4 shadow-sm border">
-          <div class="flex items-center">
-            <lucide-icon [name]="DollarSignIcon" [size]="20" class="text-purple-500" />
-            <div class="ml-3">
-              <p class="text-sm font-medium text-gray-600">Total Requested</p>
-              <p class="text-lg font-semibold text-gray-900">{{ formatTotalRequested() }}</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
+   
     <!-- Error State -->
     @if (error()) {
       <div class="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
@@ -285,7 +196,7 @@
                     }
 
                     <div class="flex items-center space-x-1">
-                      <lucide-icon [name]="DollarSignIcon" [size]="16" />
+                      
                       <span>{{ formatCurrency(application.requestedAmount, application.currency) }}</span>
                     </div>
 

@@ -129,7 +129,7 @@ interface MarketFit {
   `,
   styles: [`
     .gradient-border {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background: linear-gradient(135deg, #26667F 0%, #26667F 100%);
       padding: 2px;
       border-radius: 12px;
     }

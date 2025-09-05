@@ -265,6 +265,8 @@ private async fetchApplicationsSimplified(opportunityId: string): Promise<Fundin
         .from('applications')
         .select('*')
         .eq('opportunity_id', opportunityId)
+         .not('status', 'eq', 'withdrawn') // Exclude withdrawn
+  .not('status', 'eq', 'draft') 
         .order('created_at', { ascending: false });
 
       console.log('📋 [DEBUG] Raw Supabase response:');
@@ -337,7 +339,8 @@ private async fetchApplicationsSimplified(opportunityId: string): Promise<Fundin
         .from('applications')
         .select('*')
         .in('opportunity_id', opportunityIds)
-        .not('status', 'eq', 'withdrawn'); // Exclude withdrawn applications
+        .not('status', 'eq', 'withdrawn')
+        .not('status', 'eq', 'draft');     
 
       // Apply filters
       if (filter?.status?.length) {
@@ -572,8 +575,15 @@ private async fetchApplicationsSimplified(opportunityId: string): Promise<Fundin
     organizationId?: string
   ): Promise<ApplicationStats> {
     try {
-      let query = this.supabase.from('applications').select('status, stage, created_at, updated_at');
+    //  let query = this.supabase.from('applications').select('status, stage, created_at, updated_at');
+// Example inside fetchApplicationStats
+let query = this.supabase
+  .from('applications')
+  .select('*', { count: 'exact' })
+  .eq('opportunity_id', opportunityId);
 
+// Exclude withdrawn and draft
+query = query.not('status', 'in', ['withdrawn', 'draft']);
       if (opportunityId) {
         query = query.eq('opportunity_id', opportunityId);
       }

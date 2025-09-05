@@ -28,10 +28,7 @@ import {
   Loader2
 } from 'lucide-angular';
 import { Subject, takeUntil } from 'rxjs';
-
-import { UiButtonComponent } from '../../shared/components';
-import { SidebarNavComponent } from '../../shared/components/sidenav/sidebar-nav.component';
-import { EnhancedAIAnalysisComponent } from '../../ai/ai-analysis/enhanced-ai-analysis.component';
+ 
 import { AuthService } from '../../auth/production.auth.service';
 import { ApplicationManagementService, FundingApplication } from '../../SMEs/services/application-management.service';
  
@@ -41,6 +38,7 @@ import { MessagingService, MessageThread } from 'src/app/messaging/services/mess
 import { AiAssistantComponent } from 'src/app/ai/ai-assistant/ai-assistant.component';
 import { ApplicationTabsComponent } from './application-tabs/application-tabs.component';
 import { AiExecutiveSummaryComponent } from './ai-executive-summary/ai-executive-summary.component';
+import { ApplicantProfileComponent } from './applicant-profile/applicant-profile.component';
 
 type TabId = 'overview' | 'ai-analysis' | 'messages' | 'documents' | 'activity';
 
@@ -77,7 +75,8 @@ interface ApplicationFormData {
     LucideAngularModule,
   AiExecutiveSummaryComponent ,
     ApplicationTabsComponent ,
-    AiAssistantComponent
+    AiAssistantComponent,
+    ApplicantProfileComponent
   ],
   templateUrl: './application-detail.component.html',
   styleUrls: ['./application-detail.component.css']
