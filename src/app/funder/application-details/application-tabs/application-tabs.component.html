@@ -1,0 +1,310 @@
+<!-- src/app/funder/application-details/application-tabs/application-tabs.component.html -->
+<div class="card">
+  <!-- Tab Navigation -->
+  <div class="border-b border-gray-200">
+    <nav class="flex space-x-8 px-6">
+      @for (tab of tabs(); track tab.id) {
+        <button 
+          [class]="activeTab() === tab.id ? 'tab-active px-4 py-3 text-sm font-medium rounded-t-lg border-b-2 border-primary-500 text-primary-600' : 'px-4 py-3 text-sm font-medium text-gray-500 hover:text-gray-700'"
+          (click)="setActiveTab(tab.id)">
+          <div class="flex items-center space-x-2">
+            <lucide-icon [name]="tab.icon" [size]="16"></lucide-icon>
+            <span>{{ tab.label }}</span>
+            @if (tab.badge) {
+              <span class="bg-red-500 text-white text-xs rounded-full px-2 py-0.5 min-w-[1.25rem] h-5 flex items-center justify-center">
+                {{ tab.badge }}
+              </span>
+            }
+          </div>
+        </button>
+      }
+    </nav>
+  </div>
+
+  <!-- Tab Content -->
+  <div class="p-6">
+    
+    <!-- Messages Tab -->
+    @if (activeTab() === 'messages') {
+      <div class="space-y-6">
+        @if (messageThreads().length === 0) {
+          <!-- No Messages State -->
+          <div class="text-center py-12">
+            <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <lucide-icon [name]="'message-square'" [size]="24" class="text-blue-600"></lucide-icon>
+            </div>
+            <h3 class="text-lg font-semibold text-gray-900 mb-2">No Messages Yet</h3>
+            <p class="text-gray-600 mb-6 max-w-md mx-auto">
+              Start a conversation with the applicant to discuss this application, request additional information, or provide updates.
+            </p>
+            
+            <ui-button 
+              variant="primary" 
+              (click)="createMessageThread()"
+              [disabled]="isCreatingThread()">
+              @if (isCreatingThread()) {
+                <lucide-icon [name]="'loader-2'" [size]="16" class="mr-2 animate-spin"></lucide-icon>
+                Creating Thread...
+              } @else {
+                <lucide-icon [name]="'plus'" [size]="16" class="mr-2"></lucide-icon>
+                Start Conversation
+              }
+            </ui-button>
+          </div>
+        } @else {
+          <!-- Message Interface -->
+          <div class="grid grid-cols-3 gap-6 h-96">
+            
+            <!-- Thread List -->
+            <div class="border-r border-gray-200 pr-4">
+              <h4 class="font-semibold text-gray-900 mb-4 flex items-center justify-between">
+                Conversations
+                <button 
+                  class="text-primary-600 hover:text-primary-800 text-sm"
+                  (click)="createMessageThread()"
+                  [disabled]="isCreatingThread()">
+                  @if (isCreatingThread()) {
+                    <lucide-icon [name]="'loader-2'" [size]="14" class="animate-spin"></lucide-icon>
+                  } @else {
+                    <lucide-icon [name]="'plus'" [size]="14"></lucide-icon>
+                  }
+                </button>
+              </h4>
+              
+              <div class="space-y-2 max-h-80 overflow-y-auto">
+                @for (thread of messageThreads(); track thread.id) {
+                  <div 
+                    class="p-3 rounded-lg cursor-pointer transition-colors border"
+                    [class]="activeThread()?.id === thread.id ? 'bg-primary-50 border-primary-200' : 'hover:bg-gray-50 border-gray-200'"
+                    (click)="selectThread(thread)">
+                    <div class="flex items-start justify-between mb-1">
+                      <h5 class="font-medium text-gray-900 text-sm truncate">{{ thread.subject }}</h5>
+                      @if (thread.unreadCount > 0) {
+                        <span class="bg-red-500 text-white text-xs rounded-full px-1.5 py-0.5 min-w-[1rem] h-4 flex items-center justify-center">
+                          {{ thread.unreadCount }}
+                        </span>
+                      }
+                    </div>
+                    <p class="text-xs text-gray-500 mb-1">{{ getParticipantNames(thread) }}</p>
+                    @if (thread.lastMessage) {
+                      <p class="text-xs text-gray-600 truncate">{{ thread.lastMessage.content }}</p>
+                    }
+                  </div>
+                }
+              </div>
+            </div>
+
+            <!-- Message View -->
+            <div class="col-span-2">
+              @if (activeThread()) {
+                <div class="flex flex-col h-full">
+                  <!-- Thread Header -->
+                  <div class="border-b border-gray-200 pb-3 mb-4">
+                    <h4 class="font-semibold text-gray-900">{{ activeThread()!.subject }}</h4>
+                    <p class="text-sm text-gray-600">{{ getParticipantNames(activeThread()!) }}</p>
+                  </div>
+
+                  <!-- Messages -->
+                  <div class="flex-1 overflow-y-auto space-y-3 mb-4">
+                    @for (message of activeThread()!.messages; track message.id) {
+                      <div class="flex items-start space-x-3">
+                        <div class="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center flex-shrink-0">
+                          <span class="text-xs font-medium text-gray-600">{{ message.user?.initials || 'U' }}</span>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                          <div class="flex items-center space-x-2 mb-1">
+                            <span class="font-medium text-gray-900 text-sm">{{ message.user?.name || 'Unknown' }}</span>
+                            <span class="text-xs text-gray-500">{{ formatTime(message.timestamp || message.created_at) }}</span>
+                            @if (message.message_type !== 'message') {
+                              <span [class]="getMessageTypeClass(message.message_type)" class="text-xs">
+                                <lucide-icon [name]="getMessageTypeIcon(message.message_type)" [size]="12" class="inline mr-1"></lucide-icon>
+                                {{ message.message_type }}
+                              </span>
+                            }
+                          </div>
+                          <p class="text-gray-700 text-sm leading-relaxed">{{ message.content }}</p>
+                        </div>
+                      </div>
+                    }
+                  </div>
+
+                  <!-- Message Input -->
+                  <div class="border-t border-gray-200 pt-3">
+                    <div class="flex space-x-3">
+                      <div class="flex-1">
+                        <textarea 
+                          class="w-full p-3 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                          rows="2"
+                          placeholder="Type your message..."
+                          [value]="newMessage()"
+                          (input)="onMessageInput($event)"
+                          (keydown)="onEnterKey($event)">
+                        </textarea>
+                      </div>
+                      <ui-button 
+                        variant="primary" 
+                        (click)="sendMessage()"
+                        [disabled]="!newMessage().trim() || isSendingMessage()">
+                        @if (isSendingMessage()) {
+                          <lucide-icon [name]="'loader-2'" [size]="16" class="animate-spin"></lucide-icon>
+                        } @else {
+                          <lucide-icon [name]="'send'" [size]="16"></lucide-icon>
+                        }
+                      </ui-button>
+                    </div>
+                  </div>
+                </div>
+              } @else {
+                <div class="text-center py-12 text-gray-500">
+                  <lucide-icon [name]="'message-square'" [size]="48" class="mx-auto mb-4 text-gray-400"></lucide-icon>
+                  <p>Select a conversation to view messages</p>
+                </div>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    }
+
+    <!-- Market Research Tab -->
+    @if (activeTab() === 'market-research') {
+      <div class="space-y-6">
+        @if (!marketResearchGenerated() && !researchError()) {
+          <!-- Generate Research State -->
+          <div class="text-center py-12">
+            <div class="w-16 h-16 bg-gradient-to-br from-purple-100 to-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <lucide-icon [name]="'bar-chart-3'" [size]="24" class="text-purple-600"></lucide-icon>
+            </div>
+            <h3 class="text-lg font-semibold text-gray-900 mb-2">Market Research Analysis</h3>
+            <p class="text-gray-600 mb-6 max-w-2xl mx-auto">
+              Generate comprehensive market research for this application including industry trends, 
+              competitive landscape, and investment timing analysis.
+            </p>
+            
+            @if (application?.applicant?.industry) {
+              <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6 max-w-md mx-auto">
+                <div class="flex items-center space-x-2 text-blue-700">
+                  <lucide-icon [name]="'trending-up'" [size]="16"></lucide-icon>
+                  <span class="font-medium">Industry Focus</span>
+                </div>
+                <p class="text-blue-600 text-sm mt-1">{{ application?.applicant?.industry }}</p>
+              </div>
+            }
+
+            <ui-button 
+              variant="primary" 
+              size="lg"
+              (click)="generateMarketResearch()"
+              [disabled]="isGeneratingResearch()">
+              @if (isGeneratingResearch()) {
+                <lucide-icon [name]="'loader-2'" [size]="16" class="mr-2 animate-spin"></lucide-icon>
+                Generating Research...
+              } @else {
+                <lucide-icon [name]="'search'" [size]="16" class="mr-2"></lucide-icon>
+                Generate Market Research
+              }
+            </ui-button>
+            
+            @if (isGeneratingResearch()) {
+              <p class="text-sm text-gray-500 mt-3">This may take a few moments...</p>
+            }
+          </div>
+        } @else if (researchError()) {
+          <!-- Error State -->
+          <div class="text-center py-12">
+            <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <lucide-icon [name]="'alert-circle'" [size]="24" class="text-red-600"></lucide-icon>
+            </div>
+            <h3 class="text-lg font-semibold text-gray-900 mb-2">Research Generation Failed</h3>
+            <div class="bg-red-50 border border-red-200 rounded-lg p-4 max-w-lg mx-auto mb-6">
+              <p class="text-red-800">{{ researchError() }}</p>
+            </div>
+            
+            <div class="flex justify-center space-x-4">
+              <ui-button variant="outline" (click)="clearResearchError()">
+                Cancel
+              </ui-button>
+              <ui-button variant="primary" (click)="retryMarketResearch()">
+                <lucide-icon [name]="'search'" [size]="16" class="mr-2"></lucide-icon>
+                Try Again
+              </ui-button>
+            </div>
+          </div>
+        } @else {
+          <!-- Research Generated State -->
+          <div class="text-center py-12">
+            <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <lucide-icon [name]="'trending-up'" [size]="24" class="text-green-600"></lucide-icon>
+            </div>
+            <h3 class="text-lg font-semibold text-gray-900 mb-2">Market Research Generated</h3>
+            <p class="text-gray-600 mb-6">
+              Market research analysis has been completed and is available in the AI Analysis tab.
+            </p>
+            
+            <ui-button variant="primary" (click)="generateMarketResearch()">
+              <lucide-icon [name]="'search'" [size]="16" class="mr-2"></lucide-icon>
+              Regenerate Research
+            </ui-button>
+          </div>
+        }
+      </div>
+    }
+
+    <!-- Documents Tab -->
+    @if (activeTab() === 'documents') {
+      <div class="space-y-6">
+        @if (hasDocuments()) {
+          <!-- Documents List -->
+          <div>
+            <div class="flex items-center justify-between mb-4">
+              <h4 class="font-semibold text-gray-900">Application Documents</h4>
+              <span class="text-sm text-gray-500">{{ applicationDocuments().length }} document(s)</span>
+            </div>
+            
+            <div class="space-y-3">
+              @for (doc of applicationDocuments(); track doc.key) {
+                <div class="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                  <div class="flex items-center space-x-4">
+                    <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                      <lucide-icon [name]="'file-text'" [size]="16" class="text-blue-600"></lucide-icon>
+                    </div>
+                    <div>
+                      <h5 class="font-medium text-gray-900">{{ doc.name }}</h5>
+                      <div class="flex items-center space-x-3 text-sm text-gray-500">
+                        <span>{{ doc.type.toUpperCase() }}</span>
+                        <span>•</span>
+                        <span>{{ doc.size }}</span>
+                        @if (doc.uploadedAt) {
+                          <span>•</span>
+                          <span>{{ formatDate(doc.uploadedAt) }}</span>
+                        }
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div class="flex items-center space-x-2">
+                    <button 
+                      class="text-primary-600 hover:text-primary-800 font-medium text-sm flex items-center space-x-1"
+                      (click)="downloadDocument(doc)">
+                      <lucide-icon [name]="'download'" [size]="14"></lucide-icon>
+                      <span>Download</span>
+                    </button>
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+        } @else {
+          <!-- No Documents State -->
+          <div class="text-center py-12">
+            <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <lucide-icon [name]="'file-text'" [size]="24" class="text-gray-400"></lucide-icon>
+            </div>
+            <h3 class="text-lg font-semibold text-gray-900 mb-2">No Documents</h3>
+            <p class="text-gray-600">No supporting documents have been uploaded with this application.</p>
+          </div>
+        }
+      </div>
+    }
+  </div>
+</div>

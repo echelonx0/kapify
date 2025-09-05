@@ -3,7 +3,7 @@ import { Component, inject, Input, OnInit, OnDestroy, signal, computed } from '@
 import { CommonModule } from '@angular/common';
 import { LucideAngularModule, Sparkles, Lightbulb, TrendingUp, Copy, Calculator, FileText, HelpCircle, AlertTriangle, Target, DollarSign, Clock, Zap } from 'lucide-angular';
 import { Router } from '@angular/router';
-import { Subject, takeUntil, combineLatest } from 'rxjs';
+import { Subject, takeUntil} from 'rxjs';
 import { MarketIntelligenceService, MarketIntelligence, CompetitorIntelligence } from '../services/market-intelligence.service';
  
 interface FormData {
@@ -29,15 +29,15 @@ interface IntelligenceInsight {
   standalone: true,
   imports: [CommonModule, LucideAngularModule],
   template: `
-    <div class="bg-gradient-to-br from-purple-500 via-primary-500 to-indigo-600 p-0.5 rounded-xl sticky top-6">
+    <div class="bg-gradient-to-br from-slate-500 via-primary-500 to-cyan-600 p-0.5 rounded-xl sticky top-6">
       <div class="bg-white rounded-xl p-6">
         <div class="flex items-center space-x-3 mb-4">
-          <div class="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
+          <div class="w-8 h-8 bg-gradient-to-r from-slate-500 to-slate-500 rounded-lg flex items-center justify-center">
             <lucide-icon [img]="SparklesIcon" [size]="16" class="text-white"></lucide-icon>
           </div>
-          <h3 class="font-semibold text-gray-900">AI Investment Assistant</h3>
+          <h3 class="font-semibold text-gray-900">Kapify Investment Assistant</h3>
           @if (isLoadingIntelligence()) {
-            <div class="w-4 h-4 border-2 border-purple-500 border-t-transparent rounded-full animate-spin"></div>
+            <div class="w-4 h-4 border-2 border-slate-500 border-t-transparent rounded-full animate-spin"></div>
           }
         </div>
 
@@ -102,18 +102,18 @@ interface IntelligenceInsight {
           </div>
 
           <!-- Smart Suggestion with Intelligence -->
-          <div class="bg-purple-50 border border-purple-200 rounded-lg p-4">
+          <div class="bg-slate-50 border border-slate-200 rounded-lg p-4">
             <div class="flex items-start space-x-3">
-              <div class="w-6 h-6 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                <lucide-icon [img]="LightbulbIcon" [size]="12" class="text-purple-600"></lucide-icon>
+              <div class="w-6 h-6 bg-slate-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                <lucide-icon [img]="LightbulbIcon" [size]="12" class="text-slate-600"></lucide-icon>
               </div>
               <div class="flex-1">
-                <h4 class="text-sm font-medium text-purple-900 mb-1">Smart Suggestion</h4>
-                <p class="text-xs text-purple-700 leading-relaxed">
+                <h4 class="text-sm font-medium text-slate-900 mb-1">Smart Suggestion</h4>
+                <p class="text-xs text-slate-700 leading-relaxed">
                   {{ getIntelligentSuggestion() }}
                 </p>
                 <button 
-                  class="text-xs text-purple-600 hover:text-purple-800 font-medium mt-2"
+                  class="text-xs text-slate-600 hover:text-slate-800 font-medium mt-2"
                   (click)="applySuggestion()"
                 >
                   Apply suggestion →
@@ -196,7 +196,7 @@ interface IntelligenceInsight {
             <div class="flex items-center space-x-2">
               <div class="flex-1 bg-gray-200 rounded-full h-1.5">
                 <div 
-                  class="bg-gradient-to-r from-primary-500 to-purple-500 h-1.5 rounded-full transition-all duration-300" 
+                  class="bg-gradient-to-r from-primary-500 to-slate-500 h-1.5 rounded-full transition-all duration-300" 
                   [style.width.%]="completionPercentage"
                 ></div>
               </div>

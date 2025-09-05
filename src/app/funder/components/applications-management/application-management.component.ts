@@ -46,7 +46,7 @@ interface TabData {
     FormsModule,
     LucideAngularModule,
     UiButtonComponent,
-    UiCardComponent,
+   
     SidebarNavComponent,
     AIAssistantModalComponent
   ],
@@ -252,9 +252,10 @@ export class ApplicationManagementComponent implements OnInit {
   }
 
   // Application actions
-  viewApplication(applicationId: string) {
-    this.router.navigate(['/applications', applicationId]);
-  }
+viewApplication(applicationId: string) {
+  // Navigate to detailed application view instead of generic applications route
+  this.router.navigate(['/funder/applications', applicationId]);
+}
 
   async updateApplicationStatus(applicationId: string, status: FundingApplication['status']) {
     try {

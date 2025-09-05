@@ -1,11 +1,8 @@
-// REPLACE your existing ApplicationsHomeComponent with this fixed version
-// This bypasses the ProfileManagementService issues by using direct database calls
-
 import { Component, signal, computed, OnInit, OnDestroy, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Subject, forkJoin, of } from 'rxjs';
+import { Subject, of } from 'rxjs';
 import { takeUntil, catchError, tap } from 'rxjs/operators';
 import { 
   LucideAngularModule, 
@@ -394,8 +391,9 @@ export class ApplicationsHomeComponent implements OnInit, OnDestroy {
   }
 
   viewApplication(id: string) {
-    this.router.navigate(['/applications', id]);
-  }
+  // Navigate to detailed application view instead of generic applications route
+  this.router.navigate(['/funder/applications', id]);
+}
 
   continueApplication(applicationId: string) {
     const app = this.applications().find(a => a.id === applicationId);
@@ -423,7 +421,7 @@ export class ApplicationsHomeComponent implements OnInit, OnDestroy {
   }
 
   reviewApplication(id: string) {
-    this.router.navigate(['/funder/applications', id, 'review']);
+     this.router.navigate(['/funder/applications', id]);
   }
 
   manageOpportunities() {

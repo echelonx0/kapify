@@ -8,7 +8,7 @@ import { of, Subject } from 'rxjs';
 import { takeUntil, catchError } from 'rxjs/operators';
 
 import { AuthService } from '../../auth/production.auth.service';
-import { SidebarNavComponent, UiButtonComponent } from '../../shared/components';
+import { UiButtonComponent } from '../../shared/components';
 import { FundingOpportunity } from '../../shared/models/funder.models';
 import { SMEOpportunitiesService } from '../services/opportunities.service';
 import { OpportunityCardComponent } from './components/opportunity-card.component';
@@ -19,7 +19,6 @@ import { OpportunityCardComponent } from './components/opportunity-card.componen
   imports: [
     CommonModule,
     FormsModule,
-   
     UiButtonComponent,
     LucideAngularModule,
     OpportunityCardComponent

@@ -91,10 +91,6 @@ export class ApplicationManagementService {
   isUpdating = signal<boolean>(false);
   error = signal<string | null>(null);
 
-  // ===============================
-  // FETCH APPLICATIONS - SIMPLIFIED
-  // ===============================
-
   /**
    * Get all applications for a specific opportunity - FIXED VERSION
    */

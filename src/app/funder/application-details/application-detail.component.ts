@@ -1,394 +1,605 @@
- 
-// src/app/applications/components/application-detail.component.ts
-import { Component, signal, input, OnInit, computed } from '@angular/core';
-import { Router, ActivatedRoute } from '@angular/router';
+// src/app/funder/components/application-detail/application-detail.component.ts
+import { Component, signal, computed, OnInit, OnDestroy, inject } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { LucideAngularModule, ArrowLeft, MessageSquare, Upload, Clock, AlertCircle, Edit3, Trash2, Eye, DollarSign, Calendar, FileText, CheckCircle, XCircle, User, Building } from 'lucide-angular';
-import { UiButtonComponent, UiProgressComponent, UiStatusBadgeComponent } from '../../shared/components';
-import { Application, ApplicationStatus } from '../../shared/models/application.models';
- 
-import { SWOTAnalysis } from '../../shared/models/swot.models';
-import { ApplicationService } from 'src/app/SMEs/services/applications.service';
- 
- 
- 
+import { 
+  LucideAngularModule, 
+  ArrowLeft, 
+  User, 
+  FileText, 
+  Bot, 
+  MessageSquare, 
+  Activity,
+  Clock,
+  Calendar,
+  DollarSign,
+  Building,
+  Mail,
+  Phone,
+  MapPin,
+  CheckCircle,
+  XCircle,
+  AlertCircle,
+  Eye,
+  Download,
+  Send,
+  Plus,
+  Loader2
+} from 'lucide-angular';
+import { Subject, takeUntil } from 'rxjs';
 
-interface ApplicationSection {
+import { UiButtonComponent } from '../../shared/components';
+import { SidebarNavComponent } from '../../shared/components/sidenav/sidebar-nav.component';
+import { EnhancedAIAnalysisComponent } from '../../ai/ai-analysis/enhanced-ai-analysis.component';
+import { AuthService } from '../../auth/production.auth.service';
+import { ApplicationManagementService, FundingApplication } from '../../SMEs/services/application-management.service';
+ 
+import { FundingOpportunity } from '../../shared/models/funder.models';
+import { SMEOpportunitiesService } from '../../funding/services/opportunities.service';
+import { MessagingService, MessageThread } from 'src/app/messaging/services/messaging.service';
+import { AiAssistantComponent } from 'src/app/ai/ai-assistant/ai-assistant.component';
+import { ApplicationTabsComponent } from './application-tabs/application-tabs.component';
+import { AiExecutiveSummaryComponent } from './ai-executive-summary/ai-executive-summary.component';
+
+type TabId = 'overview' | 'ai-analysis' | 'messages' | 'documents' | 'activity';
+
+interface TabData {
+  id: TabId;
+  label: string;
+  icon: any;
+}
+
+interface ApplicationActivity {
   id: string;
-  title: string;
-  hasComments: boolean;
-  commentsCount?: number;
-  isCompleted?: boolean;
+  action: string;
+  description: string;
+  timestamp: Date;
+  actor: string;
+}
+
+// Type-safe interface for form data
+interface ApplicationFormData {
+  requestedAmount?: number | string;
+  purposeStatement?: string;
+  useOfFunds?: string;
+  timeline?: string;
+  opportunityAlignment?: string;
+  [key: string]: any; // Allow other fields
 }
 
 @Component({
-  selector: 'app-application-detail-layout',
+  selector: 'app-application-detail',
   standalone: true,
   imports: [
-    CommonModule, 
+    CommonModule,
     FormsModule,
-    LucideAngularModule, 
-    UiButtonComponent, 
-    UiProgressComponent, 
-   
-    UiStatusBadgeComponent
+    LucideAngularModule,
+  AiExecutiveSummaryComponent ,
+    ApplicationTabsComponent ,
+    AiAssistantComponent
   ],
-  templateUrl: 'application-detail.component.html'
+  templateUrl: './application-detail.component.html',
+  styleUrls: ['./application-detail.component.css']
 })
-export class ApplicationDetailLayoutComponent implements OnInit {
-  // Inputs
-  applicationId = input.required<string>();
-  
+export class ApplicationDetailComponent implements OnInit, OnDestroy {
+  // Services
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private authService = inject(AuthService);
+  private applicationService = inject(ApplicationManagementService);
+  private messagingService = inject(MessagingService);
+  private opportunitiesService = inject(SMEOpportunitiesService);
+  private destroy$ = new Subject<void>();
+
+  // Make Object available to template
+  Object = Object;
+
   // Icons
   ArrowLeftIcon = ArrowLeft;
-  MessageSquareIcon = MessageSquare;
-  UploadIcon = Upload;
-  ClockIcon = Clock;
-  AlertCircleIcon = AlertCircle;
-  Edit3Icon = Edit3;
-  Trash2Icon = Trash2;
-  EyeIcon = Eye;
-  DollarSignIcon = DollarSign;
-  CalendarIcon = Calendar;
+  UserIcon = User;
   FileTextIcon = FileText;
+  BotIcon = Bot;
+  MessageSquareIcon = MessageSquare;
+  ActivityIcon = Activity;
+  ClockIcon = Clock;
+  CalendarIcon = Calendar;
+  DollarSignIcon = DollarSign;
+  BuildingIcon = Building;
+  MailIcon = Mail;
+  PhoneIcon = Phone;
+  MapPinIcon = MapPin;
   CheckCircleIcon = CheckCircle;
   XCircleIcon = XCircle;
-  UserIcon = User;
-  BuildingIcon = Building;
-  
-  // Signals
-  applicationData = signal<Application | null>(null);
-  swotAnalysis = signal<SWOTAnalysis | null>(null);
-  isLoading = signal(true);
-  activeSection = signal('administration');
-  showCommentsPanel = signal(false);
-  userRole = signal<'sme' | 'funder'>('sme'); // Will be determined from auth
-  
-  // Form states
-  newNoteCategory = signal('general');
-  newNoteContent = signal('');
-  newNoteRating = signal<number | null>(null);
-  newNoteSentiment = signal<'positive' | 'neutral' | 'negative' | 'concern'>('neutral');
-  newNoteIsPrivate = signal(false);
-  isAddingNote = signal(false);
-  
-  newStatus = signal<ApplicationStatus | ''>('');
-  statusUpdateReason = signal('');
-  isUpdatingStatus = signal(false);
+  AlertCircleIcon = AlertCircle;
+  EyeIcon = Eye;
+  DownloadIcon = Download;
+  SendIcon = Send;
+  PlusIcon = Plus;
+  Loader2Icon = Loader2;
 
-  // Application sections - matches your current structure
-  applicationSections = signal<ApplicationSection[]>([
-    { id: 'administration', title: 'Administration', hasComments: false, isCompleted: true },
-    { id: 'use-of-funds', title: 'Use of Funds', hasComments: false, isCompleted: true },
-    { id: 'proposed-terms', title: 'Proposed Terms', hasComments: false, isCompleted: true },
-    { id: 'swot-analysis', title: 'SWOT Analysis', hasComments: false, isCompleted: false },
-    { id: 'review-notes', title: 'Review Notes', hasComments: true, commentsCount: 0 },
-    { id: 'status-management', title: 'Status Management', hasComments: false }
+  // State
+  applicationId = signal<string>('');
+  application = signal<FundingApplication | null>(null);
+  opportunity = signal<FundingOpportunity | null>(null);
+  isLoading = signal(true);
+  error = signal<string | null>(null);
+  
+  // UI State
+  activeTab = signal<TabId>('overview');
+  
+  // Messaging state
+  messageThreads = signal<MessageThread[]>([]);
+  activeThread = signal<MessageThread | null>(null);
+  newMessage = signal('');
+  isCreatingThread = signal(false);
+  isSendingMessage = signal(false);
+  showCreateThread = signal(false);
+
+  // Status update state
+  isUpdatingStatus = signal(false);
+  statusComment = signal('');
+  showStatusModal = signal(false);
+  pendingStatus = signal<FundingApplication['status'] | null>(null);
+
+  // Activity state
+  activities = signal<ApplicationActivity[]>([]);
+
+  // Computed
+  currentUser = computed(() => this.authService.user());
+  
+  tabs = computed((): TabData[] => [
+    { id: 'overview', label: 'Overview', icon: this.EyeIcon },
+    { id: 'ai-analysis', label: 'AI Analysis', icon: this.BotIcon },
+    { id: 'messages', label: 'Messages', icon: this.MessageSquareIcon },
+    { id: 'documents', label: 'Documents', icon: this.FileTextIcon },
+    { id: 'activity', label: 'Activity', icon: this.ActivityIcon }
   ]);
 
-  // Computed properties
-  applicationProgress = computed(() => {
-    const app = this.applicationData();
-    if (!app) return 0;
-    
-    const completedSteps = app.applicationSteps.filter(step => step.status === 'completed').length;
-    const totalSteps = app.applicationSteps.length;
-    
-    return totalSteps > 0 ? Math.round((completedSteps / totalSteps) * 100) : 0;
+  canUpdateStatus = computed(() => {
+    const app = this.application();
+    if (!app) return false;
+    return ['submitted', 'under_review'].includes(app.status);
   });
 
-  totalCommentsCount = computed(() => {
-    return this.applicationData()?.reviewNotes?.length || 0;
+  // Type-safe form data access
+  formData = computed((): ApplicationFormData => {
+    const app = this.application();
+    return (app?.formData as ApplicationFormData) || {};
   });
 
-  constructor(
-    private router: Router,
-    private route: ActivatedRoute,
-    private applicationService: ApplicationService,
-   
-  ) {}
+  applicationForAI = computed(() => {
+    const app = this.application();
+    const opp = this.opportunity();
+    const formData = this.formData();
+    
+    if (!app || !opp) return null;
+
+    // Transform application data for AI analysis with proper type safety
+    return {
+      requestedAmount: this.getRequestedAmount()?.toString() || '0',
+      purposeStatement: formData.purposeStatement || app.description || '',
+      useOfFunds: formData.useOfFunds || '',
+      timeline: formData.timeline || '',
+      opportunityAlignment: formData.opportunityAlignment || ''
+    };
+  });
 
   ngOnInit() {
-    this.loadApplicationData();
-    this.determineUserRole();
-  }
-
-  private loadApplicationData() {
-    this.isLoading.set(true);
-    
-    this.applicationService.getApplicationById(this.applicationId()).subscribe({
-      next: (application) => {
-        this.applicationData.set(application || null);
-        this.updateSectionComments();
-        
-        // Load SWOT analysis if available
-        // if (application?.swotAnalysisId) {
-        //   this.swotService.getSWOTAnalysisById(application.swotAnalysisId).subscribe({
-        //     next: (swot) => this.swotAnalysis.set(swot || null)
-        //   });
-        // }
-        
-        this.isLoading.set(false);
-      },
-      error: (error) => {
-        console.error('Error loading application:', error);
-        this.isLoading.set(false);
-      }
-    });
-  }
-
-  private updateSectionComments() {
-    const app = this.applicationData();
-    if (!app) return;
-
-    this.applicationSections.update(sections => 
-      sections.map(section => ({
-        ...section,
-        commentsCount: section.id === 'review-notes' ? app.reviewNotes.length : 0
-      }))
-    );
-  }
-
-  private determineUserRole() {
-    // TODO: Get from auth service
-    // For now, determine based on whether user can manage the application
-    const app = this.applicationData();
-    if (app && app.reviewTeam.includes('current-user-id')) {
-      this.userRole.set('funder');
+    const id = this.route.snapshot.paramMap.get('applicationId');
+    if (id) {
+      this.applicationId.set(id);
+      this.loadApplicationData();
+      this.loadMessageThreads();
     } else {
-      this.userRole.set('sme');
+      this.router.navigate(['/funder/dashboard']);
     }
   }
 
-  // Navigation methods
-  goBack() {
-    this.router.navigate(['/applications']);
+  ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
-  toggleCommentsPanel() {
-    this.showCommentsPanel.update(show => !show);
-  }
-
-  setActiveSection(sectionId: string) {
-    this.activeSection.set(sectionId);
-  }
-
-  getSectionTabClass(sectionId: string): string {
-    const baseClasses = 'whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors flex items-center';
-    const isActive = this.activeSection() === sectionId;
+  // Type-safe getters for form data
+  getRequestedAmount(): number | null {
+    const formData = this.formData();
+    const amount = formData.requestedAmount;
     
-    if (isActive) {
-      return `${baseClasses} border-primary-500 text-primary-600`;
+    if (typeof amount === 'number') return amount;
+    if (typeof amount === 'string') {
+      const parsed = parseFloat(amount);
+      return isNaN(parsed) ? null : parsed;
     }
-    return `${baseClasses} border-transparent text-neutral-500 hover:text-neutral-700 hover:border-neutral-300`;
+    return null;
   }
 
-  getActiveSectionTitle(): string {
-    const activeSection = this.applicationSections().find(s => s.id === this.activeSection());
-    return activeSection?.title || 'Section';
+  getTimeline(): string | null {
+    return this.formData().timeline || null;
   }
 
-  // Permission methods
-  canEditApplication(): boolean {
-    const app = this.applicationData();
-    const role = this.userRole();
+  getUseOfFunds(): string | null {
+    return this.formData().useOfFunds || null;
+  }
+
+  hasFormData(): boolean {
+    const formData = this.formData();
+    return Object.keys(formData).length > 0;
+  }
+// 3. ADD METHOD TO HANDLE MARKET RESEARCH REQUEST
+onMarketResearchRequested() {
+  // Switch to AI analysis tab or show market research results
+  console.log('Market research requested for application:', this.application()?.id);
+  // You could emit an event to parent or update local state
+  // For example, you might want to trigger the AI assistant to show market insights
+}
+  private async loadApplicationData() {
+    this.isLoading.set(true);
+    this.error.set(null);
+
+    try {
+      // Load application details
+      const application = await this.applicationService
+        .getApplicationById(this.applicationId())
+        .pipe(takeUntil(this.destroy$))
+        .toPromise();
+
+      if (application) {
+        this.application.set(application);
+        
+        // Load associated opportunity
+        const opportunity = await this.opportunitiesService
+          .getOpportunityById(application.opportunityId)
+          .pipe(takeUntil(this.destroy$))
+          .toPromise();
+        
+        if (opportunity) {
+          this.opportunity.set(opportunity);
+        }
+
+        // Generate mock activity for now
+        this.generateMockActivity(application);
+      } else {
+        this.error.set('Application not found');
+      }
+    } catch (error) {
+      console.error('Error loading application:', error);
+      this.error.set('Failed to load application details');
+    } finally {
+      this.isLoading.set(false);
+    }
+  }
+
+  private loadMessageThreads() {
+    this.messagingService.loadThreads();
     
-    if (role === 'sme') {
-      return app?.status === 'draft' || app?.status === 'under_review';
-    }
-    return false;
-  }
-
-  canWithdrawApplication(): boolean {
-    const app = this.applicationData();
-    const role = this.userRole();
-    
-    if (role === 'sme') {
-      return app?.status !== 'approved' && app?.status !== 'funded' && app?.status !== 'withdrawn';
-    }
-    return false;
-  }
-
-  canManageApplication(): boolean {
-    const app = this.applicationData();
-    const role = this.userRole();
-    
-    if (role === 'funder') {
-      return app?.reviewTeam.includes('current-user-id') || app?.assignedReviewer === 'current-user-id';
-    }
-    return false;
-  }
-
-  // Action methods
-  enterEditMode() {
-    this.router.navigate(['edit'], { relativeTo: this.route });
-  }
-
-  withdrawApplication() {
-    const reason = prompt('Please provide a reason for withdrawing this application:');
-    if (reason) {
-      this.applicationService.withdrawApplication(this.applicationId(), reason).subscribe({
-        next: (updatedApp) => {
-          this.applicationData.set(updatedApp);
-          alert('Application withdrawn successfully');
+    this.messagingService.threads$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (threads) => {
+          // Filter threads related to this application
+          const appThreads = threads.filter(thread => 
+            thread.metadata?.applicationId === this.applicationId() ||
+            thread.subject.toLowerCase().includes('application')
+          );
+          this.messageThreads.set(appThreads);
         },
         error: (error) => {
-          console.error('Error withdrawing application:', error);
-          alert('Error withdrawing application');
+          console.error('Error loading message threads:', error);
         }
       });
-    }
   }
 
-  createSWOTAnalysis() {
-   
-  }
-
-addReviewNote() {
-    if (!this.newNoteContent().trim()) return;
-
-    this.isAddingNote.set(true);
-    
-    const noteData = {
-      reviewerId: 'current-user-id', // TODO: Get from auth
-      reviewerName: 'Current Reviewer', // TODO: Get from auth
-      category: this.newNoteCategory() as any,
-      content: this.newNoteContent(),
-      rating: this.newNoteRating() || undefined, // Convert null to undefined
-      sentiment: this.newNoteSentiment(),
-      isPrivate: this.newNoteIsPrivate(),
-      tags: []
-    };
-
-    this.applicationService.addReviewNote(this.applicationId(), noteData).subscribe({
-      next: (note) => {
-        // Refresh application data
-        this.loadApplicationData();
-        
-        // Reset form
-        this.newNoteContent.set('');
-        this.newNoteRating.set(null);
-        this.newNoteSentiment.set('neutral');
-        this.newNoteIsPrivate.set(false);
-        this.isAddingNote.set(false);
+  private generateMockActivity(application: FundingApplication) {
+    const activities: ApplicationActivity[] = [
+      {
+        id: '1',
+        action: 'submitted',
+        description: 'Application submitted for review',
+        timestamp: application.submittedAt || application.createdAt,
+        actor: application.applicant?.firstName + ' ' + application.applicant?.lastName || 'Applicant'
       },
-      error: (error) => {
-        console.error('Error adding review note:', error);
-        alert('Error adding review note');
-        this.isAddingNote.set(false);
+      {
+        id: '2', 
+        action: 'received',
+        description: 'Application received and assigned for initial review',
+        timestamp: new Date(application.createdAt.getTime() + 1000 * 60 * 5), // 5 minutes later
+        actor: 'System'
       }
-    });
+    ];
+
+    if (application.status === 'under_review') {
+      activities.push({
+        id: '3',
+        action: 'review_started',
+        description: 'Application moved to under review status',
+        timestamp: application.reviewStartedAt || new Date(),
+        actor: 'Reviewer'
+      });
+    }
+
+    this.activities.set(activities.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime()));
   }
 
-  updateStatus() {
-    if (!this.newStatus()) return;
+  // Tab management
+  setActiveTab(tabId: TabId) {
+    this.activeTab.set(tabId);
+  }
+
+  // Status management
+  async updateStatus(status: FundingApplication['status'], comment?: string) {
+    if (!this.canUpdateStatus()) return;
 
     this.isUpdatingStatus.set(true);
     
-    this.applicationService.updateApplicationStatus(
-      this.applicationId(), 
-      this.newStatus() as ApplicationStatus, 
-      this.statusUpdateReason()
-    ).subscribe({
-      next: (updatedApp) => {
-        this.applicationData.set(updatedApp);
-        this.newStatus.set('');
-        this.statusUpdateReason.set('');
-        this.isUpdatingStatus.set(false);
-        alert('Status updated successfully');
-      },
-      error: (error) => {
-        console.error('Error updating status:', error);
-        alert('Error updating status');
-        this.isUpdatingStatus.set(false);
+    try {
+      const updatedApp = await this.applicationService
+        .updateApplicationStatus(this.applicationId(), status, undefined, comment)
+        .pipe(takeUntil(this.destroy$))
+        .toPromise();
+
+      if (updatedApp) {
+        this.application.set(updatedApp);
+        
+        // Add activity
+        const newActivity: ApplicationActivity = {
+          id: Date.now().toString(),
+          action: status,
+          description: `Application ${status.replace('_', ' ')}${comment ? ': ' + comment : ''}`,
+          timestamp: new Date(),
+          actor: this.currentUser()?.firstName + ' ' + this.currentUser()?.lastName || 'Reviewer'
+        };
+        
+        const currentActivities = this.activities();
+        this.activities.set([newActivity, ...currentActivities]);
       }
-    });
+      
+      this.closeStatusModal();
+    } catch (error) {
+      console.error('Error updating status:', error);
+      // You might want to show a toast notification here
+    } finally {
+      this.isUpdatingStatus.set(false);
+    }
+  }
+
+  openStatusModal(status: FundingApplication['status']) {
+    this.pendingStatus.set(status);
+    this.statusComment.set('');
+    this.showStatusModal.set(true);
+  }
+
+  closeStatusModal() {
+    this.showStatusModal.set(false);
+    this.pendingStatus.set(null);
+    this.statusComment.set('');
+  }
+
+  confirmStatusUpdate() {
+    const status = this.pendingStatus();
+    const comment = this.statusComment().trim();
+    
+    if (status) {
+      this.updateStatus(status, comment || undefined);
+    }
+  }
+
+  // Messaging
+  async createMessageThread() {
+    const application = this.application();
+    if (!application?.applicantId) return;
+
+    this.isCreatingThread.set(true);
+
+    try {
+      const threadId = await this.messagingService.createThread(
+        `Re: ${application.title}`,
+        [application.applicantId]
+      );
+
+      if (threadId) {
+        // Load updated threads
+        await this.messagingService.loadThreads();
+        this.showCreateThread.set(false);
+      }
+    } catch (error) {
+      console.error('Error creating message thread:', error);
+    } finally {
+      this.isCreatingThread.set(false);
+    }
+  }
+
+  selectThread(thread: MessageThread) {
+    this.activeThread.set(thread);
+    this.messagingService.markThreadAsRead(thread.id);
+  }
+
+  async sendMessage() {
+    const thread = this.activeThread();
+    const message = this.newMessage().trim();
+    
+    if (!thread || !message) return;
+
+    this.isSendingMessage.set(true);
+
+    try {
+      const success = await this.messagingService.sendMessage(
+        thread.id,
+        message,
+        'message'
+      );
+
+      if (success) {
+        this.newMessage.set('');
+      }
+    } catch (error) {
+      console.error('Error sending message:', error);
+    } finally {
+      this.isSendingMessage.set(false);
+    }
+  }
+
+  onEnterKey(event: KeyboardEvent) {
+    if (event.key === 'Enter' && !event.shiftKey) {
+      event.preventDefault();
+      this.sendMessage();
+    }
+  }
+
+  // Type-safe event handlers
+  onMessageInput(event: Event) {
+    const target = event.target as HTMLTextAreaElement;
+    if (target) {
+      this.newMessage.set(target.value);
+    }
+  }
+
+  onStatusCommentInput(event: Event) {
+    const target = event.target as HTMLTextAreaElement;
+    if (target) {
+      this.statusComment.set(target.value);
+    }
+  }
+
+  // Navigation
+  goBack() {
+    // Go back to application management for this opportunity
+    const application = this.application();
+    if (application?.opportunityId) {
+      this.router.navigate(['/funder/opportunities', application.opportunityId, 'applications']);
+    } else {
+      this.router.navigate(['/funder/dashboard']);
+    }
   }
 
   // Utility methods
-  getStatusText(status: ApplicationStatus): string {
-    const statusMap: Record<ApplicationStatus, string> = {
-      'draft': 'Draft',
-      'submitted': 'Submitted',
-      'under_review': 'Under Review',
-      'due_diligence': 'Due Diligence',
-      'investment_committee': 'Investment Committee',
-      'approved': 'Approved',
-      'rejected': 'Rejected',
-      'funded': 'Funded',
-      'withdrawn': 'Withdrawn'
+  getStatusBadgeClass(status: string): string {
+    const classMap: Record<string, string> = {
+      draft: 'status-badge status-draft',
+      submitted: 'status-badge status-submitted', 
+      under_review: 'status-badge status-under-review',
+      approved: 'status-badge status-approved',
+      rejected: 'status-badge status-rejected',
+      withdrawn: 'status-badge status-draft'
+    };
+    return classMap[status] || 'status-badge status-draft';
+  }
+
+  getStatusText(status: string): string {
+    const statusMap: Record<string, string> = {
+      draft: 'Draft',
+      submitted: 'Submitted',
+      under_review: 'Under Review', 
+      approved: 'Approved',
+      rejected: 'Rejected',
+      withdrawn: 'Withdrawn'
     };
     return statusMap[status] || status;
   }
 
-
-
-
-getStatusColor(status: ApplicationStatus): 'primary' | 'success' | 'warning' | 'error' {
-  const colorMap: Record<ApplicationStatus, 'primary' | 'success' | 'warning' | 'error'> = {
-    'draft': 'warning',
-    'submitted': 'primary',
-    'under_review': 'primary',
-    'due_diligence': 'primary',
-    'investment_committee': 'warning',
-    'approved': 'success',
-    'rejected': 'error',
-    'funded': 'success',
-    'withdrawn': 'error'
-  };
-  return colorMap[status] || 'primary';
-}
-
-  getReviewerName(): string {
-    const app = this.applicationData();
-    if (!app?.assignedReviewer) return 'Not assigned';
-    
-    // TODO: Get actual reviewer name from user service
-    const reviewerMap: Record<string, string> = {
-      'funder-user-001': 'Sarah Johnson',
-      'funder-user-002': 'David Chen',
-      'funder-user-003': 'Michael Roberts',
-      'funder-user-004': 'Lisa Wang'
-    };
-    
-    return reviewerMap[app.assignedReviewer] || 'Unknown';
-  }
-
-  formatCurrency(amount?: number, currency?: string): string {
-    if (!amount) return 'N/A';
-    
-    const formatter = new Intl.NumberFormat('en-ZA', {
-      style: 'currency',
-      currency: currency || 'ZAR',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0
-    });
-    
-    return formatter.format(amount);
-  }
-
   formatDate(date?: Date): string {
     if (!date) return 'N/A';
-    
     return new Intl.DateTimeFormat('en-ZA', {
-      year: 'numeric',
       month: 'short',
-      day: 'numeric'
-    }).format(new Date(date));
+      day: 'numeric', 
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    }).format(date);
   }
 
-  getInitials(name: string): string {
-    return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+  formatCurrency(amount?: number, currency: string = 'ZAR'): string {
+    if (!amount) return 'N/A';
+    return new Intl.NumberFormat('en-ZA', {
+      style: 'currency',
+      currency: currency
+    }).format(amount);
   }
 
-  getSentimentClass(sentiment: string): string {
-    const classMap: Record<string, string> = {
-      'positive': 'bg-green-100 text-green-800',
-      'neutral': 'bg-gray-100 text-gray-800',
-      'negative': 'bg-red-100 text-red-800',
-      'concern': 'bg-yellow-100 text-yellow-800'
-    };
-    return classMap[sentiment] || 'bg-gray-100 text-gray-800';
+  getTimeAgo(timestamp: string | Date): string {
+    const now = new Date();
+    const messageDate = typeof timestamp === 'string' ? new Date(timestamp) : timestamp;
+    const diff = now.getTime() - messageDate.getTime();
+    const minutes = Math.floor(diff / 60000);
+    const hours = Math.floor(diff / 3600000);
+    const days = Math.floor(diff / 86400000);
+
+    if (minutes < 1) return 'Just now';
+    if (minutes < 60) return `${minutes}m ago`;
+    if (hours < 24) return `${hours}h ago`;
+    return `${days}d ago`;
+  }
+
+  getParticipantNames(thread: MessageThread): string {
+    return thread.participants.map(p => p.name).join(', ');
+  }
+
+  // Document utility
+  hasDocuments(): boolean {
+    const app = this.application();
+    return !!(app?.documents && Object.keys(app.documents).length > 0);
+  }
+
+  // getDocumentEntries(): [string, any][] {
+  //   const app = this.application();
+  //   if (!app?.documents) return [];
+  //   return Object.entries(app.documents);
+  // }
+
+  // AI Analysis event handlers
+  onAIAnalysisCompleted(result: any) {
+    console.log('AI Analysis completed:', result);
+    // Handle AI analysis results if needed
+  }
+
+  onImprovementRequested() {
+    // This might trigger a message to the applicant
+    // asking them to improve their application
+    console.log('Improvement requested');
+  }
+
+  onProceedRequested() {
+    // This might automatically move the application to next stage
+    console.log('Proceed requested');
+  }
+
+  // Add these methods to your ApplicationDetailComponent class
+
+  // Helper methods for template - add these to your component
+  
+  /**
+   * Get form data entries as array of objects with key/value
+   */
+  getFormDataEntries(): Array<{key: string, value: any}> {
+    const formData = this.formData();
+    return Object.entries(formData).map(([key, value]) => ({
+      key,
+      value
+    }));
+  }
+
+  /**
+   * Format field names from camelCase to readable text
+   */
+  formatFieldName(fieldName: string): string {
+    return fieldName
+      // Insert space before uppercase letters
+      .replace(/([A-Z])/g, ' $1')
+      // Trim and capitalize first letter
+      .trim()
+      .replace(/^\w/, c => c.toUpperCase());
+  }
+
+  /**
+   * Get document entries as array of objects with key/value
+   */
+  getDocumentEntries(): Array<{key: string, value: any}> {
+    const app = this.application();
+    if (!app?.documents) return [];
+    
+    return Object.entries(app.documents).map(([key, value]) => ({
+      key,
+      value
+    }));
   }
 }

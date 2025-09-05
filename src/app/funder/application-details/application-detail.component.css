@@ -1,0 +1,300 @@
+/* src/app/funder/components/application-detail/application-detail.component.css */
+ 
+/* Message animations */
+@keyframes message-slide-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.message-item {
+  animation: message-slide-in 0.3s ease-out;
+}
+
+/* Thread hover effects */
+.thread-item {
+  transition: all 0.2s ease;
+}
+
+.thread-item:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+/* Status badge animations */
+.status-badge {
+  transition: all 0.2s ease;
+}
+
+.status-badge:hover {
+  transform: scale(1.05);
+}
+
+/* AI Analysis integration */
+.ai-analysis-container {
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+/* Document grid responsiveness */
+@media (max-width: 768px) {
+  .document-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Activity timeline */
+.activity-timeline {
+  position: relative;
+}
+
+.activity-timeline::before {
+  content: '';
+  position: absolute;
+  left: 1rem;
+  top: 2rem;
+  bottom: 0;
+  width: 1px;
+  background: linear-gradient(to bottom, #e5e5e5, transparent);
+}
+
+.activity-item {
+  position: relative;
+  z-index: 1;
+}
+
+/* Message thread active state */
+.thread-active {
+  background: linear-gradient(to right, #f0f9ff, #e0f2fe);
+  border-left: 3px solid #0ea5e9;
+}
+
+/* Loading states */
+.loading-skeleton {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite;
+}
+
+@keyframes loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* Modal backdrop blur */
+.modal-backdrop {
+  backdrop-filter: blur(4px);
+}
+
+/* Tab transitions */
+.tab-content {
+  animation: fade-in 0.3s ease-out;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Quick action buttons */
+.quick-actions .ui-button {
+  transition: all 0.2s ease;
+}
+
+.quick-actions .ui-button:hover {
+  transform: translateY(-1px);
+}
+
+/* Message input focus */
+.message-input:focus {
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Document viewer overlay */
+.document-overlay {
+  background: rgba(0, 0, 0, 0.9);
+  backdrop-filter: blur(8px);
+}
+
+/* Responsive adjustments */
+@media (max-width: 1024px) {
+  .sidebar-content {
+    order: 2;
+  }
+  
+  .main-content {
+    order: 1;
+  }
+}
+
+@media (max-width: 640px) {
+  .header-actions {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  
+  .quick-actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+  
+  .tab-list {
+    overflow-x: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  
+  .tab-list::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* Print styles */
+@media print {
+  .sidebar-nav,
+  .quick-actions,
+  .tab-navigation,
+  .message-input,
+  .modal-backdrop {
+    display: none !important;
+  }
+  
+  .main-content {
+    margin-left: 0 !important;
+    max-width: none !important;
+  }
+}
+
+ 
+        :root {
+            --color-primary-50: #f0fdf4;
+            --color-primary-100: #dcfce7;
+            --color-primary-500: #22c55e;
+            --color-primary-600: #16a34a;
+            --color-primary-700: #15803d;
+            --shadow-card: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+            --shadow-card-hover: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        .card {
+            background-color: white;
+            border-radius: 0.75rem;
+            border: 1px solid #e5e5e5;
+            box-shadow: var(--shadow-card);
+            transition: all 0.2s;
+        }
+
+        .card:hover {
+            box-shadow: var(--shadow-card-hover);
+        }
+
+        .gradient-border {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 2px;
+            border-radius: 12px;
+        }
+
+        .gradient-content {
+            background: white;
+            border-radius: 10px;
+            padding: 1.5rem;
+        }
+
+        .ai-panel {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            position: sticky;
+            top: 20px;
+            height: calc(100vh - 40px);
+            overflow-y: auto;
+        }
+
+        .pulse-dot {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: .5; }
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .status-submitted {
+            background-color: #dbeafe;
+            color: #1e40af;
+        }
+
+        .metric-card {
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            border-left: 4px solid #3b82f6;
+        }
+
+        .risk-low { border-left-color: #10b981; }
+        .risk-medium { border-left-color: #f59e0b; }
+        .risk-high { border-left-color: #ef4444; }
+
+        .tab-active {
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            color: white;
+        }
+
+        .insight-card {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(147, 51, 234, 0.1));
+            border: 1px solid rgba(59, 130, 246, 0.2);
+        }
+
+        .ai-thinking {
+            background: linear-gradient(90deg, #f3f4f6, #e5e7eb, #f3f4f6);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+
+        .decision-button {
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .decision-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .decision-button:hover::before {
+            left: 100%;
+        }
+ 

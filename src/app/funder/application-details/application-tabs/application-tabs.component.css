@@ -1,0 +1,177 @@
+/* src/app/funder/components/application-detail/application-tabs/application-tabs.component.css */
+ 
+
+/* Tab specific styling */
+.tab-active {
+  background-color: var(--color-primary-50);
+  border-bottom: 2px solid var(--color-primary-500);
+  color: var(--color-primary-600);
+}
+
+/* Message thread styling */
+.message-thread {
+  transition: all 0.2s ease;
+}
+
+.message-thread:hover {
+  background-color: var(--color-neutral-50);
+}
+
+.message-thread.active {
+  background-color: var(--color-primary-50);
+  border-color: var(--color-primary-200);
+}
+
+/* Message bubble styling */
+.message-bubble {
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  background-color: var(--color-neutral-50);
+  border: 1px solid var(--color-neutral-200);
+  transition: all 0.2s ease;
+}
+
+.message-bubble:hover {
+  background-color: var(--color-neutral-100);
+}
+
+.message-bubble.own-message {
+  background-color: var(--color-primary-50);
+  border-color: var(--color-primary-200);
+  margin-left: 2rem;
+}
+
+/* Document item styling */
+.document-item {
+  transition: all 0.2s ease;
+}
+
+.document-item:hover {
+  background-color: var(--color-neutral-50);
+  border-color: var(--color-primary-300);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+/* Badge styling */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.125rem 0.5rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1rem;
+}
+
+.badge-red {
+  background-color: #fee2e2;
+  color: #991b1b;
+}
+
+.badge-blue {
+  background-color: #dbeafe;
+  color: #1e40af;
+}
+
+.badge-green {
+  background-color: var(--color-primary-100);
+  color: var(--color-primary-800);
+}
+
+/* Research generation animation */
+.research-generating {
+  background: linear-gradient(45deg, #f3f4f6, #e5e7eb, #f3f4f6);
+  background-size: 200% 200%;
+  animation: research-pulse 2s ease-in-out infinite;
+}
+
+@keyframes research-pulse {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+/* Empty state styling */
+.empty-state {
+  padding: 3rem 1.5rem;
+  text-align: center;
+}
+
+.empty-state-icon {
+  width: 4rem;
+  height: 4rem;
+  margin: 0 auto 1rem auto;
+  border-radius: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Scrollbar styling for message areas */
+.message-scroll::-webkit-scrollbar {
+  width: 4px;
+}
+
+.message-scroll::-webkit-scrollbar-track {
+  background: var(--color-neutral-100);
+  border-radius: 2px;
+}
+
+.message-scroll::-webkit-scrollbar-thumb {
+  background: var(--color-neutral-300);
+  border-radius: 2px;
+}
+
+.message-scroll::-webkit-scrollbar-thumb:hover {
+  background: var(--color-neutral-400);
+}
+
+/* Message input focus styling */
+.message-input:focus {
+  outline: none;
+  ring: 2px;
+  ring-color: var(--color-primary-500);
+  border-color: var(--color-primary-500);
+}
+
+/* Success state styling */
+.success-state {
+  background: linear-gradient(135deg, #ecfdf5, #d1fae5);
+  border: 1px solid #a7f3d0;
+}
+
+/* Error state styling */
+.error-state {
+  background: linear-gradient(135deg, #fef2f2, #fecaca);
+  border: 1px solid #f87171;
+}
+
+/* Loading state styling */
+.loading-state {
+  background: linear-gradient(135deg, #eff6ff, #dbeafe);
+  border: 1px solid #93c5fd;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .message-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .message-thread-list {
+    display: none;
+  }
+  
+  .tab-navigation {
+    overflow-x: auto;
+  }
+  
+  .tab-navigation nav {
+    min-width: max-content;
+  }
+}

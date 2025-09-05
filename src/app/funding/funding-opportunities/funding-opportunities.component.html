@@ -1,66 +1,68 @@
-<div class="min-h-screen bg-gradient-to-br from-neutral-50 to-primary-50/30 mr-6 mt-6 ml-16 mr-16 ">
- 
+<div class="min-h-screen bg-gradient-to-br from-neutral-50 to-primary-50/30 mr-6 mt-6 mr-16">
 
-  <!-- Header -->
-<div class="relative rounded-xl p-8 mb-8 text-white shadow-2xl overflow-hidden bg-gradient-to-r from-primary-600 via-primary-500 to-primary-400 animate-gradient">
-  <h1 class="text-3xl font-bold mb-2">Kapify Funding Marketplace</h1>
-  <p class="max-w-3xl text-primary-100 leading-relaxed">
-    Connect with South African funders and accelerate your growth through intelligent matching.
-  </p>
-</div>
-
+  <!-- Header using design system -->
+  <div class="page-header">
+    <div class="card-gradient">
+      <div class="card-content text-white shadow-2xl overflow-hidden bg-gradient-to-r from-primary-600 via-primary-500 to-primary-400 animate-gradient">
+        <h1 class="text-3xl font-bold mb-2">Kapify Funding Marketplace</h1>
+        <p class="max-w-3xl text-primary-100 leading-relaxed">
+          Connect with South African funders and accelerate your growth through intelligent matching.
+        </p>
+      </div>
+    </div>
+  </div>
 
   <!-- Quick Category Filters -->
   <div class="mb-8">
     <h2 class="text-xl font-semibold text-neutral-900 mb-4">Browse by Category</h2>
     <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
       <button (click)="selectedFundingType.set('equity'); applyFilters()" 
-              class="p-4 rounded-xl bg-gradient-to-br from-slate-500 to-slate-600 text-white shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-0.5 group">
+              class="action-button !w-auto p-4 rounded-xl bg-gradient-to-br from-slate-500 to-slate-600 text-white shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-0.5 group">
         <div class="text-center">
-          <div class="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center mx-auto mb-2 group-hover:scale-110 transition-transform">
+          <div class="icon w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center mx-auto mb-2 group-hover:scale-110 transition-transform">
             <lucide-icon [img]="BuildingIcon" [size]="20" />
           </div>
-          <div class="font-medium text-sm">Equity</div>
+          <div class="text font-medium text-sm">Equity</div>
         </div>
       </button>
       
       <button (click)="selectedFundingType.set('debt'); applyFilters()"
-              class="p-4 rounded-xl bg-gradient-to-br from-zinc-500 to-zinc-600 text-white shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-0.5 group">
+              class="action-button !w-auto p-4 rounded-xl bg-gradient-to-br from-zinc-500 to-zinc-600 text-white shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-0.5 group">
         <div class="text-center">
-          <div class="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center mx-auto mb-2 group-hover:scale-110 transition-transform">
+          <div class="icon w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center mx-auto mb-2 group-hover:scale-110 transition-transform">
             <lucide-icon [img]="DollarSignIcon" [size]="20" />
           </div>
-          <div class="font-medium text-sm">Debt</div>
+          <div class="text font-medium text-sm">Debt</div>
         </div>
       </button>
       
       <button (click)="selectedFundingType.set('grant'); applyFilters()"
-              class="p-4 rounded-xl bg-gradient-to-br from-green-500 to-green-600 text-white shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-0.5 group">
+              class="action-button !w-auto p-4 rounded-xl bg-gradient-to-br from-green-500 to-green-600 text-white shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-0.5 group">
         <div class="text-center">
-          <div class="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center mx-auto mb-2 group-hover:scale-110 transition-transform">
+          <div class="icon w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center mx-auto mb-2 group-hover:scale-110 transition-transform">
             <lucide-icon [img]="FileTextIcon" [size]="20" />
           </div>
-          <div class="font-medium text-sm">Grants</div>
+          <div class="text font-medium text-sm">Grants</div>
         </div>
       </button>
       
       <button (click)="selectedFundingType.set('mezzanine'); applyFilters()"
-              class="p-4 rounded-xl bg-gradient-to-br from-cyan-500 to-cyan-600 text-white shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-0.5 group">
+              class="action-button !w-auto p-4 rounded-xl bg-gradient-to-br from-cyan-500 to-cyan-600 text-white shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-0.5 group">
         <div class="text-center">
-          <div class="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center mx-auto mb-2 group-hover:scale-110 transition-transform">
+          <div class="icon w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center mx-auto mb-2 group-hover:scale-110 transition-transform">
             <lucide-icon [img]="TrendingUpIcon" [size]="20" />
           </div>
-          <div class="font-medium text-sm">Mezzanine</div>
+          <div class="text font-medium text-sm">Mezzanine</div>
         </div>
       </button>
       
       <button (click)="selectedFundingType.set('convertible'); applyFilters()"
-              class="p-4 rounded-xl bg-gradient-to-br from-sky-500 to-sky-600 text-white shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-0.5 group">
+              class="action-button !w-auto p-4 rounded-xl bg-gradient-to-br from-sky-500 to-sky-600 text-white shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-0.5 group">
         <div class="text-center">
-          <div class="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center mx-auto mb-2 group-hover:scale-110 transition-transform">
+          <div class="icon w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center mx-auto mb-2 group-hover:scale-110 transition-transform">
             <lucide-icon [img]="RefreshCwIcon" [size]="20" />
           </div>
-          <div class="font-medium text-sm">Convertible</div>
+          <div class="text font-medium text-sm">Convertible</div>
         </div>
       </button>
     </div>
@@ -70,71 +72,69 @@
     <!-- Main Opportunities List -->
     <main class="lg:col-span-7 space-y-6">
       
-      <!-- Enhanced Search -->
-      <div class="bg-white rounded-xl shadow-lg border border-neutral-200 p-4">
-  <div class="relative">
-    <lucide-icon
-      [img]="SearchIcon"
-      [size]="18"
-      class="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-400"
-    />
-    <input
-      type="text"
-      placeholder="Search funding opportunities..."
-      [value]="searchQuery()"
-      (input)="onSearchChange($event)"
-      class="block w-full pl-12 pr-4 py-3 border-2 border-neutral-200 rounded-lg text-sm  transition-all"
-    />
-  </div>
-</div>
+      <!-- Enhanced Search using design system -->
+      <div class="card p-4">
+        <div class="relative">
+          <lucide-icon
+            [img]="SearchIcon"
+            [size]="18"
+            class="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-400"
+          />
+          <input
+            type="text"
+            placeholder="Search funding opportunities..."
+            [value]="searchQuery()"
+            (input)="onSearchChange($event)"
+            class="block w-full pl-12 pr-4 py-3 border-2 border-neutral-200 rounded-lg text-sm transition-all"
+          />
+        </div>
+      </div>
 
-
-
-      <!-- Loading State -->
+      <!-- Loading State using design system -->
       @if (isLoading()) {
-        <div class="bg-white rounded-xl border border-neutral-200 p-12 text-center shadow-sm">
+        <div class="card p-12 text-center">
           <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mx-auto mb-4"></div>
           <p class="text-neutral-600">Loading opportunities...</p>
         </div>
       }
 
-      <!-- Empty State -->
+      <!-- Empty State using design system -->
       @if (!isLoading() && filteredOpportunities().length === 0) {
-        <div class="bg-white rounded-xl border border-neutral-200 p-12 text-center shadow-sm">
-          <div class="w-16 h-16 bg-neutral-100 rounded-full flex items-center justify-center mx-auto mb-4">
+        <div class="empty-state">
+          <div class="empty-icon">
             <lucide-icon [img]="SearchIcon" [size]="24" class="text-neutral-400" />
           </div>
-          <h3 class="text-lg font-medium text-neutral-900 mb-2">No opportunities found</h3>
-          <p class="text-neutral-600 mb-4">Try adjusting your search criteria or filters.</p>
+          <h3 class="empty-title">No opportunities found</h3>
+          <p class="empty-description">Try adjusting your search criteria or filters.</p>
           <ui-button variant="outline" (clicked)="clearFilters()">
             Clear all filters
           </ui-button>
         </div>
       }
 
-   <!-- Opportunities List -->
-@if (!isLoading() && filteredOpportunities().length > 0) {
-  <div class="space-y-6">
-    @for (opportunity of filteredOpportunities(); track opportunity.id) {
-      <app-opportunity-card 
-        [opportunity]="opportunity"
-        (apply)="applyToOpportunity($event)"
-        (viewDetails)="viewOpportunityDetails($event)"
-        (manage)="manageApplications($event)"
-        (signInToApply)="redirectToLogin()">
-      </app-opportunity-card>
-    }
-  </div>
-}
+      <!-- Opportunities List -->
+      @if (!isLoading() && filteredOpportunities().length > 0) {
+        <div class="space-y-6">
+          @for (opportunity of filteredOpportunities(); track opportunity.id) {
+            <app-opportunity-card 
+              [opportunity]="opportunity"
+              (apply)="applyToOpportunity($event)"
+              (viewDetails)="viewOpportunityDetails($event)"
+              (manage)="manageApplications($event)"
+              (signInToApply)="redirectToLogin()">
+            </app-opportunity-card>
+          }
+        </div>
+      }
 
     </main>
 
     <!-- Enhanced Sidebar -->
     <aside class="lg:col-span-3 space-y-6">
-      <!-- Enhanced Filters -->
-      <div class="bg-white rounded-xl shadow-lg border border-neutral-200 overflow-hidden">
-        <div class="bg-gradient-to-r from-primary-500 to-primary-600 px-6 py-4">
-          <h3 class="text-lg font-semibold text-white flex items-center">
+      <!-- Enhanced Filters using design system -->
+      <div class="section-card">
+        <div class="section-header bg-gradient-to-r from-primary-500 to-primary-600">
+          <h3 class="section-title text-white flex items-center">
             <lucide-icon [img]="FilterIcon" [size]="18" class="mr-2" />
             Filter Opportunities
           </h3>
@@ -204,10 +204,10 @@
         </div>
       </div>
 
-      <!-- Latest Insights -->
-      <div class="bg-white rounded-xl shadow-lg border border-neutral-200 overflow-hidden">
-        <div class="bg-gradient-to-r from-green-500 to-emerald-600 px-6 py-4">
-          <h3 class="text-lg font-semibold text-white flex items-center">
+      <!-- Latest Insights using design system -->
+      <div class="section-card">
+        <div class="section-header bg-gradient-to-r from-green-500 to-emerald-600">
+          <h3 class="section-title text-white flex items-center">
             <lucide-icon [img]="FileTextIcon" [size]="18" class="mr-2" />
             Latest Insights
           </h3>
@@ -215,10 +215,10 @@
         
         <div class="p-6">
           <ul class="space-y-4">
-            <li class="group cursor-pointer p-3 rounded-lg hover:bg-neutral-50 transition-colors">
+            <li class="list-item group cursor-pointer p-3 rounded-lg hover:bg-neutral-50 transition-colors">
               <div class="flex items-start space-x-3">
-                <div class="w-8 h-8 bg-primary-100 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <lucide-icon [img]="FileTextIcon" [size]="16" class="text-primary-600" />
+                <div class="icon-container blue w-8 h-8 mt-0.5">
+                  <lucide-icon [img]="FileTextIcon" [size]="16" />
                 </div>
                 <div>
                   <div class="font-medium text-neutral-900 group-hover:text-primary-600 transition-colors text-sm">
@@ -229,10 +229,10 @@
               </div>
             </li>
             
-            <li class="group cursor-pointer p-3 rounded-lg hover:bg-neutral-50 transition-colors">
+            <li class="list-item group cursor-pointer p-3 rounded-lg hover:bg-neutral-50 transition-colors">
               <div class="flex items-start space-x-3">
-                <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <lucide-icon [img]="TrendingUpIcon" [size]="16" class="text-green-600" />
+                <div class="icon-container green w-8 h-8 mt-0.5">
+                  <lucide-icon [img]="TrendingUpIcon" [size]="16" />
                 </div>
                 <div>
                   <div class="font-medium text-neutral-900 group-hover:text-primary-600 transition-colors text-sm">
@@ -243,10 +243,10 @@
               </div>
             </li>
             
-            <li class="group cursor-pointer p-3 rounded-lg hover:bg-neutral-50 transition-colors">
+            <li class="list-item group cursor-pointer p-3 rounded-lg hover:bg-neutral-50 transition-colors">
               <div class="flex items-start space-x-3">
-                <div class="w-8 h-8 bg-zinc-100 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <lucide-icon [img]="DollarSignIcon" [size]="16" class="text-zinc-600" />
+                <div class="icon-container neutral w-8 h-8 mt-0.5">
+                  <lucide-icon [img]="DollarSignIcon" [size]="16" />
                 </div>
                 <div>
                   <div class="font-medium text-neutral-900 group-hover:text-primary-600 transition-colors text-sm">
@@ -260,11 +260,11 @@
         </div>
       </div>
 
-      <!-- Enhanced Newsletter -->
-      <div class="bg-gradient-to-br from-primary-500 via-primary-600 to-primary-700 rounded-xl shadow-xl text-white overflow-hidden">
-        <div class="p-8">
+      <!-- Enhanced Newsletter using design system -->
+      <div class="card-gradient">
+        <div class="card-content bg-gradient-to-br from-primary-500 via-primary-600 to-primary-700 text-white overflow-hidden">
           <div class="text-center mb-6">
-            <div class="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4">
+            <div class="icon-container w-16 h-16 bg-white/20 mx-auto mb-4">
               <lucide-icon [img]="AlertCircleIcon" [size]="24" />
             </div>
             <h3 class="text-xl font-bold mb-2">Stay Updated</h3>
