@@ -5,7 +5,6 @@ import { LucideAngularModule, Plus, Edit, Trash2, ChevronDown, ChevronUp, Search
 import { UiInputComponent, UiButtonComponent } from '../../../../shared/components'; 
 import { interval, Subscription } from 'rxjs';
 import { takeWhile } from 'rxjs/operators';
- 
 import { FundingProfileSetupService } from '../../../services/funding-profile-setup.service';
 import { BusinessAssessment, ManagementStructure } from 'src/app/SMEs/applications/models/funding-application.models';
 import { ManpowerComponent } from './manpower/manpower.component';
