@@ -1,5 +1,4 @@
 <!-- src/app/funder/components/applications-management/application-management.component.html -->
-
 <div class="min-h-screen bg-neutral-50">
   <sidebar-nav />
   <div class="ml-16">
@@ -204,26 +203,7 @@
               </div>
             </div>
 
-            <!-- Quick Actions using design system -->
-            <div class="content-grid">
-              <div class="card p-6">
-                <h3 class="text-lg font-medium text-neutral-900 mb-2">Applications Needing Review</h3>
-                <p class="text-sm text-neutral-600 mb-4">New applications awaiting initial review</p>
-                <ui-button variant="primary" (clicked)="setActiveTab('review-queue')" class="w-full">
-                  Review Applications
-                </ui-button>
-              </div>
-
-              <div class="card p-6">
-                <h3 class="text-lg font-medium text-neutral-900 mb-2">AI Assistant</h3>
-                <p class="text-sm text-neutral-600 mb-4">Use AI to analyze applications, perform background checks, and conduct market research</p>
-                <ui-button variant="outline" (clicked)="openAIAssistant()" class="w-full">
-                  <lucide-icon [img]="BotIcon" [size]="16" class="mr-2" />
-                  Launch AI Assistant
-                </ui-button>
-              </div>
-            </div>
-          </div>
+       </div>
         }
 
         <!-- Applications List using design system -->
@@ -281,7 +261,7 @@
                           View Details
                         </ui-button>
 
-                        <ui-button variant="outline" (clicked)="openAIAssistant(application)">
+                        <!-- <ui-button variant="outline" (clicked)="openAIAssistant(application)">
                           <lucide-icon [img]="BotIcon" [size]="16" class="mr-1" />
                           AI Analysis
                         </ui-button>
@@ -298,7 +278,7 @@
                               <lucide-icon [img]="MessageSquareIcon" [size]="14" />
                             </ui-button>
                           </div>
-                        }
+                        } -->
                       </div>
                     </div>
                   </div>
