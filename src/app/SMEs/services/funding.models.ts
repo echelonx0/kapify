@@ -115,4 +115,6 @@ export interface ProfileData {
     financialRatios?: any[];
     lastUpdated?: string;
   };
+
+  supportingDocuments?: Record<string, any>;
 }

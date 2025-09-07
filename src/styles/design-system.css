@@ -31,13 +31,14 @@
   /* Shadows */
   --shadow-card: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
   --shadow-card-hover: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-card-elevated: 0 10px 25px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
 }
 
-/* Component utility classes */
+/* Base card components */
 .card {
   background-color: white;
   border-radius: 0.75rem;
-  border: 1px solid #e5e5e5;
+  border: 1px solid var(--color-neutral-200);
   box-shadow: var(--shadow-card);
   transition: all 0.2s;
 }
@@ -59,7 +60,237 @@
   padding: 1.5rem;
 }
 
-/* Status badge system */
+/* Application card component */
+.application-card {
+  position: relative;
+  background-color: white;
+  border-radius: 0.75rem;
+  border: 1px solid var(--color-neutral-200);
+  overflow: hidden;
+  transition: all 0.3s ease-out;
+  box-shadow: var(--shadow-card);
+}
+
+.application-card:hover {
+  box-shadow: var(--shadow-card-elevated);
+  transform: translateY(-0.25rem);
+}
+
+/* Status-based left borders */
+.status-border {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 0.25rem;
+  transition: all 0.3s;
+}
+
+.card-draft .status-border { background-color: var(--color-neutral-400); }
+.card-submitted .status-border { background-color: #3b82f6; }
+.card-under-review .status-border { background-color: #f59e0b; }
+.card-approved .status-border { background-color: var(--color-success); }
+.card-rejected .status-border { background-color: var(--color-error); }
+.card-withdrawn .status-border { background-color: var(--color-neutral-400); }
+
+.card-content {
+  padding: 1.5rem;
+  margin-left: 0.75rem;
+}
+
+/* Header */
+.header-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.header-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.title-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.application-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--color-neutral-900);
+  transition: color 0.2s;
+}
+
+.application-card:hover .application-title {
+  color: var(--color-primary-600);
+}
+
+.application-number {
+  display: flex;
+  align-items: center;
+  font-size: 0.75rem;
+  color: var(--color-neutral-500);
+  font-weight: 500;
+  background-color: var(--color-neutral-50);
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.375rem;
+}
+
+/* Action buttons area */
+.action-buttons {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-left: 1rem;
+}
+
+/* Details grid */
+.details-grid {
+  display: grid;
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+@media (min-width: 768px) {
+  .details-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1024px) {
+  .details-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.detail-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.detail-icon {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s;
+}
+
+.application-card:hover .detail-icon {
+  transform: scale(1.05);
+}
+
+.amount-icon {
+  background-color: #dcfce7;
+  color: #16a34a;
+}
+
+.date-icon {
+  background-color: #dbeafe;
+  color: #2563eb;
+}
+
+.applicant-icon {
+  background-color: #f3e8ff;
+  color: #9333ea;
+}
+
+.opportunity-icon {
+  background-color: #fed7aa;
+  color: #ea580c;
+}
+
+.detail-info {
+  min-width: 0;
+  flex: 1;
+}
+
+.detail-label {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--color-neutral-500);
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+  display: block;
+}
+
+.detail-value {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-neutral-900);
+  margin-top: 0.125rem;
+}
+
+/* Description */
+.description {
+  margin-bottom: 1rem;
+}
+
+.description p {
+  font-size: 0.875rem;
+  color: var(--color-neutral-600);
+}
+
+/* Progress bar */
+.progress-container {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.progress-bar {
+  flex: 1;
+  background-color: var(--color-neutral-200);
+  border-radius: 9999px;
+  height: 0.5rem;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(to right, var(--color-primary-500), var(--color-primary-600));
+  transition: all 0.5s ease-out;
+}
+
+.application-card:hover .progress-fill {
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+.progress-text {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--color-neutral-600);
+  min-width: 0;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .details-grid {
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+    gap: 0.75rem;
+  }
+  
+  .header-row {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  
+  .action-buttons {
+    margin-left: 0;
+    align-self: stretch;
+  }
+}
+
+/* Status badge system - enhanced with application statuses */
 .status-badge {
   display: inline-flex;
   align-items: center;
@@ -68,6 +299,7 @@
   font-size: 0.75rem;
   font-weight: 600;
   line-height: 1rem;
+  transition: all 0.2s;
 }
 
 .status-badge.status-active {
@@ -86,8 +318,8 @@
 }
 
 .status-badge.status-draft {
-  background-color: #f5f5f5;
-  color: #262626;
+  background-color: var(--color-neutral-100);
+  color: var(--color-neutral-700);
 }
 
 .status-badge.status-submitted {
@@ -108,6 +340,22 @@
 .status-badge.status-rejected {
   background-color: #fee2e2;
   color: #991b1b;
+}
+
+.status-badge.status-withdrawn {
+  background-color: var(--color-neutral-100);
+  color: var(--color-neutral-700);
+}
+
+.stage-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.375rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  background-color: var(--color-neutral-100);
+  color: var(--color-neutral-600);
 }
 
 /* Icon container variants */
@@ -394,7 +642,7 @@
   border-bottom-color: #d4d4d4;
 }
 
-/* Add to styles/design-system.css */
+/* Utility classes */
 .line-clamp-1 {
   display: -webkit-box;
   -webkit-line-clamp: 1;

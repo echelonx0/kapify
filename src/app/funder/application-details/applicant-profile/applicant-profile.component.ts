@@ -1,5 +1,5 @@
-// src/app/funder/components/applicant-profile/applicant-profile.component.ts
-import { Component, Input, OnInit } from '@angular/core';
+// src/app/funder/components/applicant-profile/applicant-profile.component.ts - FIXED
+import { Component, Input, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { 
   LucideAngularModule, 
@@ -10,6 +10,9 @@ import {
   BarChart3
 } from 'lucide-angular';
 import { FundingApplication, ApplicantInfo } from '../../../SMEs/services/application-management.service';
+import { FundingProfileBackendService } from '../../../SMEs/services/funding-profile-backend.service';
+import { ProfileDataTransformerService } from '../../../SMEs/services/profile-data-transformer.service';
+import { ProfileData } from '../../../SMEs/services/funding.models';
 
 @Component({
   selector: 'app-applicant-profile',
@@ -36,6 +39,10 @@ export class ApplicantProfileComponent implements OnInit {
   @Input() application!: FundingApplication;
   @Input() applicant?: ApplicantInfo;
 
+  // INJECT SERVICES TO ACCESS PROFILE DATA
+  private backendService = inject(FundingProfileBackendService);
+  private transformer = inject(ProfileDataTransformerService);
+
   // Icons
   BuildingIcon = Building;
   MailIcon = Mail;
@@ -43,13 +50,68 @@ export class ApplicantProfileComponent implements OnInit {
   TrendingUpIcon = TrendingUp;
   BarChart3Icon = BarChart3;
 
+  // STORE PROFILE DATA
+  profileData: Partial<ProfileData> | null = null;
+  profileLoading = false;
+  profileError: string | null = null;
+
   ngOnInit() {
     if (!this.application) {
       console.warn('Applicant Profile: Missing application data');
+      return;
+    }
+
+    // Load the applicant's full profile data
+    this.loadApplicantProfile();
+  }
+
+  private async loadApplicantProfile() {
+    if (!this.application.applicantId) {
+      console.warn('Applicant Profile: Missing applicant ID');
+      return;
+    }
+
+    this.profileLoading = true;
+    this.profileError = null;
+
+    try {
+      console.log('🔄 Loading profile for applicant:', this.application.applicantId);
+      
+      // Load the full profile using the backend service
+      const fundingProfile = await this.backendService
+        .loadSavedProfileForUser(this.application.applicantId)
+        .toPromise();
+
+      if (fundingProfile) {
+        // Transform to UI format
+        this.profileData = this.transformer.transformFromFundingProfile(fundingProfile);
+        console.log('✅ Profile loaded successfully:', this.profileData);
+      } else {
+        throw new Error('No profile data found');
+      }
+
+    } catch (error) {
+      console.error('❌ Failed to load applicant profile:', error);
+      this.profileError = 'Unable to load applicant profile';
+    } finally {
+      this.profileLoading = false;
     }
   }
 
+  // UPDATED METHODS TO USE ACTUAL PROFILE DATA
+
   getInitials(): string {
+    if (this.profileData?.personalInfo) {
+      const { firstName, lastName } = this.profileData.personalInfo;
+      if (firstName && lastName) {
+        return (firstName[0] + lastName[0]).toUpperCase();
+      }
+      if (firstName) {
+        return firstName.substring(0, 2).toUpperCase();
+      }
+    }
+
+    // Fallback to applicant data
     const applicant = this.applicant || this.application?.applicant;
     if (applicant?.firstName && applicant?.lastName) {
       return (applicant.firstName[0] + applicant.lastName[0]).toUpperCase();
@@ -64,6 +126,15 @@ export class ApplicantProfileComponent implements OnInit {
   }
 
   getFullName(): string {
+    if (this.profileData?.personalInfo) {
+      const { firstName, lastName } = this.profileData.personalInfo;
+      if (firstName && lastName) {
+        return `${firstName} ${lastName}`;
+      }
+      if (firstName) return firstName;
+    }
+
+    // Fallback to applicant data
     const applicant = this.applicant || this.application?.applicant;
     if (applicant?.firstName && applicant?.lastName) {
       return `${applicant.firstName} ${applicant.lastName}`;
@@ -74,21 +145,42 @@ export class ApplicantProfileComponent implements OnInit {
   }
 
   getTitle(): string {
+    if (this.profileData?.personalInfo?.position) {
+      return this.profileData.personalInfo.position;
+    }
+
+    // Fallback logic
     const applicant = this.applicant || this.application?.applicant;
     const formData = this.application?.formData || {};
     
     if (formData['applicantTitle']) return formData['applicantTitle'];
     if (formData['position']) return formData['position'];
     if (applicant?.companyName) return `CEO, ${applicant.companyName}`;
+    if (this.profileData?.businessInfo?.companyName) {
+      return `CEO, ${this.profileData.businessInfo.companyName}`;
+    }
     return 'Business Owner';
   }
 
   getEmail(): string {
+    if (this.profileData?.personalInfo?.email) {
+      return this.profileData.personalInfo.email;
+    }
+
     const applicant = this.applicant || this.application?.applicant;
     return applicant?.email || 'email@example.com';
   }
 
   getLocation(): string {
+    if (this.profileData?.businessInfo?.physicalAddress) {
+      const addr = this.profileData.businessInfo.physicalAddress;
+      if (addr.city && addr.province) {
+        return `${addr.city}, ${addr.province}`;
+      }
+      if (addr.city) return addr.city;
+    }
+
+    // Fallback logic
     const formData = this.application?.formData || {};
     if (formData['businessLocation']) return formData['businessLocation'];
     if (formData['city'] && formData['province']) return `${formData['city']}, ${formData['province']}`;
@@ -96,36 +188,51 @@ export class ApplicantProfileComponent implements OnInit {
     return 'Cape Town, SA';
   }
 
-  getVerificationStatus(): string {
+  getCompanyName(): string {
+    if (this.profileData?.businessInfo?.companyName) {
+      return this.profileData.businessInfo.companyName;
+    }
+
     const applicant = this.applicant || this.application?.applicant;
-    const formData = this.application?.formData || {};
+    return applicant?.companyName || 'Company Name';
+  }
+
+  getVerificationStatus(): string {
+    // Check if we have registration number
+    const hasRegistration = !!(
+      this.profileData?.businessInfo?.registrationNumber || 
+      this.applicant?.registrationNumber
+    );
     
-    const hasRegistration = !!(applicant?.registrationNumber || formData['registrationNumber']);
+    // Check if we have documents
     const hasDocuments = this.application?.documents && Object.keys(this.application.documents).length > 0;
     
     return (hasRegistration && hasDocuments) ? 'Verified' : 'Pending';
   }
 
   getProfileScore(): number {
-    const applicant = this.applicant || this.application?.applicant;
-    const formData = this.application?.formData || {};
-    
     let score = 0;
     
-    // Basic info (40 points)
-    if (applicant?.firstName) score += 10;
-    if (applicant?.lastName) score += 10;
-    if (applicant?.email) score += 10;
-    if (applicant?.companyName) score += 10;
+    // Personal info (20 points)
+    if (this.profileData?.personalInfo?.firstName) score += 5;
+    if (this.profileData?.personalInfo?.lastName) score += 5;
+    if (this.profileData?.personalInfo?.email) score += 5;
+    if (this.profileData?.personalInfo?.position) score += 5;
     
-    // Business details (40 points)
-    if (formData['businessDescription']) score += 15;
-    if (formData['yearsInBusiness'] || formData['businessAge']) score += 15;
-    if (formData['annualRevenue'] || formData['monthlyRevenue']) score += 10;
+    // Business info (30 points)
+    if (this.profileData?.businessInfo?.companyName) score += 10;
+    if (this.profileData?.businessInfo?.registrationNumber) score += 10;
+    if (this.profileData?.businessInfo?.industry) score += 10;
     
-    // Documentation (20 points)
+    // Financial info (25 points)
+    if (this.profileData?.financialInfo?.monthlyRevenue) score += 10;
+    if (this.profileData?.financialInfo?.annualRevenue) score += 10;
+    if (this.profileData?.financialInfo?.profitMargin) score += 5;
+    
+    // Documents (25 points)
     const docCount = this.application?.documents ? Object.keys(this.application.documents).length : 0;
-    if (docCount >= 2) score += 20;
+    if (docCount >= 3) score += 25;
+    else if (docCount >= 2) score += 15;
     else if (docCount >= 1) score += 10;
     
     return Math.min(100, score);
@@ -141,8 +248,12 @@ export class ApplicantProfileComponent implements OnInit {
   }
 
   getExperienceYears(): number {
+    if (this.profileData?.businessInfo?.yearsInOperation) {
+      return this.profileData.businessInfo.yearsInOperation;
+    }
+
+    // Fallback logic
     const formData = this.application?.formData || {};
-    
     if (formData['yearsInBusiness']) {
       return parseInt(formData['yearsInBusiness'].toString()) || 0;
     }
@@ -150,15 +261,18 @@ export class ApplicantProfileComponent implements OnInit {
       return parseInt(formData['businessAge'].toString()) || 0;
     }
     
-    // Default estimation
-    return 12;
+    return 5; // Default
   }
 
   getIndustry(): string {
+    if (this.profileData?.businessInfo?.industry) {
+      return this.profileData.businessInfo.industry;
+    }
+
     const applicant = this.applicant || this.application?.applicant;
     const formData = this.application?.formData || {};
     
-    return applicant?.industry || formData['industry'] || formData['businessType'] || 'Logistics industry';
+    return applicant?.industry || formData['industry'] || formData['businessType'] || 'Technology';
   }
 
   getExperienceLevel(): string {
@@ -169,23 +283,37 @@ export class ApplicantProfileComponent implements OnInit {
     return 'Early stage';
   }
 
-  getPreviousFunding(): string {
+  getMonthlyRevenue(): string {
+    if (this.profileData?.financialInfo?.monthlyRevenue) {
+      const amount = parseFloat(this.profileData.financialInfo.monthlyRevenue);
+      return this.formatCurrency(amount);
+    }
+
+    // Fallback to form data
     const formData = this.application?.formData || {};
-    
+    if (formData['monthlyRevenue']) {
+      const amount = parseFloat(formData['monthlyRevenue'].toString());
+      return this.formatCurrency(amount);
+    }
+
+    return 'R85K'; // Default for demo
+  }
+
+  getPreviousFunding(): string {
+    // Check if we have funding history in profile
+    if (this.profileData?.fundingInfo?.amountRequired) {
+      const amount = parseFloat(this.profileData.fundingInfo.amountRequired);
+      return this.formatCurrency(amount);
+    }
+
+    // Fallback logic
+    const formData = this.application?.formData || {};
     if (formData['previousFunding']) {
       const amount = parseFloat(formData['previousFunding'].toString());
       return this.formatCurrency(amount);
     }
     
-    if (formData['fundingHistory'] === 'successful') {
-      return 'R45K';
-    }
-    
-    if (formData['fundingHistory'] === 'some') {
-      return 'R25K';
-    }
-    
-    return 'R45K'; // Default for demo
+    return 'R45K'; // Default
   }
 
   getFundingStatus(): string {
@@ -199,11 +327,7 @@ export class ApplicantProfileComponent implements OnInit {
       return 'Previous funding';
     }
     
-    if (formData['previousFunding']) {
-      return 'Successfully repaid';
-    }
-    
-    return 'Successfully repaid'; // Default
+    return 'First-time applicant';
   }
 
   getFundingRecord(): string {
@@ -217,26 +341,29 @@ export class ApplicantProfileComponent implements OnInit {
       return 'Good history';
     }
     
-    return 'Excellent history'; // Default
+    return 'New business'; // Default for first-time applicants
   }
 
   getGrowthRate(): string {
+    // Try to calculate from financial data
+    if (this.profileData?.financialInfo?.annualRevenue && this.profileData?.financialInfo?.monthlyRevenue) {
+      const annual = parseFloat(this.profileData.financialInfo.annualRevenue);
+      const monthly = parseFloat(this.profileData.financialInfo.monthlyRevenue);
+      const currentAnnual = monthly * 12;
+      
+      if (annual > 0 && currentAnnual > annual) {
+        const growth = ((currentAnnual - annual) / annual) * 100;
+        return `+${Math.round(growth)}%`;
+      }
+    }
+
+    // Fallback to form data
     const formData = this.application?.formData || {};
-    
     if (formData['growthRate']) {
       return `+${Math.round(parseFloat(formData['growthRate'].toString()))}%`;
     }
     
-    if (formData['revenueGrowth']) {
-      return `+${Math.round(parseFloat(formData['revenueGrowth'].toString()))}%`;
-    }
-    
-    if (formData['yearOverYearGrowth']) {
-      return `+${Math.round(parseFloat(formData['yearOverYearGrowth'].toString()))}%`;
-    }
-    
-    // Default realistic growth for logistics
-    return '+23%';
+    return '+23%'; // Default realistic growth
   }
 
   getGrowthPeriod(): string {
@@ -254,9 +381,30 @@ export class ApplicantProfileComponent implements OnInit {
   }
 
   private formatCurrency(amount: number): string {
+    if (amount >= 1000000) {
+      return `R${Math.round(amount / 1000000)}M`;
+    }
     if (amount >= 1000) {
       return `R${Math.round(amount / 1000)}K`;
     }
-    return `R${amount}`;
+    return `R${Math.round(amount)}`;
+  }
+
+  // Loading state helpers
+  isProfileLoading(): boolean {
+    return this.profileLoading;
+  }
+
+  hasProfileError(): boolean {
+    return !!this.profileError;
+  }
+
+  getProfileError(): string | null {
+    return this.profileError;
+  }
+
+  // Helper to check if we have sufficient data
+  hasProfileData(): boolean {
+    return !!this.profileData;
   }
 }

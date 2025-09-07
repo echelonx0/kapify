@@ -1,4 +1,4 @@
-// src/app/profile/services/funding-application-backend.service.ts 
+// src/app/SMEs/services/funding-profile-backend.service.ts
 import { Injectable, inject, signal } from '@angular/core';
 import { Observable, throwError, from } from 'rxjs';
 import { tap, catchError, switchMap } from 'rxjs/operators';
@@ -103,6 +103,106 @@ export class FundingProfileBackendService {
     );
   }
 
+// Add this method to your FundingProfileBackendService class
+
+/**
+ * Load saved profile for a specific user (for funder review purposes)
+ * @param userId - The user ID of the applicant whose profile to load
+ */
+loadSavedProfileForUser(userId: string): Observable<FundingApplicationProfile> {
+  this.isLoading.set(true);
+  this.error.set(null);
+  
+  if (!userId) {
+    this.isLoading.set(false);
+    return throwError(() => new Error('User ID is required'));
+  }
+
+  return from(this.loadFromSupabaseForUser(userId)).pipe(
+    tap((profile) => {
+      this.isLoading.set(false);
+      
+      // Track profile load activity for the specific user
+      this.activityService.trackProfileActivity(
+        'updated',
+        `Funding application profile loaded for review (User: ${userId})`,
+        'profile_load_review'
+      );
+    }),
+    catchError(error => {
+      this.error.set(`Failed to load application profile for user: ${userId}`);
+      this.isLoading.set(false);
+      console.error('Load application profile error:', error);
+      
+      // Track error activity
+      this.activityService.trackProfileActivity(
+        'updated',
+        `Failed to load funding application profile for user: ${userId}`,
+        'profile_load_error'
+      );
+      
+      return throwError(() => error);
+    })
+  );
+}
+
+/**
+ * Load profile data from Supabase for a specific user
+ * @param userId - The target user's ID
+ */
+private async loadFromSupabaseForUser(userId: string): Promise<FundingApplicationProfile> {
+  try {
+    console.log(`🔍 Loading profile data for user: ${userId}`);
+    
+    const { data: sections, error } = await this.supabase
+      .from('business_plan_sections')
+      .select('*')
+      .eq('user_id', userId)
+      .order('updated_at', { ascending: false });
+
+    if (error) {
+      throw new Error(`Supabase error: ${error.message}`);
+    }
+
+    if (!sections || sections.length === 0) {
+      throw new Error(`No profile data found for user: ${userId}`);
+    }
+
+    const applicationData: FundingApplicationProfile = {};
+
+    sections.forEach(section => {
+      switch(section.section_type) {
+        case 'company-info':
+          applicationData.companyInfo = section.data;
+          break;
+        case 'documents':
+          applicationData.supportingDocuments = section.data;
+          break;
+        case 'business-assessment':
+          applicationData.businessAssessment = section.data;
+          break;
+        case 'swot-analysis':
+          applicationData.swotAnalysis = section.data;
+          break;
+        case 'management':
+          applicationData.managementStructure = section.data;
+          break;
+        case 'business-strategy':
+          applicationData.businessStrategy = section.data;
+          break;
+        case 'financial-profile':
+          applicationData.financialProfile = section.data;
+          break;
+      }
+    });
+
+    console.log(`✅ Profile data loaded successfully for user: ${userId}`);
+    return applicationData;
+  } catch (error) {
+    console.error(`❌ Error loading profile for user ${userId}:`, error);
+    throw error;
+  }
+}
   private async debugAuthContext(): Promise<void> {
     try {
       // Check Angular auth service
@@ -179,6 +279,8 @@ export class FundingProfileBackendService {
       throw error;
     }
   }
+
+  
 
   // ===============================
   // SAVE COMPLETE APPLICATION

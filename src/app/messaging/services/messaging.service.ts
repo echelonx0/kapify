@@ -396,6 +396,233 @@ export class MessagingService {
     this.loadThreads();
   }
 
+  // src/app/shared/services/messaging.service.ts - ADD these methods to your existing MessagingService
+
+// Add these methods to your existing MessagingService class
+
+/**
+ * Get all threads related to a specific application
+ */
+async getApplicationThreads(applicationId: string): Promise<MessageThread[]> {
+  try {
+    // Get threads with application metadata
+    const { data: threadsData, error: threadsError } = await this.supabase
+      .from('message_threads')
+      .select(`
+        *,
+        thread_participants!inner(
+          user_id,
+          last_read_at,
+          can_reply,
+          users(id, first_name, last_name, user_type)
+        )
+      `)
+      .contains('metadata', { application_id: applicationId })
+      .order('updated_at', { ascending: false });
+
+    if (threadsError) throw threadsError;
+
+    // Transform and enrich threads (reuse existing logic)
+    const enrichedThreads: MessageThread[] = await Promise.all(
+      (threadsData || []).map(async (threadData) => {
+        // Get messages for this thread
+        const { data: messagesData } = await this.supabase
+          .from('messages')
+          .select(`
+            *,
+            users(id, first_name, last_name, user_type)
+          `)
+          .eq('thread_id', threadData.id)
+          .order('created_at', { ascending: true });
+
+        // Process participants
+        const participants: MessageUser[] = threadData.thread_participants.map((tp: any) => ({
+          id: tp.users.id,
+          name: `${tp.users.first_name} ${tp.users.last_name}`.trim() || 'Unknown',
+          initials: this.generateInitials(tp.users.first_name, tp.users.last_name),
+          user_type: tp.users.user_type
+        }));
+
+        // Process messages with user info
+        const messages: Message[] = (messagesData || []).map((msg: any) => ({
+          ...msg,
+          type: msg.message_type,
+          timestamp: new Date(msg.created_at),
+          user: msg.users ? {
+            id: msg.users.id,
+            name: msg.users.id === this.currentUserSubject.value?.id 
+              ? 'You' 
+              : `${msg.users.first_name} ${msg.users.last_name}`.trim() || 'Unknown',
+            initials: msg.users.id === this.currentUserSubject.value?.id
+              ? 'YU'
+              : this.generateInitials(msg.users.first_name, msg.users.last_name),
+            user_type: msg.users.user_type
+          } : {
+            id: 'system',
+            name: 'System',
+            initials: 'SY'
+          }
+        }));
+
+        // Calculate unread count
+        const currentParticipant = threadData.thread_participants.find(
+          (tp: any) => tp.user_id === this.currentUserSubject.value?.id
+        );
+        
+        const lastReadAt = currentParticipant?.last_read_at 
+          ? new Date(currentParticipant.last_read_at) 
+          : null;
+        
+        const unreadCount = lastReadAt 
+          ? messages.filter(m => 
+              new Date(m.created_at) > lastReadAt && 
+              m.sender_id !== this.currentUserSubject.value?.id
+            ).length
+          : messages.filter(m => m.sender_id !== this.currentUserSubject.value?.id).length;
+
+        return {
+          id: threadData.id,
+          subject: threadData.subject,
+          created_by: threadData.created_by,
+          created_at: threadData.created_at,
+          updated_at: threadData.updated_at,
+          is_broadcast: threadData.is_broadcast,
+          metadata: threadData.metadata,
+          messages,
+          participants,
+          messageCount: messages.length,
+          unreadCount,
+          lastMessage: messages[messages.length - 1]
+        };
+      })
+    );
+
+    return enrichedThreads;
+  } catch (error) {
+    console.error('Error loading application threads:', error);
+    return [];
+  }
+}
+
+/**
+ * Create a new thread for an application, automatically including the applicant
+ */
+async createApplicationThread(
+  applicationId: string, 
+  subject: string, 
+  additionalParticipantIds: string[] = []
+): Promise<string | null> {
+  try {
+    const currentUser = this.currentUserSubject.value;
+    if (!currentUser) throw new Error('No authenticated user');
+
+    // Get application details to find the applicant
+    const { data: applicationData, error: appError } = await this.supabase
+      .from('applications')
+      .select('id, title, applicant_id, opportunity_id')
+      .eq('id', applicationId)
+      .single();
+
+    if (appError || !applicationData) {
+      throw new Error('Application not found');
+    }
+
+    // Create thread with application metadata
+    const { data: threadData, error: threadError } = await this.supabase
+      .from('message_threads')
+      .insert([{
+        subject: subject || `Re: ${applicationData.title}`,
+        created_by: currentUser.id,
+        metadata: {
+          application_id: applicationId,
+          opportunity_id: applicationData.opportunity_id,
+          application_title: applicationData.title
+        }
+      }])
+      .select()
+      .single();
+
+    if (threadError) throw threadError;
+
+    // Add participants: current user, applicant, and any additional participants
+    const participantIds = [
+      currentUser.id,
+      applicationData.applicant_id,
+      ...additionalParticipantIds.filter(id => 
+        id !== currentUser.id && id !== applicationData.applicant_id
+      )
+    ];
+
+    const participantInserts = participantIds.map(userId => ({
+      thread_id: threadData.id,
+      user_id: userId,
+      can_reply: true
+    }));
+
+    const { error: participantsError } = await this.supabase
+      .from('thread_participants')
+      .insert(participantInserts);
+
+    if (participantsError) throw participantsError;
+
+    return threadData.id;
+  } catch (error) {
+    console.error('Error creating application thread:', error);
+    return null;
+  }
+}
+
+/**
+ * Get application details for messaging context
+ */
+async getApplicationContext(applicationId: string): Promise<any> {
+  try {
+    // First get the application
+    const { data: applicationData, error: appError } = await this.supabase
+      .from('applications')
+      .select(`
+        id,
+        title,
+        status,
+        stage,
+        applicant_id,
+        opportunity_id
+      `)
+      .eq('id', applicationId)
+      .single();
+
+    if (appError) throw appError;
+
+    // Then get the applicant user details
+    const { data: userData, error: userError } = await this.supabase
+      .from('users')
+      .select(`
+        id,
+        first_name,
+        last_name,
+        email,
+        user_type,
+        company_name
+      `)
+      .eq('id', applicationData.applicant_id)
+      .single();
+
+    if (userError) {
+      console.warn('Could not fetch user details:', userError);
+      // Return application data without user details
+      return applicationData;
+    }
+
+    // Combine the data
+    return {
+      ...applicationData,
+      users: userData
+    };
+  } catch (error) {
+    console.error('Error getting application context:', error);
+    return null;
+  }
+}
   ngOnDestroy() {
     if (this.realtimeChannel) {
       this.realtimeChannel.unsubscribe();

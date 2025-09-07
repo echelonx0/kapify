@@ -21,22 +21,18 @@ import {
   Calendar
 } from 'lucide-angular';
 
-import { UiButtonComponent, UiCardComponent } from '../../../shared/components';
+import { UiButtonComponent } from '../../../shared/components';
 import { SidebarNavComponent } from '../../../shared/components/sidenav/sidebar-nav.component';
 import { AIAssistantModalComponent } from '../../../ai/ai-assistant-modal.component'; 
 import { AuthService } from '../../../auth/production.auth.service';
 import { SMEOpportunitiesService } from '../../../funding/services/opportunities.service';
 import { FundingOpportunity } from '../../../shared/models/funder.models';
 import { ApplicationManagementService, ApplicationStats, FundingApplication } from 'src/app/SMEs/services/application-management.service';
+import { ApplicationListCardComponent, BaseApplicationCard } from 'src/app/shared/components/application-list-card/application-list-card.component'; 
  
 type TabId = 'overview' | 'all' | 'review-queue' | 'completed';
 
-interface TabData {
-  id: TabId;
-  label: string;
-  count?: number;
-  icon: any;
-}
+ 
 
 @Component({
   selector: 'app-application-management',
@@ -46,9 +42,9 @@ interface TabData {
     FormsModule,
     LucideAngularModule,
     UiButtonComponent,
-   
     SidebarNavComponent,
-    AIAssistantModalComponent
+    AIAssistantModalComponent,
+    ApplicationListCardComponent
   ],
   templateUrl: 'application-management.component.html',
   styles: [`
@@ -190,6 +186,46 @@ export class ApplicationManagementComponent implements OnInit {
     }
   }
 
+  // Add this method to your ApplicationManagementComponent class
+
+private extractRequestedAmount(formData: Record<string, any>): number {
+  // Handle different possible data structures in formData
+  if (formData?.['coverInformation']?.requestedAmount) {
+    return formData['coverInformation'].requestedAmount;
+  }
+  
+  if (formData?.['requestedAmount']) {
+    return formData['requestedAmount'];
+  }
+  
+  // Check for nested funding information
+  if (formData?.['fundingInformation']?.requestedAmount) {
+    return formData['fundingInformation'].requestedAmount;
+  }
+  
+  // Default fallback
+  return 0;
+}
+// Transform method for funder applications
+  transformFunderToBaseCard(app: FundingApplication): BaseApplicationCard {
+  return {
+    id: app.id,
+    title: app.title,
+    applicationNumber: `APP-${app.id.slice(-6).toUpperCase()}`,
+    status: app.status,
+    fundingType: app.opportunity?.fundingType,
+    requestedAmount: this.extractRequestedAmount(app.formData),
+    currency: app.opportunity?.currency || 'ZAR',
+    currentStage: this.formatStage(app.stage),
+    description: app.description,
+    createdAt: app.createdAt,
+    updatedAt: app.updatedAt,
+    submittedAt: app.submittedAt,
+    applicantName: `${app.applicant?.firstName || ''} ${app.applicant?.lastName || ''}`.trim(),
+    applicantCompany: app.applicant?.companyName,
+    opportunityTitle: app.opportunity?.title
+  };
+}
   private async loadData() {
     this.isLoading.set(true);
     
@@ -212,6 +248,8 @@ export class ApplicationManagementComponent implements OnInit {
       this.isLoading.set(false);
     }
   }
+
+ 
 
   // Tab management
   setActiveTab(tabId: TabId) {

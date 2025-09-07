@@ -168,138 +168,44 @@
         </div>
       } @else {
         <!-- Applications Grid -->
-        <div class="divide-y divide-gray-200">
-          @for (application of filteredApplications(); track application.id) {
-            <div class="p-6 hover:bg-gray-50 transition-colors">
-              <div class="flex items-start justify-between">
-                <!-- Application Info -->
-                <div class="flex-1 min-w-0">
-                  <div class="flex items-center space-x-3 mb-2">
-                    <h3 class="text-lg font-medium text-gray-900 line-clamp-1">
-                      {{ application.title }}
-                    </h3>
-                    
-                    <!-- Status Badge -->
-                    <span [class]="getStatusBadgeClass(application.status)" 
-                          class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium">
-                      {{ getStatusText(application.status) }}
-                    </span>
-                  </div>
-
-                  <!-- Application Details Row -->
-                  <div class="flex items-center space-x-6 text-sm text-gray-600 mb-3">
-                    @if (application.applicationNumber) {
-                      <div class="flex items-center space-x-1">
-                        <lucide-icon [name]="FileTextIcon" [size]="16" />
-                        <span>{{ application.applicationNumber }}</span>
-                      </div>
-                    }
-
-                    <div class="flex items-center space-x-1">
-                      
-                      <span>{{ formatCurrency(application.requestedAmount, application.currency) }}</span>
-                    </div>
-
-                    @if (application.currentStage) {
-                      <div class="flex items-center space-x-1">
-                        <lucide-icon [name]="ClockIcon" [size]="16" />
-                        <span>{{ application.currentStage }}</span>
-                      </div>
-                    }
-
-                    <div class="flex items-center space-x-1">
-                      <!-- <lucide-icon [name]="CalendarIcon" [size]="16" /> -->
-                      <span>{{ formatDate(application.updatedAt) }}</span>
-                    </div>
-                  </div>
-
-                  <!-- Funder-specific Info -->
-                  @if (isFunder() && (application.applicantName || application.applicantCompany)) {
-                    <div class="flex items-center space-x-4 text-sm text-gray-600 mb-3">
-                      @if (application.applicantName) {
-                        <div class="flex items-center space-x-1">
-                          <!-- <lucide-icon [name]="UsersIcon" [size]="16" /> -->
-                          <span>{{ application.applicantName }}</span>
-                        </div>
-                      }
-                      @if (application.applicantCompany) {
-                        <div class="flex items-center space-x-1">
-                          <!-- <lucide-icon [name]="BuildingIcon" [size]="16" /> -->
-                          <span>{{ application.applicantCompany }}</span>
-                        </div>
-                      }
-                    </div>
-                  }
-
-                  <!-- SME-specific Info -->
-                  @if (isSME() && application.opportunityTitle) {
-                    <div class="flex items-center space-x-1 text-sm text-gray-600 mb-3">
-                      <lucide-icon [name]="TrendingUpIcon" [size]="16" />
-                      <span>Opportunity: {{ application.opportunityTitle }}</span>
-                    </div>
-                  }
-
-                  <!-- Description -->
-                  @if (application.description) {
-                    <p class="text-gray-700 line-clamp-2 mb-3">
-                      {{ application.description }}
-                    </p>
-                  }
-
-                  <!-- Progress Bar -->
-                  @if (application.status !== 'draft') {
-                    <div class="w-full bg-gray-200 rounded-full h-2 mb-3">
-                      <div 
-                        class="bg-blue-600 h-2 rounded-full transition-all duration-300"
-                        [style.width.%]="getApplicationProgress(application)">
-                      </div>
-                    </div>
-                  }
-                </div>
-
-                <!-- Action Buttons -->
-                <div class="flex items-center space-x-3 ml-6">
-                  @if (isSME()) {
-                    <!-- SME Actions -->
-                    @if (application.status === 'draft') {
-                      <ui-button
-                        [variant]="'outline'"
-                        (click)="continueApplication(application.id)"
-                      >
-                        Continue
-                      </ui-button>
-                    } @else {
-                      <ui-button
-                        [variant]="'outline'"
-                        (click)="viewApplication(application.id)"
-                      >
-                        <lucide-icon [name]="EyeIcon" [size]="16" class="mr-2" />
-                        View
-                      </ui-button>
-                    }
-                  } @else {
-                    <!-- Funder Actions -->
-                    <ui-button
-                      [variant]="'outline'"
-                      (click)="reviewApplication(application.id)"
-                    >
-                      <lucide-icon [name]="SettingsIcon" [size]="16" class="mr-2" />
-                      Review
-                    </ui-button>
-                  }
-
-                  <!-- View Details Button (Always Available) -->
-                  <ui-button
-                    [variant]="'ghost'"
-                    (click)="viewApplication(application.id)"
-                  >
-                    <lucide-icon [name]="EyeIcon" [size]="16" />
-                  </ui-button>
-                </div>
-              </div>
-            </div>
+   
+<div class="space-y-4">
+  @for (application of filteredApplications(); track application.id) {
+    @if (userType()) {
+      <app-application-list-card
+        [application]="transformToBaseCard(application)"
+        [userType]="userType() === 'funder' ? 'funder' : 'sme'"
+        [showProgress]="true"
+        (viewDetails)="viewApplication($event.id)"
+      >
+        <!-- Action buttons slot -->
+        <div slot="actions" class="flex items-center gap-2">
+          @if (isSME()) {
+            @if (application.status === 'draft') {
+              <ui-button variant="primary" (clicked)="continueApplication(application.id)">
+                Continue
+              </ui-button>
+            } @else {
+              <ui-button variant="outline" (clicked)="viewApplication(application.id)">
+                <lucide-icon [name]="EyeIcon" [size]="16" class="mr-2" />
+                View
+              </ui-button>
+            }
+          } @else {
+            <ui-button variant="primary" (clicked)="reviewApplication(application.id)">
+              <lucide-icon [name]="SettingsIcon" [size]="16" class="mr-2" />
+              Review
+            </ui-button>
           }
+          
+          <ui-button variant="ghost" (clicked)="viewApplication(application.id)">
+            <lucide-icon [name]="EyeIcon" [size]="16" />
+          </ui-button>
         </div>
+      </app-application-list-card>
+    }
+  }
+</div>
       }
     </div>
   </div>

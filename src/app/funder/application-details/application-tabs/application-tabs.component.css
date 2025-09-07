@@ -134,8 +134,8 @@
 /* Message input focus styling */
 .message-input:focus {
   outline: none;
-  ring: 2px;
-  ring-color: var(--color-primary-500);
+  kerning: 2px;
+  lighting-color: var(--color-primary-500);
   border-color: var(--color-primary-500);
 }
 

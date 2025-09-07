@@ -4,6 +4,7 @@ import { Observable, from, throwError } from 'rxjs';
 import { tap, catchError } from 'rxjs/operators';
 import { AuthService } from '../../auth/production.auth.service';
 import { SharedSupabaseService } from '../../shared/services/shared-supabase.service';
+import { DocumentMetadata, SupabaseDocumentService } from 'src/app/shared/services/supabase-document.service';
 
 // Application interfaces
 export interface FundingApplication {
@@ -27,7 +28,7 @@ export interface FundingApplication {
   aiAnalysisStatus?: string;
   aiMatchScore?: number;
 
-  // Joined data from other tables (loaded separately now)
+  
   applicant?: ApplicantInfo;
   opportunity?: OpportunityInfo;
 }
@@ -79,6 +80,28 @@ export interface ApplicationFilter {
   searchQuery?: string;
 }
 
+// Document interfaces for type safety
+export interface ApplicantDocument {
+  id: string;
+  fileName: string;
+  fileType: string;
+  fileSize: number;
+  uploadDate: Date;
+  documentType: string;
+  status: 'pending' | 'verified' | 'rejected';
+  downloadUrl?: string;
+  metadata?: Record<string, any>;
+}
+
+export interface DocumentSection {
+  companyRegistration?: ApplicantDocument;
+  taxClearanceCertificate?: ApplicantDocument;
+  auditedFinancials?: ApplicantDocument;
+  businessPlan?: ApplicantDocument;
+  bankStatements?: ApplicantDocument;
+  [key: string]: ApplicantDocument | undefined;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -90,17 +113,20 @@ export class ApplicationManagementService {
   isLoading = signal<boolean>(false);
   isUpdating = signal<boolean>(false);
   error = signal<string | null>(null);
+ private documentService = inject(SupabaseDocumentService);
+  // Document cache to avoid repeated queries
+  private documentCache = new Map<string, DocumentSection>();
 
   /**
-   * Get all applications for a specific opportunity - FIXED VERSION
+   * Get all applications for a specific opportunity - ENHANCED WITH DOCUMENTS
    */
-  getApplicationsByOpportunity(opportunityId: string): Observable<FundingApplication[]> {
+  getApplicationsByOpportunity(opportunityId: string, includeDocuments: boolean = false): Observable<FundingApplication[]> {
     this.isLoading.set(true);
     this.error.set(null);
 
-    console.log('Fetching applications for opportunity:', opportunityId);
+    console.log('Fetching applications for opportunity:', opportunityId, 'with documents:', includeDocuments);
 
-    return from(this.fetchApplicationsSimplified(opportunityId)).pipe(
+    return from(this.fetchApplicationsSimplified(opportunityId, includeDocuments)).pipe(
       tap((apps) => {
         console.log('Applications loaded:', apps.length);
         this.isLoading.set(false);
@@ -115,15 +141,19 @@ export class ApplicationManagementService {
   }
 
   /**
-   * Get all applications for opportunities in the funder's organization - FIXED VERSION
+   * Get all applications for opportunities in the funder's organization - ENHANCED WITH DOCUMENTS
    */
-  getApplicationsByOrganization(organizationId: string, filter?: ApplicationFilter): Observable<FundingApplication[]> {
+  getApplicationsByOrganization(
+    organizationId: string, 
+    filter?: ApplicationFilter,
+    includeDocuments: boolean = false
+  ): Observable<FundingApplication[]> {
     this.isLoading.set(true);
     this.error.set(null);
 
     console.log('Fetching applications for organization:', organizationId);
 
-    return from(this.fetchApplicationsByOrganization(organizationId, filter)).pipe(
+    return from(this.fetchApplicationsByOrganization(organizationId, filter, includeDocuments)).pipe(
       tap((apps) => {
         console.log('Organization applications loaded:', apps.length);
         this.isLoading.set(false);
@@ -138,20 +168,20 @@ export class ApplicationManagementService {
   }
 
   /**
-   * Get applications with full user details (separate call)
+   * Get applications with full user details AND documents
    */
   getApplicationsWithDetails(opportunityId: string): Observable<FundingApplication[]> {
     return from(this.fetchApplicationsWithDetails(opportunityId));
   }
 
   /**
-   * Get single application by ID - simplified
+   * Get single application by ID - ENHANCED WITH DOCUMENTS
    */
   getApplicationById(applicationId: string): Observable<FundingApplication> {
     this.isLoading.set(true);
     this.error.set(null);
 
-    return from(this.fetchSingleApplication(applicationId)).pipe(
+    return from(this.fetchSingleApplicationWithDocuments(applicationId)).pipe(
       tap(() => this.isLoading.set(false)),
       catchError(error => {
         this.error.set('Failed to load application details');
@@ -230,6 +260,36 @@ export class ApplicationManagementService {
   }
 
   // ===============================
+  // DOCUMENT MANAGEMENT
+  // ===============================
+
+  /**
+   * Get documents for a specific applicant - NEW METHOD
+   */
+  getApplicantDocuments(applicantId: string): Observable<DocumentSection> {
+    return from(this.fetchApplicantDocuments(applicantId)).pipe(
+      catchError(error => {
+        console.error('Error loading applicant documents:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  /**
+   * Refresh document cache for an applicant - NEW METHOD
+   */
+  refreshDocumentCache(applicantId: string): void {
+    this.documentCache.delete(applicantId);
+  }
+
+  /**
+   * Get document download URL - NEW METHOD
+   */
+  getDocumentDownloadUrl(applicantId: string, documentType: string): Observable<string | null> {
+    return from(this.generateDocumentDownloadUrl(applicantId, documentType));
+  }
+
+  // ===============================
   // STATISTICS
   // ===============================
 
@@ -247,71 +307,63 @@ export class ApplicationManagementService {
   }
 
   // ===============================
-  // PRIVATE METHODS - SIMPLIFIED
+  // PRIVATE METHODS - ENHANCED WITH DOCUMENT INTEGRATION
   // ===============================
 
   /**
-   * Simplified fetch - just get applications without joins
+   * Simplified fetch - now with optional document loading
    */
-private async fetchApplicationsSimplified(opportunityId: string): Promise<FundingApplication[]> {
+  private async fetchApplicationsSimplified(
+    opportunityId: string, 
+    includeDocuments: boolean = false
+  ): Promise<FundingApplication[]> {
     try {
-      console.log('🔍 [DEBUG] Starting fetchApplicationsSimplified');
+      console.log('🔍 [DEBUG] Starting fetchApplicationsSimplified with documents:', includeDocuments);
       console.log('🎯 [DEBUG] Opportunity ID:', opportunityId);
-      console.log('👤 [DEBUG] Current user:', this.authService.user());
 
-      // Test 1: Raw Supabase query
-      console.log('📊 [DEBUG] Executing Supabase query...');
+      // Fetch applications
       const { data, error } = await this.supabase
         .from('applications')
         .select('*')
         .eq('opportunity_id', opportunityId)
-         .not('status', 'eq', 'withdrawn') // Exclude withdrawn
-  .not('status', 'eq', 'draft') 
+        .not('status', 'eq', 'withdrawn')
+        .not('status', 'eq', 'draft') 
         .order('created_at', { ascending: false });
-
-      console.log('📋 [DEBUG] Raw Supabase response:');
-      console.log('  - Error:', error);
-      console.log('  - Data length:', data?.length || 0);
-      console.log('  - Data sample:', data?.[0]);
 
       if (error) {
         console.error('🚫 [DEBUG] Supabase error details:', error);
         throw new Error(`Supabase error: ${error.message}`);
       }
 
-      if (!data) {
-        console.log('⚠️ [DEBUG] Data is null/undefined');
-        return [];
-      }
-
-      if (data.length === 0) {
-        console.log('📭 [DEBUG] Data array is empty');
+      if (!data || data.length === 0) {
+        console.log('📭 [DEBUG] No applications found');
         return [];
       }
 
       console.log('✅ [DEBUG] Raw applications found:', data.length);
-      console.log('📄 [DEBUG] First application data:', JSON.stringify(data[0], null, 2));
 
-      // Test 2: Transform data
-      console.log('🔄 [DEBUG] Starting data transformation...');
-      const transformedData = this.transformApplicationsData(data);
-      console.log('✅ [DEBUG] Transformed applications:', transformedData.length);
-      console.log('📄 [DEBUG] First transformed application:', JSON.stringify(transformedData[0], null, 2));
+      // Transform applications
+      let applications = this.transformApplicationsData(data);
 
-      return transformedData;
+      // Optionally load documents for all applications
+      if (includeDocuments) {
+        applications = await this.enrichApplicationsWithDocuments(applications);
+      }
+
+      return applications;
     } catch (error) {
       console.error('💥 [DEBUG] Error in fetchApplicationsSimplified:', error);
-      console.error('💥 [DEBUG] Error stack:', (error as Error).stack);
       throw error;
     }
   }
 
   /**
-   * Get applications for organization - simplified version
+   * Get applications for organization - enhanced with documents
    */
   private async fetchApplicationsByOrganization(
     organizationId: string, 
-    filter?: ApplicationFilter
+    filter?: ApplicationFilter,
+    includeDocuments: boolean = false
   ): Promise<FundingApplication[]> {
     try {
       console.log('Querying applications for organization:', organizationId);
@@ -381,6 +433,11 @@ private async fetchApplicationsSimplified(opportunityId: string): Promise<Fundin
         );
       }
 
+      // Optionally load documents
+      if (includeDocuments) {
+        applications = await this.enrichApplicationsWithDocuments(applications);
+      }
+
       return applications;
     } catch (error) {
       console.error('Error in fetchApplicationsByOrganization:', error);
@@ -389,12 +446,12 @@ private async fetchApplicationsSimplified(opportunityId: string): Promise<Fundin
   }
 
   /**
-   * Get applications with user details (separate queries)
+   * Get applications with user details AND documents
    */
   private async fetchApplicationsWithDetails(opportunityId: string): Promise<FundingApplication[]> {
     try {
-      // First get applications
-      const applications = await this.fetchApplicationsSimplified(opportunityId);
+      // First get applications with documents
+      const applications = await this.fetchApplicationsSimplified(opportunityId, true);
       
       if (applications.length === 0) {
         return applications;
@@ -403,7 +460,7 @@ private async fetchApplicationsSimplified(opportunityId: string): Promise<Fundin
       // Get unique applicant IDs
       const applicantIds = [...new Set(applications.map(app => app.applicantId))];
       
-      // Fetch applicant details (this might fail due to RLS, but won't block main query)
+      // Fetch applicant details
       try {
         const { data: usersData } = await this.supabase
           .from('profiles')
@@ -440,10 +497,13 @@ private async fetchApplicationsSimplified(opportunityId: string): Promise<Fundin
   }
 
   /**
-   * Get single application
+   * Get single application WITH documents - ENHANCED
    */
-  private async fetchSingleApplication(applicationId: string): Promise<FundingApplication> {
+  private async fetchSingleApplicationWithDocuments(applicationId: string): Promise<FundingApplication> {
     try {
+      console.log('🔍 [DEBUG] Fetching single application with documents:', applicationId);
+
+      // Fetch application data
       const { data, error } = await this.supabase
         .from('applications')
         .select('*')
@@ -458,12 +518,245 @@ private async fetchApplicationsSimplified(opportunityId: string): Promise<Fundin
         throw new Error('Application not found');
       }
 
-      return this.transformApplicationData(data);
+      // Transform basic application data
+      const application = this.transformApplicationData(data);
+
+      // Fetch and merge documents
+      const documentsData = await this.fetchApplicantDocuments(application.applicantId);
+      application.documents = this.transformDocumentsForApplication(documentsData);
+
+      console.log('✅ [DEBUG] Application with documents loaded:', application.id);
+      console.log('📄 [DEBUG] Documents found:', Object.keys(application.documents));
+
+      return application;
     } catch (error) {
-      console.error('Error fetching single application:', error);
+      console.error('💥 [DEBUG] Error fetching single application with documents:', error);
       throw error;
     }
   }
+
+  /**
+   * Fetch documents for an applicant from business_plan_sections - NEW METHOD
+   */
+private async fetchApplicantDocuments(applicantId: string): Promise<DocumentSection> {
+    try {
+      console.log('🔍 [DOCS] Fetching documents for applicant using existing service:', applicantId);
+
+      // Use your existing service to get documents by user
+      const documentsMap = await this.documentService
+        .getDocumentsByUser() // This gets current user's documents
+        .toPromise();
+
+      if (!documentsMap || documentsMap.size === 0) {
+        console.log('📭 [DOCS] No documents found via service');
+        
+        // FALLBACK: Try direct query for this specific user if current user is different
+        return await this.fetchDocumentsDirectlyForUser(applicantId);
+      }
+
+      console.log('📄 [DOCS] Found documents via service:', documentsMap.size);
+      
+      // Transform service results to DocumentSection format
+      const documentSection = this.transformServiceDocumentsToSection(documentsMap);
+      
+      console.log('✅ [DOCS] Documents transformed:', Object.keys(documentSection));
+      return documentSection;
+
+    } catch (error) {
+      console.error('💥 [DOCS] Error fetching documents via service:', error);
+      
+      // FALLBACK: Direct database query
+      return await this.fetchDocumentsDirectlyForUser(applicantId);
+    }
+  }
+
+   /**
+   * Transform SupabaseDocumentService results to DocumentSection format
+   */
+  private transformServiceDocumentsToSection(documentsMap: Map<string, DocumentMetadata>): DocumentSection {
+    const documents: DocumentSection = {};
+
+    documentsMap.forEach((metadata, documentKey) => {
+      const document: ApplicantDocument = {
+        id: metadata.id,
+        fileName: metadata.originalName,
+        fileType: metadata.mimeType,
+        fileSize: metadata.fileSize,
+        uploadDate: new Date(metadata.uploadedAt),
+        documentType: metadata.documentKey,
+        status: metadata.status === 'uploaded' ? 'verified' : 'pending',
+        downloadUrl: metadata.publicUrl,
+        metadata: {
+          userId: metadata.userId,
+          filePath: metadata.filePath,
+          category: metadata.category,
+          originalName: metadata.originalName,
+          uploadedAt: metadata.uploadedAt,
+          updatedAt: metadata.updatedAt
+        }
+      };
+
+      documents[documentKey] = document;
+    });
+
+    return documents;
+  }
+
+  
+  private transformRawDocumentData(rawDocData: any): DocumentSection {
+    console.log('🔄 [DEBUG] Transforming raw document data:', rawDocData);
+    
+    const documents: DocumentSection = {};
+
+    // Expected document types from the profile system
+    const documentTypes = [
+      'companyRegistration',
+      'taxClearanceCertificate', 
+      'auditedFinancials',
+      'businessPlan',
+      'bankStatements'
+    ];
+
+    let foundDocuments = 0;
+
+    documentTypes.forEach(docType => {
+      const docData = rawDocData[docType];
+      console.log(`📄 [DEBUG] Processing document type '${docType}':`, docData);
+      
+      if (docData) {
+        foundDocuments++;
+        // Handle different document data structures
+        if (typeof docData === 'string') {
+          // Simple filename/URL
+          console.log(`📄 [DEBUG] Document '${docType}' is string type:`, docData);
+          documents[docType] = {
+            id: `${docType}_${Date.now()}`,
+            fileName: docData,
+            fileType: this.extractFileType(docData),
+            fileSize: 0, // Unknown from current data
+            uploadDate: new Date(), // Default to now
+            documentType: docType,
+            status: 'verified', // Assume verified if present
+            downloadUrl: docData.startsWith('http') ? docData : undefined,
+            metadata: {}
+          };
+        } else if (typeof docData === 'object' && docData !== null) {
+          // Structured document object
+          console.log(`📄 [DEBUG] Document '${docType}' is object type:`, docData);
+          documents[docType] = {
+            id: docData.id || `${docType}_${Date.now()}`,
+            fileName: docData.fileName || docData.name || `${docType} document`,
+            fileType: docData.fileType || docData.type || this.extractFileType(docData.fileName || ''),
+            fileSize: docData.fileSize || docData.size || 0,
+            uploadDate: docData.uploadDate ? new Date(docData.uploadDate) : new Date(),
+            documentType: docType,
+            status: docData.status || 'verified',
+            downloadUrl: docData.downloadUrl || docData.url,
+            metadata: docData.metadata || {}
+          };
+        } else {
+          console.log(`⚠️ [DEBUG] Document '${docType}' has unexpected data type:`, typeof docData, docData);
+        }
+      } else {
+        console.log(`📭 [DEBUG] Document '${docType}' not found or empty`);
+      }
+    });
+
+    console.log(`✅ [DEBUG] Document transformation complete. Found ${foundDocuments} documents out of ${documentTypes.length} expected types`);
+    console.log('📋 [DEBUG] Final document types:', Object.keys(documents));
+
+    return documents;
+  }
+
+  /**
+   * Extract file type from filename - NEW METHOD
+   */
+  private extractFileType(fileName: string): string {
+    const extension = fileName.split('.').pop()?.toLowerCase();
+    const typeMap: Record<string, string> = {
+      'pdf': 'application/pdf',
+      'doc': 'application/msword',
+      'docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'xls': 'application/vnd.ms-excel',
+      'xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      'jpg': 'image/jpeg',
+      'jpeg': 'image/jpeg',
+      'png': 'image/png'
+    };
+    return typeMap[extension || ''] || 'application/octet-stream';
+  }
+
+  /**
+   * Transform document section for application response - NEW METHOD
+   */
+  private transformDocumentsForApplication(documentSection: DocumentSection): Record<string, any> {
+    const transformed: Record<string, any> = {};
+
+    Object.entries(documentSection).forEach(([docType, docData]) => {
+      if (docData) {
+        transformed[docType] = {
+          id: docData.id,
+          name: docData.fileName,
+          type: docData.fileType,
+          size: docData.fileSize,
+          uploadDate: docData.uploadDate.toISOString(),
+          status: docData.status,
+          downloadUrl: docData.downloadUrl,
+          category: docType,
+          metadata: docData.metadata
+        };
+      }
+    });
+
+    return transformed;
+  }
+
+  /**
+   * Enrich applications with document data - NEW METHOD
+   */
+  private async enrichApplicationsWithDocuments(applications: FundingApplication[]): Promise<FundingApplication[]> {
+    try {
+      console.log('📄 [DEBUG] Enriching', applications.length, 'applications with documents');
+
+      // Get unique applicant IDs
+      const applicantIds = [...new Set(applications.map(app => app.applicantId))];
+      
+      // Fetch documents for all applicants in parallel
+      const documentPromises = applicantIds.map(id => this.fetchApplicantDocuments(id));
+      const documentsResults = await Promise.allSettled(documentPromises);
+
+      // Create applicant -> documents mapping
+      const documentsMap = new Map<string, DocumentSection>();
+      applicantIds.forEach((applicantId, index) => {
+        const result = documentsResults[index];
+        if (result.status === 'fulfilled') {
+          documentsMap.set(applicantId, result.value);
+        } else {
+          console.warn('Failed to load documents for applicant:', applicantId, result.reason);
+          documentsMap.set(applicantId, {});
+        }
+      });
+
+      // Enrich applications with their documents
+      applications.forEach(app => {
+        const documentsData = documentsMap.get(app.applicantId) || {};
+        app.documents = this.transformDocumentsForApplication(documentsData);
+      });
+
+      console.log('✅ [DEBUG] Applications enriched with documents');
+      return applications;
+    } catch (error) {
+      console.error('💥 [DEBUG] Error enriching applications with documents:', error);
+      // Return applications without documents rather than failing completely
+      return applications;
+    }
+  }
+
+ 
+
+  // ===============================
+  // EXISTING METHODS (Updated where needed)
+  // ===============================
 
   private async updateApplicationInSupabase(
     applicationId: string,
@@ -508,7 +801,13 @@ private async fetchApplicationsSimplified(opportunityId: string): Promise<Fundin
         await this.addReviewNoteToSupabase(applicationId, reviewNote, 'internal', reviewer);
       }
 
-      return this.transformApplicationData(data);
+      const transformedApp = this.transformApplicationData(data);
+      
+      // Fetch documents for the updated application
+      const documentsData = await this.fetchApplicantDocuments(transformedApp.applicantId);
+      transformedApp.documents = this.transformDocumentsForApplication(documentsData);
+
+      return transformedApp;
     } catch (error) {
       console.error('Error updating application in Supabase:', error);
       throw error;
@@ -563,7 +862,13 @@ private async fetchApplicationsSimplified(opportunityId: string): Promise<Fundin
         throw new Error(`Failed to add review note: ${error.message}`);
       }
 
-      return this.transformApplicationData(data);
+      const transformedApp = this.transformApplicationData(data);
+      
+      // Fetch documents for the application
+      const documentsData = await this.fetchApplicantDocuments(transformedApp.applicantId);
+      transformedApp.documents = this.transformDocumentsForApplication(documentsData);
+
+      return transformedApp;
     } catch (error) {
       console.error('Error adding review note to Supabase:', error);
       throw error;
@@ -575,19 +880,16 @@ private async fetchApplicationsSimplified(opportunityId: string): Promise<Fundin
     organizationId?: string
   ): Promise<ApplicationStats> {
     try {
-    //  let query = this.supabase.from('applications').select('status, stage, created_at, updated_at');
-// Example inside fetchApplicationStats
-let query = this.supabase
-  .from('applications')
-  .select('*', { count: 'exact' })
-  .eq('opportunity_id', opportunityId);
+      let query = this.supabase
+        .from('applications')
+        .select('*', { count: 'exact' });
 
-// Exclude withdrawn and draft
-query = query.not('status', 'in', ['withdrawn', 'draft']);
       if (opportunityId) {
         query = query.eq('opportunity_id', opportunityId);
       }
-      // Note: Organization filtering removed for now - add back when RLS is sorted
+
+      // Exclude withdrawn and draft
+      query = query.not('status', 'in', ['withdrawn', 'draft']);
 
       const { data, error } = await query;
 
@@ -603,10 +905,10 @@ query = query.not('status', 'in', ['withdrawn', 'draft']);
   }
 
   // ===============================
-  // DATA TRANSFORMATION
+  // DATA TRANSFORMATION  
   // ===============================
 
- private transformApplicationsData(rawData: any[]): FundingApplication[] {
+  private transformApplicationsData(rawData: any[]): FundingApplication[] {
     console.log('🔄 [DEBUG] transformApplicationsData called with:', rawData.length, 'items');
     
     try {
@@ -636,7 +938,7 @@ query = query.not('status', 'in', ['withdrawn', 'draft']);
         status: rawData.status,
         stage: rawData.stage,
         formData: rawData.form_data || {},
-        documents: rawData.documents || {},
+        documents: rawData.documents || {}, // Will be enriched with actual documents later
         reviewNotes: rawData.review_notes || [],
         terms: rawData.terms || {},
         submittedAt: rawData.submitted_at ? new Date(rawData.submitted_at) : undefined,
@@ -708,5 +1010,207 @@ query = query.not('status', 'in', ['withdrawn', 'draft']);
       recentActivity,
       averageProcessingTime
     };
+  }
+
+  // ===============================
+  // UTILITY METHODS
+  // ===============================
+
+  /**
+   * Clear document cache - useful for refreshing data
+   */
+  clearDocumentCache(): void {
+    this.documentCache.clear();
+    console.log('Document cache cleared');
+  }
+
+  /**
+   * Get cache statistics for debugging
+   */
+  getCacheStats(): { size: number; applicantIds: string[] } {
+    return {
+      size: this.documentCache.size,
+      applicantIds: Array.from(this.documentCache.keys())
+    };
+  }
+
+  
+
+
+
+
+
+  // from Headers
+  
+  /**
+   * FALLBACK: Direct query for specific user (when funder views applicant documents)
+   */
+  private async fetchDocumentsDirectlyForUser(applicantId: string): Promise<DocumentSection> {
+    try {
+      console.log('🔍 [DOCS-FALLBACK] Direct query for user:', applicantId);
+
+      // Query documents table directly for the specific applicant
+      const { data: docs, error } = await this.supabase
+        .from('documents')
+        .select('*')
+        .eq('user_id', applicantId)
+        .eq('status', 'uploaded')
+        .order('uploaded_at', { ascending: false });
+
+      if (error) {
+        console.warn('⚠️ [DOCS-FALLBACK] Database query error:', error);
+        return {};
+      }
+
+      if (!docs || docs.length === 0) {
+        console.log('📭 [DOCS-FALLBACK] No documents found in database');
+        return {};
+      }
+
+      console.log('📄 [DOCS-FALLBACK] Found documents in database:', docs.length);
+
+      // Transform database results
+      const documents: DocumentSection = {};
+      
+      docs.forEach(doc => {
+        const document: ApplicantDocument = {
+          id: doc.id,
+          fileName: doc.original_name,
+          fileType: doc.mime_type,
+          fileSize: doc.file_size,
+          uploadDate: new Date(doc.uploaded_at),
+          documentType: doc.document_key,
+          status: 'verified',
+          downloadUrl: doc.public_url,
+          metadata: {
+            userId: doc.user_id,
+            filePath: doc.file_path,
+            category: doc.category,
+            originalName: doc.original_name,
+            uploadedAt: doc.uploaded_at,
+            updatedAt: doc.updated_at
+          }
+        };
+
+        documents[doc.document_key] = document;
+      });
+
+      console.log('✅ [DOCS-FALLBACK] Direct query documents transformed:', Object.keys(documents));
+      return documents;
+
+    } catch (error) {
+      console.error('💥 [DOCS-FALLBACK] Direct query failed:', error);
+      return {};
+    }
+  }
+
+  /**
+   * ENHANCED: Use existing service for download URLs
+   */
+  private async generateDocumentDownloadUrl(applicantId: string, documentType: string): Promise<string | null> {
+    try {
+      console.log('🔗 [DOCS] Generating download URL via service for:', documentType);
+      
+      // Use the existing service method
+      const signedUrl = await this.documentService
+        .downloadDocumentByKey(documentType)
+        .toPromise();
+        
+      console.log('✅ [DOCS] Generated signed URL via service');
+      return signedUrl || null;
+      
+    } catch (error) {
+      console.error('💥 [DOCS] Error generating download URL via service:', error);
+      
+      // FALLBACK: Direct public URL fetch
+      return await this.generateDirectDownloadUrl(applicantId, documentType);
+    }
+  }
+
+  /**
+   * FALLBACK: Direct download URL generation
+   */
+private async generateDirectDownloadUrl(applicantId: string, documentType: string): Promise<string | null> {
+    try {
+      // Query for the document
+      const { data: doc, error } = await this.supabase
+        .from('documents')
+        .select('public_url, file_path')
+        .eq('user_id', applicantId)
+        .eq('document_key', documentType)
+        .single();
+
+      if (error || !doc) {
+        console.warn('⚠️ [DOCS] Document not found for direct URL generation');
+        return null;
+      }
+
+      // Return public URL if available, otherwise generate signed URL
+      if (doc.public_url) {
+        return doc.public_url;
+      }
+
+      // Generate signed URL for private files
+      const { data } = await this.supabase.storage
+        .from('platform-documents')
+        .createSignedUrl(doc.file_path, 3600);
+
+      return data?.signedUrl || null;
+
+    } catch (error) {
+      console.error('💥 [DOCS] Direct URL generation failed:', error);
+      return null;
+    }
+  }
+
+
+  /**
+   * ENHANCED: Check if applicant has documents using existing service
+   */
+  async hasDocuments(applicantId: string): Promise<boolean> {
+    try {
+      const documents = await this.fetchApplicantDocuments(applicantId);
+      return Object.keys(documents).length > 0;
+    } catch {
+      return false;
+    }
+  }
+
+  /**
+   * ENHANCED: Get document summary using existing service structure
+   */
+  async getDocumentSummary(applicantId: string): Promise<{
+    total: number;
+    byType: Record<string, number>;
+    verified: number;
+    pending: number;
+  }> {
+    try {
+      const documents = await this.fetchApplicantDocuments(applicantId);
+      const docValues = Object.values(documents).filter(doc => doc !== undefined);
+      
+      const summary = {
+        total: docValues.length,
+        byType: {} as Record<string, number>,
+        verified: 0,
+        pending: 0
+      };
+
+      docValues.forEach(doc => {
+        // Count by type
+        summary.byType[doc.documentType] = (summary.byType[doc.documentType] || 0) + 1;
+        
+        // Count by status
+        if (doc.status === 'verified') {
+          summary.verified++;
+        } else {
+          summary.pending++;
+        }
+      });
+
+      return summary;
+    } catch {
+      return { total: 0, byType: {}, verified: 0, pending: 0 };
+    }
   }
 }

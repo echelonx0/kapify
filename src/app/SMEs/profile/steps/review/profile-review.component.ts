@@ -10,7 +10,6 @@ import { LucideAngularModule,
 } from 'lucide-angular';
 import { UiCardComponent, UiButtonComponent } from '../../../../shared/components'; 
 import { ProfileDataTransformerService } from '../../../services/profile-data-transformer.service';
-
 import { FundingProfileSetupService } from 'src/app/SMEs/services/funding-profile-setup.service';
 import { SMEProfileStepsService } from 'src/app/SMEs/services/sme-profile-steps.service';
 import { EnhancedAIAnalysisComponent } from 'src/app/ai/ai-analysis/enhanced-ai-analysis.component';
@@ -86,7 +85,6 @@ export class ProfileReviewComponent implements OnInit {
   // Computed data
   profileData = computed(() => this.stepCheckerService.data());
   completionSummary = computed(() => this.stepCheckerService.getCompletionSummary());
-  
   // Derived data
   profileOverview = computed(() => this.buildProfileOverview());
   sectionSummaries = computed(() => this.buildSectionSummaries());

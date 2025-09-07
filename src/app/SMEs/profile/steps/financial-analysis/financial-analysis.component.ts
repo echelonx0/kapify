@@ -5,7 +5,6 @@ import { UiCardComponent, UiButtonComponent } from '../../../../shared/component
 import { LucideAngularModule, Upload, Download, FileSpreadsheet, Save, Clock, Edit2, AlertCircle, CheckCircle, X } from 'lucide-angular';
 import { interval, Subscription, Subject } from 'rxjs';
 import { debounceTime, takeWhile, takeUntil } from 'rxjs/operators';
- 
 import { SupabaseDocumentService } from '../../../../shared/services/supabase-document.service';
 import * as XLSX from 'xlsx';
 import { SMEProfileStepsService } from '../../../services/sme-profile-steps.service';

@@ -1,16 +1,51 @@
-  <div class="card">
-      <div class="p-6">
-        <h2 class="text-lg font-semibold text-gray-900 mb-6">Applicant Profile</h2>
-        
+<!-- src/app/funder/components/applicant-profile/applicant-profile.component.html - UPDATED -->
+<div class="card">
+  <div class="p-6">
+    <h2 class="text-lg font-semibold text-gray-900 mb-6">Principal Officer</h2>
+    
+    <!-- Loading State -->
+    @if (isProfileLoading()) {
+      <div class="animate-pulse">
         <div class="flex items-start space-x-4 mb-6">
-          <div class="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
+          <div class="w-16 h-16 bg-gray-200 rounded-xl"></div>
+          <div class="flex-1">
+            <div class="h-6 bg-gray-200 rounded w-48 mb-2"></div>
+            <div class="h-4 bg-gray-200 rounded w-32 mb-2"></div>
+            <div class="h-4 bg-gray-200 rounded w-64"></div>
+          </div>
+          <div class="w-12 h-12 bg-gray-200 rounded"></div>
+        </div>
+        <div class="grid grid-cols-3 gap-6">
+          <div class="h-24 bg-gray-200 rounded-lg"></div>
+          <div class="h-24 bg-gray-200 rounded-lg"></div>
+          <div class="h-24 bg-gray-200 rounded-lg"></div>
+        </div>
+      </div>
+    }
+    
+    <!-- Error State -->
+    @else if (hasProfileError()) {
+      <div class="text-center py-8">
+        <div class="w-16 h-16 bg-red-100 rounded-xl flex items-center justify-center mx-auto mb-4">
+          <span class="text-red-600 text-2xl">⚠️</span>
+        </div>
+        <h3 class="text-lg font-medium text-gray-900 mb-2">Unable to Load Profile</h3>
+        <p class="text-gray-600 mb-4">{{ getProfileError() }}</p>
+        <div class="text-sm text-gray-500">
+          Displaying basic information from application data
+        </div>
+      </div>
+      
+      <!-- Fallback basic info when profile fails to load -->
+      <div class="border-t pt-6 mt-6">
+        <div class="flex items-start space-x-4 mb-6">
+          <div class="w-16 h-16 bg-gradient-to-br from-gray-400 to-gray-600 rounded-xl flex items-center justify-center">
             <span class="text-white font-bold text-xl">{{ getInitials() }}</span>
           </div>
           <div class="flex-1">
             <div class="flex items-center space-x-3 mb-2">
               <h3 class="text-xl font-semibold text-gray-900">{{ getFullName() }}</h3>
-              <span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">{{ getVerificationStatus() }}</span>
-              <span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">{{ getProfileScore() }}% Profile Score</span>
+              <span class="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded-full">Limited Data</span>
             </div>
             <p class="text-gray-600 mb-2">{{ getTitle() }}</p>
             <div class="flex items-center space-x-4 text-sm text-gray-500">
@@ -18,49 +53,102 @@
                 <lucide-icon [img]="MailIcon" [size]="16" class="w-4 h-4 mr-1"></lucide-icon>
                 {{ getEmail() }}
               </span>
-              <span class="flex items-center">
-                <lucide-icon [img]="BuildingIcon" [size]="16" class="w-4 h-4 mr-1"></lucide-icon>
-                {{ getLocation() }}
-              </span>
             </div>
-          </div>
-          
-          <div class="text-right">
-            <div class="text-2xl font-bold text-green-600">{{ getCreditGrade() }}</div>
-            <div class="text-sm text-gray-500">Credit Score</div>
-          </div>
-        </div>
-
-        <div class="grid grid-cols-3 gap-6">
-          <div class="insight-card rounded-lg p-4">
-            <div class="flex items-center justify-between mb-2">
-              <h4 class="font-medium text-gray-900">Experience</h4>
-              <lucide-icon [img]="AwardIcon" [size]="16" class="w-4 h-4 text-blue-600"></lucide-icon>
-            </div>
-            <div class="text-2xl font-bold text-blue-600 mb-1">{{ getExperienceYears() }} years</div>
-            <div class="text-sm text-gray-600">{{ getIndustry() }}</div>
-            <div class="text-xs text-green-600 mt-2">{{ getExperienceLevel() }}</div>
-          </div>
-          
-          <div class="insight-card rounded-lg p-4">
-            <div class="flex items-center justify-between mb-2">
-              <h4 class="font-medium text-gray-900">Previous Funding</h4>
-              <lucide-icon [img]="TrendingUpIcon" [size]="16" class="w-4 h-4 text-green-600"></lucide-icon>
-            </div>
-            <div class="text-2xl font-bold text-green-600 mb-1">{{ getPreviousFunding() }}</div>
-            <div class="text-sm text-gray-600">{{ getFundingStatus() }}</div>
-            <div class="text-xs text-green-600 mt-2">{{ getFundingRecord() }}</div>
-          </div>
-          
-          <div class="insight-card rounded-lg p-4">
-            <div class="flex items-center justify-between mb-2">
-              <h4 class="font-medium text-gray-900">Business Growth</h4>
-              <lucide-icon [img]="BarChart3Icon" [size]="16" class="w-4 h-4 text-purple-600"></lucide-icon>
-            </div>
-            <div class="text-2xl font-bold text-purple-600 mb-1">{{ getGrowthRate() }}</div>
-            <div class="text-sm text-gray-600">{{ getGrowthPeriod() }}</div>
-            <div class="text-xs text-green-600 mt-2">{{ getGrowthDescription() }}</div>
           </div>
         </div>
       </div>
-    </div>
+    }
+    
+    <!-- Normal State - Profile Loaded Successfully -->
+    @else {
+      <div class="flex items-start space-x-4 mb-6">
+        <div class="w-16 h-16 bg-gradient-to-br from-blue-500 to-slate-600 rounded-xl flex items-center justify-center">
+          <span class="text-white font-bold text-xl">{{ getInitials() }}</span>
+        </div>
+        <div class="flex-1">
+          <div class="flex items-center space-x-3 mb-2">
+            <h3 class="text-xl font-semibold text-gray-900">{{ getFullName() }}</h3>
+            <span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">{{ getVerificationStatus() }}</span>
+            <span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">{{ getProfileScore() }}% Profile Score</span>
+          </div>
+          <p class="text-gray-600 mb-2">{{ getTitle() }}</p>
+          <div class="flex items-center space-x-4 text-sm text-gray-500">
+            <span class="flex items-center">
+              <lucide-icon [img]="MailIcon" [size]="16" class="w-4 h-4 mr-1"></lucide-icon>
+              {{ getEmail() }}
+            </span>
+            <span class="flex items-center">
+              <lucide-icon [img]="BuildingIcon" [size]="16" class="w-4 h-4 mr-1"></lucide-icon>
+              {{ getLocation() }}
+            </span>
+          </div>
+          
+          <!-- Company Name Display -->
+          @if (getCompanyName() !== 'Company Name') {
+            <div class="mt-2 text-sm font-medium text-gray-700">
+              {{ getCompanyName() }}
+            </div>
+          }
+        </div>
+        
+        <div class="text-right">
+          <div class="text-2xl font-bold text-green-600">{{ getCreditGrade() }}</div>
+          <div class="text-sm text-gray-500">Credit Score</div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-3 gap-6">
+        <div class="insight-card rounded-lg p-4">
+          <div class="flex items-center justify-between mb-2">
+            <h4 class="font-medium text-gray-900">Experience</h4>
+            <lucide-icon [img]="AwardIcon" [size]="16" class="w-4 h-4 text-blue-600"></lucide-icon>
+          </div>
+          <div class="text-2xl font-bold text-cyan-600 mb-1">{{ getExperienceYears() }} years</div>
+          <div class="text-sm text-gray-600">{{ getIndustry() }}</div>
+          <div class="text-xs text-green-600 mt-2">{{ getExperienceLevel() }}</div>
+        </div>
+        
+        <div class="insight-card rounded-lg p-4">
+          <div class="flex items-center justify-between mb-2">
+            <h4 class="font-medium text-gray-900">Monthly Revenue</h4>
+            <lucide-icon [img]="TrendingUpIcon" [size]="16" class="w-4 h-4 text-green-600"></lucide-icon>
+          </div>
+          <div class="text-2xl font-bold text-green-600 mb-1">{{ getMonthlyRevenue() }}</div>
+          <div class="text-sm text-gray-600">{{ getFundingStatus() }}</div>
+          <div class="text-xs text-green-600 mt-2">{{ getFundingRecord() }}</div>
+        </div>
+        
+        <div class="insight-card rounded-lg p-4">
+          <div class="flex items-center justify-between mb-2">
+            <h4 class="font-medium text-gray-900">Business Growth</h4>
+            <lucide-icon [img]="BarChart3Icon" [size]="16" class="w-4 h-4 text-slate-600"></lucide-icon>
+          </div>
+          <div class="text-2xl font-bold text-slate-600 mb-1">{{ getGrowthRate() }}</div>
+          <div class="text-sm text-gray-600">{{ getGrowthPeriod() }}</div>
+          <div class="text-xs text-green-600 mt-2">{{ getGrowthDescription() }}</div>
+        </div>
+      </div>
+      
+      <!-- Profile Data Quality Indicator -->
+      <!-- @if (hasProfileData()) {
+        <div class="mt-6 p-3 bg-green-50 border border-green-200 rounded-lg">
+          <div class="flex items-center space-x-2">
+            <div class="w-2 h-2 bg-green-500 rounded-full"></div>
+            <span class="text-sm text-green-700 font-medium">
+              Complete profile data loaded successfully
+            </span>
+          </div>
+        </div>
+      } @else {
+        <div class="mt-6 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+          <div class="flex items-center space-x-2">
+            <div class="w-2 h-2 bg-yellow-500 rounded-full"></div>
+            <span class="text-sm text-yellow-700 font-medium">
+              Displaying information from application data only
+            </span>
+          </div>
+        </div>
+      } -->
+    }
+  </div>
+</div>

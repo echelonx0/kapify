@@ -27,6 +27,8 @@ import { ActivityInboxComponent } from 'src/app/messaging/messaging/messaging.co
 import { ApplicationManagementService, FundingApplication } from 'src/app/SMEs/services/application-management.service';
 import { OpportunityApplicationService, OpportunityApplication } from 'src/app/SMEs/services/opportunity-application.service';
 import { SharedSupabaseService } from 'src/app/shared/services/shared-supabase.service';
+import { ApplicationListCardComponent, BaseApplicationCard } from 'src/app/shared/components/application-list-card/application-list-card.component';
+import { UserType } from 'src/app/shared/models/user.models';
 
 interface ApplicationData {
   id: string;
@@ -66,7 +68,8 @@ interface UserOrganization {
     FormsModule,
     LucideAngularModule,
     UiButtonComponent,
-    ActivityInboxComponent
+    ActivityInboxComponent,
+    ApplicationListCardComponent
   ],
   templateUrl: 'applications-home.component.html',
   styles: [`
@@ -120,6 +123,11 @@ export class ApplicationsHomeComponent implements OnInit, OnDestroy {
   userType = computed(() => this.currentUser()?.userType);
   isFunder = computed(() => this.userType() === 'funder');
   isSME = computed(() => this.userType() === 'sme');
+  // Add this computed property to your ApplicationsHomeComponent class
+safeUserType = computed((): UserType => {
+  const type = this.userType();
+  return type === 'funder' ? 'funder' : 'sme';
+});
 
   ngOnInit() {
     this.loadApplications();
@@ -244,6 +252,27 @@ export class ApplicationsHomeComponent implements OnInit, OnDestroy {
       });
   }
 
+  // Add this method to transform your existing data
+ transformToBaseCard(app: ApplicationData): BaseApplicationCard {
+  return {
+    id: app.id,
+    title: app.title,
+    applicationNumber: app.applicationNumber,
+    status: app.status,
+    fundingType: app.fundingType,
+    requestedAmount: app.requestedAmount,
+    currency: app.currency,
+    currentStage: app.currentStage,
+    description: app.description,
+    createdAt: app.createdAt,
+    updatedAt: app.updatedAt,
+    submittedAt: app.submittedAt,
+    applicantName: app.applicantName,
+    applicantCompany: app.applicantCompany,
+    opportunityTitle: app.opportunityTitle,
+    opportunityId: app.opportunityId
+  };
+}
   // ===============================
   // DATA TRANSFORMATION (UNCHANGED)
   // ===============================

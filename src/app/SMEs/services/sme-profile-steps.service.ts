@@ -1,12 +1,11 @@
  
 // src/app/profile/services/sme-profile-steps.service.ts - UPDATED WITH REAL BACKEND INTEGRATION
 import { Injectable, signal, computed, inject } from '@angular/core';
- 
 import { FundingProfileBackendService } from './funding-profile-backend.service';
- 
 import { AuthService } from '../../auth/production.auth.service'; 
 import { ProfileDataTransformerService } from './profile-data-transformer.service';
-import { ProfileData, ProfileStep } from '../applications/models/profile.models';
+import {  ProfileStep } from '../applications/models/profile.models';
+import { ProfileData } from './funding.models';
 
 @Injectable({
   providedIn: 'root'
