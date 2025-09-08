@@ -121,8 +121,8 @@ export class FunderDocumentAnalysisComponent implements OnDestroy {
       return;
     }
 
-    if (file.size > 10 * 1024 * 1024) { // 10MB limit
-      this.errorMessage.set('File size must be less than 10MB');
+    if (file.size > 5 * 1024 * 1024) { // 10MB limit
+      this.errorMessage.set('File size must be less than 5MB');
       return;
     }
 

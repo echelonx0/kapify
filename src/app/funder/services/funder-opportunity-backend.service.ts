@@ -523,60 +523,6 @@ publishOpportunity(opportunityData: Partial<FundingOpportunity>): Observable<Pub
     };
   }
 
-  // private buildOpportunityForDatabase(userId: string, opportunityData: Partial<FundingOpportunity>, includeMetadata: boolean = true): any {
-  //   const baseData = {
-  //     title: opportunityData.title,
-  //     description: opportunityData.description,
-  //     short_description: opportunityData.shortDescription,
-  //     offer_amount: opportunityData.offerAmount,
-  //     min_investment: opportunityData.minInvestment,
-  //     max_investment: opportunityData.maxInvestment,
-  //     currency: opportunityData.currency,
-  //     funding_type: opportunityData.fundingType,
-  //     interest_rate: opportunityData.interestRate,
-  //     equity_offered: opportunityData.equityOffered,
-  //     repayment_terms: opportunityData.repaymentTerms,
-  //     security_required: opportunityData.securityRequired,
-  //     use_of_funds: opportunityData.useOfFunds,
-  //     investment_structure: opportunityData.investmentStructure,
-  //     expected_returns: opportunityData.expectedReturns,
-  //     investment_horizon: opportunityData.investmentHorizon,
-  //     exit_strategy: opportunityData.exitStrategy,
-  //     application_deadline: opportunityData.applicationDeadline?.toISOString(),
-  //     decision_timeframe: opportunityData.decisionTimeframe,
-  //     eligibility_criteria: opportunityData.eligibilityCriteria,
-  //     target_company_profile: opportunityData.targetCompanyProfile,
-  //     total_available: opportunityData.totalAvailable,
-  //     max_applications: opportunityData.maxApplications,
-  //     auto_match: opportunityData.autoMatch,
-  //     match_criteria: opportunityData.matchCriteria,
-  //     application_process: opportunityData.applicationProcess,
-  //     updated_at: new Date().toISOString()
-  //   };
-
-  //   if (includeMetadata) {
-  //     return {
-  //       ...baseData,
-  //       id: opportunityData.id || `opp_${Date.now()}`,
-  //       fund_id: opportunityData.fundId || 'default_fund',
-  //       organization_id: opportunityData.organizationId || 'default_org',
-  //       created_by: userId,
-  //       status: 'active',
-  //       amount_committed: 0,
-  //       amount_deployed: 0,
-  //       current_applications: 0,
-  //       view_count: 0,
-  //       application_count: 0,
-  //       conversion_rate: 0,
-  //       deal_lead: userId,
-  //       deal_team: [userId],
-  //       created_at: new Date().toISOString(),
-  //       published_at: new Date().toISOString()
-  //     };
-  //   }
-
-  //   return baseData;
-  // }
 
   // ===============================
   // HELPER METHODS

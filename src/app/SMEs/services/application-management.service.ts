@@ -27,7 +27,6 @@ export interface FundingApplication {
   updatedAt: Date;
   aiAnalysisStatus?: string;
   aiMatchScore?: number;
-
   
   applicant?: ApplicantInfo;
   opportunity?: OpportunityInfo;

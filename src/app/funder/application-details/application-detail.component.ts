@@ -39,7 +39,6 @@ import { AiAssistantComponent } from 'src/app/ai/ai-assistant/ai-assistant.compo
 import { ApplicationTabsComponent } from './application-tabs/application-tabs.component';
 import { AiExecutiveSummaryComponent } from './ai-executive-summary/ai-executive-summary.component';
 import { ApplicantProfileComponent } from './applicant-profile/applicant-profile.component';
-
 import { FundingProfileBackendService } from 'src/app/SMEs/services/funding-profile-backend.service';
 import { ProfileDataTransformerService } from 'src/app/SMEs/services/profile-data-transformer.service';
 import { ProfileData } from 'src/app/SMEs/services/funding.models';
