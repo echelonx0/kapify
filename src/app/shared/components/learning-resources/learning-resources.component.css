@@ -193,6 +193,11 @@
   color: var(--color-neutral-900);
   line-height: 1.25rem;
   margin-bottom: 0.25rem;
+
+  /* Standard property (experimental) */
+  line-clamp: 2;
+
+  /* Legacy WebKit-based support */
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
