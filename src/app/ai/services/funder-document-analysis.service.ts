@@ -126,6 +126,7 @@ export class FunderDocumentAnalysisService {
       });
 
       console.log(extractedText.length);
+       console.log(extractedText);
 // In your Angular service, add this check before calling Edge Function
 if (!extractedText || extractedText.trim().length < 100) {
   throw new Error('PDF extraction failed - no readable content found');
@@ -163,54 +164,290 @@ if (extractedText.length > 100000) {
     }
   }
 
-  // Enhanced PDF extraction method for your service
-// Replace the extractTextFromPDF and related methods in your service with this:
-
+// Enhanced PDF extraction with Gemini AI as primary method
 private async extractTextFromPDF(file: File): Promise<string> {
   try {
-    console.log('Starting PDF extraction for:', file.name);
+    console.log('Starting PDF extraction for:', file.name, 'Size:', file.size);
     
-    // Method 1: Try modern PDF.js with proper version handling
+    // Method 1: Try Gemini AI first (most reliable for all PDF types)
     try {
-      const text = await this.extractWithVersionSafePDFJS(file);
-      if (text && text.trim().length > 50) {
-        console.log('PDF.js extraction successful');
-        return text;
+      const text = await this.extractWithGeminiAI(file);
+      const cleanText = this.cleanAndValidateText(text);
+      if (this.isValidText(cleanText)) {
+        console.log('Gemini AI extraction successful, length:', cleanText.length);
+        return cleanText;
       }
-    } catch (versionError) {
-      console.warn('Version-safe PDF.js failed:', versionError);
+    } catch (error) {
+      console.warn('Gemini AI extraction failed:', error);
     }
     
-    // Method 2: Try legacy approach
+    // Method 2: Fallback to PDF.js for simple text PDFs
     try {
-      const text = await this.extractWithLegacyPDFJS(file);
-      if (text && text.trim().length > 50) {
-        console.log('Legacy PDF.js extraction successful');
-        return text;
+      const text = await this.extractWithPDFJS(file);
+      const cleanText = this.cleanAndValidateText(text);
+      if (this.isValidText(cleanText)) {
+        console.log('PDF.js extraction successful, length:', cleanText.length);
+        return cleanText;
       }
-    } catch (legacyError) {
-      console.warn('Legacy PDF.js failed:', legacyError);
+    } catch (error) {
+      console.warn('PDF.js extraction failed:', error);
     }
     
-    // Method 3: Try FileReader fallback
-    try {
-      const fallbackText = await this.extractWithFileReader(file);
-      if (fallbackText && fallbackText.trim().length > 50) {
-        console.log('FileReader extraction successful');
-        return fallbackText;
-      }
-    } catch (fallbackError) {
-      console.warn('FileReader extraction failed:', fallbackError);
-    }
-    
-    throw new Error('Unable to extract meaningful text from PDF');
+    throw new Error('Unable to extract readable text. This PDF may be image-based, corrupted, or unsupported.');
     
   } catch (error) {
     console.error('PDF extraction failed:', error);
-    throw new Error(`Failed to extract text from PDF: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    throw new Error(`PDF extraction failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 }
 
+// NEW: Gemini AI PDF extraction method
+private async extractWithGeminiAI(file: File): Promise<string> {
+  this.emitStatus({
+    stage: 'extracting',
+    message: 'Using AI to extract text...',
+    details: 'Processing PDF with advanced AI vision',
+    progress: 20
+  });
+
+  try {
+    // Convert file to base64
+    const base64Data = await this.fileToBase64(file);
+    
+    // Call your Edge Function that handles Gemini AI
+    const { data, error } = await this.supabase.functions.invoke('extract-pdf-text', {
+      body: {
+        pdfData: base64Data,
+        fileName: file.name,
+        mimeType: 'application/pdf'
+      }
+    });
+
+    if (error) {
+      throw new Error(`Gemini extraction failed: ${error.message}`);
+    }
+
+    if (!data?.success || !data?.extractedText) {
+      throw new Error('No text extracted by Gemini AI');
+    }
+
+    return data.extractedText;
+
+  } catch (error) {
+    console.error('Gemini AI extraction failed:', error);
+    throw error;
+  }
+}
+
+private async fileToBase64(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const base64 = (reader.result as string).split(',')[1];
+      resolve(base64);
+    };
+    reader.onerror = () => reject(new Error('Failed to read file'));
+    reader.readAsDataURL(file);
+  });
+}
+
+// Keep existing PDF.js method as fallback with version fix
+private async extractWithPDFJS(file: File): Promise<string> {
+  const pdfjsLib = await import('pdfjs-dist');
+  
+  // Fix version mismatch by using same version as library
+  try {
+    if (pdfjsLib.version) {
+      pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+      console.log('Using PDF.js version:', pdfjsLib.version);
+    } else {
+      // Fallback - disable worker entirely for compatibility
+      // pdfjsLib.GlobalWorkerOptions.workerSrc = null;
+      console.log('Using PDF.js without worker');
+    }
+  } catch (e) {
+    console.warn('Could not set PDF.js worker:', e);
+    // pdfjsLib.GlobalWorkerOptions.workerSrc = null;
+  }
+
+  const arrayBuffer = await file.arrayBuffer();
+  
+  const pdf = await pdfjsLib.getDocument({
+    data: arrayBuffer,
+    verbosity: 0,
+    disableFontFace: true,
+    disableRange: true,
+    disableStream: true,
+  }).promise;
+
+  let fullText = '';
+  const maxPages = Math.min(pdf.numPages, 50);
+
+  for (let pageNum = 1; pageNum <= maxPages; pageNum++) {
+    try {
+      const page = await pdf.getPage(pageNum);
+      const textContent = await page.getTextContent();
+      
+      const pageText = textContent.items
+        .filter((item: any) => {
+          return item.str && 
+                 typeof item.str === 'string' && 
+                 item.str.trim().length > 0 &&
+                 /[a-zA-Z0-9\s.,!?;:'"()-]/.test(item.str);
+        })
+        .map((item: any) => item.str.trim())
+        .filter(str => str.length > 0)
+        .join(' ');
+
+      if (pageText && pageText.length > 10) {
+        fullText += pageText + '\n\n';
+        
+        if (fullText.length > 50000) {
+          console.log('Stopping extraction - sufficient content extracted');
+          break;
+        }
+      }
+    } catch (pageError) {
+      console.warn(`Failed to extract page ${pageNum}:`, pageError);
+      continue;
+    }
+  }
+
+  return fullText;
+}
+ 
+
+private async extractWithFormData(file: File): Promise<string> {
+  // This method sends the PDF to a text extraction service
+  // You'll need to implement this if you have access to OCR services
+  // For now, return empty to skip this method
+  return '';
+}
+
+private cleanAndValidateText(text: string): string {
+  if (!text || typeof text !== 'string') {
+    return '';
+  }
+
+  return text
+    // Remove excessive whitespace
+    .replace(/\s+/g, ' ')
+    // Remove non-printable characters but keep basic punctuation
+    .replace(/[^\x20-\x7E\n\r\t]/g, '')
+    // Remove obvious binary/encoded patterns
+    .replace(/[A-Za-z0-9+/]{20,}={0,2}/g, '') // Base64-like patterns
+    .replace(/\\[xuU][0-9a-fA-F]{2,8}/g, '') // Unicode escape sequences
+    .replace(/[{}[\]()<>]/g, ' ') // PDF markup
+    // Clean up multiple spaces and newlines
+    .replace(/\n{3,}/g, '\n\n')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+private isValidText(text: string): boolean {
+  if (!text || text.length < 100) {
+    return false;
+  }
+
+  // Check for minimum readable content
+  const alphaNumeric = text.replace(/[^a-zA-Z0-9]/g, '');
+  const alphaNumericRatio = alphaNumeric.length / text.length;
+  
+  // Should be at least 40% alphanumeric for readable text
+  if (alphaNumericRatio < 0.4) {
+    console.log('Text validation failed: insufficient alphanumeric content');
+    return false;
+  }
+
+  // Check for common English words (basic validation)
+  const commonWords = ['the', 'and', 'or', 'of', 'to', 'in', 'for', 'with', 'on', 'at'];
+  const lowerText = text.toLowerCase();
+  const foundWords = commonWords.filter(word => lowerText.includes(word)).length;
+  
+  if (foundWords < 3) {
+    console.log('Text validation failed: insufficient common words');
+    return false;
+  }
+
+  return true;
+}
+
+// Update the validation before sending to Edge Function
+private async callAnalysisEdgeFunction(
+  content: string, 
+  fileName: string
+): Promise<Omit<DocumentAnalysisResult, 'processingTimeMs' | 'generatedAt'>> {
+
+  // Enhanced validation
+  if (!content || content.trim().length < 100) {
+    throw new Error('PDF extraction failed - no readable content found. The document may be image-based or corrupted.');
+  }
+
+  // Check for binary content indicators
+  const binaryIndicators = [
+    /[^\x20-\x7E\n\r\t]/g, // Non-printable characters
+    /[A-Za-z0-9+/]{50,}={0,2}/g, // Long base64-like strings
+    /\0/g, // Null bytes
+  ];
+
+  for (const indicator of binaryIndicators) {
+    const matches = content.match(indicator);
+    if (matches && matches.length > content.length * 0.1) {
+      throw new Error('Document contains too much binary data. Please ensure the PDF contains selectable text.');
+    }
+  }
+
+  // Reasonable size limit (adjust as needed)
+  const MAX_CHARS = 75000; // Leave room for API overhead
+  if (content.length > MAX_CHARS) {
+    console.log(`Content too long (${content.length} chars), truncating to ${MAX_CHARS}`);
+    content = content.substring(0, MAX_CHARS) + '\n\n[Content truncated due to length...]';
+  }
+
+  console.log('Sending to analysis:', {
+    contentLength: content.length,
+    fileName,
+    preview: content.substring(0, 200) + '...'
+  });
+
+  try {
+    const { data, error } = await this.supabase.functions.invoke('analyze-document', {
+      body: {
+        content,
+        fileName,
+        analysisType: 'investment_analysis',
+        includeMarketIntelligence: true,
+        analysisMode: 'document_upload'
+      }
+    });
+
+    if (error) {
+      throw new Error(`Analysis service error: ${error.message}`);
+    }
+
+    if (!data || !data.success) {
+      throw new Error(data?.error || 'Analysis failed without specific error');
+    }
+
+    this.validateAnalysisResult(data.result);
+    return data.result;
+
+  } catch (error) {
+    console.error('Edge function call failed:', error);
+    
+    if (error instanceof Error) {
+      if (error.message.includes('quota') || error.message.includes('limit')) {
+        throw new Error('AI service temporarily unavailable. Please try again in a few minutes.');
+      }
+      if (error.message.includes('timeout')) {
+        throw new Error('Analysis timed out. Please try with a shorter document.');
+      }
+      throw error;
+    }
+    
+    throw new Error('AI analysis service is currently unavailable');
+  }
+}
 private async extractWithVersionSafePDFJS(file: File): Promise<string> {
   return new Promise(async (resolve, reject) => {
     try {
@@ -406,55 +643,7 @@ private async extractWithFileReader(file: File): Promise<string> {
 }
 
  
-
  
-
-  private async callAnalysisEdgeFunction(
-    content: string, 
-    fileName: string
-  ): Promise<Omit<DocumentAnalysisResult, 'processingTimeMs' | 'generatedAt'>> {
-
-    
-    try {
-      const { data, error } = await this.supabase.functions.invoke('analyze-document', {
-        body: {
-          content,
-          fileName,
-          analysisType: 'investment_analysis',
-          includeMarketIntelligence: true,
-          analysisMode: 'document_upload'
-        }
-      });
-
-      if (error) {
-        throw new Error(`Analysis service error: ${error.message}`);
-      }
-
-      if (!data || !data.success) {
-        throw new Error(data?.error || 'Analysis failed without specific error');
-      }
-
-      // Validate response structure
-      this.validateAnalysisResult(data.result);
-
-      return data.result;
-
-    } catch (error) {
-      console.error('Edge function call failed:', error);
-      
-      if (error instanceof Error) {
-        if (error.message.includes('quota') || error.message.includes('limit')) {
-          throw new Error('AI service temporarily unavailable. Please try again in a few minutes.');
-        }
-        if (error.message.includes('timeout')) {
-          throw new Error('Analysis timed out. Please try with a shorter document.');
-        }
-        throw error;
-      }
-      
-      throw new Error('AI analysis service is currently unavailable');
-    }
-  }
 
   private validateAnalysisResult(result: any): void {
     const requiredFields = [

@@ -1,5 +1,5 @@
 // src/app/funder/components/ai-executive-summary/ai-executive-summary.component.ts
-import { Component, Input, computed, signal, OnInit, inject } from '@angular/core';
+import { Component, Input, computed, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { 
   LucideAngularModule, 
