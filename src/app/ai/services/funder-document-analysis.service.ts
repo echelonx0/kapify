@@ -740,26 +740,27 @@ private async extractWithFileReader(file: File): Promise<string> {
     return from(this.fetchCachedAnalysis(contentHash));
   }
 
-  private async fetchCachedAnalysis(contentHash: string): Promise<DocumentAnalysisResult | null> {
-    try {
-      const { data, error } = await this.supabase
-        .from('document_analysis_results')
-        .select('result_data, created_at')
-        .eq('content_hash', contentHash)
-        .gte('created_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()) // Last 7 days
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .single();
+private async fetchCachedAnalysis(contentHash: string): Promise<DocumentAnalysisResult | null> {
+  try {
+    const { data, error } = await this.supabase
+      .from('document_analysis_results')
+      .select('result_data, created_at')  // ✅ FIXED: use result_data, not analysis_result
+      .eq('content_hash', contentHash)
+      .gte('created_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()) // Last 7 days
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .single();
 
-      if (error || !data) {
-        return null;
-      }
-
-      return data.result_data;
-    } catch {
+    if (error || !data) {
       return null;
     }
+
+    return data.result_data;  // ✅ FIXED: use result_data
+  } catch {
+    return null;
   }
+}
+
 
   /**
    * Get analysis statistics for admin dashboard
@@ -774,45 +775,45 @@ private async extractWithFileReader(file: File): Promise<string> {
   }
 
   private async fetchAnalysisStats(): Promise<any> {
-    try {
-      const { data, error } = await this.supabase
-        .from('document_analysis_results')
-        .select('confidence_score, processing_time_ms, result_data')
-        .gte('created_at', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()); // Last 30 days
+  try {
+    const { data, error } = await this.supabase
+      .from('document_analysis_results')
+      .select('confidence_score, processing_time_ms, result_data')  // ✅ FIXED: use result_data
+      .gte('created_at', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()); // Last 30 days
 
-      if (error || !data) {
-        throw error;
-      }
-
-      // Calculate statistics
-      const totalAnalyses = data.length;
-      const averageConfidence = data.reduce((sum, item) => sum + (item.confidence_score || 0), 0) / totalAnalyses;
-      const averageProcessingTime = data.reduce((sum, item) => sum + (item.processing_time_ms || 0), 0) / totalAnalyses;
-
-      // Extract industries from market intelligence
-      const industries = data
-        .map(item => item.result_data?.marketIntelligence?.sector)
-        .filter(Boolean);
-      
-      const industryCount = industries.reduce((acc: Record<string, number>, industry) => {
-        acc[industry] = (acc[industry] || 0) + 1;
-        return acc;
-      }, {});
-
-      const topIndustries = Object.entries(industryCount)
-        .map(([industry, count]) => ({ industry, count: count as number }))
-        .sort((a, b) => b.count - a.count)
-        .slice(0, 10);
-
-      return {
-        totalAnalyses,
-        averageConfidence: Math.round(averageConfidence),
-        averageProcessingTime: Math.round(averageProcessingTime),
-        topIndustries
-      };
-    } catch (error) {
-      console.error('Failed to fetch analysis stats:', error);
+    if (error || !data) {
       throw error;
     }
+
+    // Calculate statistics
+    const totalAnalyses = data.length;
+    const averageConfidence = data.reduce((sum, item) => sum + (item.confidence_score || 0), 0) / totalAnalyses;
+    const averageProcessingTime = data.reduce((sum, item) => sum + (item.processing_time_ms || 0), 0) / totalAnalyses;
+
+    // Extract industries from market intelligence
+    const industries = data
+      .map(item => item.result_data?.marketIntelligence?.sector)  // ✅ FIXED: use result_data
+      .filter(Boolean);
+    
+    const industryCount = industries.reduce((acc: Record<string, number>, industry) => {
+      acc[industry] = (acc[industry] || 0) + 1;
+      return acc;
+    }, {});
+
+    const topIndustries = Object.entries(industryCount)
+      .map(([industry, count]) => ({ industry, count: count as number }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 10);
+
+    return {
+      totalAnalyses,
+      averageConfidence: Math.round(averageConfidence),
+      averageProcessingTime: Math.round(averageProcessingTime),
+      topIndustries
+    };
+  } catch (error) {
+    console.error('Failed to fetch analysis stats:', error);
+    throw error;
   }
+}
 }

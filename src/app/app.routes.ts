@@ -72,7 +72,8 @@ export const routes: Routes = [
     canActivate: [AuthGuard, RoleGuard],
     loadChildren: () => import('./funder/funder.routes').then(m => m.funderRoutes)
   },
- 
+ // In your app.routes.ts or routing module
+
   // Catch all (ALWAYS LAST)
   { path: '**', redirectTo: '', pathMatch: 'full' }
 ];

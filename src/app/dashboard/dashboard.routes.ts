@@ -14,6 +14,10 @@ export const dashboardRoutes: Routes = [
       { path: 'funding-opportunities', loadComponent: () => import('../funding/funding-opportunities/funding-opportunities.component').then(c => c.FundingOpportunitiesComponent) },
       { path: 'funder-dashboard', loadComponent: () => import('../funder/dashboard/funder-dashboard.component').then(c => c.FunderDashboardComponent) },
       { path: 'settings', loadComponent: () => import('./pages/settings-page.component').then(c => c.SettingsComponent) },
+      {
+  path: 'resources',
+  loadComponent: () => import('../shared/components/learning-resources/learning-resources.component').then(m => m.LearningResourcesComponent)
+},
     ]
   }
 ];
