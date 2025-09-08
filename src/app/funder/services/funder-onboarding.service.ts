@@ -1,10 +1,9 @@
 import { Injectable, signal, inject } from '@angular/core';
 import { Observable, from, throwError, of, BehaviorSubject, timer } from 'rxjs';
-import { tap, catchError, switchMap, take } from 'rxjs/operators';
+import { tap, catchError, switchMap, take, map } from 'rxjs/operators';
 import { AuthService } from '../../auth/production.auth.service';
 import { SharedSupabaseService } from '../../shared/services/shared-supabase.service';
 import { FunderOrganization, Organization, OrganizationType } from '../../shared/models/user.models';
- 
 // Simplified interface for onboarding (extends Organization)
 export interface FunderOnboardingData extends Omit<Organization, 'id' | 'createdAt' | 'updatedAt'> {
   id?: string;
@@ -95,11 +94,22 @@ export class FunderOnboardingService {
   
   onboardingState$ = this.onboardingStateSubject.asObservable();
 
-  constructor() {
-    console.log('FunderOnboardingService initialized with unified organizations');
-    this.loadFromLocalStorage();
-    this.updateStateFromData();
-  }
+constructor() {
+  console.log('FunderOnboardingService initialized with unified organizations');
+  this.loadFromLocalStorage();
+  
+  // NEW: Load existing organization data if user has one
+  this.loadExistingOrganizationData().subscribe({
+    next: () => {
+      this.updateStateFromData();
+      console.log('Organization data loaded from database');
+    },
+    error: (error) => {
+      console.warn('Failed to load organization data:', error);
+      this.updateStateFromData();
+    }
+  });
+}
 
   // ===============================
   // CORE DATA OPERATIONS
@@ -136,32 +146,12 @@ export class FunderOnboardingService {
       percentage
     };
   }
- 
-  // In funder-onboarding.service.ts - replace saveToDatabase method
-saveToDatabase(): Observable<{ success: boolean; organizationId?: string }> {
-  const user = this.authService.user();
-  if (!user) {
-    this.error.set('Please log in to save');
-    return throwError(() => new Error('Not authenticated'));
-  }
 
-  // Check if user has organization first
-  const existingOrgId = this.authService.getCurrentUserOrganizationId();
-  if (!existingOrgId) {
-    this.error.set('No organization found - please contact support');
-    return throwError(() => new Error('Organization missing'));
-  }
+  // ===============================
+// NEW: Helper method to update existing organization
+// ===============================
 
-  const data = this.organizationData();
-  if (!data.name?.trim()) {
-    this.error.set('Organization name is required');
-    return throwError(() => new Error('Name required'));
-  }
-
-  this.isSaving.set(true);
-  this.error.set(null);
-
-  // Only update existing organization
+private updateExistingOrganization(orgId: string, data: Partial<FunderOnboardingData>): Observable<{ success: boolean; organizationId?: string }> {
   const orgUpdates = {
     name: data.name,
     description: data.description || null,
@@ -189,14 +179,14 @@ saveToDatabase(): Observable<{ success: boolean; organizationId?: string }> {
   return from(
     this.supabaseService.from('organizations')
       .update(orgUpdates)
-      .eq('id', existingOrgId)
+      .eq('id', orgId)
       .select()
       .single()
   ).pipe(
     tap(({ data: orgResult, error: orgError }) => {
       if (orgError) throw orgError;
       
-      // Update local data with org ID
+      // Update local data with result
       this.organizationData.update(current => ({
         ...current,
         id: orgResult.id
@@ -205,7 +195,7 @@ saveToDatabase(): Observable<{ success: boolean; organizationId?: string }> {
       this.lastSavedToDatabase.set(new Date());
       this.updateStateFromData();
     }),
-    switchMap(() => of({ success: true, organizationId: existingOrgId })),
+    switchMap(() => of({ success: true, organizationId: orgId })),
     catchError(error => {
       console.error('Save failed:', error);
       this.error.set(error.message || 'Failed to save organization');
@@ -219,55 +209,101 @@ saveToDatabase(): Observable<{ success: boolean; organizationId?: string }> {
   );
 }
 
-  // Load from unified organizations table
-  checkOnboardingStatus(): Observable<OnboardingState> {
-    const user = this.authService.user();
-    if (!user) {
-      return of(this.getOnboardingState());
-    }
+// ===============================
+// NEW: Method to check if user has existing organization
+// ===============================
 
-    this.isLoading.set(true);
-    this.error.set(null);
+hasExistingOrganization(): boolean {
+  const orgId = this.authService.getCurrentUserOrganizationId();
+  return !!orgId;
+}
 
-    return from(
-      this.supabaseService.from('organization_users')
-        .select(`
-          *,
-          organizations (*)
-        `)
-        .eq('user_id', user.id)
-        // .eq('role', 'admin')
-        .maybeSingle()
-    ).pipe(
-      tap(({ data, error }) => {
-        if (error && error.code !== 'PGRST116') {
-          throw error;
-        }
+// ===============================
+// NEW: Method to get organization display status
+// ===============================
 
-        if (data?.organizations) {
-          const mapped = this.mapDatabaseToModel(data.organizations);
-          this.organizationData.set(mapped);
-          this.saveToLocalStorage();
-        }
-      }),
-      switchMap(() => {
-        const state = this.getOnboardingState();
-        this.onboardingStateSubject.next(state);
-        return of(state);
-      }),
-      catchError(error => {
-        console.error('Load failed:', error);
-        this.error.set('Failed to load organization data');
-        this.isLoading.set(false);
-        const state = this.getOnboardingState();
-        this.onboardingStateSubject.next(state);
-        return of(state);
-      }),
-      tap(() => {
-        this.isLoading.set(false);
-      })
-    );
+getOrganizationStatus(): 'loading' | 'existing' | 'new' | 'error' {
+  if (this.isLoading()) return 'loading';
+  if (this.error()) return 'error';
+  
+  const orgId = this.authService.getCurrentUserOrganizationId();
+  const hasData = !!this.organizationData().id;
+  
+  if (orgId && hasData) return 'existing';
+  if (orgId && !hasData) return 'loading'; // Still loading data
+  
+  return 'new';
+}
+ 
+saveToDatabase(): Observable<{ success: boolean; organizationId?: string }> {
+  const user = this.authService.user();
+  if (!user) {
+    this.error.set('Please log in to save');
+    return throwError(() => new Error('Not authenticated'));
   }
+
+  const data = this.organizationData();
+  if (!data.name?.trim()) {
+    this.error.set('Organization name is required');
+    return throwError(() => new Error('Name required'));
+  }
+
+  this.isSaving.set(true);
+  this.error.set(null);
+
+  // Check if user has existing organization
+  const existingOrgId = this.authService.getCurrentUserOrganizationId();
+  
+  if (existingOrgId) {
+    // UPDATE existing organization
+    return this.updateExistingOrganization(existingOrgId, data);
+  } else {
+    // This shouldn't happen based on your data, but handle gracefully
+    this.error.set('No organization found - please contact support');
+    this.isSaving.set(false);
+    return throwError(() => new Error('Organization missing'));
+  }
+}
+
+checkOnboardingStatus(): Observable<OnboardingState> {
+  const user = this.authService.user();
+  if (!user) {
+    return of(this.getOnboardingState());
+  }
+
+  this.isLoading.set(true);
+  this.error.set(null);
+
+  // Check if we already have organization data
+  const currentOrgData = this.organizationData();
+  if (currentOrgData.id) {
+    console.log('Using existing organization data');
+    const state = this.getOnboardingState();
+    this.onboardingStateSubject.next(state);
+    this.isLoading.set(false);
+    return of(state);
+  }
+
+  // If no existing data, try to load from database
+  return this.loadExistingOrganizationData().pipe(
+    switchMap(() => {
+      const state = this.getOnboardingState();
+      this.onboardingStateSubject.next(state);
+      return of(state);
+    }),
+    catchError(error => {
+      console.error('Load failed:', error);
+      this.error.set('Failed to load organization data');
+      this.isLoading.set(false);
+      const state = this.getOnboardingState();
+      this.onboardingStateSubject.next(state);
+      return of(state);
+    }),
+    tap(() => {
+      this.isLoading.set(false);
+    })
+  );
+}
 
   // Request verification
   requestVerification(): Observable<{ success: boolean; message: string }> {
@@ -550,4 +586,47 @@ saveToDatabase(): Observable<{ success: boolean; organizationId?: string }> {
     this.updateStateFromData();
     console.log('All onboarding data cleared');
   }
+
+
+  // ===============================
+// NEW: Load existing organization data from AuthService
+// ===============================
+
+private loadExistingOrganizationData(): Observable<void> {
+  const orgId = this.authService.getCurrentUserOrganizationId();
+  
+  if (!orgId) {
+    console.log('No existing organization found');
+    return of(undefined);
+  }
+
+  console.log('Loading existing organization data for ID:', orgId);
+  
+  return from(
+    this.supabaseService.from('organizations')
+      .select('*')
+      .eq('id', orgId)
+      .single()
+  ).pipe(
+    tap(({ data, error }) => {
+      if (error) {
+        console.warn('Failed to load existing organization:', error);
+        return;
+      }
+
+      if (data) {
+        console.log('Loaded existing organization:', data.name);
+        const mapped = this.mapDatabaseToModel(data);
+        this.organizationData.set(mapped);
+        this.saveToLocalStorage();
+        this.updateStateFromData();
+      }
+    }),
+    map(() => undefined),
+    catchError(error => {
+      console.error('Error loading existing organization:', error);
+      return of(undefined);
+    })
+  );
+}
 }

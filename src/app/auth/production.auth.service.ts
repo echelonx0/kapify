@@ -1,8 +1,8 @@
 // src/app/auth/enhanced-production.auth.service.ts
 import { Injectable, signal, computed, inject } from '@angular/core';
 import { Router } from '@angular/router';
-import { BehaviorSubject, Observable, from, of, throwError, timer } from 'rxjs';
-import { map, catchError, timeout, tap, finalize, switchMap } from 'rxjs/operators'; 
+import { BehaviorSubject, Observable, from, of, throwError } from 'rxjs';
+import { map, catchError, timeout, tap, finalize } from 'rxjs/operators'; 
 import { SharedSupabaseService } from '../shared/services/shared-supabase.service';
 import { RegistrationTransactionService, RegistrationTransactionResult } from '../shared/services/registration-transaction.service';
 import { Session, User } from '@supabase/supabase-js';

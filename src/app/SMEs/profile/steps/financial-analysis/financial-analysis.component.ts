@@ -289,92 +289,7 @@ export class FinancialAnalysisComponent implements OnInit, OnDestroy {
   }
  
 
-private extractDataDirectlyFromSheet(worksheet: XLSX.WorkSheet, range: XLSX.Range, uploadResult: any): ParsedFinancialData {
-  // Extract headers from first row
-  const headers: string[] = [];
-  for (let col = 1; col <= Math.min(range.e.c, 20); col++) { // Limit to 20 columns max
-    const cellAddress = XLSX.utils.encode_cell({ r: 0, c: col });
-    const cell = worksheet[cellAddress];
-    if (cell?.v) {
-      headers.push(cell.v.toString().trim());
-    }
-  }
-  
-  if (headers.length === 0) {
-    throw new Error('No column headers found');
-  }
-  
-  const incomeStatement: FinancialRowData[] = [];
-  const financialRatios: FinancialRatioData[] = [];
-  
-  // Process rows efficiently - limit range to reasonable bounds
-  const maxRows = Math.min(range.e.r, 100); // Process max 100 rows
-  
-  for (let row = 1; row <= maxRows; row++) {
-    // Get label from first column
-    const labelCell = worksheet[XLSX.utils.encode_cell({ r: row, c: 0 })];
-    if (!labelCell?.v) continue;
-    
-    const label = labelCell.v.toString().trim();
-    if (!label) continue;
-    
-    // Extract values efficiently
-    const values: number[] = [];
-    for (let col = 1; col <= headers.length && col <= range.e.c; col++) {
-      const cellAddress = XLSX.utils.encode_cell({ r: row, c: col });
-      const cell = worksheet[cellAddress];
-      
-      let numValue = 0;
-      if (cell?.v !== undefined) {
-        if (typeof cell.v === 'number') {
-          numValue = cell.v;
-        } else {
-          const parsed = parseFloat(cell.v.toString());
-          numValue = isNaN(parsed) ? 0 : parsed;
-        }
-      }
-      values.push(numValue);
-    }
-    
-    // Ensure values array matches header count
-    while (values.length < headers.length) values.push(0);
-    
-    // Categorize by exact label matching
-    if (EXPECTED_INCOME_STATEMENT_ROWS.includes(label)) {
-      incomeStatement.push({
-        label,
-        values,
-        editable: !this.isCalculatedField(label)
-      });
-    } else if (EXPECTED_RATIO_ROWS.includes(label)) {
-      financialRatios.push({
-        label,
-        values,
-        type: this.getRatioType(label),
-        editable: !this.isCalculatedRatio(label)
-      });
-    }
-    
-    // Early exit if we have all expected rows
-    if (incomeStatement.length >= EXPECTED_INCOME_STATEMENT_ROWS.length && 
-        financialRatios.length >= EXPECTED_RATIO_ROWS.length) {
-      break;
-    }
-  }
-  
-  return {
-    incomeStatement,
-    financialRatios,
-    columnHeaders: headers,
-    lastUpdated: new Date().toISOString(),
-    uploadedFile: {
-      documentKey: uploadResult.documentKey,
-      fileName: uploadResult.fileName,
-      publicUrl: uploadResult.publicUrl
-    }
-  };
-}
-
+ 
  
 
 // Add this for better user feedback
@@ -912,5 +827,155 @@ private async processFile(file: File) {
     clearTimeout(timeoutId);
     this.isParsingFile.set(false);
   }
+}
+
+// Fix for extractDataDirectlyFromSheet method
+private extractDataDirectlyFromSheet(worksheet: XLSX.WorkSheet, range: XLSX.Range, uploadResult: any): ParsedFinancialData {
+  // Extract headers from first row - START FROM COLUMN 0, not 1
+  const headers: string[] = [];
+  
+  // Check if we have any data at all
+  if (range.e.r < 0 || range.e.c < 0) {
+    throw new Error('Excel file appears to be empty');
+  }
+  
+  // Start from column 0 and include the first column in headers if it contains data
+  for (let col = 0; col <= Math.min(range.e.c, 20); col++) {
+    const cellAddress = XLSX.utils.encode_cell({ r: 0, c: col });
+    const cell = worksheet[cellAddress];
+    if (cell?.v) {
+      const headerValue = cell.v.toString().trim();
+      if (headerValue) {
+        headers.push(headerValue);
+      }
+    }
+  }
+  
+  // If still no headers found, check if data starts from row 1 instead of row 0
+  if (headers.length === 0) {
+    for (let col = 0; col <= Math.min(range.e.c, 20); col++) {
+      const cellAddress = XLSX.utils.encode_cell({ r: 1, c: col });
+      const cell = worksheet[cellAddress];
+      if (cell?.v) {
+        const headerValue = cell.v.toString().trim();
+        if (headerValue) {
+          headers.push(headerValue);
+        }
+      }
+    }
+  }
+  
+  if (headers.length === 0) {
+    throw new Error('No column headers found. Please ensure your Excel file has headers in the first row.');
+  }
+  
+  console.log('Found headers:', headers);
+  
+  const incomeStatement: FinancialRowData[] = [];
+  const financialRatios: FinancialRatioData[] = [];
+  
+  // Determine data start row based on where we found headers
+  const dataStartRow = headers.length > 0 ? 1 : 2;
+  const maxRows = Math.min(range.e.r, 100);
+  
+  for (let row = dataStartRow; row <= maxRows; row++) {
+    // Get label from first column (column 0)
+    const labelCell = worksheet[XLSX.utils.encode_cell({ r: row, c: 0 })];
+    if (!labelCell?.v) continue;
+    
+    const label = labelCell.v.toString().trim();
+    if (!label) continue;
+    
+    // Skip section headers
+    if (label.toUpperCase().includes('INCOME STATEMENT') || 
+        label.toUpperCase().includes('FINANCIAL RATIOS') ||
+        label === '') continue;
+    
+    // Extract values - start from column 1 since column 0 is the label
+    const values: number[] = [];
+    const valueStartCol = 1;
+    const maxValueCols = Math.min(headers.length - 1, 10); // Don't exceed reasonable column count
+    
+    for (let col = valueStartCol; col <= valueStartCol + maxValueCols - 1 && col <= range.e.c; col++) {
+      const cellAddress = XLSX.utils.encode_cell({ r: row, c: col });
+      const cell = worksheet[cellAddress];
+      
+      let numValue = 0;
+      if (cell?.v !== undefined) {
+        if (typeof cell.v === 'number') {
+          numValue = cell.v;
+        } else {
+          const parsed = parseFloat(cell.v.toString().replace(/[,\s]/g, ''));
+          numValue = isNaN(parsed) ? 0 : parsed;
+        }
+      }
+      values.push(numValue);
+    }
+    
+    // Ensure values array matches expected length (9 columns for years)
+    while (values.length < 9) values.push(0);
+    if (values.length > 9) values.splice(9);
+    
+    // Categorize by exact or partial label matching
+    const isIncomeStatementRow = EXPECTED_INCOME_STATEMENT_ROWS.some(expected => 
+      expected.toLowerCase().includes(label.toLowerCase()) || 
+      label.toLowerCase().includes(expected.toLowerCase())
+    );
+    
+    const isRatioRow = EXPECTED_RATIO_ROWS.some(expected => 
+      expected.toLowerCase().includes(label.toLowerCase()) || 
+      label.toLowerCase().includes(expected.toLowerCase())
+    );
+    
+    if (isIncomeStatementRow) {
+      // Find the best matching expected label
+      const matchedLabel = EXPECTED_INCOME_STATEMENT_ROWS.find(expected => 
+        expected.toLowerCase().includes(label.toLowerCase()) || 
+        label.toLowerCase().includes(expected.toLowerCase())
+      ) || label;
+      
+      incomeStatement.push({
+        label: matchedLabel,
+        values,
+        editable: !this.isCalculatedField(matchedLabel)
+      });
+    } else if (isRatioRow) {
+      // Find the best matching expected label
+      const matchedLabel = EXPECTED_RATIO_ROWS.find(expected => 
+        expected.toLowerCase().includes(label.toLowerCase()) || 
+        label.toLowerCase().includes(expected.toLowerCase())
+      ) || label;
+      
+      financialRatios.push({
+        label: matchedLabel,
+        values,
+        type: this.getRatioType(matchedLabel),
+        editable: !this.isCalculatedRatio(matchedLabel)
+      });
+    }
+    
+    // Early exit if we have all expected rows
+    if (incomeStatement.length >= EXPECTED_INCOME_STATEMENT_ROWS.length && 
+        financialRatios.length >= EXPECTED_RATIO_ROWS.length) {
+      break;
+    }
+  }
+  
+  // Filter headers to only include numeric columns (remove the label column)
+  const numericHeaders = headers.slice(1, 10); // Take up to 9 year columns
+  
+  return {
+    incomeStatement,
+    financialRatios,
+    columnHeaders: numericHeaders.length > 0 ? numericHeaders : [
+      'Y-3', 'Y-2', 'Y-1', 'Current', 'P+1', 'P+2', 'P+3', 'P+4', 'P+5'
+    ],
+    lastUpdated: new Date().toISOString(),
+    uploadedFile: {
+      documentKey: uploadResult.documentKey,
+      fileName: uploadResult.fileName,
+      publicUrl: uploadResult.publicUrl
+    }
+  };
 }
 }

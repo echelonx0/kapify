@@ -227,6 +227,7 @@ export interface FundingOpportunity {
 }
 
 export interface OpportunityEligibility {
+  [x: string]: any;
   industries: string[];
   businessStages: string[];
   minRevenue?: number;

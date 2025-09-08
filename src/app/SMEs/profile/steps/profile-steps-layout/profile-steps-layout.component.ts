@@ -364,6 +364,7 @@ export class  ProfileStepsLayoutComponent implements OnInit {
     try {
       await this.profileService.saveCurrentProgress();
       this.lastSaved.set(new Date());
+      
     } catch (error) {
       console.error('Failed to save progress:', error);
     } finally {

@@ -2,11 +2,9 @@
 import { Component, computed, signal, inject, OnInit } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { LucideAngularModule, Home, User, FileText, DollarSign, Settings, LogOut, Building, ChevronDown, Bell } from 'lucide-angular';
+import { LucideAngularModule, Home, User, FileText, DollarSign, Settings, LogOut, Building, ChevronDown, Bell, BookOpen } from 'lucide-angular';
 import { AuthService } from 'src/app/auth/production.auth.service';
 import { ProfileManagementService } from '../../services/profile-management.service';
- 
- 
 
 interface NavItem {
   label: string;
@@ -20,124 +18,7 @@ interface NavItem {
   selector: 'sidebar-nav',
   standalone: true,
   imports: [RouterModule, LucideAngularModule, CommonModule],
-  template: `
-    <nav class="fixed left-0 top-0 h-full w-16 hover:w-64 bg-white border-r border-neutral-200 flex flex-col py-4 z-40 transition-all duration-300 ease-in-out group shadow-lg">
-      <!-- Logo Section -->
- 
-   <div class="flex items-center w-full mb-8 px-0 group-hover:px-4">
-  <button 
-    (click)="goToDashboard()"
-    class="w-10 h-10 bg-primary-500 rounded-xl flex items-center justify-center hover:bg-primary-600 transition-colors flex-shrink-0 ml-3"
-  >
-    <span class="text-white font-bold text-lg">K</span>
-  </button>
-  <span class="ml-3 font-bold text-xl text-neutral-900 opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">
-    Kapify
-  </span>
-</div>
-
-
-      <!-- User Profile Section -->
- 
-
-      <!-- Navigation Items -->
-      <div class="flex flex-col space-y-1 flex-1 px-2">
-        @for (item of visibleNavItems(); track item.route) {
-          <a
-            [routerLink]="item.route"
-            routerLinkActive="bg-primary-50 text-primary-600 border-r-2 border-primary-600"
-            [routerLinkActiveOptions]="{exact: item.route === '/dashboard/home'}"
-            class="flex items-center px-2 py-2.5 text-sm font-medium rounded-lg text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100 transition-all duration-200 group/item"
-            [title]="item.label"
-          >
-            <div class="flex items-center justify-center w-6 h-6 flex-shrink-0">
-              <lucide-icon [img]="item.icon" [size]="20" />
-            </div>
-            <span class="ml-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">
-              {{ item.label }}
-            </span>
-            @if (item.badge && item.badge > 0) {
-              <span class="ml-auto opacity-0 group-hover:opacity-100 transition-opacity duration-300 px-2 py-1 bg-red-500 text-white text-xs rounded-full min-w-[1.25rem] text-center">
-                {{ item.badge > 99 ? '99+' : item.badge }}
-              </span>
-            }
-          </a>
-        }
-      </div>
-
-      <!-- Quick Actions -->
-      <div class="px-2 mb-4">
-        <div class="border-t border-neutral-200 pt-4">
-          <!-- Notifications -->
-          <button
-            (click)="toggleNotifications()"
-            class="flex items-center w-full px-2 py-2.5 text-sm font-medium rounded-lg text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100 transition-all duration-200 relative"
-            title="Notifications"
-          >
-            <div class="flex items-center justify-center w-6 h-6 flex-shrink-0">
-              <lucide-icon [img]="BellIcon" [size]="20" />
-              @if (unreadNotifications() > 0) {
-                <span class="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
-                  {{ unreadNotifications() > 9 ? '9+' : unreadNotifications() }}
-                </span>
-              }
-            </div>
-            <span class="ml-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">
-              Notifications
-            </span>
-          </button>
-
-          <!-- Settings -->
-          <a
-            routerLink="/dashboard/settings"
-            routerLinkActive="bg-primary-50 text-primary-600"
-            class="flex items-center px-2 py-2.5 text-sm font-medium rounded-lg text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100 transition-all duration-200"
-            title="Settings"
-          >
-            <div class="flex items-center justify-center w-6 h-6 flex-shrink-0">
-              <lucide-icon [img]="SettingsIcon" [size]="20" />
-            </div>
-            <span class="ml-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">
-              Settings
-            </span>
-          </a>
-        </div>
-      </div>
-
-      <!-- Logout Button -->
-      <div class="px-2">
-        <button
-          (click)="logout()"
-          class="flex items-center w-full px-2 py-2.5 text-sm font-medium rounded-lg text-neutral-600 hover:text-red-600 hover:bg-red-50 transition-all duration-200"
-          title="Logout"
-        >
-          <div class="flex items-center justify-center w-6 h-6 flex-shrink-0">
-            <lucide-icon [img]="LogOutIcon" [size]="20" />
-          </div>
-          <span class="ml-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">
-            Logout
-          </span>
-        </button>
-      </div>
-
-      <!-- Notifications Panel -->
-      @if (showNotifications()) {
-        <div class="absolute left-16 top-0 w-80 h-full bg-white border-r border-neutral-200 shadow-lg z-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-          <div class="p-4 border-b border-neutral-200">
-            <h3 class="font-medium text-neutral-900">Notifications</h3>
-          </div>
-          <div class="p-4">
-            <p class="text-sm text-neutral-600 text-center py-8">No new notifications</p>
-          </div>
-        </div>
-      }
-    </nav>
-
-    <!-- Main content offset -->
-    <div class="ml-16 group-hover:ml-64 transition-all duration-300 ease-in-out">
-      <!-- This div ensures content shifts when sidebar expands -->
-    </div>
-  `
+  templateUrl: 'sidenav.component.html'
 })
 export class SidebarNavComponent implements OnInit {
   private authService = inject(AuthService);
@@ -154,6 +35,7 @@ export class SidebarNavComponent implements OnInit {
   LogOutIcon = LogOut;
   BellIcon = Bell;
   ChevronDownIcon = ChevronDown;
+  BookOpenIcon = BookOpen;
 
   // State
   showNotifications = signal(false);
@@ -164,37 +46,38 @@ export class SidebarNavComponent implements OnInit {
   currentUser = computed(() => this.profileService.currentUser());
   userDisplayName = computed(() => this.profileService.userDisplayName());
 
- isAdminUser = computed(() => {
-    const user = this.currentUser();
+  isAdminUser = computed(() => {
+    const user = this.currentUser(); 
     return user?.email === 'zivaigwe@gmail.com';
   });
+
   // Navigation items with potential badges
   private navItems: NavItem[] = [
     { label: 'Home', icon: Home, route: '/dashboard/home', userTypes: ['sme', 'funder'] },
-    { label: 'Profile', icon: User, route: '/profile', userTypes: ['sme',] },
-   
+    { label: 'Resources', icon: BookOpen, route: '/resources', userTypes: ['sme', 'funder'] },
+    { label: 'Profile', icon: User, route: '/profile', userTypes: ['sme'] },
     { label: 'Funding Opportunities', icon: DollarSign, route: '/funding', userTypes: ['sme'] },
     { label: 'Manage', icon: Building, route: '/dashboard/funder-dashboard', userTypes: ['funder'] },
-   { label: 'Applications', icon: FileText, route: '/applications', userTypes: ['sme', 'funder'], badge: 2 },  
-   { label: 'Admin Console', icon: Settings, route: '/administrator/dashboard', userTypes: ['sme', 'funder'] }
+    { label: 'Applications', icon: FileText, route: '/applications', userTypes: ['sme', 'funder'], badge: 2 },  
+    { label: 'Admin Console', icon: Settings, route: '/administrator/dashboard', userTypes: ['sme', 'funder'] }
   ];
 
-visibleNavItems = computed(() => {
-  const user = this.authService.user();
-  const userType = user?.userType || 'sme';
-  const mappedUserType = this.mapUserTypeForNavigation(userType);
-  const isAdmin = this.isAdminUser();
-  
-  return this.navItems.filter(item => {
-    // Show admin route only for admin users
-    if (item.route === '/administrator/dashboard') {
-      return isAdmin;
-    }
+  visibleNavItems = computed(() => {
+    const user = this.authService.user();
+    const userType = user?.userType || 'sme';
+    const mappedUserType = this.mapUserTypeForNavigation(userType);
+    const isAdmin = this.isAdminUser();
     
-    // Show other routes based on user type
-    return item.userTypes.includes(mappedUserType);
+    return this.navItems.filter(item => {
+      // Show admin route only for admin users
+      if (item.route === '/administrator/dashboard') {
+        return isAdmin;
+      }
+      
+      // Show other routes based on user type
+      return item.userTypes.includes(mappedUserType);
+    });
   });
-});
 
   ngOnInit() {
     // Load profile data if not already loaded

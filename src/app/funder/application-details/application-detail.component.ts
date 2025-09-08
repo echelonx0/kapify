@@ -400,9 +400,6 @@ export class ApplicationDetailComponent implements OnInit, OnDestroy {
     this.activeTab.set(tabId);
   }
 
-  // Keep all other existing methods unchanged...
-  // (Status management, messaging, navigation, utility methods, etc.)
-
   // Navigation
   goBack() {
     const application = this.application();

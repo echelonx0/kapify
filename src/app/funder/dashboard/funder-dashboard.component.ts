@@ -21,6 +21,7 @@ import { FundingOpportunityService } from '../../funding/services/funding-opport
 import { UiButtonComponent } from '../../shared/components';
 import { FunderOnboardingService, OnboardingState } from '../services/funder-onboarding.service';
 import { OpportunityManagementService } from '../services/opportunity-management.service';
+import { FunderDocumentAnalysisComponent } from 'src/app/ai/document-analysis/funder-document-analysis.component';
  
  
 @Component({
@@ -29,7 +30,8 @@ import { OpportunityManagementService } from '../services/opportunity-management
   imports: [
     CommonModule,
     UiButtonComponent,
-    LucideAngularModule
+    LucideAngularModule,
+    FunderDocumentAnalysisComponent
   ],
   templateUrl: 'funder-dashboard.component.html'
 })
@@ -64,6 +66,9 @@ export class FunderDashboardComponent implements OnInit, OnDestroy {
   onboardingState = signal<OnboardingState | null>(null);
   analytics = signal<any>(null);
   recentOpportunities = signal<any[]>([]);
+showDocumentAnalysis = signal(false);
+
+
 
   ngOnInit() {
     this.loadDashboardData();
@@ -89,8 +94,9 @@ export class FunderDashboardComponent implements OnInit, OnDestroy {
       });
   }
 
-  // FIXED: Renamed methods to prevent infinite recursion
-  
+ openDocumentAnalysis() {
+  this.showDocumentAnalysis.set(true);
+}
   /**
    * Navigate to continue existing draft
    */

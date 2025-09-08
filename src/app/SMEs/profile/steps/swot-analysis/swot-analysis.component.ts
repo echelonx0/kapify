@@ -512,6 +512,7 @@ private async saveData(isManual: boolean = false) {
   }
 
   async saveAndContinue() {
+    
     await this.saveData(true);
     this.fundingApplicationService.nextStep();
   }
