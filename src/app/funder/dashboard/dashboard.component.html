@@ -1,0 +1,674 @@
+<div class="min-h-screen bg-gray-50">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+    <!-- Tab Navigation -->
+    <div class="tab-navigation mb-8">
+      <div class="tab-container">
+        <nav class="tab-list" aria-label="Dashboard Navigation">
+          @for (tab of tabs; track tab.id) {
+            <button
+              type="button"
+              class="tab-button"
+              [class.active]="isActiveTab(tab.id)"
+              (click)="switchTab(tab.id)"
+              [attr.aria-selected]="isActiveTab(tab.id)"
+              [attr.aria-controls]="tab.id + '-panel'"
+            >
+              <div class="flex items-center gap-2">
+                <lucide-icon [img]="tab.icon" [size]="16" />
+                <span class="hidden sm:inline">{{ tab.label }}</span>
+              </div>
+            </button>
+          }
+        </nav>
+      </div>
+    </div>
+
+    <!-- Tab Content -->
+    <div class="tab-content">
+
+      <!-- Overview Tab -->
+      @if (activeTab() === 'overview') {
+        <div id="overview-panel" role="tabpanel" class="space-y-8">
+          
+          <!-- Onboarding Status Card -->
+          @if (onboardingState() && !onboardingState()!.isComplete) {
+            <div class="bg-gradient-to-r from-blue-500 via-blue-600 to-indigo-600 p-0.5 rounded-xl shadow-lg">
+              <div class="bg-white rounded-xl p-6">
+                <div class="flex items-start gap-4">
+                  <div class="flex-shrink-0 mt-1">
+                    @if (onboardingState()!.canCreateOpportunities) {
+                      <div class="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
+                        <lucide-icon [img]="CheckCircleIcon" [size]="24" class="text-green-600" />
+                      </div>
+                    } @else {
+                      <div class="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center">
+                        <lucide-icon [img]="AlertCircleIcon" [size]="24" class="text-orange-600" />
+                      </div>
+                    }
+                  </div>
+                  
+                  <div class="flex-1 min-w-0">
+                    <h3 class="text-xl font-semibold text-gray-900 mb-2">
+                      {{ getOnboardingTitle() }}
+                    </h3>
+                    <p class="text-gray-600 mb-6 leading-relaxed">
+                      {{ getOnboardingDescription() }}
+                    </p>
+                    
+                    <!-- Progress Section -->
+                    <div class="mb-6">
+                      <div class="flex items-center justify-between mb-3">
+                        <span class="text-sm font-semibold text-gray-700">Setup Progress</span>
+                        <span class="text-sm font-bold text-gray-900">{{ onboardingState()!.completionPercentage }}%</span>
+                      </div>
+                      <div class="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+                        <div 
+                          class="bg-gradient-to-r from-blue-500 to-indigo-600 h-3 rounded-full transition-all duration-500 ease-out"
+                          [style.width.%]="onboardingState()!.completionPercentage"
+                        ></div>
+                      </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="flex flex-col sm:flex-row gap-3">
+                      @if (!onboardingState()!.canCreateOpportunities) {
+                        <ui-button variant="primary" (clicked)="completeOnboarding()" class="shadow-sm">
+                          Complete Setup
+                        </ui-button>
+                      } @else {
+                        <ui-button variant="outline" (clicked)="improveProfile()" class="shadow-sm">
+                          <lucide-icon [img]="Building2Icon" [size]="16" class="mr-2" />
+                          Get Verified
+                        </ui-button>
+                      }
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          }
+
+          <!-- Draft Status Card -->
+          @if (draftSummary().hasDraft && onboardingState()?.canCreateOpportunities) {
+            <div class="bg-gradient-to-r from-indigo-500 via-purple-600 to-pink-600 p-0.5 rounded-xl shadow-lg">
+              <div class="bg-white rounded-xl p-6">
+                <div class="flex items-start gap-4">
+                  <div class="flex-shrink-0 mt-1">
+                    <div class="w-12 h-12 bg-indigo-100 rounded-xl flex items-center justify-center">
+                      <lucide-icon [img]="FileTextIcon" [size]="24" class="text-indigo-600" />
+                    </div>
+                  </div>
+                  
+                  <div class="flex-1 min-w-0">
+                    <h3 class="text-xl font-semibold text-gray-900 mb-2">
+                      Continue Your Draft
+                    </h3>
+                    <p class="text-gray-600 mb-4 leading-relaxed">
+                      You have an unfinished opportunity draft: <span class="font-medium">"{{ getDraftTitle() }}"</span>
+                    </p>
+                    
+                    <!-- Progress Section -->
+                    <div class="mb-6">
+                      <div class="flex items-center justify-between mb-3">
+                        <div class="flex items-center gap-2">
+                          <span class="text-sm font-semibold text-gray-700">Draft Progress</span>
+                          <div class="flex items-center gap-1 text-xs text-gray-500">
+                            <lucide-icon [img]="ClockIcon" [size]="12" />
+                            <span>{{ getDraftLastSavedText() }}</span>
+                          </div>
+                        </div>
+                        <span class="text-sm font-bold text-gray-900">{{ draftSummary().completionPercentage }}%</span>
+                      </div>
+                      <div class="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+                        <div 
+                          class="h-3 rounded-full transition-all duration-500 ease-out"
+                          [class]="getDraftProgressColor()"
+                          [style.width.%]="draftSummary().completionPercentage"
+                        ></div>
+                      </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="flex flex-col sm:flex-row gap-3">
+                      <ui-button variant="primary" (clicked)="continueDraft()" class="shadow-sm">
+                        <lucide-icon [img]="ArrowRightIcon" [size]="16" class="mr-2" />
+                        Continue Draft
+                      </ui-button>
+                      <ui-button variant="outline" (clicked)="createNewOpportunity()" class="shadow-sm">
+                        <lucide-icon [img]="PlusIcon" [size]="16" class="mr-2" />
+                        Start Fresh
+                      </ui-button>
+                      <ui-button variant="ghost" (clicked)="deleteDraft()" class="text-red-600 hover:text-red-700 hover:bg-red-50">
+                        Delete Draft
+                      </ui-button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          }
+
+          <!-- Analytics Cards -->
+          @if (analytics()) {
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              <!-- Active Opportunities -->
+              <div class="stat-card group">
+                <div class="flex items-center justify-between">
+                  <div class="flex-1">
+                    <div class="flex items-center gap-3 mb-4">
+                      <div class="stat-icon bg-blue-50 group-hover:bg-blue-100 transition-colors">
+                        <lucide-icon [img]="TrendingUpIcon" [size]="24" class="text-blue-600" />
+                      </div>
+                    </div>
+                    <p class="stat-value">{{ getActiveOpportunitiesCount() }}</p>
+                    <p class="stat-label">Active Opportunities</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Total Applications -->
+              <div class="stat-card group">
+                <div class="flex items-center justify-between">
+                  <div class="flex-1">
+                    <div class="flex items-center gap-3 mb-4">
+                      <div class="stat-icon bg-green-50 group-hover:bg-green-100 transition-colors">
+                        <lucide-icon [img]="UsersIcon" [size]="24" class="text-green-600" />
+                      </div>
+                    </div>
+                    <p class="stat-value">{{ formatNumber(analytics()!.totalApplications) }}</p>
+                    <p class="stat-label">Total Applications</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Conversion Rate -->
+              <div class="stat-card group">
+                <div class="flex items-center justify-between">
+                  <div class="flex-1">
+                    <div class="flex items-center gap-3 mb-4">
+                      <div class="stat-icon bg-purple-50 group-hover:bg-purple-100 transition-colors">
+                        <lucide-icon [img]="DollarSignIcon" [size]="24" class="text-purple-600" />
+                      </div>
+                    </div>
+                    <p class="stat-value">{{ analytics()!.averageConversionRate.toFixed(1) }}%</p>
+                    <p class="stat-label">Conversion Rate</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Total Views -->
+              <div class="stat-card group">
+                <div class="flex items-center justify-between">
+                  <div class="flex-1">
+                    <div class="flex items-center gap-3 mb-4">
+                      <div class="stat-icon bg-orange-50 group-hover:bg-orange-100 transition-colors">
+                        <lucide-icon [img]="BarChart3Icon" [size]="24" class="text-orange-600" />
+                      </div>
+                    </div>
+                    <p class="stat-value">{{ formatNumber(analytics()!.totalViews) }}</p>
+                    <p class="stat-label">Total Views</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          }
+
+          <!-- Recent Activity Summary -->
+          <div class="grid grid-cols-1 xl:grid-cols-2 gap-8">
+            <!-- Quick Actions -->
+            <div class="section-card">
+              <div class="section-header">
+                <h3 class="section-title">Quick Actions</h3>
+                <p class="section-description">Get started with key tasks</p>
+              </div>
+              <div class="p-6 space-y-3">
+                @if (onboardingState()?.canCreateOpportunities) {
+                  <button 
+                    class="action-button"
+                    (click)="createOpportunity()"
+                  >
+                    <div class="icon">
+                      <lucide-icon [img]="PlusIcon" [size]="18" class="text-blue-600" />
+                    </div>
+                    <span class="text">Create Opportunity</span>
+                  </button>
+
+                  <button 
+                    class="action-button"
+                    (click)="importOpportunity()"
+                  >
+                    <div class="icon">
+                      <lucide-icon [img]="FileTextIcon" [size]="18" class="text-green-600" />
+                    </div>
+                    <span class="text">Import Opportunity</span>
+                  </button>
+                }
+                
+                <button 
+                  class="action-button"
+                  (click)="viewAllOpportunities()"
+                >
+                  <div class="icon">
+                    <lucide-icon [img]="TrendingUpIcon" [size]="18" class="text-purple-600" />
+                  </div>
+                  <span class="text">Browse Marketplace</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Organization Info -->
+            @if (onboardingState()?.organization) {
+              <div class="section-card">
+                <div class="section-header">
+                  <h3 class="section-title">Organization</h3>
+                  <p class="section-description">Your organization details</p>
+                </div>
+                <div class="p-6">
+                  <div class="space-y-4">
+                    <h4 class="text-base font-bold text-gray-900 leading-tight">
+                      {{ onboardingState()!.organization!.name }}
+                    </h4>
+                    <p class="text-sm text-gray-500">
+                      {{ formatOrganizationType(onboardingState()!.organization!.organizationType) }}
+                    </p>
+                  </div>
+
+                  <!-- Verification Badge -->
+                  <div class="mt-6">
+                    @if (onboardingState()!.organization!.isVerified) {
+                      <div class="inline-flex items-center px-4 py-2 rounded-lg bg-green-50 border border-green-200">
+                        <lucide-icon [img]="CheckCircleIcon" [size]="16" class="mr-2 text-green-600" />
+                        <span class="text-sm font-semibold text-green-700">Verified Organization</span>
+                      </div>
+                    } @else {
+                      <div class="inline-flex items-center px-4 py-2 rounded-lg bg-orange-50 border border-orange-200">
+                        <lucide-icon [img]="AlertCircleIcon" [size]="16" class="mr-2 text-orange-600" />
+                        <span class="text-sm font-semibold text-orange-700">Pending Verification</span>
+                      </div>
+                    }
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      }
+
+      <!-- Opportunities Tab -->
+      @if (activeTab() === 'opportunities') {
+        <div id="opportunities-panel" role="tabpanel" class="space-y-6">
+          
+          <!-- Document Analysis Section -->
+          <div class="section-card">
+            <app-funder-document-analysis></app-funder-document-analysis>
+          </div>
+
+          <!-- Opportunities Management -->
+          <div class="section-card">
+            <!-- Header -->
+            <div class="section-header">
+              <div class="flex items-center justify-between">
+                <div>
+                  <h2 class="section-title">Your Opportunities</h2>
+                  <p class="section-description">Manage your funding opportunities</p>
+                </div>
+                <div class="flex gap-2">
+                  @if (onboardingState()?.canCreateOpportunities) {
+                    <ui-button variant="outline" size="sm" (clicked)="importOpportunity()">
+                      <lucide-icon [img]="FileTextIcon" [size]="14" class="mr-2" />
+                      Import
+                    </ui-button>
+                    <ui-button variant="primary" size="sm" (clicked)="createOpportunity()">
+                      <lucide-icon [img]="PlusIcon" [size]="14" class="mr-2" />
+                      Create
+                    </ui-button>
+                  }
+                </div>
+              </div>
+            </div>
+            
+            <!-- Content -->
+            @if (recentOpportunities().length === 0) {
+              <!-- Empty State -->
+              <div class="empty-state">
+                <div class="empty-icon">
+                  <lucide-icon [img]="PlusIcon" [size]="32" class="text-gray-400" />
+                </div>
+                <h3 class="empty-title">No opportunities yet</h3>
+                <p class="empty-description">
+                  Create your first funding opportunity to start connecting with SMEs and track applications.
+                </p>
+                
+                <div class="flex flex-col sm:flex-row gap-3 justify-center">
+                  @if (onboardingState()?.canCreateOpportunities) {
+                    <ui-button variant="primary" (clicked)="createOpportunity()" class="shadow-sm">
+                      <lucide-icon [img]="PlusIcon" [size]="16" class="mr-2" />
+                      Create Opportunity
+                    </ui-button>
+                    <ui-button variant="outline" (clicked)="importOpportunity()" class="shadow-sm">
+                      <lucide-icon [img]="FileTextIcon" [size]="16" class="mr-2" />
+                      Import Opportunity
+                    </ui-button>
+                  } @else {
+                    <ui-button variant="outline" (clicked)="completeOnboarding()" class="shadow-sm">
+                      Complete Setup First
+                    </ui-button>
+                  }
+                </div>
+              </div>
+            } @else {
+              <!-- Opportunities List -->
+              <div class="divide-y divide-gray-100">
+                @for (opportunity of recentOpportunities(); track opportunity.id) {
+                  <div class="list-item group" (click)="viewOpportunity(opportunity.id)">
+                    <div class="flex items-center justify-between">
+                      <div class="flex-1 min-w-0 pr-4">
+                        <h4 class="text-base font-semibold text-gray-900 mb-3 group-hover:text-blue-600 transition-colors">
+                          {{ opportunity.title }}
+                        </h4>
+                        <div class="flex flex-wrap items-center gap-4">
+                          <span class="status-badge"
+                                [class]="'status-' + opportunity.status">
+                            {{ formatStatus(opportunity.status) }}
+                          </span>
+                          <span class="text-sm font-semibold text-gray-900">{{ formatCurrency(opportunity.totalAvailable) }}</span>
+                          <span class="text-sm text-gray-600">{{ opportunity.currentApplications }} applications</span>
+                        </div>
+                      </div>
+                      <lucide-icon [img]="ArrowRightIcon" [size]="20" class="text-gray-400 group-hover:text-gray-600 transition-colors shrink-0" />
+                    </div>
+                  </div>
+                }
+              </div>
+              
+              <!-- View All Button -->
+              <div class="p-6 border-t border-gray-100 bg-gray-50">
+                <ui-button variant="outline" (clicked)="viewAllOpportunities()" class="w-full">
+                  View All Opportunities
+                  <lucide-icon [img]="ArrowRightIcon" [size]="16" class="ml-2" />
+                </ui-button>
+              </div>
+            }
+          </div>
+        </div>
+      }
+
+      <!-- Applications Tab -->
+      @if (activeTab() === 'applications') {
+        <div id="applications-panel" role="tabpanel" class="space-y-6">
+          
+          <!-- Applications Overview Header -->
+          <div class="section-card">
+            <div class="section-header">
+              <div class="flex items-center justify-between">
+                <div>
+                  <h2 class="section-title">All Applications</h2>
+                  <p class="section-description">Manage applications across all your opportunities</p>
+                </div>
+                <ui-button variant="outline" size="sm" (clicked)="refreshApplicationsData()">
+                  <lucide-icon [img]="ArrowRightIcon" [size]="14" class="mr-2" />
+                  Refresh
+                </ui-button>
+              </div>
+            </div>
+            
+            <!-- Application Stats -->
+            @if (applicationStats() && !applicationsLoading()) {
+              <div class="p-6 border-b border-gray-100">
+                <div class="grid grid-cols-1 sm:grid-cols-4 gap-6">
+                  <div class="text-center">
+                    <div class="text-2xl font-bold text-blue-600">{{ applicationStats()!.total }}</div>
+                    <div class="text-sm text-gray-600">Total Applications</div>
+                  </div>
+                  <div class="text-center">
+                    <div class="text-2xl font-bold text-orange-600">{{ applicationsInReview().length }}</div>
+                    <div class="text-sm text-gray-600">In Review</div>
+                  </div>
+                  <div class="text-center">
+                    <div class="text-2xl font-bold text-green-600">{{ applicationStats()!.byStatus['approved'] || 0 }}</div>
+                    <div class="text-sm text-gray-600">Approved</div>
+                  </div>
+                  <div class="text-center">
+                    <div class="text-2xl font-bold text-purple-600">{{ applicationStats()!.averageProcessingTime }}</div>
+                    <div class="text-sm text-gray-600">Avg. Processing Days</div>
+                  </div>
+                </div>
+              </div>
+            }
+
+            <!-- Filters -->
+            <div class="p-6 border-b border-gray-100 bg-gray-50">
+              <div class="flex items-center gap-4">
+                <div class="flex-1">
+                  <label for="opportunity-filter" class="block text-sm font-medium text-gray-700 mb-1">
+                    Filter by Opportunity
+                  </label>
+                  <select
+                    id="opportunity-filter"
+                    [value]="selectedOpportunityFilter()"
+                    (change)="onOpportunityFilterChange($event)"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+                  >
+                    <option value="">All Opportunities</option>
+                    @for (opportunity of uniqueOpportunities(); track opportunity.id) {
+                      <option [value]="opportunity.id">{{ opportunity.title }}</option>
+                    }
+                  </select>
+                </div>
+                
+                <div class="text-sm text-gray-600 mt-6">
+                  Showing {{ filteredApplications().length }} of {{ allApplications().length }} applications
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Applications List -->
+          @if (applicationsLoading()) {
+            <div class="section-card">
+              <div class="p-12 text-center">
+                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mx-auto mb-4"></div>
+                <p class="text-gray-600">Loading applications...</p>
+              </div>
+            </div>
+          } @else if (applicationsError()) {
+            <div class="section-card">
+              <div class="p-12 text-center">
+                <div class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <lucide-icon [img]="AlertCircleIcon" [size]="24" class="text-red-600" />
+                </div>
+                <h3 class="text-lg font-semibold text-gray-900 mb-2">Error Loading Applications</h3>
+                <p class="text-gray-600 mb-4">{{ applicationsError() }}</p>
+                <ui-button variant="outline" (clicked)="refreshApplicationsData()">
+                  Try Again
+                </ui-button>
+              </div>
+            </div>
+          } @else if (filteredApplications().length === 0) {
+            <div class="section-card">
+              <div class="empty-state">
+                <div class="empty-icon">
+                  <lucide-icon [img]="FileTextIcon" [size]="32" class="text-gray-400" />
+                </div>
+                <h3 class="empty-title">No applications found</h3>
+                <p class="empty-description">
+                  @if (selectedOpportunityFilter()) {
+                    No applications found for the selected opportunity.
+                  } @else {
+                    Applications will appear here once SMEs start applying to your opportunities.
+                  }
+                </p>
+                @if (selectedOpportunityFilter()) {
+                  <ui-button variant="outline" (clicked)="selectedOpportunityFilter.set('')">
+                    Show All Applications
+                  </ui-button>
+                }
+              </div>
+            </div>
+          } @else {
+            <!-- Recent Applications Section -->
+            @if (!selectedOpportunityFilter()) {
+              <div class="section-card">
+                <div class="section-header">
+                  <h3 class="section-title">Recent Activity</h3>
+                  <p class="section-description">Latest application updates</p>
+                </div>
+                <div class="p-6">
+                  <div class="space-y-4">
+                    @for (application of recentApplicationsComputed().slice(0, 5); track application.id) {
+                      <app-application-list-card
+                        [application]="transformToApplicationCard(application)"
+                        [userType]="'funder'"
+                        [showProgress]="false"
+                        (viewDetails)="viewApplication($event.id)"
+                      >
+                        <div slot="actions" class="flex items-center gap-2">
+                          <ui-button variant="outline" size="sm" (clicked)="viewApplication(application.id)">
+                            <lucide-icon [img]="EyeIcon" [size]="14" class="mr-1" />
+                            View
+                          </ui-button>
+                          @if (application.status === 'submitted') {
+                            <ui-button variant="primary" size="sm" (clicked)="updateApplicationStatus(application.id, 'under_review')">
+                              Review
+                            </ui-button>
+                          }
+                        </div>
+                      </app-application-list-card>
+                    }
+                  </div>
+                </div>
+              </div>
+            }
+
+            <!-- All Applications Section -->
+            <div class="section-card">
+              <div class="section-header">
+                <h3 class="section-title">
+                  @if (selectedOpportunityFilter()) {
+                    Applications for Selected Opportunity
+                  } @else {
+                    All Applications
+                  }
+                </h3>
+                <p class="section-description">{{ filteredApplications().length }} applications total</p>
+              </div>
+              <div class="p-6">
+                <div class="space-y-4">
+                  @for (application of filteredApplications(); track application.id) {
+                    <app-application-list-card
+                      [application]="transformToApplicationCard(application)"
+                      [userType]="'funder'"
+                      [showProgress]="true"
+                      (viewDetails)="viewApplication($event.id)"
+                    >
+                      <div slot="actions" class="flex items-center gap-2">
+                        <ui-button variant="primary" size="sm" (clicked)="viewApplication(application.id)">
+                          <lucide-icon [img]="EyeIcon" [size]="14" class="mr-1" />
+                          View Details
+                        </ui-button>
+                        
+                        @if (application.status === 'submitted') {
+                          <ui-button variant="outline" size="sm" (clicked)="updateApplicationStatus(application.id, 'under_review')">
+                            Start Review
+                          </ui-button>
+                        }
+                        
+                        @if (application.status === 'under_review') {
+                          <ui-button variant="primary" size="sm" (clicked)="updateApplicationStatus(application.id, 'approved')">
+                            Approve
+                          </ui-button>
+                          <ui-button variant="outline" size="sm" (clicked)="updateApplicationStatus(application.id, 'rejected')">
+                            Reject
+                          </ui-button>
+                        }
+                      </div>
+                    </app-application-list-card>
+                  }
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      }
+
+      <!-- Settings Tab -->
+      @if (activeTab() === 'settings') {
+        <div id="settings-panel" role="tabpanel" class="space-y-6">
+          
+          <!-- Organization Settings -->
+          <div class="section-card">
+            <div class="section-header">
+              <h2 class="section-title">Organization Settings</h2>
+              <p class="section-description">Manage your organization profile and preferences</p>
+            </div>
+            
+            <!-- Organization Details -->
+            @if (onboardingState()?.organization) {
+              <div class="p-6 border-b border-gray-100">
+                <div class="flex items-start justify-between">
+                  <div class="flex-1">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-2">
+                      {{ onboardingState()!.organization!.name }}
+                    </h3>
+                    <p class="text-gray-600 mb-4">
+                      {{ formatOrganizationType(onboardingState()!.organization!.organizationType) }}
+                    </p>
+                    
+                    <!-- Verification Status -->
+                    @if (onboardingState()!.organization!.isVerified) {
+                      <div class="inline-flex items-center px-3 py-1 rounded-full bg-green-100 text-green-800 text-sm font-medium">
+                        <lucide-icon [img]="CheckCircleIcon" [size]="14" class="mr-2" />
+                        Verified Organization
+                      </div>
+                    } @else {
+                      <div class="inline-flex items-center px-3 py-1 rounded-full bg-orange-100 text-orange-800 text-sm font-medium">
+                        <lucide-icon [img]="AlertCircleIcon" [size]="14" class="mr-2" />
+                        Pending Verification
+                      </div>
+                    }
+                  </div>
+                  
+                  <ui-button variant="outline" (clicked)="editOrganization()">
+                    <lucide-icon [img]="Building2Icon" [size]="16" class="mr-2" />
+                    Edit Details
+                  </ui-button>
+                </div>
+              </div>
+            }
+            
+            <!-- Quick Settings -->
+            <div class="p-6">
+              <h3 class="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
+              <div class="space-y-3">
+                <button class="action-button" (click)="editOrganization()">
+                  <div class="icon">
+                    <lucide-icon [img]="Building2Icon" [size]="18" class="text-blue-600" />
+                  </div>
+                  <span class="text">Update Organization Profile</span>
+                </button>
+                
+                @if (!onboardingState()?.organization?.isVerified) {
+                  <button class="action-button" (click)="improveProfile()">
+                    <div class="icon">
+                      <lucide-icon [img]="CheckCircleIcon" [size]="18" class="text-green-600" />
+                    </div>
+                    <span class="text">Complete Verification</span>
+                  </button>
+                }
+                
+                <button class="action-button" (click)="viewAnalytics()">
+                  <div class="icon">
+                    <lucide-icon [img]="BarChart3Icon" [size]="18" class="text-purple-600" />
+                  </div>
+                  <span class="text">View Analytics</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      }
+
+    </div>
+  </div>
+</div>

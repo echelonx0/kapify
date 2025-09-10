@@ -1,148 +1,195 @@
 <!-- src/app/funder/components/organization-onboarding.component.html -->
- 
-<!-- Content based on current view -->
+<div class="h-screen bg-gradient-to-br from-slate-50 to-blue-50 overflow-hidden">
+  
   @switch (currentView()) {
     @case ('form') {
-      <!-- Welcome Screen -->
-      <div class="relative overflow-hidden">
-        <!-- Background Pattern -->
-        <div class="absolute inset-0 opacity-10">
-          <div class="absolute top-20 left-20 w-32 h-32 bg-blue-500 rounded-full blur-3xl"></div>
-          <div class="absolute top-40 right-32 w-24 h-24 bg-purple-500 rounded-full blur-2xl"></div>
-          <div class="absolute bottom-32 left-1/3 w-40 h-40 bg-indigo-500 rounded-full blur-3xl"></div>
-        </div>
-
-        <div class="relative z-10 max-w-4xl mx-auto px-6 py-16">
-          <!-- Hero Section -->
-          <div class="text-center mb-12">
-            <!-- Animated Icon -->
-            <div class="relative mb-8">
-              <div class="w-24 h-24 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center mx-auto shadow-2xl animate-pulse">
-                <lucide-icon [img]="Building2Icon" [size]="48" class="text-white" />
+      <!-- Professional Full-Width Welcome Screen -->
+      <div class="h-screen flex">
+        
+        <!-- Main Content Area - Full Width -->
+        <div class="flex-1 flex items-center justify-center p-6">
+          <div class="max-w-4xl w-full">
+            
+            <!-- Header Section -->
+            <div class="text-center mb-8">
+              <div class="w-16 h-16 bg-white rounded-xl shadow-lg flex items-center justify-center mx-auto mb-4 border border-slate-200">
+                <lucide-icon [img]="Building2Icon" [size]="32" class="text-blue-600" />
               </div>
-              <div class="absolute -top-2 -right-2 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center shadow-lg animate-bounce">
-                <lucide-icon [img]="SparklesIcon" [size]="12" class="text-white" />
-              </div>
-            </div>
-
-            <h1 class="text-4xl md:text-5xl font-bold text-neutral-900 mb-4 leading-tight">
-              Welcome to
-              <span class="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-                Kapify
-              </span>
-            </h1>
-            <p class="text-xl text-neutral-600 mb-8 max-w-2xl mx-auto leading-relaxed">
-              Let's set up your funding organization profile and connect you with promising SMEs across Africa.
-            </p>
-
-            <!-- Stats Preview -->
-            <div class="grid grid-cols-3 gap-6 max-w-md mx-auto mb-12">
-              <div class="text-center">
-                <div class="text-2xl font-bold text-blue-600">15</div>
-                <div class="text-xs text-neutral-500">Minutes</div>
-              </div>
-              <div class="text-center">
-                <div class="text-2xl font-bold text-green-600">3</div>
-                <div class="text-xs text-neutral-500">Simple Steps</div>
-              </div>
-              <div class="text-center">
-                <div class="text-2xl font-bold text-purple-600">100+</div>
-                <div class="text-xs text-neutral-500">SMEs Ready</div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Action Cards -->
-          <div class="grid md:grid-cols-3 gap-6 mb-12">
-            <!-- Primary Action -->
-            <div class="md:col-span-2">
-              <div class="bg-white/70 backdrop-blur-sm rounded-2xl border border-white/50 shadow-xl p-8 hover:shadow-2xl transition-all duration-300 hover:scale-[1.02]">
-                <div class="flex items-start space-x-4">
-                  <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center flex-shrink-0">
-                    <lucide-icon [img]="ArrowRightIcon" [size]="24" class="text-blue-600" />
+              
+              <h1 class="text-3xl font-bold text-slate-900 mb-3">Welcome to Funding Platform</h1>
+              <p class="text-lg text-slate-600 mb-4 max-w-2xl mx-auto">
+                Set up your organization profile in just a few minutes to start connecting with verified SMEs and funding opportunities.
+              </p>
+              
+              <!-- Progress Indicator -->
+              <div class="flex justify-center items-center space-x-6 mb-8">
+                <div class="flex items-center space-x-2">
+                  <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                    
                   </div>
-                  <div class="flex-1">
-                    <h3 class="text-xl font-semibold text-neutral-900 mb-2">Start Fresh Setup</h3>
-                    <p class="text-neutral-600 mb-6">Create your organization profile from scratch with our guided process.</p>
+                  <span class="text-sm font-medium text-slate-700">15 minutes</span>
+                </div>
+                <div class="w-2 h-2 bg-slate-300 rounded-full"></div>
+                <div class="flex items-center space-x-2">
+                  <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                    <span class="text-sm font-semibold text-green-600">3</span>
+                  </div>
+                  <span class="text-sm font-medium text-slate-700">simple steps</span>
+                </div>
+                <div class="w-2 h-2 bg-slate-300 rounded-full"></div>
+                <div class="flex items-center space-x-2">
+                  <div class="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
+                    <lucide-icon [img]="ShieldIcon" [size]="16" class="text-purple-600" />
+                  </div>
+                  <span class="text-sm font-medium text-slate-700">bank-grade security</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Main Action Section -->
+            <div class="grid lg:grid-cols-3 gap-6 mb-8">
+              
+              <!-- Primary CTA Card -->
+              <div class="lg:col-span-2">
+                <div class="bg-white rounded-xl border border-slate-200 shadow-sm hover:shadow-lg transition-all duration-300 p-8">
+                  <div class="flex items-start space-x-4">
+                    <div class="w-14 h-14 bg-blue-50 rounded-xl flex items-center justify-center flex-shrink-0">
+                      <lucide-icon [img]="ArrowRightIcon" [size]="24" class="text-blue-600" />
+                    </div>
+                    <div class="flex-1">
+                      <h3 class="text-xl font-semibold text-slate-900 mb-3">Create Your Organization Profile</h3>
+                      <p class="text-slate-600 mb-4 leading-relaxed">
+                        Get started with our guided setup process. We'll help you create a comprehensive organization profile that builds trust with potential partners and unlocks funding opportunities.
+                      </p>
+                      
+                      <!-- Features List -->
+                      <div class="grid grid-cols-2 gap-3 mb-6">
+                        <div class="flex items-center space-x-2">
+                          <lucide-icon [img]="CheckCircleIcon" [size]="16" class="text-green-500" />
+                          <span class="text-sm text-slate-600">SSL Encrypted</span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                          <lucide-icon [img]="CheckCircleIcon" [size]="16" class="text-green-500" />
+                          <span class="text-sm text-slate-600">GDPR Compliant</span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                          <lucide-icon [img]="CheckCircleIcon" [size]="16" class="text-green-500" />
+                          <span class="text-sm text-slate-600">Industry Standards</span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                          <lucide-icon [img]="CheckCircleIcon" [size]="16" class="text-green-500" />
+                          <span class="text-sm text-slate-600">Instant Verification</span>
+                        </div>
+                      </div>
+                      
+                      <ui-button 
+                        variant="primary" 
+                        size="lg" 
+                        class="w-full"
+                        (clicked)="startSetup()"
+                      >
+                        <lucide-icon [img]="Building2Icon" [size]="18" class="mr-2" />
+                        Start Organization Setup
+                      </ui-button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Secondary Options -->
+              <div class="space-y-4">
+                
+                <!-- Continue Existing Setup -->
+                <div class="bg-white rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all duration-300 p-6">
+                  <div class="text-center">
+                    <div class="w-12 h-12 bg-slate-50 rounded-lg flex items-center justify-center mx-auto mb-3">
+                      <lucide-icon [img]="FileTextIcon" [size]="20" class="text-slate-600" />
+                    </div>
+                    <h4 class="text-lg font-semibold text-slate-900 mb-2">Continue Setup</h4>
+                    <p class="text-sm text-slate-600 mb-4">Resume your progress from where you left off</p>
                     <ui-button 
-                      variant="primary" 
-                      size="lg" 
-                      class="w-full transform hover:scale-105 transition-transform duration-200"
-                      (clicked)="startSetup()"
+                      variant="outline" 
+                      size="md" 
+                      class="w-full"
+                      (clicked)="loadFromExisting()"
                     >
-                      <lucide-icon [img]="Building2Icon" [size]="20" class="mr-2" />
-                      Begin Organization Setup
+                      
+                      Load Progress
+                    </ui-button>
+                  </div>
+                </div>
+
+                <!-- Import Documents -->
+                <div class="bg-white rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all duration-300 p-6">
+                  <div class="text-center">
+                    <div class="w-12 h-12 bg-slate-50 rounded-lg flex items-center justify-center mx-auto mb-3">
+                      <lucide-icon [img]="UploadIcon" [size]="20" class="text-slate-600" />
+                    </div>
+                    <h4 class="text-lg font-semibold text-slate-900 mb-2">Import Data</h4>
+                    <p class="text-sm text-slate-600 mb-4">Upload existing organization documents</p>
+                    <ui-button 
+                      variant="outline" 
+                      size="md" 
+                      class="w-full"
+                      (clicked)="loadFromExisting()"
+                    >
+                      <lucide-icon [img]="UploadIcon" [size]="16" class="mr-2" />
+                      Upload Files
                     </ui-button>
                   </div>
                 </div>
               </div>
             </div>
 
-            <!-- Secondary Actions -->
-            <div class="space-y-4">
-              <div class="bg-white/50 backdrop-blur-sm rounded-xl border border-white/30 shadow-lg p-6 hover:shadow-xl transition-all duration-300 hover:scale-[1.02]">
-                <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center mb-4">
-                  <lucide-icon [img]="FileTextIcon" [size]="20" class="text-green-600" />
+            <!-- Setup Process Overview -->
+            <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+              <h3 class="text-lg font-semibold text-slate-900 mb-6 text-center">Setup Process Overview</h3>
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                
+                <!-- Step 1 -->
+                <div class="text-center">
+                  <div class="relative mb-4">
+                    <div class="w-16 h-16 bg-blue-50 rounded-xl flex items-center justify-center mx-auto border-2 border-blue-100">
+                      <lucide-icon [img]="Building2Icon" [size]="24" class="text-blue-600" />
+                    </div>
+                    <div class="absolute -top-2 -right-2 w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center">
+                      <span class="text-sm font-bold text-white">1</span>
+                    </div>
+                  </div>
+                  <h4 class="text-lg font-semibold text-slate-900 mb-2">Organization Details</h4>
+                  <p class="text-sm text-slate-600 mb-2">Basic information, contact details, and organization type</p>
+                  <div class="text-sm text-blue-600 font-medium bg-blue-50 px-3 py-1 rounded-full inline-block">5 minutes</div>
                 </div>
-                <h4 class="font-semibold text-neutral-900 mb-2">Load Existing</h4>
-                <p class="text-sm text-neutral-600 mb-4">Continue where you left off</p>
-                <ui-button 
-                  variant="outline" 
-                  size="sm" 
-                  class="w-full"
-                  (clicked)="loadFromExisting()"
-                >
-                  Load Data
-                </ui-button>
-              </div>
 
-              <div class="bg-white/50 backdrop-blur-sm rounded-xl border border-white/30 shadow-lg p-6 hover:shadow-xl transition-all duration-300 hover:scale-[1.02]">
-                <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center mb-4">
-                  <lucide-icon [img]="UploadIcon" [size]="20" class="text-purple-600" />
+                <!-- Step 2 -->
+                <div class="text-center">
+                  <div class="relative mb-4">
+                    <div class="w-16 h-16 bg-green-50 rounded-xl flex items-center justify-center mx-auto border-2 border-green-100">
+                      <lucide-icon [img]="FileTextIcon" [size]="24" class="text-green-600" />
+                    </div>
+                    <div class="absolute -top-2 -right-2 w-6 h-6 bg-green-600 rounded-full flex items-center justify-center">
+                      <span class="text-sm font-bold text-white">2</span>
+                    </div>
+                  </div>
+                  <h4 class="text-lg font-semibold text-slate-900 mb-2">Legal & Compliance</h4>
+                  <p class="text-sm text-slate-600 mb-2">Registration numbers, legal structure, and compliance details</p>
+                  <div class="text-sm text-green-600 font-medium bg-green-50 px-3 py-1 rounded-full inline-block">7 minutes</div>
                 </div>
-                <h4 class="font-semibold text-neutral-900 mb-2">Import Profile</h4>
-                <p class="text-sm text-neutral-600 mb-4">Upload existing documents</p>
-                <ui-button 
-                  variant="outline" 
-                  size="sm" 
-                  class="w-full"
-                  (clicked)="loadFromExisting()"
-                >
-                  Import Now
-                </ui-button>
-              </div>
-            </div>
-          </div>
 
-          <!-- Process Preview -->
-          <div class="bg-white/60 backdrop-blur-sm rounded-2xl border border-white/40 shadow-lg p-8">
-            <h3 class="text-xl font-semibold text-neutral-900 mb-6 text-center">What You'll Complete</h3>
-            <div class="grid md:grid-cols-3 gap-6">
-              <div class="text-center group">
-                <div class="w-16 h-16 bg-blue-100 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-200">
-                  <lucide-icon [img]="Building2Icon" [size]="28" class="text-blue-600" />
+                <!-- Step 3 -->
+                <div class="text-center">
+                  <div class="relative mb-4">
+                    <div class="w-16 h-16 bg-purple-50 rounded-xl flex items-center justify-center mx-auto border-2 border-purple-100">
+                      <lucide-icon [img]="ShieldIcon" [size]="24" class="text-purple-600" />
+                    </div>
+                    <div class="absolute -top-2 -right-2 w-6 h-6 bg-purple-600 rounded-full flex items-center justify-center">
+                      <span class="text-sm font-bold text-white">3</span>
+                    </div>
+                  </div>
+                  <h4 class="text-lg font-semibold text-slate-900 mb-2">Verification & Review</h4>
+                  <p class="text-sm text-slate-600 mb-2">Final review and optional verification for enhanced features</p>
+                  <div class="text-sm text-purple-600 font-medium bg-purple-50 px-3 py-1 rounded-full inline-block">3 minutes</div>
                 </div>
-                <h4 class="font-semibold text-neutral-900 mb-2">Basic Information</h4>
-                <p class="text-sm text-neutral-600">Organization details and contact information</p>
-                <div class="mt-3 text-xs text-blue-600 font-medium">~5 minutes</div>
-              </div>
-
-              <div class="text-center group">
-                <div class="w-16 h-16 bg-green-100 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-200">
-                  <lucide-icon [img]="FileTextIcon" [size]="28" class="text-green-600" />
-                </div>
-                <h4 class="font-semibold text-neutral-900 mb-2">Legal Registration</h4>
-                <p class="text-sm text-neutral-600">Compliance details and business address</p>
-                <div class="mt-3 text-xs text-green-600 font-medium">~7 minutes</div>
-              </div>
-
-              <div class="text-center group">
-                <div class="w-16 h-16 bg-purple-100 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-200">
-                  <lucide-icon [img]="ShieldIcon" [size]="28" class="text-purple-600" />
-                </div>
-                <h4 class="font-semibold text-neutral-900 mb-2">Verification</h4>
-                <p class="text-sm text-neutral-600">Review and submit for platform approval</p>
-                <div class="mt-3 text-xs text-purple-600 font-medium">~3 minutes</div>
               </div>
             </div>
           </div>
@@ -152,78 +199,68 @@
 
     @case ('success') {
       <!-- Success State -->
-      <div class="min-h-screen flex  justify-center">
-        <div class="max-w-2xl mx-auto px-6 text-center">
-          <!-- Success Animation -->
-          <div class="relative mb-8 mt-8">
-            <div class="w-32 h-32 bg-gradient-to-br from-green-400 to-emerald-600 rounded-full flex items-center justify-center mx-auto shadow-2xl animate-bounce">
-              <lucide-icon [img]="CheckCircleIcon" [size]="64" class="text-white" />
-            </div>
-            <div class="absolute -top-4 -right-4 w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center shadow-lg animate-pulse">
-              <lucide-icon [img]="SparklesIcon" [size]="16" class="text-white" />
-            </div>
+      <div class="h-full flex   justify-center px-6">
+        <div class="max-w-xl mx-auto text-center">
+          
+          <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6 border border-green-200">
+            <lucide-icon [img]="CheckCircleIcon" [size]="32" class="text-green-600" />
           </div>
 
-          <h2 class="text-4xl font-bold text-neutral-900 mb-4">Organization Created!</h2>
-          <p class="text-xl text-neutral-600 mb-8">
-            Your funding organization is now live on Kapify. Time to start connecting with SMEs!
+          <h2 class="text-2xl font-bold text-slate-900 mb-3">Organization Created Successfully</h2>
+          <p class="text-lg text-slate-600 mb-8 max-w-md mx-auto">
+            Your funding organization is now active. You can begin connecting with verified SMEs and exploring funding opportunities.
           </p>
 
           <!-- Action Buttons -->
-          <div class="flex flex-col sm:flex-row gap-4 justify-center mb-12">
+          <div class="grid sm:grid-cols-2 gap-4 mb-8 max-w-md mx-auto">
             <ui-button 
               variant="primary" 
               size="lg" 
-              class="transform hover:scale-105 transition-transform duration-200"
+              class="w-full"
               (clicked)="proceedToDashboard()"
             >
-              <lucide-icon [img]="ArrowRightIcon" [size]="20" class="mr-2" />
-              Explore Dashboard
+              <lucide-icon [img]="ArrowRightIcon" [size]="18" class="mr-2" />
+              Go to Dashboard
             </ui-button>
             
             <ui-button 
               variant="outline" 
               size="lg" 
-              class="transform hover:scale-105 transition-transform duration-200"
+              class="w-full"
               (clicked)="editOrganization()"
             >
-              <lucide-icon [img]="FileTextIcon" [size]="20" class="mr-2" />
-              Refine Details
+              <lucide-icon [img]="FileTextIcon" [size]="18" class="mr-2" />
+              Review Details
             </ui-button>
           </div>
 
           <!-- Next Steps -->
-          <div class="bg-white/70 backdrop-blur-sm rounded-2xl border border-white/50 shadow-xl p-8">
-            <h3 class="text-xl font-semibold text-neutral-900 mb-6">What's Next?</h3>
-            <div class="grid md:grid-cols-3 gap-6 text-left">
-              <div class="flex items-start space-x-3">
-                <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0 mt-1">
+          <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+            <h3 class="text-lg font-semibold text-slate-900 mb-4">Recommended Next Steps</h3>
+            <div class="grid grid-cols-3 gap-4">
+              
+              <div class="text-center p-4 bg-slate-50 rounded-lg">
+                <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mx-auto mb-2">
                   <lucide-icon [img]="FileTextIcon" [size]="16" class="text-blue-600" />
                 </div>
-                <div>
-                  <h4 class="font-medium text-neutral-900">Complete Legal Info</h4>
-                  <p class="text-sm text-neutral-600">Add compliance details</p>
-                </div>
+                <h4 class="text-sm font-semibold text-slate-900">Complete Legal</h4>
+                <p class="text-xs text-slate-600">Add compliance details</p>
               </div>
 
-              <div class="flex items-start space-x-3">
-                <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0 mt-1">
+              <div class="text-center p-4 bg-slate-50 rounded-lg">
+                <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center mx-auto mb-2">
                   <lucide-icon [img]="ShieldIcon" [size]="16" class="text-green-600" />
                 </div>
-                <div>
-                  <h4 class="font-medium text-neutral-900">Get Verified</h4>
-                  <p class="text-sm text-neutral-600">Build SME trust</p>
-                </div>
+                <h4 class="text-sm font-semibold text-slate-900">Get Verified</h4>
+                <p class="text-xs text-slate-600">Build trust & credibility</p>
               </div>
 
-              <div class="flex items-start space-x-3">
-                <div class="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0 mt-1">
+              <div class="text-center p-4 bg-slate-50 rounded-lg">
+                <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center mx-auto mb-2">
                   <lucide-icon [img]="Building2Icon" [size]="16" class="text-purple-600" />
                 </div>
-                <div>
-                  <h4 class="font-medium text-neutral-900">Create Opportunities</h4>
-                  <p class="text-sm text-neutral-600">Start funding SMEs</p>
-                </div>
+                <h4 class="text-sm font-semibold text-slate-900">Create Fund</h4>
+                <p class="text-xs text-slate-600">Start funding opportunities</p>
               </div>
             </div>
           </div>
@@ -231,145 +268,158 @@
       </div>
     }
 
-  @case ('verification') {
-    <div class="text-center py-12">
-      <div class="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
-        <lucide-icon [img]="ShieldIcon" [size]="40" class="text-blue-600" />
-      </div>
-      
-      <h2 class="text-2xl font-bold text-neutral-900 mb-4">Get Verified</h2>
-      <p class="text-neutral-600 mb-8 max-w-md mx-auto">
-        To build trust with SMEs and access all platform features, we recommend getting your organization verified. This process typically takes 2-3 business days.
-      </p>
+    @case ('verification') {
+      <!-- Verification State -->
+      <div class="h-full flex items-center justify-center px-6">
+        <div class="max-w-lg mx-auto text-center">
+          
+          <div class="w-16 h-16 bg-blue-50 rounded-xl flex items-center justify-center mx-auto mb-6 border border-blue-200">
+            <lucide-icon [img]="ShieldIcon" [size]="32" class="text-blue-600" />
+          </div>
+          
+          <h2 class="text-2xl font-bold text-slate-900 mb-3">Enhance Your Profile</h2>
+          <p class="text-lg text-slate-600 mb-6">
+            Request verification to enhance credibility and unlock premium features. Verification typically takes 2-3 business days.
+          </p>
 
-      <!-- Verification Benefits -->
-      <div class="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-8 max-w-md mx-auto">
-        <h3 class="font-medium text-blue-900 mb-3">Verification Benefits:</h3>
-        <ul class="text-sm text-blue-800 space-y-2 text-left">
-          <li class="flex items-center">
-            <lucide-icon [img]="CheckCircleIcon" [size]="16" class="text-blue-600 mr-2 flex-shrink-0" />
-            Enhanced credibility with SMEs
-          </li>
-          <li class="flex items-center">
-            <lucide-icon [img]="CheckCircleIcon" [size]="16" class="text-blue-600 mr-2 flex-shrink-0" />
-            Priority in funding opportunity listings
-          </li>
-          <li class="flex items-center">
-            <lucide-icon [img]="CheckCircleIcon" [size]="16" class="text-blue-600 mr-2 flex-shrink-0" />
-            Access to exclusive features
-          </li>
-          <li class="flex items-center">
-            <lucide-icon [img]="CheckCircleIcon" [size]="16" class="text-blue-600 mr-2 flex-shrink-0" />
-            Verified badge on your profile
-          </li>
-        </ul>
-      </div>
+          <!-- Benefits -->
+          <div class="bg-blue-50 border border-blue-200 rounded-xl p-6 mb-6">
+            <h3 class="text-lg font-semibold text-blue-900 mb-4">Verification Benefits</h3>
+            <div class="grid grid-cols-2 gap-3">
+              <div class="flex items-center space-x-2">
+                <lucide-icon [img]="CheckCircleIcon" [size]="16" class="text-blue-600" />
+                <span class="text-sm text-blue-800">Enhanced Trust Badge</span>
+              </div>
+              <div class="flex items-center space-x-2">
+                <lucide-icon [img]="CheckCircleIcon" [size]="16" class="text-blue-600" />
+                <span class="text-sm text-blue-800">Priority Support</span>
+              </div>
+              <div class="flex items-center space-x-2">
+                <lucide-icon [img]="CheckCircleIcon" [size]="16" class="text-blue-600" />
+                <span class="text-sm text-blue-800">Premium Features</span>
+              </div>
+              <div class="flex items-center space-x-2">
+                <lucide-icon [img]="CheckCircleIcon" [size]="16" class="text-blue-600" />
+                <span class="text-sm text-blue-800">Higher Visibility</span>
+              </div>
+            </div>
+          </div>
 
-   <div class="flex flex-col gap-4 max-w-sm mx-auto">
-  <ui-button 
-    variant="primary" 
-    size="lg" 
-    class="w-full"
-    (clicked)="requestVerification()"
-    [disabled]="onboardingService.isSaving()"
-  >
-    @if (onboardingService.isSaving()) {
-      <lucide-icon [img]="SparklesIcon" [size]="16" class="mr-2 animate-spin" />
-      Submitting...
-    } @else {
-      <lucide-icon [img]="ShieldIcon" [size]="16" class="mr-2" />
-      Request Verification
+          <!-- Action Buttons -->
+          <div class="space-y-3 mb-6">
+            <ui-button 
+              variant="primary" 
+              size="lg" 
+              class="w-full"
+              (clicked)="requestVerification()"
+              [disabled]="onboardingService.isSaving()"
+            >
+              @if (onboardingService.isSaving()) {
+                <div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                Processing Request...
+              } @else {
+                <lucide-icon [img]="ShieldIcon" [size]="18" class="mr-2" />
+                Request Verification
+              }
+            </ui-button>
+            
+            <ui-button 
+              variant="outline" 
+              size="lg" 
+              class="w-full"
+              (clicked)="skipVerification()"
+            >
+              Continue Without Verification
+            </ui-button>
+          </div>
+
+          <!-- Note -->
+          <div class="bg-slate-50 border border-slate-200 rounded-lg p-4">
+            <p class="text-sm text-slate-600">
+              You can request verification at any time from your dashboard settings.
+            </p>
+          </div>
+        </div>
+      </div>
     }
-  </ui-button>
-  
-  <ui-button 
-    variant="outline" 
-    size="lg" 
-    class="w-full"
-    (clicked)="skipVerification()"
-  >
-    Skip for Now
-  </ui-button>
+
+    @case ('complete') {
+      <!-- Complete State -->
+      <div class="h-full flex items-center justify-center px-6">
+        <div class="max-w-2xl mx-auto text-center">
+          
+          <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6 border border-green-200">
+            <lucide-icon [img]="CheckCircleIcon" [size]="32" class="text-green-600" />
+          </div>
+          
+          <h2 class="text-2xl font-bold text-slate-900 mb-3">Setup Complete!</h2>
+          <p class="text-lg text-slate-600 mb-8">
+            Your organization is fully configured and verified. You're ready to start funding opportunities and connecting with SMEs.
+          </p>
+
+          <!-- Action Buttons -->
+          <div class="grid sm:grid-cols-2 gap-4 mb-8 max-w-md mx-auto">
+            <ui-button 
+              variant="primary" 
+              size="lg" 
+              class="w-full"
+              (clicked)="proceedToDashboard()"
+            >
+              <lucide-icon [img]="ArrowRightIcon" [size]="18" class="mr-2" />
+              Go to Dashboard
+            </ui-button>
+            
+            <ui-button 
+              variant="outline" 
+              size="lg" 
+              class="w-full"
+              (clicked)="createFirstOpportunity()"
+            >
+              <lucide-icon [img]="Building2Icon" [size]="18" class="mr-2" />
+              Create Opportunity
+            </ui-button>
+          </div>
+
+          <!-- Status Cards -->
+          <div class="grid grid-cols-3 gap-4">
+            <div class="bg-green-50 border border-green-200 rounded-lg p-4">
+              <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center mx-auto mb-2">
+                <lucide-icon [img]="CheckCircleIcon" [size]="16" class="text-green-600" />
+              </div>
+              <h4 class="text-sm font-semibold text-green-900">Profile Complete</h4>
+              <p class="text-xs text-green-700">All details verified</p>
+            </div>
+            
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mx-auto mb-2">
+                <lucide-icon [img]="ShieldIcon" [size]="16" class="text-blue-600" />
+              </div>
+              <h4 class="text-sm font-semibold text-blue-900">Verified Status</h4>
+              <p class="text-xs text-blue-700">Trust badge active</p>
+            </div>
+            
+            <div class="bg-purple-50 border border-purple-200 rounded-lg p-4">
+              <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center mx-auto mb-2">
+                <lucide-icon [img]="Building2Icon" [size]="16" class="text-purple-600" />
+              </div>
+              <h4 class="text-sm font-semibold text-purple-900">Ready to Fund</h4>
+              <p class="text-xs text-purple-700">Platform access granted</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+  }
+
+  <!-- Error Display -->
+  @if (onboardingService.error()) {
+    <div class="fixed bottom-6 right-6 max-w-sm">
+      <div class="bg-red-50 border border-red-200 rounded-lg p-4 shadow-lg">
+        <div class="flex items-start space-x-3">
+          <lucide-icon [img]="AlertCircleIcon" [size]="16" class="text-red-600 flex-shrink-0 mt-0.5" />
+          <p class="text-sm text-red-800">{{ onboardingService.error() }}</p>
+        </div>
+      </div>
+    </div>
+  }
 </div>
-
-
-      <!-- Info Box -->
-      <div class="mt-8 p-4 bg-neutral-50 rounded-lg max-w-md mx-auto">
-        <p class="text-sm text-neutral-600">
-          <strong>Note:</strong> You can request verification at any time from your dashboard. We'll review your information and contact you within 2-3 business days.
-        </p>
-      </div>
-    </div>
-  }
-
-  @case ('complete') {
-    <div class="text-center py-12">
-      <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-        <lucide-icon [img]="SparklesIcon" [size]="40" class="text-green-600" />
-      </div>
-      
-      <h2 class="text-2xl font-bold text-neutral-900 mb-4">Setup Complete!</h2>
-      <p class="text-neutral-600 mb-8 max-w-md mx-auto">
-        Congratulations! Your organization is fully set up and verified. You're ready to start funding opportunities.
-      </p>
-
-      <div class="space-y-4 max-w-sm mx-auto">
-        <ui-button 
-          variant="primary" 
-          size="lg" 
-          class="w-full"
-          (clicked)="proceedToDashboard()"
-        >
-          <lucide-icon [img]="ArrowRightIcon" [size]="16" class="mr-2" />
-          Go to Dashboard
-        </ui-button>
-        
-        <ui-button 
-          variant="outline" 
-          size="lg" 
-          class="w-full"
-          (clicked)="createFirstOpportunity()"
-        >
-          Create First Opportunity
-        </ui-button>
-      </div>
-
-      <!-- Achievement Summary -->
-      <div class="mt-12 grid grid-cols-1 md:grid-cols-3 gap-4 max-w-2xl mx-auto">
-        <div class="p-4 bg-green-50 rounded-lg">
-          <div class="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-2">
-            <lucide-icon [img]="CheckCircleIcon" [size]="16" class="text-white" />
-          </div>
-          <h4 class="font-medium text-green-900 text-sm">Profile Complete</h4>
-          <p class="text-xs text-green-700">Organization verified</p>
-        </div>
-        
-        <div class="p-4 bg-blue-50 rounded-lg">
-          <div class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center mx-auto mb-2">
-            <lucide-icon [img]="ShieldIcon" [size]="16" class="text-white" />
-          </div>
-          <h4 class="font-medium text-blue-900 text-sm">Verified Status</h4>
-          <p class="text-xs text-blue-700">Trusted by SMEs</p>
-        </div>
-        
-        <div class="p-4 bg-purple-50 rounded-lg">
-          <div class="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center mx-auto mb-2">
-            <lucide-icon [img]="SparklesIcon" [size]="16" class="text-white" />
-          </div>
-          <h4 class="font-medium text-purple-900 text-sm">Ready to Fund</h4>
-          <p class="text-xs text-purple-700">All systems go</p>
-        </div>
-      </div>
-    </div>
-  }
-}
-
-<!-- Error Display -->
-@if (onboardingService.error()) {
-  <div class="mt-6 p-4 bg-red-50 border border-red-200 rounded-lg">
-    <div class="flex items-center">
-      <lucide-icon [img]="AlertCircleIcon" [size]="20" class="text-red-600 mr-3" />
-      <p class="text-red-800">{{ onboardingService.error() }}</p>
-    </div>
-  </div>
-}

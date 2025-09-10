@@ -52,7 +52,9 @@ export class EnhancedAIAnalysisComponent implements OnDestroy {
   private businessRulesService = inject(BusinessRulesAnalysisService);
   private modularAIService = inject(ModularAIAnalysisService);
   private destroy$ = new Subject<void>();
-
+  // Add these signals to your component
+analysisWarnings = signal<string[]>([]);
+partialAnalysisCompleted = signal(false);
   // Icons
   BotIcon = Bot;
   SparklesIcon = Sparkles;
@@ -228,43 +230,85 @@ ngOnInit() {
   // COMPREHENSIVE AI ANALYSIS
   // =======================
 
-  startComprehensiveAnalysis() {
-    if (!this.canAnalyze()) {
-      return;
-    }
-
-    this.isAnalyzing.set(true);
-    this.comprehensiveAnalysis.set(null);
-    this.analysisError.set(null);
-
-    const profile = this.currentProfile()!;
-
-    // Build application object for modular analysis
-    const application = {
-      id: this.applicationId || `temp_${Date.now()}`,
-      documents: {}, // Would come from actual application
-      ...this.applicationData
-    };
-
-    this.modularAIService.analyzeApplication(
-      application,
-      profile,
-      this.analysisPerspective  
-    ).pipe(takeUntil(this.destroy$)).subscribe({
-      next: (result) => {
-        this.comprehensiveAnalysis.set(result);
-        this.analysisCompleted.emit(result);
-        this.isAnalyzing.set(false);
-        console.log('Comprehensive analysis completed:', result);
-      },
-      error: (error) => {
-        console.error('Comprehensive analysis failed:', error);
-        this.analysisError.set('Comprehensive analysis failed: ' + (error.message || 'Unknown error'));
-        this.isAnalyzing.set(false);
-      }
-    });
+startComprehensiveAnalysis() {
+  if (!this.canAnalyze()) {
+    return;
   }
 
+  this.isAnalyzing.set(true);
+  this.comprehensiveAnalysis.set(null);
+  this.analysisError.set(null);
+  this.analysisWarnings.set([]); // Clear previous warnings
+
+  const profile = this.currentProfile()!;
+
+  // Build application object for modular analysis
+  const application = {
+    id: this.applicationId || `temp_${Date.now()}`,
+    documents: {}, // Would come from actual application
+    ...this.applicationData
+  };
+
+  this.modularAIService.analyzeApplication(
+    application,
+    profile,
+    this.analysisPerspective  
+  ).pipe(takeUntil(this.destroy$)).subscribe({
+    next: (result) => {
+      this.comprehensiveAnalysis.set(result);
+      this.analysisCompleted.emit(result);
+      this.partialAnalysisCompleted.set(true);
+      this.isAnalyzing.set(false);
+      
+      // Check if analysis had any fallbacks (indicating errors)
+      if (result.confidence < 80) {
+        this.analysisWarnings.set([
+          'Some analysis modules used fallback data due to service issues.',
+          'Results may be less accurate than usual.',
+          'Consider retrying the analysis later for improved accuracy.'
+        ]);
+      }
+      
+      console.log('Comprehensive analysis completed:', result);
+    },
+    error: (error) => {
+      console.error('Comprehensive analysis failed:', error);
+      
+      // User-friendly error messages
+      let userMessage = 'Analysis could not be completed. ';
+      
+      if (error.message?.includes('Financial analysis')) {
+        userMessage += 'There was an issue processing your financial data. Please ensure all financial information is complete and try again.';
+      } else if (error.message?.includes('timeout')) {
+        userMessage += 'The analysis is taking longer than expected. Please try again.';
+      } else if (error.message?.includes('Invalid JSON') || error.message?.includes('Service unavailable')) {
+        userMessage += 'Our analysis service is temporarily unavailable. Please try again in a few minutes.';
+      } else {
+        userMessage += 'Please check your internet connection and try again. If the problem persists, contact support.';
+      }
+      
+      this.analysisError.set(userMessage);
+      this.isAnalyzing.set(false);
+    }
+  });
+}
+
+// Add method to retry with better error context
+retryAnalysisWithDiagnostics() {
+  const profile = this.currentProfile();
+  
+  // Log diagnostic info
+  console.log('Retrying analysis with diagnostics:', {
+    hasProfile: !!profile,
+    hasFinancialData: !!profile?.financialProfile,
+    monthlyRevenue: profile?.financialProfile?.monthlyRevenue,
+    hasApplicationData: !!this.applicationData,
+    applicationId: this.applicationId,
+    analysisPerspective: this.analysisPerspective
+  });
+  
+  this.startComprehensiveAnalysis();
+}
   // =======================
   // EVENT HANDLERS
   // =======================

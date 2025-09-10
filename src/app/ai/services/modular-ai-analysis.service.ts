@@ -264,106 +264,222 @@ export class ModularAIAnalysisService {
   // PRIVATE IMPLEMENTATION
   // ===============================
 
-  private async performModularAnalysis(
-    application: any,
-    profileData: FundingApplicationProfile,
-    analysisMode: 'investor' | 'sme'
-  ): Promise<ComprehensiveAnalysis> {
-    const startTime = Date.now();
+// Update the performModularAnalysis method with better error handling
+
+private async performModularAnalysis(
+  application: any,
+  profileData: FundingApplicationProfile,
+  analysisMode: 'investor' | 'sme'
+): Promise<ComprehensiveAnalysis> {
+  const startTime = Date.now();
+  
+  try {
+    this.currentStage.set(`Initializing ${analysisMode} analysis modules...`);
+    this.analysisProgress.set(10);
+
+    // Track which analyses succeed/fail
+    const analysisResults: {
+      financial?: FinancialHealthAnalysis;
+      compliance?: ComplianceAnalysis;
+      management?: ManagementAnalysis;
+      market?: MarketPositionAnalysis;
+      risk?: RiskAnalysis;
+    } = {};
+    
+    const analysisErrors: string[] = [];
+
+    // Financial Analysis with better error handling
+    this.currentStage.set('Analyzing financial health...');
+    this.analysisProgress.set(20);
     
     try {
-      this.currentStage.set(`Initializing ${analysisMode} analysis modules...`);
-      this.analysisProgress.set(10);
-
-      // Parallel execution of independent analyses
-      const analysisPromises = {
-        financial: this.performFinancialAnalysis(profileData.financialProfile!, analysisMode),
-        compliance: this.performComplianceAnalysis(application.documents || {}),
-        management: this.performManagementAnalysis(profileData.managementStructure!, analysisMode)
-      };
-
-      this.currentStage.set('Running financial and compliance analysis...');
-      this.analysisProgress.set(30);
-
-      const [financial, compliance, management] = await Promise.all([
-        analysisPromises.financial,
-        analysisPromises.compliance,
-        analysisPromises.management
-      ]);
-
-      this.currentStage.set('Analyzing market position...');
-      this.analysisProgress.set(60);
-
-      const industry = profileData.companyInfo?.industryType || 'unknown';
-      const market = await this.performMarketAnalysis(profileData.businessAssessment!, industry, analysisMode);
-
-      this.currentStage.set(`Performing ${analysisMode === 'sme' ? 'application readiness' : 'risk'} assessment...`);
-      this.analysisProgress.set(80);
-
-      const risk = await this.performRiskAnalysis(profileData, industry, analysisMode);
-
-      this.currentStage.set('Generating final recommendations...');
-      this.analysisProgress.set(90);
-
-      const synthesis = await this.synthesizeAnalysis({
-        financial,
-        market,
-        management,
-        compliance,
-        risk
-      }, analysisMode);
-
-      return {
-        applicationId: application.id,
-        analysisMode,
-        ...synthesis,
-        financial,
-        market,
-        management,
-        compliance,
-        risk,
-        analysisDate: new Date(),
-        processingTimeMs: Date.now() - startTime,
-        confidence: this.calculateOverallConfidence([financial, market, management, compliance, risk])
-      };
-
+      analysisResults.financial = await this.performFinancialAnalysis(
+        profileData.financialProfile!, 
+        analysisMode
+      );
     } catch (error) {
-      console.error('Modular analysis failed:', error);
-      throw new Error(`Analysis failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      console.error('Financial analysis failed:', error);
+      analysisErrors.push(`Financial analysis: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      // Use fallback
+      analysisResults.financial = this.generateFallbackFinancialAnalysis(
+        profileData.financialProfile!, 
+        analysisMode
+      );
     }
-  }
 
-  private async performFinancialAnalysis(
-    financialProfile: FinancialProfile, 
-    analysisMode: 'investor' | 'sme'
-  ): Promise<FinancialHealthAnalysis> {
+    // Compliance Analysis
+    this.currentStage.set('Checking document compliance...');
+    this.analysisProgress.set(35);
+    
     try {
-      const { data, error } = await this.supabase.functions.invoke('analyze-financials', {
-        body: {
-          analysisType: 'financial_health',
-          analysisMode,
-          financialData: {
-            monthlyRevenue: financialProfile.monthlyRevenue,
-            historicalFinancials: financialProfile.historicalFinancials,
-            projectedRevenue: financialProfile.projectedRevenue,
-            cashFlowProjections: financialProfile.cashFlowProjections,
-            profitMargin: financialProfile.profitMargin,
-            debtToEquity: financialProfile.debtToEquity,
-            currentRatio: financialProfile.currentRatio,
-            returnOnAssets: financialProfile.returnOnAssets,
-            creditFacilities: financialProfile.creditFacilities
-          }
-        }
-      });
-
-      if (error) throw new Error(`Financial analysis failed: ${error.message}`);
-      return data.analysis;
-
+      analysisResults.compliance = await this.performComplianceAnalysis(application.documents || {});
     } catch (error) {
-      console.warn('Financial analysis failed, using fallback:', error);
-      return this.generateFallbackFinancialAnalysis(financialProfile, analysisMode);
+      console.error('Compliance analysis failed:', error);
+      analysisErrors.push(`Compliance analysis: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      // Use simple fallback
+      analysisResults.compliance = {
+        completenessScore: 50,
+        criticalDocumentsMissing: [],
+        documentQuality: 'medium',
+        complianceRisk: 'medium',
+        verificationStatus: {
+          companyRegistration: 'missing',
+          financialStatements: 'missing',
+          taxCompliance: 'missing',
+          businessPlan: 'missing'
+        },
+        recommendations: ['Complete document upload'],
+        confidence: 50
+      };
     }
+
+    // Management Analysis
+    this.currentStage.set('Evaluating management capability...');
+    this.analysisProgress.set(50);
+    
+    try {
+      analysisResults.management = await this.performManagementAnalysis(
+        profileData.managementStructure!, 
+        analysisMode
+      );
+    } catch (error) {
+      console.error('Management analysis failed:', error);
+      analysisErrors.push(`Management analysis: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      analysisResults.management = this.generateFallbackManagementAnalysis(
+        profileData.managementStructure!, 
+        analysisMode
+      );
+    }
+
+    // Market Analysis
+    this.currentStage.set('Analyzing market position...');
+    this.analysisProgress.set(65);
+    
+    try {
+      const industry = profileData.companyInfo?.industryType || 'unknown';
+      analysisResults.market = await this.performMarketAnalysis(
+        profileData.businessAssessment!, 
+        industry, 
+        analysisMode
+      );
+    } catch (error) {
+      console.error('Market analysis failed:', error);
+      analysisErrors.push(`Market analysis: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      analysisResults.market = this.generateFallbackMarketAnalysis(
+        profileData.businessAssessment!, 
+        analysisMode
+      );
+    }
+
+    // Risk Analysis
+    this.currentStage.set(`Performing ${analysisMode === 'sme' ? 'application readiness' : 'risk'} assessment...`);
+    this.analysisProgress.set(80);
+    
+    try {
+      const industry = profileData.companyInfo?.industryType || 'unknown';
+      analysisResults.risk = await this.performRiskAnalysis(profileData, industry, analysisMode);
+    } catch (error) {
+      console.error('Risk analysis failed:', error);
+      analysisErrors.push(`Risk analysis: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      analysisResults.risk = this.generateFallbackRiskAnalysis(profileData, analysisMode);
+    }
+
+    // Log errors if any occurred
+    if (analysisErrors.length > 0) {
+      console.warn(`Analysis completed with ${analysisErrors.length} fallbacks:`, analysisErrors);
+    }
+
+    this.currentStage.set('Generating final recommendations...');
+    this.analysisProgress.set(90);
+
+    const synthesis = await this.synthesizeAnalysis({
+      financial: analysisResults.financial!,
+      market: analysisResults.market!,
+      management: analysisResults.management!,
+      compliance: analysisResults.compliance!,
+      risk: analysisResults.risk!
+    }, analysisMode);
+
+    return {
+      applicationId: application.id,
+      analysisMode,
+      ...synthesis,
+      financial: analysisResults.financial!,
+      market: analysisResults.market!,
+      management: analysisResults.management!,
+      compliance: analysisResults.compliance!,
+      risk: analysisResults.risk!,
+      analysisDate: new Date(),
+      processingTimeMs: Date.now() - startTime,
+      confidence: this.calculateOverallConfidence([
+        analysisResults.financial!,
+        analysisResults.market!,
+        analysisResults.management!,
+        analysisResults.compliance!,
+        analysisResults.risk!
+      ])
+    };
+
+  } catch (error) {
+    console.error('Modular analysis failed completely:', error);
+    throw new Error(`Analysis failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
+}
+
+// Update individual analysis methods to handle Supabase errors better
+private async performFinancialAnalysis(
+  financialProfile: FinancialProfile, 
+  analysisMode: 'investor' | 'sme'
+): Promise<FinancialHealthAnalysis> {
+  try {
+    const { data, error } = await this.supabase.functions.invoke('analyze-financials', {
+      body: {
+        analysisType: 'financial_health',
+        analysisMode,
+        financialData: {
+          monthlyRevenue: financialProfile.monthlyRevenue,
+          historicalFinancials: financialProfile.historicalFinancials,
+          projectedRevenue: financialProfile.projectedRevenue,
+          cashFlowProjections: financialProfile.cashFlowProjections,
+          profitMargin: financialProfile.profitMargin,
+          debtToEquity: financialProfile.debtToEquity,
+          currentRatio: financialProfile.currentRatio,
+          returnOnAssets: financialProfile.returnOnAssets,
+          creditFacilities: financialProfile.creditFacilities
+        }
+      }
+    });
+
+    // Better error handling for Supabase responses
+    if (error) {
+      console.error('Supabase function error:', error);
+      throw new Error(`Financial analysis failed: ${error.message || 'Unknown Supabase error'}`);
+    }
+
+    if (!data || !data.analysis) {
+      console.error('Invalid response from financial analysis:', data);
+      throw new Error('Financial analysis returned invalid data');
+    }
+
+    return data.analysis;
+
+  } catch (error) {
+    // Log the full error for debugging
+    console.error('Financial analysis error details:', {
+      error,
+      errorMessage: error instanceof Error ? error.message : 'Unknown error',
+      profileData: {
+        monthlyRevenue: financialProfile.monthlyRevenue,
+        hasHistoricalData: !!financialProfile.historicalFinancials?.length
+      }
+    });
+    
+    // Re-throw with more context
+    throw new Error(`Financial analysis failed: ${error instanceof Error ? error.message : 'Service unavailable'}`);
+  }
+}
+
+ 
 
   private async performMarketAnalysis(
     businessData: BusinessAssessment,
