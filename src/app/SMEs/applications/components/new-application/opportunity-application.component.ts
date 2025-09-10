@@ -1,11 +1,8 @@
- 
-
-// src/app/applications/components/new-application/opportunity-application.component.ts - UPDATED WITH REAL AI
+ // src/app/applications/components/new-application/opportunity-application.component.ts - UPDATED WITH REAL AI
 import { Component, signal, computed, inject, OnInit } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
- 
 import { LucideAngularModule, ArrowLeft, Building, DollarSign, FileText, CheckCircle, AlertCircle, Clock, Eye, TrendingUp, Users } from 'lucide-angular';
 import { Location } from '@angular/common'; 
 import { SMEOpportunitiesService } from 'src/app/funding/services/opportunities.service';
@@ -16,8 +13,10 @@ import { GlobalProfileValidationService } from 'src/app/shared/services/global-p
 import { ProfileManagementService } from 'src/app/shared/services/profile-management.service';
 import { DatabaseApplicationService } from 'src/app/SMEs/services/database-application.service';
 import { EnhancedAIAnalysisComponent } from 'src/app/ai/ai-analysis/enhanced-ai-analysis.component';
- 
- 
+import { FundingApplicationProfile } from '../../models/funding-application.models';
+import { FundingProfileBackendService } from 'src/app/SMEs/services/funding-profile-backend.service';
+import { ProfileDataTransformerService } from 'src/app/SMEs/services/profile-data-transformer.service';
+
  
 export interface CoverInformation {
   requestedAmount: string;
@@ -33,8 +32,6 @@ interface ApplicationStep {
   title: string;
   description: string;
 }
-
-
 
 @Component({
   selector: 'app-opportunity-application-form',
@@ -96,7 +93,11 @@ export class OpportunityApplicationFormComponent implements OnInit {
   
   // ADD: Profile service for business data
   private profileService = inject(ProfileManagementService);
+ private profileTransformer = inject(ProfileDataTransformerService);
+  private fundingProfileService = inject(FundingProfileBackendService);
 
+  fullFundingProfile = signal<FundingApplicationProfile | undefined>(undefined);
+  isLoadingFundingProfile = signal(false);
   // Icons
   ArrowLeftIcon = ArrowLeft;
   BuildingIcon = Building;
@@ -128,7 +129,7 @@ export class OpportunityApplicationFormComponent implements OnInit {
   });
 
   draftApplication = signal<Application | null>(null);
-
+  fundingApplicationProfile!: FundingApplicationProfile;
   // AI Analysis state
   aiAnalysisResult = signal<any | null>(null);
   showAIAnalysis = signal(false);
@@ -171,23 +172,10 @@ export class OpportunityApplicationFormComponent implements OnInit {
     return `temp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
   });
 
-  businessProfile = computed(() => {
-    
-    const currentProfile = this.profileService.currentProfile();
-    const currentOrganization = this.profileService.currentOrganization();
-    
-    return {
-      industry: this.extractIndustry(currentOrganization),
-      businessStage: this.extractBusinessStage(currentOrganization),
-      yearsInOperation: this.extractYearsInOperation(currentOrganization),
-      financials: {
-        annualRevenue: this.extractAnnualRevenue(),
-        monthlyRevenue: this.extractMonthlyRevenue(),
-        profitMargin: 15 // Default
-      },
-      completionPercentage: currentProfile?.completionPercentage || 0
-    };
+ businessProfile = computed(() => {
+    return this.fullFundingProfile();
   });
+
 
   // Computed properties
   canContinue = computed(() => {
@@ -209,14 +197,7 @@ export class OpportunityApplicationFormComponent implements OnInit {
 
   ngOnInit() {
     // Load profile data first for AI analysis
-    this.profileService.loadProfileData().subscribe({
-      next: () => {
-        console.log('Profile data loaded for AI analysis');
-      },
-      error: (error) => {
-        console.warn('Profile data not available:', error);
-      }
-    });
+    this.loadFullFundingProfile();
 
     // Check if opportunity ID was passed in route
     const opportunityId = this.route.snapshot.paramMap.get('opportunityId');
@@ -229,6 +210,72 @@ export class OpportunityApplicationFormComponent implements OnInit {
 
     // Check for existing draft application
     this.checkForDraftApplication();
+  }
+
+  private loadFullFundingProfile() {
+    this.isLoadingFundingProfile.set(true);
+    
+    this.fundingProfileService.loadSavedProfile().subscribe({
+      next: (profile) => {
+        this.fullFundingProfile.set(profile);
+        this.isLoadingFundingProfile.set(false);
+        console.log('Full funding profile loaded for AI analysis');
+      },
+      error: (error) => {
+        console.warn('Full funding profile not available, using profile service data:', error);
+        this.loadProfileServiceData();
+      }
+    });
+  }
+
+  private loadProfileServiceData() {
+    // Fallback: load from profile service and transform
+    this.profileService.loadProfileData().subscribe({
+      next: () => {
+        const currentProfile = this.profileService.currentProfile();
+        const currentOrganization = this.profileService.currentOrganization();
+        
+        if (currentProfile) {
+          // Transform profile service data to funding profile
+          const profileData = {
+            businessInfo: this.extractBusinessInfo(currentOrganization, currentProfile),
+            personalInfo: this.extractPersonalInfo(currentProfile),
+            // Add other sections as available...
+          };
+          
+          const fundingProfile = this.profileTransformer.transformToFundingProfile(profileData);
+          this.fullFundingProfile.set(fundingProfile);
+        }
+        
+        this.isLoadingFundingProfile.set(false);
+      },
+      error: (error) => {
+        console.error('Profile data not available:', error);
+        this.isLoadingFundingProfile.set(false);
+      }
+    });
+  }
+ // Helper methods to extract data from profile service
+  private extractBusinessInfo(organization: any, profile: any) {
+    return {
+      companyName: organization?.name || '',
+      registrationNumber: organization?.registrationNumber || '',
+      industry: this.extractIndustry(organization),
+      yearsInOperation: this.extractYearsInOperation(organization),
+      numberOfEmployees: organization?.employeeCount || '',
+      physicalAddress: organization?.address || {}
+    };
+  }
+
+  private extractPersonalInfo(profile: any) {
+    return {
+      firstName: profile?.firstName || '',
+      lastName: profile?.lastName || '',
+      email: profile?.email || '',
+      phone: profile?.phone || '',
+       idNumber: profile?.idNumber || '', // Add this missing field
+      position: profile?.position || ''
+    };
   }
 
   // BUSINESS DATA EXTRACTION HELPERS FOR AI

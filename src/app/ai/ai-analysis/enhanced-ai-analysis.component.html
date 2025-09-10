@@ -1,7 +1,7 @@
-<!-- src/app/shared/components/enhanced-ai-analysis/enhanced-ai-analysis.component.html -->
+<!-- src/app/ai/ai-analysis/enhanced-ai-analysis.component.html (Updated for SME + Investor modes) -->
 <div class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
   
-  @if (!showBusinessRules() && !hasError()) {
+  @if (!showBusinessRules() && !hasError() && !showComprehensiveAnalysis()) {
     <!-- Pre-Analysis State -->
     <div class="px-8 py-10">
       <div class="text-center mb-8">
@@ -14,39 +14,19 @@
         </p>
       </div>
 
-      <!-- Analysis Capabilities Grid -->
+      <!-- Analysis Capabilities Grid - Dynamic based on perspective -->
       <div class="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
-        <div class="text-center">
-          <div class="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center mx-auto mb-3">
-            <lucide-icon [img]="TargetIcon" [size]="20" class="text-blue-600" />
+        @for (capability of getAnalysisCapabilities(); track capability.title) {
+          <div class="text-center">
+            <div class="w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-3"
+                 [class]="'bg-' + capability.color + '-50'">
+              <lucide-icon [img]="capability.icon" [size]="20" 
+                          [class]="'text-' + capability.color + '-600'" />
+            </div>
+            <h4 class="font-semibold text-gray-900 mb-1">{{ capability.title }}</h4>
+            <p class="text-sm text-gray-600">{{ capability.desc }}</p>
           </div>
-          <h4 class="font-semibold text-gray-900 mb-1">Instant Analysis</h4>
-          <p class="text-sm text-gray-600">Real-time compatibility assessment</p>
-        </div>
-        
-        <div class="text-center">
-          <div class="w-12 h-12 bg-green-50 rounded-xl flex items-center justify-center mx-auto mb-3">
-            <lucide-icon [img]="CheckCircleIcon" [size]="20" class="text-green-600" />
-          </div>
-          <h4 class="font-semibold text-gray-900 mb-1">Eligibility Review</h4>
-          <p class="text-sm text-gray-600">Automated requirements validation</p>
-        </div>
-        
-        <div class="text-center">
-          <div class="w-12 h-12 bg-purple-50 rounded-xl flex items-center justify-center mx-auto mb-3">
-            <lucide-icon [img]="FileTextIcon" [size]="20" class="text-purple-600" />
-          </div>
-          <h4 class="font-semibold text-gray-900 mb-1">Readiness Score</h4>
-          <p class="text-sm text-gray-600">Comprehensive profile evaluation</p>
-        </div>
-        
-        <div class="text-center">
-          <div class="w-12 h-12 bg-amber-50 rounded-xl flex items-center justify-center mx-auto mb-3">
-            <lucide-icon [img]="BotIcon" [size]="20" class="text-amber-600" />
-          </div>
-          <h4 class="font-semibold text-gray-900 mb-1">AI Deep Dive</h4>
-          <p class="text-sm text-gray-600">Advanced strategic insights</p>
-        </div>
+        }
       </div>
 
       <!-- Validation Issues (if any) -->
@@ -86,7 +66,7 @@
             [disabled]="!canAnalyze()"
             class="px-8 py-3 text-base font-semibold">
             <lucide-icon [img]="SparklesIcon" [size]="18" class="mr-2" />
-            Begin Analysis
+            {{ getPrimaryActionText() }}
           </ui-button>
         }
       </div>
@@ -117,14 +97,14 @@
   }
 
   @if (showBusinessRules()) {
-    <!-- Analysis Results -->
+    <!-- Business Rules Analysis Results -->
     <div class="divide-y divide-gray-100">
       
       <!-- Header Section -->
       <div class="px-8 py-6 bg-gradient-to-r from-gray-50 to-gray-100">
         <div class="flex items-center justify-between">
           <div>
-            <h3 class="text-xl font-semibold text-gray-900">{{ getAnalysisTitle() }}</h3>
+            <h3 class="text-xl font-semibold text-gray-900">Initial Assessment</h3>
             <p class="text-gray-600 mt-1">Generated {{ formatTime(businessRulesResult()!.generatedAt) }}</p>
           </div>
           <ui-button variant="ghost" size="sm" (click)="refreshAnalysis()">
@@ -146,7 +126,9 @@
                    class="capitalize mb-2">
                 {{ businessRulesResult()!.eligibilityStatus }}
               </div>
-              <p class="text-sm text-gray-600">Overall Compatibility</p>
+              <p class="text-sm text-gray-600">
+                {{ analysisPerspective === 'sme' ? 'Application Readiness' : 'Investment Compatibility' }}
+              </p>
             </div>
           </div>
         </div>
@@ -224,7 +206,9 @@
           <div class="bg-green-50 border-l-4 border-green-400 p-6 rounded-r-lg">
             <div class="flex items-center space-x-3 mb-4">
               <lucide-icon [img]="CheckCircleIcon" [size]="20" class="text-green-600" />
-              <h4 class="font-semibold text-green-900 text-lg">Key Strengths</h4>
+              <h4 class="font-semibold text-green-900 text-lg">
+                {{ analysisPerspective === 'sme' ? 'Key Strengths to Highlight' : 'Investment Strengths' }}
+              </h4>
             </div>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
               @for (strength of businessRulesResult()!.strengths; track $index) {
@@ -242,7 +226,9 @@
           <div class="bg-amber-50 border-l-4 border-amber-400 p-6 rounded-r-lg">
             <div class="flex items-center space-x-3 mb-4">
               <lucide-icon [img]="TrendingUpIcon" [size]="20" class="text-amber-600" />
-              <h4 class="font-semibold text-amber-900 text-lg">Improvement Opportunities</h4>
+              <h4 class="font-semibold text-amber-900 text-lg">
+                {{ analysisPerspective === 'sme' ? 'Areas to Strengthen' : 'Investment Concerns' }}
+              </h4>
             </div>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
               @for (area of businessRulesResult()!.improvementAreas; track $index) {
@@ -260,7 +246,9 @@
           <div class="bg-red-50 border-l-4 border-red-400 p-6 rounded-r-lg">
             <div class="flex items-center space-x-3 mb-4">
               <lucide-icon [img]="AlertTriangleIcon" [size]="20" class="text-red-600" />
-              <h4 class="font-semibold text-red-900 text-lg">Risk Factors</h4>
+              <h4 class="font-semibold text-red-900 text-lg">
+                {{ analysisPerspective === 'sme' ? 'Critical Issues to Address' : 'Risk Factors' }}
+              </h4>
             </div>
             <div class="space-y-4">
               @for (risk of businessRulesResult()!.riskFlags; track $index) {
@@ -283,7 +271,9 @@
           <div class="bg-blue-50 border-l-4 border-blue-400 p-6 rounded-r-lg">
             <div class="flex items-center space-x-3 mb-4">
               <lucide-icon [img]="TargetIcon" [size]="20" class="text-blue-600" />
-              <h4 class="font-semibold text-blue-900 text-lg">Strategic Recommendations</h4>
+              <h4 class="font-semibold text-blue-900 text-lg">
+                {{ analysisPerspective === 'sme' ? 'Action Plan' : 'Strategic Recommendations' }}
+              </h4>
             </div>
             <div class="space-y-3">
               @for (recommendation of businessRulesResult()!.recommendations; track $index) {
@@ -299,7 +289,7 @@
         }
       </div>
 
-      <!-- AI Deep Dive Section -->
+      <!-- Comprehensive Analysis Section -->
       <div class="px-8 py-6 bg-gradient-to-br from-purple-50 to-indigo-50 border-t border-gray-100">
         <div class="max-w-4xl">
           <div class="flex items-start space-x-4">
@@ -307,46 +297,38 @@
               <lucide-icon [img]="BotIcon" [size]="20" class="text-white" />
             </div>
             <div class="flex-1 min-w-0">
-              <h4 class="text-lg font-semibold text-gray-900 mb-2">Advanced AI Analysis</h4>
+              <h4 class="text-lg font-semibold text-gray-900 mb-2">
+                {{ analysisPerspective === 'sme' ? 'Comprehensive Application Analysis' : 'Advanced Investment Analysis' }}
+              </h4>
               <p class="text-gray-700 mb-6 leading-relaxed">
-                Unlock deeper insights with our advanced AI analysis. Get personalized strategic recommendations, 
-                competitive positioning analysis, and detailed success probability assessments delivered to your inbox.
+                @if (analysisPerspective === 'sme') {
+                  Get detailed insights into your application competitiveness with personalized recommendations for strengthening your funding profile, market positioning analysis, and success probability assessments.
+                } @else {
+                  Perform comprehensive due diligence with advanced AI analysis including financial health evaluation, management assessment, market analysis, and investment risk profiling.
+                }
               </p>
 
-              @if (!aiEmailRequested()) {
-                <ui-button variant="primary" (click)="requestAIAnalysis()" class="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700">
-                  <lucide-icon [img]="MailIcon" [size]="16" class="mr-2" />
-                  Request Detailed Analysis
+              @if (!isModularAnalysisRunning() && !showComprehensiveAnalysis()) {
+                <ui-button variant="primary" (click)="startComprehensiveAnalysis()" 
+                          class="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700">
+                  <lucide-icon [img]="analysisPerspective === 'sme' ? TrendingUpIcon : ShieldIcon" [size]="16" class="mr-2" />
+                  {{ getComprehensiveActionText() }}
                 </ui-button>
-                <p class="text-sm text-gray-600 mt-2">Results delivered via email in 5-10 minutes</p>
-              } @else if (aiEmailSent()) {
-                <div class="flex items-center space-x-3 bg-green-100 rounded-lg p-4">
-                  <lucide-icon [img]="CheckCircleIcon" [size]="20" class="text-green-600" />
-                  <div>
-                    <p class="font-semibold text-green-800">Analysis Request Submitted</p>
-                    <p class="text-sm text-green-700">Detailed insights will be delivered to your email within 5-10 minutes.</p>
-                  </div>
-                </div>
-              } @else if (aiEmailError()) {
+                <p class="text-sm text-gray-600 mt-2">
+                  {{ analysisPerspective === 'sme' ? 'Analysis takes 2-3 minutes' : 'Due diligence takes 3-5 minutes' }}
+                </p>
+              } @else if (isModularAnalysisRunning()) {
                 <div class="space-y-4">
-                  <div class="flex items-center space-x-3 bg-red-100 rounded-lg p-4">
-                    <lucide-icon [img]="XCircleIcon" [size]="20" class="text-red-600" />
+                  <div class="flex items-center space-x-3 bg-blue-100 rounded-lg p-4">
+                    <lucide-icon [img]="Loader2Icon" [size]="20" class="text-blue-600 animate-spin" />
                     <div class="flex-1">
-                      <p class="font-semibold text-red-800">Request Failed</p>
-                      <p class="text-sm text-red-700">{{ aiEmailError() }}</p>
+                      <p class="font-semibold text-blue-800">Analysis in Progress</p>
+                      <p class="text-sm text-blue-700">{{ getCurrentStage() }}</p>
                     </div>
                   </div>
-                  <ui-button variant="outline" (click)="retryAIRequest()">
-                    <lucide-icon [img]="RefreshCwIcon" [size]="16" class="mr-2" />
-                    Try Again
-                  </ui-button>
-                </div>
-              } @else {
-                <div class="flex items-center space-x-3 bg-blue-100 rounded-lg p-4">
-                  <lucide-icon [img]="Loader2Icon" [size]="20" class="text-blue-600 animate-spin" />
-                  <div>
-                    <p class="font-semibold text-blue-800">Processing Request</p>
-                    <p class="text-sm text-blue-700">Queueing your AI analysis...</p>
+                  <div class="w-full bg-blue-200 rounded-full h-2">
+                    <div class="bg-gradient-to-r from-blue-500 to-purple-600 h-2 rounded-full transition-all duration-500"
+                         [style.width.%]="getAnalysisProgress()"></div>
                   </div>
                 </div>
               }
@@ -366,16 +348,17 @@
             @if (businessRulesResult()!.compatibilityScore >= 60) {
               <ui-button variant="outline" (click)="improveApplication()">
                 <lucide-icon [img]="TrendingUpIcon" [size]="16" class="mr-2" />
-                Optimize Profile
+                {{ analysisPerspective === 'sme' ? 'Optimize Profile' : 'Request Improvements' }}
               </ui-button>
-              <ui-button variant="primary" (click)="proceedWithApplication()" class="bg-green-600 hover:bg-green-700">
+              <ui-button variant="primary" (click)="proceedWithApplication()" 
+                        class="bg-green-600 hover:bg-green-700">
                 <lucide-icon [img]="CheckCircleIcon" [size]="16" class="mr-2" />
-                Continue Application
+                {{ analysisPerspective === 'sme' ? 'Continue Application' : 'Proceed with Evaluation' }}
               </ui-button>
             } @else {
-              <ui-button  (click)="improveApplication()"  >
+              <ui-button (click)="improveApplication()">
                 <lucide-icon [img]="TrendingUpIcon" [size]="16" class="mr-2" />
-                Improve Profile First
+                {{ analysisPerspective === 'sme' ? 'Improve Profile First' : 'Request Improvements' }}
               </ui-button>
             }
           </div>
@@ -385,6 +368,192 @@
             Refresh Analysis
           </ui-button>
         }
+      </div>
+    </div>
+  }
+
+  <!-- Comprehensive Analysis Results -->
+  @if (showComprehensiveAnalysis()) {
+    <div class="divide-y divide-gray-100">
+      
+      <!-- Comprehensive Header -->
+      <div class="px-8 py-6 bg-gradient-to-r from-purple-50 to-indigo-50">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center space-x-4">
+            <div class="w-12 h-12 bg-gradient-to-br from-purple-600 to-indigo-600 rounded-xl flex items-center justify-center">
+              <lucide-icon [img]="BotIcon" [size]="20" class="text-white" />
+            </div>
+            <div>
+              <h3 class="text-xl font-semibold text-gray-900">
+                {{ analysisPerspective === 'sme' ? 'Application Readiness Report' : 'Investment Analysis Report' }}
+              </h3>
+              <p class="text-gray-600 mt-1">
+                Generated {{ formatTime(comprehensiveAnalysis()!.analysisDate) }} • 
+                {{ comprehensiveAnalysis()!.confidence }}% confidence
+              </p>
+            </div>
+          </div>
+          <ui-button variant="ghost" size="sm" (click)="refreshAnalysis()">
+            <lucide-icon [img]="RefreshCwIcon" [size]="16" class="mr-2" />
+            Refresh
+          </ui-button>
+        </div>
+      </div>
+
+      <!-- Overall Assessment -->
+      <div class="px-8 py-6">
+        <div class="flex items-center justify-between mb-6">
+          <div class="flex items-center space-x-6">
+            <div class="text-5xl font-bold text-gray-900">
+              {{ comprehensiveAnalysis()!.overallScore }}%
+            </div>
+            <div>
+              <div class="px-4 py-2 rounded-full text-sm font-semibold mb-2"
+                   [class]="'bg-' + getReadinessColor() + '-100 text-' + getReadinessColor() + '-800'">
+                {{ getReadinessLevel() | titlecase }}
+              </div>
+              <p class="text-sm text-gray-600 font-medium">
+                {{ analysisPerspective === 'sme' ? 'Application Readiness' : 'Investment Recommendation' }}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Progress Bar -->
+        <div class="w-full bg-gray-200 rounded-full h-4 mb-8">
+          <div [class]="getScoreBarClass(comprehensiveAnalysis()!.overallScore)" 
+               class="h-4 rounded-full transition-all duration-1000 ease-out" 
+               [style.width.%]="comprehensiveAnalysis()!.overallScore"></div>
+        </div>
+
+        <!-- Module Scores Grid -->
+        <div class="grid grid-cols-2 lg:grid-cols-5 gap-6">
+          <div class="bg-gray-50 rounded-xl p-4 text-center">
+            <lucide-icon [img]="DollarSignIcon" [size]="24" class="text-green-600 mx-auto mb-2" />
+            <div class="text-2xl font-bold text-gray-900">
+              {{ comprehensiveAnalysis()!.financial.overallScore }}%
+            </div>
+            <p class="text-sm text-gray-600 font-medium">Financial</p>
+          </div>
+          
+          <div class="bg-gray-50 rounded-xl p-4 text-center">
+            <lucide-icon [img]="TargetIcon" [size]="24" class="text-blue-600 mx-auto mb-2" />
+            <div class="text-2xl font-bold text-gray-900">
+              {{ analysisPerspective === 'sme' ? comprehensiveAnalysis()!.market.marketAppealScore || 0 : comprehensiveAnalysis()!.market.differentiationScore || 0 }}%
+            </div>
+            <p class="text-sm text-gray-600 font-medium">Market</p>
+          </div>
+          
+          <div class="bg-gray-50 rounded-xl p-4 text-center">
+            <lucide-icon [img]="UsersIcon" [size]="24" class="text-purple-600 mx-auto mb-2" />
+            <div class="text-2xl font-bold text-gray-900">
+              {{ analysisPerspective === 'sme' ? comprehensiveAnalysis()!.management.leadershipReadinessScore || 0 : comprehensiveAnalysis()!.management.leadershipScore || 0 }}%
+            </div>
+            <p class="text-sm text-gray-600 font-medium">Management</p>
+          </div>
+          
+          <div class="bg-gray-50 rounded-xl p-4 text-center">
+            <lucide-icon [img]="FileTextIcon" [size]="24" class="text-orange-600 mx-auto mb-2" />
+            <div class="text-2xl font-bold text-gray-900">
+              {{ comprehensiveAnalysis()!.compliance.completenessScore }}%
+            </div>
+            <p class="text-sm text-gray-600 font-medium">Compliance</p>
+          </div>
+          
+          <div class="bg-gray-50 rounded-xl p-4 text-center">
+            <lucide-icon [img]="ShieldIcon" [size]="24" class="text-red-600 mx-auto mb-2" />
+            <div class="text-2xl font-bold text-gray-900">
+              {{ analysisPerspective === 'sme' ? comprehensiveAnalysis()!.risk.applicationReadinessScore || 0 : (100 - (comprehensiveAnalysis()!.risk.overallRiskScore || 0)) }}%
+            </div>
+            <p class="text-sm text-gray-600 font-medium">{{ analysisPerspective === 'sme' ? 'Readiness' : 'Risk Adj.' }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Key Insights -->
+      <div class="px-8 py-6 space-y-6">
+        
+        <!-- Rationale -->
+        <div class="bg-blue-50 border-l-4 border-blue-400 p-6 rounded-r-lg">
+          <div class="flex items-center space-x-3 mb-4">
+            <lucide-icon [img]="FileTextIcon" [size]="20" class="text-blue-600" />
+            <h4 class="font-semibold text-blue-900 text-lg">Assessment Summary</h4>
+          </div>
+          <p class="text-blue-800 leading-relaxed">
+            {{ analysisPerspective === 'sme' ? comprehensiveAnalysis()!.readinessRationale : comprehensiveAnalysis()!.investmentRationale }}
+          </p>
+        </div>
+
+        <!-- Key Insights -->
+        @if (getKeyInsights().length > 0) {
+          <div class="bg-green-50 border-l-4 border-green-400 p-6 rounded-r-lg">
+            <div class="flex items-center space-x-3 mb-4">
+              <lucide-icon [img]="CheckCircleIcon" [size]="20" class="text-green-600" />
+              <h4 class="font-semibold text-green-900 text-lg">
+                {{ analysisPerspective === 'sme' ? 'Competitive Advantages' : 'Key Strengths' }}
+              </h4>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+              @for (insight of getKeyInsights(); track $index) {
+                <div class="flex items-start space-x-3">
+                  <div class="w-2 h-2 bg-green-500 rounded-full mt-2 flex-shrink-0"></div>
+                  <span class="text-green-800 font-medium">{{ insight }}</span>
+                </div>
+              }
+            </div>
+          </div>
+        }
+
+        <!-- Action Items -->
+        @if (getActionItems().length > 0) {
+          <div class="bg-orange-50 border-l-4 border-orange-400 p-6 rounded-r-lg">
+            <div class="flex items-center space-x-3 mb-4">
+              <lucide-icon [img]="TrendingUpIcon" [size]="20" class="text-orange-600" />
+              <h4 class="font-semibold text-orange-900 text-lg">
+                {{ analysisPerspective === 'sme' ? 'Action Plan' : 'Conditions' }}
+              </h4>
+            </div>
+            <div class="space-y-3">
+              @for (action of getActionItems(); track $index) {
+                <div class="flex items-start space-x-3 bg-white rounded-lg p-4 border border-orange-200">
+                  <div class="w-6 h-6 bg-orange-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <span class="text-xs font-bold text-orange-600">{{ $index + 1 }}</span>
+                  </div>
+                  <span class="text-orange-800 font-medium">{{ action }}</span>
+                </div>
+              }
+            </div>
+          </div>
+        }
+      </div>
+
+      <!-- Final Actions -->
+      <div class="px-8 py-6 bg-gray-50 flex items-center justify-between">
+        <div class="text-sm text-gray-600">
+          <span class="font-medium">Analysis completed:</span> {{ formatTime(comprehensiveAnalysis()!.analysisDate) }} • 
+          <span class="font-medium">Processing time:</span> {{ comprehensiveAnalysis()!.processingTimeMs / 1000 | number:'1.1-1' }}s
+        </div>
+        
+        <div class="flex space-x-4">
+          @if (analysisPerspective === 'sme') {
+            <ui-button variant="outline" (click)="improveApplication()">
+              <lucide-icon [img]="TrendingUpIcon" [size]="16" class="mr-2" />
+              Improve Profile
+            </ui-button>
+            @if (comprehensiveAnalysis()!.overallScore >= 70) {
+              <ui-button variant="primary" (click)="proceedWithApplication()" 
+                        class="bg-green-600 hover:bg-green-700">
+                <lucide-icon [img]="CheckCircleIcon" [size]="16" class="mr-2" />
+                Ready to Apply
+              </ui-button>
+            }
+          } @else {
+            <ui-button variant="outline" (click)="refreshAnalysis()">
+              <lucide-icon [img]="RefreshCwIcon" [size]="16" class="mr-2" />
+              Re-analyze
+            </ui-button>
+          }
+        </div>
       </div>
     </div>
   }

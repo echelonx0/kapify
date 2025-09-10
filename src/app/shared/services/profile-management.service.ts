@@ -1,7 +1,7 @@
 // src/app/shared/services/profile-management.service.ts 
 import { Injectable, inject, signal, computed } from '@angular/core';
 import { Observable, BehaviorSubject, throwError, of } from 'rxjs';
-import { map, tap, catchError, switchMap } from 'rxjs/operators';
+import { map, tap, catchError } from 'rxjs/operators';
  
 import { 
   User, 

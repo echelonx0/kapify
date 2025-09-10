@@ -1,13 +1,13 @@
-// src/app/ai/ai-analysis/enhanced-ai-analysis.component.ts
+// src/app/ai/ai-analysis/enhanced-ai-analysis.component.ts (Updated for SME + Investor modes)
 
 import { Component, Input, Output, EventEmitter, signal, computed, inject, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { LucideAngularModule, Bot, Sparkles, TrendingUp, AlertTriangle, CheckCircle, Loader2, Target, Award, Shield, RefreshCw, XCircle, Mail, Clock, FileText } from 'lucide-angular';
+import { LucideAngularModule, Bot, Sparkles, TrendingUp, AlertTriangle, CheckCircle, Loader2, Target, Award, Shield, RefreshCw, XCircle, Mail, Clock, FileText, Users, DollarSign } from 'lucide-angular';
 import { Subject, takeUntil } from 'rxjs';
 import { UiButtonComponent } from 'src/app/shared/components';
 import { FundingOpportunity } from 'src/app/shared/models/funder.models';
 import { FundingApplicationProfile } from 'src/app/SMEs/applications/models/funding-application.models';
-import { AIAnalysisService, AIAnalysisRequest, AIAnalysisResult } from '../services/ai-analysis.service';
+import { ModularAIAnalysisService, ComprehensiveAnalysis } from '../services/modular-ai-analysis.service';
 import { BusinessRulesAnalysisService, BusinessRulesResult } from '../services/business-rules.service';
 import { FundingProfileBackendService } from 'src/app/SMEs/services/funding-profile-backend.service';
 
@@ -19,21 +19,6 @@ export interface CoverInformation {
   opportunityAlignment: string;
 }
 
-// Background job response type
-export interface AIAnalysisJobResponse {
-  jobId: string;
-  status: string;
-  message?: string;
-}
-
-// Union type for AI analysis responses
-export type AIAnalysisResponse = AIAnalysisResult | AIAnalysisJobResponse;
-
-// Type guard to check if response is a job response
-function isJobResponse(response: AIAnalysisResponse): response is AIAnalysisJobResponse {
-  return 'jobId' in response;
-}
-
 @Component({
   selector: 'app-enhanced-ai-analysis',
   standalone: true,
@@ -41,7 +26,6 @@ function isJobResponse(response: AIAnalysisResponse): response is AIAnalysisJobR
     CommonModule,
     LucideAngularModule,
     UiButtonComponent,
-    
   ],
   templateUrl: './enhanced-ai-analysis.component.html'
 })
@@ -56,14 +40,17 @@ export class EnhancedAIAnalysisComponent implements OnDestroy {
   // Analysis mode: 'profile' for standalone, 'opportunity' for opportunity-specific
   @Input() analysisMode: 'profile' | 'opportunity' = 'opportunity';
   
-  @Output() analysisCompleted = new EventEmitter<AIAnalysisResult>();
+  // NEW: Analysis perspective - who is viewing the analysis
+  @Input() analysisPerspective: 'sme' | 'investor' = 'sme';
+  
+  @Output() analysisCompleted = new EventEmitter<ComprehensiveAnalysis>();
   @Output() improvementRequested = new EventEmitter<void>();
   @Output() proceedRequested = new EventEmitter<void>();
 
-  // Services
+  // Services - Updated to use ModularAIAnalysisService
   private backendService = inject(FundingProfileBackendService);
   private businessRulesService = inject(BusinessRulesAnalysisService);
-  private aiAnalysisService = inject(AIAnalysisService);
+  private modularAIService = inject(ModularAIAnalysisService);
   private destroy$ = new Subject<void>();
 
   // Icons
@@ -81,22 +68,24 @@ export class EnhancedAIAnalysisComponent implements OnDestroy {
   MailIcon = Mail;
   ClockIcon = Clock;
   FileTextIcon = FileText;
+  UsersIcon = Users;
+  DollarSignIcon = DollarSign;
 
   // State
   private loadedProfile = signal<FundingApplicationProfile | null>(null);
   businessRulesResult = signal<BusinessRulesResult | null>(null);
-  aiAnalysisResult = signal<AIAnalysisResult | null>(null);
+  
+  // Updated for comprehensive analysis
+  comprehensiveAnalysis = signal<ComprehensiveAnalysis | null>(null);
   isAnalyzing = signal(false);
   isLoadingProfile = signal(false);
   analysisError = signal<string | null>(null);
   
-  // AI Email status
-  aiEmailRequested = signal(false);
-  aiEmailSent = signal(false);
-  aiEmailError = signal<string | null>(null);
-  aiJobId = signal<string | null>(null);
+  // Analysis progress tracking
+  analysisProgress = signal(0);
+  currentAnalysisStage = signal<string>('');
 
-  // FIXED: Computed properties with proper logic
+  // Computed properties
   private currentProfile = computed(() => this.businessProfile || this.loadedProfile());
   
   canAnalyze = computed(() => {
@@ -115,11 +104,9 @@ export class EnhancedAIAnalysisComponent implements OnDestroy {
       );
     }
     
-    // Profile mode - just needs business profile
     return true;
   });
 
-  // FIXED: Better validation messages
   validationIssues = computed(() => {
     const issues: string[] = [];
     const profile = this.currentProfile();
@@ -156,17 +143,17 @@ export class EnhancedAIAnalysisComponent implements OnDestroy {
 
   hasError = computed(() => !!this.analysisError());
   showBusinessRules = computed(() => !!this.businessRulesResult());
-  showAIResults = computed(() => !!this.aiAnalysisResult());
+  showComprehensiveAnalysis = computed(() => !!this.comprehensiveAnalysis());
+  isModularAnalysisRunning = computed(() => this.isAnalyzing() || this.modularAIService.isAnalyzing());
 
   constructor() {
-    console.log('Enhanced AI Analysis Component initialized');
+    console.log('Enhanced AI Analysis Component initialized with perspective:', this.analysisPerspective);
   }
 
-  ngOnInit() {
-    if (!this.businessProfile) {
-      this.loadBusinessProfile();
-    }
-  }
+ngOnInit() {
+  if (!this.businessProfile) {
+    this.loadBusinessProfile();
+  }}
 
   ngOnDestroy() {
     this.destroy$.next();
@@ -191,7 +178,7 @@ export class EnhancedAIAnalysisComponent implements OnDestroy {
   }
 
   // =======================
-  // MAIN ANALYSIS TRIGGER
+  // ANALYSIS ORCHESTRATION
   // =======================
 
   startAnalysis() {
@@ -202,20 +189,19 @@ export class EnhancedAIAnalysisComponent implements OnDestroy {
 
     // Clear previous results
     this.businessRulesResult.set(null);
-    this.aiAnalysisResult.set(null);
+    this.comprehensiveAnalysis.set(null);
     this.analysisError.set(null);
-    this.aiEmailRequested.set(false);
-    this.aiEmailSent.set(false);
-    this.aiEmailError.set(null);
-    this.aiJobId.set(null);
+    this.analysisProgress.set(0);
 
-    // Start with business rules analysis (always instant)
+    // Start with business rules analysis (quick validation)
     this.performBusinessRulesAnalysis();
   }
 
   private performBusinessRulesAnalysis() {
     const profile = this.currentProfile();
     if (!profile) return;
+
+    this.currentAnalysisStage.set('Running eligibility checks...');
 
     const analysisObservable = this.analysisMode === 'profile' 
       ? this.businessRulesService.analyzeProfile(profile)
@@ -228,6 +214,7 @@ export class EnhancedAIAnalysisComponent implements OnDestroy {
     analysisObservable.pipe(takeUntil(this.destroy$)).subscribe({
       next: (result) => {
         this.businessRulesResult.set(result);
+        this.analysisProgress.set(25);
         console.log('Business rules analysis completed:', result);
       },
       error: (error) => {
@@ -238,84 +225,44 @@ export class EnhancedAIAnalysisComponent implements OnDestroy {
   }
 
   // =======================
-  // AI EMAIL ANALYSIS
+  // COMPREHENSIVE AI ANALYSIS
   // =======================
 
-  requestAIAnalysis() {
-    if (this.aiEmailRequested()) {
+  startComprehensiveAnalysis() {
+    if (!this.canAnalyze()) {
       return;
     }
 
-    this.aiEmailRequested.set(true);
-    this.aiEmailError.set(null);
+    this.isAnalyzing.set(true);
+    this.comprehensiveAnalysis.set(null);
+    this.analysisError.set(null);
 
-    // Build AI analysis request
-    const request = this.buildAIAnalysisRequest();
-    if (!request) {
-      this.aiEmailError.set('Failed to build analysis request');
-      this.aiEmailRequested.set(false);
-      return;
-    }
+    const profile = this.currentProfile()!;
 
-    // Send to AI analysis service (background job)
-    this.aiAnalysisService.analyzeApplication({ ...request, backgroundMode: true })
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (response: AIAnalysisResponse) => {
-          if (isJobResponse(response)) {
-            // Background job queued
-            this.aiJobId.set(response.jobId);
-            this.aiEmailSent.set(true);
-            console.log('AI analysis queued:', response.jobId);
-          } else {
-            // Immediate response (shouldn't happen with backgroundMode: true)
-            this.aiAnalysisResult.set(response);
-            this.analysisCompleted.emit(response);
-            console.log('AI analysis completed immediately');
-          }
-        },
-        error: (error) => {
-          console.error('AI analysis request failed:', error);
-          this.aiEmailError.set(
-            error?.message || 'Failed to queue AI analysis. Please try again.'
-          );
-          this.aiEmailRequested.set(false);
-        }
-      });
-  }
-
-  private buildAIAnalysisRequest(): AIAnalysisRequest | null {
-    const profile = this.currentProfile();
-    if (!profile) return null;
-
-    if (this.analysisMode === 'profile') {
-      // Profile-only analysis
-      return {
-        opportunity: null,
-        applicationData: null,
-        businessProfile: profile
-      };
-    }
-
-    // Opportunity-specific analysis
-    const opportunity = this.opportunity;
-    const applicationData = this.applicationData;
-
-    if (!opportunity || !applicationData) {
-      return null;
-    }
-
-    return {
-      opportunity,
-      applicationData: {
-        requestedAmount: applicationData.requestedAmount || '0',
-        purposeStatement: applicationData.purposeStatement || '',
-        useOfFunds: applicationData.useOfFunds || '',
-        timeline: applicationData.timeline || '',
-        opportunityAlignment: applicationData.opportunityAlignment || ''
-      },
-      businessProfile: profile
+    // Build application object for modular analysis
+    const application = {
+      id: this.applicationId || `temp_${Date.now()}`,
+      documents: {}, // Would come from actual application
+      ...this.applicationData
     };
+
+    this.modularAIService.analyzeApplication(
+      application,
+      profile,
+      this.analysisPerspective  
+    ).pipe(takeUntil(this.destroy$)).subscribe({
+      next: (result) => {
+        this.comprehensiveAnalysis.set(result);
+        this.analysisCompleted.emit(result);
+        this.isAnalyzing.set(false);
+        console.log('Comprehensive analysis completed:', result);
+      },
+      error: (error) => {
+        console.error('Comprehensive analysis failed:', error);
+        this.analysisError.set('Comprehensive analysis failed: ' + (error.message || 'Unknown error'));
+        this.isAnalyzing.set(false);
+      }
+    });
   }
 
   // =======================
@@ -339,21 +286,62 @@ export class EnhancedAIAnalysisComponent implements OnDestroy {
     this.startAnalysis();
   }
 
-  retryAIRequest() {
-    this.aiEmailRequested.set(false);
-    this.aiEmailError.set(null);
-    this.aiJobId.set(null);
-    this.requestAIAnalysis();
-  }
-
   clearError() {
     this.analysisError.set(null);
   }
 
   // =======================
-  // UI HELPERS
+  // UI HELPERS - PERSPECTIVE AWARE
   // =======================
 
+  getAnalysisTitle(): string {
+    const baseTitle = this.analysisMode === 'profile' 
+      ? 'Business Profile Analysis' 
+      : 'Opportunity Match Analysis';
+    
+    const perspective = this.analysisPerspective === 'sme' ? 'Application Readiness' : 'Investment Evaluation';
+    return `${baseTitle} - ${perspective}`;
+  }
+
+  getAnalysisDescription(): string {
+    if (this.analysisPerspective === 'sme') {
+      return this.analysisMode === 'profile'
+        ? 'Comprehensive evaluation of your business readiness for funding applications with actionable improvement recommendations'
+        : 'Intelligent assessment of your application\'s competitiveness and guidance to maximize funding success';
+    } else {
+      return this.analysisMode === 'profile'
+        ? 'Investment-focused evaluation of business viability and risk assessment for funding decisions'
+        : 'Due diligence analysis of application quality and investment opportunity assessment';
+    }
+  }
+
+  getAnalysisCapabilities() {
+    if (this.analysisPerspective === 'sme') {
+      return [
+        { icon: this.TargetIcon, title: 'Readiness Check', desc: 'Application competitiveness assessment', color: 'blue' },
+        { icon: this.CheckCircleIcon, title: 'Eligibility Review', desc: 'Requirements validation and gaps', color: 'green' },
+        { icon: this.TrendingUpIcon, title: 'Improvement Plan', desc: 'Actionable steps to strengthen profile', color: 'purple' },
+        { icon: this.BotIcon, title: 'AI Insights', desc: 'Strategic positioning recommendations', color: 'amber' }
+      ];
+    } else {
+      return [
+        { icon: this.ShieldIcon, title: 'Risk Assessment', desc: 'Investment risk evaluation', color: 'red' },
+        { icon: this.DollarSignIcon, title: 'Financial Review', desc: 'Financial health and projections', color: 'green' },
+        { icon: this.UsersIcon, title: 'Team Analysis', desc: 'Management capability assessment', color: 'purple' },
+        { icon: this.TargetIcon, title: 'Market Position', desc: 'Competitive positioning analysis', color: 'blue' }
+      ];
+    }
+  }
+
+  getPrimaryActionText(): string {
+    return this.analysisPerspective === 'sme' ? 'Check Application Readiness' : 'Evaluate Investment Opportunity';
+  }
+
+  getComprehensiveActionText(): string {
+    return this.analysisPerspective === 'sme' ? 'Get Detailed Preparation Plan' : 'Run Full Due Diligence';
+  }
+
+  // Existing UI helper methods remain the same
   getCompatibilityBadgeClass(eligibility: string): string {
     const baseClass = 'px-3 py-1 rounded-full text-sm font-medium';
     switch (eligibility) {
@@ -413,27 +401,69 @@ export class EnhancedAIAnalysisComponent implements OnDestroy {
     return `${diffDays} days ago`;
   }
 
-  getAnalysisTitle(): string {
-    return this.analysisMode === 'profile' 
-      ? 'Business Profile Analysis' 
-      : 'Opportunity Match Analysis';
-  }
-
-  getAnalysisDescription(): string {
-    return this.analysisMode === 'profile'
-      ? 'Comprehensive evaluation of your business readiness for funding applications'
-      : 'Intelligent assessment of your application\'s compatibility with this funding opportunity';
-  }
-
-  // Job status helpers
-  getJobStatusMessage(): string {
-    const jobId = this.aiJobId();
-    if (!jobId) return '';
+  // NEW: Comprehensive analysis result helpers
+  getReadinessLevel(): string {
+    const analysis = this.comprehensiveAnalysis();
+    if (!analysis) return '';
     
-    return `Analysis request queued (Job ID: ${jobId.slice(0, 8)}...)`;
+    if (this.analysisPerspective === 'sme') {
+      return analysis.applicationReadiness || 'unknown';
+    } else {
+      return analysis.recommendation || 'unknown';
+    }
   }
 
-  hasActiveJob(): boolean {
-    return !!this.aiJobId() && this.aiEmailSent() && !this.aiEmailError();
+  getReadinessColor(): string {
+    const level = this.getReadinessLevel();
+    
+    if (this.analysisPerspective === 'sme') {
+      switch (level) {
+        case 'ready_to_submit': return 'green';
+        case 'needs_minor_improvements': return 'orange';
+        case 'requires_major_work': return 'red';
+        default: return 'gray';
+      }
+    } else {
+      switch (level) {
+        case 'approve': return 'green';
+        case 'conditional_approve': return 'orange';
+        case 'reject': return 'red';
+        case 'request_more_info': return 'blue';
+        default: return 'gray';
+      }
+    }
+  }
+
+  getKeyInsights(): string[] {
+    const analysis = this.comprehensiveAnalysis();
+    if (!analysis) return [];
+    
+    if (this.analysisPerspective === 'sme') {
+      return analysis.competitiveAdvantages || [];
+    } else {
+      return analysis.keyStrengths || [];
+    }
+  }
+
+  getActionItems(): string[] {
+    const analysis = this.comprehensiveAnalysis();
+    if (!analysis) return [];
+    
+    if (this.analysisPerspective === 'sme') {
+      return analysis.actionPlan || [];
+    } else {
+      return analysis.conditions || [];
+    }
+  }
+
+  getCurrentStage(): string {
+    if (this.modularAIService.currentStage()) {
+      return this.modularAIService.currentStage();
+    }
+    return this.currentAnalysisStage();
+  }
+
+  getAnalysisProgress(): number {
+    return this.modularAIService.analysisProgress() || this.analysisProgress();
   }
 }
