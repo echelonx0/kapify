@@ -165,7 +165,7 @@ export class LearningResourcesComponent {
       description: 'Learn the essential elements of a successful grant proposal from industry experts. This comprehensive guide covers everything from research and planning to writing techniques that capture funders\' attention and demonstrate your project\'s value and impact.',
       duration: '12:34',
       category: 'funding-tips',
-      youtubeId: 'dQw4w9WgXcQ', // Replace with actual YouTube video ID
+      youtubeId: 'IUIUB72nSKs', // Replace with actual YouTube video ID
       thumbnailUrl: 'https://img.youtube.com/vi/dQw4w9WgXcQ/mqdefault.jpg',
       views: '2.3k'
     },
@@ -191,11 +191,11 @@ export class LearningResourcesComponent {
     },
     {
       id: '4',
-      title: 'Creating a Compelling Pitch Deck',
+      title: 'Creating a Compelling Business Plan',
       description: 'Discover what investors and funders want to see in your pitch deck. Learn the essential slides, design principles, and storytelling techniques that make your presentation stand out from the competition.',
       duration: '10:18',
       category: 'pitch-deck',
-      youtubeId: 'dQw4w9WgXcQ', // Replace with actual YouTube video ID
+      youtubeId: 'IUIUB72nSKs', // https://youtu.be/IUIUB72nSKs
       thumbnailUrl: 'https://img.youtube.com/vi/dQw4w9WgXcQ/mqdefault.jpg',
       views: '3.1k'
     },
@@ -205,7 +205,7 @@ export class LearningResourcesComponent {
       description: 'Explore the various funding options available to businesses, from grants and loans to equity investment. Understand which type of funding is right for your business stage and goals.',
       duration: '7:33',
       category: 'funding-tips',
-      youtubeId: 'dQw4w9WgXcQ', // Replace with actual YouTube video ID
+      youtubeId: 'XtyH-WHoals', // https://youtu.be/XtyH-WHoals
       thumbnailUrl: 'https://img.youtube.com/vi/dQw4w9WgXcQ/mqdefault.jpg',
       views: '4.7k'
     }
