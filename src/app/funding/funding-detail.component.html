@@ -58,8 +58,8 @@
             </div>
 
             <!-- Enhanced action buttons -->
-            <div class="flex flex-col space-y-3 animate-slide-in-right">
-              @if (canManageOpportunity()) {
+             <div class="flex flex-col space-y-3 animate-slide-in-right">
+              <!-- @if (canManageOpportunity()) {
                 <ui-button variant="primary" (clicked)="manageApplications()"
                           class="bg-primary-600 hover:bg-slate-700 text-white px-6 py-3 rounded-xl font-medium shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-0.5">
                   <lucide-icon [img]="UsersIcon" [size]="16" class="mr-2" />
@@ -80,14 +80,14 @@
                           class="bg-slate-100 text-slate-400 px-6 py-3 rounded-xl font-medium border border-slate-200 cursor-not-allowed">
                   Not Eligible
                 </ui-button>
-              }
+              } -->
               
-              <ui-button variant="outline" (clicked)="goBack()"
-                        class="bg-white hover:bg-slate-50 text-slate-700 px-6 py-3 rounded-xl font-medium border border-slate-200 hover:border-slate-300 shadow-sm hover:shadow-md transition-all duration-300 group">
+              <ui-button   (clicked)="goBack()"
+                        >
                 <lucide-icon [img]="ArrowLeftIcon" [size]="16" class="mr-2 group-hover:-translate-x-1 transition-transform duration-200" />
-                Back to Opportunities
+                Back 
               </ui-button>
-            </div>
+            </div>  
           </div>
         </div>
 

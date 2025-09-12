@@ -58,6 +58,7 @@ export const funderRoutes: Routes = [
         loadComponent: () =>
           import('./components/create-opportunity/create-opportunity.component').then(m => m.CreateOpportunityComponent)
       },
+      
       {
         path: 'opportunities/:id',
         loadComponent: () =>

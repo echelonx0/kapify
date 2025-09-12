@@ -1,4 +1,4 @@
-// enhanced-opportunity-card.component.ts
+// enhanced-opportunity-card.component.ts - FIXED VERSION
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { LucideAngularModule, DollarSign, Calendar, MapPin, Users, Eye, ExternalLink, Clock, Building, TrendingUp, Award } from 'lucide-angular';
@@ -37,7 +37,7 @@ import { FundingOpportunity } from '../../../shared/models/funder.models';
               <div class="icon-container neutral w-6 h-6">
                 <lucide-icon [img]="BuildingIcon" [size]="12" />
               </div>
-              <span class="font-medium">{{ opportunity.funderName || 'Private Funder' }}</span>
+              <span class="font-medium">{{ opportunity.funderOrganizationName || 'Private Funder' }}</span>
               <span class="text-neutral-400">•</span>
               <div class="flex items-center gap-1">
                 <lucide-icon [img]="AwardIcon" [size]="12" class="text-green-500" />
@@ -257,20 +257,20 @@ export class EnhancedOpportunityCardComponent {
   }
 
   formatDecisionTime(): string {
-    if (this.opportunity.decisionTimeline) {
-      return `${this.opportunity.decisionTimeline} days`;
+    if (this.opportunity.decisionTimeframe) {
+      return `${this.opportunity.decisionTimeframe} days`;
     }
     return 'Not specified';
   }
 
   formatLocations(): string {
-    if (!this.opportunity.eligibilityCriteria?.locations?.length) {
+    if (!this.opportunity.eligibilityCriteria?.geographicRestrictions?.length) {
       return 'South Africa';
     }
     
-    const locations = this.opportunity.eligibilityCriteria.locations;
-    const formatted = locations.map(loc => 
-      loc.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
+    const locations = this.opportunity.eligibilityCriteria.geographicRestrictions;
+    const formatted = locations.map((loc: string) => 
+      loc.replace(/_/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())
     );
     
     if (formatted.length <= 2) {
@@ -281,7 +281,7 @@ export class EnhancedOpportunityCardComponent {
   }
 
   formatApplicationCount(): string {
-    const count = this.opportunity.applicationCount || 0;
+    const count = this.opportunity.currentApplications || 0;
     if (count === 0) return 'No applications yet';
     if (count === 1) return '1 application';
     if (count > 100) return '100+ applications';
@@ -294,7 +294,7 @@ export class EnhancedOpportunityCardComponent {
   }
 
   formatIndustry(industry: string): string {
-    return industry.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+    return industry.replace(/_/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase());
   }
 
   getProgressPercentage(): number {
@@ -321,11 +321,11 @@ export class EnhancedOpportunityCardComponent {
   }
 
   showApplicationCount(): boolean {
-    return !!(this.opportunity.applicationCount && this.opportunity.applicationCount > 0);
+    return !!(this.opportunity.currentApplications && this.opportunity.currentApplications > 0);
   }
 
   isPopular(): boolean {
-    return !!(this.opportunity.applicationCount && this.opportunity.applicationCount > 10);
+    return !!(this.opportunity.currentApplications && this.opportunity.currentApplications > 10);
   }
 
   trackByIndustry(index: number, industry: string): string {

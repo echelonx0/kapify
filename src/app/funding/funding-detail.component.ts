@@ -92,7 +92,7 @@ export class OpportunityDetailsComponent implements OnInit {
 
   // Navigation methods
   goBack() {
-    this.router.navigate(['/funding/opportunities']);
+    // use window location to go back
   }
 
   applyNow() {

@@ -90,7 +90,7 @@ export class FunderOnboardingService {
     isComplete: false,
     canCreateOpportunities: false,
     steps: this.steps
-  });
+  }); 
   
   onboardingState$ = this.onboardingStateSubject.asObservable();
 

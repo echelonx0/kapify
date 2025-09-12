@@ -16,6 +16,11 @@ export const profileRoutes: Routes = [
         loadComponent: () => import('./pages/profile-home.component').then(c => c.ProfileHomeComponent),
         title: 'Profile Overview - Kapify'
       },
+          { 
+        path: 'data-room', 
+        loadComponent: () => import('../data-room/data-room.component').then(c => c.DataRoomComponent),
+        title: 'Profile Overview - Kapify'
+      },
       { 
         path: 'steps',
         loadComponent: () => import('./steps/profile-steps-layout/profile-steps-layout.component').then(c => c.ProfileStepsLayoutComponent),
@@ -121,7 +126,7 @@ export const profileRoutes: Routes = [
             // OLD: title: 'Financial Analysis - Profile Setup'
           }
 
-          // NOTE: 'documents' and 'management' remain the same, no redirect needed
+         
         ]
       }
     ]

@@ -154,6 +154,7 @@ export interface DueDiligenceStep {
 
 // Fund opportunities (specific deals within funds)
 export interface FundingOpportunity {
+  [x: string]: any;
   id: string;
   fundId: string;
   organizationId: string;

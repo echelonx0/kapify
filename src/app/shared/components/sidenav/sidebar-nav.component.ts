@@ -54,11 +54,14 @@ export class SidebarNavComponent implements OnInit {
   // Navigation items with potential badges
   private navItems: NavItem[] = [
     { label: 'Home', icon: Home, route: '/dashboard/home', userTypes: ['sme', 'funder'] },
-    { label: 'Resources', icon: BookOpen, route: '/dashboard/resources', userTypes: ['sme', 'funder'] },
+   
     { label: 'Profile', icon: User, route: '/profile', userTypes: ['sme'] },
     { label: 'Funding Opportunities', icon: DollarSign, route: '/funding', userTypes: ['sme'] },
     { label: 'Manage', icon: Building, route: '/dashboard/funder-dashboard', userTypes: ['funder'] },
-    { label: 'Applications', icon: FileText, route: '/applications', userTypes: ['sme', 'funder'], badge: 2 },  
+    { label: 'Applications', icon: FileText, route: '/applications', userTypes: ['sme'], badge: 2 }, 
+      { label: 'Data Room', icon: FileText, route: '/profile/data-room', userTypes: ['sme', 'funder'] },
+     
+     { label: 'Resources', icon: BookOpen, route: '/dashboard/resources', userTypes: ['sme', 'funder'] },
     { label: 'Admin Console', icon: Settings, route: '/administrator/dashboard', userTypes: ['sme', 'funder'] }
   ];
 

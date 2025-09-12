@@ -20,7 +20,7 @@ import { DashboardHeaderComponent } from '../shared/components/header/dashboard-
         </div>
         
         <!-- Page Content -->
-        <main class="ml-16">
+        <main >
           <router-outlet />
         </main>
       </div>
