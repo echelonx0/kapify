@@ -507,67 +507,97 @@ async getApplicationThreads(applicationId: string): Promise<MessageThread[]> {
 /**
  * Create a new thread for an application, automatically including the applicant
  */
+// Replace your createApplicationThread method with this fixed version
 async createApplicationThread(
   applicationId: string, 
   subject: string, 
   additionalParticipantIds: string[] = []
 ): Promise<string | null> {
   try {
-    const currentUser = this.currentUserSubject.value;
-    if (!currentUser) throw new Error('No authenticated user');
+    console.log('🐛 DEBUG: Starting createApplicationThread');
+    
+    // CRITICAL FIX: Use the Supabase client directly with proper auth context
+    const { data: { user }, error: authError } = await this.supabase.auth.getUser();
+    console.log('🐛 Supabase auth user:', user?.id, authError);
+    
+    if (authError || !user) {
+      console.error('🐛 ERROR: Supabase auth failed:', authError);
+      throw new Error('Authentication failed');
+    }
 
-    // Get application details to find the applicant
+    // Get application details
+    console.log('🐛 Fetching application:', applicationId);
     const { data: applicationData, error: appError } = await this.supabase
       .from('applications')
       .select('id, title, applicant_id, opportunity_id')
       .eq('id', applicationId)
       .single();
 
+    console.log('🐛 Application data:', applicationData, appError);
+    
     if (appError || !applicationData) {
+      console.error('🐛 ERROR: Application not found:', appError);
       throw new Error('Application not found');
     }
 
-    // Create thread with application metadata
-    const { data: threadData, error: threadError } = await this.supabase
-      .from('message_threads')
-      .insert([{
-        subject: subject || `Re: ${applicationData.title}`,
-        created_by: currentUser.id,
-        metadata: {
+    // CRITICAL FIX: Use a direct SQL call with auth context
+    const threadSubject = subject || `Re: ${applicationData.title}`;
+    
+    // Use RPC call instead of direct INSERT to ensure auth context
+    const { data: threadData, error: threadError } = await this.supabase.rpc(
+      'create_message_thread',
+      {
+        thread_subject: threadSubject,
+        thread_metadata: {
           application_id: applicationId,
           opportunity_id: applicationData.opportunity_id,
           application_title: applicationData.title
         }
-      }])
-      .select()
-      .single();
+      }
+    );
 
-    if (threadError) throw threadError;
+    console.log('🐛 Thread RPC result:', threadData, threadError);
 
-    // Add participants: current user, applicant, and any additional participants
+    if (threadError) {
+      console.error('🐛 ERROR: Thread creation failed:', threadError);
+      throw threadError;
+    }
+
+    const threadId = threadData;
+
+    // Add participants
     const participantIds = [
-      currentUser.id,
+      user.id,
       applicationData.applicant_id,
       ...additionalParticipantIds.filter(id => 
-        id !== currentUser.id && id !== applicationData.applicant_id
+        id !== user.id && id !== applicationData.applicant_id
       )
     ];
 
+    console.log('🐛 Participant IDs:', participantIds);
+
     const participantInserts = participantIds.map(userId => ({
-      thread_id: threadData.id,
+      thread_id: threadId,
       user_id: userId,
       can_reply: true
     }));
+
+    console.log('🐛 Participant inserts:', participantInserts);
 
     const { error: participantsError } = await this.supabase
       .from('thread_participants')
       .insert(participantInserts);
 
-    if (participantsError) throw participantsError;
+    if (participantsError) {
+      console.error('🐛 ERROR: Participants insert failed:', participantsError);
+      throw participantsError;
+    }
 
-    return threadData.id;
+    console.log('🐛 SUCCESS: Thread created:', threadId);
+    return threadId;
+    
   } catch (error) {
-    console.error('Error creating application thread:', error);
+    console.error('🐛 FULL ERROR in createApplicationThread:', error);
     return null;
   }
 }
