@@ -4,7 +4,7 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { LucideAngularModule, 
   Building, TrendingUp, FileText, Users, Target, DollarSign,
-  BarChart3, Shield, Download, Eye, ChevronRight, AlertCircle,
+  BarChart3, Shield, Download, Eye, AlertCircle,
   CheckCircle, Clock, Sparkles, Globe, Lock, Star, ArrowUpRight,
   PieChart, Calculator
 } from 'lucide-angular';

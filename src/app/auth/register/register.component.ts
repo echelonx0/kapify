@@ -125,27 +125,7 @@ export class RegisterComponent implements OnDestroy {
     return null;
   }
 
-  private emailValidator(control: AbstractControl) {
-    if (!control.value) return null;
-    
-    const email = control.value.toLowerCase().trim();
-    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-    
-    if (!emailRegex.test(email)) {
-      return { invalidFormat: true };
-    }
-    
-    // Additional business email validation for funders
-    if (this.selectedUserType() === 'funder') {
-      const commonPersonalDomains = ['gmail.com', 'yahoo.com', 'hotmail.com', 'outlook.com'];
-      const domain = email.split('@')[1];
-      if (commonPersonalDomains.includes(domain)) {
-        return { personalEmailForBusiness: true };
-      }
-    }
-    
-    return null;
-  }
+  
 
   private phoneValidator(control: AbstractControl) {
     if (!control.value) return null;
@@ -216,12 +196,49 @@ export class RegisterComponent implements OnDestroy {
   // FORM INTERACTION METHODS
   // ===============================
 
-  selectUserType(type: 'sme' | 'funder'): void {
-    this.selectedUserType.set(type);
-    this.registerForm.patchValue({ userType: type });
-    this.updateCompanyNameValidation();
-    this.clearErrors();
+// Replace your selectUserType method with this:
+selectUserType(type: 'sme' | 'funder'): void {
+  this.selectedUserType.set(type);
+  this.registerForm.patchValue({ userType: type });
+  this.updateCompanyNameValidation();
+  
+  // Re-validate email field when user type changes
+  const emailControl = this.registerForm.get('email');
+  if (emailControl && emailControl.value) {
+    emailControl.updateValueAndValidity();
   }
+  
+  this.clearErrors();
+}
+
+// Also update your emailValidator to be more defensive:
+private emailValidator = (control: AbstractControl) => {
+  if (!control.value) return null;
+  
+  const email = control.value.toLowerCase().trim();
+  const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+  
+  if (!emailRegex.test(email)) {
+    return { invalidFormat: true };
+  }
+  
+  // Only check business email if we're currently set to funder
+  // Use a try-catch to handle any state access issues
+  try {
+    if (this.selectedUserType?.() === 'funder') {
+      const commonPersonalDomains = ['gmail.com', 'yahoo.com', 'hotmail.com', 'outlook.com'];
+      const domain = email.split('@')[1];
+      if (commonPersonalDomains.includes(domain)) {
+        return { personalEmailForBusiness: true };
+      }
+    }
+  } catch (e) {
+    // If there's any issue accessing selectedUserType, skip business email validation
+    console.warn('Could not access selectedUserType for email validation:', e);
+  }
+  
+  return null;
+}
 
   private updateCompanyNameValidation(): void {
     const companyNameControl = this.registerForm.get('companyName');

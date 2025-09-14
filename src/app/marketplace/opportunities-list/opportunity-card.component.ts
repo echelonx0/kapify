@@ -2,7 +2,7 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { LucideAngularModule, DollarSign, Calendar, MapPin, Users, Eye, ExternalLink, Clock, Building, TrendingUp, Award } from 'lucide-angular';
-import { FundingOpportunity } from '../../../shared/models/funder.models';
+import { FundingOpportunity } from '../../shared/models/funder.models';
 
 @Component({
   selector: 'app-enhanced-opportunity-card',

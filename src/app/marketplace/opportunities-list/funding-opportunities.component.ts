@@ -6,16 +6,16 @@ import { of, Subject } from 'rxjs';
 import { takeUntil, catchError } from 'rxjs/operators';
 import { AuthService } from 'src/app/auth/production.auth.service';
 import { FundingOpportunity } from 'src/app/shared/models/funder.models';
-import { SMEOpportunitiesService } from '../../services/opportunities.service';
+import { SMEOpportunitiesService } from '../../funding/services/opportunities.service';
 import { CategoryFiltersComponent } from './category-filters.component';
-import { AdvancedFiltersComponent } from './filters.component';
+import { AdvancedFiltersComponent } from '../components/filters.component';
  
 import { MarketplaceHeaderComponent } from './marketplace-header.component';
 import { OpportunitiesGridComponent } from './opportunities-grid.component';
 import { SearchStatsBarComponent } from './search-stats-bar.component';
-import { EmptyStateComponent } from './components/empty-state.component';
-import { InsightsWidgetComponent } from './components/insights-widget.component';
-import { NewsletterSignupComponent } from './components/newsletter-signup.component';
+import { EmptyStateComponent } from '../components/empty-state.component';
+import { InsightsWidgetComponent } from '../components/insights-widget.component';
+import { NewsletterSignupComponent } from '../components/newsletter-signup.component';
 import { LoadingStateComponent } from './loading-state.component';
 
  
