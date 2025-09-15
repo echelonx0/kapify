@@ -4,10 +4,7 @@ import { CommonModule } from '@angular/common';
 import { 
   LucideAngularModule, 
   CheckCircle, 
-  Users, 
-  TrendingUp, 
-  Shield, 
-  Clock, 
+
   Star,
   ArrowRight,
   Menu,

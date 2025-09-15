@@ -1,201 +1,199 @@
-// advanced-filters.component.ts
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+// advanced-filters.component.ts - Fixed and cleaned up
+import { Component, Input, Output, EventEmitter, OnInit, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { LucideAngularModule, Filter, RefreshCw, Sliders } from 'lucide-angular';
+import { LucideAngularModule, Filter, RefreshCw, Search, ChevronDown } from 'lucide-angular';
 
 @Component({
   selector: 'app-advanced-filters',
   standalone: true,
   imports: [CommonModule, LucideAngularModule],
   template: `
-    <div class="section-card">
-      <div class="section-header">
-        <h3 class="section-title text-white flex items-center">
-          <lucide-icon [img]="FilterIcon" [size]="18" class="mr-2" />
-          Advanced Filters
-        </h3>
-        <p class="section-description text-primary-100 mt-1">
-          Narrow down opportunities to find your perfect match
-        </p>
+    <div class="bg-white" (click)="closeAllDropdowns($event)">
+      <!-- Filter Header -->
+      <div class="flex items-center justify-between mb-6">
+        <div class="flex items-center">
+          <lucide-icon [img]="FilterIcon" [size]="20" class="mr-3 text-slate-600" />
+          <h3 class="text-lg font-semibold text-slate-900">Filter Opportunities</h3>
+          <span class="ml-3 px-3 py-1 bg-emerald-50 text-emerald-700 text-xs rounded-md font-medium border border-emerald-200">
+            Advanced Search
+          </span>
+        </div>
+        
+        <!-- Clear All Button -->
+        <button 
+          *ngIf="hasActiveFilters()"
+          (click)="clearAllFilters()"
+          class="inline-flex items-center gap-2 px-4 py-2 text-sm text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-md transition-colors duration-200 border border-slate-200">
+          <lucide-icon [img]="RefreshCwIcon" [size]="16" />
+          Clear All
+        </button>
       </div>
-      
-      <div class="p-6 space-y-6">
+
+      <!-- Horizontal Filters Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-6">
         
         <!-- Funding Type Filter -->
         <div class="space-y-3">
-          <label class="block text-sm font-semibold text-neutral-800 mb-2">
+          <label class="block text-sm font-medium text-slate-700">
             Funding Type
           </label>
-          <select 
-            [value]="selectedFundingType" 
-            (change)="onFundingTypeChange($event)"
-            class="w-full px-4 py-3 bg-white border-2 border-neutral-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200 text-sm shadow-sm">
-            <option value="">All Funding Types</option>
-            <option value="equity">💼 Equity Investment</option>
-            <option value="debt">💰 Debt Financing</option>
-            <option value="grant">🎁 Grant Funding</option>
-            <option value="mezzanine">📈 Mezzanine Finance</option>
-            <option value="convertible">🔄 Convertible Notes</option>
-          </select>
+          <div class="relative">
+            <button 
+              (click)="toggleDropdown('fundingType', $event)"
+              class="w-full px-4 py-3 bg-white border border-slate-300 rounded-md text-left text-sm text-slate-700 hover:border-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors duration-200">
+              <span *ngIf="activeFundingTypes.length === 0" class="text-slate-500">Select types...</span>
+              <span *ngIf="activeFundingTypes.length === 1">{{ formatFundingType(activeFundingTypes[0]) }}</span>
+              <span *ngIf="activeFundingTypes.length > 1">{{ activeFundingTypes.length }} types selected</span>
+              <lucide-icon [img]="ChevronDownIcon" [size]="16" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400" />
+            </button>
+            
+            <div *ngIf="dropdownStates.fundingType" class="absolute z-50 w-full mt-1 bg-white border border-slate-300 rounded-md shadow-lg">
+              <div class="p-2 space-y-1 max-h-48 overflow-y-auto">
+                <label *ngFor="let type of fundingTypes" class="flex items-center p-2 hover:bg-slate-50 rounded cursor-pointer">
+                  <input 
+                    type="checkbox" 
+                    [checked]="activeFundingTypes.includes(type.value)"
+                    (change)="toggleFundingType(type.value)"
+                    class="h-4 w-4 text-emerald-600 focus:ring-emerald-500 border-slate-300 rounded">
+                  <span class="ml-3 text-sm text-slate-700">{{ type.label }}</span>
+                </label>
+              </div>
+            </div>
+          </div>
         </div>
 
         <!-- Industry Filter -->
         <div class="space-y-3">
-          <label class="block text-sm font-semibold text-neutral-800 mb-2">
-            Industry Focus
+          <label class="block text-sm font-medium text-slate-700">
+            Industry
           </label>
-          <select 
-            [value]="selectedIndustry" 
-            (change)="onIndustryChange($event)"
-            class="w-full px-4 py-3 bg-white border-2 border-neutral-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200 text-sm shadow-sm">
-            <option value="">All Industries</option>
-            <option value="technology">🚀 Technology</option>
-            <option value="manufacturing">🏭 Manufacturing</option>
-            <option value="retail">🛍️ Retail & E-commerce</option>
-            <option value="healthcare">🏥 Healthcare</option>
-            <option value="financial_services">🏦 Financial Services</option>
-            <option value="agriculture">🌾 Agriculture</option>
-            <option value="renewable_energy">⚡ Renewable Energy</option>
-            <option value="education">📚 Education</option>
-          </select>
+          <div class="relative">
+            <button 
+              (click)="toggleDropdown('industry', $event)"
+              class="w-full px-4 py-3 bg-white border border-slate-300 rounded-md text-left text-sm text-slate-700 hover:border-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors duration-200">
+              <span *ngIf="activeIndustries.length === 0" class="text-slate-500">Select industries...</span>
+              <span *ngIf="activeIndustries.length === 1">{{ formatIndustry(activeIndustries[0]) }}</span>
+              <span *ngIf="activeIndustries.length > 1">{{ activeIndustries.length }} industries selected</span>
+              <lucide-icon [img]="ChevronDownIcon" [size]="16" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400" />
+            </button>
+            
+            <div *ngIf="dropdownStates.industry" class="absolute z-50 w-full mt-1 bg-white border border-slate-300 rounded-md shadow-lg">
+              <div class="p-2 space-y-1 max-h-48 overflow-y-auto">
+                <label *ngFor="let industry of industries" class="flex items-center p-2 hover:bg-slate-50 rounded cursor-pointer">
+                  <input 
+                    type="checkbox" 
+                    [checked]="activeIndustries.includes(industry.value)"
+                    (change)="toggleIndustry(industry.value)"
+                    class="h-4 w-4 text-emerald-600 focus:ring-emerald-500 border-slate-300 rounded">
+                  <span class="ml-3 text-sm text-slate-700">{{ industry.label }}</span>
+                </label>
+              </div>
+            </div>
+          </div>
         </div>
 
         <!-- Currency Filter -->
         <div class="space-y-3">
-          <label class="block text-sm font-semibold text-neutral-800 mb-2">
+          <label class="block text-sm font-medium text-slate-700">
             Currency
           </label>
-          <select 
-            [value]="selectedCurrency" 
-            (change)="onCurrencyChange($event)"
-            class="w-full px-4 py-3 bg-white border-2 border-neutral-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200 text-sm shadow-sm">
-            <option value="">All Currencies</option>
-            <option value="ZAR">🇿🇦 South African Rand (ZAR)</option>
-            <option value="USD">🇺🇸 US Dollar (USD)</option>
-            <option value="EUR">🇪🇺 Euro (EUR)</option>
-            <option value="GBP">🇬🇧 British Pound (GBP)</option>
-          </select>
-        </div>
-
-        <!-- Amount Range Filter -->
-        <div class="space-y-3">
-          <label class="block text-sm font-semibold text-neutral-800 mb-2">
-            <lucide-icon [img]="SlidersIcon" [size]="16" class="inline mr-2" />
-            Funding Amount Range
-          </label>
-          
-          <div class="grid grid-cols-2 gap-3">
-            <div>
-              <label class="block text-xs font-medium text-neutral-600 mb-1">Minimum</label>
-              <div class="relative">
-                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 text-sm">R</span>
-                <input 
-                  type="number" 
-                  placeholder="0"
-                  [value]="minAmount"
-                  (input)="onMinAmountChange($event)"
-                  class="w-full pl-8 pr-4 py-3 bg-white border-2 border-neutral-200 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200 text-sm" />
-              </div>
-            </div>
+          <div class="relative">
+            <button 
+              (click)="toggleDropdown('currency', $event)"
+              class="w-full px-4 py-3 bg-white border border-slate-300 rounded-md text-left text-sm text-slate-700 hover:border-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors duration-200">
+              <span *ngIf="activeCurrencies.length === 0" class="text-slate-500">Select currencies...</span>
+              <span *ngIf="activeCurrencies.length === 1">{{ activeCurrencies[0] }}</span>
+              <span *ngIf="activeCurrencies.length > 1">{{ activeCurrencies.length }} currencies selected</span>
+              <lucide-icon [img]="ChevronDownIcon" [size]="16" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400" />
+            </button>
             
-            <div>
-              <label class="block text-xs font-medium text-neutral-600 mb-1">Maximum</label>
-              <div class="relative">
-                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 text-sm">R</span>
-                <input 
-                  type="number" 
-                  placeholder="Any"
-                  [value]="maxAmount"
-                  (input)="onMaxAmountChange($event)"
-                  class="w-full pl-8 pr-4 py-3 bg-white border-2 border-neutral-200 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200 text-sm" />
+            <div *ngIf="dropdownStates.currency" class="absolute z-50 w-full mt-1 bg-white border border-slate-300 rounded-md shadow-lg">
+              <div class="p-2 space-y-1">
+                <label *ngFor="let currency of currencies" class="flex items-center p-2 hover:bg-slate-50 rounded cursor-pointer">
+                  <input 
+                    type="checkbox" 
+                    [checked]="activeCurrencies.includes(currency.value)"
+                    (change)="toggleCurrency(currency.value)"
+                    class="h-4 w-4 text-emerald-600 focus:ring-emerald-500 border-slate-300 rounded">
+                  <span class="ml-3 text-sm text-slate-700">{{ currency.label }}</span>
+                </label>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- Quick Amount Presets -->
+        <!-- Amount Range - Min -->
         <div class="space-y-3">
-          <label class="block text-xs font-medium text-neutral-600">Quick Amount Ranges</label>
-          <div class="grid grid-cols-2 gap-2">
-            <button 
-              (click)="setAmountRange(0, 100000)"
-              class="px-3 py-2 text-xs bg-neutral-100 hover:bg-primary-100 hover:text-primary-700 border border-neutral-200 hover:border-primary-300 rounded-lg transition-all duration-200">
-              Under R100K
-            </button>
-            <button 
-              (click)="setAmountRange(100000, 1000000)"
-              class="px-3 py-2 text-xs bg-neutral-100 hover:bg-primary-100 hover:text-primary-700 border border-neutral-200 hover:border-primary-300 rounded-lg transition-all duration-200">
-              R100K - R1M
-            </button>
-            <button 
-              (click)="setAmountRange(1000000, 10000000)"
-              class="px-3 py-2 text-xs bg-neutral-100 hover:bg-primary-100 hover:text-primary-700 border border-neutral-200 hover:border-primary-300 rounded-lg transition-all duration-200">
-              R1M - R10M
-            </button>
-            <button 
-              (click)="setAmountRange(10000000, 0)"
-              class="px-3 py-2 text-xs bg-neutral-100 hover:bg-primary-100 hover:text-primary-700 border border-neutral-200 hover:border-primary-300 rounded-lg transition-all duration-200">
-              Over R10M
-            </button>
-          </div>
+          <label class="block text-sm font-medium text-slate-700">
+            Min Amount
+          </label>
+          <input 
+            type="number" 
+            placeholder="0"
+            [value]="minAmount"
+            (input)="onMinAmountChange($event)"
+            class="w-full px-4 py-3 bg-white border border-slate-300 rounded-md text-sm text-slate-700 placeholder-slate-400 hover:border-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors duration-200 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" />
         </div>
 
-        <!-- Action Buttons -->
-        <div class="flex gap-3 pt-4 border-t border-neutral-100">
+        <!-- Amount Range - Max -->
+        <div class="space-y-3">
+          <label class="block text-sm font-medium text-slate-700">
+            Max Amount
+          </label>
+          <input 
+            type="number" 
+            placeholder="No limit"
+            [value]="maxAmount"
+            (input)="onMaxAmountChange($event)"
+            class="w-full px-4 py-3 bg-white border border-slate-300 rounded-md text-sm text-slate-700 placeholder-slate-400 hover:border-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors duration-200 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" />
+        </div>
+      </div>
+
+      <!-- Active Filters Summary -->
+      <div *ngIf="hasActiveFilters()" class="bg-emerald-50 border border-emerald-200 rounded-md p-4">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center flex-wrap gap-3">
+            <span class="text-sm font-medium text-emerald-800">Active Filters:</span>
+            <div class="flex flex-wrap gap-2">
+              <span *ngFor="let type of activeFundingTypes" class="inline-flex items-center gap-1 px-3 py-1 bg-white text-emerald-700 rounded-md text-sm border border-emerald-200">
+                {{ formatFundingType(type) }}
+                <button (click)="toggleFundingType(type)" class="ml-1 hover:text-emerald-900 text-emerald-500 font-semibold">×</button>
+              </span>
+              <span *ngFor="let industry of activeIndustries" class="inline-flex items-center gap-1 px-3 py-1 bg-white text-emerald-700 rounded-md text-sm border border-emerald-200">
+                {{ formatIndustry(industry) }}
+                <button (click)="toggleIndustry(industry)" class="ml-1 hover:text-emerald-900 text-emerald-500 font-semibold">×</button>
+              </span>
+              <span *ngFor="let currency of activeCurrencies" class="inline-flex items-center gap-1 px-3 py-1 bg-white text-emerald-700 rounded-md text-sm border border-emerald-200">
+                {{ currency }}
+                <button (click)="toggleCurrency(currency)" class="ml-1 hover:text-emerald-900 text-emerald-500 font-semibold">×</button>
+              </span>
+              <span *ngIf="minAmount || maxAmount" class="inline-flex items-center gap-1 px-3 py-1 bg-white text-emerald-700 rounded-md text-sm border border-emerald-200">
+                {{ formatAmountRange() }}
+                <button (click)="clearAmountRange()" class="ml-1 hover:text-emerald-900 text-emerald-500 font-semibold">×</button>
+              </span>
+            </div>
+          </div>
+          
           <button 
             (click)="applyFilters.emit()"
-            class="flex-1 inline-flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-primary-500 to-primary-600 text-white rounded-xl font-semibold hover:from-primary-600 hover:to-primary-700 focus:ring-4 focus:ring-primary-200 transition-all duration-200 transform hover:-translate-y-0.5 shadow-lg">
-            <lucide-icon [img]="FilterIcon" [size]="16" />
+            class="inline-flex items-center gap-2 px-6 py-2 bg-emerald-600 text-white rounded-md font-medium hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 transition-colors duration-200 shadow-sm">
+            <lucide-icon [img]="SearchIcon" [size]="16" />
             Apply Filters
           </button>
-          
-          <button 
-            (click)="clearFilters.emit()"
-            class="px-4 py-3 bg-white border-2 border-neutral-200 text-neutral-700 rounded-xl font-medium hover:border-neutral-300 hover:bg-neutral-50 focus:ring-4 focus:ring-neutral-100 transition-all duration-200">
-            <lucide-icon [img]="RefreshCwIcon" [size]="16" />
-          </button>
-        </div>
-
-        <!-- Filter Summary -->
-        <div *ngIf="hasActiveFilters()" class="pt-4 border-t border-neutral-100">
-          <div class="bg-primary-50 border border-primary-200 rounded-lg p-3">
-            <div class="text-xs font-medium text-primary-700 mb-2">Active Filters:</div>
-            <div class="flex flex-wrap gap-1">
-              <span *ngIf="selectedFundingType" class="inline-flex items-center gap-1 px-2 py-1 bg-primary-100 text-primary-700 rounded text-xs">
-                {{ formatFundingType(selectedFundingType) }}
-                <button (click)="clearFundingType()" class="hover:text-primary-900">×</button>
-              </span>
-              <span *ngIf="selectedIndustry" class="inline-flex items-center gap-1 px-2 py-1 bg-primary-100 text-primary-700 rounded text-xs">
-                {{ formatIndustry(selectedIndustry) }}
-                <button (click)="clearIndustry()" class="hover:text-primary-900">×</button>
-              </span>
-              <span *ngIf="selectedCurrency" class="inline-flex items-center gap-1 px-2 py-1 bg-primary-100 text-primary-700 rounded text-xs">
-                {{ selectedCurrency }}
-                <button (click)="clearCurrency()" class="hover:text-primary-900">×</button>
-              </span>
-            </div>
-          </div>
         </div>
       </div>
     </div>
-  `,
-  styles: [`
-    :host {
-      display: block;
-    }
-    
-    .section-header {
-      background: linear-gradient(135deg, #059669 0%, #047857 100%);
-    }
-  `]
+  `
 })
-export class AdvancedFiltersComponent {
+export class AdvancedFiltersComponent implements OnInit, OnChanges {
+  // Input properties for backward compatibility
   @Input() selectedFundingType: string = '';
   @Input() selectedIndustry: string = '';
   @Input() selectedCurrency: string = '';
   @Input() minAmount: string = '';
   @Input() maxAmount: string = '';
 
+  // Output events for backward compatibility
   @Output() fundingTypeChange = new EventEmitter<Event>();
   @Output() industryChange = new EventEmitter<Event>();
   @Output() currencyChange = new EventEmitter<Event>();
@@ -204,19 +202,127 @@ export class AdvancedFiltersComponent {
   @Output() applyFilters = new EventEmitter<void>();
   @Output() clearFilters = new EventEmitter<void>();
 
+  // Icons
   FilterIcon = Filter;
   RefreshCwIcon = RefreshCw;
-  SlidersIcon = Sliders;
+  SearchIcon = Search;
+  ChevronDownIcon = ChevronDown;
 
-  onFundingTypeChange(event: Event) {
+  // Internal state for multi-select
+  activeFundingTypes: string[] = [];
+  activeIndustries: string[] = [];
+  activeCurrencies: string[] = [];
+
+  // Dropdown state
+  dropdownStates = {
+    fundingType: false,
+    industry: false,
+    currency: false
+  };
+
+  // Options data
+  fundingTypes = [
+    { value: 'equity', label: 'Equity' },
+    { value: 'debt', label: 'Debt' },
+    { value: 'grant', label: 'Grant' },
+    { value: 'mezzanine', label: 'Mezzanine' },
+    { value: 'convertible', label: 'Convertible' }
+  ];
+
+  industries = [
+    { value: 'technology', label: 'Technology' },
+    { value: 'manufacturing', label: 'Manufacturing' },
+    { value: 'retail', label: 'Retail' },
+    { value: 'healthcare', label: 'Healthcare' },
+    { value: 'financial_services', label: 'Financial Services' },
+    { value: 'agriculture', label: 'Agriculture' },
+    { value: 'renewable_energy', label: 'Renewable Energy' },
+    { value: 'education', label: 'Education' }
+  ];
+
+  currencies = [
+    { value: 'ZAR', label: 'ZAR (South African Rand)' },
+    { value: 'USD', label: 'USD (US Dollar)' },
+    { value: 'EUR', label: 'EUR (Euro)' },
+    { value: 'GBP', label: 'GBP (British Pound)' }
+  ];
+
+  ngOnInit() {
+    this.initializeFromInputs();
+  }
+
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes['selectedFundingType'] || changes['selectedIndustry'] || changes['selectedCurrency']) {
+      this.initializeFromInputs();
+    }
+  }
+
+  private initializeFromInputs() {
+    this.activeFundingTypes = this.selectedFundingType ? [this.selectedFundingType] : [];
+    this.activeIndustries = this.selectedIndustry ? [this.selectedIndustry] : [];
+    this.activeCurrencies = this.selectedCurrency ? [this.selectedCurrency] : [];
+  }
+
+  toggleDropdown(dropdown: keyof typeof this.dropdownStates, event?: Event) {
+    if (event) {
+      event.stopPropagation();
+    }
+    
+    // Close all other dropdowns
+    Object.keys(this.dropdownStates).forEach(key => {
+      if (key !== dropdown) {
+        this.dropdownStates[key as keyof typeof this.dropdownStates] = false;
+      }
+    });
+    
+    this.dropdownStates[dropdown] = !this.dropdownStates[dropdown];
+  }
+
+  closeAllDropdowns(event?: Event) {
+    Object.keys(this.dropdownStates).forEach(key => {
+      this.dropdownStates[key as keyof typeof this.dropdownStates] = false;
+    });
+  }
+
+  toggleFundingType(type: string) {
+    const isSelected = this.activeFundingTypes.includes(type);
+    
+    if (isSelected) {
+      this.activeFundingTypes = this.activeFundingTypes.filter(t => t !== type);
+    } else {
+      this.activeFundingTypes = [...this.activeFundingTypes, type];
+    }
+    
+    // Emit backward compatible event with first selected value or empty
+    const event = { target: { value: this.activeFundingTypes[0] || '' } } as any;
     this.fundingTypeChange.emit(event);
   }
 
-  onIndustryChange(event: Event) {
+  toggleIndustry(industry: string) {
+    const isSelected = this.activeIndustries.includes(industry);
+    
+    if (isSelected) {
+      this.activeIndustries = this.activeIndustries.filter(i => i !== industry);
+    } else {
+      this.activeIndustries = [...this.activeIndustries, industry];
+    }
+    
+    // Emit backward compatible event with first selected value or empty
+    const event = { target: { value: this.activeIndustries[0] || '' } } as any;
     this.industryChange.emit(event);
   }
 
-  onCurrencyChange(event: Event) {
+  toggleCurrency(currency: string) {
+    const isSelected = this.activeCurrencies.includes(currency);
+    
+    if (isSelected) {
+      this.activeCurrencies = this.activeCurrencies.filter(c => c !== currency);
+    } else {
+      this.activeCurrencies = [...this.activeCurrencies, currency];
+    }
+    
+    // Emit backward compatible event with first selected value or empty
+    const event = { target: { value: this.activeCurrencies[0] || '' } } as any;
     this.currencyChange.emit(event);
   }
 
@@ -228,46 +334,58 @@ export class AdvancedFiltersComponent {
     this.maxAmountChange.emit(event);
   }
 
-  setAmountRange(min: number, max: number) {
-    // Emit synthetic events to trigger parent updates
-    const minEvent = { target: { value: min.toString() } } as any;
-    const maxEvent = { target: { value: max === 0 ? '' : max.toString() } } as any;
-    
+  clearAmountRange() {
+    const minEvent = { target: { value: '' } } as any;
+    const maxEvent = { target: { value: '' } } as any;
     this.minAmountChange.emit(minEvent);
     this.maxAmountChange.emit(maxEvent);
   }
 
+  clearAllFilters() {
+    // Clear internal arrays
+    this.activeFundingTypes = [];
+    this.activeIndustries = [];
+    this.activeCurrencies = [];
+    
+    // Emit backward compatible events
+    const emptyEvent = { target: { value: '' } } as any;
+    this.fundingTypeChange.emit(emptyEvent);
+    this.industryChange.emit(emptyEvent);
+    this.currencyChange.emit(emptyEvent);
+    this.minAmountChange.emit(emptyEvent);
+    this.maxAmountChange.emit(emptyEvent);
+    
+    // Emit main clear event
+    this.clearFilters.emit();
+  }
+
   hasActiveFilters(): boolean {
-    return !!(this.selectedFundingType || this.selectedIndustry || this.selectedCurrency || this.minAmount || this.maxAmount);
-  }
-
-  clearFundingType() {
-    const event = { target: { value: '' } } as any;
-    this.fundingTypeChange.emit(event);
-  }
-
-  clearIndustry() {
-    const event = { target: { value: '' } } as any;
-    this.industryChange.emit(event);
-  }
-
-  clearCurrency() {
-    const event = { target: { value: '' } } as any;
-    this.currencyChange.emit(event);
+    return !!(
+      this.activeFundingTypes.length || 
+      this.activeIndustries.length || 
+      this.activeCurrencies.length || 
+      this.minAmount || 
+      this.maxAmount
+    );
   }
 
   formatFundingType(type: string): string {
-    const types: Record<string, string> = {
-      equity: 'Equity',
-      debt: 'Debt',
-      grant: 'Grant',
-      mezzanine: 'Mezzanine',
-      convertible: 'Convertible'
-    };
-    return types[type] || type;
+    const found = this.fundingTypes.find(t => t.value === type);
+    return found ? found.label : type;
   }
 
   formatIndustry(industry: string): string {
-    return industry.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+    const found = this.industries.find(i => i.value === industry);
+    return found ? found.label : industry.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+  }
+
+  formatAmountRange(): string {
+    const min = this.minAmount ? `R${Number(this.minAmount).toLocaleString()}` : '';
+    const max = this.maxAmount ? `R${Number(this.maxAmount).toLocaleString()}` : '';
+    
+    if (min && max) return `${min} - ${max}`;
+    if (min) return `From ${min}`;
+    if (max) return `Up to ${max}`;
+    return '';
   }
 }

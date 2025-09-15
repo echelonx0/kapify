@@ -7,7 +7,7 @@
   --color-primary-300: #86efac;
   --color-primary-400: #4ade80;
   --color-primary-500: #22c55e;
-  --color-primary-600: #16a34a;
+  --color-primary-600: #22c55e;
   --color-primary-700: #15803d;
   --color-primary-800: #166534;
   --color-primary-900: #14532d;
@@ -47,9 +47,10 @@
   box-shadow: var(--shadow-card-hover);
 }
 
+
 .card-gradient {
-  background: linear-gradient(to right, #3b82f6, #2563eb, #4f46e5);
-  padding: 0.125rem;
+  background: linear-gradient(to right, #22c55e, #22c55e, #14532d);
+  /* padding: 0.125rem; */
   border-radius: 0.75rem;
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
 }

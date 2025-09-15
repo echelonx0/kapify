@@ -1,15 +1,15 @@
-
 // insights-widget.component.ts
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { LucideAngularModule, FileText, TrendingUp, DollarSign, ExternalLink } from 'lucide-angular';
+import { LucideAngularModule, Search, FileCheck, Zap, ArrowRight } from 'lucide-angular';
+import { Router } from '@angular/router';
 
-interface InsightItem {
+interface StepItem {
   icon: any;
   iconColor: string;
+  stepNumber: number;
   title: string;
   description: string;
-  readTime: string;
 }
 
 @Component({
@@ -17,81 +17,199 @@ interface InsightItem {
   standalone: true,
   imports: [CommonModule, LucideAngularModule],
   template: `
-    <div class="section-card">
+    <div class="section-card mt-6">
       <div class="section-header">
-        <h3 class="section-title text-white flex items-center">
-          <lucide-icon [img]="FileTextIcon" [size]="18" class="mr-2" />
-          Funding Insights
+        <h3 class="section-title">
+          How to Use Kapify
         </h3>
-        <p class="section-description text-emerald-100 mt-1">
-          Expert guidance to improve your funding success
+        <p class="section-description">
+          Get funding in 3 simple steps
         </p>
       </div>
       
       <div class="p-6">
-        <div class="space-y-4">
-          <article 
-            *ngFor="let insight of insights"
-            class="group cursor-pointer p-4 rounded-lg hover:bg-neutral-50 transition-all duration-200 border border-transparent hover:border-neutral-200">
+        <div class="space-y-5">
+          <div 
+            *ngFor="let step of steps; let isLast = last"
+            class="step-item">
             
-            <div class="flex items-start space-x-3">
-              <div class="icon-container w-10 h-10 mt-0.5" [class]="insight.iconColor">
-                <lucide-icon [img]="insight.icon" [size]="16" />
+            <div class="flex items-start space-x-4">
+              <div class="step-icon-container" [class]="step.iconColor">
+                <span class="step-number">{{ step.stepNumber }}</span>
               </div>
               
               <div class="flex-1 min-w-0">
-                <div class="flex items-start justify-between">
-                  <h4 class="font-semibold text-neutral-900 group-hover:text-primary-600 transition-colors text-sm leading-tight mb-1">
-                    {{ insight.title }}
-                  </h4>
-                  <lucide-icon [img]="ExternalLinkIcon" [size]="14" class="text-neutral-400 group-hover:text-primary-500 transition-colors flex-shrink-0 ml-2 mt-0.5" />
-                </div>
-                <p class="text-xs text-neutral-600 leading-relaxed mb-2">{{ insight.description }}</p>
-                <div class="text-xs text-neutral-500">{{ insight.readTime }}</div>
+                <h4 class="step-title">
+                  {{ step.title }}
+                </h4>
+                <p class="step-description">{{ step.description }}</p>
               </div>
             </div>
-          </article>
+            
+            <div *ngIf="!isLast" class="step-connector">
+              <lucide-icon [img]="ArrowRightIcon" [size]="16" class="step-arrow" />
+            </div>
+          </div>
         </div>
         
-        <div class="mt-6 pt-4 border-t border-neutral-100">
-          <button class="w-full text-center py-2 text-sm font-medium text-primary-600 hover:text-primary-700 transition-colors">
-            View All Resources →
+        <div class="cta-section">
+          <button class="cta-button" (click)="startRegistration()">
+            Start Your Funding Journey →
           </button>
         </div>
       </div>
     </div>
   `,
   styles: [`
+    .section-card {
+      background: white;
+      border-radius: 0.75rem;
+      box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+      overflow: hidden;
+    }
+    
     .section-header {
       background: linear-gradient(135deg, #059669 0%, #047857 100%);
+      padding: 1.5rem;
+    }
+    
+    .section-title {
+      font-size: 1.125rem;
+      font-weight: 600;
+      color: white !important;
+      margin: 0;
+    }
+    
+    .section-description {
+      color: rgba(255, 255, 255, 0.9) !important;
+      margin: 0.25rem 0 0 0;
+      font-size: 0.875rem;
+    }
+    
+    .step-item {
+      position: relative;
+      padding-bottom: 1.25rem;
+    }
+    
+    .step-item:last-child {
+      padding-bottom: 0;
+    }
+    
+    .step-icon-container {
+      width: 2.5rem;
+      height: 2.5rem;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-weight: 600;
+      font-size: 0.875rem;
+    }
+    
+    .step-icon-container.blue {
+      background-color: rgb(59 130 246);
+      color: white;
+    }
+    
+    .step-icon-container.green {
+      background-color: rgb(34 197 94);
+      color: white;
+    }
+    
+    .step-icon-container.orange {
+      background-color: rgb(249 115 22);
+      color: white;
+    }
+    
+    .step-number {
+      font-weight: 700;
+    }
+    
+    .step-title {
+      font-weight: 600;
+      color: rgb(17 24 39) !important;
+      font-size: 0.875rem;
+      line-height: 1.25;
+      margin: 0 0 0.25rem 0;
+    }
+    
+    .step-description {
+      color: rgb(75 85 99) !important;
+      font-size: 0.75rem;
+      line-height: 1.5;
+      margin: 0;
+    }
+    
+    .step-connector {
+      position: absolute;
+      left: 1.25rem;
+      top: 2.5rem;
+      transform: translateX(-50%);
+      padding: 0.5rem 0;
+    }
+    
+    .step-arrow {
+      color: rgb(156 163 175);
+      transform: rotate(90deg);
+    }
+    
+    .cta-section {
+      margin-top: 1.5rem;
+      padding-top: 1rem;
+      border-top: 1px solid rgb(229 231 235);
+    }
+    
+    .cta-button {
+      width: 100%;
+      text-align: center;
+      padding: 0.75rem;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: rgb(5 150 105) !important;
+      background: transparent;
+      border: none;
+      border-radius: 0.5rem;
+      transition: all 0.2s;
+      cursor: pointer;
+    }
+    
+    .cta-button:hover {
+      color: rgb(4 120 87) !important;
+      background-color: rgb(5 150 105 / 0.05);
     }
   `]
 })
 export class InsightsWidgetComponent {
-  FileTextIcon = FileText;
-  ExternalLinkIcon = ExternalLink;
+  ArrowRightIcon = ArrowRight;
 
-  insights: InsightItem[] = [
+  constructor(private router: Router) {}
+
+  steps: StepItem[] = [
     {
-      icon: FileText,
+      icon: Search,
       iconColor: 'blue',
-      title: 'Preparing Your Funding Application',
-      description: 'Essential documents and strategies for a winning application',
-      readTime: '5 min read'
+      stepNumber: 1,
+      title: 'Browse Funding Opportunities',
+      description: 'Explore vetted funding options tailored to your business needs'
     },
     {
-      icon: TrendingUp,
+      icon: FileCheck,
       iconColor: 'green',
-      title: 'Top Grant Programs in 2025',
-      description: 'Latest government and private funding opportunities',
-      readTime: '3 min read'
+      stepNumber: 2,
+      title: 'Apply with Expert Assistance',
+      description: 'Get guided support through the application process'
     },
     {
-      icon: DollarSign,
-      iconColor: 'neutral',
-      title: 'Equity vs Debt: Making the Right Choice',
-      description: 'Strategic comparison for growth-stage businesses',
-      readTime: '7 min read'
+      icon: Zap,
+      iconColor: 'orange',
+      stepNumber: 3,
+      title: 'Receive Quick Decisions',
+      description: 'Get fast responses and funding approvals'
     }
   ];
+
+  startRegistration() {
+    this.router.navigate(['/register'], { queryParams: { userType: 'sme' } });
+  }
 }

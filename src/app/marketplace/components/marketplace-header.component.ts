@@ -1,4 +1,4 @@
-// marketplace-header.component.ts
+// marketplace-header.component.ts - Updated for Seamless Blend
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { LucideAngularModule, Zap, TrendingUp, Users } from 'lucide-angular';
@@ -8,7 +8,7 @@ import { LucideAngularModule, Zap, TrendingUp, Users } from 'lucide-angular';
   standalone: true,
   imports: [CommonModule, LucideAngularModule],
   template: `
-    <div class="relative overflow-hidden mb-8">
+    <div class="relative overflow-hidden">
       <!-- Background Pattern -->
       <div class="absolute inset-0 bg-gradient-to-r from-primary-600 via-primary-500 to-primary-400 opacity-90"></div>
       <div class="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHZpZXdCb3g9IjAgMCAyMCAyMCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMTAiIGN5PSIxMCIgcj0iMSIgZmlsbD0iIzAwMCIgZmlsbC1vcGFjaXR5PSIwLjEiLz4KPC9zdmc+')] opacity-20"></div>
@@ -53,13 +53,6 @@ import { LucideAngularModule, Zap, TrendingUp, Users } from 'lucide-angular';
             </div>
           </div>
         </div>
-      </div>
-      
-      <!-- Bottom Wave -->
-      <div class="absolute bottom-0 left-0 right-0">
-        <svg viewBox="0 0 1440 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M0 48h1440V0c-120 32-240 48-360 48S600 32 480 32 240 16 120 16 0 32 0 48z" fill="rgb(250, 250, 250)"/>
-        </svg>
       </div>
     </div>
   `,
