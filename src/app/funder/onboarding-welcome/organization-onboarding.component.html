@@ -1,0 +1,143 @@
+<div class="h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 overflow-hidden">
+  
+  <!-- Main Container -->
+  <div class="h-full flex flex-col lg:flex-row">
+    
+    <!-- Main Content Area -->
+    <div class="flex-1 flex flex-col min-w-0">
+      
+      <!-- Mobile Header Component -->
+      <app-mobile-header
+        [greeting]="getGreeting()"
+        [userName]="getUserName()"
+        [currentDate]="getCurrentDateFormatted()"
+        [userInitials]="getUserInitials()"
+      />
+
+      <!-- Content Router -->
+      <div class="flex-1 overflow-hidden">
+        @switch (currentView()) {
+          
+          @case ('setup') {
+            <app-setup-state
+              (startSetup)="startSetup()"
+              (loadExisting)="loadFromExisting()"
+            />
+          }
+
+          @case ('ready-verification') {
+            <app-verification-ready-state
+              [onboardingState]="onboardingState()"
+              [isSaving]="onboardingService.isSaving()"
+              [completionPercentage]="getCompletionPercentage()"
+              (requestVerification)="requestVerification()"
+              (skipVerification)="skipVerification()"
+              (createOpportunity)="createFirstOpportunity()"
+              (goToDashboard)="proceedToDashboard()"
+            />
+          }
+
+          @case ('pending-verification') {
+            <app-pending-verification-state
+              [verificationDate]="getVerificationDate()"
+              (goToDashboard)="proceedToDashboard()"
+              (createOpportunity)="createFirstOpportunity()"
+            />
+          }
+
+          @case ('verified') {
+            <app-verified-state
+              [verificationDate]="getVerificationDate()"
+              (createOpportunity)="createFirstOpportunity()"
+              (browseSMEs)="browseSMEs()"
+              (goToDashboard)="proceedToDashboard()"
+            />
+          }
+
+          @case ('rejected') {
+            <!-- Rejected State - Inline for now -->
+            <div class="h-full overflow-hidden flex items-center">
+              <div class="w-full max-w-3xl mx-auto text-center px-4 lg:px-8">
+                
+                <div class="w-20 h-20 bg-gradient-to-br from-red-500 to-rose-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
+                  <lucide-icon [img]="AlertCircleIcon" [size]="36" class="text-white" />
+                </div>
+                
+                <h1 class="text-2xl lg:text-3xl font-bold text-slate-900 mb-4">Verification Needs Attention</h1>
+                <p class="text-base lg:text-lg text-slate-600 mb-6">
+                  We need additional information to complete your verification. This is common and easily resolved.
+                </p>
+
+                <!-- Issue Details -->
+                <div class="bg-red-50 border border-red-200 rounded-2xl p-4 lg:p-6 mb-4">
+                  <h3 class="text-lg font-semibold text-red-900 mb-3">What needs to be updated:</h3>
+                  <div class="text-left space-y-2">
+                    <div class="flex items-start space-x-3">
+                      <div class="w-6 h-6 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <lucide-icon [img]="AlertCircleIcon" [size]="14" class="text-red-600" />
+                      </div>
+                      <div>
+                        <h4 class="font-semibold text-red-900">Documentation</h4>
+                        <p class="text-sm text-red-700">Please provide clearer copies of registration documents</p>
+                      </div>
+                    </div>
+                    
+                    <div class="flex items-start space-x-3">
+                      <div class="w-6 h-6 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <lucide-icon [img]="AlertCircleIcon" [size]="14" class="text-red-600" />
+                      </div>
+                      <div>
+                        <h4 class="font-semibold text-red-900">Contact Verification</h4>
+                        <p class="text-sm text-red-700">We need to verify your business phone number</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="space-y-3 mb-4">
+                  <button 
+                    class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-6 rounded-lg transition-colors"
+                    (click)="editOrganization()"
+                  >
+                    Update Information
+                  </button>
+                  
+                  <button 
+                    class="w-full border border-slate-300 hover:border-slate-400 text-slate-700 font-medium py-3 px-6 rounded-lg transition-colors"
+                    (click)="skipVerification()"
+                  >
+                    Continue Without Verification
+                  </button>
+                </div>
+
+                <!-- Support Contact -->
+                <div class="bg-blue-50 border border-blue-200 rounded-xl p-4">
+                  <h4 class="font-semibold text-blue-900 mb-2">Need Help?</h4>
+                  <p class="text-sm text-blue-800 mb-3">
+                    Our verification team is here to help you through this process.
+                  </p>
+                  <button class="text-sm text-blue-600 hover:text-blue-700 font-medium">
+                    Contact Support Team
+                  </button>
+                </div>
+              </div>
+            </div>
+          }
+        }
+      </div>
+    </div>
+  </div>
+
+  <!-- Error Display -->
+  @if (onboardingService.error()) {
+    <div class="fixed bottom-6 right-6 max-w-sm z-50">
+      <div class="bg-red-50 border border-red-200 rounded-xl p-4 shadow-lg">
+        <div class="flex items-start space-x-3">
+          <lucide-icon [img]="AlertCircleIcon" [size]="16" class="text-red-600 flex-shrink-0 mt-0.5" />
+          <p class="text-sm text-red-800">{{ onboardingService.error() }}</p>
+        </div>
+      </div>
+    </div>
+  }
+</div>

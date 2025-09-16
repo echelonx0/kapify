@@ -147,67 +147,7 @@ constructor() {
     };
   }
 
-  // ===============================
-// NEW: Helper method to update existing organization
-// ===============================
-
-private updateExistingOrganization(orgId: string, data: Partial<FunderOnboardingData>): Observable<{ success: boolean; organizationId?: string }> {
-  const orgUpdates = {
-    name: data.name,
-    description: data.description || null,
-    organization_type: data.organizationType || 'investment_fund',
-    status: data.status || 'active',
-    website: data.website || null,
-    logo_url: data.logoUrl || null,
-    legal_name: data.legalName || null,
-    registration_number: data.registrationNumber || null,
-    tax_number: data.taxNumber || null,
-    founded_year: data.foundedYear || null,
-    employee_count: this.parseEmployeeCount(data.employeeCount) || null,
-    assets_under_management: data.assetsUnderManagement || null,
-    email: data.email || null,
-    phone: data.phone || null,
-    address_line1: data.addressLine1 || null,
-    address_line2: data.addressLine2 || null,
-    city: data.city || null,
-    province: data.province || null,
-    postal_code: data.postalCode || null,
-    country: data.country || 'South Africa',
-    updated_at: new Date().toISOString()
-  };
-
-  return from(
-    this.supabaseService.from('organizations')
-      .update(orgUpdates)
-      .eq('id', orgId)
-      .select()
-      .single()
-  ).pipe(
-    tap(({ data: orgResult, error: orgError }) => {
-      if (orgError) throw orgError;
-      
-      // Update local data with result
-      this.organizationData.update(current => ({
-        ...current,
-        id: orgResult.id
-      }));
-      this.saveToLocalStorage();
-      this.lastSavedToDatabase.set(new Date());
-      this.updateStateFromData();
-    }),
-    switchMap(() => of({ success: true, organizationId: orgId })),
-    catchError(error => {
-      console.error('Save failed:', error);
-      this.error.set(error.message || 'Failed to save organization');
-      this.isSaving.set(false);
-      return throwError(() => error);
-    }),
-    tap(() => {
-      this.isSaving.set(false);
-      console.log('Organization updated successfully');
-    })
-  );
-}
+ 
 
 // ===============================
 // NEW: Method to check if user has existing organization
@@ -235,34 +175,144 @@ getOrganizationStatus(): 'loading' | 'existing' | 'new' | 'error' {
   return 'new';
 }
  
+ 
+// 1. Enhanced saveToDatabase method with detailed logging
 saveToDatabase(): Observable<{ success: boolean; organizationId?: string }> {
+  console.log('🔍 DEBUG: saveToDatabase() called');
+  
   const user = this.authService.user();
+  console.log('🔍 DEBUG: User check:', !!user, user?.id);
+  
   if (!user) {
+    console.log('❌ DEBUG: No user found');
     this.error.set('Please log in to save');
     return throwError(() => new Error('Not authenticated'));
   }
 
   const data = this.organizationData();
+  console.log('🔍 DEBUG: Organization data:', {
+    hasName: !!data.name?.trim(),
+    hasId: !!data.id,
+    name: data.name,
+    id: data.id
+  });
+  
   if (!data.name?.trim()) {
+    console.log('❌ DEBUG: No organization name');
     this.error.set('Organization name is required');
     return throwError(() => new Error('Name required'));
   }
 
   this.isSaving.set(true);
   this.error.set(null);
+  console.log('🔍 DEBUG: Set isSaving to true');
 
   // Check if user has existing organization
   const existingOrgId = this.authService.getCurrentUserOrganizationId();
+  console.log('🔍 DEBUG: Existing org ID from auth service:', existingOrgId);
   
   if (existingOrgId) {
+    console.log('🔍 DEBUG: Calling updateExistingOrganization with ID:', existingOrgId);
     // UPDATE existing organization
     return this.updateExistingOrganization(existingOrgId, data);
   } else {
+    console.log('❌ DEBUG: No existing organization ID found');
     // This shouldn't happen based on your data, but handle gracefully
     this.error.set('No organization found - please contact support');
     this.isSaving.set(false);
     return throwError(() => new Error('Organization missing'));
   }
+}
+
+// 2. Enhanced updateExistingOrganization with detailed logging
+private updateExistingOrganization(orgId: string, data: Partial<FunderOnboardingData>): Observable<{ success: boolean; organizationId?: string }> {
+  console.log('🔍 DEBUG: updateExistingOrganization called with:', {
+    orgId,
+    dataKeys: Object.keys(data),
+    hasName: !!data.name
+  });
+
+  const orgUpdates = {
+    name: data.name,
+    description: data.description || null,
+    organization_type: data.organizationType || 'investment_fund',
+    status: data.status || 'active',
+    website: data.website || null,
+    logo_url: data.logoUrl || null,
+    legal_name: data.legalName || null,
+    registration_number: data.registrationNumber || null,
+    tax_number: data.taxNumber || null,
+    founded_year: data.foundedYear || null,
+    employee_count: this.parseEmployeeCount(data.employeeCount) || null,
+    assets_under_management: data.assetsUnderManagement || null,
+    email: data.email || null,
+    phone: data.phone || null,
+    address_line1: data.addressLine1 || null,
+    address_line2: data.addressLine2 || null,
+    city: data.city || null,
+    province: data.province || null,
+    postal_code: data.postalCode || null,
+    country: data.country || 'South Africa',
+    updated_at: new Date().toISOString()
+  };
+
+  console.log('🔍 DEBUG: Prepared org updates:', orgUpdates);
+  console.log('🔍 DEBUG: About to call Supabase update...');
+
+  return from(
+    this.supabaseService.from('organizations')
+      .update(orgUpdates)
+      .eq('id', orgId)
+      .select()
+      .single()
+  ).pipe(
+    tap(({ data: orgResult, error: orgError }) => {
+      console.log('🔍 DEBUG: Supabase response received:', {
+        hasData: !!orgResult,
+        hasError: !!orgError,
+        errorMessage: orgError?.message
+      });
+      
+      if (orgError) {
+        console.error('❌ DEBUG: Supabase error:', orgError);
+        throw orgError;
+      }
+      
+      console.log('✅ DEBUG: Supabase update successful:', orgResult);
+      
+      // Update local data with result
+      this.organizationData.update(current => ({
+        ...current,
+        id: orgResult.id
+      }));
+      this.saveToLocalStorage();
+      this.lastSavedToDatabase.set(new Date());
+      this.updateStateFromData();
+    }),
+    switchMap(() => {
+      console.log('🔍 DEBUG: Switching to success response');
+      return of({ success: true, organizationId: orgId });
+    }),
+    catchError(error => {
+      console.error('❌ DEBUG: Catch block triggered:', error);
+      this.error.set(error.message || 'Failed to save organization');
+      this.isSaving.set(false);
+      return throwError(() => error);
+    }),
+    tap(() => {
+      console.log('✅ DEBUG: Final tap - setting isSaving to false');
+      this.isSaving.set(false);
+      console.log('Organization updated successfully');
+    })
+  );
+}
+
+// 3. Add debugging method to check auth service
+debugAuthState(): void {
+  console.log('🔍 DEBUG: Auth Service State Check');
+  console.log('User:', this.authService.user());
+  console.log('Organization ID:', this.authService.getCurrentUserOrganizationId());
+  console.log('Current org data:', this.organizationData());
 }
 
 checkOnboardingStatus(): Observable<OnboardingState> {

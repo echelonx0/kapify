@@ -1,57 +1,57 @@
- // src/app/funder/components/organization-onboarding.component.ts - FIXED LOGIC
-import { Component, signal, OnInit, OnDestroy, inject } from '@angular/core';
+// src/app/funder/components/organization-onboarding.component.ts
+import { Component, signal, OnInit, OnDestroy, inject, computed } from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
 import { Subject, takeUntil } from 'rxjs';
-import { 
-  LucideAngularModule, 
-  Building2, 
-  CheckCircle, 
-  AlertCircle,
-  ArrowRight,
-  Shield,
-  FileText,
-  Sparkles,
-  Upload
-} from 'lucide-angular';
-import { UiButtonComponent } from '../../shared/components';
+import { LucideAngularModule, AlertCircle } from 'lucide-angular';
+import { AuthService } from '../../auth/production.auth.service';
 import { FunderOnboardingService, OnboardingState } from '../services/funder-onboarding.service';
+import { MobileHeaderComponent } from './components/mobile-header.component';
+import { PendingVerificationStateComponent } from './components/pending-verification.component';
+import { SetupStateComponent } from './components/setup-state.component';
+ 
+import { VerificationReadyStateComponent } from './components/verification-ready-state.component';
+import { VerifiedStateComponent } from './components/verified.component';
+
+// Import child components
+ 
+
+type WelcomeView = 'setup' | 'ready-verification' | 'pending-verification' | 'verified' | 'rejected';
 
 @Component({
   selector: 'app-organization-onboarding',
   standalone: true,
   imports: [
     CommonModule,
-    FormsModule,
-    UiButtonComponent,
- 
-    LucideAngularModule
- 
+    LucideAngularModule,
+   
+    MobileHeaderComponent,
+    SetupStateComponent,
+    VerificationReadyStateComponent,
+    PendingVerificationStateComponent,
+    VerifiedStateComponent
   ],
-  templateUrl: 'funder-organization-onboarding.component.html'
+  templateUrl: 'organization-onboarding.component.html',
+  styleUrls: ['./organisation-onboarding.component.css']
 })
 export class OrganizationOnboardingComponent implements OnInit, OnDestroy {
   private router = inject(Router);
+  private authService = inject(AuthService);
   protected onboardingService = inject(FunderOnboardingService);
   private destroy$ = new Subject<void>();
 
   // Icons
-  Building2Icon = Building2;
-  CheckCircleIcon = CheckCircle;
   AlertCircleIcon = AlertCircle;
-  ArrowRightIcon = ArrowRight;
-  ShieldIcon = Shield;
-  FileTextIcon = FileText;
-  SparklesIcon = Sparkles;
-  UploadIcon = Upload;   // ADD THIS
 
-  // State - FIXED: Start with 'form' view and update based on actual data
-  currentView = signal<'form' | 'success' | 'verification' | 'complete'>('form');
+  // State
+  currentView = signal<WelcomeView>('setup');
   onboardingState = signal<OnboardingState | null>(null);
 
+  // Computed properties for dynamic content
+  currentTime = computed(() => new Date());
+  
   ngOnInit() {
-    console.log('🎯 OrganizationOnboardingComponent initialized');
+    console.log('🎯 Modular OrganizationOnboardingComponent initialized');
     this.checkOnboardingStatus();
     this.setupSubscriptions();
   }
@@ -62,69 +62,120 @@ export class OrganizationOnboardingComponent implements OnInit, OnDestroy {
   }
 
   private checkOnboardingStatus() {
-    console.log('🔍 OrganizationOnboardingComponent checking onboarding status');
     this.onboardingService.checkOnboardingStatus().subscribe();
   }
 
   private setupSubscriptions() {
-    console.log('🔗 OrganizationOnboardingComponent setting up subscriptions');
     this.onboardingService.onboardingState$
       .pipe(takeUntil(this.destroy$))
       .subscribe(state => {
-        console.log('📥 OrganizationOnboardingComponent received state update:', {
-          currentStep: state.currentStep,
-          completionPercentage: state.completionPercentage,
-          hasOrganization: !!state.organization,
-          isComplete: state.isComplete,
-          canCreateOpportunities: state.canCreateOpportunities,
-          organizationData: state.organization ? 'exists' : 'none'
-        });
-        
         this.onboardingState.set(state);
         this.updateViewBasedOnState(state);
       });
   }
 
-  //  More precise logic for determining view
   private updateViewBasedOnState(state: OnboardingState) {
-    console.log('🎯 Updating view based on state...');
-    console.log('🎯 State analysis:', {
-      isComplete: state.isComplete,
-      canCreateOpportunities: state.canCreateOpportunities,
-      hasOrganization: !!state.organization,
-      completionPercentage: state.completionPercentage,
-      currentStep: state.currentStep
-    });
-
-    //   Check if organization actually has data, not just if object exists
-    const hasValidOrganization = state.organization && 
-      state.organization.name && 
-      state.organization.email && 
-      state.organization.phone;
-
-    console.log('🎯 Organization data check:', {
-      organizationExists: !!state.organization,
-      hasName: !!state.organization?.name,
-      hasEmail: !!state.organization?.email,
-      hasPhone: !!state.organization?.phone,
-      hasValidOrganization
-    });
-
-    if (state.isComplete && state.organization?.isVerified) {
-      console.log('🎯 Setting view to: complete (verified)');
-      this.currentView.set('complete');
-    } else if (hasValidOrganization && state.canCreateOpportunities) {
-      console.log('🎯 Setting view to: verification (ready for verification)');
-      this.currentView.set('verification');
-    } else if (hasValidOrganization) {
-      console.log('🎯 Setting view to: success (organization created but incomplete)');
-      this.currentView.set('success');
+    const org = state.organization;
+    
+    if (!org || !org.name || !state.canCreateOpportunities) {
+      this.currentView.set('setup');
+    } else if (org.status === 'pending_verification') {
+      this.currentView.set('pending-verification');
+    } else if (org.isVerified) {
+      this.currentView.set('verified');
+    } else if (org.status === 'verification_rejected') {
+      this.currentView.set('rejected');
+    } else if (state.canCreateOpportunities) {
+      this.currentView.set('ready-verification');
     } else {
-      console.log('🎯 Setting view to: form (no valid organization data)');
-      this.currentView.set('form');
+      this.currentView.set('setup');
     }
+  }
 
-    console.log('🎯 Final view set to:', this.currentView());
+  // ===============================
+  // DYNAMIC CONTENT METHODS
+  // ===============================
+
+  getGreeting(): string {
+    const hour = this.currentTime().getHours();
+    if (hour < 12) return 'Good morning';
+    if (hour < 18) return 'Good afternoon';
+    return 'Good evening';
+  }
+
+  getUserName(): string {
+    const user = this.authService.user();
+    return user?.firstName || user?.email?.split('@')[0] || 'there';
+  }
+
+  getUserInitials(): string {
+    const user = this.authService.user();
+    if (user?.firstName && user?.lastName) {
+      return `${user.firstName[0]}${user.lastName[0]}`.toUpperCase();
+    }
+    if (user?.firstName) {
+      return user.firstName.slice(0, 2).toUpperCase();
+    }
+    if (user?.email) {
+      return user.email.slice(0, 2).toUpperCase();
+    }
+    return 'U';
+  }
+
+  getCurrentDateFormatted(): string {
+    return this.currentTime().toLocaleDateString('en-US', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  }
+
+  getVerificationDate(): string {
+    const org = this.onboardingState()?.organization;
+    if (org?.verificationDate) {
+      return new Date(org.verificationDate).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
+    }
+    return 'recently';
+  }
+
+  getStatusText(): string {
+    const org = this.onboardingState()?.organization;
+    if (!org) return 'Setup Required';
+    
+    switch (org.status) {
+      case 'pending_verification': return 'Under Review';
+      case 'verification_rejected': return 'Needs Update';
+      default: return org.isVerified ? 'Verified' : 'Active';
+    }
+  }
+
+  getStatusBadgeClass(): string {
+    const org = this.onboardingState()?.organization;
+    if (!org) return 'px-2 py-1 text-xs font-medium bg-slate-100 text-slate-700 rounded-full';
+    
+    const baseClasses = 'px-2 py-1 text-xs font-medium rounded-full';
+    
+    if (org.isVerified) {
+      return `${baseClasses} bg-green-100 text-green-800`;
+    }
+    
+    switch (org.status) {
+      case 'pending_verification':
+        return `${baseClasses} bg-orange-100 text-orange-800`;
+      case 'verification_rejected':
+        return `${baseClasses} bg-red-100 text-red-800`;
+      default:
+        return `${baseClasses} bg-blue-100 text-blue-800`;
+    }
+  }
+
+  getCompletionPercentage(): number {
+    return this.onboardingService.getStepProgress().percentage;
   }
 
   // ===============================
@@ -132,13 +183,13 @@ export class OrganizationOnboardingComponent implements OnInit, OnDestroy {
   // ===============================
 
   startSetup() {
-    console.log('🚀 Starting organization setup');
+    console.log('🚀 Starting enhanced organization setup');
     this.onboardingService.setCurrentStep('organization-info');
     this.router.navigate(['/funder/onboarding/organization-info']);
   }
 
   loadFromExisting() {
-    console.log('📂 Loading from existing data');
+    console.log('📂 Loading from existing with enhanced detection');
     this.checkOnboardingStatus();
   }
 
@@ -149,13 +200,18 @@ export class OrganizationOnboardingComponent implements OnInit, OnDestroy {
   }
 
   proceedToDashboard() {
-    console.log('🏠 Proceeding to dashboard');
+    console.log('🏠 Proceeding to enhanced dashboard');
     this.router.navigate(['/funder/dashboard']);
   }
 
   createFirstOpportunity() {
     console.log('💼 Creating first opportunity');
-    this.router.navigate(['/funding/opportunities/create']); 
+    this.router.navigate(['/funding/opportunities/create']);
+  }
+
+  browseSMEs() {
+    console.log('👥 Browsing SMEs');
+    this.router.navigate(['/funder/browse-smes']);
   }
 
   skipVerification() {
@@ -164,61 +220,13 @@ export class OrganizationOnboardingComponent implements OnInit, OnDestroy {
   }
 
   requestVerification() {
-    console.log('🛡️ Requesting verification');
+    console.log('🛡️ Requesting verification with enhanced flow');
     this.onboardingService.requestVerification().subscribe({
       next: (result) => {
         console.log('✅ Verification requested successfully:', result.message);
-        this.currentView.set('complete');
+        this.currentView.set('pending-verification');
       },
       error: (error) => console.error('❌ Failed to request verification:', error)
     });
-  }
-
-  // ===============================
-  // FORM VALIDATION & SAVE
-  // ===============================
-
-  isFormValid(): boolean {
-    const data = this.onboardingService.getCurrentOrganization();
-    const isValid = !!(
-      data.name &&
-      data.description &&
-      data.organizationType &&
-      data.email &&
-      data.phone &&
-      data.addressLine1 &&
-      data.city &&
-      data.province &&
-      data.country
-    );
-    
-    console.log('🔍 Form validation result:', isValid);
-    return isValid;
-  }
-
-  saveOrganization() {
-    console.log('💾 Saving organization from welcome component');
-    
-    if (!this.isFormValid()) {
-      console.warn('⚠️ Form is not valid, cannot save');
-      return;
-    }
-
-    this.onboardingService.saveToDatabase().subscribe({
-      next: (result) => {
-        console.log('✅ Organization saved successfully from welcome component:', result);
-        this.currentView.set('success');
-        this.checkOnboardingStatus();
-      },
-      error: (error) => {
-        console.error('❌ Failed to save organization from welcome component:', error);
-      }
-    });
-  }
-
-  saveOrganizationWithData(organizationData: any) {
-    console.log('💾 Saving organization with provided data:', organizationData);
-    this.onboardingService.updateOrganizationData(organizationData);
-    this.saveOrganization();
   }
 }

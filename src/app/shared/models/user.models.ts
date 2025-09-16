@@ -114,7 +114,7 @@ export interface Organization {
   
   // Core fields
   organizationType: OrganizationType;
-  status: 'active' | 'inactive' | 'pending_verification' | 'suspended';
+  status: 'active' | 'inactive' | 'pending_verification' | 'suspended' | 'verification_rejected';
   website?: string;
   logoUrl?: string;
   

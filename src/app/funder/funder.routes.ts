@@ -44,7 +44,7 @@ export const funderRoutes: Routes = [
           {
             path: 'verification',
             loadComponent: () =>
-              import('./components/verification-form.component').then(m => m.VerificationFormComponent)
+              import('./components/verification/verification.component').then(m => m.VerificationFormComponent)
           }
         ]
       },
