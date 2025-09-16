@@ -1,5 +1,3 @@
- 
-
 // src/app/shared/models/user.models.ts
 export type UserType = 'sme' | 'funder' | 'admin' | 'consultant';
 export type UserStatus = 'active' | 'inactive' | 'suspended' | 'pending_verification';

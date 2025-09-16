@@ -30,14 +30,14 @@ export const funderRoutes: Routes = [
           {
             path: 'organization-info',
             loadComponent: () =>
-              import('./components/basic-info-form.component').then(m => m.BasicInfoFormComponent)
+              import('./components/basic-info/basic-info-form.component').then(m => m.BasicInfoFormComponent)
           },
           
           // STEP 2: Legal & Compliance (registration, address, scale)
           {
             path: 'legal-compliance',
             loadComponent: () =>
-              import('./components/legal-info-form.component').then(m => m.LegalInfoFormComponent)
+              import('./components/legal-info/legal-info.component').then(m => m.LegalInfoFormComponent)
           },
           
           // STEP 3: Verification (review and submit)

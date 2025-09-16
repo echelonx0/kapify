@@ -9,7 +9,7 @@ import { UiButtonComponent } from '../../../shared/components';
   standalone: true,
   imports: [CommonModule, LucideAngularModule, UiButtonComponent],
   template: `
-    <div class="h-full overflow-y-auto">
+    <div class="h-full overflow-hidden">
       <div class="p-4 lg:p-8 min-h-full flex items-center">
         <div class="w-full max-w-6xl mx-auto">
           
