@@ -1,4 +1,4 @@
-// src/app/profile/profile.routes.ts - UPDATED WITH FUNDING APPLICATION NAMING
+// src/app/profile/profile.routes.ts  
 import { Routes } from '@angular/router';
 
 export const profileRoutes: Routes = [

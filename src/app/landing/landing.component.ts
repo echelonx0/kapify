@@ -13,8 +13,8 @@ import {
   Phone,
   Mail
 } from 'lucide-angular';
-import { LandingFooterComponent } from '../shared/components/landing-footer.component';
-import { LandingHeaderComponent } from '../shared/components/landing-header.component';
+import { LandingFooterComponent } from './landing-footer.component';
+import { LandingHeaderComponent } from './landing-header.component';
 
 interface Statistic {
   value: string;

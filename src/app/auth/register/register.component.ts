@@ -272,71 +272,151 @@ private emailValidator = (control: AbstractControl) => {
     this.showConfirmPassword.set(!this.showConfirmPassword());
   }
 
-  // ===============================
-  // FORM SUBMISSION
-  // ===============================
+ 
+// onSubmit(): void {
+//   if (!this.canSubmit()) {
+//     this.markAllFieldsAsTouched();
+//     return;
+//   }
 
-  onSubmit(): void {
-    if (!this.canSubmit()) {
-      this.markAllFieldsAsTouched();
-      return;
-    }
+//   this.clearMessages();
+  
+//   const formData = this.registerForm.value;
+//   const registerData: RegisterRequest = {
+//     firstName: formData.firstName.trim(),
+//     lastName: formData.lastName.trim(),
+//     email: formData.email.toLowerCase().trim(),
+//     phone: formData.phone,
+//     password: formData.password,
+//     confirmPassword: formData.confirmPassword,
+//     userType: this.selectedUserType(),
+//     companyName: formData.companyName?.trim() || undefined,
+//     agreeToTerms: formData.agreeToTerms
+//   };
 
-    this.clearMessages();
-    
-    const formData = this.registerForm.value;
-    const registerData: RegisterRequest = {
-      firstName: formData.firstName.trim(),
-      lastName: formData.lastName.trim(),
-      email: formData.email.toLowerCase().trim(),
-      phone: formData.phone,
-      password: formData.password,
-      confirmPassword: formData.confirmPassword,
-      userType: this.selectedUserType(),
-      companyName: formData.companyName?.trim() || undefined,
-      agreeToTerms: formData.agreeToTerms
-    };
+//   console.log('Submitting registration for:', registerData.email);
 
-    console.log('Submitting registration for:', registerData.email);
+//   const registrationSubscription = this.authService.register(registerData).subscribe({
+//     next: (response) => {
+//       console.log('Registration response received:', response);
+      
+//       if (response.success && response.user) {
+//         this.success.set('Account created successfully! Redirecting...');
+//         console.log('Registration successful, navigating to dashboard');
+        
+//         setTimeout(() => {
+//           this.router.navigate(['/dashboard/welcome']);
+//         }, 1500);
+//       } else {
+//         this.error.set(response.error || 'Registration failed. Please try again.');
+//         // ✅ FIXED: Don't manually re-enable - let the loading state handle it
+//       }
+//     },
+//     error: (err) => {
+//       console.error('Registration error:', err);
+      
+//       let errorMessage = 'Registration failed. Please try again.';
+      
+//       if (err.error) {
+//         errorMessage = err.error;
+//       } else if (err.message) {
+//         errorMessage = err.message;
+//       } else if (typeof err === 'string') {
+//         errorMessage = err;
+//       }
+      
+//       if (errorMessage.includes('User already registered') || errorMessage.includes('Email already confirmed')) {
+//         errorMessage = 'An account with this email already exists. Please try logging in instead.';
+//       } else if (errorMessage.includes('Email rate limit')) {
+//         errorMessage = 'Too many registration attempts. Please wait a few minutes before trying again.';
+//       } else if (errorMessage.includes('Signup is disabled')) {
+//         errorMessage = 'Registration is temporarily disabled. Please try again later.';
+//       }
+      
+//       this.error.set(errorMessage);
+      
+//       // ✅ FIXED: Remove this line - loading state cancellation is handled by AuthService
+//       // this.registerForm.enable(); // REMOVED
+//     }
+//   });
 
-    const registrationSubscription = this.authService.register(registerData).subscribe({
-      next: (response) => {
-        console.log('Registration response received:', response);
-        
-        if (response.user) {
-          this.success.set('Account created successfully! Redirecting...');
-          console.log('Registration successful, navigating to dashboard');
-          
-          setTimeout(() => {
-            this.router.navigate(['/dashboard/welcome']);
-          }, 1500);
-        } else {
-          this.error.set(response.error || 'Registration failed. Please try again.');
-        }
-      },
-      error: (err) => {
-        console.error('Registration error:', err);
-        
-        let errorMessage = 'Registration failed. Please try again.';
-        
-        if (err.error) {
-          errorMessage = err.error;
-        } else if (err.message) {
-          errorMessage = err.message;
-        } else if (typeof err === 'string') {
-          errorMessage = err;
-        }
-        
-        this.error.set(errorMessage);
-        
-        // Re-enable form for user to try again
-        this.registerForm.enable();
-      }
-    });
+//   this.subscriptions.add(registrationSubscription);
+// }
 
-    this.subscriptions.add(registrationSubscription);
+// Update the onSubmit method in your RegisterComponent to include user-type-specific routing
+
+onSubmit(): void {
+  if (!this.canSubmit()) {
+    this.markAllFieldsAsTouched();
+    return;
   }
 
+  this.clearMessages();
+  
+  const formData = this.registerForm.value;
+  const registerData: RegisterRequest = {
+    firstName: formData.firstName.trim(),
+    lastName: formData.lastName.trim(),
+    email: formData.email.toLowerCase().trim(),
+    phone: formData.phone,
+    password: formData.password,
+    confirmPassword: formData.confirmPassword,
+    userType: this.selectedUserType(),
+    companyName: formData.companyName?.trim() || undefined,
+    agreeToTerms: formData.agreeToTerms
+  };
+
+  console.log('Submitting registration for:', registerData.email);
+
+  const registrationSubscription = this.authService.register(registerData).subscribe({
+    next: (response) => {
+      console.log('Registration response received:', response);
+      
+      if (response.success && response.user) {
+        this.success.set('Account created successfully! Redirecting...');
+        console.log('Registration successful, navigating based on user type');
+        
+        setTimeout(() => {
+          // ✅ UPDATED: Route based on user type
+          if (this.selectedUserType() === 'funder') {
+            console.log('Navigating funder to onboarding welcome');
+            this.router.navigate(['/funder/onboarding/welcome']);
+          } else {
+            console.log('Navigating SME to dashboard welcome');
+            this.router.navigate(['/dashboard/welcome']);
+          }
+        }, 1500);
+      } else {
+        this.error.set(response.error || 'Registration failed. Please try again.');
+      }
+    },
+    error: (err) => {
+      console.error('Registration error:', err);
+      
+      let errorMessage = 'Registration failed. Please try again.';
+      
+      if (err.error) {
+        errorMessage = err.error;
+      } else if (err.message) {
+        errorMessage = err.message;
+      } else if (typeof err === 'string') {
+        errorMessage = err;
+      }
+      
+      if (errorMessage.includes('User already registered') || errorMessage.includes('Email already confirmed')) {
+        errorMessage = 'An account with this email already exists. Please try logging in instead.';
+      } else if (errorMessage.includes('Email rate limit')) {
+        errorMessage = 'Too many registration attempts. Please wait a few minutes before trying again.';
+      } else if (errorMessage.includes('Signup is disabled')) {
+        errorMessage = 'Registration is temporarily disabled. Please try again later.';
+      }
+      
+      this.error.set(errorMessage);
+    }
+  });
+
+  this.subscriptions.add(registrationSubscription);
+}
   private markAllFieldsAsTouched(): void {
     Object.keys(this.registerForm.controls).forEach(key => {
       this.registerForm.get(key)?.markAsTouched();
@@ -477,4 +557,8 @@ private emailValidator = (control: AbstractControl) => {
     
     return indicators[strength];
   }
+
+  get shouldDisableForm(): boolean {
+  return this.isLoading() || this.isRegistering();
+}
 }

@@ -157,9 +157,6 @@ export class OrganizationOnboardingLayoutComponent implements OnInit {
     return this.onboardingService.getOnboardingSteps();
   }
 
-  
-
-  
 
   getCurrentStepEstimatedTime(): string {
     const currentStep = this.getStepInfo().find(step => step.id === this.onboardingService.currentStep());

@@ -184,7 +184,9 @@ export class AuthService {
   // ===============================
 
  
-// Fix 2: Synchronous loading state updates
+// Key fixes for enhanced-production.auth.service.ts
+
+// 1. Fix the register method error handling
 register(credentials: RegisterRequest): Observable<AuthOperationResult> {
   console.log('Starting enhanced registration process...');
   
@@ -212,13 +214,77 @@ register(credentials: RegisterRequest): Observable<AuthOperationResult> {
     map(result => this.mapTransactionResultToAuthResult(result)),
     catchError(error => {
       console.error('Registration failed:', error);
-      const errorResult = this.createAuthErrorResult(error);
-      return of(errorResult); // Return of() instead of throwError()
+      // FIXED: Pass the original error without converting to generic message
+      const errorResult: AuthOperationResult = {
+        user: null,
+        error: error.error || error.message || 'Registration failed. Please try again.',
+        organizationCreated: false,
+        success: false
+      };
+      return of(errorResult);
     }),
     finalize(() => {
       this.updateLoadingState({ registration: false });
     })
   );
+}
+
+// 2. Fix the login method error handling  
+login(credentials: LoginRequest): Observable<AuthOperationResult> {
+  console.log('Starting enhanced login process...');
+  
+  this.updateLoadingState({ login: true });
+
+  return from(this.performLogin(credentials.email, credentials.password)).pipe(
+    timeout(30000),
+    tap(result => {
+      if (result.user) {
+        console.log('Login completed successfully');
+      }
+    }),
+    catchError(error => {
+      console.error('Login failed:', error);
+      // FIXED: Return the actual error, don't use createAuthErrorResult which makes it generic
+      const errorResult: AuthOperationResult = {
+        user: null,
+        error: error.message || 'Login failed. Please try again.',
+        success: false
+      };
+      return of(errorResult);
+    }),
+    finalize(() => {
+      this.updateLoadingState({ login: false });
+    })
+  );
+}
+
+// 3. Improve createLoginErrorMessage to preserve specific Supabase errors
+private createLoginErrorMessage(error: any): string {
+  const message = error.message || '';
+  
+  // Check for specific Supabase error messages
+  if (message.includes('Invalid login credentials')) {
+    return 'Invalid email or password. Please check your credentials and try again.';
+  }
+  if (message.includes('Email not confirmed')) {
+    return 'Please check your email and click the confirmation link before logging in.';
+  }
+  if (message.includes('Too many requests') || message.includes('rate limit')) {
+    return 'Too many login attempts. Please wait a few minutes before trying again.';
+  }
+  if (message.includes('User not found')) {
+    return 'No account found with this email address.';
+  }
+  if (message.includes('Password')) {
+    return 'Invalid password. Please check your password and try again.';
+  }
+  
+  // Return the original error message if it's user-friendly, otherwise use a generic one
+  if (message && message.length < 100 && !message.includes('Error:')) {
+    return message;
+  }
+  
+  return 'Login failed. Please try again.';
 }
 
 
@@ -264,31 +330,7 @@ register(credentials: RegisterRequest): Observable<AuthOperationResult> {
     };
   }
 
-  // ===============================
-  // ENHANCED LOGIN
-  // ===============================
-
-  login(credentials: LoginRequest): Observable<AuthOperationResult> {
-    console.log('Starting enhanced login process...');
-    
-    this.updateLoadingState({ login: true });
-
-    return from(this.performLogin(credentials.email, credentials.password)).pipe(
-      timeout(30000), // 30 second timeout for login
-      tap(result => {
-        if (result.user) {
-          console.log('Login completed successfully');
-        }
-      }),
-      catchError(error => {
-        console.error('Login failed:', error);
-        return throwError(() => this.createAuthErrorResult(error));
-      }),
-      finalize(() => {
-        this.updateLoadingState({ login: false });
-      })
-    );
-  }
+ 
 
   private async performLogin(email: string, password: string): Promise<AuthOperationResult> {
     try {
@@ -332,18 +374,28 @@ register(credentials: RegisterRequest): Observable<AuthOperationResult> {
     }
   }
 
-  private createLoginErrorMessage(error: any): string {
-    if (error.message?.includes('Invalid login credentials')) {
-      return 'Invalid email or password. Please check your credentials and try again.';
-    }
-    if (error.message?.includes('Email not confirmed')) {
-      return 'Please check your email and click the confirmation link before logging in.';
-    }
-    if (error.message?.includes('too many requests')) {
-      return 'Too many login attempts. Please wait a few minutes before trying again.';
-    }
-    return error.message || 'Login failed. Please try again.';
+ canActivateRoute(): Observable<boolean> {
+  // If still initializing, wait for it to complete
+  if (this.isInitializing()) {
+    return new Observable<boolean>(subscriber => {
+      const checkAuth = () => {
+        if (!this.isInitializing()) {
+          subscriber.next(this.isAuthenticated());
+          subscriber.complete();
+        } else {
+          setTimeout(checkAuth, 50);
+        }
+      };
+      checkAuth();
+    }).pipe(
+      timeout(10000),
+      catchError(() => of(false))
+    );
   }
+  
+  // If not initializing, return current auth state
+  return of(this.isAuthenticated());
+}
 
   // ===============================
   // SESSION MANAGEMENT

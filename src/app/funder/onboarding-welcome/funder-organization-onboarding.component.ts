@@ -85,7 +85,7 @@ export class OrganizationOnboardingComponent implements OnInit, OnDestroy {
       });
   }
 
-  // FIXED: More precise logic for determining view
+  //  More precise logic for determining view
   private updateViewBasedOnState(state: OnboardingState) {
     console.log('🎯 Updating view based on state...');
     console.log('🎯 State analysis:', {
@@ -96,7 +96,7 @@ export class OrganizationOnboardingComponent implements OnInit, OnDestroy {
       currentStep: state.currentStep
     });
 
-    // FIXED: Check if organization actually has data, not just if object exists
+    //   Check if organization actually has data, not just if object exists
     const hasValidOrganization = state.organization && 
       state.organization.name && 
       state.organization.email && 

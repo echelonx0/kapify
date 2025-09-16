@@ -154,45 +154,190 @@ export class RegistrationTransactionService {
   // INDIVIDUAL TRANSACTION PHASES
   // ===============================
 
-  private async createAuthUser(credentials: RegisterRequest): Promise<{ user: User }> {
-    try {
-      const { data: authData, error: authError } = await Promise.race([
-        this.supabaseService.auth.signUp({
-          email: credentials.email,
-          password: credentials.password,
-          options: {
-            data: {
-              first_name: credentials.firstName,
-              last_name: credentials.lastName,
-              phone: credentials.phone,
-              user_type: credentials.userType,
-              company_name: credentials.companyName
-            }
+  // private async createAuthUser(credentials: RegisterRequest): Promise<{ user: User }> {
+  //   try {
+  //     const { data: authData, error: authError } = await Promise.race([
+  //       this.supabaseService.auth.signUp({
+  //         email: credentials.email,
+  //         password: credentials.password,
+  //         options: {
+  //           data: {
+  //             first_name: credentials.firstName,
+  //             last_name: credentials.lastName,
+  //             phone: credentials.phone,
+  //             user_type: credentials.userType,
+  //             company_name: credentials.companyName
+  //           }
+  //         }
+  //       }),
+  //       new Promise<never>((_, reject) => 
+  //         setTimeout(() => reject(new Error('Auth user creation timeout')), 15000)
+  //       )
+  //     ]);
+
+  //     if (authError) {
+  //       throw new Error(`Authentication failed: ${authError.message}`);
+  //     }
+
+  //     if (!authData.user) {
+  //       throw new Error('User creation failed - no user returned from Supabase');
+  //     }
+
+  //     console.log('Auth user created successfully:', authData.user.id);
+  //     return { user: authData.user };
+
+  //   } catch (error: any) {
+  //     if (error.message?.includes('timeout')) {
+  //       throw new Error('User creation timed out. Please check your connection and try again.');
+  //     }
+  //     throw error;
+  //   }
+  // }
+
+  // Key fixes for registration-transaction.service.ts
+
+// 1. Fix createAuthUser to preserve specific Supabase errors
+private async createAuthUser(credentials: RegisterRequest): Promise<{ user: User }> {
+  try {
+    const { data: authData, error: authError } = await Promise.race([
+      this.supabaseService.auth.signUp({
+        email: credentials.email,
+        password: credentials.password,
+        options: {
+          data: {
+            first_name: credentials.firstName,
+            last_name: credentials.lastName,
+            phone: credentials.phone,
+            user_type: credentials.userType,
+            company_name: credentials.companyName
           }
-        }),
-        new Promise<never>((_, reject) => 
-          setTimeout(() => reject(new Error('Auth user creation timeout')), 15000)
-        )
-      ]);
+        }
+      }),
+      new Promise<never>((_, reject) => 
+        setTimeout(() => reject(new Error('Auth user creation timeout')), 15000)
+      )
+    ]);
 
-      if (authError) {
-        throw new Error(`Authentication failed: ${authError.message}`);
-      }
-
-      if (!authData.user) {
-        throw new Error('User creation failed - no user returned from Supabase');
-      }
-
-      console.log('Auth user created successfully:', authData.user.id);
-      return { user: authData.user };
-
-    } catch (error: any) {
-      if (error.message?.includes('timeout')) {
-        throw new Error('User creation timed out. Please check your connection and try again.');
-      }
-      throw error;
+    if (authError) {
+      // FIXED: Preserve the original Supabase error message
+      throw new Error(authError.message);
     }
+
+    if (!authData.user) {
+      throw new Error('User creation failed - no user returned from Supabase');
+    }
+
+    console.log('Auth user created successfully:', authData.user.id);
+    return { user: authData.user };
+
+  } catch (error: any) {
+    if (error.message?.includes('timeout')) {
+      throw new Error('User creation timed out. Please check your connection and try again.');
+    }
+    // FIXED: Re-throw the original error instead of wrapping it
+    throw error;
   }
+}
+
+// 2. Fix createUserFriendlyError to preserve specific errors when appropriate
+private createUserFriendlyError(error: any, phase: string): string {
+  const originalMessage = error.message || '';
+  
+  // Handle timeout errors
+  if (originalMessage.includes('timeout')) {
+    return 'Registration timed out. Please check your connection and try again.';
+  }
+  
+  // FIXED: Check for specific Supabase errors and preserve them
+  if (originalMessage.includes('User already registered')) {
+    return 'An account with this email address already exists. Please try logging in instead.';
+  }
+  
+  if (originalMessage.includes('Email rate limit exceeded')) {
+    return 'Too many registration attempts. Please wait a few minutes before trying again.';
+  }
+  
+  if (originalMessage.includes('Invalid email')) {
+    return 'Please enter a valid email address.';
+  }
+  
+  if (originalMessage.includes('Password should be at least')) {
+    return originalMessage; // This is user-friendly
+  }
+  
+  if (originalMessage.includes('Email already confirmed')) {
+    return 'This email is already registered. Please try logging in instead.';
+  }
+  
+  if (originalMessage.includes('Signup is disabled')) {
+    return 'Registration is temporarily disabled. Please try again later.';
+  }
+  
+  // If the original message is user-friendly (short and doesn't contain technical terms), use it
+  if (originalMessage.length < 100 && 
+      !originalMessage.includes('Error:') && 
+      !originalMessage.includes('Exception') &&
+      !originalMessage.includes('postgresql') &&
+      !originalMessage.includes('HTTP')) {
+    return originalMessage;
+  }
+  
+  // Fallback to phase-specific messages for technical errors
+  switch (phase) {
+    case 'auth':
+      return 'Failed to create user account. Please check your email and password.';
+    case 'user_profile':
+      return 'Failed to create user profile. Please try again.';
+    case 'organization':
+      return 'Failed to create organization. Please try again.';
+    case 'org_relationship':
+      return 'Failed to link user to organization. Please try again.';
+    default:
+      return 'Registration failed. Please try again.';
+  }
+}
+
+// 3. Fix handleTransactionFailure to preserve the original error
+private async handleTransactionFailure(
+  error: any,
+  state: RegistrationTransactionState
+): Promise<RegistrationTransactionResult> {
+  console.log('Executing rollback for failed registration transaction');
+  console.log('Failed at phase:', state.phase);
+  console.log('Completed steps:', state.completedSteps);
+  console.log('Original error:', error);
+
+  try {
+    await this.executeRollback(state.rollbackActions);
+    console.log('Rollback completed successfully');
+  } catch (rollbackError) {
+    console.error('Rollback failed:', rollbackError);
+  }
+
+  return {
+    success: false,
+    // FIXED: Check if the error is already user-friendly before converting
+    error: this.shouldUseOriginalError(error) ? error.message : this.createUserFriendlyError(error, state.phase),
+    state
+  };
+}
+
+// 4. Add helper method to determine if original error should be preserved
+private shouldUseOriginalError(error: any): boolean {
+  const message = error.message || '';
+  
+  // List of Supabase errors that are already user-friendly
+  const userFriendlyErrors = [
+    'User already registered',
+    'Email rate limit exceeded', 
+    'Invalid email',
+    'Password should be at least',
+    'Email already confirmed',
+    'Signup is disabled'
+  ];
+  
+  return userFriendlyErrors.some(friendlyError => message.includes(friendlyError));
+}
 
   private async createUserProfile(user: User, credentials: RegisterRequest): Promise<void> {
     try {
@@ -344,28 +489,28 @@ export class RegistrationTransactionService {
   // ROLLBACK AND ERROR HANDLING
   // ===============================
 
-  private async handleTransactionFailure(
-    error: any,
-    state: RegistrationTransactionState
-  ): Promise<RegistrationTransactionResult> {
-    console.log('Executing rollback for failed registration transaction');
-    console.log('Failed at phase:', state.phase);
-    console.log('Completed steps:', state.completedSteps);
+  // private async handleTransactionFailure(
+  //   error: any,
+  //   state: RegistrationTransactionState
+  // ): Promise<RegistrationTransactionResult> {
+  //   console.log('Executing rollback for failed registration transaction');
+  //   console.log('Failed at phase:', state.phase);
+  //   console.log('Completed steps:', state.completedSteps);
 
-    try {
-      await this.executeRollback(state.rollbackActions);
-      console.log('Rollback completed successfully');
-    } catch (rollbackError) {
-      console.error('Rollback failed:', rollbackError);
-      // Don't throw rollback errors - return the original error
-    }
+  //   try {
+  //     await this.executeRollback(state.rollbackActions);
+  //     console.log('Rollback completed successfully');
+  //   } catch (rollbackError) {
+  //     console.error('Rollback failed:', rollbackError);
+  //     // Don't throw rollback errors - return the original error
+  //   }
 
-    return {
-      success: false,
-      error: this.createUserFriendlyError(error, state.phase),
-      state
-    };
-  }
+  //   return {
+  //     success: false,
+  //     error: this.createUserFriendlyError(error, state.phase),
+  //     state
+  //   };
+  // }
 
   private async executeRollback(rollbackActions: RollbackAction[]): Promise<void> {
     // Execute rollback actions in reverse order
@@ -421,30 +566,30 @@ export class RegistrationTransactionService {
     }
   }
 
-  private createUserFriendlyError(error: any, phase: string): string {
-    const baseMessage = 'Registration failed';
+  // private createUserFriendlyError(error: any, phase: string): string {
+  //   const baseMessage = 'Registration failed';
     
-    if (error.message?.includes('timeout')) {
-      return 'Registration timed out. Please check your connection and try again.';
-    }
+  //   if (error.message?.includes('timeout')) {
+  //     return 'Registration timed out. Please check your connection and try again.';
+  //   }
     
-    if (error.message?.includes('email')) {
-      return 'This email address is already registered. Please use a different email or try logging in.';
-    }
+  //   if (error.message?.includes('email')) {
+  //     return 'This email address is already registered. Please use a different email or try logging in.';
+  //   }
 
-    switch (phase) {
-      case 'auth':
-        return 'Failed to create user account. Please check your email and password.';
-      case 'user_profile':
-        return 'Failed to create user profile. Please try again.';
-      case 'organization':
-        return 'Failed to create organization. Please try again.';
-      case 'org_relationship':
-        return 'Failed to link user to organization. Please try again.';
-      default:
-        return `${baseMessage}. Please try again.`;
-    }
-  }
+  //   switch (phase) {
+  //     case 'auth':
+  //       return 'Failed to create user account. Please check your email and password.';
+  //     case 'user_profile':
+  //       return 'Failed to create user profile. Please try again.';
+  //     case 'organization':
+  //       return 'Failed to create organization. Please try again.';
+  //     case 'org_relationship':
+  //       return 'Failed to link user to organization. Please try again.';
+  //     default:
+  //       return `${baseMessage}. Please try again.`;
+  //   }
+  // }
 
   // ===============================
   // RECOVERY UTILITIES

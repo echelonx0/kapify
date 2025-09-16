@@ -260,7 +260,7 @@ export class WelcomeScreenComponent implements OnInit {
   ]);
 
   ngOnInit() {
-    this.calculateProfileCompletion();
+   // this.calculateProfileCompletion();
   }
 
   getUserName(): string {
@@ -291,7 +291,7 @@ export class WelcomeScreenComponent implements OnInit {
   }
 
   completeProfile(): void {
-    this.router.navigate(['/profile/setup']);
+    this.router.navigate(['/profile/home']);
   }
 
   exploreOpportunities(): void {

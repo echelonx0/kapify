@@ -4,8 +4,10 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Subject } from 'rxjs';
 import { LucideAngularModule, Upload, FileText, X, CheckCircle, AlertCircle, Download, Eye, ArrowRight, ArrowLeft, MapPin } from 'lucide-angular';
-import * as XLSX from 'xlsx';
-import Papa from 'papaparse';
+
+// Dynamic imports for better tree-shaking and ESM compatibility
+const loadPapaParse = () => import('papaparse');
+const loadXLSX = () => import('xlsx');
 
 interface ImportedData {
   [key: string]: any;
@@ -237,30 +239,35 @@ export class ImportOpportunityComponent implements OnInit, OnDestroy {
     }
   }
 
-private async parseCsvFile(file: File): Promise<void> {
-  return new Promise((resolve, reject) => {
-    Papa.parse(file, {
-      header: true,
-      skipEmptyLines: true,
-      dynamicTyping: true,
-      complete: (results) => {
-        if (results.errors.length > 0) {
-          reject(new Error('CSV parsing errors: ' + results.errors.map(e => e.message).join(', ')));
-          return;
+  private async parseCsvFile(file: File): Promise<void> {
+    const Papa = await loadPapaParse();
+    
+    return new Promise((resolve, reject) => {
+      Papa.parse(file, {
+        header: true,
+        skipEmptyLines: true,
+        dynamicTyping: true,
+        complete: (results) => {
+          if (results.errors.length > 0) {
+            reject(new Error('CSV parsing errors: ' + results.errors.map(e => e.message).join(', ')));
+            return;
+          }
+          
+          this.rawData.set(results.data as any[]);
+          this.detectedColumns.set(results.meta.fields || []);
+          this.sampleData.set(results.data.slice(0, 5) as any[]);
+          resolve(undefined);
+        },
+        error: (error) => {
+          reject(new Error('Failed to parse CSV: ' + error.message));
         }
-        
-        this.rawData.set(results.data as any[]);
-        this.detectedColumns.set(results.meta.fields || []);
-        this.sampleData.set(results.data.slice(0, 5) as any[]);
-        resolve(undefined);
-      },
-      error: (error) => {
-        reject(new Error('Failed to parse CSV: ' + error.message));
-      }
+      });
     });
-  });
-}
+  }
+
   private async parseExcelFile(file: File): Promise<void> {
+    const XLSX = await loadXLSX();
+    
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
       
@@ -336,7 +343,7 @@ private async parseCsvFile(file: File): Promise<void> {
   // TEMPLATE DOWNLOAD
   // ===============================
 
-  downloadTemplate(format: 'csv' | 'xlsx') {
+  async downloadTemplate(format: 'csv' | 'xlsx') {
     const templateData = [
       {
         title: 'Example Growth Capital Fund',
@@ -375,9 +382,11 @@ private async parseCsvFile(file: File): Promise<void> {
     ];
 
     if (format === 'csv') {
+      const Papa = await loadPapaParse();
       const csv = Papa.unparse(templateData);
       this.downloadFile(csv, 'funding-opportunities-template.csv', 'text/csv');
     } else {
+      const XLSX = await loadXLSX();
       const ws = XLSX.utils.json_to_sheet(templateData);
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, 'Opportunities');
@@ -517,6 +526,7 @@ private async parseCsvFile(file: File): Promise<void> {
     });
     
     this.transformedData.set(transformedData);
+    this.validateData();
   }
 
   private transformValue(value: any, mapping: FieldMapping): any {
