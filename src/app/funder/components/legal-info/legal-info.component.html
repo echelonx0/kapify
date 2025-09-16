@@ -76,32 +76,31 @@
                     }
                   </div>
 
-                  <!-- Tax Number - OPTIONAL -->
+                  <!-- FSP Number - OPTIONAL -->
                   <div class="transform transition-all duration-200 hover:scale-[1.02]">
                     <label class="block text-sm font-medium text-neutral-700 mb-2">
-                      Tax Number
+                      FSP Number
                     </label>
                     <input
                       type="text"
-                      placeholder="VAT/Tax identification number (optional)"
-                      [value]="formData().taxNumber"
-                      (input)="updateField('taxNumber', $event)"
+                      placeholder="FSP number (optional)"
+                      [value]="formData().fspLicenseNumber"
+                      (input)="updateField('fspLicenseNumber', $event)"
                       class="block w-full px-3 py-2 border border-neutral-300 rounded-md shadow-sm placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200"
                     />
                   </div>
 
-                  <!-- Founded Year - OPTIONAL -->
+                  <!-- NCR License- OPTIONAL -->
                   <div class="transform transition-all duration-200 hover:scale-[1.02]">
                     <label class="block text-sm font-medium text-neutral-700 mb-2">
-                      Founded Year
+                      NCR No
                     </label>
                     <input
                       type="number"
-                      placeholder="2020 (optional)"
-                      min="1900"
-                      [max]="currentYear"
-                      [value]="formData().foundedYear"
-                      (input)="updateField('foundedYear', $event)"
+                      placeholder=""
+                     
+                      [value]="formData().ncrNumber"
+                      (input)="updateField('ncrNumber', $event)"
                       class="block w-full px-3 py-2 border border-neutral-300 rounded-md shadow-sm placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200"
                     />
                   </div>
@@ -273,85 +272,7 @@
       </div>
 
       <!-- Organization Scale Section - OPTIONAL -->
-      <div class="transform transition-all duration-300 hover:scale-[1.01]">
-        <div class=" rounded-xl border border-neutral-200 shadow-sm overflow-hidden">
-          <!-- Section Header -->
-          <button
-            (click)="toggleSection('scale')"
-            class="w-full px-6 py-4 flex items-center justify-between hover:bg-neutral-50 transition-colors duration-200"
-          >
-            <div class="flex items-center space-x-3">
-              <div class="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center">
-                <lucide-icon [img]="UsersIcon" [size]="20" class="text-purple-600" />
-              </div>
-              <div class="text-left">
-                <h3 class="font-semibold text-neutral-900">Organization Scale</h3>
-                <p class="text-sm text-neutral-600">Size and financial scope information (optional)</p>
-              </div>
-            </div>
-            <div class="flex items-center space-x-2">
-              @if (isScaleInfoComplete()) {
-                <div class="w-6 h-6 rounded-full bg-green-100 flex items-center justify-center">
-                  <lucide-icon [img]="CheckIcon" [size]="14" class="text-green-600" />
-                </div>
-              }
-              <span class="text-xs bg-blue-100 text-blue-600 px-2 py-1 rounded font-medium">Optional</span>
-              <lucide-icon 
-                [img]="expandedSections().scale ? ChevronDownIcon : ChevronRightIcon" 
-                [size]="20" 
-                class="text-neutral-400 transition-transform duration-200"
-              />
-            </div>
-          </button>
-
-          <!-- Expandable Content -->
-          <div 
-            class="transition-all duration-300 ease-in-out overflow-hidden"
-            [style.max-height]="expandedSections().scale ? '1000px' : '0px'"
-            [style.opacity]="expandedSections().scale ? '1' : '0'"
-          >
-            <div class="px-6 pb-6 border-t border-neutral-100">
-              <div class="pt-4 space-y-6">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <!-- Employee Count -->
-                  <div class="transform transition-all duration-200 hover:scale-[1.02]">
-                    <label class="block text-sm font-medium text-neutral-700 mb-2">
-                      Employee Count
-                    </label>
-                    <select
-                      [value]="formData().employeeCount"
-                      (change)="updateField('employeeCount', $event)"
-                      class="block w-full px-3 py-2 border border-neutral-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200"
-                    >
-                      <option value="">Select size</option>
-                      <option value="1-10">1-10 employees</option>
-                      <option value="11-50">11-50 employees</option>
-                      <option value="51-200">51-200 employees</option>
-                      <option value="201-500">201-500 employees</option>
-                      <option value="500+">500+ employees</option>
-                    </select>
-                  </div>
-
-                  <!-- Assets Under Management -->
-                  <div class="transform transition-all duration-200 hover:scale-[1.02]">
-                    <label class="block text-sm font-medium text-neutral-700 mb-2">
-                      Assets Under Management (ZAR)
-                    </label>
-                    <input
-                      type="number"
-                      placeholder="100000000"
-                      [value]="formData().assetsUnderManagement"
-                      (input)="updateField('assetsUnderManagement', $event)"
-                      class="block w-full px-3 py-2 border border-neutral-300 rounded-md shadow-sm placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200"
-                    />
-                    <p class="mt-1 text-sm text-neutral-500">Enter the amount in South African Rand</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+    
 
       <!-- Auto-save Status -->
       <div class="flex items-center justify-between p-4 bg-gradient-to-r from-neutral-50 to-neutral-100 rounded-xl border border-neutral-200 shadow-sm">

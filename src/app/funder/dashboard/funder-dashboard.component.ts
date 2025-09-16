@@ -29,6 +29,8 @@ import { FunderDocumentAnalysisComponent } from 'src/app/ai/document-analysis/fu
 import { ApplicationManagementService, FundingApplication, ApplicationStats } from 'src/app/SMEs/services/application-management.service';
 import { ApplicationListCardComponent, BaseApplicationCard } from 'src/app/shared/components/application-list-card/application-list-card.component';
 import { ActionEvent, OrganizationStatusSidebarComponent } from '../components/status-sidebar/status-sidebar.component';
+import { PublicProfile } from '../models/public-profile.models';
+import { PublicProfileService } from '../services/public-profile.service';
 
 type TabId = 'overview' | 'opportunities' | 'applications' | 'settings';
 
@@ -59,6 +61,18 @@ export class FunderDashboardComponent implements OnInit, OnDestroy {
   private opportunityService = inject(FundingOpportunityService);
   private applicationService = inject(ApplicationManagementService);
   private destroy$ = new Subject<void>();
+
+   // NEW: Add public profile service
+  private publicProfileService = inject(PublicProfileService);
+  
+  // NEW: Add public profile state
+  publicProfile = signal<PublicProfile | null>(null);
+  hasPublicProfile = computed(() => !!this.publicProfile());
+  publicProfileUrl = computed(() => {
+    const profile = this.publicProfile();
+    return profile?.slug ? `${window.location.origin}/funder/${profile.slug}` : null;
+  });
+
 
   // Tab management
   activeTab = signal<TabId>('overview');
@@ -174,6 +188,7 @@ export class FunderDashboardComponent implements OnInit, OnDestroy {
     this.setupSubscriptions();
     this.loadDraftSummary();
     this.loadApplicationsData();
+      this.loadPublicProfile();
   }
 
   ngOnDestroy() {
@@ -246,6 +261,47 @@ export class FunderDashboardComponent implements OnInit, OnDestroy {
           console.error('Failed to load application stats:', error);
         }
       });
+  }
+
+   private loadPublicProfile() {
+    const organizationId = this.onboardingState()?.organization?.id;
+    if (organizationId) {
+      this.publicProfileService.loadOrganizationProfile(organizationId)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: (profile) => {
+            this.publicProfile.set(profile);
+          },
+          error: (error) => {
+            console.log('No public profile found or error loading:', error);
+            // This is fine - just means no profile exists yet
+          }
+        });
+    }
+  }
+
+
+  //   Navigation methods for public profile
+  managePublicProfile() {
+    this.router.navigate(['/funder/create-profile']);
+  }
+
+  shareProfileLink() {
+    const url = this.publicProfileUrl();
+    if (url) {
+      // Copy to clipboard
+      navigator.clipboard.writeText(url).then(() => {
+        console.log('Profile URL copied to clipboard');
+        // You could show a toast notification here
+      });
+    }
+  }
+
+  viewPublicProfile() {
+    const url = this.publicProfileUrl();
+    if (url) {
+      window.open(url, '_blank');
+    }
   }
 
   openDocumentAnalysis() {
@@ -669,7 +725,7 @@ export class FunderDashboardComponent implements OnInit, OnDestroy {
     return new Date(date).toLocaleDateString();
   }
 
-  handleOrganizationAction(event: ActionEvent) {
+ handleOrganizationAction(event: ActionEvent) {
     console.log('Organization action:', event);
     
     switch (event.type) {
@@ -683,6 +739,11 @@ export class FunderDashboardComponent implements OnInit, OnDestroy {
       
       case 'edit_organization':
         this.editOrganization();
+        break;
+      
+      // NEW: Add public profile action
+      case 'manage_public_profile':
+        this.managePublicProfile();
         break;
       
       default:

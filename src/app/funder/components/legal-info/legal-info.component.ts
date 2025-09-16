@@ -1,5 +1,4 @@
- 
-// src/app/funder/components/legal-info-form.component.ts - REQUIRED FIELDS ONLY
+// src/app/funder/components/legal-info-form.component.ts 
 import { Component, signal, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -25,16 +24,15 @@ import { FunderOrganization } from '../../../shared/models/user.models';
 interface LegalInfoFormData {
   legalName: string;
   registrationNumber: string;
-  taxNumber: string;
-  foundedYear: string;
+  fspLicenseNumber: string;
+  ncrNumber: string;
   addressLine1: string;
   addressLine2: string;
   city: string;
   province: string;
   postalCode: string;
   country: string;
-  employeeCount: string;
-  assetsUnderManagement: string;
+ 
 }
 
 interface SectionState {
@@ -85,16 +83,15 @@ export class LegalInfoFormComponent implements OnInit, OnDestroy {
   formData = signal<LegalInfoFormData>({
     legalName: '',
     registrationNumber: '',
-    taxNumber: '',
-    foundedYear: '',
+    fspLicenseNumber: '',
+    ncrNumber: '',
     addressLine1: '',
     addressLine2: '',
     city: '',
     province: '',
     postalCode: '',
     country: 'South Africa',
-    employeeCount: '',
-    assetsUnderManagement: ''
+   
   });
 
   ngOnInit() {
@@ -149,8 +146,8 @@ export class LegalInfoFormComponent implements OnInit, OnDestroy {
       ...data,
       legalName: org.legalName || '',
       registrationNumber: org.registrationNumber || '',
-      taxNumber: org.taxNumber || '',
-      foundedYear: org.foundedYear?.toString() || '',
+      fspLicenseNumber: org.fspLicenseNumber || '',
+      ncrNumber: org.ncrNumber?.toString() || '',
       addressLine1: org.addressLine1 || '',
       addressLine2: org.addressLine2 || '',
       city: org.city || '',
@@ -203,16 +200,15 @@ export class LegalInfoFormComponent implements OnInit, OnDestroy {
     return {
       legalName: data.legalName?.trim() || undefined,
       registrationNumber: data.registrationNumber?.trim() || undefined,
-      taxNumber: data.taxNumber?.trim() || undefined,
-      foundedYear: data.foundedYear ? Number(data.foundedYear) : undefined,
+      fspLicenseNumber: data.fspLicenseNumber?.trim() || undefined,
+      ncrNumber: data.ncrNumber ? Number(data.ncrNumber) : undefined,
       addressLine1: data.addressLine1?.trim() || undefined,
       addressLine2: data.addressLine2?.trim() || undefined,
       city: data.city?.trim() || undefined,
       province: data.province || undefined,
       postalCode: data.postalCode?.trim() || undefined,
       country: data.country || 'South Africa',
-      employeeCount: data.employeeCount ? Number(data.employeeCount.split('-')[0]) : undefined,
-      assetsUnderManagement: data.assetsUnderManagement ? Number(data.assetsUnderManagement) : undefined
+   
     };
   }
 
@@ -244,13 +240,7 @@ export class LegalInfoFormComponent implements OnInit, OnDestroy {
     return this.isLegalSectionComplete() && this.isAddressSectionComplete();
   }
 
-  isScaleInfoComplete(): boolean {
-    const data = this.formData();
-    return !!(
-      data.employeeCount ||
-      data.assetsUnderManagement
-    );
-  }
+ 
 
   hasAnyData(): boolean {
     const data = this.formData();

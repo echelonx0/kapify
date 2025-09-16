@@ -1,5 +1,5 @@
 <div class="min-h-screen bg-gray-50">
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+  <div class="mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8" style="max-width: 1400px;">
 
     <!-- Onboarding Status Card -->
     @if (onboardingState() && !onboardingState()!.isComplete) {
@@ -317,6 +317,36 @@
             </button>
           </div>
         </div>
+
+
+        <!-- Add this to your Quick Actions in the dashboard -->
+@if (hasPublicProfile() && publicProfile()?.isPublished) {
+  <div class="section-card">
+    <div class="section-header">
+      <h3 class="section-title">Share Your Profile</h3>
+      <p class="section-description">Drive more applications with your public page</p>
+    </div>
+    <div class="p-6 space-y-4">
+      <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <div class="flex items-center gap-2 text-sm mb-2">
+          <lucide-icon [img]="GlobeIcon" [size]="14" class="text-blue-600" />
+          <span class="text-blue-600 font-medium">Your Public URL:</span>
+        </div>
+        <code class="text-blue-800 text-sm break-all">{{ publicProfileUrl() }}</code>
+      </div>
+      
+      <div class="flex gap-2">
+        <ui-button variant="primary" (clicked)="shareProfileLink()" class="flex-1">
+          Copy Link
+        </ui-button>
+        <ui-button variant="outline" (clicked)="viewPublicProfile()">
+          <lucide-icon [img]="ExternalLinkIcon" [size]="16" class="mr-2" />
+          View Live
+        </ui-button>
+      </div>
+    </div>
+  </div>
+}
 
         <!-- Organization Info Card -->
         @if (onboardingState()?.organization) {

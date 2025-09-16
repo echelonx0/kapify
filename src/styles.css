@@ -3,3 +3,16 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* In your component styles or global CSS */
+@media (max-width: 1024px) {
+  .profile-header-layout {
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+  
+  .optimization-widget {
+    width: 100%;
+    max-width: 400px;
+  }
+}

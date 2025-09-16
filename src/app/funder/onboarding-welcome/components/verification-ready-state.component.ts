@@ -167,7 +167,7 @@ export class VerificationReadyStateComponent {
   }
 
   getFoundedYear(): string {
-    return this.onboardingState?.organization?.foundedYear?.toString() || 'Not specified';
+    return this.onboardingState?.organization?.ncrNumber?.toString() || 'Not specified';
   }
 
   getCountry(): string {

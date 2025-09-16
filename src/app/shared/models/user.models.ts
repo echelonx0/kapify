@@ -119,8 +119,8 @@ export interface Organization {
   // Funder-specific fields (optional for SMEs)
   legalName?: string;
   registrationNumber?: string;
-  taxNumber?: string;
-  foundedYear?: number;
+  fspLicenseNumber?: string;
+  ncrNumber?: number;
   employeeCount?: number;
   assetsUnderManagement?: number;
   isVerified: boolean;
