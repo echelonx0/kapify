@@ -1,10 +1,10 @@
-<div class="h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 overflow-hidden">
+<div class="h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex flex-col overflow-hidden">
   
   <!-- Main Container -->
-  <div class="h-full flex flex-col lg:flex-row">
+  <div class="flex-1 flex flex-col lg:flex-row overflow-hidden">
     
     <!-- Main Content Area -->
-    <div class="flex-1 flex flex-col min-w-0">
+    <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
       
       <!-- Mobile Header Component -->
       <app-mobile-header
@@ -15,7 +15,7 @@
       />
 
       <!-- Content Router -->
-      <div class="flex-1 overflow-hidden">
+      <div class="flex-1 flex flex-col min-h-0">
         @switch (currentView()) {
           
           @case ('setup') {
@@ -56,8 +56,8 @@
 
           @case ('rejected') {
             <!-- Rejected State - Inline for now -->
-            <div class="h-full overflow-hidden flex items-center">
-              <div class="w-full max-w-3xl mx-auto text-center px-4 lg:px-8">
+            <div class="h-full flex items-center justify-center p-4 lg:p-8">
+              <div class="w-full max-w-3xl mx-auto text-center">
                 
                 <div class="w-20 h-20 bg-gradient-to-br from-red-500 to-rose-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
                   <lucide-icon [img]="AlertCircleIcon" [size]="36" class="text-white" />

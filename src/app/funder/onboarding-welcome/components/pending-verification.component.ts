@@ -9,8 +9,8 @@ import { UiButtonComponent } from '../../../shared/components';
   standalone: true,
   imports: [CommonModule, LucideAngularModule, UiButtonComponent],
   template: `
-    <div class="h-full overflow-hidden flex items-center">
-      <div class="w-full max-w-4xl mx-auto text-center px-4 lg:px-8">
+ <div class="h-full flex items-center justify-center p-4 lg:p-8">
+  <div class="w-full max-w-4xl mx-auto text-center">
         
         <div class="w-20 h-20 bg-gradient-to-br from-orange-500 to-amber-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
           <lucide-icon [img]="ClockIcon" [size]="36" class="text-white" />
