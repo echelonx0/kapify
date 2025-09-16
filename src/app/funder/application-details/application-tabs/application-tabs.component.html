@@ -146,21 +146,28 @@
                       <h5 class="font-medium text-gray-900">{{ doc.name }}</h5>
                       <div class="flex items-center space-x-3 text-sm text-gray-500">
                         <span>{{ doc.type.toUpperCase() }}</span>
-                        <span>•</span>
-                        <span>{{ doc.size }}</span>
-                        @if (doc.uploadedAt) {
-                          <span>•</span>
-                          <span>{{ formatDate(doc.uploadedAt) }}</span>
-                        }
+                     
+                        
                       </div>
                     </div>
                   </div>
                   
                   <div class="flex items-center space-x-2">
+                    <!-- View Button with Eye Icon -->
                     <button 
-                      class="text-primary-600 hover:text-primary-800 font-medium text-sm flex items-center space-x-1"
-                      (click)="downloadDocument(doc)">
-                      <lucide-icon [img]="DownloadIcon" [size]="14"></lucide-icon>
+                      class="inline-flex items-center px-3 py-1.5 text-sm font-medium text-blue-600 bg-blue-50 border border-blue-200 rounded-md hover:bg-blue-100 hover:text-blue-700 transition-colors"
+                      (click)="viewDocument(doc)"
+                      title="View document inline">
+                      <lucide-icon [img]="EyeIcon" [size]="14" class="mr-1"></lucide-icon>
+                      <span>View</span>
+                    </button>
+                    
+                    <!-- Download Button with Download Icon -->
+                    <button 
+                      class="inline-flex items-center px-3 py-1.5 text-sm font-medium text-gray-600 bg-gray-50 border border-gray-200 rounded-md hover:bg-gray-100 hover:text-gray-700 transition-colors"
+                      (click)="downloadDocument(doc)"
+                      title="Download document">
+                      <lucide-icon [img]="DownloadIcon" [size]="14" class="mr-1"></lucide-icon>
                       <span>Download</span>
                     </button>
                   </div>

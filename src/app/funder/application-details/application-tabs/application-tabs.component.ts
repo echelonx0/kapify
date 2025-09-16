@@ -1,5 +1,3 @@
- 
-
 // src/app/funder/application-details/application-tabs/application-tabs.component.ts
 import { Component, Input, Output, EventEmitter, signal, computed, inject, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -12,7 +10,8 @@ import {
   AlertCircle, 
   Search, 
   Download, 
-  BarChart3 
+  BarChart3,
+  Eye // Added Eye icon import
 } from 'lucide-angular';
 import { Subject } from 'rxjs';
 import { UiButtonComponent } from 'src/app/shared/components';
@@ -72,6 +71,7 @@ export class ApplicationTabsComponent implements OnInit, OnDestroy {
   SearchIcon = Search;
   DownloadIcon = Download;
   BarChart3Icon = BarChart3;
+  EyeIcon = Eye; // Added Eye icon
 
   // State
   activeTab = signal<TabId>('messages');
@@ -114,7 +114,7 @@ export class ApplicationTabsComponent implements OnInit, OnDestroy {
       name: this.formatFieldName(key),
       type: this.getDocumentType(value),
       size: this.getDocumentSize(value),
-      uploadedAt: this.getDocumentDate(value)
+      // uploadedAt: this.getDocumentDate(value)
     }));
 
     console.log('📋 [DEBUG] Processed document entries:', documentEntries);
@@ -220,24 +220,100 @@ export class ApplicationTabsComponent implements OnInit, OnDestroy {
   }
 
   // ===============================
-  // DOCUMENT UTILITIES
+  // DOCUMENT FUNCTIONALITY - NEW IMPLEMENTATION
   // ===============================
 
-  downloadDocument(doc: any) {
-    console.log('📄 [DEBUG] Downloading document:', doc);
+  /**
+   * View document - opens in new tab for inline viewing
+   */
+  viewDocument(doc: any) {
+    console.log('👁️ [DEBUG] Viewing document:', doc);
     
-    // Enhanced download logic
-    if (doc.value?.downloadUrl) {
-      console.log('📄 [DEBUG] Opening download URL:', doc.value.downloadUrl);
-      window.open(doc.value.downloadUrl, '_blank');
-    } else if (doc.value?.url) {
-      console.log('📄 [DEBUG] Opening URL:', doc.value.url);
-      window.open(doc.value.url, '_blank');
+    const url = this.getDocumentViewUrl(doc);
+    if (url) {
+      console.log('👁️ [DEBUG] Opening view URL:', url);
+      // Open in new tab for inline viewing
+      window.open(url, '_blank', 'noopener,noreferrer');
     } else {
-      console.log('⚠️ [DEBUG] No download URL available for:', doc.name);
-      alert('Download not available for this document');
+      console.log('⚠️ [DEBUG] No view URL available for:', doc.name);
+      this.showDocumentError('Preview not available for this document');
     }
   }
+
+  /**
+   * Download document - forces file download
+   */
+  downloadDocument(doc: any) {
+    console.log('📥 [DEBUG] Downloading document:', doc);
+    
+    const url = this.getDocumentDownloadUrl(doc);
+    if (url) {
+      console.log('📥 [DEBUG] Downloading from URL:', url);
+      
+      // Create invisible download link and trigger click
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = doc.value?.fileName || doc.value?.name || doc.name || 'document';
+      link.target = '_blank';
+      
+      // Add to DOM temporarily and click
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } else {
+      console.log('⚠️ [DEBUG] No download URL available for:', doc.name);
+      this.showDocumentError('Download not available for this document');
+    }
+  }
+
+  /**
+   * Get URL for viewing document (preview/inline)
+   */
+  private getDocumentViewUrl(doc: any): string | null {
+    // Priority order for view URLs
+    if (doc.value?.viewUrl) return doc.value.viewUrl;
+    if (doc.value?.previewUrl) return doc.value.previewUrl;
+    if (doc.value?.url) return doc.value.url;
+    if (doc.value?.downloadUrl) return doc.value.downloadUrl;
+    
+    return null;
+  }
+
+  /**
+   * Get URL for downloading document
+   */
+  private getDocumentDownloadUrl(doc: any): string | null {
+    // Priority order for download URLs
+    if (doc.value?.downloadUrl) return doc.value.downloadUrl;
+    if (doc.value?.url) return doc.value.url;
+    if (doc.value?.fileUrl) return doc.value.fileUrl;
+    
+    return null;
+  }
+
+  /**
+   * Show document error message
+   */
+  private showDocumentError(message: string) {
+    // You can replace this with your preferred notification system
+    alert(message);
+    
+    // Or use a toast/notification service if available:
+    // this.notificationService.showError(message);
+  }
+
+  /**
+   * Check if document can be previewed inline
+   */
+  canPreviewDocument(doc: any): boolean {
+    const type = this.getDocumentType(doc).toLowerCase();
+    const previewableTypes = ['pdf', 'jpg', 'jpeg', 'png', 'gif', 'svg', 'txt'];
+    return previewableTypes.includes(type) || !!doc.value?.viewUrl || !!doc.value?.previewUrl;
+  }
+
+  // ===============================
+  // DOCUMENT UTILITIES (EXISTING)
+  // ===============================
 
   private formatFieldName(fieldName: string): string {
     return fieldName
@@ -278,15 +354,16 @@ export class ApplicationTabsComponent implements OnInit, OnDestroy {
     return 'Unknown size';
   }
 
-  private getDocumentDate(doc: any): Date | null {
-    console.log('🔍 [DEBUG] Getting document date for:', doc);
+  // Not needed
+  // private getDocumentDate(doc: any): Date | null {
+  //   console.log('🔍 [DEBUG] Getting document date for:', doc);
     
-    if (doc?.uploadedAt) return new Date(doc.uploadedAt);
-    if (doc?.uploadDate) return new Date(doc.uploadDate);
-    if (doc?.createdAt) return new Date(doc.createdAt);
-    if (doc?.created_at) return new Date(doc.created_at);
-    return null;
-  }
+  //   if (doc?.uploadedAt) return new Date(doc.uploadedAt);
+  //   if (doc?.uploadDate) return new Date(doc.uploadDate);
+  //   if (doc?.createdAt) return new Date(doc.createdAt);
+  //   if (doc?.created_at) return new Date(doc.created_at);
+  //   return null;
+  // }
 
   formatDate(date: Date | null): string {
     if (!date) return 'Unknown date';
