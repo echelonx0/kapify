@@ -141,24 +141,40 @@ export class LegalInfoFormComponent implements OnInit, OnDestroy {
     }
   }
 
-  private populateFormFromOrganization(org: Partial<FunderOrganization>) {
-    this.formData.update(data => ({
-      ...data,
-      legalName: org.legalName || '',
-      registrationNumber: org.registrationNumber || '',
-      fspLicenseNumber: org.fspLicenseNumber || '',
-      ncrNumber: org.ncrNumber?.toString() || '',
-      addressLine1: org.addressLine1 || '',
-      addressLine2: org.addressLine2 || '',
-      city: org.city || '',
-      province: org.province || '',
-      postalCode: org.postalCode || '',
-      country: org.country || 'South Africa',
-      employeeCount: org.employeeCount?.toString() || '',
-      assetsUnderManagement: org.assetsUnderManagement?.toString() || ''
-    }));
-  }
+private populateFormFromOrganization(org: Partial<FunderOrganization>) {
+  this.formData.update(data => ({
+    ...data,
+    legalName: org.legalName || '',
+    registrationNumber: org.registrationNumber || '',
+    fspLicenseNumber: org.fspLicenseNumber || '',
+    ncrNumber: org.ncrNumber?.toString() || '',
+    addressLine1: org.addressLine1 || '',
+    addressLine2: org.addressLine2 || '',
+    city: org.city || '',
+    province: org.province || '',
+    postalCode: org.postalCode || '',
+    country: org.country || 'South Africa'
+    // ✅ REMOVED: employeeCount and assetsUnderManagement (not in this form)
+  }));
+}
 
+private mapFormDataToOrganization(): Partial<FunderOrganization> {
+  const data = this.formData();
+  return {
+    legalName: data.legalName?.trim() || undefined,
+    registrationNumber: data.registrationNumber?.trim() || undefined,
+    fspLicenseNumber: data.fspLicenseNumber?.trim() || undefined,
+    // ✅ FIXED: Keep as string to match database VARCHAR type
+    ncrNumber: data.ncrNumber?.trim() || undefined,
+ 
+    addressLine1: data.addressLine1?.trim() || undefined,
+    addressLine2: data.addressLine2?.trim() || undefined,
+    city: data.city?.trim() || undefined,
+    province: data.province || undefined,
+    postalCode: data.postalCode?.trim() || undefined,
+    country: data.country || 'South Africa'
+  };
+}
   // ===============================
   // SECTION TOGGLE
   // ===============================
@@ -195,22 +211,7 @@ export class LegalInfoFormComponent implements OnInit, OnDestroy {
     this.onboardingService.updateOrganizationData(organizationData);
   }
 
-  private mapFormDataToOrganization(): Partial<FunderOrganization> {
-    const data = this.formData();
-    return {
-      legalName: data.legalName?.trim() || undefined,
-      registrationNumber: data.registrationNumber?.trim() || undefined,
-      fspLicenseNumber: data.fspLicenseNumber?.trim() || undefined,
-      ncrNumber: data.ncrNumber ? Number(data.ncrNumber) : undefined,
-      addressLine1: data.addressLine1?.trim() || undefined,
-      addressLine2: data.addressLine2?.trim() || undefined,
-      city: data.city?.trim() || undefined,
-      province: data.province || undefined,
-      postalCode: data.postalCode?.trim() || undefined,
-      country: data.country || 'South Africa',
-   
-    };
-  }
+ 
 
   // ===============================
   // VALIDATION METHODS - EXACT MATCH WITH SERVICE

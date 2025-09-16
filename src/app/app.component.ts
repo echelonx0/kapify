@@ -1,5 +1,6 @@
-import { Component } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { Component, OnInit } from '@angular/core';
+import { NavigationEnd, Router, RouterOutlet, Event as RouterEvent } from '@angular/router';
+import { TestModalComponent } from './test-modal.component';
 
 @Component({
   selector: 'app-root',
@@ -9,17 +10,19 @@ import { RouterOutlet } from '@angular/router';
     <router-outlet />
   `
 })
-export class AppComponent {}
+export class AppComponent implements OnInit {
+  constructor(private router: Router) {}
 
-// // Update app.component.ts to use landing page
-// // src/app/app.component.ts
-// import { Component } from '@angular/core';
-// import { LandingComponent } from './landing/landing.component';
-
-// @Component({
-//   selector: 'app-root',
-//   standalone: true,
-//   imports: [LandingComponent],
-//   template: `<app-landing />`,
-// })
-// export class AppComponent {}
+  ngOnInit() {
+    this.router.events.subscribe((event: RouterEvent) => {
+      if (event instanceof NavigationEnd) {
+        setTimeout(() => {
+          // Check if HSStaticMethods exists before calling
+          if (window.HSStaticMethods) {
+            window.HSStaticMethods.autoInit();
+          }
+        }, 100);
+      }
+    });
+  }
+}

@@ -225,6 +225,7 @@ export class FunderDashboardComponent implements OnInit, OnDestroy {
 
   private loadApplicationsData() {
     const organizationId = this.onboardingState()?.organization?.id;
+    
     if (!organizationId) {
       console.log('No organization ID available for loading applications');
       return;

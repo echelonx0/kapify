@@ -120,7 +120,7 @@ export interface Organization {
   legalName?: string;
   registrationNumber?: string;
   fspLicenseNumber?: string;
-  ncrNumber?: number;
+  ncrNumber?: string;
   employeeCount?: number;
   assetsUnderManagement?: number;
   isVerified: boolean;

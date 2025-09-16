@@ -37,12 +37,12 @@
               
               <!-- Draft Status Card (Optional - keep if separate from org status) -->
               @if (draftSummary().hasDraft && onboardingState()?.canCreateOpportunities) {
-                <div class="bg-gradient-to-r from-indigo-500 via-purple-600 to-pink-600 p-0.5 rounded-xl shadow-lg">
+                <div class="bg-gradient-to-r from-slate-500 via-cyan-600 to-stone-600 p-0.5 rounded-xl shadow-lg">
                   <div class="bg-white rounded-xl p-6">
                     <div class="flex items-start gap-4">
                       <div class="flex-shrink-0 mt-1">
-                        <div class="w-12 h-12 bg-indigo-100 rounded-xl flex items-center justify-center">
-                          <lucide-icon [img]="FileTextIcon" [size]="24" class="text-indigo-600" />
+                        <div class="w-12 h-12 bg-slate-100 rounded-xl flex items-center justify-center">
+                          <lucide-icon [img]="FileTextIcon" [size]="24" class="text-slate-600" />
                         </div>
                       </div>
                       
@@ -81,10 +81,12 @@
                             <lucide-icon [img]="ArrowRightIcon" [size]="16" class="mr-2" />
                             Continue Draft
                           </ui-button>
-                          <ui-button variant="outline" (clicked)="createNewOpportunity()" class="shadow-sm">
+                       <div class="ml-2">
+                           <ui-button variant="outline" (clicked)="createNewOpportunity()" class="shadow-sm">
                             <lucide-icon [img]="PlusIcon" [size]="16" class="mr-2" />
                             Start Fresh
                           </ui-button>
+                       </div>
                           <ui-button variant="ghost" (clicked)="deleteDraft()" class="text-red-600 hover:text-red-700 hover:bg-red-50">
                             Delete Draft
                           </ui-button>
@@ -133,8 +135,8 @@
                     <div class="flex items-center justify-between">
                       <div class="flex-1">
                         <div class="flex items-center gap-3 mb-4">
-                          <div class="stat-icon bg-purple-50 group-hover:bg-purple-100 transition-colors">
-                            <lucide-icon [img]="DollarSignIcon" [size]="24" class="text-purple-600" />
+                          <div class="stat-icon bg-cyan-50 group-hover:bg-cyan-100 transition-colors">
+                            <lucide-icon [img]="DollarSignIcon" [size]="24" class="text-cyan-600" />
                           </div>
                         </div>
                         <p class="stat-value">{{ analytics()!.averageConversionRate.toFixed(1) }}%</p>
@@ -196,7 +198,7 @@
                       (click)="viewAllOpportunities()"
                     >
                       <div class="icon">
-                        <lucide-icon [img]="TrendingUpIcon" [size]="18" class="text-purple-600" />
+                        <lucide-icon [img]="TrendingUpIcon" [size]="18" class="text-cyan-600" />
                       </div>
                       <span class="text">Browse Marketplace</span>
                     </button>
@@ -353,7 +355,7 @@
                         <div class="text-sm text-gray-600">Approved</div>
                       </div>
                       <div class="text-center">
-                        <div class="text-2xl font-bold text-purple-600">{{ applicationStats()!.averageProcessingTime }}</div>
+                        <div class="text-2xl font-bold text-cyan-600">{{ applicationStats()!.averageProcessingTime }}</div>
                         <div class="text-sm text-gray-600">Avg. Processing Days</div>
                       </div>
                     </div>
@@ -538,7 +540,7 @@
                     
                     <button class="action-button" (click)="viewAnalytics()">
                       <div class="icon">
-                        <lucide-icon [img]="BarChart3Icon" [size]="18" class="text-purple-600" />
+                        <lucide-icon [img]="BarChart3Icon" [size]="18" class="text-cyan-600" />
                       </div>
                       <span class="text">View Analytics</span>
                     </button>
@@ -562,10 +564,10 @@
 
           <!-- Optional: Compact Draft Status for Sidebar -->
           @if (draftSummary().hasDraft) {
-            <div class="bg-gradient-to-br from-indigo-500 via-purple-600 to-pink-600 p-0.5 rounded-xl">
+            <div class="bg-gradient-to-br from-slate-500 via-cyan-600 to-stone-600 p-0.5 rounded-xl">
               <div class="bg-white rounded-xl p-4">
                 <div class="flex items-center space-x-3 mb-3">
-                  <div class="w-6 h-6 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center">
+                  <div class="w-6 h-6 bg-gradient-to-r from-slate-500 to-cyan-600 rounded-lg flex items-center justify-center">
                     <lucide-icon [img]="FileTextIcon" [size]="14" class="text-white"></lucide-icon>
                   </div>
                   <h3 class="font-semibold text-gray-900 text-sm">Draft Opportunity</h3>
@@ -575,10 +577,12 @@
                   {{ getDraftTitle() }} - {{ draftSummary().completionPercentage }}% complete
                 </p>
                 
-                <div class="space-y-2">
-                  <ui-button variant="primary" size="sm" (clicked)="continueDraft()" class="w-full">
-                    Continue Draft
+                <div class="space-2">
+             
+                    <ui-button variant="primary" size="sm" (clicked)="continueDraft()"  >
+                    Continue
                   </ui-button>
+              
                   <ui-button variant="outline" size="sm" (clicked)="createNewOpportunity()" class="w-full">
                     Start Fresh
                   </ui-button>

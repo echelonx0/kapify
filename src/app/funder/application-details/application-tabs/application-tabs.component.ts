@@ -11,12 +11,14 @@ import {
   Search, 
   Download, 
   BarChart3,
-  Eye // Added Eye icon import
+  Eye,
+  X // Added X icon for modal close
 } from 'lucide-angular';
 import { Subject } from 'rxjs';
 import { UiButtonComponent } from 'src/app/shared/components';
 import { ApplicationMessagingComponent } from 'src/app/messaging/application-messaging/application-messaging.component';
 import { MessagingService } from 'src/app/messaging/services/messaging.service';
+import { TestModalComponent } from 'src/app/test-modal.component';
  
 interface FundingApplication {
   id: string;
@@ -50,7 +52,8 @@ interface TabData {
     FormsModule,
     LucideAngularModule,
     UiButtonComponent,
-    ApplicationMessagingComponent
+    ApplicationMessagingComponent,
+
   ],
   templateUrl: './application-tabs.component.html',
   styleUrls: ['./application-tabs.component.css']
@@ -71,7 +74,8 @@ export class ApplicationTabsComponent implements OnInit, OnDestroy {
   SearchIcon = Search;
   DownloadIcon = Download;
   BarChart3Icon = BarChart3;
-  EyeIcon = Eye; // Added Eye icon
+  EyeIcon = Eye;
+  XIcon = X; // Added X icon
 
   // State
   activeTab = signal<TabId>('messages');
@@ -83,6 +87,10 @@ export class ApplicationTabsComponent implements OnInit, OnDestroy {
 
   // Message badge count - computed from messaging service
   messagesBadgeCount = signal(0);
+
+  // Document modal state
+  selectedDocument = signal<any>(null);
+  isModalOpen = signal(false);
 
   // Computed
   tabs = computed((): TabData[] => {
@@ -114,7 +122,6 @@ export class ApplicationTabsComponent implements OnInit, OnDestroy {
       name: this.formatFieldName(key),
       type: this.getDocumentType(value),
       size: this.getDocumentSize(value),
-      // uploadedAt: this.getDocumentDate(value)
     }));
 
     console.log('📋 [DEBUG] Processed document entries:', documentEntries);
@@ -126,6 +133,31 @@ export class ApplicationTabsComponent implements OnInit, OnDestroy {
     const hasAny = docs.length > 0;
     console.log('📄 [DEBUG] Has documents check:', hasAny, 'Total:', docs.length);
     return hasAny;
+  });
+
+  // Document modal computed properties
+  documentViewUrl = computed(() => {
+    const doc = this.selectedDocument();
+    return doc ? this.getDocumentViewUrl(doc) : null;
+  });
+
+  documentType = computed(() => {
+    const doc = this.selectedDocument();
+    return doc ? this.getDocumentType(doc).toLowerCase() : '';
+  });
+
+  isPdfDocument = computed(() => {
+    return this.documentType() === 'pdf';
+  });
+
+  isImageDocument = computed(() => {
+    const type = this.documentType();
+    return ['jpg', 'jpeg', 'png', 'gif', 'svg', 'webp'].includes(type);
+  });
+
+  isTextDocument = computed(() => {
+    const type = this.documentType();
+    return ['txt', 'text'].includes(type);
   });
 
   ngOnInit() {
@@ -220,23 +252,51 @@ export class ApplicationTabsComponent implements OnInit, OnDestroy {
   }
 
   // ===============================
-  // DOCUMENT FUNCTIONALITY - NEW IMPLEMENTATION
+  // DOCUMENT MODAL FUNCTIONALITY - NEW IMPLEMENTATION
   // ===============================
 
   /**
-   * View document - opens in new tab for inline viewing
+   * Open document in modal
    */
   viewDocument(doc: any) {
-    console.log('👁️ [DEBUG] Viewing document:', doc);
+    console.log('👁️ [DEBUG] Opening document in modal:', doc);
     
     const url = this.getDocumentViewUrl(doc);
     if (url) {
-      console.log('👁️ [DEBUG] Opening view URL:', url);
-      // Open in new tab for inline viewing
-      window.open(url, '_blank', 'noopener,noreferrer');
+      this.selectedDocument.set(doc);
+      this.openModal();
     } else {
       console.log('⚠️ [DEBUG] No view URL available for:', doc.name);
       this.showDocumentError('Preview not available for this document');
+    }
+  }
+
+  /**
+   * Open the modal using Preline's HSOverlay
+   */
+  private openModal() {
+    this.isModalOpen.set(true);
+    
+    // Use Preline's HSOverlay to open modal
+    setTimeout(() => {
+      const modalElement = document.getElementById('document-viewer-modal');
+      if (modalElement && (window as any).HSOverlay) {
+        (window as any).HSOverlay.open(modalElement);
+      }
+    }, 0);
+  }
+
+  /**
+   * Close the modal
+   */
+  closeModal() {
+    this.isModalOpen.set(false);
+    this.selectedDocument.set(null);
+    
+    // Use Preline's HSOverlay to close modal
+    const modalElement = document.getElementById('document-viewer-modal');
+    if (modalElement && (window as any).HSOverlay) {
+      (window as any).HSOverlay.close(modalElement);
     }
   }
 
@@ -263,6 +323,16 @@ export class ApplicationTabsComponent implements OnInit, OnDestroy {
     } else {
       console.log('⚠️ [DEBUG] No download URL available for:', doc.name);
       this.showDocumentError('Download not available for this document');
+    }
+  }
+
+  /**
+   * Download document from modal
+   */
+  downloadCurrentDocument() {
+    const doc = this.selectedDocument();
+    if (doc) {
+      this.downloadDocument(doc);
     }
   }
 
@@ -353,17 +423,6 @@ export class ApplicationTabsComponent implements OnInit, OnDestroy {
     }
     return 'Unknown size';
   }
-
-  // Not needed
-  // private getDocumentDate(doc: any): Date | null {
-  //   console.log('🔍 [DEBUG] Getting document date for:', doc);
-    
-  //   if (doc?.uploadedAt) return new Date(doc.uploadedAt);
-  //   if (doc?.uploadDate) return new Date(doc.uploadDate);
-  //   if (doc?.createdAt) return new Date(doc.createdAt);
-  //   if (doc?.created_at) return new Date(doc.created_at);
-  //   return null;
-  // }
 
   formatDate(date: Date | null): string {
     if (!date) return 'Unknown date';

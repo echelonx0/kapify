@@ -48,7 +48,7 @@ export class SidebarNavComponent implements OnInit {
 
   isAdminUser = computed(() => {
     const user = this.currentUser(); 
-    return user?.email === 'zivaigwe@gmail.com';
+    return user?.email === 'charles@bokamosoas.co.za';
   });
 
   // Navigation items with potential badges

@@ -1,3 +1,46 @@
+@if (organizationLoading()) {
+  <div class="min-h-screen bg-neutral-50 flex items-center justify-center">
+    <div class="text-center">
+      <div class="animate-spin w-12 h-12 border-4 border-primary-200 border-t-primary-600 rounded-full mx-auto mb-4"></div>
+      <h2 class="text-xl font-semibold text-neutral-900 mb-2">Loading Organization Data</h2>
+      <p class="text-neutral-600">Please wait while we set up your opportunity creation...</p>
+    </div>
+  </div>
+}
+
+<!-- ORGANIZATION ERROR STATE -->
+@else if (organizationError() && !organizationId()) {
+  <div class="min-h-screen bg-neutral-50 flex items-center justify-center px-4">
+    <div class="max-w-md w-full text-center">
+      <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+        <lucide-icon [img]="AlertCircleIcon" [size]="24" class="text-red-600" />
+      </div>
+      
+      <h2 class="text-xl font-semibold text-neutral-900 mb-2">Organization Setup Required</h2>
+      <p class="text-neutral-600 mb-6">{{ organizationError() }}</p>
+      
+      <div class="space-y-3">
+        <button 
+          (click)="goToOrganizationSetup()"
+          class="w-full bg-primary-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-primary-700 transition-colors"
+        >
+          Complete Organization Setup
+        </button>
+        
+        <button 
+          (click)="retryLoadOrganization()"
+          class="w-full border border-neutral-300 text-neutral-700 px-6 py-3 rounded-lg font-medium hover:bg-neutral-50 transition-colors"
+        >
+          <lucide-icon [img]="RefreshCwIcon" [size]="16" class="mr-2" />
+          Retry Loading
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+@else if (canProceed()) {
+
 <div class="mx-auto p-6">
   <!-- Header -->
   <div class="mb-8">
@@ -66,21 +109,100 @@
     </div>
   </div>
 
+  <!-- ERROR MESSAGES SECTION -->
+  <div class="space-y-4 mb-6">
+    <!-- Organization Error -->
+    @if (organizationError()) {
+      <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+        <div class="flex">
+          <div class="flex-shrink-0">
+            <lucide-angular [img]="AlertCircleIcon" [size]="20" class="text-red-500"></lucide-angular>
+          </div>
+          <div class="ml-3">
+            <h3 class="text-sm font-medium text-red-800">Organization Setup Required</h3>
+            <div class="mt-2 text-sm text-red-700">
+              <p>{{ organizationError() }}</p>
+            </div>
+            <div class="mt-4">
+              <div class="flex space-x-3">
+                <button 
+                  type="button"
+                  class="bg-red-100 px-3 py-2 rounded-md text-sm font-medium text-red-800 hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                  (click)="goToOrganizationSetup()"
+                >
+                  Complete Organization Setup
+                </button>
+                <button 
+                  type="button"
+                  class="bg-white px-3 py-2 rounded-md text-sm font-medium text-red-800 hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                  (click)="organizationError.set(null)"
+                >
+                  Dismiss
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- Publish Error -->
+    @if (publishError()) {
+      <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+        <div class="flex">
+          <div class="flex-shrink-0">
+            <lucide-angular [img]="AlertCircleIcon" [size]="20" class="text-red-500"></lucide-angular>
+          </div>
+          <div class="ml-3">
+            <h3 class="text-sm font-medium text-red-800">Publishing Failed</h3>
+            <div class="mt-2 text-sm text-red-700">
+              <p>{{ publishError() }}</p>
+            </div>
+            <div class="mt-4">
+              <div class="flex space-x-3">
+                <button 
+                  type="button"
+                  class="bg-red-100 px-3 py-2 rounded-md text-sm font-medium text-red-800 hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                  (click)="publishError.set(null)"
+                >
+                  Dismiss
+                </button>
+                @if (organizationError()) {
+                  <button 
+                    type="button"
+                    class="bg-white px-3 py-2 rounded-md text-sm font-medium text-red-800 hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                    (click)="goToOrganizationSetup()"
+                  >
+                    Fix Organization Setup
+                  </button>
+                }
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+  </div>
+
   <div class="grid grid-cols-1 lg:grid-cols-5 gap-8">
     <!-- Left Sidebar - Steps Navigation -->
     <div class="lg:col-span-1">
       <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-6 sticky top-6">
         <h3 class="font-semibold text-gray-900 mb-4">Progress</h3>
         <div class="space-y-1">
-          @for (step of steps(); track step.id; let i = $index) {
+          @for (step of steps; track step.id; let i = $index) {
             <div 
               class="flex items-center space-x-3 p-3 rounded-lg cursor-pointer transition-colors"
               [class]="getStepCardClasses(step.id)"
               (click)="goToStep(step.id)"
+              [class.opacity-50]="organizationError() && step.id === 'review'"
+              [class.cursor-not-allowed]="organizationError() && step.id === 'review'"
             >
               <div [class]="getStepIconClasses(step.id)">
                 @if (isStepCompleted(step.id)) {
                   <lucide-angular [img]="CheckIcon" [size]="16" class="text-white"></lucide-angular>
+                } @else if (organizationError() && step.id === 'review') {
+                  <lucide-angular [img]="AlertCircleIcon" [size]="16" class="text-red-500"></lucide-angular>
                 } @else {
                   <span class="text-xs font-semibold">{{ i + 1 }}</span>
                 }
@@ -88,6 +210,9 @@
               <div class="flex-1 min-w-0">
                 <p [class]="getStepTitleClasses(step.id)">{{ step.title }}</p>
                 <p [class]="getStepDescriptionClasses(step.id)">{{ step.description }}</p>
+                @if (organizationError() && step.id === 'review') {
+                  <p class="text-xs text-red-500 mt-1">Setup required</p>
+                }
               </div>
             </div>
           }
@@ -97,14 +222,19 @@
         <div class="mt-6">
           <div class="flex justify-between text-xs text-gray-600 mb-2">
             <span>Progress</span>
-            <span>{{ getCurrentStepIndex() + 1 }} of {{ steps().length }}</span>
+            <span>{{ getCurrentStepIndex() + 1 }} of {{ steps.length }}</span>
           </div>
           <div class="w-full bg-gray-200 rounded-full h-2">
             <div 
-              class="bg-primary-500 h-2 rounded-full transition-all duration-300" 
-              [style.width.%]="getProgressPercentage()"
+              class="h-2 rounded-full transition-all duration-300"
+              [class.bg-primary-500]="!organizationError()"
+              [class.bg-red-400]="organizationError()"
+              [style.width.%]="progressPercentage"
             ></div>
           </div>
+          @if (organizationError()) {
+            <p class="text-xs text-red-600 mt-2">Organization setup required to complete</p>
+          }
         </div>
       </div>
     </div>
@@ -113,14 +243,32 @@
     <div class="lg:col-span-3">
       <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
         <!-- Form Header -->
-        <div class="p-6 border-b border-gray-200 bg-gradient-to-r from-primary-50 to-indigo-50">
+        <div class="p-6 border-b border-gray-200"
+             [class.bg-gradient-to-r]="!organizationError()"
+             [class.from-primary-50]="!organizationError()"
+             [class.to-indigo-50]="!organizationError()"
+             [class.bg-red-50]="organizationError()">
           <div class="flex items-center space-x-4">
-            <div class="w-12 h-12 bg-primary-100 rounded-xl flex items-center justify-center">
-              <lucide-angular [img]="getCurrentStepIcon()" [size]="24" class="text-primary-600"></lucide-angular>
+            <div class="w-12 h-12 rounded-xl flex items-center justify-center"
+                 [class.bg-primary-100]="!organizationError()"
+                 [class.bg-red-100]="organizationError()">
+              @if (organizationError() && currentStep() === 'review') {
+                <lucide-angular [img]="AlertCircleIcon" [size]="24" class="text-red-600"></lucide-angular>
+              } @else {
+                <lucide-angular [img]="getCurrentStepIcon()" [size]="24" 
+                               [class.text-primary-600]="!organizationError()"
+                               [class.text-red-600]="organizationError()"></lucide-angular>
+              }
             </div>
             <div>
               <h2 class="text-xl font-semibold text-gray-900">{{ getCurrentStepTitle() }}</h2>
               <p class="text-sm text-gray-600 mt-1">{{ getCurrentStepSubtitle() }}</p>
+              @if (organizationError() && currentStep() === 'review') {
+                <p class="text-sm text-red-600 mt-1">
+                  <lucide-angular [img]="AlertCircleIcon" [size]="14" class="inline mr-1"></lucide-angular>
+                  Cannot publish without organization setup
+                </p>
+              }
             </div>
           </div>
         </div>
@@ -215,145 +363,141 @@
                 }
               </div>
 
+              <!-- Media & Branding Section -->
+              <div class="space-y-6">
+                <div class="flex items-center justify-between mb-4">
+                  <div class="flex items-center space-x-2">
+                    <lucide-angular [img]="SparklesIcon" [size]="20" class="text-primary-600"></lucide-angular>
+                    <h3 class="text-lg font-semibold text-gray-900">Media & Branding</h3>
+                  </div>
+                  <span class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">Optional</span>
+                </div>
 
-              <!-- Add this section after the Full Description field in your basic info step -->
-<!-- Media & Branding Section -->
-<div class="space-y-6">
-  <div class="flex items-center justify-between mb-4">
-    <div class="flex items-center space-x-2">
-      <lucide-angular [img]="SparklesIcon" [size]="20" class="text-primary-600"></lucide-angular>
-      <h3 class="text-lg font-semibold text-gray-900">Media & Branding</h3>
-    </div>
-    <span class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">Optional</span>
-  </div>
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                  <div class="flex items-start space-x-3">
+                    <lucide-angular [img]="LightbulbIcon" [size]="20" class="text-blue-600 mt-0.5"></lucide-angular>
+                    <div>
+                      <h4 class="text-sm font-medium text-blue-900">Enhance Your Opportunity</h4>
+                      <p class="text-sm text-blue-700 mt-1">
+                        Add images, videos, and branding to make your opportunity more attractive to potential applicants.
+                      </p>
+                    </div>
+                  </div>
+                </div>
 
-  <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-    <div class="flex items-start space-x-3">
-      <lucide-angular [img]="LightbulbIcon" [size]="20" class="text-blue-600 mt-0.5"></lucide-angular>
-      <div>
-        <h4 class="text-sm font-medium text-blue-900">Enhance Your Opportunity</h4>
-        <p class="text-sm text-blue-700 mt-1">
-          Add images, videos, and branding to make your opportunity more attractive to potential applicants.
-        </p>
-      </div>
-    </div>
-  </div>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <!-- Opportunity Image URL -->
+                  <div class="space-y-2">
+                    <label class="block text-sm font-semibold text-gray-700 flex items-center">
+                      <lucide-angular [img]="EyeIcon" [size]="16" class="mr-2"></lucide-angular>
+                      Opportunity Image URL
+                    </label>
+                    <input 
+                      type="url" 
+                      placeholder="https://example.com/opportunity-image.jpg"
+                      [value]="formData().fundingOpportunityImageUrl"
+                      (input)="updateField('fundingOpportunityImageUrl', $event)"
+                      [class]="getFieldClasses('fundingOpportunityImageUrl')"
+                    >
+                    <p class="text-xs text-gray-500">Add a compelling image to represent your opportunity</p>
+                    @if (getFieldError('fundingOpportunityImageUrl'); as error) {
+                      <p class="text-sm text-red-600 flex items-center">
+                        <lucide-angular [img]="AlertCircleIcon" [size]="14" class="mr-1"></lucide-angular>
+                        {{ error.message }}
+                      </p>
+                    }
+                    @if (formData().fundingOpportunityImageUrl && !getFieldError('fundingOpportunityImageUrl')) {
+                      <div class="mt-2 p-2 bg-gray-50 rounded border">
+                        <img 
+                          [src]="formData().fundingOpportunityImageUrl" 
+                          alt="Opportunity preview"
+                          class="w-full h-24 object-cover rounded"
+                          (error)="onImageError('fundingOpportunityImageUrl')"
+                        >
+                      </div>
+                    }
+                  </div>
 
-  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-    <!-- Opportunity Image URL -->
-  <div class="space-y-2">
-      <label class="block text-sm font-semibold text-gray-700 flex items-center">
-        <lucide-angular [img]="EyeIcon" [size]="16" class="mr-2"></lucide-angular>
-        Opportunity Image URL
-      </label>
-      <input 
-        type="url" 
-        placeholder="https://example.com/opportunity-image.jpg"
-        [value]="formData().fundingOpportunityImageUrl"
-        (input)="updateField('fundingOpportunityImageUrl', $event)"
-        [class]="getFieldClasses('fundingOpportunityImageUrl')"
-      >
-      <p class="text-xs text-gray-500">Add a compelling image to represent your opportunity</p>
-      @if (getFieldError('fundingOpportunityImageUrl'); as error) {
-        <p class="text-sm text-red-600 flex items-center">
-          <lucide-angular [img]="AlertCircleIcon" [size]="14" class="mr-1"></lucide-angular>
-          {{ error.message }}
-        </p>
-      }
-      @if (formData().fundingOpportunityImageUrl && !getFieldError('fundingOpportunityImageUrl')) {
-        <div class="mt-2 p-2 bg-gray-50 rounded border">
-          <img 
-            [src]="formData().fundingOpportunityImageUrl" 
-            alt="Opportunity preview"
-            class="w-full h-24 object-cover rounded"
-            (error)="onImageError('fundingOpportunityImageUrl')"
-          >
-        </div>
-      }
-    </div>
+                  <!-- Opportunity Video URL -->
+                  <div class="space-y-2">
+                    <label class="block text-sm font-semibold text-gray-700 flex items-center">
+                      <lucide-angular [img]="SparklesIcon" [size]="16" class="mr-2"></lucide-angular>
+                      Opportunity Video URL
+                    </label>
+                    <input 
+                      type="url" 
+                      placeholder="https://youtube.com/watch?v=example"
+                      [value]="formData().fundingOpportunityVideoUrl"
+                      (input)="updateField('fundingOpportunityVideoUrl', $event)"
+                      [class]="getFieldClasses('fundingOpportunityVideoUrl')"
+                    >
+                    <p class="text-xs text-gray-500">YouTube, Vimeo, or other video platform URL</p>
+                    @if (getFieldError('fundingOpportunityVideoUrl'); as error) {
+                      <p class="text-sm text-red-600 flex items-center">
+                        <lucide-angular [img]="AlertCircleIcon" [size]="14" class="mr-1"></lucide-angular>
+                        {{ error.message }}
+                      </p>
+                    }
+                  </div>
 
-    <!-- FIXED: Opportunity Video URL -->
-    <div class="space-y-2">
-      <label class="block text-sm font-semibold text-gray-700 flex items-center">
-        <lucide-angular [img]="SparklesIcon" [size]="16" class="mr-2"></lucide-angular>
-        Opportunity Video URL
-      </label>
-      <input 
-        type="url" 
-        placeholder="https://youtube.com/watch?v=example"
-        [value]="formData().fundingOpportunityVideoUrl"
-        (input)="updateField('fundingOpportunityVideoUrl', $event)"
-        [class]="getFieldClasses('fundingOpportunityVideoUrl')"
-      >
-      <p class="text-xs text-gray-500">YouTube, Vimeo, or other video platform URL</p>
-      @if (getFieldError('fundingOpportunityVideoUrl'); as error) {
-        <p class="text-sm text-red-600 flex items-center">
-          <lucide-angular [img]="AlertCircleIcon" [size]="14" class="mr-1"></lucide-angular>
-          {{ error.message }}
-        </p>
-      }
-    </div>
+                  <!-- Organization Name -->
+                  <div class="space-y-2">
+                    <label class="block text-sm font-semibold text-gray-700 flex items-center">
+                      <lucide-angular [img]="UsersIcon" [size]="16" class="mr-2"></lucide-angular>
+                      Organization Name
+                    </label>
+                    <input 
+                      type="text" 
+                      placeholder="Your organization or fund name"
+                      [value]="formData().funderOrganizationName"
+                      (input)="updateField('funderOrganizationName', $event)"
+                      [class]="getFieldClasses('funderOrganizationName')"
+                    >
+                    <p class="text-xs text-gray-500">How your organization will appear to applicants</p>
+                    @if (getFieldError('funderOrganizationName'); as error) {
+                      <p class="text-sm text-red-600 flex items-center">
+                        <lucide-angular [img]="AlertCircleIcon" [size]="14" class="mr-1"></lucide-angular>
+                        {{ error.message }}
+                      </p>
+                    }
+                  </div>
 
-    <!-- Organization Name -->
-    <div class="space-y-2">
-      <label class="block text-sm font-semibold text-gray-700 flex items-center">
-        <lucide-angular [img]="UsersIcon" [size]="16" class="mr-2"></lucide-angular>
-        Organization Name
-      </label>
-      <input 
-        type="text" 
-        placeholder="Your organization or fund name"
-        [value]="formData().funderOrganizationName"
-        (input)="updateField('funderOrganizationName', $event)"
-        [class]="getFieldClasses('funderOrganizationName')"
-      >
-      <p class="text-xs text-gray-500">How your organization will appear to applicants</p>
-      @if (getFieldError('funderOrganizationName'); as error) {
-        <p class="text-sm text-red-600 flex items-center">
-          <lucide-angular [img]="AlertCircleIcon" [size]="14" class="mr-1"></lucide-angular>
-          {{ error.message }}
-        </p>
-      }
-    </div>
-
-    <!-- Organization Logo URL -->
-      <div class="space-y-2">
-      <label class="block text-sm font-semibold text-gray-700 flex items-center">
-        <lucide-angular [img]="SettingsIcon" [size]="16" class="mr-2"></lucide-angular>
-        Organization Logo URL
-      </label>
-      <input 
-        type="url" 
-        placeholder="https://example.com/logo.png"
-        [value]="formData().funderOrganizationLogoUrl"
-        (input)="updateField('funderOrganizationLogoUrl', $event)"
-        [class]="getFieldClasses('funderOrganizationLogoUrl')"
-      >
-      <p class="text-xs text-gray-500">Your organization's logo for branding</p>
-      @if (getFieldError('funderOrganizationLogoUrl'); as error) {
-        <p class="text-sm text-red-600 flex items-center">
-          <lucide-angular [img]="AlertCircleIcon" [size]="14" class="mr-1"></lucide-angular>
-          {{ error.message }}
-        </p>
-      }
-      @if (formData().funderOrganizationLogoUrl && !getFieldError('funderOrganizationLogoUrl')) {
-        <div class="mt-2 p-2 bg-gray-50 rounded border">
-          <img 
-            [src]="formData().funderOrganizationLogoUrl" 
-            alt="Logo preview"
-            class="w-16 h-16 object-contain rounded"
-            (error)="onImageError('funderOrganizationLogoUrl')"
-          >
-        </div>
-      }
-    </div>
-  </div>
-</div>
+                  <!-- Organization Logo URL -->
+                  <div class="space-y-2">
+                    <label class="block text-sm font-semibold text-gray-700 flex items-center">
+                      <lucide-angular [img]="SettingsIcon" [size]="16" class="mr-2"></lucide-angular>
+                      Organization Logo URL
+                    </label>
+                    <input 
+                      type="url" 
+                      placeholder="https://example.com/logo.png"
+                      [value]="formData().funderOrganizationLogoUrl"
+                      (input)="updateField('funderOrganizationLogoUrl', $event)"
+                      [class]="getFieldClasses('funderOrganizationLogoUrl')"
+                    >
+                    <p class="text-xs text-gray-500">Your organization's logo for branding</p>
+                    @if (getFieldError('funderOrganizationLogoUrl'); as error) {
+                      <p class="text-sm text-red-600 flex items-center">
+                        <lucide-angular [img]="AlertCircleIcon" [size]="14" class="mr-1"></lucide-angular>
+                        {{ error.message }}
+                      </p>
+                    }
+                    @if (formData().funderOrganizationLogoUrl && !getFieldError('funderOrganizationLogoUrl')) {
+                      <div class="mt-2 p-2 bg-gray-50 rounded border">
+                        <img 
+                          [src]="formData().funderOrganizationLogoUrl" 
+                          alt="Logo preview"
+                          class="w-16 h-16 object-contain rounded"
+                          (error)="onImageError('funderOrganizationLogoUrl')"
+                        >
+                      </div>
+                    }
+                  </div>
+                </div>
+              </div>
             </div>
           }
 
-
-          
           <!-- Step: Investment Terms -->
           @if (currentStep() === 'terms') {
             <div class="space-y-8">
@@ -537,25 +681,6 @@
                     }
                   </div>
                 </div>
-
-                <!-- Investment Validation Summary -->
-                @if (currentStepErrors().length > 0) {
-                  <div class="bg-red-50 border border-red-200 rounded-lg p-4">
-                    <div class="flex">
-                      <lucide-angular [img]="AlertCircleIcon" [size]="20" class="text-red-500 mr-3 mt-0.5"></lucide-angular>
-                      <div>
-                        <h4 class="text-sm font-medium text-red-800 mb-2">Investment Amount Issues</h4>
-                        <ul class="text-sm text-red-700 space-y-1">
-                          @for (error of currentStepErrors(); track error.field) {
-                            @if (error.field.includes('Investment') || error.field.includes('Amount') || error.field.includes('Available')) {
-                              <li>• {{ error.message }}</li>
-                            }
-                          }
-                        </ul>
-                      </div>
-                    </div>
-                  </div>
-                }
               </div>
 
               <!-- Terms Section based on funding type -->
@@ -942,26 +1067,25 @@
                   </div>
                 }
 
-                <!-- Add this in the review step, after the business stages section -->
-@if (hasMediaContent()) {
-  <div class="mt-4">
-    <span class="text-gray-500 text-sm">Media & Branding:</span>
-    <div class="mt-1 space-y-1 text-sm">
-      @if (formData().fundingOpportunityImageUrl) {
-        <div>• Opportunity image attached</div>
-      }
-      @if (formData().fundingOpportunityVideoUrl) {
-        <div>• Opportunity video attached</div>
-      }
-      @if (formData().funderOrganizationName) {
-        <div>• Organization: {{ formData().funderOrganizationName }}</div>
-      }
-      @if (formData().funderOrganizationLogoUrl) {
-        <div>• Organization logo attached</div>
-      }
-    </div>
-  </div>
-}
+                @if (hasMediaContent()) {
+                  <div class="mt-4">
+                    <span class="text-gray-500 text-sm">Media & Branding:</span>
+                    <div class="mt-1 space-y-1 text-sm">
+                      @if (formData().fundingOpportunityImageUrl) {
+                        <div>• Opportunity image attached</div>
+                      }
+                      @if (formData().fundingOpportunityVideoUrl) {
+                        <div>• Opportunity video attached</div>
+                      }
+                      @if (formData().funderOrganizationName) {
+                        <div>• Organization: {{ formData().funderOrganizationName }}</div>
+                      }
+                      @if (formData().funderOrganizationLogoUrl) {
+                        <div>• Organization logo attached</div>
+                      }
+                    </div>
+                  </div>
+                }
               </div>
 
               <div class="bg-green-50 border border-green-200 rounded-lg p-4">
@@ -1014,7 +1138,8 @@
             <button 
               class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-all"
               (click)="saveDraft()"
-              [disabled]="isSaving()"
+              [disabled]="isSaving() || organizationError()"
+              [title]="organizationError() ? 'Organization setup required' : ''"
             >
               <lucide-angular [img]="SaveIcon" [size]="16" class="mr-2 inline"></lucide-angular>
               @if (isSaving()) {
@@ -1025,28 +1150,43 @@
             </button>
 
             @if (currentStep() === 'review') {
-              <button 
-                class="px-6 py-2 bg-primary-600 border border-transparent rounded-lg text-sm font-medium text-white hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 flex items-center transition-all"
-                (click)="publishOpportunity()"
-                [disabled]="!canPublish() || isPublishing()"
-              >
-                @if (isPublishing()) {
-                  <lucide-angular [img]="RefreshCwIcon" [size]="16" class="mr-2 animate-spin"></lucide-angular>
-                  @if (isEditMode()) {
-                    Saving Changes...
+              <!-- Enhanced Publish Button with Better Error States -->
+              @if (organizationError()) {
+                <div class="flex flex-col items-end">
+                  <button 
+                    class="px-6 py-2 bg-gray-300 border border-transparent rounded-lg text-sm font-medium text-gray-500 cursor-not-allowed flex items-center"
+                    disabled
+                    title="Organization setup required before publishing"
+                  >
+                    <lucide-angular [img]="AlertCircleIcon" [size]="16" class="mr-2"></lucide-angular>
+                    Setup Required
+                  </button>
+                  <p class="text-xs text-red-600 mt-1">Complete organization setup first</p>
+                </div>
+              } @else {
+                <button 
+                  class="px-6 py-2 bg-primary-600 border border-transparent rounded-lg text-sm font-medium text-white hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 flex items-center transition-all"
+                  (click)="publishOpportunity()"
+                  [disabled]="!canPublish() || isPublishing()"
+                >
+                  @if (isPublishing()) {
+                    <lucide-angular [img]="RefreshCwIcon" [size]="16" class="mr-2 animate-spin"></lucide-angular>
+                    @if (isEditMode()) {
+                      Saving Changes...
+                    } @else {
+                      Publishing...
+                    }
                   } @else {
-                    Publishing...
+                    @if (isEditMode()) {
+                      <lucide-angular [img]="SaveIcon" [size]="16" class="mr-2"></lucide-angular>
+                      Save Changes
+                    } @else {
+                      <lucide-angular [img]="CheckIcon" [size]="16" class="mr-2"></lucide-angular>
+                      Publish Opportunity
+                    }
                   }
-                } @else {
-                  @if (isEditMode()) {
-                    <lucide-angular [img]="SaveIcon" [size]="16" class="mr-2"></lucide-angular>
-                    Save Changes
-                  } @else {
-                    <lucide-angular [img]="CheckIcon" [size]="16" class="mr-2"></lucide-angular>
-                    Publish Opportunity
-                  }
-                }
-              </button>
+                </button>
+              }
             } @else {
               <button 
                 class="px-6 py-2 bg-primary-600 border border-transparent rounded-lg text-sm font-medium text-white hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 flex items-center transition-all"
@@ -1072,3 +1212,5 @@
     </div>
   </div>
 </div>
+
+}

@@ -224,89 +224,7 @@ saveToDatabase(): Observable<{ success: boolean; organizationId?: string }> {
   }
 }
 
-// 2. Enhanced updateExistingOrganization with detailed logging
-private updateExistingOrganization(orgId: string, data: Partial<FunderOnboardingData>): Observable<{ success: boolean; organizationId?: string }> {
-  console.log('🔍 DEBUG: updateExistingOrganization called with:', {
-    orgId,
-    dataKeys: Object.keys(data),
-    hasName: !!data.name
-  });
-
-  const orgUpdates = {
-    name: data.name,
-    description: data.description || null,
-    organization_type: data.organizationType || 'investment_fund',
-    status: data.status || 'active',
-    website: data.website || null,
-    logo_url: data.logoUrl || null,
-    legal_name: data.legalName || null,
-    registration_number: data.registrationNumber || null,
-    fspLicenseNumber: data.fspLicenseNumber || null,
-    ncrNumber: data.ncrNumber || null,
-    employee_count: this.parseEmployeeCount(data.employeeCount) || null,
-    assets_under_management: data.assetsUnderManagement || null,
-    email: data.email || null,
-    phone: data.phone || null,
-    address_line1: data.addressLine1 || null,
-    address_line2: data.addressLine2 || null,
-    city: data.city || null,
-    province: data.province || null,
-    postal_code: data.postalCode || null,
-    country: data.country || 'South Africa',
-    updated_at: new Date().toISOString()
-  };
-
-  console.log('🔍 DEBUG: Prepared org updates:', orgUpdates);
-  console.log('🔍 DEBUG: About to call Supabase update...');
-
-  return from(
-    this.supabaseService.from('organizations')
-      .update(orgUpdates)
-      .eq('id', orgId)
-      .select()
-      .single()
-  ).pipe(
-    tap(({ data: orgResult, error: orgError }) => {
-      console.log('🔍 DEBUG: Supabase response received:', {
-        hasData: !!orgResult,
-        hasError: !!orgError,
-        errorMessage: orgError?.message
-      });
-      
-      if (orgError) {
-        console.error('❌ DEBUG: Supabase error:', orgError);
-        throw orgError;
-      }
-      
-      console.log('✅ DEBUG: Supabase update successful:', orgResult);
-      
-      // Update local data with result
-      this.organizationData.update(current => ({
-        ...current,
-        id: orgResult.id
-      }));
-      this.saveToLocalStorage();
-      this.lastSavedToDatabase.set(new Date());
-      this.updateStateFromData();
-    }),
-    switchMap(() => {
-      console.log('🔍 DEBUG: Switching to success response');
-      return of({ success: true, organizationId: orgId });
-    }),
-    catchError(error => {
-      console.error('❌ DEBUG: Catch block triggered:', error);
-      this.error.set(error.message || 'Failed to save organization');
-      this.isSaving.set(false);
-      return throwError(() => error);
-    }),
-    tap(() => {
-      console.log('✅ DEBUG: Final tap - setting isSaving to false');
-      this.isSaving.set(false);
-      console.log('Organization updated successfully');
-    })
-  );
-}
-
+ 
 // 3. Add debugging method to check auth service
 debugAuthState(): void {
   console.log('🔍 DEBUG: Auth Service State Check');
@@ -406,33 +324,121 @@ checkOnboardingStatus(): Observable<OnboardingState> {
   // DATABASE MAPPING
   // ===============================
 
-  private mapDatabaseToModel(dbOrg: any): FunderOnboardingData {
-    return {
-      id: dbOrg.id,
-      name: dbOrg.name,
-      description: dbOrg.description,
-      organizationType: dbOrg.organization_type as OrganizationType,
-      status: dbOrg.status,
-      website: dbOrg.website,
-      logoUrl: dbOrg.logo_url,
-      legalName: dbOrg.legal_name,
-      registrationNumber: dbOrg.registration_number,
-      fspLicenseNumber: dbOrg.tax_number,
-      ncrNumber: dbOrg.founded_year,
-      employeeCount: dbOrg.employee_count,
-      assetsUnderManagement: dbOrg.assets_under_management,
-      isVerified: dbOrg.is_verified,
-      verificationDate: dbOrg.verification_date ? new Date(dbOrg.verification_date) : undefined,
-      email: dbOrg.email,
-      phone: dbOrg.phone,
-      addressLine1: dbOrg.address_line1,
-      addressLine2: dbOrg.address_line2,
-      city: dbOrg.city,
-      province: dbOrg.province,
-      postalCode: dbOrg.postal_code,
-      country: dbOrg.country || 'South Africa'
-    };
-  }
+// Fix the incorrect mapping in your service file
+// Replace the mapDatabaseToModel method in funder-onboarding.service.ts
+
+private mapDatabaseToModel(dbOrg: any): FunderOnboardingData {
+  return {
+    id: dbOrg.id,
+    name: dbOrg.name,
+    description: dbOrg.description,
+    organizationType: dbOrg.organization_type as OrganizationType,
+    status: dbOrg.status,
+    website: dbOrg.website,
+    logoUrl: dbOrg.logo_url,
+    legalName: dbOrg.legal_name,
+    registrationNumber: dbOrg.registration_number,
+    // FIXED: Now correctly mapping to the renamed columns
+    fspLicenseNumber: dbOrg.fsp_license_number,
+    ncrNumber: dbOrg.ncr_number,
+    employeeCount: dbOrg.employee_count,
+    assetsUnderManagement: dbOrg.assets_under_management,
+    isVerified: dbOrg.is_verified,
+    verificationDate: dbOrg.verification_date ? new Date(dbOrg.verification_date) : undefined,
+    email: dbOrg.email,
+    phone: dbOrg.phone,
+    addressLine1: dbOrg.address_line1,
+    addressLine2: dbOrg.address_line2,
+    city: dbOrg.city,
+    province: dbOrg.province,
+    postalCode: dbOrg.postal_code,
+    country: dbOrg.country || 'South Africa'
+  };
+}
+
+// Also fix the updateExistingOrganization method
+private updateExistingOrganization(orgId: string, data: Partial<FunderOnboardingData>): Observable<{ success: boolean; organizationId?: string }> {
+  console.log('🔍 DEBUG: updateExistingOrganization called with:', {
+    orgId,
+    dataKeys: Object.keys(data),
+    hasName: !!data.name
+  });
+
+  const orgUpdates = {
+    name: data.name,
+    description: data.description || null,
+    organization_type: data.organizationType || 'investment_fund',
+    status: data.status || 'active',
+    website: data.website || null,
+    logo_url: data.logoUrl || null,
+    legal_name: data.legalName || null,
+    registration_number: data.registrationNumber || null,
+    // FIXED: Now using correct column names
+    fsp_license_number: data.fspLicenseNumber || null,
+    ncr_number: data.ncrNumber?.toString() || null,
+    employee_count: this.parseEmployeeCount(data.employeeCount) || null,
+    assets_under_management: data.assetsUnderManagement || null,
+    email: data.email || null,
+    phone: data.phone || null,
+    address_line1: data.addressLine1 || null,
+    address_line2: data.addressLine2 || null,
+    city: data.city || null,
+    province: data.province || null,
+    postal_code: data.postalCode || null,
+    country: data.country || 'South Africa',
+    updated_at: new Date().toISOString()
+  };
+
+  console.log('🔍 DEBUG: Prepared org updates:', orgUpdates);
+  console.log('🔍 DEBUG: About to call Supabase update...');
+
+  return from(
+    this.supabaseService.from('organizations')
+      .update(orgUpdates)
+      .eq('id', orgId)
+      .select()
+      .single()
+  ).pipe(
+    tap(({ data: orgResult, error: orgError }) => {
+      console.log('🔍 DEBUG: Supabase response received:', {
+        hasData: !!orgResult,
+        hasError: !!orgError,
+        errorMessage: orgError?.message
+      });
+      
+      if (orgError) {
+        console.error('❌ DEBUG: Supabase error:', orgError);
+        throw orgError;
+      }
+      
+      console.log('✅ DEBUG: Supabase update successful:', orgResult);
+      
+      // Update local data with result
+      this.organizationData.update(current => ({
+        ...current,
+        id: orgResult.id
+      }));
+      this.saveToLocalStorage();
+      this.lastSavedToDatabase.set(new Date());
+      this.updateStateFromData();
+    }),
+    switchMap(() => {
+      console.log('🔍 DEBUG: Switching to success response');
+      return of({ success: true, organizationId: orgId });
+    }),
+    catchError(error => {
+      console.error('❌ DEBUG: Catch block triggered:', error);
+      this.error.set(error.message || 'Failed to save organization');
+      this.isSaving.set(false);
+      return throwError(() => error);
+    }),
+    tap(() => {
+      console.log('✅ DEBUG: Final tap - setting isSaving to false');
+      this.isSaving.set(false);
+      console.log('Organization updated successfully');
+    })
+  );
+}
 
   // ===============================
   // VALIDATION & STATE METHODS

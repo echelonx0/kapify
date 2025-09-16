@@ -711,7 +711,7 @@ private async getOrCreateTempOrganizationId(userId: string): Promise<string> {
   try {
     // First, try to find an existing organization for this user
     const { data: existingOrg, error: findError } = await this.supabaseService
-      .from('funder_organizations')
+      .from('organization_users')
       .select('id')
       .eq('user_id', userId)
       .single();
@@ -746,7 +746,7 @@ private async getOrCreateTempOrganizationId(userId: string): Promise<string> {
     };
 
     const { data: newOrg, error: createError } = await this.supabaseService
-      .from('funder_organizations')
+      .from('organization_users')
       .insert(tempOrgData)
       .select('id')
       .single();
@@ -765,7 +765,7 @@ private async getOrCreateTempOrganizationId(userId: string): Promise<string> {
     // Fallback: try to find any organization for this user (in case of race conditions)
     try {
       const { data: fallbackOrg } = await this.supabaseService
-        .from('funder_organizations')
+        .from('organization_users')
         .select('id')
         .eq('user_id', userId)
         .limit(1)
@@ -791,7 +791,7 @@ async checkUserOrganization(userId: string): Promise<{
 }> {
   try {
     const { data: org, error } = await this.supabaseService
-      .from('funder_organizations')
+      .from('organization_users')
       .select('id, name')
       .eq('user_id', userId)
       .single();
