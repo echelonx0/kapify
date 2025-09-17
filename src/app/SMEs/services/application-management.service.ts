@@ -305,144 +305,9 @@ export class ApplicationManagementService {
     );
   }
 
-  // ===============================
-  // PRIVATE METHODS - ENHANCED WITH DOCUMENT INTEGRATION
-  // ===============================
+  
 
-  /**
-   * Simplified fetch - now with optional document loading
-   */
-  private async fetchApplicationsSimplified(
-    opportunityId: string, 
-    includeDocuments: boolean = false
-  ): Promise<FundingApplication[]> {
-    try {
-      console.log('🔍 [DEBUG] Starting fetchApplicationsSimplified with documents:', includeDocuments);
-      console.log('🎯 [DEBUG] Opportunity ID:', opportunityId);
-
-      // Fetch applications
-      const { data, error } = await this.supabase
-        .from('applications')
-        .select('*')
-        .eq('opportunity_id', opportunityId)
-        .not('status', 'eq', 'withdrawn')
-        .not('status', 'eq', 'draft') 
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        console.error('🚫 [DEBUG] Supabase error details:', error);
-        throw new Error(`Supabase error: ${error.message}`);
-      }
-
-      if (!data || data.length === 0) {
-        console.log('📭 [DEBUG] No applications found');
-        return [];
-      }
-
-      console.log('✅ [DEBUG] Raw applications found:', data.length);
-
-      // Transform applications
-      let applications = this.transformApplicationsData(data);
-
-      // Optionally load documents for all applications
-      if (includeDocuments) {
-        applications = await this.enrichApplicationsWithDocuments(applications);
-      }
-
-      return applications;
-    } catch (error) {
-      console.error('💥 [DEBUG] Error in fetchApplicationsSimplified:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Get applications for organization - enhanced with documents
-   */
-  private async fetchApplicationsByOrganization(
-    organizationId: string, 
-    filter?: ApplicationFilter,
-    includeDocuments: boolean = false
-  ): Promise<FundingApplication[]> {
-    try {
-      console.log('Querying applications for organization:', organizationId);
-
-      // First, get opportunities for this organization
-      const { data: opportunities, error: oppError } = await this.supabase
-        .from('funding_opportunities')
-        .select('id')
-        .eq('organization_id', organizationId);
-
-      if (oppError) {
-        throw new Error(`Failed to fetch opportunities: ${oppError.message}`);
-      }
-
-      if (!opportunities || opportunities.length === 0) {
-        console.log('No opportunities found for organization:', organizationId);
-        return [];
-      }
-
-      const opportunityIds = opportunities.map(opp => opp.id);
-      console.log('Found opportunities:', opportunityIds.length);
-
-      // Now get applications for these opportunities
-      let query = this.supabase
-        .from('applications')
-        .select('*')
-        .in('opportunity_id', opportunityIds)
-        .not('status', 'eq', 'withdrawn')
-        .not('status', 'eq', 'draft');     
-
-      // Apply filters
-      if (filter?.status?.length) {
-        query = query.in('status', filter.status);
-      }
-
-      if (filter?.stage?.length) {
-        query = query.in('stage', filter.stage);
-      }
-
-      if (filter?.dateRange) {
-        query = query
-          .gte('created_at', filter.dateRange.start.toISOString())
-          .lte('created_at', filter.dateRange.end.toISOString());
-      }
-
-      const { data, error } = await query.order('created_at', { ascending: false });
-
-      if (error) {
-        console.error('Supabase error:', error);
-        throw new Error(`Supabase error: ${error.message}`);
-      }
-
-      if (!data || data.length === 0) {
-        console.log('No applications found for organization opportunities');
-        return [];
-      }
-
-      console.log('Raw applications found:', data.length);
-      let applications = this.transformApplicationsData(data);
-
-      // Apply search filter (client-side)
-      if (filter?.searchQuery) {
-        const searchLower = filter.searchQuery.toLowerCase();
-        applications = applications.filter(app =>
-          app.title.toLowerCase().includes(searchLower) ||
-          app.description?.toLowerCase().includes(searchLower)
-        );
-      }
-
-      // Optionally load documents
-      if (includeDocuments) {
-        applications = await this.enrichApplicationsWithDocuments(applications);
-      }
-
-      return applications;
-    } catch (error) {
-      console.error('Error in fetchApplicationsByOrganization:', error);
-      throw error;
-    }
-  }
+ 
 
   /**
    * Get applications with user details AND documents
@@ -874,34 +739,7 @@ private async fetchApplicantDocuments(applicantId: string): Promise<DocumentSect
     }
   }
 
-  private async fetchApplicationStats(
-    opportunityId?: string,
-    organizationId?: string
-  ): Promise<ApplicationStats> {
-    try {
-      let query = this.supabase
-        .from('applications')
-        .select('*', { count: 'exact' });
-
-      if (opportunityId) {
-        query = query.eq('opportunity_id', opportunityId);
-      }
-
-      // Exclude withdrawn and draft
-      query = query.not('status', 'in', ['withdrawn', 'draft']);
-
-      const { data, error } = await query;
-
-      if (error) {
-        throw new Error(`Failed to fetch stats: ${error.message}`);
-      }
-
-      return this.calculateStats(data || []);
-    } catch (error) {
-      console.error('Error fetching application stats:', error);
-      throw error;
-    }
-  }
+ 
 
   // ===============================
   // DATA TRANSFORMATION  
@@ -1212,4 +1050,175 @@ private async generateDirectDownloadUrl(applicantId: string, documentType: strin
       return { total: 0, byType: {}, verified: 0, pending: 0 };
     }
   }
+
+  private async fetchApplicationsSimplified(
+  opportunityId: string, 
+  includeDocuments: boolean = false
+): Promise<FundingApplication[]> {
+  try {
+    console.log('🔍 [DEBUG] Starting fetchApplicationsSimplified with documents:', includeDocuments);
+    console.log('🎯 [DEBUG] Opportunity ID:', opportunityId);
+
+    // FIXED: Correct Supabase query syntax
+    const { data, error } = await this.supabase
+      .from('applications')
+      .select('*')
+      .eq('opportunity_id', opportunityId)
+      .not('status', 'in', '(withdrawn,draft)')  // ✅ FIXED: Correct syntax
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('🚫 [DEBUG] Supabase error details:', error);
+      throw new Error(`Supabase error: ${error.message}`);
+    }
+
+    if (!data || data.length === 0) {
+      console.log('📭 [DEBUG] No applications found');
+      return [];
+    }
+
+    console.log('✅ [DEBUG] Raw applications found:', data.length);
+
+    // Transform applications
+    let applications = this.transformApplicationsData(data);
+
+    // Optionally load documents for all applications
+    if (includeDocuments) {
+      applications = await this.enrichApplicationsWithDocuments(applications);
+    }
+
+    return applications;
+  } catch (error) {
+    console.error('💥 [DEBUG] Error in fetchApplicationsSimplified:', error);
+    throw error;
+  }
+}
+
+// ===============================
+// FIXED: fetchApplicationsByOrganization method
+// ===============================
+private async fetchApplicationsByOrganization(
+  organizationId: string, 
+  filter?: ApplicationFilter,
+  includeDocuments: boolean = false
+): Promise<FundingApplication[]> {
+  try {
+    console.log('Querying applications for organization:', organizationId);
+
+    // First, get opportunities for this organization
+    const { data: opportunities, error: oppError } = await this.supabase
+      .from('funding_opportunities')
+      .select('id')
+      .eq('organization_id', organizationId);
+
+    if (oppError) {
+      throw new Error(`Failed to fetch opportunities: ${oppError.message}`);
+    }
+
+    if (!opportunities || opportunities.length === 0) {
+      console.log('No opportunities found for organization:', organizationId);
+      return [];
+    }
+
+    const opportunityIds = opportunities.map(opp => opp.id);
+    console.log('Found opportunities:', opportunityIds.length);
+
+    // FIXED: Correct query syntax
+    let query = this.supabase
+      .from('applications')
+      .select('*')
+      .in('opportunity_id', opportunityIds)
+      .not('status', 'in', '(withdrawn,draft)');  // ✅ FIXED: Correct syntax
+
+    // Apply filters
+    if (filter?.status?.length) {
+      query = query.in('status', filter.status);
+    }
+
+    if (filter?.stage?.length) {
+      query = query.in('stage', filter.stage);
+    }
+
+    if (filter?.dateRange) {
+      query = query
+        .gte('created_at', filter.dateRange.start.toISOString())
+        .lte('created_at', filter.dateRange.end.toISOString());
+    }
+
+    const { data, error } = await query.order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Supabase error:', error);
+      throw new Error(`Supabase error: ${error.message}`);
+    }
+
+    if (!data || data.length === 0) {
+      console.log('No applications found for organization opportunities');
+      return [];
+    }
+
+    console.log('Raw applications found:', data.length);
+    let applications = this.transformApplicationsData(data);
+
+    // Apply search filter (client-side)
+    if (filter?.searchQuery) {
+      const searchLower = filter.searchQuery.toLowerCase();
+      applications = applications.filter(app =>
+        app.title.toLowerCase().includes(searchLower) ||
+        app.description?.toLowerCase().includes(searchLower)
+      );
+    }
+
+    // Optionally load documents
+    if (includeDocuments) {
+      applications = await this.enrichApplicationsWithDocuments(applications);
+    }
+
+    return applications;
+  } catch (error) {
+    console.error('Error in fetchApplicationsByOrganization:', error);
+    throw error;
+  }
+}
+
+// ===============================
+// FIXED: fetchApplicationStats method
+// ===============================
+private async fetchApplicationStats(
+  opportunityId?: string,
+  organizationId?: string
+): Promise<ApplicationStats> {
+  try {
+    let query = this.supabase
+      .from('applications')
+      .select('*', { count: 'exact' });
+
+    if (opportunityId) {
+      query = query.eq('opportunity_id', opportunityId);
+    }
+
+    // FIXED: Use individual not() calls or alternative approach
+    // Option 1: Use individual not() calls
+    query = query
+      .not('status', 'eq', 'withdrawn')
+      .not('status', 'eq', 'draft');
+
+    // Alternative Option 2: Use neq (not equal) for each
+    // query = query
+    //   .neq('status', 'withdrawn')
+    //   .neq('status', 'draft');
+
+    const { data, error } = await query;
+
+    if (error) {
+      throw new Error(`Failed to fetch stats: ${error.message}`);
+    }
+
+    return this.calculateStats(data || []);
+  } catch (error) {
+    console.error('Error fetching application stats:', error);
+    throw error;
+  }
+}
+
 }

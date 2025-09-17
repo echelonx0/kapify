@@ -443,7 +443,7 @@ export class OrganizationOnboardingLayoutComponent implements OnInit {
         this.onboardingService.requestVerification().subscribe({
           next: (result) => {
             console.log('✅ Verification requested:', result.message);
-            this.router.navigate(['/funder-dashboard']);
+            this.router.navigate(['/funder/dashboard']);
           },
           error: (error) => {
             console.error('❌ Verification request failed:', error);

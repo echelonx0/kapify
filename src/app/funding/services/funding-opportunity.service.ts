@@ -1,5 +1,3 @@
- 
-
 // src/app/funder/services/funding-opportunity.service.ts
 import { Injectable, signal, inject } from '@angular/core';
 import { Observable, from, throwError, BehaviorSubject } from 'rxjs';

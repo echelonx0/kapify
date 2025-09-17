@@ -2,13 +2,16 @@
 import { Component, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, NavigationEnd } from '@angular/router';
-import { LucideAngularModule, Bell, Settings, Info, Zap } from 'lucide-angular';
+import { LucideAngularModule, Bell, Settings, Zap } from 'lucide-angular';
 import { filter, map, startWith } from 'rxjs/operators';
 import { ProfileManagementService } from '../../services/profile-management.service';
+import { VersionService } from '../../services/version.service';
+ 
 
 interface RouteConfig {
   title: string;
   description: string;
+  showVersion?: boolean;
 }
 
 @Component({
@@ -17,24 +20,6 @@ interface RouteConfig {
   imports: [CommonModule, LucideAngularModule],
   template: `
     <header class="bg-white border-b border-neutral-200 shadow-sm relative">
-      <!-- Version indicator - top right corner -->
-      <div class="absolute top-2 right-6 z-10">
-        <div class="group relative">
-          <div class="flex items-center space-x-1 px-2 py-1 bg-neutral-100 hover:bg-neutral-200 rounded-full transition-all duration-200 cursor-pointer">
-            <lucide-icon [img]="InfoIcon" [size]="12" class="text-neutral-500" />
-            <span class="text-xs font-medium text-neutral-600">{{ appVersion }}</span>
-          </div>
-          
-          <!-- Version tooltip -->
-          <div class="absolute right-0 top-full mt-2 px-3 py-2 bg-neutral-900 text-white text-xs rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 whitespace-nowrap z-20">
-            <div class="font-medium">FundFlow Platform</div>
-            <div class="text-neutral-300">Version {{ appVersion }}</div>
-            <div class="text-neutral-400">{{ buildDate }}</div>
-            <div class="absolute -top-1 right-4 w-2 h-2 bg-neutral-900 rotate-45"></div>
-          </div>
-        </div>
-      </div>
-
       <div class="px-6 py-6">
         <div class="flex items-center justify-between ml-16">
           <!-- Left side - Title and description -->
@@ -52,10 +37,52 @@ interface RouteConfig {
               }
             </div>
             
-            <!-- Description with better typography -->
-            <p class="text-neutral-600 leading-relaxed max-w-4xl">
-              {{ currentRouteConfig().description }}
-            </p>
+            <!-- Description with integrated version badge -->
+            <div class="flex items-center flex-wrap gap-3">
+              <p class="text-neutral-600 leading-relaxed max-w-4xl">
+                {{ currentRouteConfig().description }}
+              </p>
+              
+              @if (shouldShowVersion()) {
+                <!-- Sleek version badge integrated into description -->
+                <div class="group relative inline-flex items-center">
+                  <div class="flex items-center space-x-2 px-3 py-1.5 bg-gradient-to-r from-neutral-50 to-neutral-100 hover:from-primary-50 hover:to-primary-100 border border-neutral-200 hover:border-primary-200 rounded-full transition-all duration-300 cursor-pointer shadow-sm hover:shadow-md">
+                    <!-- Version dot indicator -->
+                    <div class="w-1.5 h-1.5 rounded-full bg-gradient-to-r from-green-400 to-green-500 animate-pulse"></div>
+                    
+                    <!-- Version text -->
+                    <span class="text-xs font-medium text-neutral-600 group-hover:text-primary-700 transition-colors">
+                      {{ versionService.shortVersion() }}
+                    </span>
+                    
+                    <!-- Environment indicator for non-production -->
+                    @if (!versionService.isProduction()) {
+                      <div class="px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded"
+                           [class]="versionService.getEnvironmentBadgeClass()">
+                        {{ versionService.environment() }}
+                      </div>
+                    }
+                  </div>
+                  
+                  <!-- Enhanced hover tooltip -->
+                  <div class="absolute left-0 top-full mt-3 px-4 py-3 bg-neutral-900 text-white text-xs rounded-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 whitespace-nowrap z-20 shadow-xl">
+                    <div class="space-y-1">
+                      <div class="font-semibold text-white">FundFlow Platform</div>
+                      <div class="text-neutral-200">{{ versionService.detailedVersion() }}</div>
+                      @if (versionService.commitHash()) {
+                        <div class="text-neutral-400 text-[10px] font-mono">{{ versionService.commitHash() }}</div>
+                      }
+                      @if (!versionService.isProduction()) {
+                        <div class="text-yellow-300 text-[10px] uppercase font-bold tracking-wide">
+                          {{ versionService.environment() }} BUILD
+                        </div>
+                      }
+                    </div>
+                    <div class="absolute -top-1.5 left-4 w-3 h-3 bg-neutral-900 rotate-45"></div>
+                  </div>
+                </div>
+              }
+            </div>
           </div>
        
           <!-- Right side - Actions and user info -->
@@ -142,64 +169,70 @@ interface RouteConfig {
 export class DashboardHeaderComponent {
   private router = inject(Router);
   private profileService = inject(ProfileManagementService);
+  public versionService = inject(VersionService);
   
   BellIcon = Bell;
   SettingsIcon = Settings;
-  InfoIcon = Info;
   ZapIcon = Zap;
-  
-  // Version information
-  appVersion = '2.4.1';
-  buildDate = 'Dec 2024';
   
   // Navigation state
   isNavigating = false;
 
-  // Route configurations - enhanced with priority flags
+  // Route configurations - enhanced with version display control
   private routeConfigs: Record<string, RouteConfig & { priority?: boolean }> = {
     '/dashboard': {
       title: 'Welcome back, {{name}}!',
       description: 'Track your applications, explore new opportunities, and manage your business profile.',
+      showVersion: true // Show version on main dashboard
     },
     '/administrator': {
       title: 'Admin Console',
       description: 'Manage users, system settings, and monitor platform performance.',
-      priority: true
+      priority: true,
+      showVersion: true
     },
     '/administrator/dashboard': {
       title: 'Admin Dashboard',
       description: 'Overview of system metrics, user activity, and key performance indicators.',
-      priority: true
+      priority: true,
+      showVersion: true
     },
     '/profile': {
       title: 'Your Profile',
       description: 'Manage your personal information, business details, and account preferences. Keep your profile updated to improve your funding opportunities.',
+      showVersion: false
     },
     '/applications': {
       title: 'Your Applications',
       description: 'Track the status of your funding applications, view feedback, and submit new applications to grow your business.',
-      priority: true
+      priority: true,
+      showVersion: false
     },
     '/opportunities': {
       title: 'Funding Opportunities',
       description: 'Discover funding opportunities tailored to your business. Filter by amount, type, and requirements to find the perfect match.',
-      priority: true
+      priority: true,
+      showVersion: false
     },
     '/documents': {
       title: 'Document Center',
       description: 'Upload, organize, and manage all your business documents. Having complete documentation speeds up the application process.',
+      showVersion: false
     },
     '/settings': {
       title: 'Account Settings',
       description: 'Configure your account preferences, notification settings, and security options.',
+      showVersion: false
     },
     '/analytics': {
       title: 'Business Analytics',
       description: 'View insights about your business performance, funding progress, and market opportunities.',
+      showVersion: false
     },
     '/team': {
       title: 'Team Management',
       description: 'Manage your team members, assign roles, and control access to your business information.',
+      showVersion: false
     }
   };
 
@@ -247,7 +280,7 @@ export class DashboardHeaderComponent {
     return typeMap[user.userType] || user.userType;
   });
 
-  // Enhanced route configuration with priority detection
+  // Enhanced route configuration with version control
   currentRouteConfig = computed(() => {
     const currentPath = this.router.url.split('?')[0];
     const config = this.routeConfigs[currentPath] || this.routeConfigs['/dashboard'];
@@ -258,13 +291,19 @@ export class DashboardHeaderComponent {
     return {
       title,
       description: config.description,
-      priority: config.priority || false
+      priority: config.priority || false,
+      showVersion: config.showVersion || false
     };
   });
 
   // Check if current route is high priority
   isHighPriorityRoute = computed(() => {
     return this.currentRouteConfig().priority;
+  });
+
+  // Check if version should be displayed on current route
+  shouldShowVersion = computed(() => {
+    return this.currentRouteConfig().showVersion;
   });
 
   // Profile completion logic

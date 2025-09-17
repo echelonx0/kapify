@@ -11,7 +11,7 @@ export interface Activity {
   id: string;
   userId: string;
   organizationId?: string;
-  type: 'funding' | 'partnership' | 'milestone' | 'system' | 'application' | 'profile' | 'document';
+  type: 'funding' | 'partnership' | 'milestone' | 'system' | 'application' | 'profile' | 'document' | 'verification';
   action: string; // More specific action like 'created', 'updated', 'submitted'
   message: string;
   entityType?: string; // What was acted upon: 'application', 'opportunity', 'profile'
@@ -556,7 +556,8 @@ export class DatabaseActivityService {
       'system': 'System',
       'application': 'Application',
       'profile': 'Profile',
-      'document': 'Document'
+      'document': 'Document',
+      'verification': 'Verification'
     };
     
     return typeMap[type] || 'Activity';
@@ -573,7 +574,8 @@ export class DatabaseActivityService {
       'system': 'gray',
       'application': 'orange',
       'profile': 'cyan',
-      'document': 'yellow'
+      'document': 'yellow',
+      'verification': 'teal'
     };
     
     return colorMap[type] || 'gray';

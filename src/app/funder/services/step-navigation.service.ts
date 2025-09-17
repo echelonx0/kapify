@@ -1,6 +1,6 @@
 // src/app/funder/services/step-navigation.service.ts
 import { Injectable, signal, computed, inject } from '@angular/core';
-import { OpportunityFormStateService, ValidationError } from './opportunity-form-state.service';
+import { OpportunityFormStateService } from './opportunity-form-state.service';
 import { 
   Target, 
   DollarSign, 

@@ -177,52 +177,93 @@ getOrganizationStatus(): 'loading' | 'existing' | 'new' | 'error' {
  
  
 // 1. Enhanced saveToDatabase method with detailed logging
-saveToDatabase(): Observable<{ success: boolean; organizationId?: string }> {
-  console.log('🔍 DEBUG: saveToDatabase() called');
-  
-  const user = this.authService.user();
-  console.log('🔍 DEBUG: User check:', !!user, user?.id);
-  
-  if (!user) {
-    console.log('❌ DEBUG: No user found');
-    this.error.set('Please log in to save');
-    return throwError(() => new Error('Not authenticated'));
+ saveToDatabase(): Observable<{ success: boolean; organizationId?: string }> {
+    console.log('🔍 DEBUG: saveToDatabase() called');
+    
+    const user = this.authService.user();
+    console.log('🔍 DEBUG: User check:', !!user, user?.id);
+    
+    if (!user) {
+      console.log('❌ DEBUG: No user found');
+      this.error.set('Please log in to save');
+      return throwError(() => new Error('Not authenticated'));
+    }
+
+    const data = this.organizationData();
+    console.log('🔍 DEBUG: Organization data:', {
+      hasName: !!data.name?.trim(),
+      hasId: !!data.id,
+      name: data.name,
+      id: data.id
+    });
+    
+    // Pre-validate before attempting save
+    const validation = this.validateDataForDatabase(data);
+    if (!validation.isValid) {
+      console.log('❌ DEBUG: Pre-validation failed:', validation.errors);
+      this.error.set(`Validation failed: ${validation.errors[0]}`);
+      return throwError(() => new Error('Validation failed'));
+    }
+
+    this.isSaving.set(true);
+    this.error.set(null);
+    console.log('🔍 DEBUG: Set isSaving to true');
+
+    // Check if user has existing organization
+    const existingOrgId = this.authService.getCurrentUserOrganizationId();
+    console.log('🔍 DEBUG: Existing org ID from auth service:', existingOrgId);
+    
+    if (existingOrgId) {
+      console.log('🔍 DEBUG: Calling updateExistingOrganization with ID:', existingOrgId);
+      return this.updateExistingOrganization(existingOrgId, data);
+    } else {
+      console.log('❌ DEBUG: No existing organization ID found');
+      this.error.set('No organization found - please contact support');
+      this.isSaving.set(false);
+      return throwError(() => new Error('Organization missing'));
+    }
   }
 
-  const data = this.organizationData();
-  console.log('🔍 DEBUG: Organization data:', {
-    hasName: !!data.name?.trim(),
-    hasId: !!data.id,
-    name: data.name,
-    id: data.id
-  });
-  
-  if (!data.name?.trim()) {
-    console.log('❌ DEBUG: No organization name');
-    this.error.set('Organization name is required');
-    return throwError(() => new Error('Name required'));
+  // ===============================
+  // ADDITIONAL HELPER METHODS
+  // ===============================
+
+  // Method to test database connection and permissions
+  testDatabaseConnection(): Observable<boolean> {
+    const orgId = this.authService.getCurrentUserOrganizationId();
+    if (!orgId) {
+      return of(false);
+    }
+
+    return from(
+      this.supabaseService.from('organizations')
+        .select('id, name')
+        .eq('id', orgId)
+        .single()
+    ).pipe(
+      map(({ data, error }) => {
+        if (error) {
+          console.error('Database connection test failed:', error);
+          return false;
+        }
+        console.log('Database connection test passed:', data?.name);
+        return true;
+      }),
+      catchError(() => of(false))
+    );
   }
 
-  this.isSaving.set(true);
-  this.error.set(null);
-  console.log('🔍 DEBUG: Set isSaving to true');
-
-  // Check if user has existing organization
-  const existingOrgId = this.authService.getCurrentUserOrganizationId();
-  console.log('🔍 DEBUG: Existing org ID from auth service:', existingOrgId);
-  
-  if (existingOrgId) {
-    console.log('🔍 DEBUG: Calling updateExistingOrganization with ID:', existingOrgId);
-    // UPDATE existing organization
-    return this.updateExistingOrganization(existingOrgId, data);
-  } else {
-    console.log('❌ DEBUG: No existing organization ID found');
-    // This shouldn't happen based on your data, but handle gracefully
-    this.error.set('No organization found - please contact support');
-    this.isSaving.set(false);
-    return throwError(() => new Error('Organization missing'));
+  // Method to validate specific fields before saving
+  validateField(fieldName: keyof FunderOnboardingData, value: any): { isValid: boolean; error?: string } {
+    const tempData = { [fieldName]: value };
+    const validation = this.validateDataForDatabase(tempData);
+    
+    return {
+      isValid: validation.errors.length === 0,
+      error: validation.errors[0]
+    };
   }
-}
+
 
  
 // 3. Add debugging method to check auth service
@@ -324,9 +365,6 @@ checkOnboardingStatus(): Observable<OnboardingState> {
   // DATABASE MAPPING
   // ===============================
 
-// Fix the incorrect mapping in your service file
-// Replace the mapDatabaseToModel method in funder-onboarding.service.ts
-
 private mapDatabaseToModel(dbOrg: any): FunderOnboardingData {
   return {
     id: dbOrg.id,
@@ -357,88 +395,201 @@ private mapDatabaseToModel(dbOrg: any): FunderOnboardingData {
 }
 
 // Also fix the updateExistingOrganization method
-private updateExistingOrganization(orgId: string, data: Partial<FunderOnboardingData>): Observable<{ success: boolean; organizationId?: string }> {
-  console.log('🔍 DEBUG: updateExistingOrganization called with:', {
-    orgId,
-    dataKeys: Object.keys(data),
-    hasName: !!data.name
-  });
+// private updateExistingOrganization(orgId: string, data: Partial<FunderOnboardingData>): Observable<{ success: boolean; organizationId?: string }> {
+//   console.log('🔍 DEBUG: updateExistingOrganization called with:', {
+//     orgId,
+//     dataKeys: Object.keys(data),
+//     hasName: !!data.name
+//   });
 
-  const orgUpdates = {
-    name: data.name,
-    description: data.description || null,
-    organization_type: data.organizationType || 'investment_fund',
-    status: data.status || 'active',
-    website: data.website || null,
-    logo_url: data.logoUrl || null,
-    legal_name: data.legalName || null,
-    registration_number: data.registrationNumber || null,
-    // FIXED: Now using correct column names
-    fsp_license_number: data.fspLicenseNumber || null,
-    ncr_number: data.ncrNumber?.toString() || null,
-    employee_count: this.parseEmployeeCount(data.employeeCount) || null,
-    assets_under_management: data.assetsUnderManagement || null,
-    email: data.email || null,
-    phone: data.phone || null,
-    address_line1: data.addressLine1 || null,
-    address_line2: data.addressLine2 || null,
-    city: data.city || null,
-    province: data.province || null,
-    postal_code: data.postalCode || null,
-    country: data.country || 'South Africa',
-    updated_at: new Date().toISOString()
-  };
+//   const orgUpdates = {
+//     name: data.name,
+//     description: data.description || null,
+//     organization_type: data.organizationType || 'investment_fund',
+//     status: data.status || 'active',
+//     website: data.website || null,
+//     logo_url: data.logoUrl || null,
+//     legal_name: data.legalName || null,
+//     registration_number: data.registrationNumber || null,
+//     // FIXED: Now using correct column names
+//     fsp_license_number: data.fspLicenseNumber || null,
+//     ncr_number: data.ncrNumber?.toString() || null,
+//     employee_count: this.parseEmployeeCount(data.employeeCount) || null,
+//     assets_under_management: data.assetsUnderManagement || null,
+//     email: data.email || null,
+//     phone: data.phone || null,
+//     address_line1: data.addressLine1 || null,
+//     address_line2: data.addressLine2 || null,
+//     city: data.city || null,
+//     province: data.province || null,
+//     postal_code: data.postalCode || null,
+//     country: data.country || 'South Africa',
+//     updated_at: new Date().toISOString()
+//   };
 
-  console.log('🔍 DEBUG: Prepared org updates:', orgUpdates);
-  console.log('🔍 DEBUG: About to call Supabase update...');
+//   console.log('🔍 DEBUG: Prepared org updates:', orgUpdates);
+//   console.log('🔍 DEBUG: About to call Supabase update...');
 
-  return from(
-    this.supabaseService.from('organizations')
-      .update(orgUpdates)
-      .eq('id', orgId)
-      .select()
-      .single()
-  ).pipe(
-    tap(({ data: orgResult, error: orgError }) => {
-      console.log('🔍 DEBUG: Supabase response received:', {
-        hasData: !!orgResult,
-        hasError: !!orgError,
-        errorMessage: orgError?.message
-      });
+//   return from(
+//     this.supabaseService.from('organizations')
+//       .update(orgUpdates)
+//       .eq('id', orgId)
+//       .select()
+//       .maybeSingle()
+//   ).pipe(
+//     tap(({ data: orgResult, error: orgError }) => {
+//       console.log('🔍 DEBUG: Supabase response received:', {
+//         hasData: !!orgResult,
+//         hasError: !!orgError,
+//         errorMessage: orgError?.message
+//       });
       
-      if (orgError) {
-        console.error('❌ DEBUG: Supabase error:', orgError);
-        throw orgError;
-      }
+//       if (orgError) {
+//         console.error('❌ DEBUG: Supabase error:', orgError);
+//         throw orgError;
+//       }
       
-      console.log('✅ DEBUG: Supabase update successful:', orgResult);
+//       console.log('✅ DEBUG: Supabase update successful:', orgResult);
       
-      // Update local data with result
-      this.organizationData.update(current => ({
-        ...current,
-        id: orgResult.id
-      }));
-      this.saveToLocalStorage();
-      this.lastSavedToDatabase.set(new Date());
-      this.updateStateFromData();
-    }),
-    switchMap(() => {
-      console.log('🔍 DEBUG: Switching to success response');
-      return of({ success: true, organizationId: orgId });
-    }),
-    catchError(error => {
-      console.error('❌ DEBUG: Catch block triggered:', error);
-      this.error.set(error.message || 'Failed to save organization');
+//       // Update local data with result
+//       this.organizationData.update(current => ({
+//         ...current,
+//         id: orgResult.id
+//       }));
+//       this.saveToLocalStorage();
+//       this.lastSavedToDatabase.set(new Date());
+//       this.updateStateFromData();
+//     }),
+//     switchMap(() => {
+//       console.log('🔍 DEBUG: Switching to success response');
+//       return of({ success: true, organizationId: orgId });
+//     }),
+//     catchError(error => {
+//       console.error('❌ DEBUG: Catch block triggered:', error);
+//       this.error.set(error.message || 'Failed to save organization');
+//       this.isSaving.set(false);
+//       return throwError(() => error);
+//     }),
+//     tap(() => {
+//       console.log('✅ DEBUG: Final tap - setting isSaving to false');
+//       this.isSaving.set(false);
+//       console.log('Organization updated successfully');
+//     })
+//   );
+// }
+
+private updateExistingOrganization(
+    orgId: string, 
+    data: Partial<FunderOnboardingData>
+  ): Observable<{ success: boolean; organizationId?: string }> {
+    console.log('🔍 DEBUG: updateExistingOrganization called with:', {
+      orgId,
+      dataKeys: Object.keys(data),
+      hasName: !!data.name
+    });
+
+    // STEP 1: Validate and sanitize data
+    const validation = this.validateDataForDatabase(data);
+    
+    if (!validation.isValid) {
+      console.error('❌ DEBUG: Data validation failed:', validation.errors);
+      this.error.set(`Validation failed: ${validation.errors.join(', ')}`);
       this.isSaving.set(false);
-      return throwError(() => error);
-    }),
-    tap(() => {
-      console.log('✅ DEBUG: Final tap - setting isSaving to false');
-      this.isSaving.set(false);
-      console.log('Organization updated successfully');
-    })
-  );
-}
+      return throwError(() => new Error(validation.errors.join(', ')));
+    }
+
+    console.log('✅ DEBUG: Data validation passed');
+    console.log('🔍 DEBUG: Sanitized data:', validation.sanitizedData);
+
+    // STEP 2: Perform Supabase update with correct syntax
+    return from(
+      this.supabaseService.from('organizations')
+        .update(validation.sanitizedData)
+        .eq('id', orgId)
+        .select('*')
+        .single() // Use single() instead of maybeSingle() to ensure we get data back
+    ).pipe(
+      tap(({ data: orgResult, error: orgError }) => {
+        console.log('🔍 DEBUG: Supabase response received:', {
+          hasData: !!orgResult,
+          hasError: !!orgError,
+          errorMessage: orgError?.message,
+          errorCode: orgError?.code
+        });
+        
+        if (orgError) {
+          console.error('❌ DEBUG: Supabase error details:', {
+            message: orgError.message,
+            code: orgError.code,
+            details: orgError.details,
+            hint: orgError.hint
+          });
+          
+          // Handle specific error types
+          if (orgError.code === '23514') {
+            throw new Error('Invalid data: Check constraint violation');
+          } else if (orgError.code === '23505') {
+            throw new Error('Data conflict: Duplicate value detected');
+          } else if (orgError.code === 'PGRST116') {
+            throw new Error('Organization not found or access denied');
+          } else {
+            throw new Error(`Database error: ${orgError.message}`);
+          }
+        }
+        
+        if (!orgResult) {
+          console.error('❌ DEBUG: No data returned from update');
+          throw new Error('Update succeeded but no data returned');
+        }
+        
+        console.log('✅ DEBUG: Supabase update successful:', {
+          id: orgResult.id,
+          name: orgResult.name,
+          updatedAt: orgResult.updated_at
+        });
+        
+        // STEP 3: Update local data with result
+        const updatedLocalData = this.mapDatabaseToModel(orgResult);
+        this.organizationData.update(current => ({
+          ...current,
+          ...updatedLocalData
+        }));
+        
+        this.saveToLocalStorage();
+        this.lastSavedToDatabase.set(new Date());
+        this.updateStateFromData();
+      }),
+      switchMap((result) => {
+        console.log('🔍 DEBUG: Switching to success response');
+        return of({ success: true, organizationId: orgId });
+      }),
+      catchError(error => {
+        console.error('❌ DEBUG: Catch block triggered:', error);
+        
+        // Provide user-friendly error messages
+        let userMessage = 'Failed to save organization data';
+        
+        if (error.message.includes('Check constraint violation')) {
+          userMessage = 'Invalid organization type or status value';
+        } else if (error.message.includes('Duplicate value')) {
+          userMessage = 'Registration number already exists';
+        } else if (error.message.includes('not found or access denied')) {
+          userMessage = 'Organization not found or you don\'t have permission to update it';
+        } else if (error.message.includes('Validation failed')) {
+          userMessage = error.message;
+        }
+        
+        this.error.set(userMessage);
+        this.isSaving.set(false);
+        return throwError(() => error);
+      }),
+      tap(() => {
+        console.log('✅ DEBUG: Final tap - setting isSaving to false');
+        this.isSaving.set(false);
+        console.log('Organization updated successfully');
+      })
+    );
+  }
 
   // ===============================
   // VALIDATION & STATE METHODS
@@ -662,7 +813,7 @@ private loadExistingOrganizationData(): Observable<void> {
     this.supabaseService.from('organizations')
       .select('*')
       .eq('id', orgId)
-      .single()
+      .maybeSingle()
   ).pipe(
     tap(({ data, error }) => {
       if (error) {
@@ -685,4 +836,138 @@ private loadExistingOrganizationData(): Observable<void> {
     })
   );
 }
+
+
+
+  // ===============================
+  // NEW: DATA VALIDATION METHODS
+  // ===============================
+
+  private validateDataForDatabase(data: Partial<FunderOnboardingData>): { 
+    isValid: boolean; 
+    errors: string[]; 
+    sanitizedData: any; 
+  } {
+    const errors: string[] = [];
+    const sanitizedData: any = {};
+
+    // Name validation (required)
+    if (!data.name?.trim()) {
+      errors.push('Organization name is required');
+    } else if (data.name.length > 255) {
+      errors.push('Organization name must be less than 255 characters');
+    } else {
+      sanitizedData.name = data.name.trim();
+    }
+
+    // Organization type validation
+    const validTypes = [
+      'investment_fund', 'bank', 'government', 'ngo', 'private_equity',
+      'venture_capital', 'sme', 'consultant', 'general', 'funder'
+    ];
+    if (data.organizationType && !validTypes.includes(data.organizationType)) {
+      errors.push(`Invalid organization type: ${data.organizationType}`);
+    } else {
+      sanitizedData.organization_type = data.organizationType || 'investment_fund';
+    }
+
+    // Status validation
+    const validStatuses = ['active', 'inactive', 'pending_verification', 'suspended'];
+    if (data.status && !validStatuses.includes(data.status)) {
+      errors.push(`Invalid status: ${data.status}`);
+    } else {
+      sanitizedData.status = data.status || 'active';
+    }
+
+    // String field validation with length limits
+    const stringFields = [
+      { key: 'description', dbKey: 'description', maxLength: null },
+      { key: 'website', dbKey: 'website', maxLength: 255 },
+      { key: 'phone', dbKey: 'phone', maxLength: 20 },
+      { key: 'email', dbKey: 'email', maxLength: 255 },
+      { key: 'logoUrl', dbKey: 'logo_url', maxLength: null },
+      { key: 'legalName', dbKey: 'legal_name', maxLength: 255 },
+      { key: 'registrationNumber', dbKey: 'registration_number', maxLength: 100 },
+      { key: 'fspLicenseNumber', dbKey: 'fsp_license_number', maxLength: 100 },
+      { key: 'addressLine1', dbKey: 'address_line1', maxLength: 255 },
+      { key: 'addressLine2', dbKey: 'address_line2', maxLength: 255 },
+      { key: 'city', dbKey: 'city', maxLength: 100 },
+      { key: 'province', dbKey: 'province', maxLength: 100 },
+      { key: 'postalCode', dbKey: 'postal_code', maxLength: 20 },
+      { key: 'country', dbKey: 'country', maxLength: 100 }
+    ];
+
+    stringFields.forEach(field => {
+      const value = data[field.key as keyof FunderOnboardingData];
+      if (value) {
+        const trimmed = value.toString().trim();
+        if (field.maxLength && trimmed.length > field.maxLength) {
+          errors.push(`${field.key} must be less than ${field.maxLength} characters`);
+        } else if (trimmed) {
+          sanitizedData[field.dbKey] = trimmed;
+        }
+      }
+    });
+
+    // NCR Number validation (VARCHAR(50))
+    if (data.ncrNumber) {
+      const ncrStr = data.ncrNumber.toString().trim();
+      if (ncrStr.length > 50) {
+        errors.push('NCR number must be less than 50 characters');
+      } else if (ncrStr) {
+        sanitizedData.ncr_number = ncrStr;
+      }
+    }
+
+    // Employee count validation (integer)
+    if (data.employeeCount !== undefined) {
+      const empCount = this.parseEmployeeCount(data.employeeCount);
+      if (empCount !== null) {
+        sanitizedData.employee_count = empCount;
+      }
+    }
+
+    // Assets under management validation (bigint)
+    if (data.assetsUnderManagement !== undefined) {
+      const aum = typeof data.assetsUnderManagement === 'string' 
+        ? parseFloat(data.assetsUnderManagement)
+        : data.assetsUnderManagement;
+      
+      if (!isNaN(aum) && aum >= 0) {
+        sanitizedData.assets_under_management = Math.floor(aum);
+      }
+    }
+
+    // Boolean fields
+    if (data.isVerified !== undefined) {
+      sanitizedData.is_verified = Boolean(data.isVerified);
+    }
+
+    // Date fields
+    if (data.verificationDate) {
+      sanitizedData.verification_date = data.verificationDate instanceof Date 
+        ? data.verificationDate.toISOString()
+        : data.verificationDate;
+    }
+
+    // Always set updated_at
+    sanitizedData.updated_at = new Date().toISOString();
+
+    return {
+      isValid: errors.length === 0,
+      errors,
+      sanitizedData
+    };
+  }
+
+  private validateEmailFormat(email: string): boolean {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  }
+
+  private validatePhoneFormat(phone: string): boolean {
+    // Basic phone validation - adjust for your requirements
+    const phoneRegex = /^[\+\-\s\(\)\d]{7,20}$/;
+    return phoneRegex.test(phone);
+  }
 }
