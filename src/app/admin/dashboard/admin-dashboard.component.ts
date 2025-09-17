@@ -7,11 +7,10 @@ import { AdminService, AdminStats, AdminUser, AdminOrganization, AdminOpportunit
 import { AuthService } from '../../auth/production.auth.service';
 import { UiButtonComponent, UiCardComponent } from '../../shared/components';
 import { DropdownComponent, DropdownOption } from '../../shared/components/ui/shared-ui-components';
-import { OrganizationsTabComponent } from './components/organisations-tab/organisations-tab.component';
+import { OrganizationVerificationComponent } from '../organization-verification/organization-verification.component';
  
 
-type TabType = 'overview' | 'users' | 'organizations' | 'opportunities' | 'activity';
-
+type TabType = 'overview' | 'users' | 'organizations' | 'opportunities' | 'verification';
 interface FilterState {
   users: {
     status: string;
@@ -40,7 +39,7 @@ interface FilterState {
     UiButtonComponent, 
     UiCardComponent, 
     DropdownComponent,
-     
+       OrganizationVerificationComponent
   ],
   templateUrl: './admin-dashboard.component.html',
 })
@@ -138,12 +137,15 @@ export class AdminDashboardComponent implements OnInit {
   });
 
   // Enhanced navigation tabs with dynamic counts
-  tabs = computed(() => [
+tabs = computed(() => [
     { id: 'overview' as TabType, label: 'Overview', count: undefined },
     { id: 'users' as TabType, label: 'Users', count: this.filteredUsers().length },
     { id: 'organizations' as TabType, label: 'Organizations', count: this.filteredOrganizations().length },
-    { id: 'opportunities' as TabType, label: 'Opportunities', count: this.filteredOpportunities().length }
+    { id: 'opportunities' as TabType, label: 'Opportunities', count: this.filteredOpportunities().length },
+    { id: 'verification' as TabType, label: 'Verification', count: undefined } // NEW
   ]);
+
+  
 
   ngOnInit() {
     // Check admin access (uncomment when ready)

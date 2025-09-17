@@ -3,9 +3,13 @@ import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms'; 
 import { MessagingService, MessageThread } from 'src/app/messaging/services/messaging.service';
-import { UiButtonComponent, UiCardComponent } from 'src/app/shared/components';
 import { SupabaseDocumentService, DocumentMetadata } from 'src/app/shared/services/supabase-document.service';
-import { OrganizationVerificationService, VerificationOrganization, VerificationStats } from 'src/app/admin/services/organization-verification.service';
+import { ErrorToastComponent } from './components/error-toast.component';
+import { VerificationDetailsComponent } from './components/verification-details/verification-details.component';
+import { VerificationHeaderComponent } from './components/verification-header.component';
+import { VerificationModalsComponent } from './components/verification-modals/verification-modals.component';
+import { VerificationSidebarComponent } from './components/verification-sidebar.component';
+import { OrganizationVerificationService, VerificationOrganization, VerificationStats } from '../services/organization-verification.service';
  
 type ActiveTab = 'details' | 'documents' | 'messaging' | 'activity';
 
@@ -16,11 +20,13 @@ type ActiveTab = 'details' | 'documents' | 'messaging' | 'activity';
     CommonModule,
     FormsModule,
     ReactiveFormsModule,
-    UiButtonComponent,
-    UiCardComponent
+    VerificationHeaderComponent,
+    VerificationSidebarComponent,
+    VerificationDetailsComponent,
+    VerificationModalsComponent,
+    ErrorToastComponent
   ],
-  templateUrl: './organization-verification.component.html',
-  styleUrls: ['./organization-verification.component.scss']
+  templateUrl: './organization-verification.component.html'
 })
 export class OrganizationVerificationComponent implements OnInit {
   private verificationService = inject(OrganizationVerificationService);
@@ -61,7 +67,7 @@ export class OrganizationVerificationComponent implements OnInit {
   rejectionForm: FormGroup;
   infoRequestForm: FormGroup;
   
-  // Computed properties
+  // Computed properties - CRITICAL: This must be included
   filteredOrganizations = computed(() => {
     const orgs = this.organizations();
     const search = this.searchTerm().toLowerCase();
@@ -102,6 +108,10 @@ export class OrganizationVerificationComponent implements OnInit {
     this.setupSubscriptions();
   }
 
+  // ===============================
+  // MAIN COMPONENT METHODS
+  // ===============================
+
   private loadVerificationData() {
     this.isLoading.set(true);
     this.verificationService.refreshVerifications();
@@ -133,6 +143,10 @@ export class OrganizationVerificationComponent implements OnInit {
     this.verificationService.stats$.subscribe({
       next: (stats) => this.stats.set(stats)
     });
+  }
+
+  refreshData() {
+    this.verificationService.refreshVerifications();
   }
 
   // ===============================
@@ -195,15 +209,6 @@ export class OrganizationVerificationComponent implements OnInit {
         }
         break;
     }
-  }
-
-  getTabClasses(tab: ActiveTab): string {
-    const isActive = this.activeTab() === tab;
-    return `px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
-      isActive
-        ? 'bg-primary-100 text-primary-800 border border-primary-200'
-        : 'text-neutral-600 hover:text-neutral-800 hover:bg-neutral-50'
-    }`;
   }
 
   // ===============================
@@ -322,49 +327,8 @@ export class OrganizationVerificationComponent implements OnInit {
   }
 
   // ===============================
-  // UTILITY METHODS
+  // MODAL MANAGEMENT
   // ===============================
-
-  formatDate(date: string): string {
-    return new Date(date).toLocaleDateString('en-ZA', {
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  }
-
-  formatFileSize(bytes: number): string {
-    if (bytes === 0) return '0 Bytes';
-    const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-  }
-
-  getDocumentIcon(mimeType: string): string {
-    if (mimeType.includes('pdf')) return 'file-text';
-    if (mimeType.includes('image')) return 'image';
-    if (mimeType.includes('spreadsheet') || mimeType.includes('excel')) return 'table';
-    if (mimeType.includes('document') || mimeType.includes('word')) return 'file-text';
-    return 'file';
-  }
-
-  getUserInitials(firstName?: string, lastName?: string): string {
-    const first = firstName?.charAt(0)?.toUpperCase() || '';
-    const last = lastName?.charAt(0)?.toUpperCase() || '';
-    return first + last || 'U';
-  }
-
-  getOrganizationStatusBadge(status: string): string {
-    const badges = {
-      'pending_verification': 'bg-warning/20 text-warning border border-warning/30',
-      'active': 'bg-primary-100 text-primary-800 border border-primary-200',
-      'rejected': 'bg-red-100 text-red-800 border border-red-200'
-    };
-    return badges[status as keyof typeof badges] || 'bg-neutral-100 text-neutral-700 border border-neutral-200';
-  }
 
   closeModal() {
     this.showApprovalModal.set(false);
@@ -372,7 +336,59 @@ export class OrganizationVerificationComponent implements OnInit {
     this.showInfoRequestModal.set(false);
   }
 
-  refreshData() {
-    this.verificationService.refreshVerifications();
+  // ===============================
+  // EVENT HANDLERS FOR CHILD COMPONENTS
+  // ===============================
+
+  onSearchChanged(searchTerm: string) {
+    this.searchTerm.set(searchTerm);
+  }
+
+  onFilterChanged(filter: string) {
+    this.statusFilter.set(filter);
+  }
+
+  onTabChanged(tab: ActiveTab) {
+    this.setActiveTab(tab);
+  }
+
+  onDocumentSelected(doc: DocumentMetadata) {
+    this.selectDocument(doc);
+  }
+
+  onDocumentPreviewed(doc: DocumentMetadata) {
+    this.previewDocument(doc);
+  }
+
+  onDocumentDownloaded(doc: DocumentMetadata) {
+    this.downloadDocument(doc);
+  }
+
+  onApproveRequested() {
+    this.openApprovalModal();
+  }
+
+  onRejectRequested() {
+    this.openRejectionModal();
+  }
+
+  onInfoRequested() {
+    this.openInfoRequestModal();
+  }
+
+  onModalClosed() {
+    this.closeModal();
+  }
+
+  onOrganizationApproved() {
+    this.approveOrganization();
+  }
+
+  onOrganizationRejected() {
+    this.rejectOrganization();
+  }
+
+  onInfoRequestSubmitted() {
+    this.requestMoreInfo();
   }
 }

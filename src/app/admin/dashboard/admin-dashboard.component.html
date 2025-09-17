@@ -84,6 +84,10 @@
       </div>
     </div>
 
+    <div *ngIf="activeTab() === 'verification'" class="h-full">
+  <app-organization-verification></app-organization-verification>
+</div>
+
     <!-- Overview Tab - Enhanced Stats Cards -->
     <div *ngIf="activeTab() === 'overview' && !isLoading()">
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">

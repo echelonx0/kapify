@@ -1,0 +1,151 @@
+<!-- Approval Modal -->
+    <div *ngIf="showApprovalModal" class="modal-overlay fixed inset-0 bg-black/50 backdrop-blur-sm overflow-y-auto h-full w-full z-50 flex items-center justify-center p-4">
+      <div class="modal-content relative w-full max-w-md mx-auto">
+        <ui-card title="Approve Organization" subtitle="Verify and approve this organization" variant="elevated" size="lg">
+          <form [formGroup]="approvalForm" (ngSubmit)="organizationApproved.emit()">
+            <div class="space-y-4">
+              <div class="bg-primary-50 border border-primary-200 rounded-lg p-4">
+                <div class="flex items-center">
+                  <svg class="w-5 h-5 text-primary-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                  </svg>
+                  <div>
+                    <p class="font-medium text-primary-900">Organization: {{ selectedOrganization?.name }}</p>
+                    <p class="text-sm text-primary-700">This will mark the organization as verified and grant full platform access.</p>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <label for="adminNotes" class="block text-sm font-medium text-neutral-700 mb-2">
+                  Admin Notes (Optional)
+                </label>
+                <textarea
+                  id="adminNotes"
+                  formControlName="adminNotes"
+                  rows="3"
+                  placeholder="Add any notes about the verification process..."
+                  class="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                ></textarea>
+              </div>
+
+              <div class="flex justify-end space-x-3 pt-4 border-t border-neutral-200">
+                <ui-button variant="outline" type="button" (clicked)="modalClosed.emit()">
+                  Cancel
+                </ui-button>
+                <ui-button variant="primary" type="submit">
+                  <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                  </svg>
+                  Approve Organization
+                </ui-button>
+              </div>
+            </div>
+          </form>
+        </ui-card>
+      </div>
+    </div>
+
+    <!-- Rejection Modal -->
+    <div *ngIf="showRejectionModal" class="modal-overlay fixed inset-0 bg-black/50 backdrop-blur-sm overflow-y-auto h-full w-full z-50 flex items-center justify-center p-4">
+      <div class="modal-content relative w-full max-w-md mx-auto">
+        <ui-card title="Reject Organization" subtitle="Provide a reason for rejection" variant="elevated" size="lg">
+          <form [formGroup]="rejectionForm" (ngSubmit)="organizationRejected.emit()">
+            <div class="space-y-4">
+              <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+                <div class="flex items-center">
+                  <svg class="w-5 h-5 text-red-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                  </svg>
+                  <div>
+                    <p class="font-medium text-red-900">Organization: {{ selectedOrganization?.name }}</p>
+                    <p class="text-sm text-red-700">This will reject the verification request and notify the organization.</p>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <label for="reason" class="block text-sm font-medium text-neutral-700 mb-2">
+                  Reason for Rejection <span class="text-red-500">*</span>
+                </label>
+                <textarea
+                  id="reason"
+                  formControlName="reason"
+                  rows="4"
+                  placeholder="Provide detailed feedback on why the verification was rejected..."
+                  class="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                  [class.border-red-300]="rejectionForm.get('reason')?.invalid && rejectionForm.get('reason')?.touched"
+                ></textarea>
+                <div *ngIf="rejectionForm.get('reason')?.invalid && rejectionForm.get('reason')?.touched" class="mt-1 text-sm text-red-600">
+                  Please provide a reason for rejection
+                </div>
+              </div>
+
+              <div class="flex justify-end space-x-3 pt-4 border-t border-neutral-200">
+                <ui-button variant="outline" type="button" (clicked)="modalClosed.emit()">
+                  Cancel
+                </ui-button>
+                <ui-button   type="submit" [disabled]="rejectionForm.invalid">
+                  <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                  </svg>
+                  Reject Organization
+                </ui-button>
+              </div>
+            </div>
+          </form>
+        </ui-card>
+      </div>
+    </div>
+
+    <!-- Info Request Modal -->
+    <div *ngIf="showInfoRequestModal" class="modal-overlay fixed inset-0 bg-black/50 backdrop-blur-sm overflow-y-auto h-full w-full z-50 flex items-center justify-center p-4">
+      <div class="modal-content relative w-full max-w-md mx-auto">
+        <ui-card title="Request Additional Information" subtitle="Send a message requesting more details" variant="elevated" size="lg">
+          <form [formGroup]="infoRequestForm" (ngSubmit)="infoRequested.emit()">
+            <div class="space-y-4">
+              <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <div class="flex items-center">
+                  <svg class="w-5 h-5 text-blue-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                  </svg>
+                  <div>
+                    <p class="font-medium text-blue-900">Organization: {{ selectedOrganization?.name }}</p>
+                    <p class="text-sm text-blue-700">This will create a verification thread and send your message to the organization.</p>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <label for="messageContent" class="block text-sm font-medium text-neutral-700 mb-2">
+                  Message <span class="text-red-500">*</span>
+                </label>
+                <textarea
+                  id="messageContent"
+                  formControlName="messageContent"
+                  rows="5"
+                  placeholder="Please provide additional documentation or clarification regarding..."
+                  class="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                  [class.border-red-300]="infoRequestForm.get('messageContent')?.invalid && infoRequestForm.get('messageContent')?.touched"
+                ></textarea>
+                <div *ngIf="infoRequestForm.get('messageContent')?.invalid && infoRequestForm.get('messageContent')?.touched" class="mt-1 text-sm text-red-600">
+                  Please enter a message
+                </div>
+              </div>
+
+              <div class="flex justify-end space-x-3 pt-4 border-t border-neutral-200">
+                <ui-button variant="outline" type="button" (clicked)="modalClosed.emit()">
+                  Cancel
+                </ui-button>
+                <ui-button variant="primary" type="submit" [disabled]="infoRequestForm.invalid">
+                  <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                  </svg>
+                  Send Message
+                </ui-button>
+              </div>
+            </div>
+          </form>
+        </ui-card>
+      </div>
+    </div>
