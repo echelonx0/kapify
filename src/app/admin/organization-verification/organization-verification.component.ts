@@ -3,7 +3,7 @@ import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms'; 
 import { MessagingService, MessageThread } from 'src/app/messaging/services/messaging.service';
-import { SupabaseDocumentService, DocumentMetadata } from 'src/app/shared/services/supabase-document.service';
+import {  DocumentMetadata } from 'src/app/shared/services/supabase-document.service';
 import { ErrorToastComponent } from './components/error-toast.component';
 import { VerificationDetailsComponent } from './components/verification-details/verification-details.component';
 import { VerificationHeaderComponent } from './components/verification-header.component';
@@ -31,7 +31,7 @@ type ActiveTab = 'details' | 'documents' | 'messaging' | 'activity';
 export class OrganizationVerificationComponent implements OnInit {
   private verificationService = inject(OrganizationVerificationService);
   private messagingService = inject(MessagingService);
-  private documentService = inject(SupabaseDocumentService);
+ 
   private fb = inject(FormBuilder);
 
   // State signals
@@ -104,6 +104,7 @@ export class OrganizationVerificationComponent implements OnInit {
   }
 
   ngOnInit() {
+    
     this.loadVerificationData();
     this.setupSubscriptions();
   }

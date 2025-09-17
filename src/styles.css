@@ -1,4 +1,5 @@
 @import url('./styles/design-system.css');
+@import url('./styles/verification-styles.css');
 @import "preline/variants.css";
 @tailwind base;
 @tailwind components;
