@@ -1,7 +1,7 @@
 // src/app/admin/services/organization-verification.service.ts
 import { Injectable, inject, signal } from '@angular/core';
 import { Observable, from, throwError, BehaviorSubject } from 'rxjs';
-import { tap, catchError, switchMap, map } from 'rxjs/operators';
+import { tap, catchError} from 'rxjs/operators';
 import { SharedSupabaseService } from '../../shared/services/shared-supabase.service';
 import { AuthService } from '../../auth/production.auth.service'; 
 import { ActivityService } from '../../shared/services/activity.service';
@@ -78,6 +78,7 @@ export class OrganizationVerificationService {
   error = signal<string | null>(null);
 
   constructor() {
+      this.testDatabaseAccess(); // Add this line
     this.loadPendingVerifications();
   }
 
@@ -85,87 +86,183 @@ export class OrganizationVerificationService {
   // CORE VERIFICATION METHODS
   // ===============================
 
-  async loadPendingVerifications(): Promise<void> {
-    this.isLoading.set(true);
-    this.error.set(null);
+ // Fixed loadPendingVerifications method for OrganizationVerificationService
+async loadPendingVerifications(): Promise<void> {
+  console.log('🔍 Starting loadPendingVerifications...');
+  this.isLoading.set(true);
+  this.error.set(null);
 
-    try {
-      // Get organizations pending verification with user details
-      const { data: orgsData, error: orgsError } = await this.supabase
-        .from('organizations')
-        .select(`
-          id,
-          name,
-          organization_type,
-          status,
-          is_verified,
-          legal_name,
-          registration_number,
-          email,
-          phone,
-          website,
-          city,
-          country,
-          created_at,
-          updated_at,
-          created_by,
-          users!organizations_created_by_fkey(
-            first_name,
-            last_name,
-            email
-          )
-        `)
-        .eq('status', 'pending_verification')
-        .order('created_at', { ascending: true });
+  try {
+    // Debug: Check if supabase service is working
+    console.log('📡 Supabase service:', this.supabase ? 'Available' : 'NOT AVAILABLE');
 
-      if (orgsError) throw orgsError;
+    // Get organizations pending verification (without JOIN)
+    console.log('🔎 Querying organizations with status = pending_verification...');
+    
+    const { data: orgsData, error: orgsError } = await this.supabase
+      .from('organizations')
+      .select(`
+        id,
+        name,
+        organization_type,
+        status,
+        is_verified,
+        legal_name,
+        registration_number,
+        email,
+        phone,
+        website,
+        city,
+        country,
+        created_at,
+        updated_at,
+        created_by
+      `)
+      .eq('status', 'pending_verification')
+      .order('created_at', { ascending: true });
 
-      // Transform data and get additional info
-      const organizations: VerificationOrganization[] = await Promise.all(
-        (orgsData || []).map(async (org) => {
-          // Get document count for this organization
-          const documentCount = await this.getOrganizationDocumentCount(org.id);
-          
-          // Check if verification thread exists
-          const verificationThread = await this.findVerificationThread(org.id);
+    console.log('📊 Query result - Error:', orgsError);
+    console.log('📊 Query result - Data count:', orgsData?.length || 0);
+    console.log('📊 Query result - Data:', orgsData);
 
-          return {
-            id: org.id,
-            name: org.name,
-            organizationType: org.organization_type,
-            status: org.status,
-            isVerified: org.is_verified,
-            legalName: org.legal_name,
-            registrationNumber: org.registration_number,
-            email: org.email,
-            phone: org.phone,
-            website: org.website,
-            city: org.city,
-            country: org.country,
-            createdAt: org.created_at,
-            updatedAt: org.updated_at,
-            createdByUser: org.users ? {
-              firstName: org.users.first_name,
-              lastName: org.users.last_name,
-              email: org.users.email
-            } : undefined,
-            verificationThreadId: verificationThread?.id,
-            documentCount,
-            lastActivityDate: org.updated_at
-          };
-        })
-      );
-
-      this.organizationsSubject.next(organizations);
-      await this.updateStats();
-
-    } catch (error) {
-      console.error('Error loading pending verifications:', error);
-      this.error.set('Failed to load verification requests');
-    } finally {
-      this.isLoading.set(false);
+    if (orgsError) {
+      console.error('❌ Supabase query error:', orgsError);
+      throw orgsError;
     }
+
+    if (!orgsData || orgsData.length === 0) {
+      console.log('⚠️ No organizations found with pending_verification status');
+      this.organizationsSubject.next([]);
+      await this.updateStats();
+      return;
+    }
+
+    console.log('✅ Found', orgsData.length, 'pending verification organizations');
+
+    // Transform data and get additional info
+    console.log('🔄 Processing organization data...');
+    
+    const organizations: VerificationOrganization[] = await Promise.all(
+      orgsData.map(async (org, index) => {
+        console.log(`Processing org ${index + 1}/${orgsData.length}: ${org.name} (${org.id})`);
+        
+        // Get user details separately if created_by exists
+        let createdByUser = undefined;
+        if (org.created_by) {
+          console.log(`  🔍 Fetching user data for created_by: ${org.created_by}`);
+          const { data: userData, error: userError } = await this.supabase
+            .from('users')
+            .select('first_name, last_name, email')
+            .eq('id', org.created_by)
+            .maybeSingle();
+
+          if (userError) {
+            console.warn(`  ⚠️ Error fetching user ${org.created_by}:`, userError);
+          } else if (userData) {
+            console.log(`  ✅ Found user: ${userData.first_name} ${userData.last_name}`);
+            createdByUser = {
+              firstName: userData.first_name,
+              lastName: userData.last_name,
+              email: userData.email
+            };
+          } else {
+            console.warn(`  ⚠️ No user found for ID: ${org.created_by}`);
+          }
+        }
+
+        // Get document count for this organization
+        console.log(`  📄 Getting document count for org: ${org.id}`);
+        const documentCount = await this.getOrganizationDocumentCount(org.id);
+        console.log(`  📄 Document count: ${documentCount}`);
+        
+        // Check if verification thread exists
+        console.log(`  💬 Checking for verification thread...`);
+        const verificationThread = await this.findVerificationThread(org.id);
+        console.log(`  💬 Thread found:`, verificationThread ? 'Yes' : 'No');
+
+        const transformedOrg: VerificationOrganization = {
+          id: org.id,
+          name: org.name,
+          organizationType: org.organization_type,
+          status: org.status,
+          isVerified: org.is_verified,
+          legalName: org.legal_name,
+          registrationNumber: org.registration_number,
+          email: org.email,
+          phone: org.phone,
+          website: org.website,
+          city: org.city,
+          country: org.country,
+          createdAt: org.created_at,
+          updatedAt: org.updated_at,
+          createdByUser,
+          verificationThreadId: verificationThread?.id,
+          documentCount,
+          lastActivityDate: org.updated_at
+        };
+
+        console.log(`  ✅ Processed org: ${org.name}`);
+        return transformedOrg;
+      })
+    );
+
+    console.log('🎯 Final organizations array:', organizations);
+    console.log('🎯 Setting organizations in BehaviorSubject...');
+    
+    this.organizationsSubject.next(organizations);
+    
+    console.log('📊 Updating stats...');
+    await this.updateStats();
+
+    console.log('✅ loadPendingVerifications completed successfully');
+
+  } catch (error) {
+    console.error('❌ Error in loadPendingVerifications:', error);
+    this.error.set('Failed to load verification requests');
+  } finally {
+    console.log('🔄 Setting loading to false');
+    this.isLoading.set(false);
   }
+}
+
+// Also fix the createVerificationThread method to be more robust
+private async createVerificationThread(organizationId: string, organizationName: string): Promise<string | null> {
+  try {
+    // Get organization creator to include in thread
+    const { data: orgData } = await this.supabase
+      .from('organizations')
+      .select('created_by')
+      .eq('id', organizationId)
+      .maybeSingle(); // Use maybeSingle for safety
+
+    if (!orgData?.created_by) {
+      console.warn('No organization creator found for thread creation');
+      return null;
+    }
+
+    const threadId = await this.messagingService.createThread(
+      `Verification: ${organizationName}`,
+      [orgData.created_by] // Include organization creator
+    );
+
+    // Update our local state with the thread ID
+    if (threadId) {
+      const currentOrgs = this.organizationsSubject.value;
+      const updatedOrgs = currentOrgs.map(org => 
+        org.id === organizationId 
+          ? { ...org, verificationThreadId: threadId }
+          : org
+      );
+      this.organizationsSubject.next(updatedOrgs);
+    }
+
+    return threadId;
+
+  } catch (error) {
+    console.error('Error creating verification thread:', error);
+    return null;
+  }
+}
 
   approveOrganization(organizationId: string, adminNotes?: string): Observable<boolean> {
     return from(this.performApproval(organizationId, adminNotes)).pipe(
@@ -180,6 +277,48 @@ export class OrganizationVerificationService {
     );
   }
 
+  async testDatabaseAccess(): Promise<void> {
+  console.log('🔍 Testing database access...');
+  
+  try {
+    // Test 1: Check current user context
+    const { data: user, error: userError } = await this.supabase.auth.getUser();
+    console.log('👤 Current auth user:', user?.user?.email || 'No user');
+    if (userError) console.error('Auth error:', userError);
+
+    // Test 2: Try to read ANY organization (not filtered)
+    const { data: allOrgs, error: allError } = await this.supabase
+      .from('organizations')
+      .select('id, name, status')
+      .limit(5);
+    
+    console.log('📊 All orgs query - Error:', allError);
+    console.log('📊 All orgs query - Count:', allOrgs?.length || 0);
+    console.log('📊 All orgs query - Data:', allOrgs);
+
+    // Test 3: Try with specific ID (from your data)
+    const { data: specificOrg, error: specificError } = await this.supabase
+      .from('organizations')
+      .select('*')
+      .eq('id', '04516edd-8783-4a9e-b27d-81836613c502') // Agu Ibe Fund ID
+      .single();
+    
+    console.log('🎯 Specific org query - Error:', specificError);
+    console.log('🎯 Specific org query - Data:', specificOrg);
+
+    // Test 4: Check RLS policies (if user has access)
+    const { data: policies, error: policyError } = await this.supabase
+      .from('pg_policies')
+      .select('*')
+      .eq('tablename', 'organizations');
+    
+    console.log('🔒 RLS policies - Error:', policyError);
+    console.log('🔒 RLS policies - Data:', policies);
+
+  } catch (error) {
+    console.error('❌ Database access test failed:', error);
+  }
+}
   rejectOrganization(organizationId: string, reason: string): Observable<boolean> {
     return from(this.performRejection(organizationId, reason)).pipe(
       tap(() => {
@@ -381,43 +520,7 @@ export class OrganizationVerificationService {
   // HELPER METHODS
   // ===============================
 
- private async createVerificationThread(organizationId: string, organizationName: string): Promise<string | null> {
-    try {
-      // Get organization creator to include in thread
-      const { data: orgData } = await this.supabase
-        .from('organizations')
-        .select('created_by')
-        .eq('id', organizationId)
-        .single();
-
-      if (!orgData?.created_by) {
-        console.warn('No organization creator found for thread creation');
-        return null;
-      }
-
-      const threadId = await this.messagingService.createThread(
-        `Verification: ${organizationName}`,
-        [orgData.created_by] // Include organization creator
-      );
-
-      // Update our local state with the thread ID
-      if (threadId) {
-        const currentOrgs = this.organizationsSubject.value;
-        const updatedOrgs = currentOrgs.map(org => 
-          org.id === organizationId 
-            ? { ...org, verificationThreadId: threadId }
-            : org
-        );
-        this.organizationsSubject.next(updatedOrgs);
-      }
-
-      return threadId;
-
-    } catch (error) {
-      console.error('Error creating verification thread:', error);
-      return null;
-    }
-  }
+ 
 
   private async findVerificationThread(organizationId: string): Promise<{ id: string } | null> {
     try {

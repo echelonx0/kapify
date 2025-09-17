@@ -118,7 +118,13 @@ export interface PasswordResetResponse {
 export class AdminService {
   private supabaseService = inject(SharedSupabaseService);
   private authService = inject(AuthService);
-
+ private readonly ADMIN_EMAILS: string[] = [
+    'charles@bokamosoas.co.za',
+    'admin@kapify.com',
+    'support@kapify.com',
+    'operations@kapify.com',
+    'zivaigwe@gmail.com'
+  ];
   constructor() {
     console.log('AdminService initialized');
   }
@@ -127,14 +133,16 @@ export class AdminService {
   // ACCESS CONTROL
   // ===============================
 
-  private verifyAdminAccess(): boolean {
+ private verifyAdminAccess(): boolean {
     const currentUser = this.authService.user();
-    return currentUser?.email === 'zivaigwe@gmail.com';
+    if (!currentUser?.email) return false;
+
+    return this.ADMIN_EMAILS.includes(currentUser.email.toLowerCase());
   }
 
   private throwIfNotAdmin(): void {
     if (!this.verifyAdminAccess()) {
-      throw new Error('Admin access required');
+      throw new Error('Unauthorized: Admin access required');
     }
   }
 
@@ -232,38 +240,6 @@ export class AdminService {
 
  
 
-  getUserById(userId: string): Observable<AdminUser> {
-    this.throwIfNotAdmin();
-
-    return from(
-      this.supabaseService
-        .from('users')
-        .select(`
-          *,
-          user_profiles (
-            completion_percentage
-          ),
-          organization_users (
-            organization_id,
-            organizations (
-              name
-            )
-          )
-        `)
-        .eq('id', userId)
-        .single()
-    ).pipe(
-      map(({ data, error }) => {
-        if (error) throw error;
-        return this.mapDatabaseUserToAdmin(data);
-      }),
-      catchError(error => {
-        console.error('Failed to fetch user:', error);
-        return throwError(() => new Error('Failed to load user details'));
-      })
-    );
-  }
-
   updateUserStatus(userId: string, status: string): Observable<AdminUser> {
     this.throwIfNotAdmin();
 
@@ -329,38 +305,7 @@ export class AdminService {
   // ORGANIZATION MANAGEMENT
   // ===============================
 
-  
-
-  getOrganizationById(organizationId: string): Observable<AdminOrganization> {
-    this.throwIfNotAdmin();
-
-    return from(
-      this.supabaseService
-        .from('organizations')
-        .select(`
-          *,
-          organization_users (
-            role,
-            users (
-              first_name,
-              last_name,
-              email
-            )
-          )
-        `)
-        .eq('id', organizationId)
-        .single()
-    ).pipe(
-      map(({ data, error }) => {
-        if (error) throw error;
-        return this.mapDatabaseOrganizationToAdmin(data);
-      }),
-      catchError(error => {
-        console.error('Failed to fetch organization:', error);
-        return throwError(() => new Error('Failed to load organization details'));
-      })
-    );
-  }
+ 
 
   updateOrganizationStatus(organizationId: string, status: string): Observable<AdminOrganization> {
     this.throwIfNotAdmin();
@@ -420,148 +365,13 @@ export class AdminService {
   // OPPORTUNITY MANAGEMENT
   // ===============================
 
- // Fix getAllUsers() - use proper JOIN
-getAllUsers(): Observable<AdminUser[]> {
-  this.throwIfNotAdmin();
+ 
 
-  return from(
-    this.supabaseService
-      .from('users')
-      .select(`
-        *,
-        user_profiles (
-          completion_percentage
-        )
-      `)
-      .order('created_at', { ascending: false })
-      .limit(1000)
-  ).pipe(
-    switchMap(({ data: users, error }) => {
-      if (error) throw error;
-      
-      // Get organization data separately for each user
-      return from(Promise.all(
-        (users || []).map(async (user) => {
-          const { data: orgUser } = await this.supabaseService
-            .from('organization_users')
-            .select(`
-              organization_id,
-              organizations!inner (name)
-            `)
-            .eq('user_id', user.id)
-            .maybeSingle();
+ 
 
-          return this.mapDatabaseUserToAdmin({
-            ...user,
-            organization_users: orgUser ? [orgUser] : []
-          });
-        })
-      ));
-    }),
-    catchError(error => {
-      console.error('Failed to fetch users:', error);
-      return throwError(() => new Error('Failed to load users'));
-    })
-  );
-}
+ 
 
-// Fix getAllOrganizations() - query organizations table directly
-getAllOrganizations(): Observable<AdminOrganization[]> {
-  this.throwIfNotAdmin();
-
-  return from(
-    this.supabaseService
-      .from('organizations')
-      .select(`
-        *
-      `)
-      .order('created_at', { ascending: false })
-      .limit(1000)
-  ).pipe(
-    switchMap(({ data: orgs, error }) => {
-      if (error) throw error;
-      
-      // Get users for each organization
-      return from(Promise.all(
-        (orgs || []).map(async (org) => {
-          const { data: orgUsers } = await this.supabaseService
-            .from('organization_users')
-            .select(`
-              role,
-              users!inner (
-                first_name,
-                last_name,
-                email
-              )
-            `)
-            .eq('organization_id', org.id);
-
-          return this.mapDatabaseOrganizationToAdmin({
-            ...org,
-            organization_users: orgUsers || []
-          });
-        })
-      ));
-    }),
-    catchError(error => {
-      console.error('Failed to fetch organizations:', error);
-      return throwError(() => new Error('Failed to load organizations'));
-    })
-  );
-}
-
-// Fix getAllOpportunities() - use proper JOIN to organizations
-getAllOpportunities(): Observable<AdminOpportunity[]> {
-  this.throwIfNotAdmin();
-
-  return from(
-    this.supabaseService
-      .from('funding_opportunities')
-      .select(`
-        *,
-        organizations!inner (
-          name
-        )
-      `)
-      .order('created_at', { ascending: false })
-      .limit(1000)
-  ).pipe(
-    map(({ data, error }) => {
-      if (error) throw error;
-      return (data || []).map(this.mapDatabaseOpportunityToAdmin);
-    }),
-    catchError(error => {
-      console.error('Failed to fetch opportunities:', error);
-      return throwError(() => new Error('Failed to load opportunities'));
-    })
-  );
-}
-
-  getOpportunityById(opportunityId: string): Observable<AdminOpportunity> {
-    this.throwIfNotAdmin();
-
-    return from(
-      this.supabaseService
-        .from('funding_opportunities')
-        .select(`
-          *,
-          organizations (
-            name
-          )
-        `)
-        .eq('id', opportunityId)
-        .single()
-    ).pipe(
-      map(({ data, error }) => {
-        if (error) throw error;
-        return this.mapDatabaseOpportunityToAdmin(data);
-      }),
-      catchError(error => {
-        console.error('Failed to fetch opportunity:', error);
-        return throwError(() => new Error('Failed to load opportunity details'));
-      })
-    );
-  }
+  
 
   updateOpportunityStatus(opportunityId: string, status: string): Observable<AdminOpportunity> {
     this.throwIfNotAdmin();
@@ -913,4 +723,250 @@ getAllOpportunities(): Observable<AdminOpportunity[]> {
     
     return trend;
   }
+
+  // Fixed methods for AdminService
+
+// Replace the existing getAllUsers() method
+getAllUsers(): Observable<AdminUser[]> {
+  this.throwIfNotAdmin();
+
+  return from(
+    this.supabaseService
+      .from('users')
+      .select(`
+        *,
+        user_profiles (
+          completion_percentage
+        )
+      `)
+      .order('created_at', { ascending: false })
+      .limit(1000)
+  ).pipe(
+    switchMap(({ data: users, error }) => {
+      if (error) throw error;
+      
+      // Get organization data separately for each user
+      return from(Promise.all(
+        (users || []).map(async (user) => {
+          const { data: orgUser } = await this.supabaseService
+            .from('organization_users')
+            .select(`
+              organization_id,
+              organizations!inner (name)
+            `)
+            .eq('user_id', user.id)
+            .maybeSingle();
+
+          return this.mapDatabaseUserToAdmin({
+            ...user,
+            organization_users: orgUser ? [orgUser] : []
+          });
+        })
+      ));
+    }),
+    catchError(error => {
+      console.error('Failed to fetch users:', error);
+      return throwError(() => new Error('Failed to load users'));
+    })
+  );
+}
+
+// Replace the existing getAllOrganizations() method
+getAllOrganizations(): Observable<AdminOrganization[]> {
+  this.throwIfNotAdmin();
+
+  return from(
+    this.supabaseService
+      .from('organizations')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(1000)
+  ).pipe(
+    switchMap(({ data: orgs, error }) => {
+      if (error) throw error;
+      
+      // Get users for each organization separately
+      return from(Promise.all(
+        (orgs || []).map(async (org) => {
+          const { data: orgUsers } = await this.supabaseService
+            .from('organization_users')
+            .select(`
+              role,
+              users!inner (
+                first_name,
+                last_name,
+                email
+              )
+            `)
+            .eq('organization_id', org.id);
+
+          return this.mapDatabaseOrganizationToAdmin({
+            ...org,
+            organization_users: orgUsers || []
+          });
+        })
+      ));
+    }),
+    catchError(error => {
+      console.error('Failed to fetch organizations:', error);
+      return throwError(() => new Error('Failed to load organizations'));
+    })
+  );
+}
+
+// Replace the existing getAllOpportunities() method
+getAllOpportunities(): Observable<AdminOpportunity[]> {
+  this.throwIfNotAdmin();
+
+  return from(
+    this.supabaseService
+      .from('funding_opportunities')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(1000)
+  ).pipe(
+    switchMap(({ data: opportunities, error }) => {
+      if (error) throw error;
+      
+      // Get organization data separately for each opportunity
+      return from(Promise.all(
+        (opportunities || []).map(async (opp) => {
+          const { data: org } = await this.supabaseService
+            .from('organizations')
+            .select('name')
+            .eq('id', opp.organization_id)
+            .maybeSingle();
+
+          return this.mapDatabaseOpportunityToAdmin({
+            ...opp,
+            organizations: org || { name: 'Unknown Organization' }
+          });
+        })
+      ));
+    }),
+    catchError(error => {
+      console.error('Failed to fetch opportunities:', error);
+      return throwError(() => new Error('Failed to load opportunities'));
+    })
+  );
+}
+
+// Fix the getOpportunityById method
+getOpportunityById(opportunityId: string): Observable<AdminOpportunity> {
+  this.throwIfNotAdmin();
+
+  return from(
+    this.supabaseService
+      .from('funding_opportunities')
+      .select('*')
+      .eq('id', opportunityId)
+      .single()
+  ).pipe(
+    switchMap(({ data: opportunity, error }) => {
+      if (error) throw error;
+      
+      // Get organization data separately
+      return from(
+        this.supabaseService
+          .from('organizations')
+          .select('name')
+          .eq('id', opportunity.organization_id)
+          .maybeSingle()
+      ).pipe(
+        map(({ data: org }) => this.mapDatabaseOpportunityToAdmin({
+          ...opportunity,
+          organizations: org || { name: 'Unknown Organization' }
+        }))
+      );
+    }),
+    catchError(error => {
+      console.error('Failed to fetch opportunity:', error);
+      return throwError(() => new Error('Failed to load opportunity details'));
+    })
+  );
+}
+
+// Fix the getUserById method  
+getUserById(userId: string): Observable<AdminUser> {
+  this.throwIfNotAdmin();
+
+  return from(
+    this.supabaseService
+      .from('users')
+      .select(`
+        *,
+        user_profiles (
+          completion_percentage
+        )
+      `)
+      .eq('id', userId)
+      .single()
+  ).pipe(
+    switchMap(({ data: user, error }) => {
+      if (error) throw error;
+      
+      // Get organization data separately
+      return from(
+        this.supabaseService
+          .from('organization_users')
+          .select(`
+            organization_id,
+            organizations!inner (name)
+          `)
+          .eq('user_id', user.id)
+          .maybeSingle()
+      ).pipe(
+        map(({ data: orgUser }) => this.mapDatabaseUserToAdmin({
+          ...user,
+          organization_users: orgUser ? [orgUser] : []
+        }))
+      );
+    }),
+    catchError(error => {
+      console.error('Failed to fetch user:', error);
+      return throwError(() => new Error('Failed to load user details'));
+    })
+  );
+}
+
+// Fix the getOrganizationById method
+getOrganizationById(organizationId: string): Observable<AdminOrganization> {
+  this.throwIfNotAdmin();
+
+  return from(
+    this.supabaseService
+      .from('organizations')
+      .select('*')
+      .eq('id', organizationId)
+      .single()
+  ).pipe(
+    switchMap(({ data: org, error }) => {
+      if (error) throw error;
+      
+      // Get users for this organization separately
+      return from(
+        this.supabaseService
+          .from('organization_users')
+          .select(`
+            role,
+            users!inner (
+              first_name,
+              last_name,
+              email
+            )
+          `)
+          .eq('organization_id', org.id)
+      ).pipe(
+        map(({ data: orgUsers }) => this.mapDatabaseOrganizationToAdmin({
+          ...org,
+          organization_users: orgUsers || []
+        }))
+      );
+    }),
+    catchError(error => {
+      console.error('Failed to fetch organization:', error);
+      return throwError(() => new Error('Failed to load organization details'));
+    })
+  );
+}
 }

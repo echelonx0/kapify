@@ -36,19 +36,21 @@
   <div class="bg-white/60 backdrop-blur-sm border-b border-neutral-200/50">
     <div class="px-6 lg:px-8">
       <nav class="flex space-x-1 py-2">
+       
+
         <button
-          *ngFor="let tab of tabs()"
-          (click)="setActiveTab(tab.id)"
-          [class]="getEnhancedTabClasses(tab.id)"
-        >
-          <span class="font-medium">{{ tab.label }}</span>
-          <span 
-            *ngIf="tab.count !== undefined"
-            [class]="getTabCountClasses(tab.id)"
-          >
-            {{ tab.count }}
-          </span>
-        </button>
+  *ngFor="let tab of tabs()"
+  (click)="setActiveTab(tab.id)"
+  [class]="getEnhancedTabClasses(tab.id)"
+>
+  <span class="font-medium">{{ tab.label }}</span>
+  <span 
+    *ngIf="tab.count !== undefined"
+    [class]="getTabCountClasses(tab.id)"
+  >
+    {{ tab.count }}
+  </span>
+</button>
       </nav>
     </div>
   </div>

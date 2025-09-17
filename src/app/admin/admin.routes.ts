@@ -7,7 +7,7 @@ export const adminRoutes: Routes = [
     path: '',
     loadComponent: () => {
       console.log('Loading AdminLayoutComponent...');
-      return import('./admin-layout.component').then(m => {
+      return import('./admin-layout/admin-layout.component').then(m => {
         console.log('AdminLayoutComponent loaded:', m.AdminLayoutComponent);
         return m.AdminLayoutComponent;
       });
@@ -26,17 +26,17 @@ export const adminRoutes: Routes = [
         },
         title: 'Admin Dashboard - Kapify'
       },
-
-      //   {
-      //   path: 'admin',
-      //   loadComponent: async () => {
-      //     console.log('Loading AdminDashboardComponent...');
-      //     const m = await import('./dashboard/admin.component');
-      //     console.log('AdminDashboardComponent loaded:', m.KapifyAdminDashboard);
-      //     return m.KapifyAdminDashboard;
-      //   },
-      //   title: 'Admin Dashboard - Kapify'
-      // }
+      {
+        path: 'verification',
+        loadComponent: () => {
+          console.log('Loading OrganizationVerificationComponent...');
+          return import('./organization-verification/organization-verification.component').then(m => {
+            console.log('OrganizationVerificationComponent loaded:', m.OrganizationVerificationComponent);
+            return m.OrganizationVerificationComponent;
+          });
+        },
+        title: 'Organization Verification - Kapify Admin'
+      }
     ]
   }
 ];

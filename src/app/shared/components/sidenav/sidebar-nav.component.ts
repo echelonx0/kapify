@@ -42,27 +42,37 @@ export class SidebarNavComponent implements OnInit {
   isOnline = signal(true);
   unreadNotifications = signal(3); // TODO: Get from notifications service
 
+  // Admin email configuration
+  private readonly ADMIN_EMAILS = [
+    'charles@bokamosoas.co.za',
+    'admin@kapify.com',
+    'support@kapify.com',
+    'operations@kapify.com',
+    'zivaigwe@gmail.com'
+    // Add more admin emails as needed
+  ];
+
   // Profile data
   currentUser = computed(() => this.profileService.currentUser());
   userDisplayName = computed(() => this.profileService.userDisplayName());
 
   isAdminUser = computed(() => {
     const user = this.currentUser(); 
-    return user?.email === 'charles@bokamosoas.co.za';
+    if (!user?.email) return false;
+    
+    return this.ADMIN_EMAILS.includes(user.email.toLowerCase());
   });
 
   // Navigation items with potential badges
   private navItems: NavItem[] = [
     { label: 'Home', icon: Home, route: '/dashboard/home', userTypes: ['sme', 'funder'] },
-   
     { label: 'Profile', icon: User, route: '/profile', userTypes: ['sme'] },
     { label: 'Funding Opportunities', icon: DollarSign, route: '/funding', userTypes: ['sme'] },
     { label: 'Manage', icon: Building, route: '/dashboard/funder-dashboard', userTypes: ['funder'] },
     { label: 'Applications', icon: FileText, route: '/applications', userTypes: ['sme'], badge: 2 }, 
-      { label: 'Data Room', icon: FileText, route: '/profile/data-room', userTypes: ['sme', 'funder'] },
-     
-     { label: 'Resources', icon: BookOpen, route: '/dashboard/resources', userTypes: ['sme', 'funder'] },
-    { label: 'Admin Console', icon: Settings, route: '/administrator/dashboard', userTypes: ['sme', 'funder'] }
+    { label: 'Data Room', icon: FileText, route: '/profile/data-room', userTypes: ['sme', 'funder'] },
+    { label: 'Resources', icon: BookOpen, route: '/dashboard/resources', userTypes: ['sme', 'funder'] },
+  { label: 'Admin Console', icon: Settings, route: '/administrator', userTypes: ['sme', 'funder'] }
   ];
 
   visibleNavItems = computed(() => {
@@ -73,7 +83,7 @@ export class SidebarNavComponent implements OnInit {
     
     return this.navItems.filter(item => {
       // Show admin route only for admin users
-      if (item.route === '/administrator/dashboard') {
+      if (item.route === '/admin') {
         return isAdmin;
       }
       
@@ -110,6 +120,24 @@ export class SidebarNavComponent implements OnInit {
       case 'admin':
       case 'consultant': return 'funder';
       default: return 'sme';
+    }
+  }
+
+  // Method to check if a specific email is an admin (for external use)
+  isEmailAdmin(email: string): boolean {
+    return this.ADMIN_EMAILS.includes(email.toLowerCase());
+  }
+
+  // Method to get the list of admin emails (for external use)
+  getAdminEmails(): string[] {
+    return [...this.ADMIN_EMAILS];
+  }
+
+  // Method to add admin email dynamically (for future use)
+  addAdminEmail(email: string): void {
+    const normalizedEmail = email.toLowerCase();
+    if (!this.ADMIN_EMAILS.includes(normalizedEmail)) {
+      this.ADMIN_EMAILS.push(normalizedEmail);
     }
   }
 
