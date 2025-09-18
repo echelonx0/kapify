@@ -100,6 +100,55 @@
                 </div>
               }
 
+              <!-- Document Analysis Section -->
+              <div class="section-card">
+                <!-- Collapsible Header -->
+                <div 
+                  class="section-header clickable"
+                  (click)="toggleDocumentAnalysis()"
+                  role="button"
+                  tabindex="0"
+                  [attr.aria-expanded]="isDocumentAnalysisExpanded()"
+                  aria-controls="document-analysis-content"
+                >
+                  <div class="flex items-center justify-between">
+                    <div>
+                      <h3 class="section-title">Quick Evaluator</h3>
+                      <p class="section-description">Uload a proposal and see Kapify in action</p>
+                    </div>
+                    
+                    <button 
+                      class="toggle-button"
+                      [attr.aria-label]="isDocumentAnalysisExpanded() ? 'Collapse document analysis' : 'Expand document analysis'"
+                      tabindex="-1"
+                    >
+                      <span class="text-sm">
+                        {{ isDocumentAnalysisExpanded() ? 'Hide' : 'Show' }}
+                      </span>
+                      <lucide-icon 
+                        [img]="ChevronDownIcon" 
+                        [size]="16" 
+                        class="toggle-icon"
+                        [class.expanded]="isDocumentAnalysisExpanded()"
+                      />
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Collapsible Content -->
+                <div 
+                  id="document-analysis-content"
+                  class="collapsible-content"
+                  [class.expanded]="isDocumentAnalysisExpanded()"
+                  [class.collapsed]="!isDocumentAnalysisExpanded()"
+                  [attr.aria-hidden]="!isDocumentAnalysisExpanded()"
+                >
+                  <div class="content-wrapper">
+                    <app-funder-document-analysis></app-funder-document-analysis>
+                  </div>
+                </div>
+              </div>
+
               <!-- Quick Actions -->
               <div class="grid grid-cols-1 gap-8">
                 <div class="section-card">
@@ -129,16 +178,6 @@
                         <span class="text">Import Opportunity</span>
                       </button>
                     }
-                    
-                    <button 
-                      class="action-button"
-                      (click)="viewAllOpportunities()"
-                    >
-                      <div class="icon">
-                        <lucide-icon [img]="TrendingUpIcon" [size]="18" class="text-cyan-600" />
-                      </div>
-                      <span class="text">Browse Marketplace</span>
-                    </button>
                   </div>
                 </div>
               </div>
@@ -149,11 +188,6 @@
           @if (activeTab() === 'opportunities') {
             <div id="opportunities-panel" role="tabpanel" class="space-y-6">
               
-              <!-- Document Analysis Section -->
-              <div class="section-card">
-                <app-funder-document-analysis></app-funder-document-analysis>
-              </div>
-
               <!-- Opportunities Management -->
               <div class="section-card">
                 <!-- Header -->
