@@ -1,9 +1,9 @@
-  <div class="bg-gradient-to-br from-blue-500 via-indigo-600 to-purple-600 p-0.5 rounded-xl sticky top-6">
+  <div class="bg-gradient-to-br from-slate-500 via-primary-600 to-slate-600 p-0.5 rounded-xl sticky top-6">
       <div class="bg-white rounded-xl p-6">
         <!-- Header -->
         <div class="flex items-center justify-between mb-4">
           <div class="flex items-center space-x-3">
-            <div class="w-8 h-8 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
+            <div class="w-8 h-8 bg-gradient-to-r from-slate-500 to-primary-600 rounded-lg flex items-center justify-center">
               <lucide-icon [img]="Building2Icon" [size]="16" class="text-white"></lucide-icon>
             </div>
             <div class="flex-1">
@@ -159,24 +159,24 @@
   
   @if (!isComplete()) {
     <button 
-      class="w-full text-left p-3 border border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-all group"
+      class="w-full text-left p-3 border border-gray-200 rounded-lg hover:border-slate-300 hover:bg-slate-50 transition-all group"
       (click)="completeSetup()"
     >
       <div class="flex items-center space-x-3">
-        <lucide-icon [img]="FileTextIcon" [size]="16" class="text-gray-400 group-hover:text-blue-600"></lucide-icon>
-        <span class="text-sm text-gray-700 group-hover:text-blue-700">Complete Organization Setup</span>
+        <lucide-icon [img]="FileTextIcon" [size]="16" class="text-gray-400 group-hover:text-slate-600"></lucide-icon>
+        <span class="text-sm text-gray-700 group-hover:text-slate-700">Complete Organization Setup</span>
       </div>
     </button>
   }
 
   <button 
-    class="w-full text-left p-3 border border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-all group"
+    class="w-full text-left p-3 border border-gray-200 rounded-lg hover:border-slate-300 hover:bg-slate-50 transition-all group"
     (click)="editOrganization()"
   >
     <div class="flex items-center space-x-3">
-      <lucide-icon [img]="Building2Icon" [size]="16" class="text-gray-400 group-hover:text-blue-600"></lucide-icon>
-      <span class="text-sm text-gray-700 group-hover:text-blue-700">Edit Organization Details</span>
-      <lucide-icon [img]="ExternalLinkIcon" [size]="12" class="text-gray-400 group-hover:text-blue-600 ml-auto"></lucide-icon>
+      <lucide-icon [img]="Building2Icon" [size]="16" class="text-gray-400 group-hover:text-slate-600"></lucide-icon>
+      <span class="text-sm text-gray-700 group-hover:text-slate-700">Edit Organization Details</span>
+      <lucide-icon [img]="ExternalLinkIcon" [size]="12" class="text-gray-400 group-hover:text-slate-600 ml-auto"></lucide-icon>
     </div>
   </button>
 

@@ -9,6 +9,7 @@ import { ProfileCompletionGuard } from './guards/profile-completion.guard';
 import { RoleGuard } from './guards/role.guard';
 import { FundingOpportunitiesComponent } from './marketplace/opportunities-list/funding-opportunities.component';
 import { NotFoundComponent } from './shared/components/not-found/not-found.component';
+import { SuccessPageComponent } from './shared/components/success-page/success-page.component';
 
 export const routes: Routes = [
   // Public routes
@@ -52,6 +53,18 @@ export const routes: Routes = [
     loadChildren: () => import('./dashboard/dashboard.routes').then(m => m.dashboardRoutes)
   },
 
+   // Success pages for major actions
+  {
+    path: 'success/:type',
+    component: SuccessPageComponent,
+    title: 'Success'
+  },
+  {
+    path: 'success/:type/:id',
+    component: SuccessPageComponent,
+    title: 'Success'
+  },
+  
   // Profile routes
   {
     path: 'profile',

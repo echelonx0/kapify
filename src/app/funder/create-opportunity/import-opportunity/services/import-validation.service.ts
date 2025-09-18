@@ -1,4 +1,4 @@
-// src/app/funder/components/import-opportunity/services/import-validation.service.ts
+// src/app/funder/create-opportunity/import-opportunity/services/import-validation.service.ts
 import { Injectable } from '@angular/core';
 
 interface FileValidationResult {
@@ -211,7 +211,7 @@ export class ImportValidationService {
         equityOffered: null,
         expectedReturns: null,
         investmentHorizon: 3,
-        applicationDeadline: '2024-11-30'
+        applicationDeadline: '2025-11-30'
       }
     ];
 

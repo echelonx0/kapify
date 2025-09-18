@@ -3,8 +3,6 @@ import { Component, signal, inject, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { LucideAngularModule, ArrowLeft, Home } from 'lucide-angular';
-
-import { UiButtonComponent } from '../../../shared/components';
 import { UploadStepComponent } from './steps/upload-step.component';
 import { MappingStepComponent } from './steps/mapping-step.component';
 import { PreviewStepComponent } from './steps/preview-step.component';
@@ -26,7 +24,7 @@ interface StepConfig {
   imports: [
     CommonModule,
     LucideAngularModule,
-    UiButtonComponent,
+ 
     UploadStepComponent,
     MappingStepComponent,
     PreviewStepComponent,
@@ -235,15 +233,50 @@ export class ImportOpportunityContainerComponent implements OnInit {
   }
 
   private triggerPreviewImport() {
-    // Get reference to preview step and trigger import
-    const previewStep = document.querySelector('app-preview-step') as any;
-    if (previewStep && previewStep.triggerImport) {
-      previewStep.triggerImport();
-    } else {
-      // Fallback - emit current transformed data
-      if (this.transformedData()) {
-        this.onValidDataReady(this.transformedData());
+    console.log('🎯 Triggering preview import');
+    
+    // Check if we have transformed data
+    if (this.transformedData()) {
+      const mappingData = this.transformedData();
+      console.log('📦 Using transformed data for import:', mappingData);
+      
+      if (mappingData?.mappings && mappingData?.uploadedData) {
+        // Transform the raw data using the mappings
+        const transformedRows = mappingData.uploadedData.rawData.map((row: any) => {
+          const transformed: any = {};
+          mappingData.mappings.forEach((mapping: any) => {
+            if (mapping.sourceField) {
+              transformed[mapping.targetField] = row[mapping.sourceField];
+            }
+          });
+          return transformed;
+        });
+        
+        console.log('✅ Transformed rows for import:', transformedRows.length, 'opportunities');
+        this.onValidDataReady(transformedRows);
+      } else {
+        console.error('❌ Invalid transformed data structure:', mappingData);
+        this.importResults.set({
+          success: false,
+          imported: 0,
+          failed: 0,
+          warnings: 0,
+          message: 'Invalid data structure for import',
+          errors: ['Data transformation failed']
+        });
+        this.currentStep.set('results');
       }
+    } else {
+      console.error('❌ No transformed data available for import');
+      this.importResults.set({
+        success: false,
+        imported: 0,
+        failed: 0,
+        warnings: 0,
+        message: 'No data available for import',
+        errors: ['No data to import']
+      });
+      this.currentStep.set('results');
     }
   }
 
@@ -393,6 +426,21 @@ export class ImportOpportunityContainerComponent implements OnInit {
   }
 
   private transformImportDataToOpportunity(importData: any): Partial<FundingOpportunity> {
+    // Fix application deadline to ensure it's in the future
+    let applicationDeadline: Date | undefined;
+    if (importData.applicationDeadline) {
+      const inputDate = new Date(importData.applicationDeadline);
+      const today = new Date();
+      
+      // If the date is in the past, set it to 3 months from now
+      if (inputDate <= today) {
+        applicationDeadline = new Date();
+        applicationDeadline.setMonth(applicationDeadline.getMonth() + 3);
+      } else {
+        applicationDeadline = inputDate;
+      }
+    }
+
     return {
       title: importData.title,
       description: importData.description,
@@ -408,7 +456,7 @@ export class ImportOpportunityContainerComponent implements OnInit {
       equityOffered: importData.equityOffered ? Number(importData.equityOffered) : undefined,
       expectedReturns: importData.expectedReturns ? Number(importData.expectedReturns) : undefined,
       investmentHorizon: importData.investmentHorizon ? Number(importData.investmentHorizon) : undefined,
-      applicationDeadline: importData.applicationDeadline ? new Date(importData.applicationDeadline) : undefined,
+      applicationDeadline,
       
       // Set reasonable defaults for required fields not in import
       targetCompanyProfile: 'Various SMEs seeking funding',
