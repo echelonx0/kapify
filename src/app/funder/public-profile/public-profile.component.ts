@@ -100,6 +100,7 @@ HomeIcon = Home;
   }
 
   private setupSEO(profile: PublicProfile) {
+    
     const orgName = this.getOrganizationName();
     const pageTitle = `${orgName} - ${profile.tagline}`;
     const description = profile.metaDescription || profile.elevator_pitch || profile.tagline;
