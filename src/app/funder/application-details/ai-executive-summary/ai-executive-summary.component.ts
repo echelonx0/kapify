@@ -44,8 +44,8 @@ interface MarketFit {
       <div class="gradient-content">
         <div class="flex items-start justify-between mb-4">
           <h2 class="text-lg font-semibold text-gray-900 flex items-center">
-            <lucide-icon [img]="ZapIcon" [size]="20" class="text-purple-600 mr-2"></lucide-icon>
-            AI Executive Summary
+            <lucide-icon [img]="ZapIcon" [size]="20" class="text-slate-600 mr-2"></lucide-icon>
+            Quick Evaluation
           </h2>
           <div class="flex items-center space-x-2">
             <span class="text-xs font-medium" [class]="getConfidenceColorClass()">
