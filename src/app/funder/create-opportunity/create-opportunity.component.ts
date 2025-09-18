@@ -5,20 +5,20 @@ import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Location } from '@angular/common';
 import { Subject, takeUntil, switchMap, Observable } from 'rxjs';
-import { AlertCircle, AlertCircleIcon, ArrowLeft, ArrowRight, Calculator, Check, ChevronDown, ClockIcon, Copy, DollarSign, Eye, FileText, HelpCircle, Lightbulb, LucideAngularModule, PieChart, RefreshCw, Save, Settings, Shield, Sparkles, Target, TrendingUp, Users, XCircle } from 'lucide-angular';
+import {  AlertCircleIcon, ArrowLeft, ArrowRight, Calculator, Check, ChevronDown, ClockIcon, Copy, DollarSign, Eye, FileText, HelpCircle, Lightbulb, LucideAngularModule, PieChart, RefreshCw, Save, Settings, Shield, Sparkles, Target, TrendingUp, Users, XCircle } from 'lucide-angular';
 import { trigger, transition, style, animate } from '@angular/animations';
 
 // Services 
-import { FundingOpportunityService } from '../../../funding/services/funding-opportunity.service';
-import { FundingOpportunity } from '../../../shared/models/funder.models';
+import { FundingOpportunityService } from '../../funding/services/funding-opportunity.service';
+import { FundingOpportunity } from '../../shared/models/funder.models';
 
 // Components
-import { AiAssistantComponent } from '../../../ai/ai-assistant/ai-assistant.component';
-import { OpportunityFormStateService } from '../../services/opportunity-form-state.service';
+import { AiAssistantComponent } from '../../ai/ai-assistant/ai-assistant.component';
+import { OpportunityFormStateService } from '../services/opportunity-form-state.service';
 import { OpportunityFormData } from './shared/form-interfaces';
-import { OrganizationStateService } from '../../services/organization-state.service';
-import { StepNavigationService } from '../../services/step-navigation.service';
-import { OpportunityUIHelperService } from '../../services/ui-helper.service';
+import { OrganizationStateService } from '../services/organization-state.service';
+import { StepNavigationService } from '../services/step-navigation.service';
+import { OpportunityUIHelperService } from '../services/ui-helper.service';
 import { OpportunityBasicsComponent } from './steps/basic.component';
 import { EligibilityFiltersComponent } from './steps/eligibility.component';
 import { MediaBrandingComponent } from './steps/media.component';

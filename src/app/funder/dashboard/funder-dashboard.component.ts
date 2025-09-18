@@ -62,10 +62,10 @@ export class FunderDashboardComponent implements OnInit, OnDestroy {
   private applicationService = inject(ApplicationManagementService);
   private destroy$ = new Subject<void>();
 
-   // NEW: Add public profile service
+   // Add public profile service
   private publicProfileService = inject(PublicProfileService);
   
-  // NEW: Add public profile state
+  //  Add public profile state
   publicProfile = signal<PublicProfile | null>(null);
   hasPublicProfile = computed(() => !!this.publicProfile());
   publicProfileUrl = computed(() => {
