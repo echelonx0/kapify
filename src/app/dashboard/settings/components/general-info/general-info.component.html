@@ -1,0 +1,215 @@
+<div class="space-y-6">
+      <!-- Header -->
+      <div class="bg-white rounded-lg border border-neutral-200">
+        <div class="px-6 py-4 border-b border-neutral-200">
+          <h3 class="text-lg font-medium text-neutral-900">General Information</h3>
+          <p class="text-sm text-neutral-600 mt-1">
+            Basic details about your organization
+          </p>
+        </div>
+
+        <form [formGroup]="generalForm" (ngSubmit)="onSave()" class="p-6">
+          <div class="space-y-6">
+            <!-- Logo Upload Section -->
+            <div class="flex items-start space-x-6">
+              <div class="flex-shrink-0">
+                <div class="relative">
+                  @if (currentLogoUrl()) {
+                    <img 
+                      [src]="currentLogoUrl()" 
+                      [alt]="organization?.name + ' logo'"
+                      class="w-20 h-20 rounded-lg object-cover border-2 border-neutral-200"
+                    />
+                  } @else {
+                    <div class="w-20 h-20 bg-neutral-100 rounded-lg border-2 border-dashed border-neutral-300 flex items-center justify-center">
+                      <lucide-icon [img]="Building2Icon" [size]="24" class="text-neutral-400" />
+                    </div>
+                  }
+                  
+                  <!-- Upload overlay -->
+                  <button
+                    type="button"
+                    (click)="triggerFileUpload()"
+                    [disabled]="isUploading()"
+                    class="absolute inset-0 bg-black bg-opacity-50 rounded-lg flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity duration-200"
+                  >
+                    @if (isUploading()) {
+                      <div class="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    } @else {
+                      <lucide-icon [img]="CameraIcon" [size]="18" class="text-white" />
+                    }
+                  </button>
+                </div>
+                
+                <input
+                  #fileInput
+                  type="file"
+                  accept="image/*"
+                  (change)="onFileSelected($event)"
+                  class="hidden"
+                />
+                
+                <p class="text-xs text-neutral-500 mt-2 text-center">
+                  Click to upload logo<br>
+                  <span class="text-neutral-400">Max 5MB</span>
+                </p>
+              </div>
+
+              <div class="flex-1">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <!-- Organization Name -->
+                  <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-neutral-700 mb-2">
+                      Organization Name *
+                    </label>
+                    <input
+                      type="text"
+                      formControlName="name"
+                      placeholder="e.g., South African Growth Fund"
+                      class="block w-full px-3 py-2 border border-neutral-300 rounded-md shadow-sm placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                      [class.border-red-300]="generalForm.get('name')?.invalid && generalForm.get('name')?.touched"
+                    />
+                    @if (generalForm.get('name')?.invalid && generalForm.get('name')?.touched) {
+                      <p class="mt-1 text-sm text-red-600">Organization name is required</p>
+                    }
+                  </div>
+
+                  <!-- Organization Type -->
+                  <div>
+                    <label class="block text-sm font-medium text-neutral-700 mb-2">
+                      Organization Type *
+                    </label>
+                    <select
+                      formControlName="organizationType"
+                      class="block w-full px-3 py-2 border border-neutral-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                      [class.border-red-300]="generalForm.get('organizationType')?.invalid && generalForm.get('organizationType')?.touched"
+                    >
+                      <option value="">Select organization type</option>
+                      <option value="investment_fund">Investment Fund</option>
+                      <option value="venture_capital">Venture Capital</option>
+                      <option value="private_equity">Private Equity</option>
+                      <option value="bank">Bank</option>
+                      <option value="government">Government Agency</option>
+                      <option value="ngo">NGO/Non-Profit</option>
+                      <option value="general">General</option>
+                    </select>
+                    @if (generalForm.get('organizationType')?.invalid && generalForm.get('organizationType')?.touched) {
+                      <p class="mt-1 text-sm text-red-600">Organization type is required</p>
+                    }
+                  </div>
+
+                  <!-- Employee Count -->
+                  <div>
+                    <label class="block text-sm font-medium text-neutral-700 mb-2">
+                      Employee Count
+                    </label>
+                    <select
+                      formControlName="employeeCount"
+                      class="block w-full px-3 py-2 border border-neutral-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                    >
+                      <option value="">Select employee count</option>
+                      <option value="1">1 employee</option>
+                      <option value="10">1-10 employees</option>
+                      <option value="50">11-50 employees</option>
+                      <option value="200">51-200 employees</option>
+                      <option value="500">201-500 employees</option>
+                      <option value="1000">500+ employees</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Description -->
+            <div>
+              <label class="block text-sm font-medium text-neutral-700 mb-2">
+                Description *
+              </label>
+              <textarea
+                formControlName="description"
+                rows="4"
+                placeholder="Describe your organization's mission, focus areas, and investment approach..."
+                class="block w-full px-3 py-2 border border-neutral-300 rounded-md shadow-sm placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 resize-none"
+                [class.border-red-300]="generalForm.get('description')?.invalid && generalForm.get('description')?.touched"
+              ></textarea>
+              @if (generalForm.get('description')?.invalid && generalForm.get('description')?.touched) {
+                <p class="mt-1 text-sm text-red-600">Description is required</p>
+              }
+            </div>
+
+            <!-- Assets Under Management (for funders) -->
+            @if (isFunder()) {
+              <div>
+                <label class="block text-sm font-medium text-neutral-700 mb-2">
+                  Assets Under Management (Optional)
+                </label>
+                <div class="relative">
+                  <span class="absolute left-3 top-2 text-neutral-500">R</span>
+                  <input
+                    type="number"
+                    formControlName="assetsUnderManagement"
+                    placeholder="0"
+                    class="block w-full pl-8 pr-3 py-2 border border-neutral-300 rounded-md shadow-sm placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                  />
+                </div>
+                <p class="mt-1 text-xs text-neutral-500">
+                  Total value of assets currently under management
+                </p>
+              </div>
+            }
+          </div>
+
+          <!-- Actions -->
+          <div class="flex items-center justify-between pt-6 border-t border-neutral-200 mt-6">
+            <div class="flex items-center text-sm">
+              @if (lastSaved() && lastSaved() !== null) {
+                <div class="flex items-center text-green-600">
+                  <lucide-icon [img]="CheckIcon" [size]="16" class="mr-2" />
+                  Last saved {{ formatLastSaved(lastSaved()) }}
+                </div>
+              } @else if (hasUnsavedChanges()) {
+                <div class="flex items-center text-amber-600">
+                  <lucide-icon [img]="AlertCircleIcon" [size]="16" class="mr-2" />
+                  You have unsaved changes
+                </div>
+              }
+            </div>
+
+            <div class="flex space-x-3">
+              <button
+                type="button"
+                (click)="onReset()"
+                [disabled]="isLoading || !hasUnsavedChanges()"
+                class="px-4 py-2 text-sm font-medium text-neutral-700 bg-white border border-neutral-300 rounded-md hover:bg-neutral-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Reset
+              </button>
+              
+              <button
+                type="submit"
+                [disabled]="generalForm.invalid || isLoading"
+                class="px-4 py-2 text-sm font-medium text-white bg-primary-600 border border-transparent rounded-md hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+              >
+                @if (isLoading) {
+                  <div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                  Saving...
+                } @else {
+                  <lucide-icon [img]="SaveIcon" [size]="16" class="mr-2" />
+                  Save Changes
+                }
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+
+      <!-- Upload Status -->
+      @if (uploadError()) {
+        <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+          <div class="flex items-center">
+            <lucide-icon [img]="AlertCircleIcon" [size]="20" class="text-red-600 mr-3" />
+            <p class="text-red-800">{{ uploadError() }}</p>
+          </div>
+        </div>
+      }
+    </div>

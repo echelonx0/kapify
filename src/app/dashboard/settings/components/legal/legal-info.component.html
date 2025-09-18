@@ -1,0 +1,305 @@
+<div class="space-y-6">
+      <!-- Legal Registration -->
+      <div class="bg-white rounded-lg border border-neutral-200">
+        <div class="px-6 py-4 border-b border-neutral-200">
+          <div class="flex items-center justify-between">
+            <div>
+              <h3 class="text-lg font-medium text-neutral-900">Legal Registration</h3>
+              <p class="text-sm text-neutral-600 mt-1">
+                Official registration and compliance details
+              </p>
+            </div>
+            
+            <!-- Verification Status Badge -->
+            @if (organization) {
+              <div [class]="getVerificationStatusClasses()">
+                <lucide-icon [img]="getVerificationIcon()" [size]="16" class="mr-2" />
+                {{ getVerificationStatusText() }}
+              </div>
+            }
+          </div>
+        </div>
+
+        <form [formGroup]="legalForm" (ngSubmit)="onSave()" class="p-6">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Legal Name -->
+            <div>
+              <label class="block text-sm font-medium text-neutral-700 mb-2">
+                Legal Name *
+              </label>
+              <input
+                type="text"
+                formControlName="legalName"
+                placeholder="Official registered name"
+                class="block w-full px-3 py-2 border border-neutral-300 rounded-md shadow-sm placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                [class.border-red-300]="legalForm.get('legalName')?.invalid && legalForm.get('legalName')?.touched"
+              />
+              @if (legalForm.get('legalName')?.invalid && legalForm.get('legalName')?.touched) {
+                <p class="mt-1 text-sm text-red-600">Legal name is required</p>
+              }
+            </div>
+
+            <!-- Registration Number -->
+            <div>
+              <label class="block text-sm font-medium text-neutral-700 mb-2">
+                Registration Number *
+              </label>
+              <input
+                type="text"
+                formControlName="registrationNumber"
+                placeholder="Company registration number"
+                class="block w-full px-3 py-2 border border-neutral-300 rounded-md shadow-sm placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                [class.border-red-300]="legalForm.get('registrationNumber')?.invalid && legalForm.get('registrationNumber')?.touched"
+              />
+              @if (legalForm.get('registrationNumber')?.invalid && legalForm.get('registrationNumber')?.touched) {
+                <p class="mt-1 text-sm text-red-600">Registration number is required</p>
+              }
+            </div>
+
+            <!-- FSP License Number -->
+            <div>
+              <label class="block text-sm font-medium text-neutral-700 mb-2">
+                FSP License Number
+              </label>
+              <input
+                type="text"
+                formControlName="fspLicenseNumber"
+                placeholder="Financial Services Provider number"
+                class="block w-full px-3 py-2 border border-neutral-300 rounded-md shadow-sm placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              />
+              <p class="mt-1 text-xs text-neutral-500">
+                Required for financial service providers
+              </p>
+            </div>
+
+            <!-- NCR Number -->
+            <div>
+              <label class="block text-sm font-medium text-neutral-700 mb-2">
+                NCR Number
+              </label>
+              <input
+                type="text"
+                formControlName="ncrNumber"
+                placeholder="NCRCP1234"
+                class="block w-full px-3 py-2 border border-neutral-300 rounded-md shadow-sm placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              />
+              <p class="mt-1 text-xs text-neutral-500">
+                National Credit Regulator registration number
+              </p>
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div class="flex items-center justify-between pt-6 border-t border-neutral-200 mt-6">
+            <div class="flex items-center text-sm">
+              @if (lastSaved() && lastSaved() !== null) {
+                <div class="flex items-center text-green-600">
+                  <lucide-icon [img]="CheckIcon" [size]="16" class="mr-2" />
+                  Last saved {{ formatLastSaved(lastSaved()) }}
+                </div>
+              } @else if (hasUnsavedChanges()) {
+                <div class="flex items-center text-amber-600">
+                  <lucide-icon [img]="AlertCircleIcon" [size]="16" class="mr-2" />
+                  You have unsaved changes
+                </div>
+              }
+            </div>
+
+            <div class="flex space-x-3">
+              <button
+                type="button"
+                (click)="onReset()"
+                [disabled]="isLoading || !hasUnsavedChanges()"
+                class="px-4 py-2 text-sm font-medium text-neutral-700 bg-white border border-neutral-300 rounded-md hover:bg-neutral-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Reset
+              </button>
+              
+              <button
+                type="submit"
+                [disabled]="legalForm.invalid || isLoading"
+                class="px-4 py-2 text-sm font-medium text-white bg-primary-600 border border-transparent rounded-md hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+              >
+                @if (isLoading) {
+                  <div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                  Saving...
+                } @else {
+                  <lucide-icon [img]="SaveIcon" [size]="16" class="mr-2" />
+                  Save Changes
+                }
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+
+      <!-- Verification Section -->
+      <div class="bg-white rounded-lg border border-neutral-200">
+        <div class="px-6 py-4 border-b border-neutral-200">
+          <h3 class="text-lg font-medium text-neutral-900">Verification Status</h3>
+          <p class="text-sm text-neutral-600 mt-1">
+            Verify your organization to access all platform features
+          </p>
+        </div>
+
+        <div class="p-6">
+          @switch (organization?.status) {
+            @case ('active') {
+              @if (organization?.isVerified) {
+                <!-- Verified -->
+                <div class="flex items-center justify-between p-4 bg-green-50 border border-green-200 rounded-lg">
+                  <div class="flex items-center">
+                    <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center mr-4">
+                      <lucide-icon [img]="CheckCircleIcon" [size]="20" class="text-green-600" />
+                    </div>
+                    <div>
+                      <h4 class="text-sm font-medium text-green-900">Organization Verified</h4>
+                      <p class="text-sm text-green-700">
+                        Your organization has been successfully verified
+                        @if (organization?.verificationDate) {
+                          on {{ formatDate(organization?.verificationDate) }}
+                        }
+                      </p>
+                    </div>
+                  </div>
+                  <div class="flex items-center text-green-600">
+                    <lucide-icon [img]="ShieldIcon" [size]="20" class="mr-2" />
+                    <span class="text-sm font-medium">Verified</span>
+                  </div>
+                </div>
+              } @else {
+                <!-- Not verified but can request -->
+                <div class="text-center py-8">
+                  <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <lucide-icon [img]="ShieldIcon" [size]="32" class="text-blue-600" />
+                  </div>
+                  <h4 class="text-lg font-medium text-neutral-900 mb-2">Get Verified</h4>
+                  <p class="text-neutral-600 mb-6 max-w-md mx-auto">
+                    Verify your organization to build trust with SMEs, access premium features, and unlock higher funding limits.
+                  </p>
+                  
+                  @if (canRequestVerification()) {
+                    <button
+                      (click)="requestVerification()"
+                      [disabled]="isRequestingVerification()"
+                      class="px-6 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center mx-auto"
+                    >
+                      @if (isRequestingVerification()) {
+                        <div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                        Requesting...
+                      } @else {
+                        <lucide-icon [img]="ShieldIcon" [size]="16" class="mr-2" />
+                        Request Verification
+                      }
+                    </button>
+                  } @else {
+                    <div class="p-4 bg-amber-50 border border-amber-200 rounded-lg">
+                      <div class="flex items-center justify-center">
+                        <lucide-icon [img]="AlertTriangleIcon" [size]="20" class="text-amber-600 mr-2" />
+                        <p class="text-amber-800 text-sm">
+                          Complete all required legal information before requesting verification
+                        </p>
+                      </div>
+                    </div>
+                  }
+                </div>
+              }
+            }
+            
+            @case ('pending_verification') {
+              <!-- Pending verification -->
+              <div class="flex items-center justify-between p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                <div class="flex items-center">
+                  <div class="w-10 h-10 bg-yellow-100 rounded-full flex items-center justify-center mr-4">
+                    <lucide-icon [img]="ClockIcon" [size]="20" class="text-yellow-600" />
+                  </div>
+                  <div>
+                    <h4 class="text-sm font-medium text-yellow-900">Verification Pending</h4>
+                    <p class="text-sm text-yellow-700">
+                      Your verification request is being reviewed. This typically takes 2-5 business days.
+                    </p>
+                  </div>
+                </div>
+                <div class="flex items-center text-yellow-600">
+                  <lucide-icon [img]="ClockIcon" [size]="20" class="mr-2" />
+                  <span class="text-sm font-medium">Pending</span>
+                </div>
+              </div>
+            }
+            
+            @case ('verification_rejected') {
+              <!-- Verification rejected -->
+              <div class="space-y-4">
+                <div class="p-4 bg-red-50 border border-red-200 rounded-lg">
+                  <div class="flex items-center">
+                    <div class="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center mr-4">
+                      <lucide-icon [img]="XCircleIcon" [size]="20" class="text-red-600" />
+                    </div>
+                    <div class="flex-1">
+                      <h4 class="text-sm font-medium text-red-900">Verification Rejected</h4>
+                      <p class="text-sm text-red-700">
+                        Your verification request was rejected. Please review the requirements and resubmit.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="text-center">
+                  <button
+                    (click)="requestVerification()"
+                    [disabled]="isRequestingVerification() || !canRequestVerification()"
+                    class="px-6 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center mx-auto"
+                  >
+                    @if (isRequestingVerification()) {
+                      <div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                      Resubmitting...
+                    } @else {
+                      <lucide-icon [img]="ShieldIcon" [size]="16" class="mr-2" />
+                      Resubmit for Verification
+                    }
+                  </button>
+                </div>
+              </div>
+            }
+            
+            @default {
+              <!-- Default/unknown status -->
+              <div class="text-center py-8">
+                <div class="w-16 h-16 bg-neutral-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <lucide-icon [img]="AlertTriangleIcon" [size]="32" class="text-neutral-500" />
+                </div>
+                <h4 class="text-lg font-medium text-neutral-900 mb-2">Unknown Verification Status</h4>
+                <p class="text-neutral-600">
+                  Please contact support for assistance with your verification status.
+                </p>
+              </div>
+            }
+          }
+
+          <!-- Verification Benefits -->
+          @if (!organization?.isVerified) {
+            <div class="mt-6 pt-6 border-t border-neutral-200">
+              <h4 class="text-sm font-medium text-neutral-900 mb-3">Verification Benefits</h4>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div class="flex items-center text-sm text-neutral-600">
+                  <lucide-icon [img]="CheckIcon" [size]="16" class="text-green-500 mr-2 flex-shrink-0" />
+                  Build trust with SME applicants
+                </div>
+                <div class="flex items-center text-sm text-neutral-600">
+                  <lucide-icon [img]="CheckIcon" [size]="16" class="text-green-500 mr-2 flex-shrink-0" />
+                  Access to premium features
+                </div>
+                <div class="flex items-center text-sm text-neutral-600">
+                  <lucide-icon [img]="CheckIcon" [size]="16" class="text-green-500 mr-2 flex-shrink-0" />
+                  Higher visibility in search results
+                </div>
+                <div class="flex items-center text-sm text-neutral-600">
+                  <lucide-icon [img]="CheckIcon" [size]="16" class="text-green-500 mr-2 flex-shrink-0" />
+                  Priority customer support
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    </div>

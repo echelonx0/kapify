@@ -30,10 +30,10 @@ import { OpportunityManagementService } from '../services/opportunity-management
 import { FunderDocumentAnalysisComponent } from 'src/app/ai/document-analysis/funder-document-analysis.component';
 import { ActionEvent, OrganizationStatusSidebarComponent } from '../components/status-sidebar/status-sidebar.component';
 import { PublicProfile } from '../models/public-profile.models';
-import { PublicProfileService } from '../services/public-profile.service';
-import { SettingsComponent } from 'src/app/dashboard/pages/settings-page.component';
+import { PublicProfileService } from '../services/public-profile.service'; 
 import { FunderApplicationsComponent } from '../application-details/funder-applications/funder-applications.component';
 import { DraftManagementService } from '../services/draft-management.service';
+import { SettingsComponent } from 'src/app/dashboard/settings/settings.component';
 
 type TabId = 'overview' | 'opportunities' | 'applications' | 'settings';
 
