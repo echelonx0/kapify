@@ -4,7 +4,7 @@ import { Injectable, inject, signal } from '@angular/core';
 import { Observable, from, throwError, BehaviorSubject } from 'rxjs';
 import { tap, catchError, map } from 'rxjs/operators';
  
-import { AuthService } from '../../auth/production.auth.service'; 
+ 
 import { SharedSupabaseService } from 'src/app/shared/services/shared-supabase.service';
 import { PublicProfile, PublicProfileStats } from '../models/public-profile.models';
 
@@ -13,7 +13,7 @@ import { PublicProfile, PublicProfileStats } from '../models/public-profile.mode
 })
 export class PublicProfileService {
   private supabaseService = inject(SharedSupabaseService);
-  private authService = inject(AuthService);
+ 
   
   // State
   private profileSubject = new BehaviorSubject<PublicProfile | null>(null);

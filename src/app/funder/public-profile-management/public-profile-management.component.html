@@ -1,15 +1,14 @@
 <div class="min-h-screen bg-gray-50">
-<div class="mx-auto px-4 sm:px-6 lg:px-8 py-8" style="max-width: 1360px;">
+  <div class="mx-auto px-4 sm:px-6 lg:px-8 py-8" style="max-width: 1360px;">
     
     <!-- Header -->
     <div class="mb-8">
       <div class="flex items-center justify-between">
-               <ui-button variant="outline" (clicked)="goBack()" class="shadow-sm">
-        <lucide-icon [img]="ArrowLeftIcon" [size]="16" class="mr-2" />
-        Go Back
-      </ui-button>
+        <ui-button variant="outline" (clicked)="goBack()" class="shadow-sm">
+          <lucide-icon [img]="ArrowLeftIcon" [size]="16" class="mr-2" />
+          Go Back
+        </ui-button>
     
-        
         <div class="flex items-center gap-3">
           @if (profileExists()) {
             <ui-button 
@@ -34,7 +33,7 @@
               <ui-button 
                 variant="primary" 
                 (clicked)="publishProfile()"
-                [disabled]="!isValid() || isPublishing()"
+                [disabled]="!canPublish()"
               >
                 <lucide-icon [img]="GlobeIcon" [size]="16" class="mr-2" />
                 {{ isPublishing() ? 'Publishing...' : 'Publish' }}
@@ -44,7 +43,7 @@
             <ui-button 
               variant="primary" 
               (clicked)="createProfile()"
-              [disabled]="!isValid() || isCreating()"
+              [disabled]="!isFormValid() || isCreating()"
             >
               <lucide-icon [img]="PlusIcon" [size]="16" class="mr-2" />
               {{ isCreating() ? 'Creating...' : 'Create Profile' }}
@@ -63,6 +62,32 @@
           </div>
         </div>
       }
+
+      <!-- Validation Summary -->
+      @if (!isFormValid() && profileForm.touched) {
+        <div class="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+          <div class="flex items-start gap-3">
+            <lucide-icon [img]="AlertCircleIcon" [size]="20" class="text-red-600 mt-0.5" />
+            <div>
+              <h4 class="text-red-800 font-medium mb-2">Complete these required fields to publish:</h4>
+              <ul class="text-red-700 text-sm space-y-1">
+                @if (hasFieldError('tagline')) {
+                  <li>• {{ getFieldError('tagline') }}</li>
+                }
+                @if (hasFieldError('investmentMin')) {
+                  <li>• {{ getFieldError('investmentMin') }}</li>
+                }
+                @if (hasFieldError('investmentMax')) {
+                  <li>• {{ getFieldError('investmentMax') }}</li>
+                }
+                @if (hasFieldError('investmentRange')) {
+                  <li>• {{ getFieldError('investmentRange') }}</li>
+                }
+              </ul>
+            </div>
+          </div>
+        </div>
+      }
     </div>
 
     <!-- Main Content Grid -->
@@ -75,12 +100,10 @@
           <!-- Hero Section -->
           <div class="section-card">
             <div class="section-header">
-        
-                  <div>
-          <h1 class="text-2xl font-bold text-gray-900">Public Profile</h1>
-          <p class="text-gray-600 mt-1">Customize your public funder page to attract high-quality applications</p>
-     
-        </div>
+              <div>
+                <h1 class="text-2xl font-bold text-gray-900">Public Profile</h1>
+                <p class="text-gray-600 mt-1">Customize your public funder page to attract high-quality applications</p>
+              </div>
             </div>
             <div class="p-6 space-y-6">
               
@@ -93,9 +116,16 @@
                   type="text"
                   formControlName="tagline"
                   placeholder="e.g., Empowering South African entrepreneurs to scale"
-                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                  class="form-input"
+                  [class.error]="hasFieldError('tagline')"
                   maxlength="120"
                 />
+                @if (hasFieldError('tagline')) {
+                  <div class="form-error">
+                    <lucide-icon [img]="AlertCircleIcon" [size]="14" class="mr-1" />
+                    {{ getFieldError('tagline') }}
+                  </div>
+                }
                 <p class="text-xs text-gray-500 mt-1">
                   {{ profileForm.get('tagline')?.value?.length || 0 }}/120 characters
                 </p>
@@ -109,7 +139,7 @@
                 <textarea
                   formControlName="elevator_pitch"
                   placeholder="2-3 sentences describing your investment focus and value proposition"
-                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                  class="form-textarea"
                   rows="3"
                   maxlength="300"
                 ></textarea>
@@ -128,7 +158,7 @@
                     type="url"
                     formControlName="heroVideoUrl"
                     placeholder="YouTube or Vimeo URL"
-                    class="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                    class="form-input flex-1"
                   />
                   <ui-button type="button" variant="outline" (clicked)="uploadVideo()">
                     <lucide-icon [img]="UploadIcon" [size]="16" class="mr-2" />
@@ -174,7 +204,7 @@
                         type="text"
                         [formControlName]="$index"
                         placeholder="e.g., Funded 50+ companies"
-                        class="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                        class="form-input flex-1"
                       />
                       <ui-button 
                         type="button" 
@@ -210,14 +240,14 @@
                 </div>
                 <div class="space-y-3" formArrayName="successMetrics">
                   @for (metricGroup of successMetricsArray.controls; track $index) {
-                    <div [formGroupName]="$index" class="p-4 border border-gray-200 rounded-lg">
+                    <div [formGroupName]="$index" class="metric-card">
                       <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
                         <div>
                           <input
                             type="text"
                             formControlName="label"
                             placeholder="Metric label"
-                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                            class="form-input"
                           />
                         </div>
                         <div>
@@ -225,12 +255,12 @@
                             type="text"
                             formControlName="value"
                             placeholder="Value"
-                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                            class="form-input"
                           />
                         </div>
                         <div class="flex gap-2">
                           <label class="flex items-center">
-                            <input type="checkbox" formControlName="emphasis" class="mr-2" />
+                            <input type="checkbox" formControlName="emphasis" class="form-checkbox mr-2" />
                             <span class="text-sm">Highlight</span>
                           </label>
                           <ui-button 
@@ -271,8 +301,15 @@
                       type="number"
                       formControlName="min"
                       placeholder="100000"
-                      class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                      class="form-input"
+                      [class.error]="hasFieldError('investmentMin')"
                     />
+                    @if (hasFieldError('investmentMin')) {
+                      <div class="form-error">
+                        <lucide-icon [img]="AlertCircleIcon" [size]="14" class="mr-1" />
+                        {{ getFieldError('investmentMin') }}
+                      </div>
+                    }
                   </div>
                   <div>
                     <label class="block text-xs text-gray-500 mb-1">Maximum (R)</label>
@@ -280,8 +317,15 @@
                       type="number"
                       formControlName="max"
                       placeholder="5000000"
-                      class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                      class="form-input"
+                      [class.error]="hasFieldError('investmentMax')"
                     />
+                    @if (hasFieldError('investmentMax')) {
+                      <div class="form-error">
+                        <lucide-icon [img]="AlertCircleIcon" [size]="14" class="mr-1" />
+                        {{ getFieldError('investmentMax') }}
+                      </div>
+                    }
                   </div>
                   <div>
                     <label class="block text-xs text-gray-500 mb-1">Typical (R)</label>
@@ -289,10 +333,16 @@
                       type="number"
                       formControlName="typical"
                       placeholder="500000"
-                      class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                      class="form-input"
                     />
                   </div>
                 </div>
+                @if (hasFieldError('investmentRange')) {
+                  <div class="form-error mt-2">
+                    <lucide-icon [img]="AlertCircleIcon" [size]="14" class="mr-1" />
+                    {{ getFieldError('investmentRange') }}
+                  </div>
+                }
               </div>
 
               <!-- Funding Areas -->
@@ -313,14 +363,14 @@
                 </div>
                 <div class="space-y-3" formArrayName="fundingAreas">
                   @for (areaGroup of fundingAreasArray.controls; track $index) {
-                    <div [formGroupName]="$index" class="p-4 border border-gray-200 rounded-lg">
+                    <div [formGroupName]="$index" class="funding-area-card">
                       <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
                         <div>
                           <input
                             type="text"
                             formControlName="name"
                             placeholder="e.g., Technology, Healthcare"
-                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                            class="form-input"
                           />
                         </div>
                         <div class="flex gap-2">
@@ -328,7 +378,7 @@
                             type="text"
                             formControlName="description"
                             placeholder="Brief description (optional)"
-                            class="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                            class="form-input flex-1"
                           />
                           <ui-button 
                             type="button" 
@@ -345,7 +395,7 @@
                           type="text"
                           formControlName="tagsInput"
                           placeholder="Tags (comma-separated): fintech, saas, mobile apps"
-                          class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                          class="form-input"
                         />
                       </div>
                     </div>
@@ -363,7 +413,7 @@
                     type="text"
                     formControlName="applicationProcess"
                     placeholder="e.g., Apply in 10 minutes"
-                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                    class="form-input"
                   />
                 </div>
                 <div>
@@ -374,7 +424,7 @@
                     type="text"
                     formControlName="responseTimePromise"
                     placeholder="e.g., We respond within 48 hours"
-                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                    class="form-input"
                   />
                 </div>
               </div>
@@ -394,7 +444,7 @@
                   <div [formGroupName]="$index" class="flex gap-3 items-center">
                     <select
                       formControlName="platform"
-                      class="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                      class="form-select"
                     >
                       <option value="linkedin">LinkedIn</option>
                       <option value="twitter">Twitter</option>
@@ -407,7 +457,7 @@
                       type="url"
                       formControlName="url"
                       placeholder="https://..."
-                      class="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                      class="form-input flex-1"
                     />
                     <ui-button 
                       type="button" 
@@ -448,7 +498,7 @@
                 <textarea
                   formControlName="foundingStory"
                   placeholder="Why did you start this fund? What drives your investment philosophy?"
-                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                  class="form-textarea"
                   rows="4"
                 ></textarea>
               </div>
@@ -461,7 +511,7 @@
                 <textarea
                   formControlName="investmentApproach"
                   placeholder="How do you evaluate investments? What support do you provide?"
-                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                  class="form-textarea"
                   rows="4"
                 ></textarea>
               </div>
@@ -484,14 +534,14 @@
                 </div>
                 <div class="space-y-4" formArrayName="teamMembers">
                   @for (memberGroup of teamMembersArray.controls; track $index) {
-                    <div [formGroupName]="$index" class="p-4 border border-gray-200 rounded-lg">
+                    <div [formGroupName]="$index" class="team-member-card">
                       <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
                         <div>
                           <input
                             type="text"
                             formControlName="name"
                             placeholder="Full name"
-                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                            class="form-input"
                           />
                         </div>
                         <div>
@@ -499,7 +549,7 @@
                             type="text"
                             formControlName="title"
                             placeholder="Title/Role"
-                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                            class="form-input"
                           />
                         </div>
                       </div>
@@ -507,7 +557,7 @@
                         <textarea
                           formControlName="bio"
                           placeholder="Brief bio (optional)"
-                          class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                          class="form-textarea"
                           rows="2"
                         ></textarea>
                       </div>
@@ -516,7 +566,7 @@
                           type="url"
                           formControlName="linkedinUrl"
                           placeholder="LinkedIn URL (optional)"
-                          class="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                          class="form-input flex-1"
                         />
                         <ui-button 
                           type="button" 
@@ -535,14 +585,16 @@
             </div>
           </div>
 
-          <!-- Save Actions - moved inside form column -->
-          <div class="sticky bottom-0 bg-white border-t border-gray-200 p-4 -mx-4">
+          <!-- Save Actions -->
+          <div class="sticky bottom-0 bg-white border-t border-gray-200 p-4 -mx-4 rounded-lg shadow-sm">
             <div class="flex items-center justify-between">
               <div class="text-sm text-gray-500">
                 @if (lastSaved()) {
-                  Last saved: {{ formatLastSaved() }}
+                  <span class="text-green-600 font-medium">✓ Last saved: {{ formatLastSaved() }}</span>
+                } @else if (hasChanges()) {
+                  <span class="text-orange-600">Changes not saved</span>
                 } @else {
-                  Changes not saved
+                  <span>No changes</span>
                 }
               </div>
               
@@ -551,7 +603,7 @@
                   type="button"
                   variant="outline" 
                   (clicked)="saveDraft()"
-                  [disabled]="isSaving() || !hasChanges()"
+                  [disabled]="!canSave()"
                 >
                   <lucide-icon [img]="SaveIcon" [size]="16" class="mr-2" />
                   {{ isSaving() ? 'Saving...' : 'Save Draft' }}
@@ -562,7 +614,7 @@
                     type="button"
                     variant="primary" 
                     (clicked)="publishProfile()"
-                    [disabled]="!isValid() || isPublishing()"
+                    [disabled]="!canPublish()"
                   >
                     <lucide-icon [img]="GlobeIcon" [size]="16" class="mr-2" />
                     {{ isPublishing() ? 'Publishing...' : 'Publish Profile' }}

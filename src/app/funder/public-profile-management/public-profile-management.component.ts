@@ -1,28 +1,27 @@
+ 
+
 // src/app/funder/components/public-profile-management/public-profile-management.component.ts
 import { Component, inject, OnInit, OnDestroy, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, FormArray, ReactiveFormsModule, Validators } from '@angular/forms';
  
 import { Subject, takeUntil, debounceTime, distinctUntilChanged } from 'rxjs';
-import { LucideAngularModule, Eye, Edit3, Save, Globe, ExternalLink, Plus, Trash2, Upload, Play, Users, Award, Target, DollarSign, Clock, Building2, ArrowLeft } from 'lucide-angular';
+import { LucideAngularModule, Eye, Edit3, Save, Globe, ExternalLink, Plus, Trash2, Upload, Play, Users, Award, Target, DollarSign, Clock, Building2, ArrowLeft, AlertCircle } from 'lucide-angular';
 import { UiButtonComponent } from 'src/app/shared/components';
 import { PublicProfile, SuccessMetric, SocialLink, FundingArea, TeamMember } from '../models/public-profile.models';
 import { FunderOnboardingService } from '../services/funder-onboarding.service';
 import { PublicProfileService } from '../services/public-profile.service';
 import { ProfileOptimizationWidgetComponent } from './profile-optimisation.component';
 
- 
-
 @Component({
   selector: 'app-public-profile-management',
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, LucideAngularModule, UiButtonComponent, ProfileOptimizationWidgetComponent],
-  templateUrl: 'public-profile-management.component.html'
-
+  templateUrl: 'public-profile-management.component.html',
+  styleUrls: ['public-profile-management.component.css']
 })
 export class PublicProfileManagementComponent implements OnInit, OnDestroy {
   private fb = inject(FormBuilder);
- 
   private profileService = inject(PublicProfileService);
   private onboardingService = inject(FunderOnboardingService);
   private destroy$ = new Subject<void>();
@@ -43,7 +42,9 @@ export class PublicProfileManagementComponent implements OnInit, OnDestroy {
   DollarSignIcon = DollarSign;
   ClockIcon = Clock;
   Building2Icon = Building2;
-ArrowLeftIcon = ArrowLeft;
+  ArrowLeftIcon = ArrowLeft;
+  AlertCircleIcon = AlertCircle;
+
   // State
   profile = signal<PublicProfile | null>(null);
   organizationId = signal<string | null>(null);
@@ -53,14 +54,96 @@ ArrowLeftIcon = ArrowLeft;
   isPublishing = signal(false);
   error = signal<string | null>(null);
   lastSaved = signal<Date | null>(null);
+  validationErrors = signal<Record<string, string>>({});
 
   // Form
   profileForm!: FormGroup;
-
-  // Computed
+private formChanged = signal(0);
+  // Computed - Fixed validation logic
   profileExists = computed(() => !!this.profile()?.id);
-  isValid = computed(() => this.profileForm?.valid ?? false);
-  hasChanges = computed(() => this.profileForm?.dirty ?? false);
+  
+// Replace your isFormValid computed property with this fixed version:
+
+// Make isFormValid reactive:
+isFormValid = computed(() => {
+  // Subscribe to form changes to make this reactive
+  this.formChanged();
+  
+  if (!this.profileForm) return false;
+  
+  // Get current form values
+  const formValue = this.profileForm.getRawValue(); // Use getRawValue() instead of .value
+  
+  console.log('Validation check (reactive):', {
+    tagline: formValue.tagline,
+    investmentRange: formValue.investmentRange
+  });
+  
+  // Check required fields
+  const tagline = formValue.tagline?.trim();
+  const investmentRange = formValue.investmentRange;
+  
+  if (!tagline || tagline.length === 0) {
+    console.log('Validation failed: No tagline');
+    return false;
+  }
+  
+  if (!investmentRange) {
+    console.log('Validation failed: No investment range object');
+    return false;
+  }
+  
+  const minAmount = investmentRange.min;
+  const maxAmount = investmentRange.max;
+  
+  if (!minAmount || minAmount <= 0) {
+    console.log('Validation failed: Invalid min amount:', minAmount);
+    return false;
+  }
+  
+  if (!maxAmount || maxAmount <= 0) {
+    console.log('Validation failed: Invalid max amount:', maxAmount);
+    return false;
+  }
+  
+  if (maxAmount <= minAmount) {
+    console.log('Validation failed: Max not greater than min');
+    return false;
+  }
+  
+  console.log('Validation passed!');
+  return true;
+});
+
+// Update canPublish to be reactive:
+canPublish = computed(() => {
+  // Subscribe to form changes
+  this.formChanged();
+  
+  const isValid = this.isFormValid();
+  const notSaving = !this.isSaving();
+  const notPublishing = !this.isPublishing();
+  
+  console.log('Can publish check (reactive):', {
+    isValid,
+    notSaving,
+    notPublishing,
+    result: isValid && notSaving && notPublishing
+  });
+  
+  return isValid && notSaving && notPublishing;
+});
+ 
+hasChanges = computed(() => {
+  this.formChanged();
+  return this.profileForm?.dirty ?? false;
+});
+  
+ 
+
+  canSave = computed(() => {
+    return this.hasChanges() && !this.isSaving();
+  });
 
   // Form Arrays
   get portfolioHighlightsArray() { return this.profileForm.get('portfolioHighlights') as FormArray; }
@@ -73,6 +156,7 @@ ArrowLeftIcon = ArrowLeft;
     this.initializeForm();
     this.loadOrganizationData();
     this.setupAutoSave();
+    this.setupValidation();
   }
 
   ngOnDestroy() {
@@ -107,6 +191,17 @@ ArrowLeftIcon = ArrowLeft;
     });
   }
 
+  
+  // Helper method to get field error
+  getFieldError(fieldName: string): string | null {
+    return this.validationErrors()[fieldName] || null;
+  }
+
+  // Helper method to check if field has error
+  hasFieldError(fieldName: string): boolean {
+    return !!this.getFieldError(fieldName);
+  }
+
   private loadOrganizationData() {
     this.onboardingService.onboardingState$
       .pipe(takeUntil(this.destroy$))
@@ -139,13 +234,14 @@ ArrowLeftIcon = ArrowLeft;
       });
   }
 
-    goBack() {
-  window.history.back();
-}
-// Add this method to your component
-saveProfile() {
-  this.saveDraft();
-}
+  goBack() {
+    window.history.back();
+  }
+
+  saveProfile() {
+    this.saveDraft();
+  }
+
   private populateForm(profile: PublicProfile) {
     // Basic fields
     this.profileForm.patchValue({
@@ -299,7 +395,9 @@ saveProfile() {
   // ===============================
 
   saveDraft() {
-    if (!this.profileForm.valid) return;
+    // Mark all fields as touched to show validation errors
+    this.profileForm.markAllAsTouched();
+    this.updateValidationErrors();
 
     this.isSaving.set(true);
     const formData = this.getFormData();
@@ -322,6 +420,7 @@ saveProfile() {
           this.profile.set(profile);
           this.lastSaved.set(new Date());
           this.profileForm.markAsPristine();
+          this.error.set(null);
           this.isSaving.set(false);
         },
         error: (error) => {
@@ -333,36 +432,18 @@ saveProfile() {
   }
 
   createProfile() {
+    if (!this.isFormValid()) {
+      this.profileForm.markAllAsTouched();
+      this.updateValidationErrors();
+      return;
+    }
+    
     this.isCreating.set(true);
     this.saveDraft();
-    // saveDraft will handle the creation logic
     this.isCreating.set(false);
   }
 
-  publishProfile() {
-    if (!this.profile()?.id) {
-      // Save first, then publish
-      this.saveDraft();
-      return;
-    }
-
-    this.isPublishing.set(true);
-    
-    this.profileService.publishProfile(this.profile()!.id)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (profile) => {
-          this.profile.set(profile);
-          this.isPublishing.set(false);
-        },
-        error: (error) => {
-          console.error('Publish failed:', error);
-          this.error.set('Failed to publish profile');
-          this.isPublishing.set(false);
-        }
-      });
-  }
-
+  
   previewProfile() {
     // Save current changes first, then open preview
     if (this.hasChanges()) {
@@ -453,9 +534,106 @@ saveProfile() {
         takeUntil(this.destroy$)
       )
       .subscribe(() => {
-        if (this.profileForm.valid && this.hasChanges() && !this.isSaving()) {
+        if (this.hasChanges() && !this.isSaving()) {
           this.saveDraft();
         }
       });
   }
+
+  // Replace the validation logic in your component with this:
+
+// In your component class, update these computed properties:
+
+
+
+// Update the validation errors method:
+private updateValidationErrors() {
+  const errors: Record<string, string> = {};
+  const formValue = this.profileForm.value;
+  
+  // Check tagline
+  const tagline = formValue.tagline?.trim();
+  if (!tagline) {
+    errors['tagline'] = 'Tagline is required for publishing';
+  } else if (tagline.length > 120) {
+    errors['tagline'] = 'Tagline must be 120 characters or less';
+  }
+  
+  // Check investment range
+  const investmentRange = formValue.investmentRange;
+  const minAmount = investmentRange?.min;
+  const maxAmount = investmentRange?.max;
+  
+  if (!minAmount || minAmount <= 0) {
+    errors['investmentMin'] = 'Minimum investment amount is required';
+  }
+  
+  if (!maxAmount || maxAmount <= 0) {
+    errors['investmentMax'] = 'Maximum investment amount is required';
+  }
+  
+  if (minAmount && maxAmount && minAmount >= maxAmount) {
+    errors['investmentRange'] = 'Maximum must be greater than minimum';
+  }
+  
+  this.validationErrors.set(errors);
+}
+
+private setupValidation() {
+  // Initial validation
+  this.updateValidationErrors();
+  
+  // Watch for any form changes and trigger reactivity
+  this.profileForm.valueChanges
+    .pipe(takeUntil(this.destroy$))
+    .subscribe(() => {
+      this.updateValidationErrors();
+      // Force computed properties to recalculate
+      this.formChanged.set(this.formChanged() + 1);
+    });
+  
+  this.profileForm.statusChanges
+    .pipe(takeUntil(this.destroy$))
+    .subscribe(() => {
+      this.updateValidationErrors();
+      this.formChanged.set(this.formChanged() + 1);
+    });
+}
+
+
+
+// Update your publishProfile method to force validation:
+publishProfile() {
+  // Force form to be touched to show all validation errors
+  this.profileForm.markAllAsTouched();
+  this.updateValidationErrors();
+  
+  if (!this.canPublish()) {
+    console.log('Form validation failed');
+    return;
+  }
+
+  if (!this.profile()?.id) {
+    // Save first, then publish
+    this.saveDraft();
+    return;
+  }
+
+  this.isPublishing.set(true);
+  
+  this.profileService.publishProfile(this.profile()!.id)
+    .pipe(takeUntil(this.destroy$))
+    .subscribe({
+      next: (profile) => {
+        this.profile.set(profile);
+        this.error.set(null);
+        this.isPublishing.set(false);
+      },
+      error: (error) => {
+        console.error('Publish failed:', error);
+        this.error.set('Failed to publish profile');
+        this.isPublishing.set(false);
+      }
+    });
+}
 }

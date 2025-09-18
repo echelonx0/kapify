@@ -11,13 +11,13 @@
       } @else if (error()) {
         <!-- Error State -->
        <!-- Enhanced Profile Not Found Page -->
-<div class="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 flex items-center justify-center px-4">
+<div class="min-h-screen bg-gradient-to-br from-gray-50 to-cyan-50 flex items-center justify-center px-4">
   <div class="max-w-2xl mx-auto text-center">
     
     <!-- Icon and Title -->
     <div class="mb-8">
-      <div class="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
-        <lucide-icon [img]="GlobeIcon" [size]="36" class="text-blue-600" />
+      <div class="w-20 h-20 bg-cyan-100 rounded-full flex items-center justify-center mx-auto mb-6">
+        <lucide-icon [img]="GlobeIcon" [size]="36" class="text-cyan-600" />
       </div>
       <h1 class="text-3xl font-bold text-gray-900 mb-3">Profile Not Found</h1>
       <p class="text-lg text-gray-600 max-w-lg mx-auto">
@@ -30,20 +30,20 @@
       <h2 class="text-xl font-semibold text-gray-900 mb-4">Are you a funder?</h2>
       <div class="text-left space-y-4 max-w-lg mx-auto">
         <div class="flex items-start gap-3">
-          <div class="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-            <span class="text-xs font-bold text-blue-600">1</span>
+          <div class="w-6 h-6 bg-cyan-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+            <span class="text-xs font-bold text-cyan-600">1</span>
           </div>
           <p class="text-gray-600">Create your public profile to attract high-quality SME applications</p>
         </div>
         <div class="flex items-start gap-3">
-          <div class="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-            <span class="text-xs font-bold text-blue-600">2</span>
+          <div class="w-6 h-6 bg-cyan-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+            <span class="text-xs font-bold text-cyan-600">2</span>
           </div>
           <p class="text-gray-600">Showcase your investment criteria and track record</p>
         </div>
         <div class="flex items-start gap-3">
-          <div class="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-            <span class="text-xs font-bold text-blue-600">3</span>
+          <div class="w-6 h-6 bg-cyan-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+            <span class="text-xs font-bold text-cyan-600">3</span>
           </div>
           <p class="text-gray-600">Share your unique URL to drive targeted applications</p>
         </div>
@@ -71,16 +71,16 @@
     <!-- Help Text -->
     <p class="text-sm text-gray-500 mt-8">
       Looking for funding opportunities? 
-      <a href="/marketplace" class="text-blue-600 hover:text-blue-700 font-medium">Browse our marketplace</a>
+      <a href="/marketplace" class="text-cyan-600 hover:text-cyan-700 font-medium">Browse our marketplace</a>
     </p>
   </div>
 </div>
       } @else if (profile()) {
         <!-- Profile Content -->
-        <div class="max-w-6xl mx-auto">
+        <div >
           
           <!-- Hero Section -->
-          <section class="relative bg-gradient-to-br from-blue-600 via-indigo-700 to-purple-800 text-white">
+          <section class="relative bg-gradient-to-br from-cyan-600 via-slate-700 to-primary-800 text-white">
             <div class="absolute inset-0 bg-black bg-opacity-20"></div>
             <div class="relative px-4 sm:px-6 lg:px-8 py-16 lg:py-24">
               <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
@@ -106,12 +106,12 @@
                     </div>
                   </div>
                   
-                  <h2 class="text-xl lg:text-2xl font-medium text-blue-100 leading-relaxed">
+                  <h2 class="text-xl lg:text-2xl font-medium text-cyan-100 leading-relaxed">
                     {{ profile()!.tagline }}
                   </h2>
                   
                   @if (profile()!.elevator_pitch) {
-                    <p class="text-lg text-blue-50 leading-relaxed max-w-2xl">
+                    <p class="text-lg text-cyan-50 leading-relaxed max-w-2xl">
                       {{ profile()!.elevator_pitch }}
                     </p>
                   }
@@ -133,14 +133,14 @@
                       variant="primary" 
                       size="lg" 
                       (clicked)="startApplication()"
-                      class="bg-white text-blue-700 hover:bg-blue-50 shadow-lg"
+                     
                     >
                       <lucide-icon [img]="ArrowRightIcon" [size]="20" class="mr-2" />
                       Apply for Funding
                     </ui-button>
                     
                     @if (profile()!.responseTimePromise) {
-                      <div class="flex items-center gap-2 text-blue-100">
+                      <div class="flex items-center gap-2 text-cyan-100">
                         <lucide-icon [img]="ClockIcon" [size]="16" />
                         <span class="text-sm">{{ profile()!.responseTimePromise }}</span>
                       </div>
@@ -157,7 +157,7 @@
                           (click)="playVideo()"
                           class="w-20 h-20 bg-white bg-opacity-90 rounded-full flex items-center justify-center hover:bg-opacity-100 transition-all transform hover:scale-105"
                         >
-                          <lucide-icon [img]="PlayIcon" [size]="32" class="text-blue-600 ml-1" />
+                          <lucide-icon [img]="PlayIcon" [size]="32" class="text-cyan-600 ml-1" />
                         </button>
                       </div>
                     </div>
@@ -190,8 +190,8 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
                   @for (metric of getDisplayMetrics(); track metric.label) {
                     <div class="text-center" [class.lg:col-span-2]="metric.emphasis">
-                      <div class="w-16 h-16 bg-blue-100 rounded-xl flex items-center justify-center mx-auto mb-4">
-                        <lucide-icon [img]="getMetricIcon(metric)" [size]="24" class="text-blue-600" />
+                      <div class="w-16 h-16 bg-cyan-100 rounded-xl flex items-center justify-center mx-auto mb-4">
+                        <lucide-icon [img]="getMetricIcon(metric)" [size]="24" class="text-cyan-600" />
                       </div>
                       <div class="text-3xl font-bold text-gray-900 mb-2" [class.text-4xl]="metric.emphasis">
                         {{ metric.value }}
@@ -218,19 +218,19 @@
 
               <!-- Investment Range -->
               @if (profile()!.investmentRange) {
-                <div class="bg-gradient-to-r from-blue-500 to-indigo-600 rounded-2xl p-8 mb-12 text-white text-center">
+                <div class="bg-gradient-to-r from-cyan-500 to-slate-600 rounded-2xl p-8 mb-12 text-white text-center">
                   <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div>
-                      <div class="text-sm text-blue-100 mb-1">Minimum Investment</div>
+                      <div class="text-sm text-cyan-100 mb-1">Minimum Investment</div>
                       <div class="text-2xl font-bold">{{ formatAmount(profile()!.investmentRange.min) }}</div>
                     </div>
                     <div>
-                      <div class="text-sm text-blue-100 mb-1">Maximum Investment</div>
+                      <div class="text-sm text-cyan-100 mb-1">Maximum Investment</div>
                       <div class="text-2xl font-bold">{{ formatAmount(profile()!.investmentRange.max) }}</div>
                     </div>
                     @if (profile()!.investmentRange.typical) {
                       <div>
-                        <div class="text-sm text-blue-100 mb-1">Typical Investment</div>
+                        <div class="text-sm text-cyan-100 mb-1">Typical Investment</div>
                         <div class="text-2xl font-bold">{{ formatAmount(profile()!.investmentRange.typical!) }}</div>
                       </div>
                     }
@@ -244,8 +244,8 @@
                   @for (area of profile()!.fundingAreas; track area.name) {
                     <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
                       <div class="flex items-center gap-3 mb-4">
-                        <div class="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center">
-                          <lucide-icon [img]="TargetIcon" [size]="20" class="text-indigo-600" />
+                        <div class="w-12 h-12 bg-slate-100 rounded-lg flex items-center justify-center">
+                          <lucide-icon [img]="TargetIcon" [size]="20" class="text-slate-600" />
                         </div>
                         <h3 class="text-lg font-semibold text-gray-900">{{ area.name }}</h3>
                       </div>
@@ -289,8 +289,8 @@
                   </div>
                   
                   <div class="text-center">
-                    <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <span class="text-2xl font-bold text-blue-600">2</span>
+                    <div class="w-16 h-16 bg-cyan-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <span class="text-2xl font-bold text-cyan-600">2</span>
                     </div>
                     <h3 class="text-lg font-semibold text-gray-900 mb-2">Review Process</h3>
                     <p class="text-gray-600">
@@ -299,8 +299,8 @@
                   </div>
                   
                   <div class="text-center">
-                    <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <span class="text-2xl font-bold text-purple-600">3</span>
+                    <div class="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <span class="text-2xl font-bold text-primary-600">3</span>
                     </div>
                     <h3 class="text-lg font-semibold text-gray-900 mb-2">Get Funded</h3>
                     <p class="text-gray-600">Receive funding and ongoing support to scale your business</p>
@@ -368,7 +368,7 @@
                             }
                             
                             <h4 class="text-lg font-semibold text-gray-900 mb-1">{{ member.name }}</h4>
-                            <p class="text-blue-600 font-medium mb-3">{{ member.title }}</p>
+                            <p class="text-cyan-600 font-medium mb-3">{{ member.title }}</p>
                             
                             @if (member.bio) {
                               <p class="text-sm text-gray-600 mb-4">{{ member.bio }}</p>
@@ -378,7 +378,7 @@
                               <a 
                                 [href]="member.linkedinUrl" 
                                 target="_blank" 
-                                class="inline-flex items-center gap-1 text-blue-600 hover:text-blue-700 text-sm"
+                                class="inline-flex items-center gap-1 text-cyan-600 hover:text-cyan-700 text-sm"
                               >
                                 <lucide-icon [img]="LinkedinIcon" [size]="16" />
                                 <span>LinkedIn</span>
