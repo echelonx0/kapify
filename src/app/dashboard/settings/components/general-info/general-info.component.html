@@ -107,7 +107,7 @@
                       formControlName="employeeCount"
                       class="block w-full px-3 py-2 border border-neutral-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                     >
-                      <option value="">Select employee count</option>
+                      <option value="">Select </option>
                       <option value="1">1 employee</option>
                       <option value="10">1-10 employees</option>
                       <option value="50">11-50 employees</option>
@@ -162,7 +162,7 @@
           <!-- Actions -->
           <div class="flex items-center justify-between pt-6 border-t border-neutral-200 mt-6">
             <div class="flex items-center text-sm">
-              @if (lastSaved() && lastSaved() !== null) {
+              @if (lastSaved()) {
                 <div class="flex items-center text-green-600">
                   <lucide-icon [img]="CheckIcon" [size]="16" class="mr-2" />
                   Last saved {{ formatLastSaved(lastSaved()) }}
