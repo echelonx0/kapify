@@ -22,7 +22,42 @@
                 {{ currentRouteConfig().description }}
               </p>
               
-              @if (shouldShowVersion()) {
+       
+            </div>
+          </div>
+       
+          <!-- Right side - Actions and user info -->
+          <div class="flex items-center space-x-6">
+            <!-- Notifications with enhanced styling -->
+            <div class="relative">
+              <button 
+                class="relative p-3 text-neutral-500 hover:text-primary-600 hover:bg-primary-50 rounded-xl transition-all duration-200 group"
+                [class.bg-primary-50]="notificationCount() > 0"
+                [class.text-primary-600]="notificationCount() > 0"
+              >
+                <lucide-icon 
+                  [img]="BellIcon" 
+                  [size]="22" 
+                  class="transition-transform duration-200 group-hover:scale-110"
+                />
+                @if (notificationCount() > 0) {
+                  <div class="absolute -top-1 -right-1 min-w-[20px] h-5 bg-gradient-to-r from-red-500 to-red-600 text-white text-xs font-bold rounded-full flex items-center justify-center px-1 shadow-lg animate-pulse">
+                    {{ notificationCount() > 99 ? '99+' : notificationCount() }}
+                  </div>
+                }
+              </button>
+            </div>
+            
+            <!-- User profile section with card styling -->
+            <div class="flex items-center space-x-4 p-2 rounded-xl hover:bg-neutral-50 transition-all duration-200 cursor-pointer group">
+              <!-- User info -->
+              <div class="text-right">
+                <p class="text-sm font-semibold text-neutral-900 group-hover:text-primary-700 transition-colors">
+                  {{ userName() }}
+                </p>
+                <div class="flex items-center space-x-2">
+                  <!-- <p class="text-xs text-neutral-500">{{ userType() }}</p> -->
+                          @if (shouldShowVersion()) {
                 <!-- Sleek version badge integrated into description -->
                 <div class="group relative inline-flex items-center">
                   <div class="flex items-center space-x-2 px-3 py-1.5 bg-gradient-to-r from-neutral-50 to-neutral-100 hover:from-primary-50 hover:to-primary-100 border border-neutral-200 hover:border-primary-200 rounded-full transition-all duration-300 cursor-pointer shadow-sm hover:shadow-md">
@@ -61,40 +96,6 @@
                   </div>
                 </div>
               }
-            </div>
-          </div>
-       
-          <!-- Right side - Actions and user info -->
-          <div class="flex items-center space-x-6">
-            <!-- Notifications with enhanced styling -->
-            <div class="relative">
-              <button 
-                class="relative p-3 text-neutral-500 hover:text-primary-600 hover:bg-primary-50 rounded-xl transition-all duration-200 group"
-                [class.bg-primary-50]="notificationCount() > 0"
-                [class.text-primary-600]="notificationCount() > 0"
-              >
-                <lucide-icon 
-                  [img]="BellIcon" 
-                  [size]="22" 
-                  class="transition-transform duration-200 group-hover:scale-110"
-                />
-                @if (notificationCount() > 0) {
-                  <div class="absolute -top-1 -right-1 min-w-[20px] h-5 bg-gradient-to-r from-red-500 to-red-600 text-white text-xs font-bold rounded-full flex items-center justify-center px-1 shadow-lg animate-pulse">
-                    {{ notificationCount() > 99 ? '99+' : notificationCount() }}
-                  </div>
-                }
-              </button>
-            </div>
-            
-            <!-- User profile section with card styling -->
-            <div class="flex items-center space-x-4 p-2 rounded-xl hover:bg-neutral-50 transition-all duration-200 cursor-pointer group">
-              <!-- User info -->
-              <div class="text-right">
-                <p class="text-sm font-semibold text-neutral-900 group-hover:text-primary-700 transition-colors">
-                  {{ userName() }}
-                </p>
-                <div class="flex items-center space-x-2">
-                  <p class="text-xs text-neutral-500">{{ userType() }}</p>
                   @if (currentOrganization()?.isVerified) {
                     <div class="w-2 h-2 bg-green-500 rounded-full" title="Verified"></div>
                   }
