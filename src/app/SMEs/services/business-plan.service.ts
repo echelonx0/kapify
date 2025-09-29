@@ -1,4 +1,4 @@
-// src/app/applications/services/business-plan.service.ts - PRODUCTION SUPABASE
+// src/app/applications/services/business-plan.service.ts  
 import { Injectable, signal, inject } from '@angular/core';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { BehaviorSubject, Observable, from, throwError } from 'rxjs';

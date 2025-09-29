@@ -19,7 +19,7 @@ export class VersionService {
     buildDate: '29 September, 2025',
     environment: 'production', // Change based on your build process
     buildNumber: '1250',
-    commitHash: 'a7b2c3d' // First 7 chars of git commit
+    commitHash: '24ae113' // First 7 chars of git commit
   });
 
   // Public read-only access
