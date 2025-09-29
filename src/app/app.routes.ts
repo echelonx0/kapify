@@ -1,4 +1,4 @@
-// app.routes.ts - FIXED ROUTE ORDER
+// app.routes.ts 
 import { Routes } from '@angular/router';
 import { LandingComponent } from './landing/landing.component';
 import { LoginComponent } from './auth/login/login.component'; 
@@ -87,14 +87,14 @@ export const routes: Routes = [
     loadChildren: () => import('./funding/funding.routes').then(m => m.fundingRoutes)
   },
 
-  // 🔥 FIX: Funder routes (SPECIFIC) come FIRST
+  //  Funder routes (SPECIFIC) come FIRST
   {
     path: 'funder',
     canActivate: [AuthGuard, RoleGuard],
     loadChildren: () => import('./funder/funder.routes').then(m => m.funderRoutes)
   },
 
-  // 🔥 FIX: Public funder profile (PARAMETERIZED) comes SECOND  
+  //  Public funder profile (PARAMETERIZED) comes SECOND  
   {
     path: 'funder/:slug',
     loadComponent: () => import('./funder/public-profile/public-profile.component').then(m => m.FunderProfileComponent),
@@ -108,7 +108,7 @@ export const routes: Routes = [
     title: 'Page Not Found - Kapify'
   },
 
-  // Catch all (ALWAYS LAST) - redirect to 404
+  // Catch all - redirect to 404
   { 
     path: '**', 
     redirectTo: '/404'

@@ -18,7 +18,7 @@ export const profileRoutes: Routes = [
       },
           { 
         path: 'data-room', 
-        loadComponent: () => import('../data-room/data-room.component').then(c => c.DataRoomComponent),
+        loadComponent: () => import('src/app/data-room/data-room.component').then(c => c.DataRoomComponent),
         title: 'Profile Overview - Kapify'
       },
       { 

@@ -251,7 +251,7 @@ export class ApplicationTabsComponent implements OnInit, OnDestroy {
   }
 
   // ===============================
-  // DOCUMENT MODAL FUNCTIONALITY - NEW IMPLEMENTATION
+  // DOCUMENT MODAL FUNCTIONALITY 
   // ===============================
 
   /**
@@ -275,14 +275,7 @@ export class ApplicationTabsComponent implements OnInit, OnDestroy {
    */
   private openModal() {
     this.isModalOpen.set(true);
-    
-    // Use Preline's HSOverlay to open modal
-    setTimeout(() => {
-      const modalElement = document.getElementById('document-viewer-modal');
-      if (modalElement && (window as any).HSOverlay) {
-        (window as any).HSOverlay.open(modalElement);
-      }
-    }, 0);
+  
   }
 
   /**
@@ -292,11 +285,6 @@ export class ApplicationTabsComponent implements OnInit, OnDestroy {
     this.isModalOpen.set(false);
     this.selectedDocument.set(null);
     
-    // Use Preline's HSOverlay to close modal
-    const modalElement = document.getElementById('document-viewer-modal');
-    if (modalElement && (window as any).HSOverlay) {
-      (window as any).HSOverlay.close(modalElement);
-    }
   }
 
   /**

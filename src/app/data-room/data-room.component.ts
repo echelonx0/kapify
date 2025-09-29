@@ -1,7 +1,6 @@
-// src/app/SMEs/data-room/data-room.component.ts - UPDATED VERSION
+// src/app/SMEs/data-room/data-room.component.ts 
 import { Component, OnInit, signal, computed, inject, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
 import { LucideAngularModule, 
   Building, TrendingUp, FileText, Users, Target, DollarSign,
   BarChart3, Shield, Download, Eye, AlertCircle,
@@ -11,9 +10,10 @@ import { LucideAngularModule,
 import { UiCardComponent, UiButtonComponent } from 'src/app/shared/components';
 import { SharedSupabaseService } from 'src/app/shared/services/shared-supabase.service';
 import { SupabaseDocumentService } from 'src/app/shared/services/supabase-document.service';
-import { ApplicationManagementService } from '../services/application-management.service';
-import { FundingProfileBackendService } from '../services/funding-profile-backend.service';
-import { ProfileDataTransformerService } from '../services/profile-data-transformer.service';
+ 
+import { UserType } from 'src/app/shared/models/user.models';
+import { AuthService } from 'src/app/auth/production.auth.service';
+import { FundingProfileBackendService } from '../SMEs/services/funding-profile-backend.service';
  
 interface DataRoomSection {
   id: string;
@@ -63,11 +63,8 @@ export class DataRoomComponent implements OnInit {
 
   private profileService = inject(FundingProfileBackendService);
   private documentService = inject(SupabaseDocumentService);
-  private applicationService = inject(ApplicationManagementService);
-  private transformer = inject(ProfileDataTransformerService);
   private supabase = inject(SharedSupabaseService);
-  private router = inject(Router);
-
+   private authService = inject(AuthService);
   // Icons
   BuildingIcon = Building;
   TrendingUpIcon = TrendingUp;
@@ -101,6 +98,17 @@ export class DataRoomComponent implements OnInit {
   documentsData = signal<Map<string, any>>(new Map());
   marketIntelligence = signal<MarketIntelligence | null>(null);
   accessLogs = signal<any[]>([]);
+
+   // User context
+  currentUser = computed(() => this.authService.user());
+  userType = computed(() => this.currentUser()?.userType);
+  isFunder = computed(() => this.userType() === 'funder');
+  isSME = computed(() => this.userType() === 'sme');
+  // Add this computed property to your ApplicationsHomeComponent class
+safeUserType = computed((): UserType => {
+  const type = this.userType();
+  return type === 'funder' ? 'funder' : 'sme';
+});
 
   // Computed properties
   sections = computed<DataRoomSection[]>(() => [
@@ -197,6 +205,7 @@ export class DataRoomComponent implements OnInit {
   ngOnInit() {
     this.loadDataRoomData();
     this.trackDataRoomAccess();
+
   }
 
   // ===============================
