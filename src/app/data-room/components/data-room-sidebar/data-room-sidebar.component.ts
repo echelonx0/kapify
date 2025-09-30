@@ -22,7 +22,7 @@ import { DataRoomSection, UserPermissions } from '../../models/data-room.models'
           <div>
             <h3 class="font-semibold text-gray-900">Data Room</h3>
             <p class="text-sm text-gray-500">
-              {{ permissions().canManage ? 'Manage' : 'View' }}
+              {{ permissions.canManage ? 'Manage' : 'View' }}
             </p>
           </div>
         </div>
@@ -65,7 +65,7 @@ import { DataRoomSection, UserPermissions } from '../../models/data-room.models'
       </nav>
 
       <!-- Section Info -->
-      @if (activeSection()) {
+      @if (activeSection) {
         <div class="p-4 border-t border-gray-200">
           <div class="bg-gray-50 rounded-lg p-3">
             <h4 class="text-sm font-medium text-gray-900 mb-1">
@@ -116,11 +116,11 @@ import { DataRoomSection, UserPermissions } from '../../models/data-room.models'
   `]
 })
 export class DataRoomSidebarComponent {
-  @Input({ required: true }) sections!: () => DataRoomSection[];
-  @Input({ required: true }) activeSection!: () => string;
-  @Input({ required: true }) permissions!: () => UserPermissions;
-  @Input() documentCounts = () => new Map<string, number>();
-  @Input() sectionStatuses = () => new Map<string, 'complete' | 'pending' | 'missing'>();
+  @Input({ required: true }) sections!: DataRoomSection[];
+  @Input({ required: true }) activeSection!: string;
+  @Input({ required: true }) permissions!: UserPermissions;
+  @Input() documentCounts = new Map<string, number>();
+  @Input() sectionStatuses = new Map<string, 'complete' | 'pending' | 'missing'>();
 
   @Output() selectSection = new EventEmitter<string>();
 
@@ -137,8 +137,8 @@ export class DataRoomSidebarComponent {
 
   // Computed accessible sections based on permissions
   accessibleSections = computed(() => {
-    const allSections = this.sections();
-    const accessibleKeys = this.permissions().accessibleSections;
+    const allSections = this.sections;
+    const accessibleKeys = this.permissions.accessibleSections;
     
     return allSections.filter(section => 
       accessibleKeys.includes(section.sectionKey) && section.isEnabled
@@ -151,12 +151,12 @@ export class DataRoomSidebarComponent {
 
   getSectionButtonClass(sectionKey: string): string {
     const baseClass = 'section-button';
-    const isActive = this.activeSection() === sectionKey;
+    const isActive = this.activeSection === sectionKey;
     return `${baseClass} ${isActive ? 'active' : ''}`;
   }
 
   getIconClass(sectionKey: string): string {
-    const isActive = this.activeSection() === sectionKey;
+    const isActive = this.activeSection === sectionKey;
     return isActive ? 'text-primary-600' : 'text-gray-400';
   }
 
@@ -173,20 +173,20 @@ export class DataRoomSidebarComponent {
   }
 
   getDocumentCount(sectionId: string): number {
-    return this.documentCounts().get(sectionId) || 0;
+    return this.documentCounts.get(sectionId) || 0;
   }
 
   getSectionStatus(sectionKey: string): 'complete' | 'pending' | 'missing' {
-    return this.sectionStatuses().get(sectionKey) || 'missing';
+    return this.sectionStatuses.get(sectionKey) || 'missing';
   }
 
   getActiveSectionTitle(): string {
-    const section = this.sections().find(s => s.sectionKey === this.activeSection());
+    const section = this.sections.find(s => s.sectionKey === this.activeSection);
     return section?.title || '';
   }
 
   getActiveSectionDescription(): string {
-    const section = this.sections().find(s => s.sectionKey === this.activeSection());
+    const section = this.sections.find(s => s.sectionKey === this.activeSection);
     return section?.description || '';
   }
 }

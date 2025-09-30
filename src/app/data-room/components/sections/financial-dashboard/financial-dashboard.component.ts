@@ -1,4 +1,4 @@
-// src/app/SMEs/data-room/components/sections/financial-dashboard/financial-dashboard.component.ts
+//src/app/SMEs/data-room/components/sections/financial-dashboard/financial-dashboard.component.ts
 import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { LucideAngularModule, TrendingUp, BarChart3, PieChart, Calculator, Download } from 'lucide-angular';
@@ -33,7 +33,7 @@ interface FinancialMetrics {
         </ui-button>
       </div>
 
-      @if (financialMetrics()) {
+      @if (financialMetrics) {
         <!-- Financial Metrics Grid -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <!-- Monthly Revenue -->
@@ -44,7 +44,7 @@ interface FinancialMetrics {
               </div>
             </div>
             <div class="space-y-1">
-              <div class="text-2xl font-bold text-gray-900">{{ formatCurrency(financialMetrics()!.monthlyRevenue) }}</div>
+              <div class="text-2xl font-bold text-gray-900">{{ formatCurrency(financialMetrics.monthlyRevenue) }}</div>
               <div class="text-gray-500 text-sm">Monthly Revenue</div>
               <div class="text-green-600 text-sm font-medium">+12% vs last month</div>
             </div>
@@ -58,7 +58,7 @@ interface FinancialMetrics {
               </div>
             </div>
             <div class="space-y-1">
-              <div class="text-2xl font-bold text-gray-900">{{ formatCurrency(financialMetrics()!.monthlyExpenses) }}</div>
+              <div class="text-2xl font-bold text-gray-900">{{ formatCurrency(financialMetrics.monthlyExpenses) }}</div>
               <div class="text-gray-500 text-sm">Monthly Expenses</div>
               <div class="text-red-600 text-sm font-medium">+5% vs last month</div>
             </div>
@@ -74,7 +74,7 @@ interface FinancialMetrics {
             <div class="space-y-1">
               <div class="text-2xl font-bold text-gray-900">{{ formatCurrency(getMonthlyProfit()) }}</div>
               <div class="text-gray-500 text-sm">Monthly Profit</div>
-              <div class="text-primary-600 text-sm font-medium">{{ financialMetrics()!.profitMargin }}% margin</div>
+              <div class="text-primary-600 text-sm font-medium">{{ financialMetrics.profitMargin }}% margin</div>
             </div>
           </ui-card>
 
@@ -86,7 +86,7 @@ interface FinancialMetrics {
               </div>
             </div>
             <div class="space-y-1">
-              <div class="text-2xl font-bold text-gray-900">{{ financialMetrics()!.projectedGrowth }}%</div>
+              <div class="text-2xl font-bold text-gray-900">{{ financialMetrics.projectedGrowth }}%</div>
               <div class="text-gray-500 text-sm">YoY Growth Rate</div>
               <div class="text-purple-600 text-sm font-medium">Above industry avg</div>
             </div>
@@ -137,12 +137,12 @@ interface FinancialMetrics {
             <div>
               <div class="flex items-center justify-between mb-2">
                 <span class="text-sm text-gray-600">Profit Margin</span>
-                <span class="text-lg font-bold text-gray-900">{{ financialMetrics()!.profitMargin }}%</span>
+                <span class="text-lg font-bold text-gray-900">{{ financialMetrics.profitMargin }}%</span>
               </div>
               <div class="w-full bg-gray-200 rounded-full h-2">
                 <div 
                   class="bg-green-600 h-2 rounded-full transition-all" 
-                  [style.width.%]="financialMetrics()!.profitMargin"
+                  [style.width.%]="financialMetrics.profitMargin"
                 ></div>
               </div>
             </div>
@@ -150,12 +150,12 @@ interface FinancialMetrics {
             <div>
               <div class="flex items-center justify-between mb-2">
                 <span class="text-sm text-gray-600">Growth Rate</span>
-                <span class="text-lg font-bold text-gray-900">{{ financialMetrics()!.projectedGrowth }}%</span>
+                <span class="text-lg font-bold text-gray-900">{{ financialMetrics.projectedGrowth }}%</span>
               </div>
               <div class="w-full bg-gray-200 rounded-full h-2">
                 <div 
                   class="bg-primary-600 h-2 rounded-full transition-all" 
-                  [style.width.%]="Math.min(financialMetrics()!.projectedGrowth, 100)"
+                  [style.width.%]="Math.min(financialMetrics.projectedGrowth, 100)"
                 ></div>
               </div>
             </div>
@@ -186,7 +186,7 @@ interface FinancialMetrics {
   `
 })
 export class FinancialDashboardComponent {
-  @Input() financialMetrics = () => null as FinancialMetrics | null;
+  @Input() financialMetrics: FinancialMetrics | null = null;
 
   // Icons
   TrendingUpIcon = TrendingUp;
@@ -207,35 +207,30 @@ export class FinancialDashboardComponent {
   }
 
   getMonthlyProfit(): number {
-    const metrics = this.financialMetrics();
-    if (!metrics) return 0;
-    return metrics.monthlyRevenue - metrics.monthlyExpenses;
+    if (!this.financialMetrics) return 0;
+    return this.financialMetrics.monthlyRevenue - this.financialMetrics.monthlyExpenses;
   }
 
   getProjectedRevenue(year: number): number {
-    const metrics = this.financialMetrics();
-    if (!metrics) return 0;
+    if (!this.financialMetrics) return 0;
     const multiplier = year === 1 ? 1.2 : year === 2 ? 1.35 : 1.8;
-    return metrics.annualRevenue * multiplier;
+    return this.financialMetrics.annualRevenue * multiplier;
   }
 
   getProjectedGrossProfit(year: number): number {
-    const metrics = this.financialMetrics();
-    if (!metrics) return 0;
+    if (!this.financialMetrics) return 0;
     const multiplier = year === 1 ? 0.7 : year === 2 ? 0.75 : 0.8;
-    return metrics.annualRevenue * multiplier;
+    return this.financialMetrics.annualRevenue * multiplier;
   }
 
   getProjectedEBITDA(year: number): number {
-    const metrics = this.financialMetrics();
-    if (!metrics) return 0;
+    if (!this.financialMetrics) return 0;
     const multiplier = year === 1 ? 0.2 : year === 2 ? 0.25 : 0.3;
-    return metrics.annualRevenue * multiplier;
+    return this.financialMetrics.annualRevenue * multiplier;
   }
 
   getExpenseRatio(): number {
-    const metrics = this.financialMetrics();
-    if (!metrics) return 0;
-    return Math.round((metrics.monthlyExpenses / metrics.monthlyRevenue) * 100);
+    if (!this.financialMetrics) return 0;
+    return Math.round((this.financialMetrics.monthlyExpenses / this.financialMetrics.monthlyRevenue) * 100);
   }
 }

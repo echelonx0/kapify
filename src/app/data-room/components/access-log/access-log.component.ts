@@ -1,5 +1,5 @@
 // src/app/SMEs/data-room/components/access-log/access-log.component.ts
-import { Component, Input, OnInit, signal, computed } from '@angular/core';
+import { Component, Input, OnInit, signal, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { LucideAngularModule, Eye, Download, Share2, Calendar, User, Filter, X, FileDown } from 'lucide-angular';

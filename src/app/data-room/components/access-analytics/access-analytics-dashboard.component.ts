@@ -1,5 +1,5 @@
 // src/app/SMEs/data-room/components/access-analytics/access-analytics-dashboard.component.ts
-import { Component, Input, OnInit, signal } from '@angular/core';
+import { Component, inject, Input, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { LucideAngularModule, Eye, Download, Users, TrendingUp, FileText, Clock } from 'lucide-angular';
 import { UiCardComponent } from 'src/app/shared/components';

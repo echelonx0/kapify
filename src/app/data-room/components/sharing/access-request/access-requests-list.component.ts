@@ -100,11 +100,11 @@ import { DataRoomAccessRequest, ApproveAccessRequestRequest, RejectAccessRequest
                     <ui-button variant="ghost" size="sm" (clicked)="viewDetails(request)">
                       <lucide-icon [img]="EyeIcon" [size]="16" />
                     </ui-button>
-                    <ui-button variant="success" size="sm" (clicked)="openApproveModal(request)">
+                    <ui-button  size="sm" (clicked)="openApproveModal(request)">
                       <lucide-icon [img]="CheckCircleIcon" [size]="16" class="mr-1" />
                       Approve
                     </ui-button>
-                    <ui-button variant="danger" size="sm" (clicked)="openRejectModal(request)">
+                    <ui-button  size="sm" (clicked)="openRejectModal(request)">
                       <lucide-icon [img]="XCircleIcon" [size]="16" class="mr-1" />
                       Reject
                     </ui-button>
@@ -171,7 +171,7 @@ import { DataRoomAccessRequest, ApproveAccessRequestRequest, RejectAccessRequest
                   <ui-button variant="outline" type="button" (clicked)="closeModals()" [disabled]="isProcessing()">
                     Cancel
                   </ui-button>
-                  <ui-button variant="success" type="submit" [disabled]="approveForm.invalid" [loading]="isProcessing()">
+                  <ui-button variant="outline" type="submit" [disabled]="approveForm.invalid" [loading]="isProcessing()">
                     {{ isProcessing() ? 'Approving...' : 'Approve Request' }}
                   </ui-button>
                 </div>
@@ -212,10 +212,10 @@ import { DataRoomAccessRequest, ApproveAccessRequestRequest, RejectAccessRequest
                 </div>
 
                 <div class="flex items-center justify-end gap-3 pt-4 border-t border-gray-200">
-                  <ui-button variant="outline" type="button" (clicked)="closeModals()" [disabled]="isProcessing()">
+                  <ui-button   type="button" (clicked)="closeModals()" [disabled]="isProcessing()">
                     Cancel
                   </ui-button>
-                  <ui-button variant="danger" type="submit" [disabled]="rejectForm.invalid" [loading]="isProcessing()">
+                  <ui-button   type="submit" [disabled]="rejectForm.invalid" [loading]="isProcessing()">
                     {{ isProcessing() ? 'Rejecting...' : 'Reject Request' }}
                   </ui-button>
                 </div>

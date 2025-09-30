@@ -1,5 +1,5 @@
 // src/app/SMEs/data-room/components/document-repository/document-card/document-card.component.ts
-import { Component, Input, Output, EventEmitter, computed } from '@angular/core';
+import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { LucideAngularModule, FileText, Link, Download, Eye, Edit, Trash2, ExternalLink } from 'lucide-angular';
 import { UiButtonComponent, UiCardComponent } from 'src/app/shared/components';
@@ -21,13 +21,13 @@ import { DataRoomDocument } from '../../../models/data-room.models';
         <div class="flex items-start justify-between mb-3">
           <div [class]="'w-12 h-12 rounded-lg flex items-center justify-center ' + getIconBackground()">
             <lucide-icon 
-              [img]="document().documentType === 'file' ? FileTextIcon : LinkIcon" 
+              [img]="document.documentType === 'file' ? FileTextIcon : LinkIcon" 
               [size]="24" 
               [class]="getIconColor()"
             />
           </div>
           
-          @if (document().isFeatured) {
+          @if (document.isFeatured) {
             <div class="bg-yellow-100 text-yellow-700 px-2 py-1 rounded-full text-xs font-medium">
               Featured
             </div>
@@ -37,39 +37,39 @@ import { DataRoomDocument } from '../../../models/data-room.models';
         <!-- Content -->
         <div class="mb-3">
           <h3 class="font-semibold text-gray-900 mb-1 line-clamp-2">
-            {{ document().title }}
+            {{ document.title }}
           </h3>
           
-          @if (document().description) {
+          @if (document.description) {
             <p class="text-sm text-gray-600 line-clamp-2 mb-2">
-              {{ document().description }}
+              {{ document.description }}
             </p>
           }
           
           <!-- Category -->
           <div class="flex items-center gap-2 mb-2">
             <span class="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded">
-              {{ document().category }}
+              {{ document.category }}
             </span>
             
-            @if (document().documentType === 'file' && document().fileSize) {
+            @if (document.documentType === 'file' && document.fileSize) {
               <span class="text-xs text-gray-500">
-                {{ formatFileSize(document().fileSize!) }}
+                {{ formatFileSize(document.fileSize) }}
               </span>
             }
           </div>
 
           <!-- Tags -->
-          @if (document().tags && document().tags.length > 0) {
+          @if (document.tags && document.tags.length > 0) {
             <div class="flex flex-wrap gap-1 mb-2">
-              @for (tag of document().tags.slice(0, 3); track tag) {
+              @for (tag of document.tags.slice(0, 3); track tag) {
                 <span class="text-xs bg-blue-50 text-blue-600 px-2 py-0.5 rounded">
                   {{ tag }}
                 </span>
               }
-              @if (document().tags.length > 3) {
+              @if (document.tags.length > 3) {
                 <span class="text-xs text-gray-500">
-                  +{{ document().tags.length - 3 }}
+                  +{{ document.tags.length - 3 }}
                 </span>
               }
             </div>
@@ -77,13 +77,13 @@ import { DataRoomDocument } from '../../../models/data-room.models';
 
           <!-- Metadata -->
           <div class="text-xs text-gray-500">
-            Added {{ formatDate(document().createdAt) }}
+            Added {{ formatDate(document.createdAt) }}
           </div>
         </div>
 
         <!-- Actions -->
         <div class="flex items-center gap-2 pt-3 border-t border-gray-100">
-          @if (canManage()) {
+          @if (canManage) {
             <!-- Owner Actions -->
             <ui-button 
               variant="ghost" 
@@ -113,7 +113,7 @@ import { DataRoomDocument } from '../../../models/data-room.models';
             </ui-button>
           } @else {
             <!-- Viewer Actions -->
-            @if (document().documentType === 'link') {
+            @if (document.documentType === 'link') {
               <ui-button 
                 variant="primary" 
                 size="sm"
@@ -134,7 +134,7 @@ import { DataRoomDocument } from '../../../models/data-room.models';
                 View
               </ui-button>
               
-              @if (canDownload()) {
+              @if (canDownload) {
                 <ui-button 
                   variant="primary" 
                   size="sm"
@@ -169,9 +169,9 @@ import { DataRoomDocument } from '../../../models/data-room.models';
   `]
 })
 export class DocumentCardComponent {
-  @Input({ required: true }) document!: () => DataRoomDocument;
-  @Input() canManage = () => false;
-  @Input() canDownload = () => false;
+  @Input({ required: true }) document!: DataRoomDocument;
+  @Input() canManage = false;
+  @Input() canDownload = false;
 
   @Output() view = new EventEmitter<DataRoomDocument>();
   @Output() edit = new EventEmitter<DataRoomDocument>();
@@ -188,29 +188,29 @@ export class DocumentCardComponent {
   ExternalLinkIcon = ExternalLink;
 
   onView(): void {
-    this.view.emit(this.document());
+    this.view.emit(this.document);
   }
 
   onEdit(): void {
-    this.edit.emit(this.document());
+    this.edit.emit(this.document);
   }
 
   onDelete(): void {
-    this.delete.emit(this.document());
+    this.delete.emit(this.document);
   }
 
   onDownload(): void {
-    this.download.emit(this.document());
+    this.download.emit(this.document);
   }
 
   getIconBackground(): string {
-    return this.document().documentType === 'file' 
+    return this.document.documentType === 'file' 
       ? 'bg-blue-100' 
       : 'bg-purple-100';
   }
 
   getIconColor(): string {
-    return this.document().documentType === 'file'
+    return this.document.documentType === 'file'
       ? 'text-blue-600'
       : 'text-purple-600';
   }

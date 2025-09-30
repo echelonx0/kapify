@@ -143,7 +143,7 @@ import { DataRoomSection, CreateAccessRequestRequest } from '../../../models/dat
                       <label class="flex items-center gap-3 p-2 hover:bg-gray-50 rounded cursor-pointer">
                         <input
                           type="checkbox"
-                          [checked]="isSection Selected(section.sectionKey)"
+                          [checked]="isSectionßSelected(section.sectionKey)"
                           (change)="toggleSection(section.sectionKey)"
                           class="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
                         />

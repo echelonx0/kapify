@@ -680,142 +680,140 @@ import { AccessRequestsListComponent } from './components/sharing/access-request
     AccessLogComponent,
     AccessAnalyticsDashboardComponent
   ],
-  template: `
-    <div class="h-screen bg-gray-50 flex">
-      <!-- Sidebar Navigation -->
-      <app-data-room-sidebar
-        [sections]="sections"
-        [activeSection]="activeSection"
-        [permissions]="permissions"
-        [documentCounts]="documentCounts"
-        [sectionStatuses]="sectionStatuses"
-        (selectSection)="navigateToSection($event)"
+// Update only the template section of data-room.component.ts
+template: `
+  <div class="h-screen bg-gray-50 flex">
+    <!-- Sidebar Navigation -->
+    <app-data-room-sidebar
+      [sections]="sections()"
+      [activeSection]="activeSection()"
+      [permissions]="permissions()"
+      [documentCounts]="documentCounts()"
+      [sectionStatuses]="sectionStatuses()"
+      (selectSection)="navigateToSection($event)"
+    />
+
+    <!-- Main Content -->
+    <div class="flex-1 flex flex-col overflow-hidden">
+      <!-- Header -->
+      <app-data-room-header
+        [dataRoom]="dataRoom()"
+        [permissions]="permissions()"
+        [companyName]="companyName()"
+        [isAIAnalyzing]="isAIAnalyzing()"
+        [stats]="accessStats()"
+        [shareInfo]="shareInfo()"
+        (enhanceWithAI)="enhanceWithAI()"
+        (export)="exportDataRoom()"
+        (share)="openSharingModal()"
+        (viewAccessLog)="navigateToSection('access-log')"
+        (back)="navigateBack()"
       />
 
-      <!-- Main Content -->
-      <div class="flex-1 flex flex-col overflow-hidden">
-        <!-- Header -->
-        <app-data-room-header
-          [dataRoom]="dataRoom"
-          [permissions]="permissions"
-          [companyName]="companyName"
-          [isAIAnalyzing]="isAIAnalyzing"
-          [stats]="accessStats"
-          [shareInfo]="shareInfo"
-          (enhanceWithAI)="enhanceWithAI()"
-          (export)="exportDataRoom()"
-          (share)="openSharingModal()"
-          (viewAccessLog)="navigateToSection('access-log')"
-          (back)="navigateBack()"
-        />
-
-        <!-- Content Area -->
-        <div class="flex-1 overflow-y-auto">
-          <div class="max-w-7xl mx-auto p-8">
-            @if (isLoading()) {
-              <div class="text-center py-12">
-                <div class="animate-spin w-8 h-8 border-2 border-primary-500 border-t-transparent rounded-full mx-auto mb-4"></div>
-                <p class="text-gray-600">Loading data room...</p>
+      <!-- Content Area -->
+      <div class="flex-1 overflow-y-auto">
+        <div class="max-w-7xl mx-auto p-8">
+          @if (isLoading()) {
+            <div class="text-center py-12">
+              <div class="animate-spin w-8 h-8 border-2 border-primary-500 border-t-transparent rounded-full mx-auto mb-4"></div>
+              <p class="text-gray-600">Loading data room...</p>
+            </div>
+          } @else if (error()) {
+            <div class="text-center py-12">
+              <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <span class="text-red-600 text-2xl">⚠</span>
               </div>
-            } @else if (error()) {
-              <div class="text-center py-12">
-                <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <span class="text-red-600 text-2xl">⚠</span>
-                </div>
-                <h3 class="text-lg font-medium text-gray-900 mb-2">Failed to load data room</h3>
-                <p class="text-gray-600 mb-4">{{ error() }}</p>
-                <button
-                  (click)="loadDataRoom()"
-                  class="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700"
-                >
-                  Try Again
-                </button>
-              </div>
-            } @else {
-              <!-- Section Content -->
-              @switch (activeSection()) {
-                @case ('executive') {
-                  <app-executive-summary
-                    [companyInfo]="companyInfo"
-                    [financialMetrics]="financialMetrics"
-                    [fundingInfo]="fundingInfo"
-                    [marketIntelligence]="marketIntelligence"
-                  />
-                }
-                @case ('financials') {
-                  <app-financial-dashboard
-                    [financialMetrics]="financialMetrics"
-                  />
-                }
-                @case ('documents') {
-                  <app-document-repository
-                    [dataRoomId]="dataRoomId()"
-                    [permissions]="permissions"
-                    [sections]="sections"
-                  />
-                }
-                @case ('management') {
-                  <app-management-team
-                    [managementTeam]="managementTeam"
-                  />
-                }
-                @case ('market') {
-                  <app-market-analysis
-                    [marketIntelligence]="marketIntelligence"
-                    [isAnalyzing]="isAIAnalyzing"
-                    (enhanceWithAI)="enhanceWithAI()"
-                  />
-                }
-                @case ('legal') {
-                  <app-legal-compliance
-                    [companyInfo]="companyInfo"
-                  />
-                }
-                @case ('access-requests') {
-                  <app-access-requests-list
-                    [organizationId]="currentUserId()"
-                  />
-                }
-                @case ('access-log') {
-                  <app-access-log
-                    [dataRoomId]="dataRoomId()"
-                  />
-                }
-                @case ('analytics') {
-                  <app-access-analytics-dashboard
-                    [dataRoomId]="dataRoomId()"
-                    [companyInfo]="companyInfo"
-                    [financialMetrics]="financialMetrics"
-                    [fundingInfo]="fundingInfo"
-                    [marketIntelligence]="marketIntelligence"
-                  />
-                }
-                @default {
-                  <app-executive-summary
-                    [companyInfo]="companyInfo"
-                    [financialMetrics]="financialMetrics"
-                    [fundingInfo]="fundingInfo"
-                    [marketIntelligence]="marketIntelligence"
-                  />
-                }
+              <h3 class="text-lg font-medium text-gray-900 mb-2">Failed to load data room</h3>
+              <p class="text-gray-600 mb-4">{{ error() }}</p>
+              <button
+                (click)="loadDataRoom()"
+                class="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700"
+              >
+                Try Again
+              </button>
+            </div>
+          } @else {
+            <!-- Section Content -->
+            @switch (activeSection()) {
+              @case ('executive') {
+                <app-executive-summary
+                  [companyInfo]="companyInfo()"
+                  [financialMetrics]="financialMetrics()"
+                  [fundingInfo]="fundingInfo()"
+                  [marketIntelligence]="marketIntelligence()"
+                />
+              }
+              @case ('financials') {
+                <app-financial-dashboard
+                  [financialMetrics]="financialMetrics()"
+                />
+              }
+              @case ('documents') {
+                <app-document-repository
+                  [dataRoomId]="dataRoomId()"
+                  [permissions]="permissions()"
+                  [sections]="sections()"
+                />
+              }
+              @case ('management') {
+                <app-management-team
+                  [managementTeam]="managementTeam()"
+                />
+              }
+              @case ('market') {
+                <app-market-analysis
+                  [marketIntelligence]="marketIntelligence()"
+                  [isAnalyzing]="isAIAnalyzing"
+                  (enhanceWithAI)="enhanceWithAI()"
+                />
+              }
+              @case ('legal') {
+                <app-legal-compliance
+                  [companyInfo]="companyInfo()"
+                />
+              }
+              @case ('access-requests') {
+                <app-access-requests-list
+                  [organizationId]="currentUserId()"
+                />
+              }
+              @case ('access-log') {
+                <app-access-log
+                  [dataRoomId]="dataRoomId()"
+                />
+              }
+              @case ('analytics') {
+                <app-access-analytics-dashboard
+                  [dataRoomId]="dataRoomId()"
+              
+                />
+              }
+              @default {
+                <app-executive-summary
+                  [companyInfo]="companyInfo()"
+                  [financialMetrics]="financialMetrics()"
+                  [fundingInfo]="fundingInfo()"
+                  [marketIntelligence]="marketIntelligence()"
+                />
               }
             }
-          </div>
+          }
         </div>
       </div>
-
-      <!-- Modals -->
-      <app-sharing-modal
-        (shared)="onDataRoomShared()"
-        (closed)="onModalClosed()"
-      />
-
-      <app-access-request-modal
-        (submitted)="onAccessRequestSubmitted()"
-        (closed)="onModalClosed()"
-      />
     </div>
-  `,
+
+    <!-- Modals -->
+    <app-sharing-modal
+      (shared)="onDataRoomShared()"
+      (closed)="onModalClosed()"
+    />
+
+    <app-access-request-modal
+      (submitted)="onAccessRequestSubmitted()"
+      (closed)="onModalClosed()"
+    />
+  </div>
+`,
   styles: [`
     :host {
       display: block;

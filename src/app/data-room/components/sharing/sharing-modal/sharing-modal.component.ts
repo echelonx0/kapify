@@ -1,7 +1,7 @@
 // src/app/SMEs/data-room/components/sharing/sharing-modal/sharing-modal.component.ts
 import { Component, Output, EventEmitter, signal, inject, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { LucideAngularModule, X, Search, CheckSquare, Square, Calendar, AlertCircle, CheckCircle, Users } from 'lucide-angular';
 import { UiButtonComponent } from 'src/app/shared/components';
 import { DataRoomSharingService } from '../../../services/data-room-sharing.service';
@@ -13,6 +13,7 @@ import { DataRoomSection, DataRoomDocument, ShareRecipient, CreateShareRequest }
   imports: [
     CommonModule,
     ReactiveFormsModule,
+    FormsModule,  
     LucideAngularModule,
     UiButtonComponent
   ],

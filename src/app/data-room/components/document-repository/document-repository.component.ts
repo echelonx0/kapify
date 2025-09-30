@@ -28,7 +28,7 @@ import { LinkDocumentModalComponent } from './link-document-modal/link-document-
         <div>
           <h2 class="text-2xl font-bold text-gray-900">Document Repository</h2>
           <p class="text-gray-600 mt-1">
-            @if (permissions().canManage) {
+            @if (permissions.canManage) {
               Manage your data room documents and links
             } @else {
               Browse available documents
@@ -37,7 +37,7 @@ import { LinkDocumentModalComponent } from './link-document-modal/link-document-
         </div>
 
         <!-- Actions (Owner Only) -->
-        @if (permissions().canManage) {
+        @if (permissions.canManage) {
           <div class="flex items-center gap-3">
             <ui-button variant="outline" (clicked)="openUploadModal()">
               <lucide-icon [img]="UploadIcon" [size]="16" class="mr-2" />
@@ -123,10 +123,10 @@ import { LinkDocumentModalComponent } from './link-document-modal/link-document-
       } @else {
         <!-- Document Grid -->
         <app-document-grid
-          [documents]="documents"
-          [categories]="categories"
-          [canManage]="() => permissions().canManage"
-          [canDownload]="() => permissions().canDownload"
+          [documents]="documents()"
+          [categories]="categories()"
+          [canManage]="permissions.canManage"
+          [canDownload]="permissions.canDownload"
           (view)="onViewDocument($event)"
           (edit)="onEditDocument($event)"
           (delete)="onDeleteDocument($event)"
@@ -154,8 +154,8 @@ import { LinkDocumentModalComponent } from './link-document-modal/link-document-
 })
 export class DocumentRepositoryComponent implements OnInit {
   @Input({ required: true }) dataRoomId!: string;
-  @Input({ required: true }) permissions!: () => UserPermissions;
-  @Input() sections = () => [] as DataRoomSection[];
+  @Input({ required: true }) permissions!: UserPermissions;
+  @Input() sections: DataRoomSection[] = [];
 
   @ViewChild(DocumentUploadModalComponent) uploadModal!: DocumentUploadModalComponent;
   @ViewChild(LinkDocumentModalComponent) linkModal!: LinkDocumentModalComponent;
@@ -210,11 +210,11 @@ export class DocumentRepositoryComponent implements OnInit {
   }
 
   openUploadModal(): void {
-    this.uploadModal.open(this.dataRoomId, this.sections());
+    this.uploadModal.open(this.dataRoomId, this.sections);
   }
 
   openLinkModal(): void {
-    this.linkModal.open(this.dataRoomId, this.sections());
+    this.linkModal.open(this.dataRoomId, this.sections);
   }
 
   onDocumentUploaded(): void {
@@ -269,29 +269,29 @@ export class DocumentRepositoryComponent implements OnInit {
     }
   }
 
-  onDownloadDocument(document: DataRoomDocument): void {
-    if (document.documentType === 'link') {
-      window.open(document.externalUrl, '_blank');
-      return;
-    }
-
-    // Track download
-    this.accessService.trackDocumentDownload(document.id, this.dataRoomId).subscribe();
-
-    // Download file
-    this.documentService.downloadDocument(document.id).subscribe({
-      next: (blob) => {
-        const url = window.URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = document.originalName || document.title;
-        link.click();
-        window.URL.revokeObjectURL(url);
-      },
-      error: (err) => {
-        console.error('Failed to download document:', err);
-        alert('Failed to download document');
-      }
-    });
+onDownloadDocument(document: DataRoomDocument): void {
+  if (document.documentType === 'link') {
+    window.open(document.externalUrl, '_blank');
+    return;
   }
+
+  // Track download
+  this.accessService.trackDocumentDownload(document.id, this.dataRoomId).subscribe();
+
+  // Download file
+  this.documentService.downloadDocument(document.id).subscribe({
+    next: (blob) => {
+      const url = window.URL.createObjectURL(blob);
+      const link = window.document.createElement('a'); // ✅ Changed from document to window.document
+      link.href = url;
+      link.download = document.originalName || document.title;
+      link.click();
+      window.URL.revokeObjectURL(url);
+    },
+    error: (err) => {
+      console.error('Failed to download document:', err);
+      alert('Failed to download document');
+    }
+  });
+}
 }

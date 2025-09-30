@@ -168,7 +168,8 @@ export class MarketAnalysisComponent {
   `
 })
 export class LegalComplianceComponent {
-  @Input() companyInfo = () => null as { registrationNumber?: string } | null;
+ @Input() companyInfo: { registrationNumber?: string } | null = null;
+
 
   ShieldIcon = import('lucide-angular').then(m => m.Shield);
   CheckCircleIcon = import('lucide-angular').then(m => m.CheckCircle);

@@ -49,7 +49,7 @@ type ViewMode = 'grid' | 'list';
             class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
           >
             <option value="">All Categories</option>
-            @for (category of categories(); track category) {
+            @for (category of categories; track category) {
               <option [value]="category">{{ category }}</option>
             }
           </select>
@@ -68,8 +68,8 @@ type ViewMode = 'grid' | 'list';
           <!-- Sort -->
           <div class="flex gap-2">
             <select
-              [(ngModel)]="sortField"
-              (ngModelChange)="onSortChange()"
+              [(ngModel)]="sortFieldValue"
+              (ngModelChange)="onSortFieldChange($event)"
               class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
             >
               <option value="createdAt">Date</option>
@@ -84,7 +84,7 @@ type ViewMode = 'grid' | 'list';
               (clicked)="toggleSortDirection()"
             >
               <lucide-icon 
-                [img]="sortDirection === 'asc' ? SortAscIcon : SortDescIcon" 
+                [img]="sortDirection() === 'asc' ? SortAscIcon : SortDescIcon" 
                 [size]="20"
               />
             </ui-button>
@@ -148,7 +148,7 @@ type ViewMode = 'grid' | 'list';
         <div [class]="viewMode() === 'grid' ? 'document-grid' : 'document-list'">
           @for (doc of filteredDocuments(); track doc.id) {
             <app-document-card
-              [document]="() => doc"
+              [document]="doc"
               [canManage]="canManage"
               [canDownload]="canDownload"
               (view)="onView($event)"
@@ -202,10 +202,10 @@ type ViewMode = 'grid' | 'list';
   `]
 })
 export class DocumentGridComponent {
-  @Input({ required: true }) documents!: () => DataRoomDocument[];
-  @Input() categories = () => [] as string[];
-  @Input() canManage = () => false;
-  @Input() canDownload = () => false;
+  @Input({ required: true }) documents!: DataRoomDocument[];
+  @Input() categories: string[] = [];
+  @Input() canManage = false;
+  @Input() canDownload = false;
 
   @Output() view = new EventEmitter<DataRoomDocument>();
   @Output() edit = new EventEmitter<DataRoomDocument>();
@@ -224,13 +224,14 @@ export class DocumentGridComponent {
   searchQuery = '';
   selectedCategory = '';
   selectedType = '';
+  sortFieldValue: SortField = 'createdAt';
   sortField = signal<SortField>('createdAt');
   sortDirection = signal<SortDirection>('desc');
   viewMode = signal<ViewMode>('grid');
 
   // Computed filtered and sorted documents
   filteredDocuments = computed(() => {
-    let docs = this.documents();
+    let docs = this.documents;
 
     // Apply search filter
     if (this.searchQuery) {
@@ -265,8 +266,8 @@ export class DocumentGridComponent {
     // Triggers computed recalculation
   }
 
-  onSortChange(): void {
-    // Triggers computed recalculation
+  onSortFieldChange(value: string): void {
+    this.sortField.set(value as SortField);
   }
 
   toggleSortDirection(): void {
