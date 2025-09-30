@@ -19,13 +19,13 @@ export const applicationRoutes: Routes = [
     {
     path: 'new',
     loadComponent: () => 
-      import('./components/new-application/opportunity-application.component').then(m => m.OpportunityApplicationFormComponent),
+      import('./new-application/opportunity-application.component').then(m => m.OpportunityApplicationFormComponent),
     title: 'New Application'
   },
   {
     path: 'new/:opportunityId',
     loadComponent: () => 
-      import('./components/new-application/opportunity-application.component').then(m => m.OpportunityApplicationFormComponent),
+      import('./new-application/opportunity-application.component').then(m => m.OpportunityApplicationFormComponent),
     title: 'Apply for Opportunity'
   },
     {

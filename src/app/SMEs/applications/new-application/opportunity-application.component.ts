@@ -13,7 +13,7 @@ import { GlobalProfileValidationService } from 'src/app/shared/services/global-p
 import { ProfileManagementService } from 'src/app/shared/services/profile-management.service';
 import { DatabaseApplicationService } from 'src/app/SMEs/services/database-application.service';
 import { EnhancedAIAnalysisComponent } from 'src/app/ai/ai-analysis/enhanced-ai-analysis.component';
-import { FundingApplicationProfile } from '../../models/funding-application.models';
+import { FundingApplicationProfile } from '../models/funding-application.models';
 import { FundingProfileBackendService } from 'src/app/SMEs/services/funding-profile-backend.service';
 import { ProfileDataTransformerService } from 'src/app/SMEs/services/profile-data-transformer.service';
 

@@ -1,0 +1,59 @@
+<!-- cover-statement-upload.component.html -->
+<div class="bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-xl p-6">
+  <div class="group">
+    <label class="block text-sm font-medium text-blue-800 mb-3 group-hover:text-blue-900 transition-colors flex items-center">
+      <lucide-icon [img]="FileTextIcon" [size]="16" class="mr-2" />
+      Cover Statement (Optional)
+    </label>
+    
+    @if (!selectedFile()) {
+      <div 
+        class="border-2 border-dashed border-blue-300 rounded-xl p-8 text-center cursor-pointer transition-all hover:border-blue-500 hover:bg-blue-100/50"
+        [class.border-blue-500]="isDragging()"
+        [class.bg-blue-100]="isDragging()"
+        (dragover)="onDragOver($event)"
+        (dragleave)="onDragLeave($event)"
+        (drop)="onDrop($event)"
+        (click)="fileInput.click()"
+      >
+        <lucide-icon [img]="UploadIcon" [size]="32" class="text-blue-400 mx-auto mb-3" />
+        <p class="text-sm text-blue-700 font-medium mb-1">
+          Click to upload or drag and drop
+        </p>
+        <p class="text-xs text-blue-600">
+          PDF or Word document (Max 5MB)
+        </p>
+        <input 
+          #fileInput
+          type="file" 
+          [accept]="ACCEPTED_TYPES"
+          (change)="onFileSelected($event)"
+          class="hidden"
+        />
+      </div>
+    } @else {
+      <div class="bg-white border-2 border-blue-200 rounded-xl p-4 flex items-center justify-between">
+        <div class="flex items-center space-x-3">
+          <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+            <lucide-icon [img]="FileTextIcon" [size]="20" class="text-blue-600" />
+          </div>
+          <div>
+            <p class="text-sm font-medium text-neutral-900">{{ selectedFile()!.name }}</p>
+            <p class="text-xs text-neutral-500">{{ formatFileSize(selectedFile()!.size) }}</p>
+          </div>
+        </div>
+        <button 
+          type="button"
+          (click)="removeFile()"
+          class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-red-50 text-red-600 transition-colors"
+        >
+          <lucide-icon [img]="XIcon" [size]="16" />
+        </button>
+      </div>
+    }
+    
+    <p class="mt-2 text-xs text-blue-600">
+      Upload a cover letter explaining why this opportunity aligns with your business
+    </p>
+  </div>
+</div>

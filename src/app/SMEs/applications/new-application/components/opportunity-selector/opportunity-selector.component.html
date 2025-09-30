@@ -1,0 +1,58 @@
+<!-- opportunity-selector.component.html -->
+<div class="space-y-6">
+  <div class="flex items-center space-x-3 mb-6">
+    <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center shadow-lg">
+      <lucide-icon [img]="BuildingIcon" [size]="20" class="text-white" />
+    </div>
+    <div>
+      <h3 class="text-lg font-semibold text-neutral-900">Select Funding Opportunity</h3>
+      <p class="text-sm text-neutral-600">Choose the opportunity you want to apply for</p>
+    </div>
+  </div>
+
+  @if (isLoading()) {
+    <div class="text-center py-12">
+      <div class="animate-spin w-8 h-8 border-2 border-primary-500 border-t-transparent rounded-full mx-auto mb-4"></div>
+      <p class="text-neutral-500">Loading opportunities...</p>
+    </div>
+  } @else if (opportunities().length === 0) {
+    <div class="text-center py-12">
+      <div class="w-16 h-16 bg-neutral-100 rounded-full flex items-center justify-center mx-auto mb-4">
+        <lucide-icon [img]="AlertCircleIcon" [size]="24" class="text-neutral-400" />
+      </div>
+      <p class="text-neutral-500 mb-4">No active opportunities available at the moment.</p>
+      <ui-button variant="outline" (click)="goBack()">
+        Browse Opportunities
+      </ui-button>
+    </div>
+  } @else {
+    <div class="space-y-4">
+      @for (opportunity of opportunities(); track opportunity.id) {
+        <div 
+          class="border rounded-lg p-4 cursor-pointer transition-all duration-300 hover:border-primary-300 hover:shadow-md hover:scale-[1.02]"
+          [class.border-primary-500]="selectedOpportunityId() === opportunity.id"
+          [class.bg-gradient-to-r]="selectedOpportunityId() === opportunity.id"
+          [class.from-primary-50]="selectedOpportunityId() === opportunity.id"
+          [class.to-primary-100]="selectedOpportunityId() === opportunity.id"
+          [class.shadow-lg]="selectedOpportunityId() === opportunity.id"
+          (click)="selectOpportunity(opportunity)"
+        >
+          <div class="flex justify-between items-start">
+            <div class="flex-1">
+              <h4 class="font-medium text-neutral-900">{{ opportunity.title }}</h4>
+              <p class="text-sm text-neutral-600 mt-1">{{ opportunity.shortDescription }}</p>
+              <div class="flex items-center space-x-4 mt-2 text-sm text-neutral-500">
+                <span class="capitalize px-2 py-1 bg-neutral-100 rounded-full">{{ opportunity.fundingType }}</span>
+                <span>{{ formatCurrency(opportunity.minInvestment, opportunity.currency) }} - {{ formatCurrency(opportunity.maxInvestment, opportunity.currency) }}</span>
+                <span>{{ getOrganizationName(opportunity) }}</span>
+              </div>
+            </div>
+            @if (selectedOpportunityId() === opportunity.id) {
+              <lucide-icon [img]="CheckCircleIcon" [size]="20" class="text-primary-600 ml-4" />
+            }
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>

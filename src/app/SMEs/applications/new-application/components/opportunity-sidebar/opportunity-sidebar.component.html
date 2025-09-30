@@ -1,0 +1,213 @@
+<!-- opportunity-sidebar.component.html -->
+@if (opportunity(); as opp) {
+  <ui-card class="sticky top-6 hover:shadow-lg transition-shadow duration-300">
+    <div class="space-y-4">
+      <div class="border-b border-neutral-200 pb-4">
+        <h3 class="font-medium text-neutral-900">Selected Opportunity</h3>
+        <p class="text-sm text-neutral-600">{{ getOrganizationName() }}</p>
+      </div>
+
+      <div class="bg-gradient-to-br from-neutral-50 to-neutral-100 rounded-lg p-4 border border-neutral-200">
+        <h4 class="font-medium text-neutral-900 mb-3">{{ opp.title }}</h4>
+        
+        <div class="space-y-3 text-sm">
+          <div class="flex justify-between items-center p-2 bg-white rounded border">
+            <span class="text-neutral-600 flex items-center">
+              <lucide-icon [img]="BuildingIcon" [size]="12" class="mr-1" />
+              Type:
+            </span>
+            <span class="font-medium capitalize bg-primary-100 text-primary-800 px-2 py-1 rounded-full text-xs">
+              {{ opp.fundingType }}
+            </span>
+          </div>
+          
+          <div class="flex justify-between items-center p-2 bg-white rounded border">
+            <span class="text-neutral-600 flex items-center">
+              <lucide-icon [img]="DollarSignIcon" [size]="12" class="mr-1" />
+              Range:
+            </span>
+            <span class="font-medium">{{ formatCurrency(opp.minInvestment, opp.currency) }} - {{ formatCurrency(opp.maxInvestment, opp.currency) }}</span>
+          </div>
+          
+          @if (opp.interestRate) {
+            <div class="flex justify-between items-center p-2 bg-white rounded border">
+              <span class="text-neutral-600 flex items-center">
+                <lucide-icon [img]="DollarSignIcon" [size]="12" class="mr-1" />
+                Interest Rate:
+              </span>
+              <span class="font-medium">{{ opp.interestRate }}%</span>
+            </div>
+          }
+          
+          @if (opp.equityOffered) {
+            <div class="flex justify-between items-center p-2 bg-white rounded border">
+              <span class="text-neutral-600 flex items-center">
+                <lucide-icon [img]="DollarSignIcon" [size]="12" class="mr-1" />
+                Equity:
+              </span>
+              <span class="font-medium">{{ opp.equityOffered }}%</span>
+            </div>
+          }
+          
+          <div class="flex justify-between items-center p-2 bg-white rounded border">
+            <span class="text-neutral-600 flex items-center">
+              <lucide-icon [img]="ClockIcon" [size]="12" class="mr-1" />
+              Decision Time:
+            </span>
+            <span class="font-medium">{{ opp.decisionTimeframe }} days</span>
+          </div>
+        </div>
+      </div>
+
+      @if (opp.shortDescription) {
+        <div class="bg-white border border-neutral-200 rounded-lg p-4 hover:shadow-sm transition-shadow">
+          <h4 class="font-medium text-neutral-900 mb-2 flex items-center">
+            <lucide-icon [img]="FileTextIcon" [size]="14" class="mr-1 text-blue-600" />
+            Description
+          </h4>
+          <p class="text-sm text-neutral-600 leading-relaxed">{{ opp.shortDescription }}</p>
+        </div>
+      }
+
+      @if (opp.applicationDeadline) {
+        <div class="bg-gradient-to-r from-amber-50 to-yellow-50 border-2 border-amber-200 rounded-lg p-3">
+          <div class="flex items-center">
+            <lucide-icon [img]="AlertCircleIcon" [size]="16" class="text-amber-600 mr-2" />
+            <div>
+              <p class="text-sm font-medium text-amber-800">Application Deadline</p>
+              <p class="text-xs text-amber-700">{{ opp.applicationDeadline | date:'mediumDate' }}</p>
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- AI Insights Sidebar -->
+      @if (showAIInsights()) {
+        <div class="bg-gradient-to-br from-blue-50 via-indigo-50 to-slate-50 border-2 border-blue-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+          <div class="flex items-center space-x-2 mb-3">
+            <div class="w-6 h-6 bg-gradient-to-r from-blue-500 to-slate-600 rounded flex items-center justify-center">
+              <lucide-icon [img]="DollarSignIcon" [size]="12" class="text-white" />
+            </div>
+            <h4 class="font-medium text-neutral-900">AI Insights</h4>
+          </div>
+
+          @if (aiAnalysisResult()) {
+            <div class="space-y-3">
+              <div class="bg-white/60 backdrop-blur rounded p-3">
+                <div class="flex justify-between items-center">
+                  <span class="text-neutral-600 text-sm">Match Score:</span>
+                  <div class="flex items-center space-x-2">
+                    <div class="w-12 h-1.5 bg-neutral-200 rounded-full overflow-hidden">
+                      <div class="h-full bg-gradient-to-r from-blue-400 to-blue-600 transition-all duration-1000"
+                           [style.width.%]="aiAnalysisResult().matchScore"></div>
+                    </div>
+                    <span class="font-medium text-blue-600 text-sm">{{ aiAnalysisResult().matchScore }}%</span>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="bg-white/60 backdrop-blur rounded p-3">
+                <div class="flex justify-between items-center">
+                  <span class="text-neutral-600 text-sm">Success Rate:</span>
+                  <div class="flex items-center space-x-2">
+                    <div class="w-12 h-1.5 bg-neutral-200 rounded-full overflow-hidden">
+                      <div class="h-full bg-gradient-to-r from-green-400 to-green-600 transition-all duration-1000"
+                           [style.width.%]="aiAnalysisResult().successProbability"></div>
+                    </div>
+                    <span class="font-medium text-green-600 text-sm">{{ aiAnalysisResult().successProbability }}%</span>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="bg-white/60 backdrop-blur rounded p-3">
+                <div class="flex justify-between items-center">
+                  <span class="text-neutral-600 text-sm">Position:</span>
+                  <span class="font-medium capitalize text-slate-600 text-sm bg-slate-100 px-2 py-1 rounded-full">
+                    {{ aiAnalysisResult().competitivePositioning }}
+                  </span>
+                </div>
+              </div>
+            </div>
+          } @else {
+            <div class="text-center py-4">
+              <div class="w-8 h-8 border-2 border-blue-300 border-t-blue-600 rounded-full animate-spin mx-auto mb-2"></div>
+              <p class="text-sm text-neutral-600">Complete application details to get AI analysis</p>
+            </div>
+          }
+        </div>
+      }
+
+      <!-- Statistics -->
+      <div class="pt-4 border-t-2 border-neutral-200 space-y-3">
+        <div class="bg-white border border-neutral-200 rounded-lg p-3 hover:shadow-sm transition-shadow">
+          <div class="flex items-center justify-between text-sm">
+            <span class="text-neutral-600 flex items-center">
+              <lucide-icon [img]="UsersIcon" [size]="12" class="mr-1" />
+              Applications:
+            </span>
+            <div class="flex items-center space-x-2">
+              <span class="font-medium">{{ opp.currentApplications || 0 }}</span>
+              @if (opp.maxApplications) {
+                <span class="text-neutral-400">/</span>
+                <span class="text-neutral-500">{{ opp.maxApplications }}</span>
+                <div class="w-16 h-1 bg-neutral-200 rounded-full overflow-hidden ml-2">
+                  <div class="h-full bg-gradient-to-r from-primary-400 to-primary-600 transition-all duration-500"
+                       [style.width.%]="getApplicationProgress()"></div>
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+        
+        @if (opp.viewCount) {
+          <div class="bg-white border border-neutral-200 rounded-lg p-3 hover:shadow-sm transition-shadow">
+            <div class="flex items-center justify-between text-sm">
+              <span class="text-neutral-600 flex items-center">
+                <lucide-icon [img]="EyeIcon" [size]="12" class="mr-1" />
+                Views:
+              </span>
+              <span class="font-medium">{{ opp.viewCount }}</span>
+            </div>
+          </div>
+        }
+        
+        <div class="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg p-3">
+          <div class="flex items-center justify-between text-sm">
+            <span class="text-green-700 flex items-center font-medium">
+              <lucide-icon [img]="TrendingUpIcon" [size]="12" class="mr-1" />
+              Interest Level:
+            </span>
+            <div class="flex items-center space-x-1">
+              @for (star of [1,2,3,4,5]; track star) {
+                <div class="w-2 h-2 rounded-full" 
+                     [class]="star <= 4 ? 'bg-yellow-400' : 'bg-neutral-300'"></div>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </ui-card>
+} @else {
+  <ui-card class="sticky top-6 hover:shadow-lg transition-shadow duration-300">
+    <div class="text-center py-12">
+      <div class="w-16 h-16 bg-gradient-to-br from-neutral-100 to-neutral-200 rounded-xl mx-auto mb-4 flex items-center justify-center">
+        <lucide-icon [img]="BuildingIcon" [size]="28" class="text-neutral-400" />
+      </div>
+      <h3 class="font-medium text-neutral-900 mb-2">No Opportunity Selected</h3>
+      <p class="text-sm text-neutral-500">Select an opportunity to view details and start your application</p>
+      <div class="mt-4 pt-4 border-t border-neutral-200">
+        <div class="flex items-center justify-center space-x-4 text-xs text-neutral-400">
+          <span class="flex items-center">
+            <lucide-icon [img]="ClockIcon" [size]="12" class="mr-1" />
+            Quick Process
+          </span>
+          <span class="flex items-center">
+            <lucide-icon [img]="AlertCircleIcon" [size]="12" class="mr-1" />
+            Secure
+          </span>
+        </div>
+      </div>
+    </div>
+  </ui-card>
+}

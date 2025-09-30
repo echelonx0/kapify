@@ -1,0 +1,111 @@
+<!-- application-form.component.html -->
+<div class="space-y-8">
+  <div class="flex items-center space-x-3 mb-6">
+    <div class="w-10 h-10 bg-gradient-to-br from-slate-500 to-slate-600 rounded-lg flex items-center justify-center shadow-lg">
+      <lucide-icon [img]="FileTextIcon" [size]="20" class="text-white" />
+    </div>
+    <div>
+      <h3 class="text-lg font-semibold text-neutral-900">Application Details</h3>
+      <p class="text-sm text-neutral-600">Provide information specific to this opportunity</p>
+    </div>
+  </div>
+
+  <!-- Requested Amount -->
+  <div class="group">
+    <label class="block text-sm font-medium text-neutral-700 mb-3 group-hover:text-primary-600 transition-colors">
+      Requested Amount <span class="text-red-500">*</span>
+    </label>
+    <div class="relative">
+      <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+        <span class="text-neutral-500 font-medium">{{ opportunity().currency || 'ZAR' }}</span>
+      </div>
+      <input
+        type="number"
+        placeholder="0"
+        [value]="formData().requestedAmount"
+        (input)="onRequestedAmountChange($event)"
+        [min]="opportunity().minInvestment"
+        [max]="opportunity().maxInvestment"
+        class="block w-full pl-16 pr-4 py-4 text-lg border-2 border-neutral-300 rounded-xl shadow-sm placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all hover:border-neutral-400 font-medium"
+      />
+    </div>
+    @if (getAmountValidationMessage()) {
+      <p class="mt-2 text-sm text-red-600 flex items-center">
+        <lucide-icon [img]="AlertCircleIcon" [size]="16" class="mr-1" />
+        {{ getAmountValidationMessage() }}
+      </p>
+    } @else {
+      <p class="mt-2 text-sm text-neutral-500 flex items-center">
+        <lucide-icon [img]="DollarSignIcon" [size]="16" class="mr-1 text-green-600" />
+        Range: {{ formatCurrency(opportunity().minInvestment) }} - {{ formatCurrency(opportunity().maxInvestment) }}
+      </p>
+    }
+  </div>
+
+  <!-- Two Column Layout -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+    
+    <!-- Purpose Statement -->
+    <div class="group">
+      <label class="block text-sm font-medium text-neutral-700 mb-3 group-hover:text-primary-600 transition-colors">
+        Purpose Statement <span class="text-red-500">*</span>
+      </label>
+      <div class="relative">
+        <textarea
+          placeholder="Explain why you need this funding and how it will benefit your business..."
+          [value]="formData().purposeStatement"
+          (input)="onPurposeStatementChange($event)"
+          rows="6"
+          class="block w-full px-4 py-4 border-2 border-neutral-300 rounded-xl shadow-sm placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all hover:border-neutral-400 resize-none text-sm leading-relaxed"
+        ></textarea>
+        <div class="absolute bottom-3 right-3 text-xs text-neutral-400">
+          {{ formData().purposeStatement?.length || 0 }} characters
+        </div>
+      </div>
+      <p class="mt-2 text-xs text-neutral-500">Describe your business objectives</p>
+    </div>
+
+    <!-- Use of Funds -->
+    <div class="group">
+      <label class="block text-sm font-medium text-neutral-700 mb-3 group-hover:text-primary-600 transition-colors">
+        Use of Funds <span class="text-red-500">*</span>
+      </label>
+      <div class="relative">
+        <textarea
+          placeholder="Provide a detailed breakdown of how you will use the funding..."
+          [value]="formData().useOfFunds"
+          (input)="onUseOfFundsChange($event)"
+          rows="6"
+          class="block w-full px-4 py-4 border-2 border-neutral-300 rounded-xl shadow-sm placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all hover:border-neutral-400 resize-none text-sm leading-relaxed"
+        ></textarea>
+        <div class="absolute bottom-3 right-3 text-xs text-neutral-400">
+          {{ formData().useOfFunds?.length || 0 }} characters
+        </div>
+      </div>
+      <p class="mt-2 text-xs text-neutral-500">Break down how funds will be allocated</p>
+    </div>
+  </div>
+
+  <!-- Cover Statement Upload -->
+  <app-cover-statement-upload
+    (fileSelected)="onCoverStatementUploaded($event)">
+  </app-cover-statement-upload>
+
+  <!-- Progress Indicator -->
+  <div class="bg-neutral-50 border border-neutral-200 rounded-xl p-4">
+    <div class="flex items-center justify-between text-sm text-neutral-600 mb-2">
+      <span class="font-medium">Application Completion</span>
+      <span class="font-medium">{{ completionPercentage() }}%</span>
+    </div>
+    <div class="w-full bg-neutral-200 rounded-full h-2">
+      <div 
+        class="bg-gradient-to-r from-green-400 to-green-600 h-2 rounded-full transition-all duration-500"
+        [style.width.%]="completionPercentage()"
+      ></div>
+    </div>
+    <div class="mt-2 flex items-center text-xs text-neutral-500">
+      <lucide-icon [img]="CheckCircleIcon" [size]="12" class="mr-1 text-green-600" />
+      Complete all required fields to continue
+    </div>
+  </div>
+</div>
