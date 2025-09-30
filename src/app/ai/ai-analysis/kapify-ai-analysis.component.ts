@@ -1,4 +1,4 @@
-// src/app/ai/ai-analysis/enhanced-ai-analysis.component.ts (Refactored - Main Orchestrator)
+// src/app/ai/ai-analysis/kapify-ai-analysis.component.ts
 
 import { Component, Input, Output, EventEmitter, signal, computed, inject, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -90,7 +90,7 @@ type AnalysisState = 'pre-analysis' | 'business-rules' | 'ai-progress' | 'ai-res
     </div>
   `
 })
-export class EnhancedAIAnalysisComponent implements OnInit, OnDestroy {
+export class KapifyAIAnalysisComponent implements OnInit, OnDestroy {
 
   @Input() opportunity: FundingOpportunity | null = null;
    @Input() applicationData: ApplicationFormData | null = null; 

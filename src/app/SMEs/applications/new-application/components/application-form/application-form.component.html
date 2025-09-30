@@ -42,48 +42,44 @@
     }
   </div>
 
-  <!-- Two Column Layout -->
-  <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-    
-    <!-- Purpose Statement -->
-    <div class="group">
-      <label class="block text-sm font-medium text-neutral-700 mb-3 group-hover:text-primary-600 transition-colors">
-        Purpose Statement <span class="text-red-500">*</span>
-      </label>
-      <div class="relative">
-        <textarea
-          placeholder="Explain why you need this funding and how it will benefit your business..."
-          [value]="formData().purposeStatement"
-          (input)="onPurposeStatementChange($event)"
-          rows="6"
-          class="block w-full px-4 py-4 border-2 border-neutral-300 rounded-xl shadow-sm placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all hover:border-neutral-400 resize-none text-sm leading-relaxed"
-        ></textarea>
-        <div class="absolute bottom-3 right-3 text-xs text-neutral-400">
-          {{ formData().purposeStatement.length || 0 }} characters
-        </div>
+  <!-- Purpose Statement -->
+  <div class="group">
+    <label class="block text-sm font-medium text-neutral-700 mb-3 group-hover:text-primary-600 transition-colors">
+      Purpose Statement <span class="text-red-500">*</span>
+    </label>
+    <div class="relative">
+      <textarea
+        placeholder="Explain why you need this funding and how it will benefit your business..."
+        [value]="formData().purposeStatement"
+        (input)="onPurposeStatementChange($event)"
+        rows="6"
+        class="block w-full px-4 py-4 border-2 border-neutral-300 rounded-xl shadow-sm placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all hover:border-neutral-400 resize-none text-sm leading-relaxed"
+      ></textarea>
+      <div class="absolute bottom-3 right-3 text-xs text-neutral-400">
+        {{ formData().purposeStatement.length || 0 }} characters
       </div>
-      <p class="mt-2 text-xs text-neutral-500">Describe your business objectives</p>
     </div>
+    <p class="mt-2 text-xs text-neutral-500">Describe your business objectives</p>
+  </div>
 
-    <!-- Use of Funds -->
-    <div class="group">
-      <label class="block text-sm font-medium text-neutral-700 mb-3 group-hover:text-primary-600 transition-colors">
-        Use of Funds <span class="text-red-500">*</span>
-      </label>
-      <div class="relative">
-        <textarea
-          placeholder="Provide a detailed breakdown of how you will use the funding..."
-          [value]="formData().useOfFunds"
-          (input)="onUseOfFundsChange($event)"
-          rows="6"
-          class="block w-full px-4 py-4 border-2 border-neutral-300 rounded-xl shadow-sm placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all hover:border-neutral-400 resize-none text-sm leading-relaxed"
-        ></textarea>
-        <div class="absolute bottom-3 right-3 text-xs text-neutral-400">
-          {{ formData().useOfFunds.length || 0 }} characters
-        </div>
+  <!-- Use of Funds -->
+  <div class="group">
+    <label class="block text-sm font-medium text-neutral-700 mb-3 group-hover:text-primary-600 transition-colors">
+      Use of Funds <span class="text-red-500">*</span>
+    </label>
+    <div class="relative">
+      <textarea
+        placeholder="Provide a detailed breakdown of how you will use the funding..."
+        [value]="formData().useOfFunds"
+        (input)="onUseOfFundsChange($event)"
+        rows="6"
+        class="block w-full px-4 py-4 border-2 border-neutral-300 rounded-xl shadow-sm placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all hover:border-neutral-400 resize-none text-sm leading-relaxed"
+      ></textarea>
+      <div class="absolute bottom-3 right-3 text-xs text-neutral-400">
+        {{ formData().useOfFunds.length || 0 }} characters
       </div>
-      <p class="mt-2 text-xs text-neutral-500">Break down how funds will be allocated</p>
     </div>
+    <p class="mt-2 text-xs text-neutral-500">Break down how funds will be allocated</p>
   </div>
 
   <!-- Cover Statement Upload -->

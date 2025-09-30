@@ -12,7 +12,7 @@ import { UiCardComponent, UiButtonComponent } from '../../../../shared/component
 import { ProfileDataTransformerService } from '../../../services/profile-data-transformer.service';
 import { FundingProfileSetupService } from 'src/app/SMEs/services/funding-profile-setup.service';
 import { SMEProfileStepsService } from 'src/app/SMEs/services/sme-profile-steps.service';
-import { EnhancedAIAnalysisComponent } from 'src/app/ai/ai-analysis/enhanced-ai-analysis.component';
+import { KapifyAIAnalysisComponent } from 'src/app/ai/ai-analysis/kapify-ai-analysis.component';
  
 interface SectionSummary {
   stepId: string;
@@ -51,7 +51,7 @@ interface ProfileReadiness {
     LucideAngularModule, 
     UiCardComponent, 
     UiButtonComponent,
-    EnhancedAIAnalysisComponent
+    KapifyAIAnalysisComponent
   ],
   templateUrl: './profile-review.component.html'
 })

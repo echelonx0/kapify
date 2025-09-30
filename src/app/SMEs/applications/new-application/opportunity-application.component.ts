@@ -1,11 +1,9 @@
 // src/app/applications/components/new-application/opportunity-application.component.ts
-
 import { Component, signal, computed, inject, OnInit, OnDestroy } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { Location } from '@angular/common';
 import { LucideAngularModule, ArrowLeft, Clock } from 'lucide-angular';
-
 import { SMEOpportunitiesService } from 'src/app/funding/services/opportunities.service';
 import { UiButtonComponent, UiCardComponent } from 'src/app/shared/components';
 import { Application } from 'src/app/shared/models/application.models';
@@ -13,8 +11,7 @@ import {  FundingOpportunity } from 'src/app/shared/models/funder.models';
 import { GlobalProfileValidationService } from 'src/app/shared/services/global-profile-validation.service';
 import { DatabaseApplicationService } from 'src/app/SMEs/services/database-application.service';
 import { FundingProfileBackendService } from 'src/app/SMEs/services/funding-profile-backend.service';
-
-import { EnhancedAIAnalysisComponent } from 'src/app/ai/ai-analysis/enhanced-ai-analysis.component';
+import { KapifyAIAnalysisComponent } from 'src/app/ai/ai-analysis/kapify-ai-analysis.component';
  
 import { ApplicationFormService } from './services/application-form.service';
 import { ApplicationValidationService } from './services/application-validation.service';
@@ -35,7 +32,7 @@ import { FundingApplicationProfile } from '../models/funding-application.models'
     LucideAngularModule,
     UiButtonComponent,
     UiCardComponent,
-    EnhancedAIAnalysisComponent,
+    KapifyAIAnalysisComponent,
     OpportunitySelectorComponent,
     ApplicationFormComponent,
     ReviewSummaryComponent,
@@ -111,14 +108,14 @@ steps = signal<ApplicationFormStep[]>([
     {
       id: 'ai-analysis',
       number: 3,
-      title: 'AI Analysis',
-      description: 'Get intelligent insights'
+      title: 'Analysis',
+      description: 'Pre-Qualification insights'
     },
     {
       id: 'review-submit',
       number: 4,
-      title: 'Review & Submit',
-      description: 'Final review and submission'
+      title: 'Review',
+      description: 'Review and submission'
     }
   ]);
 
