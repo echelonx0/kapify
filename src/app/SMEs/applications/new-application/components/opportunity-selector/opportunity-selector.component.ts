@@ -9,7 +9,7 @@ import { FundingOpportunity } from 'src/app/shared/models/funder.models';
 @Component({
   selector: 'app-opportunity-selector',
   standalone: true,
-  imports: [CommonModule, LucideAngularModule, UiButtonComponent, UiCardComponent],
+  imports: [CommonModule, LucideAngularModule, UiButtonComponent],
   templateUrl: './opportunity-selector.component.html'
 })
 export class OpportunitySelectorComponent {
