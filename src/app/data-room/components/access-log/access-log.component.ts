@@ -164,7 +164,7 @@ import { DataRoomAccessLog, AccessLogFilters } from '../../models/data-room.mode
                             {{ log.user?.name || log.user?.email || 'Unknown User' }}
                           </div>
                           @if (log.user?.name && log.user?.email) {
-                            <div class="text-xs text-gray-500">{{ log.user.email }}</div>
+                           <div class="text-xs text-gray-500">{{ log.user?.email || 'N/A' }}</div>
                           }
                         </div>
                       </div>

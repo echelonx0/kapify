@@ -43,7 +43,7 @@ import { DataRoom, UserPermissions } from '../../models/data-room.models';
             </div>
             
             @if (dataRoom?.description) {
-              <p class="text-gray-600 max-w-3xl">{{ dataRoom.description }}</p>
+             <p class="text-gray-600 max-w-3xl">{{ dataRoom?.description || '' }}</p>
             } @else if (companyName) {
               <p class="text-gray-600">
                 Comprehensive due diligence materials for {{ companyName }}

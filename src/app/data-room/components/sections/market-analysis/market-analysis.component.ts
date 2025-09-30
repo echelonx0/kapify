@@ -1,7 +1,7 @@
 // src/app/SMEs/data-room/components/sections/market-analysis/market-analysis.component.ts
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { LucideAngularModule, TrendingUp, Sparkles } from 'lucide-angular';
+import { LucideAngularModule, TrendingUp, Sparkles, CheckCircle, FileText, Shield } from 'lucide-angular';
 import { UiCardComponent, UiButtonComponent } from 'src/app/shared/components';
 
 interface MarketIntelligence {
@@ -106,7 +106,7 @@ export class MarketAnalysisComponent {
               <p class="text-sm text-green-600">Verified</p>
             </div>
           </div>
-          <p class="text-sm text-gray-600">Registration #: {{ companyInfo()?.registrationNumber }}</p>
+          <p class="text-sm text-gray-600">Registration #: {{ companyInfo?.registrationNumber }}</p>
         </ui-card>
 
         <ui-card class="p-6">
@@ -171,7 +171,7 @@ export class LegalComplianceComponent {
  @Input() companyInfo: { registrationNumber?: string } | null = null;
 
 
-  ShieldIcon = import('lucide-angular').then(m => m.Shield);
-  CheckCircleIcon = import('lucide-angular').then(m => m.CheckCircle);
-  FileTextIcon = import('lucide-angular').then(m => m.FileText);
+ ShieldIcon = Shield;
+  CheckCircleIcon = CheckCircle;
+  FileTextIcon = FileText;
 }

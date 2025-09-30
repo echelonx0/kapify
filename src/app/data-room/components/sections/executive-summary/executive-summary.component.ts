@@ -190,7 +190,7 @@ interface MarketIntelligence {
             </h4>
             @if (marketIntelligence?.keyStrengths?.length) {
               <ul class="space-y-2">
-                @for (strength of marketIntelligence.keyStrengths; track $index) {
+                @for (strength of marketIntelligence!.keyStrengths; track $index) {
                   <li class="text-gray-600 text-sm flex items-start gap-3">
                     <div class="w-2 h-2 bg-green-400 rounded-full mt-2"></div>
                     {{ strength }}
@@ -206,38 +206,38 @@ interface MarketIntelligence {
             <h4 class="font-medium text-gray-900 mb-3">Use of Funds</h4>
             @if (fundingInfo?.useOfFunds) {
               <div class="space-y-3">
-                @if (fundingInfo.useOfFunds.expansion) {
+                @if (fundingInfo?.useOfFunds?.expansion) {
                   <div>
                     <div class="flex items-center justify-between mb-1">
                       <span class="text-sm text-gray-600">Market Expansion</span>
-                      <span class="text-sm font-medium">{{ fundingInfo.useOfFunds.expansion }}%</span>
+                      <span class="text-sm font-medium">{{ fundingInfo!.useOfFunds!.expansion }}%</span>
                     </div>
                     <div class="w-full bg-gray-200 rounded-full h-2">
-                      <div class="bg-primary-600 h-2 rounded-full" [style.width.%]="fundingInfo.useOfFunds.expansion"></div>
+                      <div class="bg-primary-600 h-2 rounded-full" [style.width.%]="fundingInfo!.useOfFunds!.expansion"></div>
                     </div>
                   </div>
                 }
                 
-                @if (fundingInfo.useOfFunds.productDevelopment) {
+                @if (fundingInfo?.useOfFunds?.productDevelopment) {
                   <div>
                     <div class="flex items-center justify-between mb-1">
                       <span class="text-sm text-gray-600">Product Development</span>
-                      <span class="text-sm font-medium">{{ fundingInfo.useOfFunds.productDevelopment }}%</span>
+                      <span class="text-sm font-medium">{{ fundingInfo!.useOfFunds!.productDevelopment }}%</span>
                     </div>
                     <div class="w-full bg-gray-200 rounded-full h-2">
-                      <div class="bg-green-600 h-2 rounded-full" [style.width.%]="fundingInfo.useOfFunds.productDevelopment"></div>
+                      <div class="bg-green-600 h-2 rounded-full" [style.width.%]="fundingInfo!.useOfFunds!.productDevelopment"></div>
                     </div>
                   </div>
                 }
                 
-                @if (fundingInfo.useOfFunds.workingCapital) {
+                @if (fundingInfo?.useOfFunds?.workingCapital) {
                   <div>
                     <div class="flex items-center justify-between mb-1">
                       <span class="text-sm text-gray-600">Working Capital</span>
-                      <span class="text-sm font-medium">{{ fundingInfo.useOfFunds.workingCapital }}%</span>
+                      <span class="text-sm font-medium">{{ fundingInfo!.useOfFunds!.workingCapital }}%</span>
                     </div>
                     <div class="w-full bg-gray-200 rounded-full h-2">
-                      <div class="bg-purple-600 h-2 rounded-full" [style.width.%]="fundingInfo.useOfFunds.workingCapital"></div>
+                      <div class="bg-purple-600 h-2 rounded-full" [style.width.%]="fundingInfo!.useOfFunds!.workingCapital"></div>
                     </div>
                   </div>
                 }
