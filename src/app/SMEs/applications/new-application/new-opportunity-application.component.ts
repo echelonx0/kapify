@@ -39,7 +39,8 @@ import { FundingApplicationProfile } from '../models/funding-application.models'
     OpportunitySelectorComponent,
     ApplicationFormComponent,
     ReviewSummaryComponent,
-    OpportunitySidebarComponent
+    OpportunitySidebarComponent,
+    
   ],
   templateUrl: './opportunity-application.component.html',
   providers: [ApplicationFormService, ApplicationValidationService],

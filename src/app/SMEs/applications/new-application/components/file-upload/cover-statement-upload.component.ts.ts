@@ -8,7 +8,7 @@ import { UiButtonComponent } from 'src/app/shared/components';
 @Component({
   selector: 'app-cover-statement-upload',
   standalone: true,
-  imports: [CommonModule, LucideAngularModule, UiButtonComponent],
+  imports: [CommonModule, LucideAngularModule],
   templateUrl: './cover-statement-upload.component.html'
 })
 export class CoverStatementUploadComponent {

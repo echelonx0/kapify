@@ -15,7 +15,7 @@ import { FundingOpportunity } from 'src/app/shared/models/funder.models';
 export class OpportunitySelectorComponent {
   // Inputs
   opportunities = input.required<FundingOpportunity[]>();
-  selectedOpportunityId = input<string | null>(null);
+   selectedOpportunityId = input<string | null | undefined>(null);
   isLoading = input<boolean>(false);
   
   // Outputs

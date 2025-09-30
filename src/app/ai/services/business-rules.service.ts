@@ -3,6 +3,7 @@ import { Injectable, inject } from '@angular/core';
 import { Observable, of } from 'rxjs';
 import { FundingOpportunity } from 'src/app/shared/models/funder.models';
 import { FundingApplicationProfile } from 'src/app/SMEs/applications/models/funding-application.models';
+import { ApplicationFormData } from 'src/app/SMEs/applications/new-application/models/application-form.model';
  
 export interface BusinessRulesResult {
   // Overall scoring
@@ -53,13 +54,7 @@ export interface BusinessRulesResult {
   generatedAt: Date;
 }
 
-export interface CoverInformation {
-  requestedAmount: string;
-  purposeStatement: string;
-  useOfFunds: string;
-  timeline: string;
-  opportunityAlignment: string;
-}
+ 
 
 @Injectable({
   providedIn: 'root'
@@ -84,7 +79,7 @@ export class BusinessRulesAnalysisService {
   analyzeApplication(
     profile: FundingApplicationProfile, 
     opportunity: FundingOpportunity,
-    applicationData: CoverInformation
+    applicationData: ApplicationFormData
   ): Observable<BusinessRulesResult> {
     
     // Hard reject for amount misalignment
@@ -103,7 +98,7 @@ export class BusinessRulesAnalysisService {
   private performProfileAnalysis(
     profile: FundingApplicationProfile,
     opportunity: FundingOpportunity | null,
-    applicationData: CoverInformation | null
+    applicationData: ApplicationFormData | null
   ): BusinessRulesResult {
     
     // Calculate individual scores
@@ -154,7 +149,7 @@ export class BusinessRulesAnalysisService {
   // AMOUNT ELIGIBILITY (HARD REJECT)
   // =======================
 
-  private isAmountEligible(applicationData: CoverInformation, opportunity: FundingOpportunity): boolean {
+  private isAmountEligible(applicationData: ApplicationFormData, opportunity: FundingOpportunity): boolean {
     const requestedAmount = parseFloat(applicationData.requestedAmount);
     
     if (isNaN(requestedAmount) || requestedAmount <= 0) {
@@ -166,7 +161,7 @@ export class BusinessRulesAnalysisService {
   }
 
   private createAmountRejectionResult(
-    applicationData: CoverInformation, 
+    applicationData: ApplicationFormData, 
     opportunity: FundingOpportunity
   ): BusinessRulesResult {
     const requestedAmount = parseFloat(applicationData.requestedAmount);
