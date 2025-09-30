@@ -83,6 +83,8 @@ export class ApplicationFormService {
 
   // Get plain object for saving
   getFormDataForSave(): ApplicationFormData {
-    return { ...this.formDataSignal() };
+    return { ...this.formDataSignal(),
+     
+     };
   }
 }

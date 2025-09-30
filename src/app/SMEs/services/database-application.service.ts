@@ -608,7 +608,7 @@ export class DatabaseApplicationService {
         description: dbApp.form_data.useOfFunds,
         amount: dbApp.form_data?.requestedAmount || 0,
         percentage: 100,
-        timeline: dbApp.form_data?.timeline || '',
+        timeline:  'Not Specified',
         priority: 'high',
         justification: dbApp.form_data?.purposeStatement || '',
         expectedImpact: 'Business growth and expansion'

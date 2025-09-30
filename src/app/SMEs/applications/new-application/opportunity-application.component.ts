@@ -1023,16 +1023,16 @@ steps = signal<ApplicationFormStep[]>([
     });
   }
 
-  private loadFromDraftApplication(application: Application): void {
-    const formData = application.useOfFunds?.[0];
-    if (formData) {
-      this.formService.prefillForm({
-        requestedAmount: application.requestedAmount?.toString() || '',
-        purposeStatement: application.purposeStatement || '',
-        useOfFunds: formData.description || ''
-      });
-    }
-  }
+// opportunity-application.component.ts
+private loadFromDraftApplication(application: Application): void {
+  this.formService.prefillForm({
+    requestedAmount: application.requestedAmount?.toString() || '',
+    purposeStatement: application.purposeStatement || '',
+    useOfFunds: typeof application.useOfFunds === 'string' 
+      ? application.useOfFunds 
+      : application.useOfFunds?.[0]?.description || ''
+  });
+}
 
   private createDraftApplication(opportunity: FundingOpportunity): void {
     const applicationData = {
