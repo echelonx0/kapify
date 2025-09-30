@@ -1,0 +1,145 @@
+<div class="suggestion-card" [class.expanded]="isExpanded()">
+  <!-- Match Score Badge -->
+  <div class="match-badge">
+    <svg class="match-ring" viewBox="0 0 36 36">
+      <path
+        class="match-ring-bg"
+        d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+        fill="none"
+        stroke="#e5e7eb"
+        stroke-width="2"
+      />
+      <path
+        class="match-ring-fill"
+        [attr.stroke-dasharray]="matchScore + ', 100'"
+        d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+        fill="none"
+        stroke="#10b981"
+        stroke-width="2"
+        stroke-linecap="round"
+      />
+    </svg>
+    <div class="match-score">
+      <span class="score-number">{{ matchScore }}</span>
+      <span class="score-percent">%</span>
+    </div>
+  </div>
+
+  <!-- Compact View -->
+  <div class="card-header" (click)="toggle()">
+    <div class="header-content">
+      <div class="title-section">
+        <h3 class="opportunity-title">{{ opportunity.title }}</h3>
+        <div class="meta-row">
+          <span class="funder-name">
+            <lucide-icon [img]="BuildingIcon" [size]="14" />
+            {{ opportunity.funderOrganizationName || 'Private Funder' }}
+          </span>
+          <span class="verified-badge" *ngIf="opportunity['organizationVerified']">
+            <lucide-icon [img]="AwardIcon" [size]="12" />
+            Verified
+          </span>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <span class="funding-badge" [class]="getFundingTypeClass()">
+          {{ formatFundingType() }}
+        </span>
+        <button class="expand-btn" type="button">
+          <lucide-icon 
+            [img]="isExpanded() ? ChevronUpIcon : ChevronDownIcon" 
+            [size]="20" 
+          />
+        </button>
+      </div>
+    </div>
+
+    <!-- Funding Amount -->
+    <div class="amount-row">
+      <lucide-icon [img]="DollarSignIcon" [size]="16" class="text-green-600" />
+      <span class="amount-text">{{ formatAmountRange() }}</span>
+    </div>
+
+    <!-- Match Reasons (Always Visible) -->
+    <div class="match-reasons-compact">
+      <lucide-icon [img]="SparklesIcon" [size]="14" class="text-primary-600" />
+      <span class="reasons-text">{{ getTopReason() }}</span>
+      <span class="more-reasons" *ngIf="matchReasons.length > 1">
+        +{{ matchReasons.length - 1 }} more
+      </span>
+    </div>
+  </div>
+
+  <!-- Expanded Details -->
+  <div class="card-body" *ngIf="isExpanded()">
+    <!-- Full Match Reasons -->
+    <div class="match-reasons-full">
+      <h4 class="reasons-title">
+        <lucide-icon [img]="SparklesIcon" [size]="16" />
+        Why this matches
+      </h4>
+      <ul class="reasons-list">
+        <li *ngFor="let reason of matchReasons">
+          <svg class="checkmark" width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <circle cx="8" cy="8" r="8" fill="#10b981"/>
+            <path d="M5 8l2 2 4-4" stroke="white" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+          {{ reason }}
+        </li>
+      </ul>
+    </div>
+
+    <!-- Description -->
+    <div class="description-section">
+      <p class="description-text">
+        {{ opportunity.shortDescription || opportunity.description }}
+      </p>
+    </div>
+
+    <!-- Industry Tags -->
+    <div class="tags-section">
+      <span 
+        *ngFor="let industry of getDisplayIndustries(); let i = index"
+        class="industry-tag"
+        [class.hidden]="i > 2">
+        {{ formatIndustry(industry) }}
+      </span>
+    </div>
+
+    <!-- Progress Bar -->
+    <div class="progress-section">
+      <div class="progress-header">
+        <span class="progress-label">Funding Available</span>
+        <span class="progress-value">{{ formatAvailable() }}</span>
+      </div>
+      <div class="progress-bar">
+        <div 
+          class="progress-fill" 
+          [style.width.%]="getProgressPercentage()">
+        </div>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="card-actions">
+      <button 
+        *ngIf="canApply"
+        (click)="onApply($event)"
+        class="btn-primary">
+        Apply Now
+      </button>
+      <button 
+        *ngIf="!canApply"
+        (click)="onSignIn($event)"
+        class="btn-secondary">
+        Sign In to Apply
+      </button>
+      <button 
+        (click)="onViewDetails($event)"
+        class="btn-outline">
+        View Details
+      </button>
+    </div>
+  </div>
+</div>

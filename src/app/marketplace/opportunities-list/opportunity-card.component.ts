@@ -1,4 +1,4 @@
-// enhanced-opportunity-card.component.ts - FIXED VERSION
+// src/app/marketplace/opportunities-list/opportunity-card.component.ts
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { LucideAngularModule, DollarSign, Calendar, MapPin, Users, Eye, ExternalLink, Clock, Building, TrendingUp, Award } from 'lucide-angular';
@@ -168,7 +168,7 @@ import { FundingOpportunity } from '../../shared/models/funder.models';
     }
   `]
 })
-export class EnhancedOpportunityCardComponent {
+export class KapifyOpportunityCardComponent {
   @Input() opportunity!: FundingOpportunity;
   @Input() canApply: boolean = false;
   @Input() canManage: boolean = false;

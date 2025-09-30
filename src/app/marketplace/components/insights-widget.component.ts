@@ -186,20 +186,21 @@ export class InsightsWidgetComponent {
   constructor(private router: Router) {}
 
   steps: StepItem[] = [
+       {
+      icon: FileCheck,
+      iconColor: 'green',
+      stepNumber: 1,
+      title: 'Create Pre-Qualified Profile',
+      description: 'Build a Kapify profile with Intelligent Pre-Qualification'
+    },
     {
       icon: Search,
       iconColor: 'blue',
-      stepNumber: 1,
-      title: 'Browse Funding Opportunities',
-      description: 'Explore vetted funding options tailored to your business needs'
-    },
-    {
-      icon: FileCheck,
-      iconColor: 'green',
       stepNumber: 2,
-      title: 'Apply with Expert Assistance',
-      description: 'Get guided support through the application process'
+      title: 'Easy Apply to Funding Opportunities',
+      description: 'Easily find and apply to opportunities that match your profile'
     },
+ 
     {
       icon: Zap,
       iconColor: 'orange',

@@ -2,12 +2,12 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FundingOpportunity } from '../../shared/models/funder.models';
-import { EnhancedOpportunityCardComponent } from './opportunity-card.component';
+import { KapifyOpportunityCardComponent } from './opportunity-card.component';
  
 @Component({
   selector: 'app-opportunities-grid',
   standalone: true,
-  imports: [CommonModule, EnhancedOpportunityCardComponent],
+  imports: [CommonModule, KapifyOpportunityCardComponent],
   template: `
     <div class="space-y-6">
       <!-- Results Header -->

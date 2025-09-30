@@ -1,79 +1,73 @@
-<!-- funding-opportunities.component.html -->
-<div class="min-h-screen bg-gradient-to-br from-neutral-50 to-primary-50/20">
-  
-  <!-- Hero Header -->
-  <app-marketplace-header></app-marketplace-header>
-
-  <!-- Quick Category Filters -->
-  <app-category-filters 
-    [selectedType]="selectedFundingType()"
-    (typeSelected)="onCategorySelected($event)">
-  </app-category-filters>
-
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+    <div class="min-h-screen bg-gradient-to-br from-neutral-50 to-primary-50/20">
       
-      <!-- Main Content Area -->
-      <main class="lg:col-span-3 space-y-6">
-        
-        <!-- Search and Stats Bar -->
-        <app-search-stats-bar
-          [searchQuery]="searchQuery()"
-          [totalResults]="filteredOpportunities().length"
-          [isLoading]="isLoading()"
-          (searchChanged)="onSearchChange($event)"
-          (refreshData)="refreshData()">
-        </app-search-stats-bar>
-
-        <!-- Loading State -->
-        <app-loading-state *ngIf="isLoading()"></app-loading-state>
-
-        <!-- Empty State -->
-        <app-empty-state 
-          *ngIf="!isLoading() && filteredOpportunities().length === 0"
-          (clearFilters)="clearFilters()">
-        </app-empty-state>
-
-        <!-- Opportunities Grid -->
-        <app-opportunities-grid
-          *ngIf="!isLoading() && filteredOpportunities().length > 0"
-          [opportunities]="filteredOpportunities()"
-          [userType]="getUserTypeLabel()"
-          [canApply]="canApplyToOpportunity()"
-          (apply)="applyToOpportunity($event)"
-          (viewDetails)="viewOpportunityDetails($event)"
-          (manage)="manageApplications($event)"
-          (signInToApply)="redirectToLogin()">
-        </app-opportunities-grid>
-
-      </main>
-
-      <!-- Enhanced Sidebar -->
-      <aside class="lg:col-span-1 space-y-6">
-        
-        <!-- Advanced Filters -->
-        <app-advanced-filters
-          [selectedFundingType]="selectedFundingType()"
-          [selectedIndustry]="selectedIndustry()"
-          [selectedCurrency]="selectedCurrency()"
-          [minAmount]="minAmount()"
-          [maxAmount]="maxAmount()"
-          (fundingTypeChange)="onFundingTypeChange($event)"
-          (industryChange)="onIndustryChange($event)"
-          (currencyChange)="onCurrencyChange($event)"
-          (minAmountChange)="onMinAmountChange($event)"
-          (maxAmountChange)="onMaxAmountChange($event)"
-          (applyFilters)="applyFilters()"
-          (clearFilters)="clearFilters()">
-        </app-advanced-filters>
-
-        <!-- Insights Widget -->
-        <app-insights-widget></app-insights-widget>
-
-        <!-- Newsletter Signup -->
-        <app-newsletter-signup></app-newsletter-signup>
-
-      </aside>
-    </div>
-  </div>
+      <!-- Hero Header -->
+      <app-marketplace-header></app-marketplace-header>
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
+  <app-smart-suggestions></app-smart-suggestions>
 </div>
+      <!-- Horizontal Advanced Filters -->
+      <div class="bg-white border-b border-neutral-200 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <app-advanced-filters
+            (fundingTypeChange)="onFundingTypeChange($event)"
+            (industryChange)="onIndustryChange($event)"
+            (currencyChange)="onCurrencyChange($event)"
+            (minAmountChange)="onMinAmountChange($event)"
+            (maxAmountChange)="onMaxAmountChange($event)"
+            (applyFilters)="applyFilters()"
+            (clearFilters)="clearFilters()">
+          </app-advanced-filters>
+        </div>
+      </div>
+
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+          
+          <!-- Main Content Area - Now Full Width -->
+          <main class="lg:col-span-3 space-y-8 pt-6">
+            
+            <!-- Search and Stats Bar -->
+            <app-search-stats-bar
+              [searchQuery]="searchQuery()"
+              [totalResults]="filteredOpportunities().length"
+              [isLoading]="isLoading()"
+              (searchChanged)="onSearchChange($event)"
+              (refreshData)="refreshData()">
+            </app-search-stats-bar>
+
+            <!-- Loading State -->
+            <app-loading-state *ngIf="isLoading()"></app-loading-state>
+
+            <!-- Empty State -->
+            <app-empty-state 
+              *ngIf="!isLoading() && filteredOpportunities().length === 0"
+              (clearFilters)="clearFilters()">
+            </app-empty-state>
+
+            <!-- Opportunities Grid -->
+            <app-opportunities-grid
+              *ngIf="!isLoading() && filteredOpportunities().length > 0"
+              [opportunities]="filteredOpportunities()"
+              [userType]="getUserTypeLabel()"
+              [canApply]="canApplyToOpportunity()"
+              (apply)="applyToOpportunity($event)"
+              (viewDetails)="viewOpportunityDetails($event)"
+              (manage)="manageApplications($event)"
+              (signInToApply)="redirectToLogin()">
+            </app-opportunities-grid>
+
+          </main>
+
+          <!-- Sidebar - Now Only Widgets -->
+          <aside class="lg:col-span-1 space-y-6">
+            
+            <!-- Insights Widget -->
+            <app-insights-widget></app-insights-widget>
+
+            <!-- Newsletter Signup -->
+            <app-newsletter-signup></app-newsletter-signup>
+
+          </aside>
+        </div>
+      </div>
+    </div>

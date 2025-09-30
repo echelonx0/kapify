@@ -1,6 +1,4 @@
- 
-
-// funding-opportunities.component.ts - Fixed to work with new filters
+// src/app/marketplace/opportunities-list/funding-opportunities.component.ts
 import { Component, signal, OnInit, OnDestroy, inject, computed } from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
@@ -18,6 +16,7 @@ import { InsightsWidgetComponent } from '../components/insights-widget.component
 import { NewsletterSignupComponent } from '../components/newsletter-signup.component';
 import { LoadingStateComponent } from './loading-state.component';
 import { MarketplaceHeaderComponent } from '../components/marketplace-header.component';
+import { SmartSuggestionsComponent } from '../components/smart-suggestions/smart-suggestions.component';
 
 @Component({
   selector: 'app-funding-opportunities',
@@ -31,81 +30,10 @@ import { MarketplaceHeaderComponent } from '../components/marketplace-header.com
     OpportunitiesGridComponent,
     AdvancedFiltersComponent,
     InsightsWidgetComponent,
-    NewsletterSignupComponent
+    NewsletterSignupComponent,
+    SmartSuggestionsComponent
   ],
-  template: `
-    <div class="min-h-screen bg-gradient-to-br from-neutral-50 to-primary-50/20">
-      
-      <!-- Hero Header -->
-      <app-marketplace-header></app-marketplace-header>
-
-      <!-- Horizontal Advanced Filters -->
-      <div class="bg-white border-b border-neutral-200 shadow-sm">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <app-advanced-filters
-            (fundingTypeChange)="onFundingTypeChange($event)"
-            (industryChange)="onIndustryChange($event)"
-            (currencyChange)="onCurrencyChange($event)"
-            (minAmountChange)="onMinAmountChange($event)"
-            (maxAmountChange)="onMaxAmountChange($event)"
-            (applyFilters)="applyFilters()"
-            (clearFilters)="clearFilters()">
-          </app-advanced-filters>
-        </div>
-      </div>
-
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
-          
-          <!-- Main Content Area - Now Full Width -->
-          <main class="lg:col-span-3 space-y-8 pt-6">
-            
-            <!-- Search and Stats Bar -->
-            <app-search-stats-bar
-              [searchQuery]="searchQuery()"
-              [totalResults]="filteredOpportunities().length"
-              [isLoading]="isLoading()"
-              (searchChanged)="onSearchChange($event)"
-              (refreshData)="refreshData()">
-            </app-search-stats-bar>
-
-            <!-- Loading State -->
-            <app-loading-state *ngIf="isLoading()"></app-loading-state>
-
-            <!-- Empty State -->
-            <app-empty-state 
-              *ngIf="!isLoading() && filteredOpportunities().length === 0"
-              (clearFilters)="clearFilters()">
-            </app-empty-state>
-
-            <!-- Opportunities Grid -->
-            <app-opportunities-grid
-              *ngIf="!isLoading() && filteredOpportunities().length > 0"
-              [opportunities]="filteredOpportunities()"
-              [userType]="getUserTypeLabel()"
-              [canApply]="canApplyToOpportunity()"
-              (apply)="applyToOpportunity($event)"
-              (viewDetails)="viewOpportunityDetails($event)"
-              (manage)="manageApplications($event)"
-              (signInToApply)="redirectToLogin()">
-            </app-opportunities-grid>
-
-          </main>
-
-          <!-- Sidebar - Now Only Widgets -->
-          <aside class="lg:col-span-1 space-y-6">
-            
-            <!-- Insights Widget -->
-            <app-insights-widget></app-insights-widget>
-
-            <!-- Newsletter Signup -->
-            <app-newsletter-signup></app-newsletter-signup>
-
-          </aside>
-        </div>
-      </div>
-    </div>
-  `
+  templateUrl: './funding-opportunities.component.html',
 })
 export class FundingOpportunitiesComponent implements OnInit, OnDestroy {
   // Services
