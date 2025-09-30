@@ -192,7 +192,7 @@ export interface FundingOpportunity {
   // Application process
   applicationDeadline?: Date;
   decisionTimeframe: number; // days
-  applicationProcess: ApplicationStep[];
+  applicationProcess: FunderApplicationStep[];
   
   // Eligibility & targeting
   eligibilityCriteria: OpportunityEligibility;
@@ -241,7 +241,7 @@ export interface OpportunityEligibility {
   excludeCriteria?: string[];
 }
 
-export interface ApplicationStep {
+export interface FunderApplicationStep {
   step: number;
   name: string;
   description: string;
