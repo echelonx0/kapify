@@ -1,7 +1,8 @@
+ 
 // src/app/shared/components/activity-feed.component.ts  
 import { Component, output, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { LucideAngularModule, Filter, MoreHorizontal, TrendingUp, TrendingDown, Users, Settings, Heart, CreditCard, FileText, Building, DollarSign, Upload, Flag, Handshake, DollarSignIcon, FileTextIcon, FlagIcon, HandshakeIcon, HeartIcon, SettingsIcon, TrendingDownIcon, TrendingUpIcon, UploadIcon, UsersIcon } from 'lucide-angular';
+import { LucideAngularModule, Filter, MoreHorizontal, TrendingUp, DollarSign, FileText, Users, Upload, Flag, Handshake, Settings, CreditCard, DollarSignIcon, FileTextIcon, FlagIcon, HandshakeIcon, SettingsIcon, TrendingUpIcon, UploadIcon, UsersIcon } from 'lucide-angular';
 import { UiButtonComponent } from '..';
 import { ActivityService } from '../../services/activity.service';
 import { Observable } from 'rxjs';
@@ -16,14 +17,16 @@ import { Activity } from '../../services/database-activity.service';
     UiButtonComponent
   ],
   template: `
-    <div class="bg-white rounded-lg border border-gray-200 mt-8">
+    <div class="activity-feed-card">
       <!-- Header -->
-      <div class="flex items-center justify-between p-6 border-b border-gray-100">
-        <div class="flex items-center space-x-3">
-          <lucide-icon [img]="TrendingUpIcon" [size]="20" class="text-gray-500"></lucide-icon>
-          <h3 class="text-lg font-semibold text-gray-900">Recent Activity</h3>
+      <div class="activity-header">
+        <div class="activity-header-left">
+          <div class="activity-header-icon">
+            <lucide-icon [img]="TrendingUpIcon" [size]="20"></lucide-icon>
+          </div>
+          <h3 class="activity-title">Recent Activity</h3>
         </div>
-        <div class="flex items-center space-x-2">
+        <div class="activity-header-actions">
           <ui-button variant="ghost" size="sm" (clicked)="toggleFilter()">
             <lucide-icon [img]="FilterIcon" [size]="16" class="mr-1"></lucide-icon>
             Filter
@@ -35,96 +38,115 @@ import { Activity } from '../../services/database-activity.service';
       </div>
 
       <!-- Activity List -->
-      <div class="divide-y divide-gray-50">
+      <div class="activity-list">
         @if (activityService.isLoading()) {
-          <div class="p-8 text-center">
-            <div class="animate-spin w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full mx-auto mb-3"></div>
-            <p class="text-sm text-gray-500">Loading activities...</p>
+          <div class="activity-loading">
+            <div class="loading-spinner"></div>
+            <p class="loading-text">Loading activities...</p>
           </div>
         } @else if (activityService.error()) {
-          <div class="p-8 text-center">
-            <p class="text-sm text-red-600">{{ activityService.error() }}</p>
+          <div class="activity-error">
+            <p class="error-text">{{ activityService.error() }}</p>
             <ui-button variant="outline" size="sm" (clicked)="refresh()" class="mt-2">
               Try Again
             </ui-button>
           </div>
         } @else {
-          @for (activity of activities$ | async; track activity.id) {
-            <div class="p-4 hover:bg-gray-50 transition-colors cursor-pointer" 
-                 (click)="activityClicked.emit(activity)">
-              <div class="flex items-start space-x-4">
+          @for (activity of activities$ | async; track activity.id; let i = $index) {
+            <div 
+              class="activity-item"
+              [class]="'activity-item-' + activity.type"
+              [style.animation-delay]="i * 50 + 'ms'"
+              (click)="activityClicked.emit(activity)">
+              
+              <!-- Status border -->
+              <div [class]="'activity-border activity-border-' + activity.type"></div>
+
+              <div class="activity-content">
                 <!-- Activity Type Icon -->
-                <div [class]="getActivityIconClasses(activity.type, activity.status)">
+                <div [class]="'activity-icon activity-icon-' + activity.type">
                   <lucide-icon 
                     [img]="getActivityIcon(activity.type)" 
-                    [size]="16">
+                    [size]="18">
                   </lucide-icon>
                 </div>
 
-                <!-- Activity Content -->
-                <div class="flex-1 min-w-0">
-                  <div class="flex items-start justify-between">
-                    <div class="flex-1 space-y-1">
-                      <!-- Type Badge and Status -->
-                      <div class="flex items-center space-x-2">
-                        <span [class]="getTypeBadgeClasses(activity.type)">
-                          {{ getTypeLabel(activity.type) }}
+                <!-- Activity Details -->
+                <div class="activity-details">
+                  <div class="activity-header-row">
+                    <div class="activity-meta">
+                      <!-- Type Badge -->
+                      <span [class]="'activity-type-badge activity-type-' + activity.type">
+                        {{ getTypeLabel(activity.type) }}
+                      </span>
+                      
+                      <!-- Status Badge -->
+                      <span [class]="'activity-status-badge activity-status-' + activity.status">
+                        {{ getStatusLabel(activity.status) }}
+                      </span>
+                      
+                      <!-- Action Tag -->
+                      @if (activity.action) {
+                        <span class="activity-action-tag">
+                          {{ activity.action }}
                         </span>
-                        <span [class]="getStatusClasses(activity.status)">
-                          {{ getStatusLabel(activity.status) }}
-                        </span>
-                        @if (activity.action) {
-                          <span class="text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">
-                            {{ activity.action }}
-                          </span>
-                        }
-                      </div>
-
-                      <!-- Message -->
-                      <p class="text-sm text-gray-900 font-medium leading-tight">
-                        {{ activity.message }}
-                      </p>
-
-                      <!-- Details -->
-                      <div class="flex items-center space-x-4 text-xs text-gray-500">
-                        <span>{{ activityService.formatRelativeTime(activity.createdAt) }}</span>
-                        @if (activity.method) {
-                          <span class="flex items-center">
-                            <lucide-icon [img]="CreditCardIcon" [size]="12" class="mr-1"></lucide-icon>
-                            {{ activity.method }}
-                          </span>
-                        }
-                        @if (activity.user) {
-                          <span class="flex items-center">
-                            <lucide-icon [img]="UsersIcon" [size]="12" class="mr-1"></lucide-icon>
-                            {{ activity.user.name }}
-                          </span>
-                        }
-                        @if (activity.entityType && activity.entityId) {
-                          <span class="text-xs text-gray-400">
-                            {{ activity.entityType }}: {{ activity.entityId.substring(0, 8) }}...
-                          </span>
-                        }
-                      </div>
+                      }
                     </div>
 
                     <!-- Amount (if applicable) -->
                     @if (activity.amount) {
-                      <div class="text-right ml-4">
-                        <span [class]="getAmountClasses(activity.amount, activity.status)">
+                      <div class="activity-amount">
+                        <span [class]="'amount-value amount-' + activity.status">
                           {{ getAmountDisplay(activity.amount) }}
                         </span>
                       </div>
+                    }
+                  </div>
+
+                  <!-- Message -->
+                  <p class="activity-message">
+                    {{ activity.message }}
+                  </p>
+
+                  <!-- Additional Info -->
+                  <div class="activity-info">
+                    <span class="info-item">
+                      {{ activityService.formatRelativeTime(activity.createdAt) }}
+                    </span>
+                    
+                    @if (activity.method) {
+                      <span class="info-divider">•</span>
+                      <span class="info-item info-with-icon">
+                        <lucide-icon [img]="CreditCardIcon" [size]="12"></lucide-icon>
+                        {{ activity.method }}
+                      </span>
+                    }
+                    
+                    @if (activity.user) {
+                      <span class="info-divider">•</span>
+                      <span class="info-item info-with-icon">
+                        <lucide-icon [img]="UsersIcon" [size]="12"></lucide-icon>
+                        {{ activity.user.name }}
+                      </span>
+                    }
+                    
+                    @if (activity.entityType && activity.entityId) {
+                      <span class="info-divider">•</span>
+                      <span class="info-item info-entity">
+                        {{ activity.entityType }}: {{ activity.entityId.substring(0, 8) }}...
+                      </span>
                     }
                   </div>
                 </div>
               </div>
             </div>
           } @empty {
-            <div class="p-8 text-center">
-              <lucide-icon [img]="TrendingUpIcon" [size]="32" class="mx-auto text-gray-300 mb-3"></lucide-icon>
-              <p class="text-sm text-gray-500 font-medium">No recent activity</p>
-              <p class="text-xs text-gray-400 mt-1">Activity will appear here as it happens</p>
+            <div class="activity-empty">
+              <div class="empty-icon">
+                <lucide-icon [img]="TrendingUpIcon" [size]="32"></lucide-icon>
+              </div>
+              <p class="empty-title">No recent activity</p>
+              <p class="empty-description">Activity will appear here as it happens</p>
             </div>
           }
         }
@@ -132,7 +154,7 @@ import { Activity } from '../../services/database-activity.service';
 
       <!-- Footer -->
       @if ((activities$ | async)?.length && (activities$ | async)!.length > 6) {
-        <div class="p-4 border-t border-gray-100 bg-gray-50">
+        <div class="activity-footer">
           <ui-button 
             variant="ghost" 
             size="sm" 
@@ -144,28 +166,21 @@ import { Activity } from '../../services/database-activity.service';
       }
     </div>
   `,
-  styles: [`
-    :host {
-      display: block;
-    }
-  `]
+  styleUrls: ['./activity-feed.component.css'],
 })
 export class ActivityFeedComponent implements OnInit {
-  // Icons - Updated with new activity types
+  // Icons
   FilterIcon = Filter;
   MoreIcon = MoreHorizontal;
   TrendingUpIcon = TrendingUp;
-  TrendingDownIcon = TrendingDown;
   UsersIcon = Users;
-  SettingsIcon = Settings;
-  HeartIcon = Heart;
   CreditCardIcon = CreditCard;
   FileTextIcon = FileText;
-  BuildingIcon = Building;
   DollarSignIcon = DollarSign;
   UploadIcon = Upload;
   FlagIcon = Flag;
   HandshakeIcon = Handshake;
+  SettingsIcon = Settings;
 
   // Inject service
   activityService = inject(ActivityService);
@@ -182,7 +197,6 @@ export class ActivityFeedComponent implements OnInit {
   }
 
   toggleFilter() {
-    // Implement filter logic here
     console.log('Toggle filter');
   }
 
@@ -191,167 +205,39 @@ export class ActivityFeedComponent implements OnInit {
     this.activities$ = this.activityService.getActivities();
   }
 
-  getActivityIconClasses(type: string, status: string): string {
-    const baseClasses = 'w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 border-2';
-    
-    if (status === 'pending') {
-      return `${baseClasses} bg-yellow-50 border-yellow-200 text-yellow-600`;
-    }
-    
-    if (status === 'failed') {
-      return `${baseClasses} bg-red-50 border-red-200 text-red-600`;
-    }
-
-    // Updated for new activity types
-    switch (type) {
-      case 'funding':
-        return `${baseClasses} bg-green-50 border-green-200 text-green-600`;
-      case 'application':
-        return `${baseClasses} bg-blue-50 border-blue-200 text-blue-600`;
-      case 'profile':
-        return `${baseClasses} bg-purple-50 border-purple-200 text-purple-600`;
-      case 'document':
-        return `${baseClasses} bg-orange-50 border-orange-200 text-orange-600`;
-      case 'partnership':
-        return `${baseClasses} bg-indigo-50 border-indigo-200 text-indigo-600`;
-      case 'milestone':
-        return `${baseClasses} bg-pink-50 border-pink-200 text-pink-600`;
-      case 'system':
-        return `${baseClasses} bg-gray-50 border-gray-200 text-gray-600`;
-      // Legacy types for backward compatibility
-      case 'donation':
-        return `${baseClasses} bg-green-50 border-green-200 text-green-600`;
-      case 'withdrawal':
-        return `${baseClasses} bg-green-50 border-green-200 text-green-600`;
-      case 'campaign':
-        return `${baseClasses} bg-purple-50 border-purple-200 text-purple-600`;
-      case 'user':
-        return `${baseClasses} bg-indigo-50 border-indigo-200 text-indigo-600`;
-      default:
-        return `${baseClasses} bg-gray-50 border-gray-200 text-gray-600`;
-    }
-  }
-
   getActivityIcon(type: string): any {
-    // Updated for new activity types
-    switch (type) {
-      case 'funding':
-        return DollarSignIcon;
-      case 'application':
-        return FileTextIcon;
-      case 'profile':
-        return UsersIcon;
-      case 'document':
-        return UploadIcon;
-      case 'partnership':
-        return HandshakeIcon;
-      case 'milestone':
-        return FlagIcon;
-      case 'system':
-        return SettingsIcon;
-      // Legacy types for backward compatibility
-      case 'donation':
-        return HeartIcon;
-      case 'withdrawal':
-        return TrendingDownIcon;
-      case 'campaign':
-        return TrendingUpIcon;
-      case 'user':
-        return UsersIcon;
-      default:
-        return TrendingUpIcon;
-    }
-  }
-
-  getTypeBadgeClasses(type: string): string {
-    const baseClasses = 'inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium';
-    
-    // Updated for new activity types
-    switch (type) {
-      case 'funding':
-        return `${baseClasses} bg-green-100 text-green-800`;
-      case 'application':
-        return `${baseClasses} bg-blue-100 text-blue-800`;
-      case 'profile':
-        return `${baseClasses} bg-purple-100 text-purple-800`;
-      case 'document':
-        return `${baseClasses} bg-orange-100 text-orange-800`;
-      case 'partnership':
-        return `${baseClasses} bg-indigo-100 text-indigo-800`;
-      case 'milestone':
-        return `${baseClasses} bg-pink-100 text-pink-800`;
-      case 'system':
-        return `${baseClasses} bg-gray-100 text-gray-800`;
-      // Legacy types
-      case 'donation':
-        return `${baseClasses} bg-green-100 text-green-800`;
-      case 'withdrawal':
-        return `${baseClasses} bg-green-100 text-green-800`;
-      case 'campaign':
-        return `${baseClasses} bg-purple-100 text-purple-800`;
-      case 'user':
-        return `${baseClasses} bg-indigo-100 text-indigo-800`;
-      default:
-        return `${baseClasses} bg-gray-100 text-gray-800`;
-    }
+    const icons: Record<string, any> = {
+      'funding': DollarSignIcon,
+      'application': FileTextIcon,
+      'profile': UsersIcon,
+      'document': UploadIcon,
+      'partnership': HandshakeIcon,
+      'milestone': FlagIcon,
+      'system': SettingsIcon
+    };
+    return icons[type] || TrendingUpIcon;
   }
 
   getTypeLabel(type: string): string {
-    // Updated for new activity types
-    switch (type) {
-      case 'funding': return 'FUNDING';
-      case 'application': return 'APPLICATION';
-      case 'profile': return 'PROFILE';
-      case 'document': return 'DOCUMENT';
-      case 'partnership': return 'PARTNERSHIP';
-      case 'milestone': return 'MILESTONE';
-      case 'system': return 'SYSTEM';
-      // Legacy types
-      case 'donation': return 'DONATION';
-      case 'withdrawal': return 'WITHDRAWAL';
-      case 'campaign': return 'CAMPAIGN';
-      case 'user': return 'USER';
-      default: return type.toUpperCase();
-    }
-  }
-
-  getStatusClasses(status: string): string {
-    const baseClasses = 'inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium';
-    
-    switch (status) {
-      case 'completed':
-        return `${baseClasses} bg-green-100 text-green-700`;
-      case 'pending':
-        return `${baseClasses} bg-yellow-100 text-yellow-700`;
-      case 'failed':
-        return `${baseClasses} bg-red-100 text-red-700`;
-      default:
-        return `${baseClasses} bg-gray-100 text-gray-700`;
-    }
+    const labels: Record<string, string> = {
+      'funding': 'Funding',
+      'application': 'Application',
+      'profile': 'Profile',
+      'document': 'Document',
+      'partnership': 'Partnership',
+      'milestone': 'Milestone',
+      'system': 'System'
+    };
+    return labels[type] || type.charAt(0).toUpperCase() + type.slice(1);
   }
 
   getStatusLabel(status: string): string {
-    switch (status) {
-      case 'completed': return 'Completed';
-      case 'pending': return 'Pending';
-      case 'failed': return 'Failed';
-      default: return status;
-    }
-  }
-
-  getAmountClasses(amount: number, status: string): string {
-    const baseClasses = 'text-sm font-semibold';
-    
-    if (status === 'pending') {
-      return `${baseClasses} text-yellow-600`;
-    }
-    
-    if (status === 'failed') {
-      return `${baseClasses} text-red-600`;
-    }
-
-    // All funding amounts are positive in this context
-    return `${baseClasses} text-green-600`;
+    const labels: Record<string, string> = {
+      'completed': 'Completed',
+      'pending': 'Pending',
+      'failed': 'Failed'
+    };
+    return labels[status] || status;
   }
 
   getAmountDisplay(amount: number): string {

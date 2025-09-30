@@ -66,38 +66,6 @@ export class SMEOpportunitiesService {
     );
   }
 
-  // Once you disable RLS, update your fetchActiveOpportunities method to this:
-  // private async fetchActiveOpportunities(): Promise<FundingOpportunity[]> {
-  //   try {
-  //     console.log('Fetching active opportunities from Supabase...');
-  //     const { data, error } = await this.supabase
-  //       .from('funding_opportunities')
-  //       .select(`
-  //         *,
-  //         funder_organizations!funding_opportunities_organization_id_fkey (
-  //           name,
-  //           organization_type,
-  //           website,
-  //           description,
-  //           is_verified
-  //         )
-  //       `)
-  //       .eq('status', 'active')
-  //       .not('published_at', 'is', null)
-  //       .order('published_at', { ascending: false });
-
-  //     if (error) {
-  //       throw new Error(`Failed to fetch opportunities: ${error.message}`);
-  //     }
-  //     console.log(`Fetched ${data?.length || 0} opportunities`);
-      
-  //     return (data || []).map(item => this.transformDatabaseToLocal(item));
-  //   } catch (error) {
-  //     console.error('Error fetching active opportunities:', error);
-  //     throw error;
-  //   }
-  // }
-
   private async fetchActiveOpportunities(): Promise<FundingOpportunity[]> {
   try {
     console.log('Fetching active opportunities from Supabase...');
