@@ -6,7 +6,7 @@ import { DashboardHeaderComponent, SidebarNavComponent } from 'src/app/shared/co
 @Component({
   selector: 'app-applications',
   standalone: true,
-  imports: [RouterOutlet, SidebarNavComponent, DashboardHeaderComponent],
+  imports: [RouterOutlet, SidebarNavComponent],
   template: `
 <div class="h-screen bg-neutral-50 flex overflow-hidden">
   <sidebar-nav />
@@ -14,7 +14,7 @@ import { DashboardHeaderComponent, SidebarNavComponent } from 'src/app/shared/co
   <!-- Main Content Area -->
   <div class="flex-1 flex flex-col overflow-hidden">
     <!-- Sticky Header -->
-    <dashboard-header class="sticky top-0 z-50 bg-white shadow-sm" />
+  
 
     <!-- Page Content - scrollable -->
     <main class="flex-1 overflow-y-auto">

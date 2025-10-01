@@ -1,10 +1,8 @@
 <div class="min-h-screen bg-white">
-  <!-- Header -->
   <landing-header />
 
-  <!-- Hero Section -->
+  <!-- Hero Section - Simplified CTAs -->
   <section class="relative pt-32 pb-16 lg:pb-24 overflow-hidden">
-    <!-- Background Image with Overlay -->
     <div class="absolute inset-0">
       <div class="w-full h-full bg-gradient-to-br from-slate-900 via-slate-800 to-slate-700"></div>
       <div class="absolute inset-0 bg-black/20"></div>
@@ -14,13 +12,11 @@
       <div class="grid lg:grid-cols-2 gap-16 items-center min-h-[80vh]">
         <!-- Left Content -->
         <div class="space-y-8">
-          <!-- Badge -->
           <div class="inline-flex items-center px-4 py-2 bg-green-100 text-green-700 rounded-full text-sm font-semibold">
             <lucide-icon [img]="MapPinIcon" [size]="16" class="mr-2" />
             South Africa Only
           </div>
 
-          <!-- Main Headline -->
           <div class="space-y-6">
             <h1 class="text-5xl lg:text-7xl font-bold text-white leading-tight">
               Stop Getting
@@ -43,18 +39,18 @@
             }
           </div>
 
-          <!-- CTA Buttons -->
+          <!-- Single Primary CTA -->
           <div class="flex flex-col sm:flex-row gap-4">
             <button 
-              class="inline-flex items-center justify-center px-10 py-4 bg-orange-500 text-white text-lg font-bold rounded-lg hover:bg-orange-600 transition-colors"
-              (click)="startApplication()"
+              class="inline-flex items-center justify-center px-10 py-4 bg-orange-500 text-white text-lg font-bold rounded-lg hover:bg-orange-600 transition-colors shadow-lg"
+              (click)="visitMarketPlace()"
             >
-              Check My Funding Match
+              Explore Funding
               <lucide-icon [img]="ArrowRightIcon" [size]="20" class="ml-2" />
             </button>
             <button 
               class="inline-flex items-center justify-center px-10 py-4 border-2 border-white text-white text-lg font-bold rounded-lg hover:bg-white hover:text-gray-900 transition-colors"
-              (click)="watchDemo()"
+              (click)="scrollToMatching()"
             >
               How It Works
             </button>
@@ -64,49 +60,42 @@
           <div class="flex flex-wrap items-center gap-8 text-sm text-gray-300">
             <div class="flex items-center space-x-2">
               <lucide-icon [img]="CheckCircleIcon" [size]="16" class="text-green-400" />
-              <span>No fees until funded</span>
+              <span>Prequalify for opportunities</span>
             </div>
             <div class="flex items-center space-x-2">
               <lucide-icon [img]="CheckCircleIcon" [size]="16" class="text-green-400" />
-              <span>48hr response</span>
+              <span>One click applications</span>
             </div>
             <div class="flex items-center space-x-2">
               <lucide-icon [img]="CheckCircleIcon" [size]="16" class="text-green-400" />
-              <span>FSCA regulated</span>
+              <span>Technical assiatance</span>
             </div>
           </div>
         </div>
 
-        <!-- Right Side - Application Card -->
+        <!-- Right Side - Simplified Application Preview -->
         <div class="relative lg:ml-8">
           <div class="bg-white rounded-3xl shadow-2xl p-8 border border-gray-200">
-            <div class="space-y-8">
+            <div class="space-y-6">
               <div class="text-center">
                 <h3 class="text-2xl font-bold text-gray-900 mb-2">Get Your Match</h3>
                 <p class="text-gray-600">See which funders want your business</p>
               </div>
               
               <!-- Progress Steps -->
-              <div class="space-y-6">
+              <div class="space-y-4">
                 @for (step of applicationSteps; track step.number; let i = $index) {
                   <div class="flex items-center space-x-4">
                     <div [class]="getStepClasses(i)">
                       {{ step.number }}
                     </div>
                     <div class="flex-1">
-                      <div class="text-lg font-semibold text-gray-900">{{ step.title }}</div>
+                      <div class="text-base font-semibold text-gray-900">{{ step.title }}</div>
                       <div class="text-sm text-gray-600">{{ step.description }}</div>
                     </div>
                   </div>
                 }
               </div>
-
-              <button 
-                class="w-full py-4 bg-green-500 text-white text-lg font-bold rounded-xl hover:bg-green-600 transition-colors"
-                (click)="startApplication()"
-              >
-                Start Application
-              </button>
             </div>
           </div>
         </div>
@@ -114,58 +103,71 @@
     </div>
   </section>
 
-  <!-- Problem/Solution Section -->
-  <section class="py-20 bg-gray-50">
+  <!-- Problem/Solution Section - Visual Icons -->
+  <section id="matching-section" class="py-20 bg-white">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="grid lg:grid-cols-2 gap-16 items-center">
-        <div>
-          <h2 class="text-4xl font-bold text-gray-900 mb-6">
-            The Problem With Traditional Funding
-          </h2>
-          <div class="space-y-4 text-lg text-gray-700">
-            <p>• You waste months applying to funders who never fund your industry</p>
-            <p>• Funders reject 90% of applications because they're poor fits</p>
-            <p>• Nobody knows who actually wants to fund what</p>
-            <p>• Both sides waste time and money on mismatched connections</p>
+      <div class="text-center mb-16">
+        <h2 class="text-4xl font-bold text-gray-900 mb-4">
+          The Matching Problem, Solved
+        </h2>
+        <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+          Traditional funding wastes everyone's time. We fix that with smart matching.
+        </p>
+      </div>
+
+      <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+        @for (item of problemSolutions; track item.problem) {
+          <div class="text-center space-y-4">
+            <!-- Icon -->
+            <div class="w-16 h-16 bg-red-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <lucide-icon [img]="item.icon" [size]="32" class="text-red-500" />
+            </div>
+            
+            <!-- Problem -->
+            <div class="space-y-2">
+              <div class="text-sm font-semibold text-red-600 uppercase tracking-wider">Problem</div>
+              <p class="text-gray-700 text-sm leading-relaxed">{{ item.problem }}</p>
+            </div>
+
+            <!-- Divider -->
+            <div class="flex items-center justify-center py-2">
+              <lucide-icon [img]="ArrowRightIcon" [size]="20" class="text-green-500 rotate-90" />
+            </div>
+
+            <!-- Solution -->
+            <div class="space-y-2">
+              <div class="text-sm font-semibold text-green-600 uppercase tracking-wider">Solution</div>
+              <p class="text-gray-700 text-sm leading-relaxed">{{ item.solution }}</p>
+            </div>
           </div>
-        </div>
-        <div>
-          <h2 class="text-4xl font-bold text-gray-900 mb-6">
-            How Kapify Fixes This
-          </h2>
-          <div class="space-y-4 text-lg text-gray-700">
-            <p>• AI matches you only with funders who fund your specific business type</p>
-            <p>• Funders only see pre-qualified applications that fit their criteria</p>
-            <p>• 98% match rate because we eliminate bad fits upfront</p>
-            <p>• Both sides save time and close deals faster</p>
-          </div>
-        </div>
+        }
       </div>
     </div>
   </section>
 
-  <!-- Value Props Section -->
-  <section class="py-20 bg-white">
+  <!-- Value Props Section - Icon-Driven -->
+  <section class="py-20 bg-gray-50">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="text-center mb-16">
-        <h2 class="text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
-          What You Get
+        <h2 class="text-4xl font-bold text-gray-900 mb-4">
+          Why Choose Kapify
         </h2>
+        <p class="text-xl text-gray-600">Built for both businesses and funders</p>
       </div>
 
-      <div class="grid md:grid-cols-2 gap-16">
+      <div class="grid lg:grid-cols-2 gap-12">
         <!-- SME Benefits -->
-        <div class="bg-blue-50 rounded-2xl p-8">
-          <h3 class="text-2xl font-bold text-gray-900 mb-6">For Your Business</h3>
-          <div class="space-y-4">
+        <div class="bg-white rounded-2xl p-8 shadow-lg">
+          <h3 class="text-2xl font-bold text-gray-900 mb-8 text-center">For Your Business</h3>
+          <div class="grid gap-6">
             @for (benefit of smeBenefits; track benefit.title) {
               <div class="flex items-start space-x-4">
-                <div class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
-                  <lucide-icon [img]="CheckCircleIcon" [size]="16" class="text-white" />
+                <div class="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center flex-shrink-0">
+                  <lucide-icon [img]="benefit.icon" [size]="24" class="text-blue-600" />
                 </div>
                 <div>
-                  <h4 class="font-bold text-gray-900 mb-1">{{ benefit.title }}</h4>
-                  <p class="text-gray-700">{{ benefit.description }}</p>
+                  <h4 class="font-bold text-gray-900 mb-1 text-lg">{{ benefit.title }}</h4>
+                  <p class="text-gray-600">{{ benefit.description }}</p>
                 </div>
               </div>
             }
@@ -173,17 +175,17 @@
         </div>
 
         <!-- Funder Benefits -->
-        <div class="bg-green-50 rounded-2xl p-8">
-          <h3 class="text-2xl font-bold text-gray-900 mb-6">For Funders</h3>
-          <div class="space-y-4">
+        <div class="bg-white rounded-2xl p-8 shadow-lg">
+          <h3 class="text-2xl font-bold text-gray-900 mb-8 text-center">For Funders</h3>
+          <div class="grid gap-6">
             @for (benefit of funderBenefits; track benefit.title) {
               <div class="flex items-start space-x-4">
-                <div class="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
-                  <lucide-icon [img]="CheckCircleIcon" [size]="16" class="text-white" />
+                <div class="w-12 h-12 bg-green-50 rounded-xl flex items-center justify-center flex-shrink-0">
+                  <lucide-icon [img]="benefit.icon" [size]="24" class="text-green-600" />
                 </div>
                 <div>
-                  <h4 class="font-bold text-gray-900 mb-1">{{ benefit.title }}</h4>
-                  <p class="text-gray-700">{{ benefit.description }}</p>
+                  <h4 class="font-bold text-gray-900 mb-1 text-lg">{{ benefit.title }}</h4>
+                  <p class="text-gray-600">{{ benefit.description }}</p>
                 </div>
               </div>
             }
@@ -194,25 +196,26 @@
   </section>
 
   <!-- Social Proof -->
-  <section class="py-20 bg-gray-50">
+  <section class="py-20 bg-white">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="text-center mb-16">
-        <h2 class="text-4xl font-bold text-gray-900 mb-6">
+        <h2 class="text-4xl font-bold text-gray-900 mb-4">
           Real Results
         </h2>
+        <p class="text-xl text-gray-600">Businesses funded through Kapify</p>
       </div>
 
       <div class="grid md:grid-cols-3 gap-8">
         @for (testimonial of testimonials; track testimonial.name) {
-          <div class="bg-white p-8 rounded-2xl shadow-lg border border-gray-100">
+          <div class="bg-white p-8 rounded-2xl shadow-lg border border-gray-100 hover:shadow-xl transition-shadow">
             <div class="space-y-6">
-              <blockquote class="text-gray-700 leading-relaxed text-lg">
+              <blockquote class="text-gray-700 leading-relaxed">
                 "{{ testimonial.content }}"
               </blockquote>
               <div class="pt-6 border-t border-gray-200">
                 <div class="font-bold text-gray-900">{{ testimonial.name }}</div>
-                <div class="text-gray-600">{{ testimonial.role }}, {{ testimonial.company }}</div>
-                <div class="text-green-600 font-semibold text-sm mt-1">{{ testimonial.amount }}</div>
+                <div class="text-sm text-gray-600">{{ testimonial.role }}, {{ testimonial.company }}</div>
+                <div class="text-green-600 font-semibold text-sm mt-2">{{ testimonial.amount }}</div>
               </div>
             </div>
           </div>
@@ -234,15 +237,15 @@
         </p>
         <div class="flex flex-col sm:flex-row justify-center gap-6">
           <button 
-            class="inline-flex items-center justify-center px-10 py-4 bg-white text-green-600 text-lg font-bold rounded-lg hover:bg-gray-50 transition-colors"
-            (click)="startApplication()"
+            class="inline-flex items-center justify-center px-10 py-4 bg-white text-green-600 text-lg font-bold rounded-lg hover:bg-gray-50 transition-colors shadow-lg"
+            (click)="visitMarketPlace()"
           >
-            Start Application
+            Get Started 
             <lucide-icon [img]="ArrowRightIcon" [size]="20" class="ml-2" />
           </button>
           <button 
             class="inline-flex items-center justify-center px-10 py-4 border-2 border-white text-white text-lg font-bold rounded-lg hover:bg-white hover:text-green-600 transition-colors"
-            (click)="openFunderPortal()"
+            (click)="register()"
           >
             I'm a Funder
           </button>

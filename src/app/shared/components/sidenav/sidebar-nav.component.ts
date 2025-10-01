@@ -152,7 +152,7 @@ export class SidebarNavComponent implements OnInit {
   logout() {
     this.profileService.clearProfileData();
     this.authService.signOut();
-    this.router.navigate(['/']);
+    this.router.navigate(['/login']);
   }
 
   getUserInitials(): string {
