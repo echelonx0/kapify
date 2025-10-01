@@ -12,11 +12,12 @@ import { FunderHeaderComponent } from './header/funder-header.component';
   template: `
     <div class="min-h-screen bg-neutral-50">
       <sidebar-nav />
-      
       <!-- Main Content -->
      
- 
-      <funder-header></funder-header>
+
+        <div class="sticky top-0 z-10 bg-neutral-50 border-b border-gray-200">
+          <funder-header></funder-header>
+          </div>
         <!-- Page Content -->
         <main class="ml-16">
           <router-outlet />

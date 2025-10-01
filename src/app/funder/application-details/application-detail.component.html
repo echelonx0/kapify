@@ -2,6 +2,12 @@
 
 <!-- Application Header Component -->
 @if (application()) {
+
+  <div class="sticky top-0 z-10 bg-neutral-50 border-b border-gray-200">
+  
+    
+ 
+
   <app-application-header
     [application]="application()!"
     [profileLoading]="profileLoading()"
@@ -10,6 +16,7 @@
     (back)="goBack()"
     (manageStatus)="openStatusModal()">
   </app-application-header>
+   </div>
 }
 
 <div class="max-w-7xl mx-auto px-6 py-6">
