@@ -10,9 +10,9 @@ import {
   AlertTriangle,
   CheckCircle,
   BarChart3
-} from 'lucide-angular'; 
-import { FundingOpportunity } from '../../../shared/models/funder.models';
+} from 'lucide-angular';  
 import { FundingApplication } from 'src/app/SMEs/models/application.models';
+import { FundingOpportunity } from 'src/app/shared/models/funder.models';
 
 interface AIInsight {
   type: 'positive' | 'negative' | 'neutral';

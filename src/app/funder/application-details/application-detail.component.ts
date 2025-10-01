@@ -36,13 +36,14 @@ import { FundingOpportunity } from '../../shared/models/funder.models';
 import { SMEOpportunitiesService } from '../../funding/services/opportunities.service';
 import { MessagingService, MessageThread } from 'src/app/messaging/services/messaging.service';
 import { AiAssistantComponent } from 'src/app/ai/ai-assistant/ai-assistant.component';
-import { ApplicationTabsComponent } from './application-tabs/application-tabs.component';
-import { AiExecutiveSummaryComponent } from './ai-executive-summary/ai-executive-summary.component';
-import { ApplicantProfileComponent } from './applicant-profile/applicant-profile.component';
+import { ApplicationTabsComponent } from './components/application-tabs/application-tabs.component';
+ 
 import { FundingProfileBackendService } from 'src/app/SMEs/services/funding-profile-backend.service';
 import { ProfileDataTransformerService } from 'src/app/SMEs/services/profile-data-transformer.service';
 import { ProfileData } from 'src/app/SMEs/services/funding.models';
 import { FundingApplication } from 'src/app/SMEs/models/application.models';
+import { AiExecutiveSummaryComponent } from './components/ai-executive-summary/ai-executive-summary.component';
+import { ApplicantProfileComponent } from './components/applicant-profile/applicant-profile.component';
 
 type TabId = 'overview' | 'ai-analysis' | 'messages' | 'documents' | 'activity';
 
