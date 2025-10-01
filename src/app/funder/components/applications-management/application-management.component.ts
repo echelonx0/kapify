@@ -27,8 +27,9 @@ import { AIAssistantModalComponent } from '../../../ai/ai-assistant-modal.compon
 import { AuthService } from '../../../auth/production.auth.service';
 import { SMEOpportunitiesService } from '../../../funding/services/opportunities.service';
 import { FundingOpportunity } from '../../../shared/models/funder.models';
-import { ApplicationManagementService, ApplicationStats, FundingApplication } from 'src/app/SMEs/services/application-management.service';
+import { ApplicationManagementService   } from 'src/app/SMEs/services/application-management.service';
 import { ApplicationListCardComponent, BaseApplicationCard } from 'src/app/shared/components/application-list-card/application-list-card.component'; 
+import { FundingApplication, ApplicationStats } from 'src/app/SMEs/models/application.models';
  
 type TabId = 'overview' | 'all' | 'review-queue' | 'completed';
 

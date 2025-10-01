@@ -124,7 +124,7 @@ export class SMEProfileStepsService {
   });
 
   // ===============================
-  // BACKEND INTEGRATION - FIXED
+  // BACKEND INTEGRATION
   // ===============================
 
   async loadSavedProfile(): Promise<void> {
@@ -158,7 +158,7 @@ export class SMEProfileStepsService {
     }
   }
 
-  // REAL AUTO-SAVE IMPLEMENTATION - NO MORE DUMMY CODE
+  // REAL AUTO-SAVE IMPLEMENTATION 
   private autoSave() {
     // Clear existing timeout
     if (this.autoSaveTimeout) {

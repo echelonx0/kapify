@@ -4,9 +4,9 @@ import { Observable, from, forkJoin, of } from 'rxjs';
 import { map, catchError, tap } from 'rxjs/operators';
 import { SharedSupabaseService } from '../../shared/services/shared-supabase.service';
 import { MarketIntelligenceService } from './market-intelligence.service';
- 
-import { DocumentSection } from '../../SMEs/services/application-management.service';
+  
 import { FundingApplicationProfile, FinancialProfile, BusinessAssessment, ManagementStructure } from 'src/app/SMEs/applications/models/funding-application.models';
+import { DocumentSection } from 'src/app/SMEs/models/application.models';
 
 // Enhanced Analysis Result Interfaces for Both Modes
 export interface FinancialHealthAnalysis {

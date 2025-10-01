@@ -10,10 +10,11 @@ import {
   Eye,
   ArrowRight
 } from 'lucide-angular';
-import { ApplicationManagementService, FundingApplication, ApplicationStats } from 'src/app/SMEs/services/application-management.service';
+import { ApplicationManagementService  } from 'src/app/SMEs/services/application-management.service';
 import { ApplicationListCardComponent, BaseApplicationCard } from 'src/app/shared/components/application-list-card/application-list-card.component';
 import { UiButtonComponent } from 'src/app/shared/components';
 import { FunderOnboardingService, OnboardingState } from '../../services/funder-onboarding.service';
+import { FundingApplication, ApplicationStats } from 'src/app/SMEs/models/application.models';
 
 @Component({
   selector: 'app-funder-applications',

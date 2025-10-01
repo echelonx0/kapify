@@ -8,11 +8,11 @@ import {
   Award, 
   TrendingUp, 
   BarChart3
-} from 'lucide-angular';
-import { FundingApplication, ApplicantInfo } from '../../../SMEs/services/application-management.service';
+} from 'lucide-angular'; 
 import { FundingProfileBackendService } from '../../../SMEs/services/funding-profile-backend.service';
 import { ProfileDataTransformerService } from '../../../SMEs/services/profile-data-transformer.service';
 import { ProfileData } from '../../../SMEs/services/funding.models';
+import { FundingApplication, ApplicantInfo } from 'src/app/SMEs/models/application.models';
 
 @Component({
   selector: 'app-applicant-profile',

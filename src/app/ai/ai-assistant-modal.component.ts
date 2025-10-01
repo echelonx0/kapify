@@ -3,9 +3,9 @@ import { Component, Input, Output, EventEmitter, signal, inject } from '@angular
 import { CommonModule } from '@angular/common';
 import { LucideAngularModule, Bot, FileSearch, Users, TrendingUp, Shield, X, Loader2, CheckCircle, AlertTriangle } from 'lucide-angular';
  
-import { AIAssistantService, AIAnalysisRequest, } from './services/ai-assistant.service';
-import { FundingApplication } from 'src/app/SMEs/services/application-management.service';
+import { AIAssistantService, AIAnalysisRequest, } from './services/ai-assistant.service'; 
 import { AIAnalysisResult } from 'src/app/ai/services/ai-analysis.service';
+import { FundingApplication } from '../SMEs/models/application.models';
  
 
 interface AIAction {

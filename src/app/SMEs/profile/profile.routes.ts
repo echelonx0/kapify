@@ -75,56 +75,7 @@ export const profileRoutes: Routes = [
             loadComponent: () => import('./steps/review/profile-review.component').then(c => c.ProfileReviewComponent),
             title: 'Review & Analysis - Funding Application'
           },
-          // ===============================
-          // LEGACY ROUTES (BACKWARD COMPATIBILITY)
-          // Keep these for existing bookmarks/links
-          // TODO: Remove after migration period (6 months)
-          // ===============================
-          
-          // Legacy: admin → company-info
-          { 
-            path: 'admin', 
-            redirectTo: 'company-info',
-            pathMatch: 'full' as 'full'
-            // OLD: loadComponent: () => import('./steps/admin-information-step/admin-information.component').then(c => c.AdminInformationComponent),
-            // OLD: title: 'Company Information - Profile Setup'
-          },
-          
-          // Legacy: business-review → business-assessment
-          { 
-            path: 'business-review', 
-            redirectTo: 'business-assessment',
-            pathMatch: 'full' as 'full'
-            // OLD: loadComponent: () => import('./steps/business-info.component').then(c => c.BusinessInfoComponent),
-            // OLD: title: 'Business Review - Profile Setup'
-          },
-          
-          // Legacy: swot → swot-analysis  
-          { 
-            path: 'swot', 
-            redirectTo: 'swot-analysis',
-            pathMatch: 'full' as 'full'
-            // OLD: loadComponent: () => import('./steps/swot-analysis/swot-analysis.component').then(c => c.SWOTAnalysisComponent), 
-            // OLD: title: 'SWOT Analysis - Profile Setup'
-          },
-          
-          // Legacy: business-plan → business-strategy
-          { 
-            path: 'business-plan', 
-            redirectTo: 'business-strategy',
-            pathMatch: 'full' as 'full'
-            // OLD: loadComponent: () => import('./steps/business-plan/business-plan.component').then(c => c.BusinessPlanComponent),
-            // OLD: title: 'Business Plan - Profile Setup'
-          },
-          
-          // Legacy: financial → financial-profile
-          { 
-            path: 'financial', 
-            redirectTo: 'financial-profile',
-            pathMatch: 'full' as 'full'
-            // OLD: loadComponent: () => import('./steps/financial-analysis.component').then(c => c.FinancialAnalysisComponent),
-            // OLD: title: 'Financial Analysis - Profile Setup'
-          }
+      
 
          
         ]

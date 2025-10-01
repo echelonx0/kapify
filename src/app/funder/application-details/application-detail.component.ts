@@ -31,7 +31,7 @@ import {
 import { Subject, takeUntil, forkJoin } from 'rxjs';
  
 import { AuthService } from '../../auth/production.auth.service';
-import { ApplicationManagementService, FundingApplication } from '../../SMEs/services/application-management.service';
+import { ApplicationManagementService } from '../../SMEs/services/application-management.service';
 import { FundingOpportunity } from '../../shared/models/funder.models';
 import { SMEOpportunitiesService } from '../../funding/services/opportunities.service';
 import { MessagingService, MessageThread } from 'src/app/messaging/services/messaging.service';
@@ -42,6 +42,7 @@ import { ApplicantProfileComponent } from './applicant-profile/applicant-profile
 import { FundingProfileBackendService } from 'src/app/SMEs/services/funding-profile-backend.service';
 import { ProfileDataTransformerService } from 'src/app/SMEs/services/profile-data-transformer.service';
 import { ProfileData } from 'src/app/SMEs/services/funding.models';
+import { FundingApplication } from 'src/app/SMEs/models/application.models';
 
 type TabId = 'overview' | 'ai-analysis' | 'messages' | 'documents' | 'activity';
 
