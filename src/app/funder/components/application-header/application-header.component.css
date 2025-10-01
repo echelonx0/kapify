@@ -1,0 +1,17 @@
+/* src/app/funder/components/application-detail/components/application-header/application-header.component.css */
+
+header {
+  transition: box-shadow 0.2s ease;
+}
+
+header:hover {
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+}
+
+.status-badge {
+  transition: transform 0.2s ease;
+}
+
+.status-badge:hover {
+  transform: scale(1.05);
+}
