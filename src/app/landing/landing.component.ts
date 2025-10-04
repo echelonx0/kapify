@@ -16,7 +16,13 @@ import {
   Shield,
   Users,
   Target,
-  Zap
+  Zap,
+  ArrowDown,
+  Building,
+  FileText,
+  Filter,
+  ShieldCheck,
+  XCircle
 } from 'lucide-angular';
 import { LandingFooterComponent } from './landing-footer.component';
 import { LandingHeaderComponent } from './landing-header.component';
@@ -82,6 +88,13 @@ export class LandingComponent {
   UsersIcon = Users;
   TargetIcon = Target;
   ZapIcon = Zap;
+
+  ShieldCheckIcon = ShieldCheck;
+XCircleIcon = XCircle;
+ArrowDownIcon = ArrowDown;
+BuildingIcon = Building;
+FilterIcon = Filter;
+FileTextIcon = FileText;
 
   heroStats: Statistic[] = [
     { value: '98%', label: 'MATCH SUCCESS', description: 'Of matches get funded' },

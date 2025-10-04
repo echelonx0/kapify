@@ -26,9 +26,8 @@ import { UiButtonComponent } from '../shared/components/ui-button.component';
           <!-- Desktop Navigation -->
           <nav class="hidden md:flex items-center space-x-8">
             <a href="#features" class="text-neutral-600 hover:text-neutral-900 transition-colors">Features</a>
-            <a (click)="goToMarketplace()" class="text-neutral-600 hover:text-neutral-900 transition-colors cursor-pointer">Browse Funding</a>
-            <a href="#how-it-works" class="text-neutral-600 hover:text-neutral-900 transition-colors">How It Works</a>
-            <a href="#testimonials" class="text-neutral-600 hover:text-neutral-900 transition-colors">Success Stories</a>
+            <a (click)="goToMarketplace()" class="text-neutral-600 hover:text-neutral-900 transition-colors cursor-pointer">Explore</a>
+            <a href="#how-it-works" class="text-neutral-600 hover:text-neutral-900 transition-colors">How It Works</a> 
             <a href="#contact" class="text-neutral-600 hover:text-neutral-900 transition-colors">Contact</a>
           </nav>
 
@@ -58,10 +57,9 @@ import { UiButtonComponent } from '../shared/components/ui-button.component';
         @if (mobileMenuOpen()) {
           <div class="md:hidden border-t border-neutral-200 py-4 space-y-4">
             <a href="#features" class="block text-neutral-600 hover:text-neutral-900 transition-colors">Features</a>
-            <a (click)="goToMarketplace(); toggleMobileMenu()" class="block text-neutral-600 hover:text-neutral-900 transition-colors cursor-pointer">Browse Funding</a>
+            <a (click)="goToMarketplace(); toggleMobileMenu()" class="block text-neutral-600 hover:text-neutral-900 transition-colors cursor-pointer">Explore</a>
             <a href="#how-it-works" class="block text-neutral-600 hover:text-neutral-900 transition-colors">How It Works</a>
-            <a href="#testimonials" class="block text-neutral-600 hover:text-neutral-900 transition-colors">Success Stories</a>
-            <a href="#contact" class="block text-neutral-600 hover:text-neutral-900 transition-colors">Contact</a>
+           <a href="#contact" class="block text-neutral-600 hover:text-neutral-900 transition-colors">Contact</a>
             <div class="pt-4 border-t border-neutral-200 space-y-3">
               <ui-button variant="ghost" [fullWidth]="true" (clicked)="openFunderPortal()">
                 Funder Portal
