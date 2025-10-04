@@ -11,8 +11,8 @@ import { LucideAngularModule,
 import { UiCardComponent, UiButtonComponent } from '../../../../shared/components'; 
 import { ProfileDataTransformerService } from '../../../services/profile-data-transformer.service';
 import { FundingProfileSetupService } from 'src/app/SMEs/services/funding-profile-setup.service';
-import { SMEProfileStepsService } from 'src/app/SMEs/services/sme-profile-steps.service';
-import { KapifyAIAnalysisComponent } from 'src/app/ai/ai-analysis/kapify-ai-analysis.component';
+ import { KapifyAIAnalysisComponent } from 'src/app/ai/ai-analysis/kapify-ai-analysis.component';
+import { SMEProfileStepsService } from '../../services/sme-profile-steps.service';
  
 interface SectionSummary {
   stepId: string;

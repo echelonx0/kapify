@@ -6,8 +6,8 @@ import { UiButtonComponent } from '../../../../shared/components';
  
 import { CommonModule } from '@angular/common';
 import { FundingProfileSetupService } from 'src/app/SMEs/services/funding-profile-setup.service';
-import { SMEProfileStepsService } from 'src/app/SMEs/services/sme-profile-steps.service';
-
+import { SMEProfileStepsService } from '../../services/sme-profile-steps.service';
+ 
 @Component({
   selector: 'app-profile-steps-layout',
   standalone: true,

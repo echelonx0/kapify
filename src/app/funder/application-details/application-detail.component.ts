@@ -696,7 +696,7 @@ import { AiAssistantComponent } from 'src/app/ai/ai-assistant/ai-assistant.compo
 import { ApplicationTabsComponent } from './components/application-tabs/application-tabs.component';
 import { FundingProfileBackendService } from 'src/app/SMEs/services/funding-profile-backend.service';
 import { ProfileDataTransformerService } from 'src/app/SMEs/services/profile-data-transformer.service';
-import { ProfileData } from 'src/app/SMEs/services/funding.models';
+import { ProfileData } from 'src/app/SMEs/profile/models/funding.models';
 import { FundingApplication } from 'src/app/SMEs/models/application.models';
 import { AiExecutiveSummaryComponent } from './components/ai-executive-summary/ai-executive-summary.component';
 import { ApplicantProfileComponent } from './components/applicant-profile/applicant-profile.component';

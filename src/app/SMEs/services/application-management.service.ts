@@ -6,7 +6,8 @@ import { AuthService } from '../../auth/production.auth.service';
 import { SharedSupabaseService } from '../../shared/services/shared-supabase.service';
 import { DocumentMetadata, SupabaseDocumentService } from 'src/app/shared/services/supabase-document.service';
 import { DocumentSection, FundingApplication, ApplicationFilter, ApplicationStats, ApplicantDocument } from '../models/application.models';
-import { ReviewNote } from './opportunity-application.service';
+import { ReviewNote } from '../profile/models/sme-profile.models';
+ 
  
 
 @Injectable({

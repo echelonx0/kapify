@@ -12,7 +12,7 @@ import {
  
 import { FundingApplication, ApplicantInfo } from 'src/app/SMEs/models/application.models';
 import { FundingProfileBackendService } from 'src/app/SMEs/services/funding-profile-backend.service';
-import { ProfileData } from 'src/app/SMEs/services/funding.models';
+import { ProfileData } from 'src/app/SMEs/profile/models/funding.models';
 import { ProfileDataTransformerService } from 'src/app/SMEs/services/profile-data-transformer.service';
 
 @Component({

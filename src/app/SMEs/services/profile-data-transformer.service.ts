@@ -1,7 +1,7 @@
 // src/app/profile/services/profile-data-transformer.service.ts - 
 import { Injectable } from '@angular/core';  
 import { FundingApplicationProfile, SWOTAnalysis, BusinessAssessment, ManagementStructure } from '../applications/models/funding-application.models';
-import { ProfileData } from './funding.models';
+import { ProfileData } from '../profile/models/funding.models';
  
 
 @Injectable({

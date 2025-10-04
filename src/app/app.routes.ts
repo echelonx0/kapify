@@ -100,7 +100,11 @@ export const routes: Routes = [
     loadComponent: () => import('./funder/public-profile/public-profile.component').then(m => m.FunderProfileComponent),
     title: 'Funder Profile - Kapify'
   },
-
+ {
+    path: 'test/parser',
+    loadComponent: () => import('./test/parser-test.component').then(m => m.ParserTestComponent),
+    title: 'Excel Parser Test'
+  },
   // 404 Page - MUST come before catch-all
   {
     path: '404',

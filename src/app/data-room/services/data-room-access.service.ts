@@ -442,58 +442,61 @@ export class DataRoomAccessService {
     );
   }
 
-  private getDocumentViewers(documentId: string): Observable<UserAccessSummary[]> {
-    return from(
-      this.supabase
-        .from('data_room_access_logs')
-        .select(`
-          user_id,
-          action_type,
-          created_at,
-          user:user_id (
-            id,
-            email,
-            raw_user_meta_data
-          )
-        `)
-        .eq('document_id', documentId)
-        .order('created_at', { ascending: false })
-    ).pipe(
-      map(({ data, error }) => {
-        if (error) throw error;
+ private getDocumentViewers(documentId: string): Observable<UserAccessSummary[]> {
+  return from(
+    this.supabase
+      .from('data_room_access_logs')
+      .select(`
+        user_id,
+        action_type,
+        created_at,
+        user:user_id (
+          id,
+          email,
+          raw_user_meta_data
+        )
+      `)
+      .eq('document_id', documentId)
+      .order('created_at', { ascending: false })
+  ).pipe(
+    map(({ data, error }) => {
+      if (error) throw error;
 
-        const userStats = new Map<string, { email: string; name?: string; viewCount: number; downloadCount: number; lastAccess: Date }>();
+      const userStats = new Map<string, { email: string; name?: string; viewCount: number; downloadCount: number; lastAccess: Date }>();
 
-        data.forEach(log => {
-          const existing = userStats.get(log.user_id);
-          if (existing) {
-            if (log.action_type === 'view') existing.viewCount++;
-            if (log.action_type === 'download') existing.downloadCount++;
-            if (new Date(log.created_at) > existing.lastAccess) {
-              existing.lastAccess = new Date(log.created_at);
-            }
-          } else {
-            userStats.set(log.user_id, {
-              email: log.user?.email || 'Unknown',
-              name: log.user?.raw_user_meta_data?.full_name,
-              viewCount: log.action_type === 'view' ? 1 : 0,
-              downloadCount: log.action_type === 'download' ? 1 : 0,
-              lastAccess: new Date(log.created_at)
-            });
+      data.forEach(log => {
+        // FIX: Access first element of user array
+        const user = Array.isArray(log.user) ? log.user[0] : log.user;
+        
+        const existing = userStats.get(log.user_id);
+        if (existing) {
+          if (log.action_type === 'view') existing.viewCount++;
+          if (log.action_type === 'download') existing.downloadCount++;
+          if (new Date(log.created_at) > existing.lastAccess) {
+            existing.lastAccess = new Date(log.created_at);
           }
-        });
+        } else {
+          userStats.set(log.user_id, {
+            email: user?.email || 'Unknown',
+            name: user?.raw_user_meta_data?.full_name,
+            viewCount: log.action_type === 'view' ? 1 : 0,
+            downloadCount: log.action_type === 'download' ? 1 : 0,
+            lastAccess: new Date(log.created_at)
+          });
+        }
+      });
 
-        return Array.from(userStats.entries()).map(([userId, stats]) => ({
-          userId,
-          userName: stats.name,
-          userEmail: stats.email,
-          viewCount: stats.viewCount,
-          downloadCount: stats.downloadCount,
-          lastAccess: stats.lastAccess
-        }));
-      })
-    );
-  }
+      return Array.from(userStats.entries()).map(([userId, stats]) => ({
+        userId,
+        userName: stats.name,
+        userEmail: stats.email,
+        viewCount: stats.viewCount,
+        downloadCount: stats.downloadCount,
+        lastAccess: stats.lastAccess
+      }));
+    })
+  );
+}
 
   private getUserLastAccess(dataRoomId: string, userId: string): Observable<Date> {
     return from(

@@ -1,5 +1,5 @@
-import { BoardMember, ManagementMember } from "../applications/models/funding-application.models";
-import { CommitteeMember } from "../applications/models/profile.models";
+import { BoardMember, ManagementMember } from "../../applications/models/funding-application.models";
+import { CommitteeMember } from "../../applications/models/profile.models";
 
  
  

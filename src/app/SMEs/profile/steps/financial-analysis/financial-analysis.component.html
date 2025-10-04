@@ -1,10 +1,10 @@
 <!-- src/app/profile/steps/financial-analysis/financial-analysis.component.html -->
 <div class="max-w-7xl mx-auto p-6 space-y-8">
   <!-- Header Section -->
-  <div class="flex items-center justify-between">
+  <div class="flex items-center justify-between mb-2 m-2">
     <div>
-      <h1 class="text-3xl font-bold text-primary-700">Financial Analysis</h1>
-      <p class="text-gray-600 mt-1">Upload your financial template and projections</p>
+      <h1 class="text-2xl font-bold text-slate-700">Financial Analysis</h1>
+      
     </div>
     
     <!-- Save Status -->
@@ -34,144 +34,107 @@
     </div>
   </div>
 
-  <!-- Upload Section -->
-  <ui-card class="shadow-md rounded-xl border border-gray-100">
-    <div class="p-8">
-      @if (!uploadedTemplate() && !hasFinancialData()) {
-        <!-- Upload Area -->
-        <div class="text-center">
-          <lucide-icon [name]="FileSpreadsheetIcon" [size]="56" class="mx-auto text-primary-400 mb-4" />
-          <h3 class="text-xl font-semibold text-gray-900 mb-2">Import Financial Data</h3>
-          <p class="text-gray-600 mb-6">
-            Use our template with predefined columns and rows to fill in your financial projections.
-            The template includes income statement and financial ratios sections.
-          </p>
-
-          <!-- Template Download -->
-          <div class="mb-6">
-            <ui-button 
-              variant="outline" 
-              (clicked)="downloadTemplate()">
-              <lucide-icon [name]="DownloadIcon" [size]="16" class="mr-2" />
-              Download Template
-            </ui-button>
-            <p class="text-sm text-gray-500 mt-2">
-              Use <strong>this template</strong> with predefined columns and rows to fill in the dataset for the financial ratios below.
-            </p>
-          </div>
-
-          <!-- Drop Zone -->
-          <div 
-            class="border-2 border-dashed border-gray-300 rounded-xl p-10 transition-colors hover:border-primary-500 hover:bg-primary-50"
-            (dragover)="onDragOver($event)"
-            (dragleave)="onDragLeave($event)"
-            (drop)="onDrop($event)"
-          >
-            <lucide-icon [name]="UploadIcon" [size]="36" class="mx-auto text-primary-400 mb-3" />
-            <p class="text-lg font-medium text-gray-700 mb-2">
-              Click to upload or drag and drop
-            </p>
-            <p class="text-sm text-gray-500 mb-4">
-              Excel files (.xlsx, .xls) up to 10MB
-            </p>
-            
-            <ui-button 
-              variant="primary" 
-              [loading]="isProcessingFile()" 
-              (clicked)="triggerFileUpload()">
-              <lucide-icon [name]="UploadIcon" [size]="16" class="mr-2" />
-              Choose File
-            </ui-button>
-          </div>
-        </div>
-      } @else {
-        <!-- File Uploaded Status -->
-        <div class="bg-primary-50 border border-primary-200 rounded-lg p-4">
-          <div class="flex items-center justify-between">
-            <div class="flex items-center">
-              <lucide-icon [name]="CheckCircleIcon" [size]="20" class="text-primary-600 mr-3" />
-              <div>
-                <p class="font-medium text-primary-900">Financial template processed</p>
-                @if (uploadedTemplate()) {
-                  <p class="text-sm text-primary-700">
-                    {{ uploadedTemplate()!.name }} ({{ formatFileSize(uploadedTemplate()!.size) }})
-                  </p>
-                }
-                @if (hasValidTemplate()) {
-                  <p class="text-sm text-primary-600">
-                    ✓ Template structure validated • {{ getCompletionPercentage() }}% complete
-                  </p>
-                }
-              </div>
-            </div>
-            
-            <div class="flex items-center space-x-2">
-              <ui-button 
-                variant="outline" 
-                size="sm"
-                (clicked)="downloadCurrentData()"
-                title="Download current data as Excel">
-                <lucide-icon [name]="DownloadIcon" [size]="16" />
-              </ui-button>
-
-              <ui-button 
-                variant="outline" 
-                size="sm" 
-                (clicked)="removeTemplate()"
-                class="text-red-600 hover:bg-red-50"
-                title="Remove and start over">
-                <lucide-icon [name]="XIcon" [size]="16" />
-              </ui-button>
-            </div>
-          </div>
-        </div>
-      }
-
-      <!-- Error Display -->
-      @if (parseError()) {
-        <div class="mt-4 bg-red-50 border border-red-200 rounded-lg p-4">
-          <div class="flex items-center">
-            <lucide-icon [name]="AlertCircleIcon" [size]="20" class="text-red-600 mr-3" />
-            <div>
-              <p class="font-medium text-red-900">Upload Error</p>
-              <p class="text-sm text-red-700 mt-1">{{ parseError() }}</p>
-            </div>
-            <ui-button 
-              variant="ghost"
-              size="sm"
-              (clicked)="clearErrors()"
-              class="ml-auto text-red-600 hover:text-red-800">
-              <lucide-icon [name]="XIcon" [size]="16" />
-            </ui-button>
-          </div>
-        </div>
-      }
-
-      <!-- Warnings Display -->
-      @if (parseWarnings().length > 0) {
-        <div class="mt-4 bg-orange-50 border border-orange-200 rounded-lg p-4">
-          <div class="flex items-start">
-            <lucide-icon [name]="AlertCircleIcon" [size]="20" class="text-orange-600 mr-3 mt-0.5" />
-            <div class="flex-1">
-              <p class="font-medium text-orange-900">Template Warnings</p>
-              <ul class="text-sm text-orange-700 mt-1 space-y-1">
-                @for (warning of parseWarnings(); track warning) {
-                  <li>• {{ warning }}</li>
-                }
-              </ul>
-            </div>
-          </div>
-        </div>
-      }
-    </div>
-  </ui-card>
+  <!-- Upload Component -->
+  <app-financial-upload
+    [hasData]="hasFinancialData()"
+    [uploadedFile]="uploadedTemplate()"
+    [isProcessing]="isParsingFile() || isUploading()"
+    [error]="parseError()"
+    [warnings]="parseWarnings()"
+    [progress]="parseProgress()"
+    [isValidTemplate]="hasValidTemplate()"
+    [completionPercentage]="getCompletionPercentage()"
+    (fileSelected)="onFileSelected($event)"
+    (templateDownload)="downloadTemplate()"
+    (dataDownload)="downloadCurrentData()"
+    (fileRemove)="removeTemplate()"
+    (errorClear)="clearErrors()"
+  />
 
   <!-- Financial Data Display -->
   @if (hasFinancialData()) {
-    <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+    <!-- Tab Navigation (Desktop Only) -->
+    <div class="hidden lg:block">
+      <div class="border-b border-gray-200">
+        <nav class="-mb-px flex space-x-8">
+          <button
+            (click)="switchTab('income-statement')"
+            [class]="activeTab() === 'income-statement' 
+              ? 'border-primary-500 text-primary-600' 
+              : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+            class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors duration-200">
+            Income Statement
+          </button>
+          <button
+            (click)="switchTab('financial-ratios')"
+            [class]="activeTab() === 'financial-ratios' 
+              ? 'border-primary-500 text-primary-600' 
+              : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+            class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors duration-200">
+            Financial Ratios
+          </button>
+        </nav>
+      </div>
+    </div>
+
+    <!-- Desktop: Tabbed Content -->
+    <div class="hidden lg:block">
+      @if (activeTab() === 'income-statement') {
+        <ui-card>
+          <div class="p-6">
+            <div class="flex items-center justify-between mb-6">
+              <h3 class="text-lg font-semibold text-gray-900">Income Statement</h3>
+              <ui-button 
+                variant="outline" 
+                size="sm"
+                (clicked)="toggleEditMode()">
+                <lucide-icon [name]="EditIcon" [size]="16" class="mr-1" />
+                {{ editingMode() ? 'Done' : 'Edit' }}
+              </ui-button>
+            </div>
+
+            <app-financial-data-table
+              [sections]="incomeStatementSections()"
+              [columnHeaders]="columnHeaders()"
+              [editMode]="editingMode()"
+              itemLabel="Item"
+              (cellValueChanged)="onIncomeStatementCellChanged($event)"
+            />
+          </div>
+        </ui-card>
+      }
+
+      @if (activeTab() === 'financial-ratios') {
+        <ui-card>
+          <div class="p-6">
+            <div class="flex items-center justify-between mb-6">
+              <h3 class="text-lg font-semibold text-gray-900">Financial Ratios</h3>
+              <ui-button 
+                variant="outline" 
+                size="sm"
+                (clicked)="toggleEditMode()">
+                <lucide-icon [name]="EditIcon" [size]="16" class="mr-1" />
+                {{ editingMode() ? 'Done' : 'Edit' }}
+              </ui-button>
+            </div>
+
+            <app-financial-data-table
+              [sections]="financialRatiosSections()"
+              [columnHeaders]="columnHeaders()"
+              [editMode]="editingMode()"
+              itemLabel="Ratio"
+              (cellValueChanged)="onFinancialRatiosCellChanged($event)"
+            />
+          </div>
+        </ui-card>
+      }
+    </div>
+
+    <!-- Mobile/Tablet: Stacked Vertical Layout -->
+    <div class="lg:hidden space-y-6">
       <!-- Income Statement -->
       <ui-card>
-        <div class="p-6">
+        <div class="p-2">
           <div class="flex items-center justify-between mb-6">
             <h3 class="text-lg font-semibold text-gray-900">Income Statement</h3>
             <ui-button 
@@ -183,42 +146,13 @@
             </ui-button>
           </div>
 
-          <!-- Column Headers -->
-          <div class="overflow-x-auto">
-            <div class="min-w-full">
-              <div class="grid grid-cols-10 gap-2 mb-3 text-xs font-medium text-gray-700 border-b pb-2">
-                <div class="col-span-3">Item</div>
-                @for (header of columnHeaders(); track header) {
-                  <div class="text-center">{{ header }}</div>
-                }
-              </div>
-
-              <!-- Income Statement Rows -->
-              @for (row of incomeStatementData(); track $index) {
-                <div class="grid grid-cols-10 gap-2 py-2 border-b border-gray-100 hover:bg-gray-50">
-                  <div class="col-span-3 text-sm font-medium text-gray-900">
-                    {{ row.label }}
-                  </div>
-                  @for (value of row.values; track valueIndex; let valueIndex = $index) {
-                    <div class="text-center">
-                      @if (editingMode() && row.editable) {
-                        <input 
-                          type="number"
-                          [value]="value"
-                          (blur)="onCellBlur($event, $index, valueIndex, false)"
-                          class="w-full text-xs px-1 py-1 border border-gray-300 rounded text-center"
-                        />
-                      } @else {
-                        <span class="text-xs" [class]="value < 0 ? 'text-red-600' : 'text-gray-900'">
-                          {{ formatCurrency(value) }}
-                        </span>
-                      }
-                    </div>
-                  }
-                </div>
-              }
-            </div>
-          </div>
+          <app-financial-data-table
+            [sections]="incomeStatementSections()"
+            [columnHeaders]="columnHeaders()"
+            [editMode]="editingMode()"
+            itemLabel="Item"
+            (cellValueChanged)="onIncomeStatementCellChanged($event)"
+          />
         </div>
       </ui-card>
 
@@ -227,100 +161,41 @@
         <div class="p-6">
           <h3 class="text-lg font-semibold text-gray-900 mb-6">Financial Ratios</h3>
 
-          <!-- Column Headers -->
-          <div class="overflow-x-auto">
-            <div class="min-w-full">
-              <div class="grid grid-cols-10 gap-2 mb-3 text-xs font-medium text-gray-700 border-b pb-2">
-                <div class="col-span-3">Ratio</div>
-                @for (header of columnHeaders(); track header) {
-                  <div class="text-center">{{ header }}</div>
-                }
-              </div>
-
-              <!-- Ratio Rows -->
-              @for (row of financialRatiosData(); track $index) {
-                <div class="grid grid-cols-10 gap-2 py-2 border-b border-gray-100 hover:bg-gray-50">
-                  <div class="col-span-3 text-sm font-medium text-gray-900">
-                    {{ row.label }}
-                  </div>
-                  @for (value of row.values; track valueIndex; let valueIndex = $index) {
-                    <div class="text-center">
-                      @if (editingMode() && row.editable) {
-                        <input 
-                          type="number"
-                          [value]="value"
-                          (blur)="onCellBlur($event, $index, valueIndex, true)"
-                          class="w-full text-xs px-1 py-1 border border-gray-300 rounded text-center"
-                          [step]="row.type === 'percentage' || row.type === 'ratio' ? '0.01' : '1'"
-                        />
-                      } @else {
-                        <span class="text-xs text-gray-900">
-                          {{ formatRatio(value, row.type) }}
-                        </span>
-                      }
-                    </div>
-                  }
-                </div>
-              }
-            </div>
-          </div>
+          <app-financial-data-table
+            [sections]="financialRatiosSections()"
+            [columnHeaders]="columnHeaders()"
+            [editMode]="editingMode()"
+            itemLabel="Ratio"
+            (cellValueChanged)="onFinancialRatiosCellChanged($event)"
+          />
         </div>
       </ui-card>
     </div>
 
-    <!-- Notes Section -->
-    <ui-card>
-      <div class="p-6">
-        <h3 class="text-lg font-semibold text-gray-900 mb-4">Analysis Notes</h3>
-        <textarea
-          [(ngModel)]="notesText"
-          (blur)="saveNotes()"
-          placeholder="Add any additional notes about your financial projections, assumptions, or methodology..."
-          rows="4"
-          class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-        ></textarea>
-      </div>
-    </ui-card>
+    <!-- Notes Component -->
+    <div class="mt-2">
+       <app-financial-notes
+      [(notes)]="notesText"
+      (notesSaved)="onNotesSaved($event)"
+    />
+    </div>
 
-    <!-- Summary Card -->
-    <ui-card class="shadow-md rounded-xl">
-      <div class="p-6">
-        <h3 class="text-lg font-semibold text-gray-900 mb-4">Summary</h3>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div class="text-center">
-            <div class="text-2xl font-bold text-primary-600">{{ getCompletionPercentage() }}%</div>
-            <div class="w-full bg-gray-200 rounded-full h-2 mt-2">
-              <div class="bg-primary-500 h-2 rounded-full" [style.width.%]="getCompletionPercentage()"></div>
-            </div>
-            <div class="text-sm text-gray-600 mt-1">Data Completion</div>
-          </div>
-          <div class="text-center">
-            <div class="text-2xl font-bold text-green-600">{{ incomeStatementData().length }}</div>
-            <div class="text-sm text-gray-600">Income Statement Items</div>
-          </div>
-          <div class="text-center">
-            <div class="text-2xl font-bold text-purple-600">{{ financialRatiosData().length }}</div>
-            <div class="text-sm text-gray-600">Financial Ratios</div>
-          </div>
-        </div>
-
-        @if (!hasValidTemplate()) {
-          <div class="mt-4 p-4 bg-orange-50 border border-orange-200 rounded-lg">
-            <p class="text-sm text-orange-800">
-              <lucide-icon [name]="AlertCircleIcon" [size]="16" class="inline mr-1" />
-              Template structure doesn't match expected format. Some features may not work correctly.
-            </p>
-          </div>
-        }
-      </div>
-    </ui-card>
+    <!-- Summary Component -->
+    <div class="mt-2">
+      <app-financial-summary
+      [completionPercentage]="getCompletionPercentage()"
+      [incomeStatementCount]="incomeStatementData().length"
+      [financialRatiosCount]="financialRatiosData().length"
+      [isValidTemplate]="hasValidTemplate()"
+    />
+    </div>
   }
 
-  <!-- Empty State Help -->
+  <!-- Empty State -->
   @if (!hasFinancialData() && !uploadedTemplate()) {
     <ui-card>
       <div class="p-6 text-center">
-        <lucide-icon [name]="FileSpreadsheetIcon" [size]="48" class="mx-auto text-gray-400 mb-4" />
+        <lucide-icon name="file-spreadsheet" [size]="48" class="mx-auto text-gray-400 mb-4" />
         <h3 class="text-lg font-medium text-gray-900 mb-2">No Financial Data</h3>
         <p class="text-gray-600 mb-6">
           Upload a financial template with your historical data and projections to begin your analysis. 
@@ -328,12 +203,8 @@
         </p>
         <div class="flex justify-center space-x-4">
           <ui-button variant="primary" (clicked)="downloadTemplate()">
-            <lucide-icon [name]="DownloadIcon" [size]="16" class="mr-2" />
+            <lucide-icon name="download" [size]="16" class="mr-2" />
             Download Template
-          </ui-button>
-          <ui-button variant="outline" (clicked)="triggerFileUpload()">
-            <lucide-icon [name]="UploadIcon" [size]="16" class="mr-2" />
-            Upload Existing File
           </ui-button>
         </div>
       </div>

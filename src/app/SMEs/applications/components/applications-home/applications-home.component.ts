@@ -24,12 +24,13 @@ import {
 import { AuthService } from 'src/app/auth/production.auth.service';
 import { UiButtonComponent } from 'src/app/shared/components';
 import { ActivityInboxComponent } from 'src/app/messaging/messaging/messaging.component'; 
-import { OpportunityApplicationService, OpportunityApplication } from 'src/app/SMEs/services/opportunity-application.service';
+import { OpportunityApplicationService } from 'src/app/SMEs/services/opportunity-application.service';
 import { SharedSupabaseService } from 'src/app/shared/services/shared-supabase.service';
 import { ApplicationListCardComponent, BaseApplicationCard } from 'src/app/shared/components/application-list-card/application-list-card.component';
 import { UserType } from 'src/app/shared/models/user.models';
 import { FundingApplication } from 'src/app/SMEs/models/application.models';
 import { ApplicationManagementService } from 'src/app/SMEs/services/application-management.service';
+import { OpportunityApplication } from 'src/app/SMEs/profile/models/sme-profile.models';
 
 interface ApplicationData {
   id: string;
@@ -185,11 +186,12 @@ safeUserType = computed((): UserType => {
         this.isLoading.set(false);
         return;
       }
-
+ // Access first element of the array
+    const org = orgUserData.organizations[0];
       const organization: UserOrganization = {
-        id: orgUserData.organizations.id,
-        name: orgUserData.organizations.name,
-        organizationType: orgUserData.organizations.organization_type
+        id: org.id,
+        name: org.name,
+        organizationType: org.organization_type
       };
       
       this.userOrganization.set(organization);
