@@ -12,14 +12,10 @@ import { LucideAngularModule, Search, RefreshCw, Filter, BarChart3 } from 'lucid
       <div class="p-6">
         <div class="flex flex-col lg:flex-row lg:items-center gap-4">
           
-          <!-- Enhanced Search -->
+          <!--   Search -->
           <div class="flex-1">
             <div class="relative group">
-              <lucide-icon
-                [img]="SearchIcon"
-                [size]="20"
-                class="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-400 group-focus-within:text-primary-500 transition-colors"
-              />
+             
               <input
                 type="text"
                 placeholder="Search opportunities by title, funder, or description..."

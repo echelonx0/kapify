@@ -1,4 +1,4 @@
- <div class="smart-suggestions-container" *ngIf="showComponent()">
+  <div class="smart-suggestions-container" *ngIf="showComponent()">
       <!-- Header -->
       <div class="suggestions-header">
         <div class="header-content">
@@ -52,43 +52,16 @@
 
       <!-- Suggestions Grid -->
       <div *ngIf="!isLoading() && suggestions().length > 0" class="suggestions-grid">
-        <div 
+        <app-suggestion-card
           *ngFor="let suggestion of suggestions(); trackBy: trackBySuggestion"
-          class="suggestion-wrapper">
-          
-          <!-- Match Score Badge -->
-          <div class="match-badge" *ngIf="shouldShowScore(suggestion)">
-            <div class="match-score-ring" [style.--score]="suggestion.score">
-              <span class="match-score-text">{{ suggestion.score }}%</span>
-            </div>
-            <span class="match-label">Match</span>
-          </div>
-
-          <!-- Match Reasons -->
-          <div class="match-reasons" *ngIf="suggestion.matchReasons.length > 0">
-            <div class="flex items-center gap-2 mb-2">
-              <lucide-icon [img]="SparklesIcon" [size]="14" class="text-primary-600" />
-              <span class="text-xs font-semibold text-primary-700 uppercase tracking-wide">
-                Why this is recommended
-              </span>
-            </div>
-            <ul class="reasons-list">
-              <li *ngFor="let reason of suggestion.matchReasons.slice(0, 2)">
-                {{ reason }}
-              </li>
-            </ul>
-          </div>
-
-          <!-- Opportunity Card -->
-          <app-enhanced-opportunity-card
-            [opportunity]="suggestion.opportunity"
-            [canApply]="canApply()"
-            [canManage]="false"
-            (apply)="onApply($event)"
-            (viewDetails)="onViewDetails($event)"
-            (signInToApply)="onSignInToApply()">
-          </app-enhanced-opportunity-card>
-        </div>
+          [opportunity]="suggestion.opportunity"
+          [matchScore]="suggestion.score"
+          [matchReasons]="suggestion.matchReasons"
+          [canApply]="canApply()"
+          (apply)="onApply($event)"
+          (viewDetails)="onViewDetails($event)"
+          (signIn)="onSignInToApply()">
+        </app-suggestion-card>
       </div>
 
       <!-- View All Link -->
