@@ -155,7 +155,7 @@ import { FundingOpportunity } from '../../shared/models/funder.models';
               *ngIf="!canApply && !canManage"
               (click)="onSignInToApply()"
               class="inline-flex items-center gap-2 px-6 py-3 bg-neutral-600 text-white rounded-lg font-semibold hover:bg-neutral-700 focus:ring-4 focus:ring-neutral-200 transition-all duration-200">
-              <span>Sign In to Apply</span>
+              <span>SME account needed to apply</span>
             </button>
           </div>
         </div>

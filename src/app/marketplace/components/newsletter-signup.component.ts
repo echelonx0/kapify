@@ -24,7 +24,7 @@ import { FormsModule } from '@angular/forms';
             <div class="inline-flex items-center justify-center w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl mb-4">
               <lucide-icon [img]="MailIcon" [size]="28" />
             </div>
-            <h3 class="text-xl font-bold mb-2">Stay Ahead of Funding</h3>
+            <h3 class="text-xl font-bold mb-2">Stay in the loop</h3>
             <p class="text-primary-100 text-sm leading-relaxed">
               Get exclusive funding opportunities and expert insights delivered weekly
             </p>
@@ -49,7 +49,7 @@ import { FormsModule } from '@angular/forms';
                 placeholder="Enter your email address"
                 [(ngModel)]="emailAddress"
                 [disabled]="isSubmitting()"
-                class="w-full px-4 py-4 rounded-xl bg-white/10 border border-white/20 placeholder-white/70 text-white focus:bg-white/20 focus:outline-none focus:ring-2 focus:ring-white/30 transition-all backdrop-blur-sm disabled:opacity-50"
+                class="w-full px-4 py-4 rounded-xl  border border-white/20   text-white focus:bg-white/20 focus:outline-none focus:ring-2 focus:ring-white/30 transition-all backdrop-blur-sm disabled:opacity-50"
               />
             </div>
             <button 
@@ -63,8 +63,8 @@ import { FormsModule } from '@angular/forms';
               </span>
               
               <span *ngIf="!isSubmitting()">
-                <lucide-icon [img]="SendIcon" [size]="16" />
-                Subscribe for Free
+              
+                Get Access
               </span>
             </button>
           </div>

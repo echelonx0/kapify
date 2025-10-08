@@ -49,7 +49,7 @@
 
 
 .card-gradient {
-  background: linear-gradient(to right, #22c55e, #22c55e, #14532d);
+  /* background: linear-gradient(to right, #22c55e, #22c55e, #14532d); */
   /* padding: 0.125rem; */
   border-radius: 0.75rem;
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
