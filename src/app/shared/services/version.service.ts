@@ -15,11 +15,11 @@ export interface VersionInfo {
 export class VersionService {
   // Global version signal accessible throughout the app
   private versionInfo = signal<VersionInfo>({
-    version: '2.4.9',
-    buildDate: '1st October, 2025',
+    version: '2.5.0',
+    buildDate: '8th October, 2025',
     environment: 'production',  
-    buildNumber: '1260',
-    commitHash: '4fa5107' // First 7 chars of git commit
+    buildNumber: '2',
+    commitHash: '513b456' // First 7 chars of git commit
   });
 
   // Public read-only access

@@ -12,8 +12,7 @@ import { trigger, transition, style, animate } from '@angular/animations';
 import { FundingOpportunityService } from '../../funding/services/funding-opportunity.service';
 import { FundingOpportunity } from '../../shared/models/funder.models';
 
-// Components
-import { AiAssistantComponent } from '../../ai/ai-assistant/ai-assistant.component';
+// Components 
 import { OpportunityFormStateService } from '../services/opportunity-form-state.service';
 import { OpportunityFormData } from './shared/form-interfaces';
 import { OrganizationStateService } from '../services/organization-state.service';
@@ -32,7 +31,7 @@ import { FundingStructureComponent } from './steps/structure.component';
     FormsModule,
     CommonModule,
     LucideAngularModule,
-    AiAssistantComponent,
+    // AiAssistantComponent,
  OpportunityBasicsComponent,
     MediaBrandingComponent,
     FundingStructureComponent,
@@ -53,6 +52,7 @@ import { FundingStructureComponent } from './steps/structure.component';
   templateUrl: 'create-opportunity.component.html'
 })
 export class CreateOpportunityComponent implements OnInit, OnDestroy {
+  
   private destroy$ = new Subject<void>();
   private route = inject(ActivatedRoute);
   private router = inject(Router);

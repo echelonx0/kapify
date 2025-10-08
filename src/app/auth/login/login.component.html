@@ -1,15 +1,15 @@
 <div class="min-h-screen flex">
   <!-- Left Panel - Form -->
-  <div class="flex-1 flex items-center justify-center px-8 py-12 bg-white">
+  <div class="flex-1 flex items-center justify-center px-8 py-2 bg-white">
     <div class="w-full max-w-md">
       <!-- Logo -->
-      <div class="mb-12">
-        <div class="w-10 h-10 bg-primary-600 rounded-xl flex items-center justify-center mb-8">
-          <span class="text-white font-bold text-lg">K</span>
-        </div>
-        <h1 class="text-3xl font-bold text-neutral-900 mb-2">Welcome back</h1>
-        <p class="text-neutral-600">Sign in to continue to Kapify</p>
-      </div>
+  <div class="mb-12 flex items-center space-x-4">
+  <div class="w-10 h-10 bg-primary-600 rounded-xl flex items-center justify-center">
+    <span class="text-white font-bold text-lg">K</span>
+  </div>
+  <h1 class="text-3xl font-bold text-neutral-900">Welcome back</h1>
+</div>
+
 
       <!-- Form -->
       <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="space-y-6">
@@ -56,24 +56,7 @@
           }
         </div>
 
-        <!-- Remember & Forgot -->
-        <div class="flex items-center justify-between">
-          <label class="flex items-center">
-            <input
-              type="checkbox"
-              formControlName="rememberMe"
-              class="w-4 h-4 text-primary-600 border-neutral-300 rounded focus:ring-2 focus:ring-primary-500 focus:ring-offset-0"
-            />
-            <span class="ml-2 text-sm text-neutral-700">Remember me</span>
-          </label>
-          <a 
-            href="/forgot-password" 
-            class="text-sm text-primary-600 hover:text-primary-700 font-medium transition-colors"
-          >
-            Forgot password?
-          </a>
-        </div>
-
+       
         <!-- Error Message -->
         @if (error()) {
           <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
@@ -98,32 +81,40 @@
       </form>
 
       <!-- Register Link -->
-      <div class="mt-8 text-center">
-        <p class="text-neutral-600">
-          Don't have an account? 
-          <a 
-            routerLink="/register"
-            class="text-primary-600 hover:text-primary-700 font-medium transition-colors"
-          >
-            Sign up
-          </a>
-        </p>
-      </div>
+<div class="mt-8 text-center">
+  <!-- Sign up & Forgot -->
+  <div class="flex items-center justify-between text-sm text-slate-700">
+    <p class="text-slate-700">
+      New here?
+      <a 
+        routerLink="/register"
+        class="text-slate-700 font-medium hover:text-slate-900 transition-colors"
+      >
+        Sign up
+      </a>
+    </p>
+    <a 
+      href="/forgot-password" 
+      class="text-slate-700 font-medium hover:text-slate-900 transition-colors"
+    >
+      Forgot password?
+    </a>
+  </div>
+</div>
+
 
       <!-- Footer -->
-      <div class="mt-12 text-center text-xs text-neutral-500">
-        By signing in, you agree to our 
-        <a href="/terms" class="text-primary-600 hover:underline">Terms</a>
-        and 
-        <a href="/privacy" class="text-primary-600 hover:underline">Privacy Policy</a>
-      </div>
+    <div class="mt-12 text-justify text-xs text-neutral-500">
+  Please review our <a href="/privacy" class="text-slate-700 font-bold hover:underline">Privacy Policy</a> and <a href="/terms" class="text-slate-700 font-bold hover:underline">Data Protection Policy</a> before using this platform. By logging in and continuing to use our services, you confirm that you have read, understood, and accepted our Privacy Policy. You also consent to the handling, storage, and sharing of your data strictly in accordance with these policies, and understand that your data will only be used within the platform as outlined.
+</div>
+
     </div>
   </div>
 
   <!-- Right Panel - Image -->
   <div class="hidden lg:block flex-1 relative overflow-hidden">
     <img 
-      src="/images/auth.png" 
+      src="/images/auth-2.png" 
       alt="Welcome back illustration"
       class="absolute inset-0 w-full h-full object-cover"
     />
