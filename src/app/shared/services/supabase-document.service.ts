@@ -106,6 +106,7 @@ export class SupabaseDocumentService {
     );
   }
 
+  
   private async performUpload(
     file: File,
     userId: string,

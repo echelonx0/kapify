@@ -37,272 +37,221 @@ interface SettingsTab {
     ContactDetailsComponent,
     LegalInfoComponent
   ],
-  template: `
-    <div class="min-h-screen bg-neutral-50">
-      <!-- Header -->
-      <div class="bg-white border-b border-neutral-200">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div class="py-6">
-            <div class="flex items-center">
-              <lucide-icon [img]="SettingsIcon" [size]="24" class="text-neutral-900 mr-3" />
-              <div>
-                <h1 class="text-2xl font-bold text-neutral-900">Organization Settings</h1>
-                <p class="text-sm text-neutral-600 mt-1">
-                  Manage your organization details and preferences
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Content -->
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div class="flex gap-8">
-          <!-- Sidebar Navigation -->
-          <div class="w-64 flex-shrink-0">
-            <nav class="space-y-2">
-              @for (tab of settingsTabs; track tab.id) {
-                <button
-                  (click)="setActiveSection(tab.id)"
-                  [class]="getSectionClasses(tab.id)"
-                  [disabled]="!tab.enabled"
-                  class="w-full"
-                >
-                  <div class="flex items-center px-3 py-2">
-                    <lucide-icon [img]="tab.icon" [size]="18" class="mr-3 flex-shrink-0" />
-                    <div class="flex-1 text-left">
-                      <div class="text-sm font-medium">{{ tab.label }}</div>
-                      @if (!tab.enabled) {
-                        <div class="text-xs text-neutral-500">Coming Soon</div>
-                      }
-                    </div>
-                  </div>
-                </button>
-              }
-            </nav>
-
-            <!-- Organization Quick Info -->
-            @if (organization() && !isLoading()) {
-              <div class="mt-8 p-4 bg-white rounded-lg border border-neutral-200 shadow-sm">
-                <div class="flex items-center mb-3">
-                  @if (organization()?.logoUrl) {
-                    <img 
-                      [src]="organization()?.logoUrl" 
-                      [alt]="organization()?.name + ' logo'"
-                      class="w-10 h-10 rounded-lg object-cover mr-3"
-                    />
-                  } @else {
-                    <div class="w-10 h-10 bg-neutral-100 rounded-lg flex items-center justify-center mr-3">
-                      <lucide-icon [img]="Building2Icon" [size]="20" class="text-neutral-600" />
-                    </div>
-                  }
-                  <div class="flex-1 min-w-0">
-                    <p class="text-sm font-medium text-neutral-900 truncate">
-                      {{ organization()?.name }}
-                    </p>
-                    <p class="text-xs text-neutral-500">
-                      {{ getOrganizationTypeLabel(organization()?.organizationType) }}
-                    </p>
-                  </div>
-                </div>
-                
-                <div class="flex items-center justify-between text-xs">
-                  <span class="text-neutral-500">Status</span>
-                  <span [class]="getStatusClasses(organization()?.status)">
-                    {{ getStatusLabel(organization()?.status) }}
-                  </span>
-                </div>
-                
-                @if (organization()?.isVerified) {
-                  <div class="flex items-center mt-2 text-xs text-green-600">
-                    <lucide-icon [img]="ShieldIcon" [size]="12" class="mr-1" />
-                    Verified Organization
-                  </div>
-                }
-              </div>
-            }
-          </div>
-
-          <!-- Main Content -->
-          <div class="flex-1">
-            @if (isLoading()) {
-              <div class="bg-white rounded-lg border border-neutral-200 shadow-sm p-8">
-                <div class="flex items-center justify-center">
-                  <div class="animate-spin w-8 h-8 border-4 border-primary-500 border-t-transparent rounded-full mr-3"></div>
-                  <span class="text-neutral-600">Loading organization details...</span>
-                </div>
-              </div>
-            } @else if (error()) {
-              <div class="bg-white rounded-lg border border-red-200 shadow-sm p-8">
-                <div class="text-center">
-                  <h3 class="text-lg font-medium text-red-900 mb-2">Error Loading Settings</h3>
-                  <p class="text-red-700 mb-4">{{ error() }}</p>
-                  <button 
-                    (click)="retryLoad()"
-                    class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
-                  >
-                    Try Again
-                  </button>
-                </div>
-              </div>
-            } @else {
-              <!-- Active Section Component -->
-              @switch (activeSection()) {
-                @case ('general') {
-                  <app-general-info 
-                    [organization]="organization()"
-                    [isLoading]="isSaving()"
-                    (organizationUpdated)="onOrganizationUpdated($event)"
-                  />
-                }
-                @case ('contact') {
-                  <app-contact-details 
-                    [organization]="organization()"
-                    [isLoading]="isSaving()"
-                    (organizationUpdated)="onOrganizationUpdated($event)"
-                  />
-                }
-                @case ('legal') {
-                  <app-legal-info 
-                    [organization]="organization()"
-                    [isLoading]="isSaving()"
-                    (organizationUpdated)="onOrganizationUpdated($event)"
-                  />
-                }
-                @default {
-                  <div class="bg-white rounded-lg border border-neutral-200 shadow-sm p-8 text-center">
-                    <h3 class="text-lg font-medium text-neutral-900 mb-2">Coming Soon</h3>
-                    <p class="text-neutral-600">This section is under development.</p>
-                  </div>
-                }
-              }
-            }
-          </div>
-        </div>
-      </div>
-    </div>
-  `,
+  templateUrl: 'settings.component.html',
   styles: [`
-    .tab-navigation {
-      display: flex;
-      justify-content: center;
-    }
+    .settings-page {
+  display: flex;
+  gap: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+  background-color: #f9fafb; /* neutral-50 */
+}
 
-    .section-card {
-      background: white;
-      border-radius: 0.75rem;
-      border: 1px solid #e5e7eb;
-      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
-    }
+/* Sidebar */
+.sidebar {
+  width: 16rem;
+  flex-shrink: 0;
+}
 
-    .section-header {
-      padding: 1.5rem;
-      border-bottom: 1px solid #e5e7eb;
-    }
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
 
-    .section-title {
-      font-size: 1.125rem;
-      font-weight: 600;
-      color: #111827;
-      margin-bottom: 0.25rem;
-    }
+.sidebar-nav button {
+  width: 100%;
+  border: none;
+  background: none;
+  cursor: pointer;
+  border-radius: 0.75rem;
+  transition: all 0.2s ease-in-out;
+}
 
-    .section-description {
-      font-size: 0.875rem;
-      color: #6b7280;
-    }
+.sidebar-nav button:hover {
+  background-color: #f3f4f6; /* hover neutral-100 */
+}
 
-    .stat-card {
-      background: white;
-      border-radius: 0.75rem;
-      padding: 1.5rem;
-      border: 1px solid #e5e7eb;
-      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
-      transition: all 0.2s;
-    }
+.nav-item {
+  display: flex;
+  align-items: center;
+  padding: 0.5rem 0.75rem;
+}
 
-    .stat-card:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 4px 12px 0 rgba(0, 0, 0, 0.12);
-    }
+.nav-icon {
+  margin-right: 0.75rem;
+  flex-shrink: 0;
+  color: #4b5563; /* neutral-600 */
+}
 
-    .stat-icon {
-      width: 3rem;
-      height: 3rem;
-      border-radius: 0.75rem;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: background-color 0.2s;
-    }
+.nav-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #111827; /* neutral-900 */
+}
 
-    .stat-value {
-      font-size: 2rem;
-      font-weight: 700;
-      color: #111827;
-      margin-bottom: 0.25rem;
-    }
+.nav-subtext {
+  font-size: 0.75rem;
+  color: #6b7280; /* neutral-500 */
+}
 
-    .stat-label {
-      font-size: 0.875rem;
-      color: #6b7280;
-    }
+/* Organization Card */
+.org-card {
+  margin-top: 2rem;
+  padding: 1rem;
+  background-color: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.75rem;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+  transition: all 0.2s;
+}
 
-    .action-button {
-      display: flex;
-      align-items: center;
-      width: 100%;
-      padding: 1rem;
-      text-align: left;
-      background: white;
-      border: 1px solid #e5e7eb;
-      border-radius: 0.5rem;
-      transition: all 0.2s;
-      cursor: pointer;
-    }
+.org-card:hover {
+  box-shadow: 0 4px 6px rgba(0,0,0,0.08);
+}
 
-    .action-button:hover {
-      border-color: #d1d5db;
-      box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.05);
-    }
+.org-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
 
-    .empty-state {
-      padding: 3rem;
-      text-align: center;
-    }
+.org-logo, .org-logo-placeholder {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 0.75rem;
+}
 
-    .empty-icon {
-      width: 48px;
-      height: 48px;
-      margin: 0 auto 1rem;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background-color: #f3f4f6;
-      border-radius: 50%;
-    }
+.org-logo-placeholder {
+  background-color: #f3f4f6;
+  color: #4b5563;
+}
 
-    .empty-title {
-      font-size: 1.125rem;
-      font-weight: 600;
-      color: #111827;
-      margin-bottom: 0.5rem;
-    }
+.org-info .org-name {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #111827;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 
-    .empty-description {
-      color: #6b7280;
-      margin-bottom: 1.5rem;
-    }
+.org-info .org-type {
+  font-size: 0.75rem;
+  color: #6b7280;
+}
 
-    .status-badge {
-      display: inline-flex;
-      align-items: center;
-      padding: 0.25rem 0.75rem;
-      border-radius: 9999px;
-      font-size: 0.75rem;
-      font-weight: 500;
-    }
+/* Status Badge */
+.org-status {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem;
+  border-radius: 0.75rem;
+  border: 1px solid #e5e7eb;
+  background-color: #fff;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+
+.status-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #4b5563;
+}
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.25rem 0.625rem;
+  border-radius: 9999px;
+  transition: all 0.2s;
+}
+
+.status-dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 9999px;
+}
+
+.bg-green { background-color: #22c55e; }
+.bg-yellow { background-color: #eab308; }
+.bg-red { background-color: #ef4444; }
+.bg-gray { background-color: #9ca3af; }
+
+.org-verified {
+  margin-top: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.75rem;
+  color: #16a34a; /* green-600 */
+}
+
+/* Main content */
+.settings-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* Loading and Error Cards */
+.loading-card, .error-card, .coming-soon-card {
+  padding: 2rem;
+  border-radius: 0.75rem;
+  background-color: #fff;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+  text-align: center;
+}
+
+.loading-spinner {
+  width: 2rem;
+  height: 2rem;
+  border: 0.25rem solid #22c55e;
+  border-top-color: transparent;
+  border-radius: 9999px;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 0.5rem;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.error-card h3 {
+  color: #b91c1c;
+  margin-bottom: 0.5rem;
+}
+
+.error-card p {
+  color: #991b1b;
+  margin-bottom: 1rem;
+}
+
+.error-card button {
+  background-color: #b91c1c;
+  color: #fff;
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.error-card button:hover {
+  background-color: #991b1b;
+}
+
+   
   `]
 })
 export class SettingsComponent implements OnInit, OnDestroy {
@@ -349,20 +298,20 @@ export class SettingsComponent implements OnInit, OnDestroy {
       enabled: true,
       description: 'Registration, compliance, and verification'
     },
-    {
-      id: 'integrations',
-      label: 'Integrations',
-      icon: this.SettingsIcon,
-      enabled: false,
-      description: 'Third-party integrations and APIs'
-    },
-    {
-      id: 'billing',
-      label: 'Billing',
-      icon: this.CreditCardIcon,
-      enabled: false,
-      description: 'Subscription and payment details'
-    }
+    // {
+    //   id: 'integrations',
+    //   label: 'Integrations',
+    //   icon: this.SettingsIcon,
+    //   enabled: false,
+    //   description: 'Third-party integrations and APIs'
+    // },
+    // {
+    //   id: 'billing',
+    //   label: 'Billing',
+    //   icon: this.CreditCardIcon,
+    //   enabled: false,
+    //   description: 'Subscription and payment details'
+    // }
   ];
 
   ngOnInit() {
@@ -387,6 +336,10 @@ export class SettingsComponent implements OnInit, OnDestroy {
       this.activeSection.set(section);
     }
   }
+
+  trackByTabId(index: number, tab: any) {
+  return tab.id;
+}
 
   getSectionClasses(sectionId: SettingsSection): string {
     const baseClasses = 'text-left rounded-md transition-all duration-200';

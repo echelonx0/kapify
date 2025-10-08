@@ -1,5 +1,3 @@
- 
-
 // src/app/funder/funder.routes.ts - UPDATED WITH PUBLIC PROFILE MANAGEMENT
 import { Routes } from '@angular/router';
 
@@ -60,7 +58,7 @@ export const funderRoutes: Routes = [
       {
         path: 'opportunities/import',
         loadComponent: () =>
-          import('./create-opportunity/import-opportunity/import-opportunity-container.component').then(m => m.ImportOpportunityContainerComponent)
+          import('./create-opportunity/import-opportunity/import-container.component').then(m => m.ImportOpportunityContainerComponent)
       },   
       {
         path: 'opportunities/create',
