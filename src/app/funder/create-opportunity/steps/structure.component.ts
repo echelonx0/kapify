@@ -101,8 +101,7 @@ import { OpportunityUIHelperService } from 'src/app/funder/services/ui-helper.se
               Total Available <span class="text-red-500">*</span>
             </label>
             <div class="relative">
-              <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-sm font-medium">ZAR</span>
-              <input 
+            <input 
                 type="text" 
                 placeholder="5,000,000"
                 [value]="ui.formatNumberWithCommas(formState.formData().totalAvailable)"
@@ -126,8 +125,7 @@ import { OpportunityUIHelperService } from 'src/app/funder/services/ui-helper.se
               Typical Investment <span class="text-red-500">*</span>
             </label>
             <div class="relative">
-              <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-sm font-medium">ZAR</span>
-              <input 
+             <input 
                 type="text" 
                 placeholder="500,000"
                 [value]="ui.formatNumberWithCommas(formState.formData().offerAmount)"
@@ -151,7 +149,7 @@ import { OpportunityUIHelperService } from 'src/app/funder/services/ui-helper.se
           <div class="space-y-2">
             <label class="block text-sm font-semibold text-gray-700">Minimum Investment</label>
             <div class="relative">
-              <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-sm font-medium">ZAR</span>
+              
               <input 
                 type="text" 
                 placeholder="100,000"
@@ -174,7 +172,6 @@ import { OpportunityUIHelperService } from 'src/app/funder/services/ui-helper.se
           <div class="space-y-2">
             <label class="block text-sm font-semibold text-gray-700">Maximum Investment</label>
             <div class="relative">
-              <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-sm font-medium">ZAR</span>
               <input 
                 type="text" 
                 placeholder="2,000,000"

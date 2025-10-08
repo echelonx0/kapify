@@ -363,11 +363,14 @@ export class FunderDashboardComponent implements OnInit, OnDestroy {
   }
 
   editOpportunity(opportunityId: string) {
-    this.router.navigate([
-      '/funder/opportunities',
-      opportunityId,
-    ]);
-  }
+  this.router.navigate([
+    '/funder/opportunities/edit',
+    opportunityId
+  ]);
+}
+
+
+ 
 
   viewAnalytics() {
     // this.router.navigate(['/funder/analytics']);

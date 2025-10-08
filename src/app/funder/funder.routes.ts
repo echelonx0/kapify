@@ -60,11 +60,17 @@ export const funderRoutes: Routes = [
         loadComponent: () =>
           import('./create-opportunity/import-opportunity/import-container.component').then(m => m.ImportOpportunityContainerComponent)
       },   
-      {
-        path: 'opportunities/create',
-        loadComponent: () =>
-          import('./create-opportunity/create-opportunity.component').then(m => m.CreateOpportunityComponent)
-      },
+     {
+  path: 'opportunities/create',
+  loadComponent: () =>
+    import('./create-opportunity/create-opportunity.component').then(m => m.CreateOpportunityComponent)
+},
+{
+  path: 'opportunities/edit/:id',
+  loadComponent: () =>
+    import('./create-opportunity/create-opportunity.component').then(m => m.CreateOpportunityComponent)
+},
+
       
       {
         path: 'opportunities/:id',

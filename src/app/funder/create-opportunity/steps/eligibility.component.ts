@@ -47,8 +47,7 @@ import { OpportunityUIHelperService } from 'src/app/funder/services/ui-helper.se
           <div class="space-y-2">
             <label class="block text-sm font-semibold text-gray-700">Minimum Annual Revenue</label>
             <div class="relative">
-              <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-sm font-medium">ZAR</span>
-              <input 
+               <input 
                 type="text" 
                 placeholder="1,000,000"
                 [value]="ui.formatNumberWithCommas(formState.formData().minRevenue)"
@@ -70,7 +69,6 @@ import { OpportunityUIHelperService } from 'src/app/funder/services/ui-helper.se
           <div class="space-y-2">
             <label class="block text-sm font-semibold text-gray-700">Maximum Annual Revenue</label>
             <div class="relative">
-              <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-sm font-medium">ZAR</span>
               <input 
                 type="text" 
                 placeholder="50,000,000"
