@@ -86,9 +86,9 @@ export class RegisterComponent implements OnDestroy {
       password: ['', [Validators.required, this.passwordValidator]],
       confirmPassword: ['', [Validators.required]],
       userType: ['sme'],
-      agreeToTerms: [false, [Validators.requiredTrue]]
+      // agreeToTerms: [false, [Validators.requiredTrue]]
     }, { 
-      validators: [this.passwordMatchValidator, this.termsValidator],
+      validators: [this.passwordMatchValidator],
       updateOn: 'change'
     });
   }
