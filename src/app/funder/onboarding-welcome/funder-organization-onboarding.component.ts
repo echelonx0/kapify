@@ -9,7 +9,6 @@ import { FunderOnboardingService, OnboardingState } from '../services/funder-onb
 import { MobileHeaderComponent } from './components/mobile-header.component';
 import { PendingVerificationStateComponent } from './components/pending-verification.component';
 import { SetupStateComponent } from './components/setup-state.component';
- 
 import { VerificationReadyStateComponent } from './components/verification-ready-state.component';
 import { VerifiedStateComponent } from './components/verified.component';
 
