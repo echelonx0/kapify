@@ -24,7 +24,7 @@ import {
   Zap
 } from 'lucide-angular';
 import { UiButtonComponent } from '../../shared/components';
-import { RightPanelContent, RightPanelComponent } from '../components/right_panel.component';
+import { RightPanelContent, RightPanelComponent } from '../components/right-panel.component';
  
 
 interface OnboardingCard {

@@ -17,7 +17,6 @@ import { trigger, transition, style, animate } from '@angular/animations';
 import { FundingOpportunityService } from '../../funding/services/funding-opportunity.service';
 import { FundingOpportunity } from '../../shared/models/funder.models';
 import { ModalService } from '../../shared/services/modal.service';
-
 // Components 
 import { OpportunityFormStateService } from '../services/opportunity-form-state.service';
 import { OpportunityFormData } from './shared/form-interfaces';
@@ -130,7 +129,7 @@ export class CreateOpportunityComponent implements OnInit, OnDestroy {
       // Don't proceed with loading until validation is complete
       return;
     }
-    
+   
     // Load organization data
     this.organizationState.loadOrganizationData();
     

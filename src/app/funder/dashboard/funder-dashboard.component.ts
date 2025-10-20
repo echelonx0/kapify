@@ -370,6 +370,16 @@ export class FunderDashboardComponent implements OnInit, OnDestroy {
 }
 
 
+  deleteOpportunity(opportunityId: string) {
+  
+}
+
+
+  duplicateOpportunity(opportunityId: string) {
+  
+}
+
+
  
 
   viewAnalytics() {

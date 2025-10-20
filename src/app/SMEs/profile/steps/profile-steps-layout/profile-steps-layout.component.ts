@@ -156,15 +156,15 @@ export class  ProfileStepsLayoutComponent implements OnInit {
       priority: 'high' as const,
       dependencies: ['documents']
     },
-    {
-  id: 'review',
-  title: 'Review & Analysis', 
-  shortTitle: 'Review',
-  description: 'Review your complete profile and get AI insights',
-  icon: Eye, // or Sparkles
-  estimatedTime: '5 min',
-  priority: 'low' as const
-}
+      {
+    id: 'review',
+    title: 'Review & Analysis', 
+    shortTitle: 'Review',
+    description: 'Review your complete profile and get AI insights',
+    icon: Eye, // or Sparkles
+    estimatedTime: '5 min',
+    priority: 'low' as const
+  }
   ];
 
   @HostListener('window:resize', ['$event'])

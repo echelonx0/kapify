@@ -268,12 +268,25 @@
                         </div>
                       </div>
  
-                      <!-- Edit Button -->
-                      <div class="p-6 border-t border-gray-100 bg-gray-50">
-                        <ui-button variant="outline" (clicked)="editOpportunity(opportunity.id)" class="w-full">
-                          Edit Opportunity
-                        </ui-button>
-                      </div>
+                      <!-- Manage Buttons -->
+           <!-- Manage Buttons -->
+<div class="p-6 border-t border-gray-100 bg-gray-50">
+  <div class="flex flex-col sm:flex-row gap-2"> <!-- Add flex container and gap -->
+    <ui-button variant="outline" (clicked)="editOpportunity(opportunity.id)" class="w-full sm:w-auto">
+      Edit 
+    </ui-button>
+
+    <ui-button variant="outline" (clicked)="deleteOpportunity(opportunity.id)" class="w-full sm:w-auto">
+      Delete
+    </ui-button>
+
+       <ui-button variant="outline" (clicked)="duplicateOpportunity(opportunity.id)" class="w-full sm:w-auto">
+     Duplicate
+    </ui-button>
+  </div>
+</div>
+
+                      
                     }
                   </div>
                 }
