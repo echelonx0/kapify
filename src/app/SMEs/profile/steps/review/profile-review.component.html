@@ -1,6 +1,51 @@
 <!-- src/app/profile/steps/review/profile-review.component.html -->
-<div class="max-w-7xl mx-auto p-6 space-y-8">
+<div class="max-w-7xl mx-auto space-y-8 ml-8">
  
+
+  <!-- AI Analysis Section -->
+<!-- Profile Evaluation Section -->
+<div class="mt-8">
+  <div class="space-y-6">
+    <!-- Hero Header -->
+    <div class="bg-slate-950 rounded-2xl p-12 text-white">
+      <h2 class="text-4xl font-bold mb-4">Profile Evaluation</h2>
+      <p class="text-slate-300 text-lg mb-10 leading-relaxed max-w-2xl">
+        Get AI-powered insights about your business profile's strengths, areas for improvement, and funding readiness.
+      </p>
+      
+      <!-- Action Button with branded accent -->
+      <div class="flex">
+        <div class="w-1 bg-emerald-500"></div>
+        <button 
+          (click)="toggleAIAnalysis()" 
+          class="flex-1 bg-emerald-500 text-white px-8 py-4 font-semibold text-lg hover:bg-emerald-600 transition-colors">
+          @if (showAIAnalysis()) {
+            Hide Analysis
+          } @else {
+            Analyze My Profile
+          }
+        </button>
+      </div>
+    </div>
+
+    <!-- Analysis Content -->
+    @if (showAIAnalysis()) {
+      <div class="bg-white border border-slate-200 rounded-lg p-8">
+        <app-enhanced-ai-analysis
+          [opportunity]="null"
+          [applicationData]="null"
+          [applicationId]="null"
+          [isSubmitted]="false"
+          [analysisMode]="'profile'"
+          (analysisCompleted)="onProfileAnalysisCompleted($event)">
+        </app-enhanced-ai-analysis>
+      </div>
+    }
+  </div>
+</div>
+
+
+
 
   <!-- Profile Overview Card -->
 <ui-card class="mb-8">
@@ -45,7 +90,7 @@
       </div>
       <div class="p-4 rounded-lg bg-gray-50">
         <div class="text-sm font-medium text-gray-500">Funding Required</div>
-        <div class="text-lg font-semibold text-blue-600">
+        <div class="text-lg font-semibold text-slate-600">
           {{ formatCurrency(profileOverview().requestedFunding) }}
         </div>
       </div>
@@ -95,7 +140,7 @@
         <div class="mb-4">
           <div class="w-full bg-gray-200 rounded-full h-2">
             <div 
-              [class]="'h-2 rounded-full transition-all duration-300 ' + (section.completed ? 'bg-green-500' : 'bg-blue-500')"
+              [class]="'h-2 rounded-full transition-all duration-300 ' + (section.completed ? 'bg-green-500' : 'bg-slate-500')"
               [style.width]="getCompletionBarWidth(section.completionPercentage)"
             ></div>
           </div>
@@ -110,7 +155,7 @@
                 <div class="flex items-center">
                   <span class="text-sm font-medium text-gray-900 mr-2">{{ item.value }}</span>
                   @if (item.status) {
-                    <span [class]="'px-2 py-1 rounded-full text-xs font-medium ' + getStatusBadgeClass(item.status)">
+                    <span [class]="'px-2 py-1 rounded-lg text-xs font-medium ' + getStatusBadgeClass(item.status)">
                       {{ item.status }}
                     </span>
                   }
@@ -143,53 +188,5 @@
 </div>
 
 
-  <!-- AI Analysis Section -->
-<div class="mt-4">
-      <ui-card>
-    <div class="p-6">
-      <div class="flex items-center justify-between mb-4">
-        <div class="flex items-center">
-          <lucide-icon [name]="SparklesIcon" [size]="24" class="text-purple-600 mr-3" />
-          <h2 class="text-xl font-semibold text-gray-900">AI Profile Analysis</h2>
-        </div>
-        <ui-button variant="outline" (clicked)="toggleAIAnalysis()">
-          @if (showAIAnalysis()) {
-            Hide Analysis
-          } @else {
-            Show AI Insights
-          }
-        </ui-button>
-      </div>
-
-      @if (showAIAnalysis()) {
-        <div class="border-t pt-6">
-       <!-- In profile review/completion component -->
-<div class="mt-8">
-  <app-enhanced-ai-analysis
-    [opportunity]="null"
-    [applicationData]="null"
-    [applicationId]="null"
- 
-    [isSubmitted]="false"
-    [analysisMode]="'profile'"
-    (analysisCompleted)="onProfileAnalysisCompleted($event)">
-  </app-enhanced-ai-analysis>
-</div>
-        </div>
-      } @else {
-        <div class="text-center py-8">
-          <p class="text-gray-600 mb-4">
-            Get AI-powered insights about your business profile's strengths, areas for improvement, and funding readiness.
-          </p>
-          <ui-button variant="primary" (clicked)="toggleAIAnalysis()">
-            <lucide-icon [name]="SparklesIcon" [size]="16" class="mr-2" />
-            Analyze My Profile
-          </ui-button>
-        </div>
-      }
-    </div>
-  </ui-card>
-
-</div>
  
 </div>
