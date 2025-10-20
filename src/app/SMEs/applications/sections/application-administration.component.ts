@@ -1,7 +1,8 @@
 // src/app/applications/sections/application-administration.component.ts
 import { Component, signal, input, OnInit } from '@angular/core';
-import { UiCardComponent } from '../../shared/components';
+ 
 import { LucideAngularModule, User, Building, Phone, Mail, MapPin, Calendar } from 'lucide-angular';
+import { UiCardComponent } from 'src/app/shared/components';
 
 interface ContactDetails {
   fullName: string;

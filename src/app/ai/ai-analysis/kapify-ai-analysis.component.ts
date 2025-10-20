@@ -5,7 +5,7 @@ import { CommonModule } from '@angular/common';
 import { Subject, takeUntil } from 'rxjs';
 
 // Child Components
-import { AnalysisLauncherComponent } from './components/analysis-launcher.component';
+import { AnalysisLauncherComponent } from './evaluation-component/evaluation.component';
 import { BusinessRulesResultsComponent } from './components/business-rules-results.component';
 import { AiAnalysisProgressComponent } from './components/ai-analysis-progress.component';
 import { ComprehensiveAnalysisResultsComponent } from './components/comprehensive-analysis-results.component';

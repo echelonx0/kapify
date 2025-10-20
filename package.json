@@ -35,6 +35,7 @@
     "@angular-devkit/build-angular": "^19.0.5",
     "@angular/cli": "^19.0.5",
     "@angular/compiler-cli": "^19.0.0",
+    "@spartan-ng/cli": "^0.0.1-alpha.532",
     "@tailwindcss/forms": "^0.5.10",
     "@types/jasmine": "~5.1.0",
     "@types/papaparse": "^5.3.16",

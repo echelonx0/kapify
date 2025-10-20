@@ -12,7 +12,6 @@ import { GlobalProfileValidationService } from 'src/app/shared/services/global-p
 import { DatabaseApplicationService } from 'src/app/SMEs/services/database-application.service';
 import { FundingProfileBackendService } from 'src/app/SMEs/services/funding-profile-backend.service';
 import { KapifyAIAnalysisComponent } from 'src/app/ai/ai-analysis/kapify-ai-analysis.component';
- 
 import { ApplicationFormService } from './services/application-form.service';
 import { ApplicationValidationService } from './services/application-validation.service';
 

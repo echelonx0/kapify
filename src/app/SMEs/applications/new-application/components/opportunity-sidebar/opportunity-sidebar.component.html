@@ -2,10 +2,7 @@
 @if (opportunity(); as opp) {
   <ui-card class="sticky top-6 hover:shadow-lg transition-shadow duration-300">
     <div class="space-y-4">
-      <div class="border-b border-neutral-200 pb-4">
-        <h3 class="font-medium text-neutral-900">Selected Opportunity</h3>
-        <p class="text-sm text-neutral-600">{{ getOrganizationName() }}</p>
-      </div>
+  
 
       <div class="bg-gradient-to-br from-neutral-50 to-neutral-100 rounded-lg p-4 border border-neutral-200">
         <h4 class="font-medium text-neutral-900 mb-3">{{ opp.title }}</h4>
@@ -63,7 +60,7 @@
         <div class="bg-white border border-neutral-200 rounded-lg p-4 hover:shadow-sm transition-shadow">
           <h4 class="font-medium text-neutral-900 mb-2 flex items-center">
             <lucide-icon [img]="FileTextIcon" [size]="14" class="mr-1 text-blue-600" />
-            Description
+            Fund Purpose
           </h4>
           <p class="text-sm text-neutral-600 leading-relaxed">{{ opp.shortDescription }}</p>
         </div>
@@ -82,7 +79,7 @@
       }
 
       <!-- AI Insights Sidebar -->
-      @if (showAIInsights()) {
+      <!-- @if (showAIInsights()) {
         <div class="bg-gradient-to-br from-blue-50 via-indigo-50 to-slate-50 border-2 border-blue-200 rounded-lg p-4 hover:shadow-md transition-shadow">
           <div class="flex items-center space-x-2 mb-3">
             <div class="w-6 h-6 bg-gradient-to-r from-blue-500 to-slate-600 rounded flex items-center justify-center">
@@ -135,7 +132,7 @@
             </div>
           }
         </div>
-      }
+      } -->
 
       <!-- Statistics -->
       <div class="pt-4 border-t-2 border-neutral-200 space-y-3">

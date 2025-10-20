@@ -3,7 +3,8 @@
   <div class="group">
     <label class="block text-sm font-medium text-blue-800 mb-3 group-hover:text-blue-900 transition-colors flex items-center">
       <lucide-icon [img]="FileTextIcon" [size]="16" class="mr-2" />
-      Cover Statement (Optional)
+     Upload a cover letter explaining why this opportunity aligns with your business
+     (Optional)
     </label>
     
     @if (!selectedFile()) {
@@ -52,8 +53,16 @@
       </div>
     }
     
-    <p class="mt-2 text-xs text-blue-600">
-      Upload a cover letter explaining why this opportunity aligns with your business
-    </p>
-  </div>
+<p class="mt-2 text-xs text-blue-600">
+  Feel free to download and use a sample 
+  <a 
+    href="https://docs.google.com/document/d/111pVmW97vfwWKQaKKNysyen-eezD5lxlJEa90Vs-u5g/edit?usp=sharing" 
+    target="_blank" 
+    rel="noopener noreferrer"
+    class="underline hover:text-blue-800 transition-colors"
+  >
+    here
+  </a>
+</p>
+</div>
 </div>

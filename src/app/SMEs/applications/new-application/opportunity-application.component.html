@@ -34,7 +34,7 @@
     </div>
   </div>
 
-  <!-- Progress Steps -->
+  <!-- Progress Steps PROBLEMATIC-->
   <div class="mb-8">
     <div class="flex items-center justify-between w-full">
       @for (step of steps(); track step.id) {
@@ -62,9 +62,9 @@
   </div>
 
   <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-    <!-- Main Content -->
+    <!-- Main Content --> 
     <div class="lg:col-span-2">
-      <ui-card class="hover:shadow-lg transition-shadow duration-300">
+      <ui-card class="hover:shadow-md transition-shadow duration-300">
         @if (error()) {
           <div class="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
             <span class="text-red-800">{{ error() }}</span>
@@ -91,16 +91,7 @@
 
           @case ('ai-analysis') {
             <div class="space-y-6">
-              <div class="flex items-center space-x-3 mb-6">
-                <div class="w-10 h-10 bg-gradient-to-r from-blue-500 to-slate-600 rounded-lg flex items-center justify-center shadow-lg">
-                  <lucide-icon [img]="ClockIcon" [size]="20" class="text-white" />
-                </div>
-                <div>
-                  <h3 class="text-lg font-semibold text-neutral-900">Pre Qualification Analysis</h3>
-                  <p class="text-sm text-neutral-600">Get intelligent insights about your application</p>
-                </div>
-              </div>
-
+            
               <app-enhanced-ai-analysis
                 [opportunity]="selectedOpportunity()"
                 [applicationData]="formData()"
@@ -168,7 +159,7 @@
             } @else {
               <ui-button variant="primary" (click)="nextStep()" [disabled]="!canContinue()">
                 @if (currentStep() === 'application-details') {
-                  Continue to AI Analysis
+                  Continue to Evaluation Step
                 } @else if (currentStep() === 'ai-analysis') {
                   Continue to Review
                 } @else {

@@ -1,40 +1,47 @@
-// src/app/shared/components/ui-textarea.component.ts
 import { Component, input, signal, forwardRef } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'ui-textarea',
   standalone: true,
+  imports: [CommonModule],
   template: `
-    <div class="space-y-1">
+    <div class="space-y-2.5">
       @if (label()) {
-        <label class="block text-sm font-medium text-neutral-700">
+        <label class="block text-sm font-semibold text-slate-900">
           {{ label() }}
           @if (required()) {
-            <span class="text-red-500">*</span>
+            <span class="text-red-500 ml-1">*</span>
           }
         </label>
       }
-      <textarea
-        [placeholder]="placeholder()"
-        [disabled]="disabled()"
-        [class]="textareaClasses()"
-        [rows]="rows()"
-        [value]="value()"
-        (input)="onInput($event)"
-        (blur)="onBlur()"
-      ></textarea>
+      
+      <div class="relative group">
+        <textarea
+          [placeholder]="placeholder()"
+          [disabled]="disabled()"
+          [class]="textareaClasses()"
+          [rows]="rows()"
+          [value]="internalValue()"
+          (input)="onInput($event)"
+          (blur)="onBlur()"
+        ></textarea>
+        
+        @if (showCharCount()) {
+          <div class="absolute bottom-3 right-3 text-xs font-medium text-slate-400 pointer-events-none">
+            {{ internalValue().length }}{{ maxLength() ? ' / ' + maxLength() : '' }}
+          </div>
+        }
+      </div>
+      
       @if (error()) {
-        <p class="text-sm text-red-600">{{ error() }}</p>
-      } @else if (hint()) {
-        <p class="text-sm text-neutral-500">{{ hint() }}</p>
-      }
-      @if (showCharCount()) {
-        <div class="flex justify-end">
-          <span class="text-xs text-neutral-500">
-            {{ value().length }}{{ maxLength() ? '/' + maxLength() : '' }}
-          </span>
+        <div class="flex items-center space-x-1.5 text-sm text-red-600 font-medium">
+          <div class="w-1.5 h-1.5 rounded-full bg-red-600"></div>
+          <span>{{ error() }}</span>
         </div>
+      } @else if (hint()) {
+        <p class="text-sm text-slate-500">{{ hint() }}</p>
       }
     </div>
   `,
@@ -51,31 +58,35 @@ export class UiTextareaComponent implements ControlValueAccessor {
   placeholder = input<string>();
   required = input(false);
   disabled = input(false);
-  error = input<string>();
+  error = input<string | null>();
   hint = input<string>();
-  rows = input(4);
+  rows = input(5);
   maxLength = input<number>();
   showCharCount = input(false);
-
-  value = signal('');
+  value = input('');
+  internalValue = signal('');
   
   private onChange = (value: string) => {};
   private onTouched = () => {};
 
   textareaClasses = () => {
-    const baseClasses = 'block w-full px-3 py-2 border rounded-md shadow-sm placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-offset-0 sm:text-sm transition-colors resize-y';
+    const baseClasses = 'block w-full px-4 py-3 text-sm leading-relaxed border-2 rounded-lg shadow-sm transition-all duration-200 resize-none font-normal placeholder-slate-400 focus:outline-none';
+    
     const stateClasses = this.error() 
-      ? 'border-red-300 focus:border-red-500 focus:ring-red-500'
-      : 'border-neutral-300 focus:border-primary-500 focus:ring-primary-500';
-    const disabledClasses = this.disabled() ? 'bg-neutral-50 cursor-not-allowed' : 'bg-white';
+      ? 'border-red-300 bg-red-50/30 focus:border-red-500 focus:ring-2 focus:ring-red-100'
+      : 'border-slate-200 bg-white hover:border-slate-300 focus:border-slate-900 focus:ring-2 focus:ring-slate-100';
+    
+    const disabledClasses = this.disabled() 
+      ? 'bg-slate-50 text-slate-500 cursor-not-allowed border-slate-100' 
+      : '';
     
     return `${baseClasses} ${stateClasses} ${disabledClasses}`;
   };
 
   onInput(event: Event): void {
     const target = event.target as HTMLTextAreaElement;
-    this.value.set(target.value);
-    this.onChange(this.value());
+    this.internalValue.set(target.value);
+    this.onChange(this.internalValue());
   }
 
   onBlur(): void {
@@ -83,7 +94,7 @@ export class UiTextareaComponent implements ControlValueAccessor {
   }
 
   writeValue(value: string): void {
-    this.value.set(value || '');
+    this.internalValue.set(value || '');
   }
 
   registerOnChange(fn: (value: string) => void): void {
@@ -95,7 +106,6 @@ export class UiTextareaComponent implements ControlValueAccessor {
   }
 
   setDisabledState(isDisabled: boolean): void {
-    // In React-style components, we'd use a signal for this
+    // Handled via input
   }
 }
-

@@ -44,7 +44,7 @@ export class OpportunitySidebarComponent {
   }
 
   getOrganizationName(): string {
-    return 'Private Funder'; // Replace with actual logic
+    return 'Private Funder';  
   }
 
   getApplicationProgress(): number {

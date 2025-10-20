@@ -1,106 +1,92 @@
-<!-- application-form.component.html -->
 <div class="space-y-8">
   <div class="flex items-center space-x-3 mb-6">
     <div class="w-10 h-10 bg-gradient-to-br from-slate-500 to-slate-600 rounded-lg flex items-center justify-center shadow-lg">
       <lucide-icon [img]="FileTextIcon" [size]="20" class="text-white" />
     </div>
     <div>
-      <h3 class="text-lg font-semibold text-neutral-900">Application Details</h3>
-      <p class="text-sm text-neutral-600">Provide information specific to this opportunity</p>
+      <h3 class="text-lg font-semibold text-slate-900">Application Details</h3>
+      <p class="text-sm text-slate-600">Provide information specific to this opportunity</p>
     </div>
   </div>
 
   <!-- Requested Amount -->
   <div class="group">
-    <label class="block text-sm font-medium text-neutral-700 mb-3 group-hover:text-primary-600 transition-colors">
+    <label class="block text-sm font-semibold text-slate-900 mb-3 group-hover:text-slate-700 transition-colors">
       Requested Amount <span class="text-red-500">*</span>
     </label>
     <div class="relative">
-      <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-     </div>
       <input
-        type="number"
+        type="text"
+        inputmode="numeric"
+        [value]="getFormattedAmount()"
+        (input)="onAmountInput($event)"
+        (blur)="validateAmount()"
         placeholder="0"
-        [value]="formData().requestedAmount"
-        (input)="onRequestedAmountChange($event)"
-        [min]="opportunity().minInvestment"
-        [max]="opportunity().maxInvestment"
-        class="block w-full pl-16 pr-4 py-4 text-lg border-2 border-neutral-300 rounded-xl shadow-sm placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all hover:border-neutral-400 font-medium"
+        class="block w-full px-4 py-3 text-lg border-2 border-slate-200 rounded-lg shadow-sm placeholder-slate-400 focus:outline-none focus:border-slate-900 focus:ring-2 focus:ring-slate-100 transition-all hover:border-slate-300 font-semibold bg-white text-right tracking-tight"
       />
     </div>
     @if (getAmountValidationMessage()) {
-      <p class="mt-2 text-sm text-red-600 flex items-center">
-        <lucide-icon [img]="AlertCircleIcon" [size]="16" class="mr-1" />
-        {{ getAmountValidationMessage() }}
-      </p>
+      <div class="mt-2.5 flex items-center space-x-1.5 text-sm text-red-600 font-medium">
+        <div class="w-1.5 h-1.5 rounded-full bg-red-600"></div>
+        <span>{{ getAmountValidationMessage() }}</span>
+      </div>
     } @else {
-      <p class="mt-2 text-sm text-neutral-500 flex items-center">
-        <lucide-icon [img]="DollarSignIcon" [size]="16" class="mr-1 text-green-600" />
-        Range: {{ formatCurrency(opportunity().minInvestment) }} - {{ formatCurrency(opportunity().maxInvestment) }}
+      <p class="mt-2.5 text-sm text-slate-600">
+        Range: {{ formatCurrency(opportunity().minInvestment) }} – {{ formatCurrency(opportunity().maxInvestment) }}
       </p>
     }
   </div>
 
   <!-- Purpose Statement -->
-  <div class="group">
-    <label class="block text-sm font-medium text-neutral-700 mb-3 group-hover:text-primary-600 transition-colors">
-      Purpose Statement <span class="text-red-500">*</span>
-    </label>
-    <div class="relative">
-      <textarea
-        placeholder="Explain why you need this funding and how it will benefit your business..."
-        [value]="formData().purposeStatement"
-        (input)="onPurposeStatementChange($event)"
-        rows="6"
-        class="block w-full px-4 py-4 border-2 border-neutral-300 rounded-xl shadow-sm placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all hover:border-neutral-400 resize-none text-sm leading-relaxed"
-      ></textarea>
-      <div class="absolute bottom-3 right-3 text-xs text-neutral-400">
-        {{ formData().purposeStatement.length || 0 }} characters
-      </div>
-    </div>
-    <p class="mt-2 text-xs text-neutral-500">Describe your business objectives</p>
-  </div>
+  <ui-textarea
+    [label]="'Purpose Statement'"
+    [placeholder]="'Explain why you need this funding. Be clear and compelling.'"
+    [required]="true"
+    [rows]="6"
+    [value]="formData().purposeStatement"
+    [error]="getPurposeError()"
+    [hint]="'Describe your business objectives and why this funding is critical.'"
+    [showCharCount]="true"
+    (ngModelChange)="onPurposeStatementChange($event)"
+    ngModel
+  ></ui-textarea>
 
   <!-- Use of Funds -->
-  <div class="group">
-    <label class="block text-sm font-medium text-neutral-700 mb-3 group-hover:text-primary-600 transition-colors">
-      Use of Funds <span class="text-red-500">*</span>
-    </label>
-    <div class="relative">
-      <textarea
-        placeholder="Provide a detailed breakdown of how you will use the funding..."
-        [value]="formData().useOfFunds"
-        (input)="onUseOfFundsChange($event)"
-        rows="6"
-        class="block w-full px-4 py-4 border-2 border-neutral-300 rounded-xl shadow-sm placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all hover:border-neutral-400 resize-none text-sm leading-relaxed"
-      ></textarea>
-      <div class="absolute bottom-3 right-3 text-xs text-neutral-400">
-        {{ formData().useOfFunds.length || 0 }} characters
-      </div>
-    </div>
-    <p class="mt-2 text-xs text-neutral-500">Break down how funds will be allocated</p>
-  </div>
+  <ui-textarea
+    [label]="'Use of Funds'"
+    [placeholder]="'Provide a detailed breakdown of how you will use the funding.'"
+    [required]="true"
+    [rows]="6"
+    [value]="formData().useOfFunds"
+    [error]="getUseOfFundsError()"
+    [hint]="'Break down how funds will be allocated across key initiatives.'"
+    [showCharCount]="true"
+    (ngModelChange)="onUseOfFundsChange($event)"
+    ngModel
+  ></ui-textarea>
 
   <!-- Cover Statement Upload -->
-  <app-cover-statement-upload
-    (fileSelected)="onCoverStatementUploaded($event)">
-  </app-cover-statement-upload>
+  <div class="mt-6">
+    <app-cover-statement-upload
+      (fileSelected)="onCoverStatementUploaded($event)">
+    </app-cover-statement-upload>
+  </div>
 
   <!-- Progress Indicator -->
-  <div class="bg-neutral-50 border border-neutral-200 rounded-xl p-4">
-    <div class="flex items-center justify-between text-sm text-neutral-600 mb-2">
-      <span class="font-medium">Application Completion</span>
-      <span class="font-medium">{{ completionPercentage() }}%</span>
+  <div class="bg-slate-50 border border-slate-200 rounded-lg p-5">
+    <div class="flex items-center justify-between text-sm text-slate-700 mb-3">
+      <span class="font-semibold">Application Completion</span>
+      <span class="font-semibold text-slate-900">{{ completionPercentage() }}%</span>
     </div>
-    <div class="w-full bg-neutral-200 rounded-full h-2">
+    <div class="w-full bg-slate-200 rounded-full h-2">
       <div 
-        class="bg-gradient-to-r from-green-400 to-green-600 h-2 rounded-full transition-all duration-500"
+        class="bg-gradient-to-r from-emerald-400 to-emerald-600 h-2 rounded-full transition-all duration-500"
         [style.width.%]="completionPercentage()"
       ></div>
     </div>
-    <div class="mt-2 flex items-center text-xs text-neutral-500">
-      <lucide-icon [img]="CheckCircleIcon" [size]="12" class="mr-1 text-green-600" />
-      Complete all required fields to continue
+    <div class="mt-3 flex items-center text-xs text-slate-600 font-medium">
+      <div class="w-1.5 h-1.5 rounded-full bg-emerald-600 mr-2"></div>
+      Complete all required fields  
     </div>
   </div>
 </div>
