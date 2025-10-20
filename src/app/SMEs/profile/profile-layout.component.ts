@@ -11,9 +11,7 @@ import { SidebarNavComponent } from '../../shared/components';
   template: `
 
    <div class=" bg-neutral-50">
-      <sidebar-nav />
-      
- 
+      <sidebar-nav /> 
         <main>
           <router-outlet />
         </main>
