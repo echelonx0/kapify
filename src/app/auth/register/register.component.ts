@@ -6,7 +6,13 @@ import { LucideAngularModule, Eye, EyeOff, ArrowRight, Users, Building, Check, A
 import { Subscription } from 'rxjs';
 import { AuthService, RegisterRequest } from '../production.auth.service';
 
- 
+ interface Slide {
+  image: string;      // path to image
+  title?: string;
+  subtitle?: string;
+  id?: string;
+}
+
 
 @Component({
   selector: 'app-register',
@@ -33,7 +39,16 @@ export class RegisterComponent implements OnDestroy {
   success = signal<string | null>(null);
   
   private subscriptions = new Subscription();
+slides = signal<Slide[]>([
+  { image: '/images/auth-3.png', title: 'Single use plaform', subtitle: 'Choose the best financing option for your business.' },
+  { image: '/images/auth-2.png', title: 'Fast approvals', subtitle: 'Get matched with investors quickly.' },
+  { image: '/images/auth.png', title: 'Trusted investors', subtitle: 'Access a vetted network of funders.' }
+]);
 
+activeSlideIndex = signal<number>(0);
+autoplay = true;               // toggle autoplay on/off
+autoplayIntervalMs = 5000;     // change to taste
+private autoplayTimer: any = null;
   // Icons
   EyeIcon = Eye;
   EyeOffIcon = EyeOff;
@@ -70,10 +85,15 @@ export class RegisterComponent implements OnDestroy {
     this.initializeForm();
     this.setupRouteSubscription();
     this.updateCompanyNameValidation();
+
+
+  // Start carousel autoplay
+  this.startAutoplay();
   }
 
   ngOnDestroy(): void {
     this.subscriptions.unsubscribe();
+    this.stopAutoplay();
   }
 
   private initializeForm(): void {
@@ -271,79 +291,6 @@ private emailValidator = (control: AbstractControl) => {
   toggleConfirmPasswordVisibility(): void {
     this.showConfirmPassword.set(!this.showConfirmPassword());
   }
-
- 
-// onSubmit(): void {
-//   if (!this.canSubmit()) {
-//     this.markAllFieldsAsTouched();
-//     return;
-//   }
-
-//   this.clearMessages();
-  
-//   const formData = this.registerForm.value;
-//   const registerData: RegisterRequest = {
-//     firstName: formData.firstName.trim(),
-//     lastName: formData.lastName.trim(),
-//     email: formData.email.toLowerCase().trim(),
-//     phone: formData.phone,
-//     password: formData.password,
-//     confirmPassword: formData.confirmPassword,
-//     userType: this.selectedUserType(),
-//     companyName: formData.companyName?.trim() || undefined,
-//     agreeToTerms: formData.agreeToTerms
-//   };
-
-//   console.log('Submitting registration for:', registerData.email);
-
-//   const registrationSubscription = this.authService.register(registerData).subscribe({
-//     next: (response) => {
-//       console.log('Registration response received:', response);
-      
-//       if (response.success && response.user) {
-//         this.success.set('Account created successfully! Redirecting...');
-//         console.log('Registration successful, navigating to dashboard');
-        
-//         setTimeout(() => {
-//           this.router.navigate(['/dashboard/welcome']);
-//         }, 1500);
-//       } else {
-//         this.error.set(response.error || 'Registration failed. Please try again.');
-//         // ✅ FIXED: Don't manually re-enable - let the loading state handle it
-//       }
-//     },
-//     error: (err) => {
-//       console.error('Registration error:', err);
-      
-//       let errorMessage = 'Registration failed. Please try again.';
-      
-//       if (err.error) {
-//         errorMessage = err.error;
-//       } else if (err.message) {
-//         errorMessage = err.message;
-//       } else if (typeof err === 'string') {
-//         errorMessage = err;
-//       }
-      
-//       if (errorMessage.includes('User already registered') || errorMessage.includes('Email already confirmed')) {
-//         errorMessage = 'An account with this email already exists. Please try logging in instead.';
-//       } else if (errorMessage.includes('Email rate limit')) {
-//         errorMessage = 'Too many registration attempts. Please wait a few minutes before trying again.';
-//       } else if (errorMessage.includes('Signup is disabled')) {
-//         errorMessage = 'Registration is temporarily disabled. Please try again later.';
-//       }
-      
-//       this.error.set(errorMessage);
-      
-//       // ✅ FIXED: Remove this line - loading state cancellation is handled by AuthService
-//       // this.registerForm.enable(); // REMOVED
-//     }
-//   });
-
-//   this.subscriptions.add(registrationSubscription);
-// }
-
-// Update the onSubmit method in your RegisterComponent to include user-type-specific routing
 
 onSubmit(): void {
   if (!this.canSubmit()) {
@@ -561,4 +508,38 @@ onSubmit(): void {
   get shouldDisableForm(): boolean {
   return this.isLoading() || this.isRegistering();
 }
+
+// Call this.startAutoplay() in constructor (after initializeForm())
+  startAutoplay(): void {
+  if (!this.autoplay) return;
+  // clear existing timer first
+  this.stopAutoplay();
+  this.autoplayTimer = setInterval(() => {
+    this.nextSlide();
+  }, this.autoplayIntervalMs);
+}
+
+  stopAutoplay(): void {
+  if (this.autoplayTimer) {
+    clearInterval(this.autoplayTimer);
+    this.autoplayTimer = null;
+  }
+}
+
+selectSlide(index: number): void {
+  const slides = this.slides();
+  if (index < 0 || index >= slides.length) return;
+  this.activeSlideIndex.set(index);
+}
+
+nextSlide(): void {
+  const next = (this.activeSlideIndex() + 1) % this.slides().length;
+  this.activeSlideIndex.set(next);
+}
+
+prevSlide(): void {
+  const prev = (this.activeSlideIndex() - 1 + this.slides().length) % this.slides().length;
+  this.activeSlideIndex.set(prev);
+}
+
 }

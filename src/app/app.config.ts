@@ -11,8 +11,7 @@ import { getFirestore, provideFirestore } from '@angular/fire/firestore';
 import { getFunctions, provideFunctions } from '@angular/fire/functions';
 import { getStorage, provideStorage } from '@angular/fire/storage';
 import { getVertexAI, provideVertexAI } from '@angular/fire/vertexai';
-import { environment } from '../environments/environment';
-// import { AuthInterceptor } from './auth/auth.interceptor';
+import { environment } from '../environments/environment'; 
 import { SupabaseAuthInterceptor } from './auth/interceptors/supabase.interceptor';
  
 

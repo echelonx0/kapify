@@ -1,52 +1,55 @@
-<div class="min-h-screen flex">
+
+<div class="min-h-screen flex relative">
+  <!-- Top-right header (moved here from form panel) -->
+  <div class="absolute top-6 right-8 flex items-center space-x-6 z-40">
+    <div class="flex items-center space-x-3">
+      <div class="w-10 h-10 bg-primary-600 rounded-xl flex items-center justify-center shadow-md">
+        <span class="text-white font-bold text-lg">K</span>
+      </div>
+      <h1 class="text-2xl font-bold text-white drop-shadow-md">Join Kapify</h1>
+    </div>
+    <a
+      routerLink="/login"
+      class="text-sm text-white font-medium border border-white/30 hover:border-white bg-white/10 hover:bg-white/20 transition-all px-4 py-1.5 rounded-full shadow-sm backdrop-blur-sm"
+    >
+      Sign in
+    </a>
+  </div>
+
   <!-- Left Panel - Form -->
   <div class="flex-1 flex items-center justify-center px-8 py-12 bg-white">
     <div class="w-full max-w-md">
-      
-      <!-- Logo and Login Link -->
-  <div class="mb-12 flex items-center justify-between">
-  <div class="flex items-center space-x-4">
-    <div class="w-10 h-10 bg-primary-600 rounded-xl flex items-center justify-center">
-      <span class="text-white font-bold text-lg">K</span>
-    </div>
-    <h1 class="text-3xl font-bold text-neutral-900">Join Kapify</h1>
-  </div>
-  <a 
-    routerLink="/login"
-    class="text-sm text-slate-700 font-medium hover:text-slate-900 transition-colors border border-slate-300 px-3 py-1 rounded-full shadow-sm hover:shadow-md"
-  >
-    Sign in
-  </a>
-</div>
+      <!-- 🧩 Removed the old header section from here -->
 
       <!-- Form -->
       <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="space-y-6">
 
         <!-- User Type Selection -->
-       <div class="mb-6">
-  <label class="block text-sm font-medium text-neutral-700 mb-3">I am a</label>
-  <div class="grid grid-cols-2 gap-4">
-    <button
-      type="button"
-      [class]="getUserTypeButtonClasses('sme') + ' bg-white hover:bg-primary-50 border border-slate-200 rounded-lg p-4 flex flex-col items-center justify-center shadow-sm hover:shadow-md transition-all'"
-      (click)="selectUserType('sme')"
-    >
-      <lucide-icon [img]="BuildingIcon" [size]="24" class="mb-2 text-primary-600" />
-      <div class="font-medium text-sm text-neutral-900">SME Owner</div>
-      <div class="text-xs text-neutral-500 mt-1 text-center">Looking for funding</div>
-    </button>
-    <button
-      type="button"
-      [class]="getUserTypeButtonClasses('funder') + ' bg-white hover:bg-primary-50 border border-slate-200 rounded-lg p-4 flex flex-col items-center justify-center shadow-sm hover:shadow-md transition-all'"
-      (click)="selectUserType('funder')"
-    >
-      <lucide-icon [img]="UsersIcon" [size]="24" class="mb-2 text-primary-600" />
-      <div class="font-medium text-sm text-neutral-900">Investor</div>
-      <div class="text-xs text-neutral-500 mt-1 text-center">Providing funding</div>
-    </button>
-  </div>
-</div>
-        <!-- Name Fields -->
+        <div class="mb-6">
+          <label class="block text-sm font-medium text-neutral-700 mb-3">I am a</label>
+          <div class="grid grid-cols-2 gap-4">
+            <button
+              type="button"
+              [class]="getUserTypeButtonClasses('sme') + ' bg-white hover:bg-primary-50 border border-slate-200 rounded-lg p-4 flex flex-col items-center justify-center shadow-sm hover:shadow-md transition-all'"
+              (click)="selectUserType('sme')"
+            >
+              <lucide-icon [img]="BuildingIcon" [size]="24" class="mb-2 text-primary-600" />
+              <div class="font-medium text-sm text-neutral-900">SME Owner</div>
+              <div class="text-xs text-neutral-500 mt-1 text-center">Looking for funding</div>
+            </button>
+            <button
+              type="button"
+              [class]="getUserTypeButtonClasses('funder') + ' bg-white hover:bg-primary-50 border border-slate-200 rounded-lg p-4 flex flex-col items-center justify-center shadow-sm hover:shadow-md transition-all'"
+              (click)="selectUserType('funder')"
+            >
+              <lucide-icon [img]="UsersIcon" [size]="24" class="mb-2 text-primary-600" />
+              <div class="font-medium text-sm text-neutral-900">Investor</div>
+              <div class="text-xs text-neutral-500 mt-1 text-center">Providing funding</div>
+            </button>
+          </div>
+        </div>
+
+        <!-- Rest of your form untouched -->
         <div class="grid grid-cols-2 gap-4">
           <div>
             <label class="block text-sm font-medium text-neutral-700 mb-2">First name</label>
@@ -74,7 +77,9 @@
           </div>
         </div>
 
-        <!-- Email -->
+        <!-- ... rest of form unchanged ... -->
+
+                <!-- Email -->
         <div>
           <label class="block text-sm font-medium text-neutral-700 mb-2">Email address</label>
           <input
@@ -186,6 +191,7 @@
             <lucide-icon [img]="ArrowRightIcon" [size]="20" class="ml-2" />
           }
         </button>
+
       </form>
 
       <!-- Terms / Privacy Text -->
@@ -196,17 +202,64 @@
         <a href="/terms" class="text-slate-700 font-medium hover:text-slate-900">Data Protection Policy</a> 
         before using this platform. By logging in and continuing to use our services, you confirm that you have read, understood, and accepted our Privacy Policy. You also consent to the handling, storage, and sharing of your data strictly in accordance with these policies, and understand that your data will only be used within the platform as outlined.
       </div>
-
     </div>
   </div>
 
-  <!-- Right Panel - Image -->
+  <!-- Right Panel - Slideshow -->
   <div class="hidden lg:block flex-1 relative overflow-hidden">
-    <img 
-      src="/images/auth-3.png" 
-      alt="Join Kapify illustration"
-      class="absolute inset-0 w-full h-full object-cover"
-    />
-    <div class="absolute inset-0 bg-gradient-to-br from-primary-600/10 to-primary-500/5"></div>
+    <ng-container *ngFor="let slide of slides(); let i = index">
+      <img
+        [src]="slide.image"
+        [alt]="slide.title || 'slide-' + i"
+        class="absolute inset-0 w-full h-full object-cover transition-opacity duration-700"
+        [ngClass]="{
+          'opacity-100 z-20': activeSlideIndex() === i,
+          'opacity-0 z-10': activeSlideIndex() !== i
+        }"
+        (mouseenter)="stopAutoplay()"
+        (mouseleave)="startAutoplay()"
+      />
+    </ng-container>
+
+    <div class="absolute inset-0 pointer-events-none bg-gradient-to-t from-black/55 via-black/30 to-transparent"></div>
+
+    <div class="absolute left-8 bottom-12 max-w-lg text-white z-30">
+      <h2 class="text-3xl md:text-4xl font-serif leading-tight drop-shadow-md">
+        {{ slides()[activeSlideIndex()]?.title }}
+      </h2>
+      <p class="mt-3 text-sm md:text-base text-white/90 max-w-md">
+        {{ slides()[activeSlideIndex()]?.subtitle }}
+      </p>
+
+      <div class="mt-6 flex items-center space-x-4">
+        <div class="flex items-center space-x-2">
+          <button
+            *ngFor="let s of slides(); let idx = index"
+            (click)="selectSlide(idx); stopAutoplay();"
+            [attr.aria-label]="'Go to slide ' + (idx + 1)"
+            class="w-3 h-3 rounded-full transform transition-all duration-200"
+            [ngClass]="{
+              'scale-125 bg-white': activeSlideIndex() === idx,
+              'bg-white/40 hover:bg-white/60': activeSlideIndex() !== idx
+            }"
+          ></button>
+        </div>
+
+        <div class="ml-4 flex items-center space-x-2">
+          <button
+            (click)="prevSlide(); stopAutoplay()"
+            class="px-3 py-2 rounded-md bg-white/10 hover:bg-white/20 text-white text-sm"
+          >
+            ‹
+          </button>
+          <button
+            (click)="nextSlide(); stopAutoplay()"
+            class="px-3 py-2 rounded-md bg-white/10 hover:bg-white/20 text-white text-sm"
+          >
+            ›
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </div>

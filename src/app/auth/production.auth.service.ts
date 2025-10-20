@@ -1,4 +1,4 @@
-// src/app/auth/enhanced-production.auth.service.ts
+// src/app/auth/production.auth.service.ts
 import { Injectable, signal, computed, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { BehaviorSubject, Observable, from, of, throwError } from 'rxjs';
