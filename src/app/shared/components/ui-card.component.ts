@@ -1,4 +1,4 @@
- import { CommonModule } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { Component, Input } from '@angular/core';
 
 export interface CardIcon {
@@ -12,31 +12,31 @@ export interface CardIcon {
   imports: [CommonModule],
   template: `
     <div [class]="cardClasses">
-      <!-- Status Border (left accent) -->
-      <div *ngIf="status !== 'none'" [class]="statusBorderClasses"></div>
+      <!-- Animated gradient border on hover -->
+      <div class="card-border-accent"></div>
 
-      <!-- Title, Subtitle & Actions Header -->
+      <!-- Header Section -->
       <ng-container *ngIf="title || subtitle || hasActions || icon">
         <div [class]="headerClasses">
-          <div class="flex items-start gap-4 flex-1">
-            <!-- Icon Slot -->
+          <div class="flex items-start gap-3 flex-1">
+            <!-- Icon Slot with enhanced styling -->
             <div *ngIf="icon" [class]="iconContainerClasses">
               <ng-content select="[slot=icon]"></ng-content>
             </div>
             
             <!-- Title & Subtitle -->
             <div class="flex-1 min-w-0">
-              <h3 *ngIf="title" class="text-lg font-semibold text-gray-900 transition-colors duration-200">
+              <h3 *ngIf="title" class="text-base font-semibold text-slate-900 leading-tight">
                 {{ title }}
               </h3>
-              <p *ngIf="subtitle" class="mt-1 text-sm text-gray-600 leading-relaxed">
+              <p *ngIf="subtitle" class="mt-1.5 text-sm text-slate-600 leading-relaxed">
                 {{ subtitle }}
               </p>
             </div>
           </div>
 
           <!-- Actions Slot -->
-          <div *ngIf="hasActions" class="flex items-center space-x-2 ml-4">
+          <div *ngIf="hasActions" class="flex items-center space-x-2 ml-3 flex-shrink-0">
             <ng-content select="[slot=actions]"></ng-content>
           </div>
         </div>
@@ -53,56 +53,191 @@ export interface CardIcon {
       display: block;
     }
 
-    /* Card hover effect with transform */
-    .card-hover:hover {
-      transform: translateY(-0.25rem);
-      box-shadow: var(--shadow-card-elevated);
-    }
-
-    /* Gradient border pattern from design system */
-    .card-gradient-wrapper {
-      background: linear-gradient(to right, #22c55e, #22c55e, #14532d);
-      padding: 0.125rem;
-      border-radius: 0.75rem;
-      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-    }
-
-    .card-gradient-content {
-      background-color: white;
-      border-radius: 0.625rem;
-      height: 100%;
-    }
-
-    /* Header with gradient background and accent bar */
-    .header-with-accent {
+    /* Main card container with refined styling */
+    .ui-card {
       position: relative;
-      background: linear-gradient(135deg, #fafbff 0%, #f8fafc 100%);
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 1rem; /* 16px */
+      overflow: hidden;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
     }
 
-    .header-with-accent::before {
-      content: '';
+    /* Hover elevation effect */
+    .ui-card:hover {
+      border-color: #cbd5e1;
+      box-shadow: 0 4px 12px 0 rgba(0, 0, 0, 0.08), 
+                  0 2px 4px 0 rgba(0, 0, 0, 0.04);
+      transform: translateY(-2px);
+    }
+
+    /* Animated gradient border accent on hover */
+    .card-border-accent {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(
+        90deg,
+        transparent 0%,
+        #ff6b35 50%,
+        transparent 100%
+      );
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      pointer-events: none;
+    }
+
+    .ui-card:hover .card-border-accent {
+      opacity: 1;
+    }
+
+    /* Status border (left accent) - sleeker version */
+    .status-border {
       position: absolute;
       left: 0;
       top: 0;
       bottom: 0;
+      width: 3px;
+      transition: width 0.3s ease;
+      pointer-events: none;
+    }
+
+    .ui-card:hover .status-border {
       width: 4px;
-      background: linear-gradient(to bottom, #15803d, #22c55e);
-      border-radius: 0 2px 2px 0;
     }
 
-    /* Icon container transitions */
+    .status-primary { background: #2563eb; }
+    .status-success { background: #10b981; }
+    .status-warning { background: #f59e0b; }
+    .status-error { background: #ef4444; }
+
+    /* Header with refined styling */
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      border-bottom: 1px solid #f1f5f9;
+      transition: background-color 0.2s ease;
+    }
+
+    .ui-card:hover .card-header {
+      background-color: #f8fafc;
+    }
+
+    /* Icon container - modern style */
     .icon-container {
-      transition: transform 0.2s ease, filter 0.2s ease;
+      flex-shrink: 0;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 0.75rem; /* 12px */
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      background: #f1f5f9;
     }
 
-    .card-hover:hover .icon-container {
-      transform: scale(1.05);
-      filter: brightness(1.1);
+    .icon-blue { background: #dbeafe; color: #2563eb; }
+    .icon-green { background: #dcfce7; color: #16a34a; }
+    .icon-purple { background: #e9d5ff; color: #9333ea; }
+    .icon-orange { background: #ffedd5; color: #ff6b35; }
+    .icon-neutral { background: #f1f5f9; color: #64748b; }
+    .icon-indigo { background: #e0e7ff; color: #4f46e5; }
+
+    /* Icon hover effect */
+    .ui-card:hover .icon-container {
+      transform: scale(1.08);
+      filter: brightness(1.15);
     }
 
-    /* Title color transition on hover */
-    .card-hover:hover h3 {
-      color: var(--color-primary-600);
+    /* Content area */
+    .card-content {
+      transition: opacity 0.2s ease;
+    }
+
+    .ui-card:hover .card-content {
+      opacity: 1;
+    }
+
+    /* Gradient variant */
+    .card-gradient-wrapper {
+      background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+      border: 1px solid #e2e8f0;
+      border-radius: 1rem;
+      padding: 1px;
+      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+    }
+
+    .card-gradient-wrapper:hover {
+      border-color: #cbd5e1;
+      box-shadow: 0 4px 12px 0 rgba(0, 0, 0, 0.08);
+    }
+
+    .card-gradient-content {
+      background-color: white;
+      border-radius: 0.9375rem;
+      height: 100%;
+    }
+
+    /* Elevated variant */
+    .card-elevated {
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1),
+                  0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    }
+
+    .card-elevated:hover {
+      box-shadow: 0 20px 35px -8px rgba(0, 0, 0, 0.15),
+                  0 10px 10px -5px rgba(0, 0, 0, 0.05);
+    }
+
+    /* Small size tweaks */
+    .card-sm .card-header {
+      padding: 1rem;
+      padding-bottom: 0.75rem;
+    }
+
+    .card-sm .card-content {
+      padding: 1rem;
+    }
+
+    /* Medium size (default) */
+    .card-md .card-header {
+      padding: 1.5rem;
+      padding-bottom: 1rem;
+    }
+
+    .card-md .card-content {
+      padding: 1.5rem;
+    }
+
+    /* Large size */
+    .card-lg .card-header {
+      padding: 2rem;
+      padding-bottom: 1.5rem;
+    }
+
+    .card-lg .card-content {
+      padding: 2rem;
+    }
+
+    /* Left padding when status is active */
+    .has-status .card-header,
+    .has-status .card-content {
+      padding-left: calc(var(--padding-left) + 0.75rem);
+    }
+
+    /* No padding variant */
+    .card-no-padding .card-content {
+      padding: 0;
+    }
+
+    /* Focus state for accessibility */
+    .ui-card:focus-within {
+      outline: 2px solid #ff6b35;
+      outline-offset: 2px;
     }
   `]
 })
@@ -120,93 +255,44 @@ export class UiCardComponent {
   @Input() accent = false;
 
   get cardClasses(): string {
-    if (this.variant === 'gradient') {
-      return ['card-gradient-wrapper', this.marginBottom].filter(Boolean).join(' ');
-    }
-
-    const baseClasses = 'bg-white border border-gray-200 rounded-xl overflow-hidden relative';
-    const shadowClass = this.variant === 'elevated' ? 'shadow-lg' : 'shadow-sm';
-    const hoverClass = this.hover ? 'card-hover transition-all duration-200 ease-out' : '';
+    const baseClass = 'ui-card';
+    const variantClass = this.variant === 'gradient' ? 'card-gradient-wrapper' : '';
+    const elevatedClass = this.variant === 'elevated' ? 'card-elevated' : '';
+    const sizeClass = `card-${this.size}`;
+    const statusClass = this.status !== 'none' ? 'has-status' : '';
+    const paddingClass = !this.padding ? 'card-no-padding' : '';
     const margin = this.marginBottom;
-    
-    return [baseClasses, shadowClass, hoverClass, margin]
+
+    return [baseClass, variantClass, elevatedClass, sizeClass, statusClass, paddingClass, margin]
       .filter(Boolean)
       .join(' ');
-  }
-
-  get statusBorderClasses(): string {
-    const baseClasses = 'absolute left-0 top-0 bottom-0 w-1 transition-all duration-300';
-    
-    const colorMap = {
-      primary: 'bg-blue-500',
-      success: 'bg-green-500',
-      warning: 'bg-yellow-500',
-      error: 'bg-red-500',
-      none: ''
-    };
-
-    return [baseClasses, colorMap[this.status]].filter(Boolean).join(' ');
   }
 
   get headerClasses(): string {
-    const basePadding = this.getHeaderPadding();
-    const borderBottom = (this.title || this.subtitle) ? 'border-b border-gray-200' : '';
-    const showAccent = this.accent || this.variant === 'elevated';
-    const accentClass = showAccent && (this.title || this.subtitle) ? 'header-with-accent' : '';
-    const leftPadding = this.status !== 'none' ? 'pl-6' : '';
+    const baseClass = 'card-header';
+    const statusBorder = this.status !== 'none' ? `status-border status-${this.status}` : '';
     
-    return [basePadding, borderBottom, accentClass, leftPadding, 'flex justify-between items-start']
-      .filter(Boolean)
-      .join(' ');
+    return [baseClass, statusBorder].filter(Boolean).join(' ');
   }
 
   get contentClasses(): string {
-    if (!this.padding) return '';
-    
-    const hasHeader = this.title || this.subtitle || this.hasActions || this.icon;
-    const basePadding = this.getContentPadding();
-    const leftPadding = this.status !== 'none' ? 'pl-6' : '';
-    
-    const classes = hasHeader ? `${basePadding.horizontal} ${basePadding.bottom}` : basePadding.all;
-    return [classes, leftPadding].filter(Boolean).join(' ');
+    return 'card-content';
   }
 
   get iconContainerClasses(): string {
-    const baseClasses = 'w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 icon-container';
+    if (!this.icon) return '';
     
+    const baseClass = 'icon-container';
     const colorMap = {
-      blue: 'bg-blue-100 text-blue-600',
-      green: 'bg-green-100 text-green-600',
-      purple: 'bg-purple-100 text-purple-600',
-      orange: 'bg-orange-100 text-orange-600',
-      neutral: 'bg-gray-100 text-gray-600',
-      indigo: 'bg-indigo-100 text-indigo-600'
+      blue: 'icon-blue',
+      green: 'icon-green',
+      purple: 'icon-purple',
+      orange: 'icon-orange',
+      neutral: 'icon-neutral',
+      indigo: 'icon-indigo'
     };
 
-    const colorClass = this.icon?.color ? colorMap[this.icon.color] : colorMap.blue;
-    
-    return [baseClasses, colorClass].filter(Boolean).join(' ');
-  }
-
-  private getHeaderPadding(): string {
-    switch (this.size) {
-      case 'sm':
-        return 'p-4 pb-3';
-      case 'lg':
-        return 'p-8 pb-6';
-      default:
-        return 'p-6 pb-4';
-    }
-  }
-
-  private getContentPadding() {
-    switch (this.size) {
-      case 'sm':
-        return { all: 'p-4', horizontal: 'px-4', bottom: 'pb-4' };
-      case 'lg':
-        return { all: 'p-8', horizontal: 'px-8', bottom: 'pb-8' };
-      default:
-        return { all: 'p-6', horizontal: 'px-6', bottom: 'pb-6' };
-    }
+    const colorClass = this.icon.color ? colorMap[this.icon.color] : colorMap.blue;
+    return [baseClass, colorClass].filter(Boolean).join(' ');
   }
 }

@@ -69,7 +69,7 @@ interface UserOrganization {
     CommonModule,
     FormsModule,
     LucideAngularModule,
-    UiButtonComponent,
+ 
     ActivityInboxComponent,
     ApplicationListCardComponent
   ],

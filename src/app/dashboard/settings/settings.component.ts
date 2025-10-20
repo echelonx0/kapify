@@ -24,7 +24,6 @@ interface SettingsTab {
   label: string;
   icon: any;
   enabled: boolean;
-  description: string;
 }
 
 @Component({
@@ -39,219 +38,43 @@ interface SettingsTab {
   ],
   templateUrl: 'settings.component.html',
   styles: [`
-    .settings-page {
-  display: flex;
-  gap: 2rem;
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 2rem;
-  background-color: #f9fafb; /* neutral-50 */
-}
+    :host {
+      display: block;
+    }
 
-/* Sidebar */
-.sidebar {
-  width: 16rem;
-  flex-shrink: 0;
-}
+    .tab-button {
+      position: relative;
+      overflow: hidden;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
 
-.sidebar-nav {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
+    .tab-button.active {
+      background-color: #f8fafc;
+    }
 
-.sidebar-nav button {
-  width: 100%;
-  border: none;
-  background: none;
-  cursor: pointer;
-  border-radius: 0.75rem;
-  transition: all 0.2s ease-in-out;
-}
+    .tab-button:hover:not(:disabled) {
+      background-color: #f1f5f9;
+    }
 
-.sidebar-nav button:hover {
-  background-color: #f3f4f6; /* hover neutral-100 */
-}
+    .tab-button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
 
-.nav-item {
-  display: flex;
-  align-items: center;
-  padding: 0.5rem 0.75rem;
-}
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(4px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
 
-.nav-icon {
-  margin-right: 0.75rem;
-  flex-shrink: 0;
-  color: #4b5563; /* neutral-600 */
-}
-
-.nav-label {
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: #111827; /* neutral-900 */
-}
-
-.nav-subtext {
-  font-size: 0.75rem;
-  color: #6b7280; /* neutral-500 */
-}
-
-/* Organization Card */
-.org-card {
-  margin-top: 2rem;
-  padding: 1rem;
-  background-color: #fff;
-  border: 1px solid #e5e7eb;
-  border-radius: 0.75rem;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-  transition: all 0.2s;
-}
-
-.org-card:hover {
-  box-shadow: 0 4px 6px rgba(0,0,0,0.08);
-}
-
-.org-header {
-  display: flex;
-  align-items: center;
-  margin-bottom: 0.75rem;
-}
-
-.org-logo, .org-logo-placeholder {
-  width: 2.5rem;
-  height: 2.5rem;
-  border-radius: 0.5rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-right: 0.75rem;
-}
-
-.org-logo-placeholder {
-  background-color: #f3f4f6;
-  color: #4b5563;
-}
-
-.org-info .org-name {
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: #111827;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.org-info .org-type {
-  font-size: 0.75rem;
-  color: #6b7280;
-}
-
-/* Status Badge */
-.org-status {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0.5rem;
-  border-radius: 0.75rem;
-  border: 1px solid #e5e7eb;
-  background-color: #fff;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-}
-
-.status-label {
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: #4b5563;
-}
-
-.status-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.25rem;
-  font-size: 0.75rem;
-  font-weight: 600;
-  padding: 0.25rem 0.625rem;
-  border-radius: 9999px;
-  transition: all 0.2s;
-}
-
-.status-dot {
-  width: 0.5rem;
-  height: 0.5rem;
-  border-radius: 9999px;
-}
-
-.bg-green { background-color: #22c55e; }
-.bg-yellow { background-color: #eab308; }
-.bg-red { background-color: #ef4444; }
-.bg-gray { background-color: #9ca3af; }
-
-.org-verified {
-  margin-top: 0.5rem;
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-  font-size: 0.75rem;
-  color: #16a34a; /* green-600 */
-}
-
-/* Main content */
-.settings-main {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-/* Loading and Error Cards */
-.loading-card, .error-card, .coming-soon-card {
-  padding: 2rem;
-  border-radius: 0.75rem;
-  background-color: #fff;
-  border: 1px solid #e5e7eb;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-  text-align: center;
-}
-
-.loading-spinner {
-  width: 2rem;
-  height: 2rem;
-  border: 0.25rem solid #22c55e;
-  border-top-color: transparent;
-  border-radius: 9999px;
-  animation: spin 1s linear infinite;
-  margin: 0 auto 0.5rem;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
-.error-card h3 {
-  color: #b91c1c;
-  margin-bottom: 0.5rem;
-}
-
-.error-card p {
-  color: #991b1b;
-  margin-bottom: 1rem;
-}
-
-.error-card button {
-  background-color: #b91c1c;
-  color: #fff;
-  padding: 0.5rem 1rem;
-  border-radius: 0.375rem;
-  border: none;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.error-card button:hover {
-  background-color: #991b1b;
-}
-
-   
+    :host ::ng-deep .settings-content {
+      animation: fadeIn 0.3s ease-out;
+    }
   `]
 })
 export class SettingsComponent implements OnInit, OnDestroy {
@@ -279,48 +102,42 @@ export class SettingsComponent implements OnInit, OnDestroy {
   settingsTabs: SettingsTab[] = [
     {
       id: 'general',
-      label: 'General',
+      label: 'General Info',
       icon: this.Building2Icon,
-      enabled: true,
-      description: 'Organization name, type, and description'
+      enabled: true
     },
     {
       id: 'contact',
-      label: 'Contact',
+      label: 'Contact Details',
       icon: this.GlobeIcon,
-      enabled: true,
-      description: 'Email, phone, website, and address'
+      enabled: true
     },
     {
       id: 'legal',
-      label: 'Legal',
+      label: 'Legal Information',
       icon: this.FileTextIcon,
-      enabled: true,
-      description: 'Registration, compliance, and verification'
+      enabled: true
     },
-    // {
-    //   id: 'integrations',
-    //   label: 'Integrations',
-    //   icon: this.SettingsIcon,
-    //   enabled: false,
-    //   description: 'Third-party integrations and APIs'
-    // },
-    // {
-    //   id: 'billing',
-    //   label: 'Billing',
-    //   icon: this.CreditCardIcon,
-    //   enabled: false,
-    //   description: 'Subscription and payment details'
-    // }
+    {
+      id: 'integrations',
+      label: 'Integrations',
+      icon: this.SettingsIcon,
+      enabled: false
+    },
+    {
+      id: 'billing',
+      label: 'Billing & Plans',
+      icon: this.CreditCardIcon,
+      enabled: false
+    }
   ];
 
   ngOnInit() {
-    // Organization data will be auto-loaded by the service
     this.settingsService.organization$
       .pipe(takeUntil(this.destroy$))
       .subscribe(org => {
         if (org) {
-          console.log('Organization loaded in settings:', org.name);
+          console.log('Organization loaded:', org.name);
         }
       });
   }
@@ -337,37 +154,31 @@ export class SettingsComponent implements OnInit, OnDestroy {
     }
   }
 
-  trackByTabId(index: number, tab: any) {
-  return tab.id;
-}
-
-  getSectionClasses(sectionId: SettingsSection): string {
-    const baseClasses = 'text-left rounded-md transition-all duration-200';
-    const isActive = this.activeSection() === sectionId;
-    const tab = this.settingsTabs.find(t => t.id === sectionId);
-    
-    if (!tab?.enabled) {
-      return `${baseClasses} text-neutral-400 cursor-not-allowed opacity-60`;
-    }
-    
-    if (isActive) {
-      return `${baseClasses} bg-primary-50 text-primary-700 border border-primary-200`;
-    }
-    
-    return `${baseClasses} text-neutral-600 hover:text-neutral-900 hover:bg-neutral-50`;
+  trackByTabId(index: number, tab: SettingsTab) {
+    return tab.id;
   }
 
-  getOrganizationTypeLabel(type: string | undefined): string {
-    const labels: Record<string, string> = {
-      'investment_fund': 'Investment Fund',
-      'venture_capital': 'Venture Capital',
-      'private_equity': 'Private Equity',
-      'bank': 'Bank',
-      'government': 'Government Agency',
-      'ngo': 'NGO/Non-Profit',
-      'general': 'General'
-    };
-    return labels[type || ''] || 'Unknown';
+  getSectionClasses(sectionId: SettingsSection): string {
+    const isActive = this.activeSection() === sectionId;
+    const isEnabled = this.settingsTabs.find(t => t.id === sectionId)?.enabled;
+    
+    const classes = [
+      'tab-button',
+      'w-full',
+      'text-left',
+      'transition-all',
+      'duration-200',
+      'rounded-xl',
+      isActive ? 'active bg-slate-100' : 'hover:bg-slate-50',
+      !isEnabled ? 'disabled opacity-60 cursor-not-allowed' : 'cursor-pointer'
+    ];
+    
+    return classes.filter(Boolean).join(' ');
+  }
+
+  getTabIconColor(tabId: SettingsSection): string {
+    const isActive = this.activeSection() === tabId;
+    return isActive ? 'text-orange-500' : 'text-slate-400';
   }
 
   getStatusLabel(status: string | undefined): string {
@@ -382,26 +193,35 @@ export class SettingsComponent implements OnInit, OnDestroy {
   }
 
   getStatusClasses(status: string | undefined): string {
-    const baseClasses = 'px-2 py-1 rounded-full text-xs font-medium';
-    
-    switch (status) {
-      case 'active':
-        return `${baseClasses} bg-green-100 text-green-700`;
-      case 'pending_verification':
-        return `${baseClasses} bg-yellow-100 text-yellow-700`;
-      case 'verification_rejected':
-        return `${baseClasses} bg-red-100 text-red-700`;
-      case 'suspended':
-        return `${baseClasses} bg-red-100 text-red-700`;
-      case 'inactive':
-        return `${baseClasses} bg-neutral-100 text-neutral-700`;
-      default:
-        return `${baseClasses} bg-neutral-100 text-neutral-500`;
-    }
+    const classMap: Record<string, string> = {
+      'active': 'bg-green-50 text-green-700 border border-green-200/50',
+      'pending_verification': 'bg-amber-50 text-amber-700 border border-amber-200/50',
+      'verification_rejected': 'bg-red-50 text-red-700 border border-red-200/50',
+      'suspended': 'bg-red-50 text-red-700 border border-red-200/50',
+      'inactive': 'bg-slate-50 text-slate-700 border border-slate-200/50'
+    };
+    return classMap[status || ''] || 'bg-slate-50 text-slate-700 border border-slate-200/50';
+  }
+
+  getOrganizationTypeLabel(type: string | undefined): string {
+    const labels: Record<string, string> = {
+      'investment_fund': 'Investment Fund',
+      'venture_capital': 'Venture Capital',
+      'private_equity': 'Private Equity',
+      'bank': 'Bank',
+      'government': 'Government Agency',
+      'ngo': 'NGO/Non-Profit',
+      'general': 'General',
+      'sme': 'Small Business',
+      'startup': 'Startup',
+      'nonprofit': 'Non-Profit',
+      'enterprise': 'Enterprise',
+      'funder': 'Funding Organization'
+    };
+    return labels[type || ''] || 'Organization';
   }
 
   onOrganizationUpdated(updatedOrg: any) {
-    // Organization will be updated automatically through the service
     console.log('Organization updated:', updatedOrg.name);
   }
 

@@ -1,38 +1,55 @@
+<!-- src/app/dashboard/components/settings/components/general-info/general-info.component.html -->
 <div class="space-y-6">
-  <!-- General Information Section -->
-  <div class="section-card">
-    <div class="section-header">
-      <h3 class="section-title">General Information</h3>
-      <p class="section-description">Provide the key details about your organization below.</p>
+  
+  <!-- General Information Card -->
+  <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+    
+    <!-- Card Header -->
+    <div class="px-8 py-6 border-b border-slate-200 bg-slate-50/50">
+      <h3 class="text-xl font-bold text-slate-900">General Information</h3>
+      <p class="text-sm text-slate-600 mt-1">Update your organization's core details</p>
     </div>
 
-    <form [formGroup]="generalForm" (ngSubmit)="onSave()" class="p-6 space-y-8">
-      <!-- Form Content -->
-      <div class="details-grid">
+    <!-- Form Content -->
+    <form [formGroup]="generalForm" (ngSubmit)="onSave()" class="p-8 space-y-8">
+      
+      <!-- Organization Name & Type Grid -->
+      <div class="grid grid-cols-2 gap-6">
+        
         <!-- Organization Name -->
-        <div class="md:col-span-2">
-          <label class="detail-label">Organization Name *</label>
+        <div class="col-span-2 md:col-span-1">
+          <label class="block text-sm font-semibold text-slate-900 mb-2">
+            Organization Name
+            <span class="text-orange-500">*</span>
+          </label>
           <input
             type="text"
             formControlName="name"
             placeholder="e.g., South African Growth Fund"
-            class="block w-full px-3 py-2 border border-neutral-300 rounded-md shadow-sm placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+            class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200"
             [class.border-red-300]="generalForm.get('name')?.invalid && generalForm.get('name')?.touched"
+            [class.focus:ring-red-500]="generalForm.get('name')?.invalid && generalForm.get('name')?.touched"
           />
           @if (generalForm.get('name')?.invalid && generalForm.get('name')?.touched) {
-            <p class="mt-1 text-sm text-red-600">Organization name is required</p>
+            <p class="mt-1.5 text-xs font-medium text-red-600 flex items-center gap-1">
+              <span class="w-1 h-1 rounded-full bg-red-600"></span>
+              Organization name is required
+            </p>
           }
         </div>
 
         <!-- Organization Type -->
-        <div>
-          <label class="detail-label">Organization Type *</label>
+        <div class="col-span-2 md:col-span-1">
+          <label class="block text-sm font-semibold text-slate-900 mb-2">
+            Organization Type
+            <span class="text-orange-500">*</span>
+          </label>
           <select
             formControlName="organizationType"
-            class="block w-full px-3 py-2 border border-neutral-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+            class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200 bg-white"
             [class.border-red-300]="generalForm.get('organizationType')?.invalid && generalForm.get('organizationType')?.touched"
           >
-            <option value="">Select organization type</option>
+            <option value="">Select organization type...</option>
             <option value="investment_fund">Investment Fund</option>
             <option value="venture_capital">Venture Capital</option>
             <option value="private_equity">Private Equity</option>
@@ -42,69 +59,80 @@
             <option value="general">General</option>
           </select>
           @if (generalForm.get('organizationType')?.invalid && generalForm.get('organizationType')?.touched) {
-            <p class="mt-1 text-sm text-red-600">Organization type is required</p>
+            <p class="mt-1.5 text-xs font-medium text-red-600 flex items-center gap-1">
+              <span class="w-1 h-1 rounded-full bg-red-600"></span>
+              Organization type is required
+            </p>
           }
         </div>
       </div>
 
       <!-- Description -->
       <div>
-        <label class="detail-label">Description *</label>
+        <label class="block text-sm font-semibold text-slate-900 mb-2">
+          Description
+          <span class="text-orange-500">*</span>
+        </label>
         <textarea
           formControlName="description"
           rows="4"
           placeholder="Describe your organization's mission, focus areas, and investment approach..."
-          class="block w-full px-3 py-2 border border-neutral-300 rounded-md shadow-sm placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 resize-none"
+          class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200 resize-none"
           [class.border-red-300]="generalForm.get('description')?.invalid && generalForm.get('description')?.touched"
         ></textarea>
         @if (generalForm.get('description')?.invalid && generalForm.get('description')?.touched) {
-          <p class="mt-1 text-sm text-red-600">Description is required</p>
+          <p class="mt-1.5 text-xs font-medium text-red-600 flex items-center gap-1">
+            <span class="w-1 h-1 rounded-full bg-red-600"></span>
+            Description is required
+          </p>
         }
       </div>
 
-      <!-- Assets Under Management -->
+      <!-- Assets Under Management (Funders Only) -->
       @if (isFunder()) {
-      <div class="aum-field">
-  <label class="detail-label">Assets Under Management (Optional)</label>
-  <div class="input-with-currency">
-    <span class="currency">R</span>
-    <input
-      type="number"
-      formControlName="assetsUnderManagement"
-      placeholder="0"
-    />
-  </div>
-  <p class="helper-text">
-    Total value of assets currently under management
-  </p>
-</div>
-
+        <div>
+          <label class="block text-sm font-semibold text-slate-900 mb-2">
+            Assets Under Management
+            <span class="text-slate-400 font-normal">(Optional)</span>
+          </label>
+          <div class="relative">
+            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-600 font-medium">R</span>
+            <input
+              type="number"
+              formControlName="assetsUnderManagement"
+              placeholder="0"
+              class="w-full pl-8 pr-4 py-2.5 border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200"
+            />
+          </div>
+          <p class="mt-1.5 text-xs text-slate-500">Total value of assets currently under management</p>
+        </div>
       }
 
-      <!-- Form Actions -->
-      <div class="flex items-center justify-between pt-6 border-t border-neutral-200 mt-6">
-        <!-- Status -->
-        <div class="flex items-center text-sm">
+      <!-- Form Footer -->
+      <div class="flex items-center justify-between pt-6 border-t border-slate-200">
+        
+        <!-- Status Message -->
+        <div class="text-sm">
           @if (lastSaved()) {
-            <div class="flex items-center text-green-600">
-              <lucide-icon [img]="CheckIcon" [size]="16" class="mr-2" />
-              Last saved {{ formatLastSaved(lastSaved()) }}
+            <div class="flex items-center gap-1.5 text-green-600 font-medium">
+              <lucide-icon [img]="CheckIcon" [size]="16" />
+              Saved {{ formatLastSaved(lastSaved()) }}
             </div>
           } @else if (hasUnsavedChanges()) {
-            <div class="flex items-center text-amber-600">
-              <lucide-icon [img]="AlertCircleIcon" [size]="16" class="mr-2" />
+            <div class="flex items-center gap-1.5 text-amber-600 font-medium">
+              <lucide-icon [img]="AlertCircleIcon" [size]="16" />
               You have unsaved changes
             </div>
           }
         </div>
 
-        <!-- Buttons -->
-        <div class="action-buttons">
+        <!-- Action Buttons -->
+        <div class="flex items-center gap-3">
           <button
             type="button"
             (click)="onReset()"
             [disabled]="isLoading || !hasUnsavedChanges()"
-            class="action-button neutral w-auto px-4 py-2 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+            class="px-4 py-2.5 text-sm font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Reset
           </button>
@@ -112,14 +140,14 @@
           <button
             type="submit"
             [disabled]="generalForm.invalid || isLoading"
-            class="px-4 py-2 text-sm font-medium text-white bg-color-primary-600 rounded-md hover:bg-color-primary-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+            class="px-4 py-2.5 text-sm font-medium text-white bg-orange-500 hover:bg-orange-600 active:bg-orange-700 rounded-xl transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
           >
             @if (isLoading) {
-              <div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-              Saving...
+              <div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+              <span>Saving...</span>
             } @else {
-              <lucide-icon [img]="SaveIcon" [size]="16" class="mr-2" />
-              Save Changes
+              <lucide-icon [img]="SaveIcon" [size]="16" />
+              <span>Save Changes</span>
             }
           </button>
         </div>
@@ -127,14 +155,11 @@
     </form>
   </div>
 
-  <!-- Upload Error -->
+  <!-- Upload Error Alert -->
   @if (uploadError()) {
-    <div class="application-card card-rejected p-4 flex items-center">
-      <div class="status-border"></div>
-      <div class="flex items-center text-red-800">
-        <lucide-icon [img]="AlertCircleIcon" [size]="20" class="text-red-600 mr-3" />
-        <p>{{ uploadError() }}</p>
-      </div>
+    <div class="px-4 py-3 bg-red-50 border border-red-200/50 rounded-xl flex items-center gap-3">
+      <lucide-icon [img]="AlertCircleIcon" [size]="18" class="text-red-600 flex-shrink-0" />
+      <p class="text-sm font-medium text-red-700">{{ uploadError() }}</p>
     </div>
   }
 </div>

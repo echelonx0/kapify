@@ -1,19 +1,15 @@
-// src/app/dashboard/components/settings/components/general-info.component.ts
+// src/app/dashboard/components/settings/components/general-info/general-info.component.ts
 import { Component, Input, Output, EventEmitter, signal, inject, OnInit, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { 
   LucideAngularModule, 
-  Building2, 
-  Camera, 
   Save, 
   Check,
-  AlertCircle,
-  Upload
+  AlertCircle
 } from 'lucide-angular';
 import { OrganizationSettings, OrganizationSettingsService } from '../../../services/organization-settings.service';
 
- 
 @Component({
   selector: 'app-general-info',
   standalone: true,
@@ -23,6 +19,40 @@ import { OrganizationSettings, OrganizationSettingsService } from '../../../serv
     LucideAngularModule
   ],
   templateUrl: './general-info.component.html',
+  styles: [`
+    :host {
+      display: block;
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus {
+      outline: none;
+    }
+
+    /* Focus ring animation */
+    input:focus,
+    select:focus,
+    textarea:focus {
+      animation: focusPulse 0.2s ease-out;
+    }
+
+    @keyframes focusPulse {
+      from {
+        box-shadow: 0 0 0 0 rgba(255, 107, 53, 0.1);
+      }
+      to {
+        box-shadow: 0 0 0 4px rgba(255, 107, 53, 0.1);
+      }
+    }
+
+    /* Smooth transitions */
+    input,
+    select,
+    textarea {
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+  `]
 })
 export class GeneralInfoComponent implements OnInit {
   @Input() organization: OrganizationSettings | null = null;
@@ -33,25 +63,19 @@ export class GeneralInfoComponent implements OnInit {
   private fb = inject(FormBuilder);
 
   // Icons
-  Building2Icon = Building2;
-  CameraIcon = Camera;
   SaveIcon = Save;
   CheckIcon = Check;
   AlertCircleIcon = AlertCircle;
-  UploadIcon = Upload;
 
   // Form
   generalForm!: FormGroup;
 
   // State
-  isUploading = signal(false);
   uploadError = signal<string | null>(null);
-  currentLogoUrl = signal<string | null>(null);
   lastSaved = signal<Date | null>(null);
   initialFormValue: any = null;
 
   constructor() {
-    // Watch for last saved updates using effect
     effect(() => {
       const date = this.settingsService.lastSaved();
       this.lastSaved.set(date);
@@ -66,13 +90,11 @@ export class GeneralInfoComponent implements OnInit {
   private initializeForm() {
     this.generalForm = this.fb.group({
       name: ['', [Validators.required, Validators.maxLength(255)]],
-      description: ['', [Validators.required]],
+      description: ['', [Validators.required, Validators.minLength(10)]],
       organizationType: ['', [Validators.required]],
-      employeeCount: [''],
       assetsUnderManagement: ['']
     });
 
-    // Track form changes
     this.generalForm.valueChanges.subscribe(() => {
       this.uploadError.set(null);
     });
@@ -85,13 +107,11 @@ export class GeneralInfoComponent implements OnInit {
       name: this.organization.name || '',
       description: this.organization.description || '',
       organizationType: this.organization.organizationType || '',
-      employeeCount: this.organization.employeeCount?.toString() || '',
       assetsUnderManagement: this.organization.assetsUnderManagement?.toString() || ''
     };
 
     this.generalForm.patchValue(formValue);
     this.initialFormValue = this.generalForm.value;
-    this.currentLogoUrl.set(this.organization.logoUrl || null);
   }
 
   isFunder(): boolean {
@@ -120,35 +140,6 @@ export class GeneralInfoComponent implements OnInit {
     return date.toLocaleDateString();
   }
 
-  triggerFileUpload() {
-    const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
-    fileInput?.click();
-  }
-
-  onFileSelected(event: Event) {
-    const target = event.target as HTMLInputElement;
-    const file = target.files?.[0];
-    
-    if (!file) return;
-
-    this.isUploading.set(true);
-    this.uploadError.set(null);
-
-    this.settingsService.uploadLogo(file).subscribe({
-      next: (logoUrl) => {
-        this.currentLogoUrl.set(logoUrl);
-        this.isUploading.set(false);
-        // Clear the file input
-        target.value = '';
-      },
-      error: (error) => {
-        this.uploadError.set(error.message || 'Failed to upload logo');
-        this.isUploading.set(false);
-        target.value = '';
-      }
-    });
-  }
-
   onSave() {
     if (this.generalForm.invalid) {
       this.generalForm.markAllAsTouched();
@@ -160,7 +151,6 @@ export class GeneralInfoComponent implements OnInit {
       name: formValue.name?.trim(),
       description: formValue.description?.trim(),
       organizationType: formValue.organizationType,
-      employeeCount: formValue.employeeCount ? parseInt(formValue.employeeCount) : undefined,
       assetsUnderManagement: formValue.assetsUnderManagement ? parseInt(formValue.assetsUnderManagement) : undefined
     };
 
@@ -176,6 +166,7 @@ export class GeneralInfoComponent implements OnInit {
       },
       error: (error) => {
         console.error('Update failed:', error);
+        this.uploadError.set(error.message || 'Failed to save changes');
       }
     });
   }

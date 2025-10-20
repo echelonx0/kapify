@@ -1,695 +1,157 @@
-<!-- src/app/SMEs/data-room/data-room.component.html  -->
-<div class="h-screen bg-gray-50 flex ml-16">
-  <!-- Data Room Navigation Sidebar -->
-  <div class="w-64 bg-white border-r border-gray-200 h-full overflow-y-auto">
-    <!-- Header -->
-    <div class="p-6 border-b border-gray-200">
-      <div class="flex items-center gap-3">
-        <div class="w-10 h-10 bg-primary-600 rounded-lg flex items-center justify-center">
-          <lucide-icon [img]="BuildingIcon" [size]="24" class="text-white" />
-        </div>
-        <div>
-          <h3 class="font-semibold text-gray-900">Data Room</h3>
-          <p class="text-sm text-gray-500">Investment Portfolio</p>
-        </div>
-      </div>
-    </div>
+<!-- src/app/SMEs/data-room/data-room.component.html -->
+<div class="min-h-screen bg-slate-50 ml-16 mr-2">
+  <!-- Main Layout -->
+  <div class="flex h-screen bg-slate-50">
     
-    <!-- Navigation -->
-    <nav class="p-4">
-      @for (section of sections(); track section.id) {
-        <button
-          (click)="setActiveSection(section.id)"
-          [class]="'w-full flex items-center gap-3 px-3 py-3 rounded-lg mb-2 transition-all border ' + 
-            (activeSection() === section.id 
-              ? 'bg-primary-50 text-primary-700 border-primary-200' 
-              : 'text-gray-700 hover:bg-gray-50 border-transparent')"
-        >
-          <lucide-icon 
-            [img]="section.icon" 
-            [size]="20"
-            [class]="activeSection() === section.id ? 'text-primary-600' : 'text-gray-400'"
-          />
-          <span class="font-medium text-left flex-1">{{ section.title }}</span>
+    <!-- Sidebar Navigation -->
+    <app-data-room-sidebar
+      [sections]="sections()"
+      [activeSection]="activeSection()"
+      [permissions]="permissions()"
+      [documentCounts]="documentCounts()"
+      [sectionStatuses]="sectionStatuses()"
+      (selectSection)="navigateToSection($event)"
+    />
+
+    <!-- Main Content Area -->
+    <div class="flex-1 flex flex-col overflow-hidden">
+      
+      <!-- Header -->
+      <app-data-room-header
+        [dataRoom]="dataRoom()"
+        [permissions]="permissions()"
+        [companyName]="companyName()"
+        [isAIAnalyzing]="isAIAnalyzing()"
+        [stats]="accessStats()"
+        [shareInfo]="shareInfo()"
+        (enhanceWithAI)="enhanceWithAI()"
+        (export)="exportDataRoom()"
+        (share)="openSharingModal()"
+        (viewAccessLog)="navigateToSection('access-log')"
+        (back)="navigateBack()"
+      />
+
+      <!-- Content Scroll Area -->
+      <div class="flex-1 overflow-y-auto">
+        <div class="max-w-6xl mx-auto px-8 py-8">
           
-          @if (section.status === 'complete') {
-            <lucide-icon [img]="CheckCircleIcon" [size]="16" class="text-green-500" />
+          <!-- Loading State -->
+          @if (isLoading()) {
+            <div class="flex flex-col items-center justify-center py-16">
+              <div class="w-10 h-10 rounded-full border-2 border-slate-200 border-t-orange-500 animate-spin mb-4"></div>
+              <p class="text-slate-600 font-medium">Loading data room...</p>
+            </div>
           }
-          @if (section.status === 'pending') {
-            <lucide-icon [img]="ClockIcon" [size]="16" class="text-orange-500" />
+          
+          <!-- Error State -->
+          @else if (error()) {
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-12 text-center">
+              <div class="w-16 h-16 bg-red-100 rounded-xl flex items-center justify-center mx-auto mb-4">
+                <lucide-icon 
+                  [img]="AlertCircleIcon" 
+                  [size]="32" 
+                  class="text-red-600"
+                />
+              </div>
+              <h3 class="text-lg font-bold text-slate-900 mb-2">Failed to load data room</h3>
+              <p class="text-slate-600 mb-6">{{ error() }}</p>
+              <button
+                (click)="loadDataRoom()"
+                class="px-6 py-2.5 bg-orange-500 text-white font-medium rounded-xl hover:bg-orange-600 active:bg-orange-700 transition-colors duration-200"
+              >
+                Try Again
+              </button>
+            </div>
           }
-        </button>
-      }
-    </nav>
-  </div>
-  
-  <!-- Main Content Area -->
-  <div class="flex-1 overflow-y-auto">
-    <div class="max-w-7xl mx-auto p-8">
-      <!-- Data Room Header -->
-      <div class="mb-8 flex items-center justify-between">
-        <div>
-          <h1 class="text-3xl font-bold text-gray-900">Investment Data Room</h1>
-          <p class="text-gray-600 mt-1">
-            Comprehensive due diligence materials for {{ companyInfo()?.companyName }}
-          </p>
-        </div>
-        
-        <div class="flex items-center gap-3">
-          <ui-button 
-            variant="primary"
-            [loading]="isAIAnalyzing()"
-            (clicked)="enhanceWithAI()"
-            [disabled]="isAIAnalyzing()"
-          >
-            <lucide-icon 
-              [img]="SparklesIcon" 
-              [size]="16" 
-              [class]="isAIAnalyzing() ? 'animate-spin mr-2' : 'mr-2'"
-            />
-            {{ isAIAnalyzing() ? 'Analyzing...' : 'Enhance with AI' }}
-          </ui-button>
           
-          <ui-button variant="outline" (clicked)="exportDataRoom()">
-            <lucide-icon [img]="DownloadIcon" [size]="16" class="mr-2" />
-            Export
-          </ui-button>
-          
-          <ui-button variant="ghost">
-            <lucide-icon [img]="LockIcon" [size]="16" class="mr-2" />
-            Access Log
-          </ui-button>
+          <!-- Section Content -->
+          @else {
+            @switch (activeSection()) {
+              
+              @case ('executive') {
+                <app-executive-summary
+                  [companyInfo]="companyInfo()"
+                  [financialMetrics]="financialMetrics()"
+                  [fundingInfo]="fundingInfo()"
+                  [marketIntelligence]="marketIntelligence()"
+                />
+              }
+              
+              @case ('financials') {
+                <app-financial-dashboard
+                  [financialMetrics]="financialMetrics()"
+                />
+              }
+              
+              @case ('documents') {
+                <app-document-repository
+                  [dataRoomId]="dataRoomId()"
+                  [permissions]="permissions()"
+                  [sections]="sections()"
+                />
+              }
+              
+              @case ('management') {
+                <app-management-team
+                  [managementTeam]="managementTeam()"
+                />
+              }
+              
+              @case ('market') {
+                <app-market-analysis
+                  [marketIntelligence]="marketIntelligence()"
+                  [isAnalyzing]="isAIAnalyzing"
+                  (enhanceWithAI)="enhanceWithAI()"
+                />
+              }
+              
+              @case ('legal') {
+                <app-legal-compliance
+                  [companyInfo]="companyInfo()"
+                />
+              }
+              
+              @case ('access-requests') {
+                <app-access-requests-list
+                  [organizationId]="currentUserId()"
+                />
+              }
+              
+              @case ('access-log') {
+                <app-access-log
+                  [dataRoomId]="dataRoomId()"
+                />
+              }
+              
+              @case ('analytics') {
+                <app-access-analytics-dashboard
+                  [dataRoomId]="dataRoomId()"
+                />
+              }
+              
+              @default {
+                <app-executive-summary
+                  [companyInfo]="companyInfo()"
+                  [financialMetrics]="financialMetrics()"
+                  [fundingInfo]="fundingInfo()"
+                  [marketIntelligence]="marketIntelligence()"
+                />
+              }
+            }
+          }
         </div>
       </div>
-
-      <!-- Error Message -->
-      @if (error()) {
-        <div class="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
-          <div class="flex items-center gap-2">
-            <lucide-icon [img]="AlertCircleIcon" [size]="16" class="text-red-600" />
-            <span class="text-red-800 font-medium">{{ error() }}</span>
-          </div>
-        </div>
-      }
-
-      <!-- Loading State -->
-      @if (isLoading()) {
-        <div class="text-center py-8">
-          <div class="animate-spin w-8 h-8 border-2 border-primary-500 border-t-transparent rounded-full mx-auto mb-4"></div>
-          <p class="text-gray-600">Loading data room...</p>
-        </div>
-      } @else {
-        <!-- Active Section Content -->
-        @switch (activeSection()) {
-          @case ('executive') {
-            <ng-container [ngTemplateOutlet]="executiveSummary"></ng-container>
-          }
-          @case ('financials') {
-            <ng-container [ngTemplateOutlet]="financialDashboard"></ng-container>
-          }
-          @case ('documents') {
-            <ng-container [ngTemplateOutlet]="documentRepository"></ng-container>
-          }
-          @case ('management') {
-            <ng-container [ngTemplateOutlet]="managementTeam"></ng-container>
-          }
-          @case ('market') {
-            <ng-container [ngTemplateOutlet]="marketAnalysis"></ng-container>
-          }
-          @case ('legal') {
-            <ng-container [ngTemplateOutlet]="legalCompliance"></ng-container>
-          }
-          @default {
-            <ng-container [ngTemplateOutlet]="executiveSummary"></ng-container>
-          }
-        }
-      }
     </div>
   </div>
+
+  <!-- Modals -->
+  <app-sharing-modal
+    (shared)="onDataRoomShared()"
+    (closed)="onModalClosed()"
+  />
+
+  <app-access-request-modal
+    (submitted)="onAccessRequestSubmitted()"
+    (closed)="onModalClosed()"
+  />
 </div>
-
-<!-- Executive Summary Template -->
-<ng-template #executiveSummary>
-  <div class="space-y-6">
-    <!-- Company Header -->
-    <div class="bg-gradient-to-r from-primary-600 to-primary-700 rounded-xl p-8 text-white">
-      <div class="flex items-start justify-between">
-        <div>
-          <h1 class="text-3xl font-bold mb-2">{{ companyInfo()?.companyName }}</h1>
-          <p class="text-primary-100 text-lg mb-4">{{ companyInfo()?.description }}</p>
-          <div class="flex items-center gap-6">
-            <div class="flex items-center gap-2">
-              <lucide-icon [img]="BuildingIcon" [size]="20" class="text-primary-200" />
-              <span class="text-primary-100">{{ companyInfo()?.industry }}</span>
-            </div>
-            <div class="flex items-center gap-2">
-              <lucide-icon [img]="TrendingUpIcon" [size]="20" class="text-primary-200" />
-              <span class="text-primary-100">{{ companyInfo()?.yearsInOperation }} years in operation</span>
-            </div>
-          </div>
-        </div>
-        <div class="text-right">
-          <div class="bg-white/20 rounded-lg p-4 backdrop-blur-sm">
-            <div class="text-2xl font-bold">{{ formatLargeNumber(fundingInfo()?.amountRequired || 0) }}</div>
-            <div class="text-primary-100 text-sm">Funding Sought</div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Key Metrics Grid -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-      <!-- Annual Revenue Card -->
-      <ui-card class="p-6">
-        <div class="flex items-center justify-between mb-4">
-          <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-            <lucide-icon [img]="DollarSignIcon" [size]="24" class="text-green-600" />
-          </div>
-          <lucide-icon [img]="TrendingUpIcon" [size]="20" class="text-green-500" />
-        </div>
-        <div class="space-y-1">
-          <div class="text-2xl font-bold text-gray-900">
-            {{ formatLargeNumber(financialMetrics()?.annualRevenue || 0) }}
-          </div>
-          <div class="text-gray-500 text-sm">Annual Revenue</div>
-          <div class="text-green-600 text-sm font-medium">
-            +{{ financialMetrics()?.projectedGrowth || 0 }}% projected growth
-          </div>
-        </div>
-      </ui-card>
-
-      <!-- Profit Margin Card -->
-      <ui-card class="p-6">
-        <div class="flex items-center justify-between mb-4">
-          <div class="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center">
-            <lucide-icon [img]="BarChart3Icon" [size]="24" class="text-primary-600" />
-          </div>
-          <lucide-icon [img]="PieChartIcon" [size]="20" class="text-primary-500" />
-        </div>
-        <div class="space-y-1">
-          <div class="text-2xl font-bold text-gray-900">{{ financialMetrics()?.profitMargin || 0 }}%</div>
-          <div class="text-gray-500 text-sm">Profit Margin</div>
-          <div class="text-primary-600 text-sm font-medium">Industry leading</div>
-        </div>
-      </ui-card>
-
-      <!-- Market Growth Card -->
-      <ui-card class="p-6">
-        <div class="flex items-center justify-between mb-4">
-          <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-            <lucide-icon [img]="GlobeIcon" [size]="24" class="text-purple-600" />
-          </div>
-          <lucide-icon [img]="ArrowUpRightIcon" [size]="20" class="text-purple-500" />
-        </div>
-        <div class="space-y-1">
-          <div class="text-2xl font-bold text-gray-900">{{ marketIntelligence()?.sectorGrowth || 28 }}%</div>
-          <div class="text-gray-500 text-sm">Market Growth</div>
-          <div class="text-purple-600 text-sm font-medium">YoY sector expansion</div>
-        </div>
-      </ui-card>
-
-      <!-- ROI Projection Card -->
-      <ui-card class="p-6">
-        <div class="flex items-center justify-between mb-4">
-          <div class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
-            <lucide-icon [img]="CalculatorIcon" [size]="24" class="text-orange-600" />
-          </div>
-          <lucide-icon [img]="StarIcon" [size]="20" class="text-orange-500" />
-        </div>
-        <div class="space-y-1">
-          <div class="text-2xl font-bold text-gray-900">{{ marketIntelligence()?.roiProjection || '3.2x' }}</div>
-          <div class="text-gray-500 text-sm">Projected ROI</div>
-          <div class="text-orange-600 text-sm font-medium">5-year horizon</div>
-        </div>
-      </ui-card>
-    </div>
-
-    <!-- AI-Enhanced Market Intelligence -->
-    @if (marketIntelligence()) {
-      <div class="bg-gradient-to-br from-purple-50 to-primary-50 rounded-xl p-6 border border-purple-200">
-        <div class="flex items-center gap-3 mb-4">
-          <div class="w-8 h-8 bg-purple-600 rounded-lg flex items-center justify-center">
-            <lucide-icon [img]="SparklesIcon" [size]="20" class="text-white" />
-          </div>
-          <h3 class="text-lg font-semibold text-gray-900">AI Market Intelligence</h3>
-          <span class="bg-purple-100 text-purple-700 px-2 py-1 rounded-full text-xs font-medium">
-            Real-time insights
-          </span>
-        </div>
-        
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div>
-            <h4 class="font-medium text-gray-900 mb-2">Market Position</h4>
-            <p class="text-gray-600 text-sm mb-3">{{ marketIntelligence()!.competitivePosition }}</p>
-            <div class="text-sm text-purple-600 font-medium">{{ marketIntelligence()!.marketSize }}</div>
-          </div>
-          
-          <div>
-            <h4 class="font-medium text-gray-900 mb-2">Investment Outlook</h4>
-            <p class="text-gray-600 text-sm mb-3">Valuation: {{ marketIntelligence()!.valuationRange }}</p>
-            <div class="text-sm text-purple-600 font-medium">Payback: {{ marketIntelligence()!.paybackPeriod }}</div>
-          </div>
-          
-          <div>
-            <h4 class="font-medium text-gray-900 mb-2">Key Trends</h4>
-            <ul class="space-y-1">
-              @for (trend of getTrendSlice(marketIntelligence()!.trends); track $index) {
-                <li class="text-sm text-gray-600 flex items-start gap-2">
-                  <div class="w-1.5 h-1.5 bg-purple-400 rounded-full mt-2 flex-shrink-0"></div>
-                  {{ trend }}
-                </li>
-              }
-            </ul>
-          </div>
-        </div>
-      </div>
-    }
-
-    <!-- Investment Thesis -->
-    <ui-card class="p-6">
-      <h3 class="text-lg font-semibold text-gray-900 mb-4">Investment Thesis</h3>
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div>
-          <h4 class="font-medium text-gray-900 mb-3 flex items-center gap-2">
-            <lucide-icon [img]="CheckCircleIcon" [size]="20" class="text-green-500" />
-            Key Strengths
-          </h4>
-          @if (marketIntelligence()?.keyStrengths?.length) {
-            <ul class="space-y-2">
-              @for (strength of marketIntelligence()!.keyStrengths; track $index) {
-                <li class="text-gray-600 text-sm flex items-start gap-3">
-                  <div class="w-2 h-2 bg-green-400 rounded-full mt-2 flex-shrink-0"></div>
-                  {{ strength }}
-                </li>
-              }
-            </ul>
-          } @else {
-            <p class="text-gray-500 text-sm italic">Enhance with AI to see key strengths</p>
-          }
-        </div>
-        
-        <div>
-          <h4 class="font-medium text-gray-900 mb-3">Use of Funds</h4>
-          @if (fundingInfo()?.useOfFunds) {
-            <div class="space-y-3">
-              @if (fundingInfo()!.useOfFunds.expansion) {
-                <div class="flex items-center justify-between">
-                  <span class="text-sm text-gray-600">Market Expansion</span>
-                  <span class="text-sm font-medium">{{ fundingInfo()!.useOfFunds.expansion }}%</span>
-                </div>
-                <div class="w-full bg-gray-200 rounded-full h-2">
-                  <div 
-                    class="bg-primary-600 h-2 rounded-full" 
-                    [style.width.%]="fundingInfo()!.useOfFunds.expansion"
-                  ></div>
-                </div>
-              }
-              
-              @if (fundingInfo()!.useOfFunds.productDevelopment) {
-                <div class="flex items-center justify-between">
-                  <span class="text-sm text-gray-600">Product Development</span>
-                  <span class="text-sm font-medium">{{ fundingInfo()!.useOfFunds.productDevelopment }}%</span>
-                </div>
-                <div class="w-full bg-gray-200 rounded-full h-2">
-                  <div 
-                    class="bg-green-600 h-2 rounded-full" 
-                    [style.width.%]="fundingInfo()!.useOfFunds.productDevelopment"
-                  ></div>
-                </div>
-              }
-              
-              @if (fundingInfo()!.useOfFunds.workingCapital) {
-                <div class="flex items-center justify-between">
-                  <span class="text-sm text-gray-600">Working Capital</span>
-                  <span class="text-sm font-medium">{{ fundingInfo()!.useOfFunds.workingCapital }}%</span>
-                </div>
-                <div class="w-full bg-gray-200 rounded-full h-2">
-                  <div 
-                    class="bg-purple-600 h-2 rounded-full" 
-                    [style.width.%]="fundingInfo()!.useOfFunds.workingCapital"
-                  ></div>
-                </div>
-              }
-            </div>
-          } @else {
-            <p class="text-gray-500 text-sm italic">Use of funds breakdown not available</p>
-          }
-        </div>
-      </div>
-    </ui-card>
-  </div>
-</ng-template>
-
-<!-- Financial Dashboard Template -->
-<ng-template #financialDashboard>
-  <div class="space-y-6">
-    <div class="flex items-center justify-between">
-      <h2 class="text-2xl font-bold text-gray-900">Financial Dashboard</h2>
-      <ui-button variant="primary">
-        <lucide-icon [img]="DownloadIcon" [size]="16" class="mr-2" />
-        Export Report
-      </ui-button>
-    </div>
-
-    @if (financialMetrics()) {
-      <!-- Financial Metrics Grid -->
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <!-- Monthly Revenue -->
-        <ui-card class="p-6">
-          <div class="flex items-center justify-between mb-4">
-            <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-              <lucide-icon [img]="TrendingUpIcon" [size]="24" class="text-green-600" />
-            </div>
-          </div>
-          <div class="space-y-1">
-            <div class="text-2xl font-bold text-gray-900">{{ formatLargeNumber(financialMetrics()!.monthlyRevenue) }}</div>
-            <div class="text-gray-500 text-sm">Monthly Revenue</div>
-            <div class="text-green-600 text-sm font-medium">+12% vs last month</div>
-          </div>
-        </ui-card>
-
-        <!-- Monthly Expenses -->
-        <ui-card class="p-6">
-          <div class="flex items-center justify-between mb-4">
-            <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
-              <lucide-icon [img]="BarChart3Icon" [size]="24" class="text-red-600" />
-            </div>
-          </div>
-          <div class="space-y-1">
-            <div class="text-2xl font-bold text-gray-900">{{ formatLargeNumber(financialMetrics()!.monthlyExpenses) }}</div>
-            <div class="text-gray-500 text-sm">Monthly Expenses</div>
-            <div class="text-red-600 text-sm font-medium">+5% vs last month</div>
-          </div>
-        </ui-card>
-
-        <!-- Monthly Profit -->
-        <ui-card class="p-6">
-          <div class="flex items-center justify-between mb-4">
-            <div class="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center">
-              <lucide-icon [img]="PieChartIcon" [size]="24" class="text-primary-600" />
-            </div>
-          </div>
-          <div class="space-y-1">
-            <div class="text-2xl font-bold text-gray-900">{{ formatLargeNumber(getMonthlyProfit()) }}</div>
-            <div class="text-gray-500 text-sm">Monthly Profit</div>
-            <div class="text-primary-600 text-sm font-medium">{{ financialMetrics()!.profitMargin }}% margin</div>
-          </div>
-        </ui-card>
-
-        <!-- Growth Rate -->
-        <ui-card class="p-6">
-          <div class="flex items-center justify-between mb-4">
-            <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-              <lucide-icon [img]="CalculatorIcon" [size]="24" class="text-purple-600" />
-            </div>
-          </div>
-          <div class="space-y-1">
-            <div class="text-2xl font-bold text-gray-900">{{ financialMetrics()!.projectedGrowth }}%</div>
-            <div class="text-gray-500 text-sm">YoY Growth Rate</div>
-            <div class="text-purple-600 text-sm font-medium">Above industry avg</div>
-          </div>
-        </ui-card>
-      </div>
-
-      <!-- Financial Projections Table -->
-      <ui-card class="p-6">
-        <h3 class="text-lg font-semibold text-gray-900 mb-4">3-Year Financial Projections</h3>
-        <div class="overflow-x-auto">
-          <table class="w-full">
-            <thead>
-              <tr class="border-b border-gray-200">
-                <th class="text-left py-3 px-4 font-medium text-gray-900">Metric</th>
-                <th class="text-right py-3 px-4 font-medium text-gray-900">Year 1</th>
-                <th class="text-right py-3 px-4 font-medium text-gray-900">Year 2</th>
-                <th class="text-right py-3 px-4 font-medium text-gray-900">Year 3</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-gray-100">
-              <tr>
-                <td class="py-3 px-4 text-gray-900">Revenue</td>
-                <td class="py-3 px-4 text-right text-gray-600">{{ formatLargeNumber(getProjectedRevenue(1)) }}</td>
-                <td class="py-3 px-4 text-right text-gray-600">{{ formatLargeNumber(getProjectedRevenue(2)) }}</td>
-                <td class="py-3 px-4 text-right text-gray-600">{{ formatLargeNumber(getProjectedRevenue(3)) }}</td>
-              </tr>
-              <tr>
-                <td class="py-3 px-4 text-gray-900">Gross Profit</td>
-                <td class="py-3 px-4 text-right text-gray-600">{{ formatLargeNumber(getProjectedGrossProfit(1)) }}</td>
-                <td class="py-3 px-4 text-right text-gray-600">{{ formatLargeNumber(getProjectedGrossProfit(2)) }}</td>
-                <td class="py-3 px-4 text-right text-gray-600">{{ formatLargeNumber(getProjectedGrossProfit(3)) }}</td>
-              </tr>
-              <tr>
-                <td class="py-3 px-4 text-gray-900">EBITDA</td>
-                <td class="py-3 px-4 text-right text-gray-600">{{ formatLargeNumber(getProjectedEBITDA(1)) }}</td>
-                <td class="py-3 px-4 text-right text-gray-600">{{ formatLargeNumber(getProjectedEBITDA(2)) }}</td>
-                <td class="py-3 px-4 text-right text-gray-600">{{ formatLargeNumber(getProjectedEBITDA(3)) }}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </ui-card>
-    } @else {
-      <div class="text-center py-8">
-        <lucide-icon [img]="BarChart3Icon" [size]="48" class="text-gray-400 mx-auto mb-4" />
-        <p class="text-gray-600">Financial data not available</p>
-        <p class="text-sm text-gray-400">Complete your financial profile to see dashboard</p>
-      </div>
-    }
-  </div>
-</ng-template>
-
-<!-- Document Repository Template -->
-<ng-template #documentRepository>
-  <div class="space-y-6">
-    <div class="flex items-center justify-between">
-      <h2 class="text-2xl font-bold text-gray-900">Document Repository</h2>
-      <span class="text-sm text-gray-500">Last updated: {{ getCurrentDate() }}</span>
-    </div>
-
-    @if (documentsData().size > 0) {
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        @for (entry of documentsData() | keyvalue; track entry.key) {
-          <ui-card class="p-6 hover:shadow-md transition-shadow">
-            <div class="flex items-start justify-between mb-4">
-              <div class="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center">
-                <lucide-icon [img]="FileTextIcon" [size]="24" class="text-primary-600" />
-              </div>
-              <div [class]="'px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1 ' + getStatusColor(entry.value.status)">
-                <lucide-icon [img]="getStatusIcon(entry.value.status)" [size]="12" />
-                {{ entry.value.status }}
-              </div>
-            </div>
-            
-            <h3 class="font-semibold text-gray-900 mb-2 capitalize">
-              {{ formatDocumentKey(entry.key) }}
-            </h3>
-            
-            <p class="text-sm text-gray-500 mb-4">
-              Uploaded: {{ formatUploadDate(entry.value.uploadedAt || entry.value.uploadDate) }}
-            </p>
-            
-            <div class="flex items-center gap-2">
-              <ui-button variant="ghost" size="sm" (clicked)="viewDocument(entry.key)">
-                <lucide-icon [img]="EyeIcon" [size]="16" class="mr-1" />
-                View
-              </ui-button>
-              <ui-button variant="ghost" size="sm" (clicked)="downloadDocument(entry.key)">
-                <lucide-icon [img]="DownloadIcon" [size]="16" class="mr-1" />
-                Download
-              </ui-button>
-            </div>
-          </ui-card>
-        }
-      </div>
-
-      <!-- Document Security Notice -->
-      <div class="bg-amber-50 border border-amber-200 rounded-lg p-4">
-        <div class="flex items-start gap-3">
-          <lucide-icon [img]="ShieldIcon" [size]="20" class="text-amber-600 mt-0.5" />
-          <div>
-            <h4 class="font-medium text-amber-900 mb-1">Secure Document Access</h4>
-            <p class="text-sm text-amber-700">
-              All documents are encrypted and access is logged. Downloads are watermarked with reviewer information.
-            </p>
-          </div>
-        </div>
-      </div>
-    } @else {
-      <div class="text-center py-8">
-        <lucide-icon [img]="FileTextIcon" [size]="48" class="text-gray-400 mx-auto mb-4" />
-        <p class="text-gray-600">No documents available</p>
-        <p class="text-sm text-gray-400">Upload documents to your profile to see them here</p>
-      </div>
-    }
-  </div>
-</ng-template>
-
-<!-- Management Team Template -->
-<ng-template #managementTeam>
-  <div class="space-y-6">
-    <h2 class="text-2xl font-bold text-gray-900">Management Team</h2>
-    
-    @if (getManagementTeam().length) {
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        @for (member of getManagementTeam(); track $index) {
-          <ui-card class="p-6">
-            <div class="flex items-start gap-4">
-              <div class="w-16 h-16 bg-gradient-to-br from-primary-500 to-purple-600 rounded-full flex items-center justify-center text-white text-xl font-bold">
-                {{ getInitials(member) }}
-              </div>
-              <div class="flex-1">
-                <h3 class="text-lg font-semibold text-gray-900">{{ getFullName(member) }}</h3>
-                <p class="text-primary-600 font-medium mb-2">{{ member.position || member.role }}</p>
-                <p class="text-gray-600 text-sm mb-2">{{ member.experience || 'Experience details not provided' }}</p>
-                <p class="text-gray-500 text-sm">{{ member.education || member.qualifications || 'Education details not provided' }}</p>
-              </div>
-            </div>
-          </ui-card>
-        }
-      </div>
-    } @else {
-      <div class="text-center py-8">
-        <lucide-icon [img]="UsersIcon" [size]="48" class="text-gray-400 mx-auto mb-4" />
-        <p class="text-gray-600">Management team information not available</p>
-        <p class="text-sm text-gray-400">Complete your management section to see team details</p>
-      </div>
-    }
-  </div>
-</ng-template>
-
-<!-- Market Analysis Template -->
-<ng-template #marketAnalysis>
-  <div class="space-y-6">
-    <div class="flex items-center justify-between">
-      <h2 class="text-2xl font-bold text-gray-900">Market Analysis</h2>
-      @if (marketIntelligence()) {
-        <span class="bg-purple-100 text-purple-700 px-3 py-1 rounded-full text-sm font-medium">
-          AI-Enhanced Insights
-        </span>
-      }
-    </div>
-
-    @if (marketIntelligence()) {
-      <!-- Market Overview -->
-      <ui-card class="p-6">
-        <h3 class="text-lg font-semibold text-gray-900 mb-4">Market Overview</h3>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div class="text-center">
-            <div class="text-3xl font-bold text-primary-600 mb-2">{{ marketIntelligence()!.marketSize }}</div>
-            <div class="text-gray-600">Total Addressable Market</div>
-          </div>
-          <div class="text-center">
-            <div class="text-3xl font-bold text-green-600 mb-2">{{ marketIntelligence()!.sectorGrowth }}%</div>
-            <div class="text-gray-600">Annual Growth Rate</div>
-          </div>
-          <div class="text-center">
-            <div class="text-3xl font-bold text-purple-600 mb-2">{{ marketIntelligence()!.competitivePosition }}</div>
-            <div class="text-gray-600">Market Position</div>
-          </div>
-        </div>
-      </ui-card>
-
-      <!-- Market Trends -->
-      <ui-card class="p-6">
-        <h3 class="text-lg font-semibold text-gray-900 mb-4">Key Market Trends</h3>
-        <div class="space-y-4">
-          @for (trend of marketIntelligence()!.trends; track $index) {
-            <div class="flex items-start gap-3 p-4 bg-gray-50 rounded-lg">
-              <div class="w-6 h-6 bg-primary-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                <lucide-icon [img]="TrendingUpIcon" [size]="16" class="text-primary-600" />
-              </div>
-              <p class="text-gray-700">{{ trend }}</p>
-            </div>
-          }
-        </div>
-      </ui-card>
-    } @else {
-      <div class="text-center py-8">
-        <lucide-icon [img]="TrendingUpIcon" [size]="48" class="text-gray-400 mx-auto mb-4" />
-        <p class="text-gray-600">Market analysis not available</p>
-        <ui-button variant="primary" (clicked)="enhanceWithAI()" [loading]="isAIAnalyzing()">
-          <lucide-icon [img]="SparklesIcon" [size]="16" class="mr-2" />
-          Generate Market Analysis
-        </ui-button>
-      </div>
-    }
-  </div>
-</ng-template>
-
-<!-- Legal Compliance Template -->
-<ng-template #legalCompliance>
-  <div class="space-y-6">
-    <h2 class="text-2xl font-bold text-gray-900">Legal & Compliance</h2>
-
-    <!-- Compliance Status Grid -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-      <ui-card class="p-6">
-        <div class="flex items-center gap-3 mb-4">
-          <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-            <lucide-icon [img]="ShieldIcon" [size]="24" class="text-green-600" />
-          </div>
-          <div>
-            <h3 class="font-semibold text-gray-900">Company Registration</h3>
-            <p class="text-sm text-green-600">Verified</p>
-          </div>
-        </div>
-        <p class="text-sm text-gray-600">Registration #: {{ companyInfo()?.registrationNumber }}</p>
-      </ui-card>
-
-      <ui-card class="p-6">
-        <div class="flex items-center gap-3 mb-4">
-          <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-            <lucide-icon [img]="CheckCircleIcon" [size]="24" class="text-green-600" />
-          </div>
-          <div>
-            <h3 class="font-semibold text-gray-900">Tax Compliance</h3>
-            <p class="text-sm text-green-600">Current</p>
-          </div>
-        </div>
-        <p class="text-sm text-gray-600">All tax obligations up to date</p>
-      </ui-card>
-
-      <ui-card class="p-6">
-        <div class="flex items-center gap-3 mb-4">
-          <div class="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center">
-            <lucide-icon [img]="FileTextIcon" [size]="24" class="text-primary-600" />
-          </div>
-          <div>
-            <h3 class="font-semibold text-gray-900">Legal Structure</h3>
-            <p class="text-sm text-primary-600">Private Company</p>
-          </div>
-        </div>
-        <p class="text-sm text-gray-600">Limited liability company</p>
-      </ui-card>
-    </div>
-
-    <!-- Regulatory Compliance -->
-    <ui-card class="p-6">
-      <h3 class="text-lg font-semibold text-gray-900 mb-4">Regulatory Compliance</h3>
-      <div class="space-y-4">
-        <div class="flex items-center justify-between p-4 bg-green-50 rounded-lg">
-          <div class="flex items-center gap-3">
-            <lucide-icon [img]="CheckCircleIcon" [size]="20" class="text-green-500" />
-            <span class="font-medium text-gray-900">Financial Services Conduct Authority (FSCA)</span>
-          </div>
-          <span class="text-sm text-green-600 font-medium">Compliant</span>
-        </div>
-        
-        <div class="flex items-center justify-between p-4 bg-green-50 rounded-lg">
-          <div class="flex items-center gap-3">
-            <lucide-icon [img]="CheckCircleIcon" [size]="20" class="text-green-500" />
-            <span class="font-medium text-gray-900">South African Reserve Bank (SARB)</span>
-          </div>
-          <span class="text-sm text-green-600 font-medium">Registered</span>
-        </div>
-        
-        <div class="flex items-center justify-between p-4 bg-green-50 rounded-lg">
-          <div class="flex items-center gap-3">
-            <lucide-icon [img]="CheckCircleIcon" [size]="20" class="text-green-500" />
-            <span class="font-medium text-gray-900">POPIA Compliance</span>
-          </div>
-          <span class="text-sm text-green-600 font-medium">Certified</span>
-        </div>
-      </div>
-    </ui-card>
-  </div>
-</ng-template>

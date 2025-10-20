@@ -1,15 +1,13 @@
- 
- 
-// // src/app/auth/production.auth.service.ts  
+// // src/app/auth/auth.service.ts
 // import { Injectable, signal, computed, inject } from '@angular/core';
 // import { Router } from '@angular/router';
- 
-// import { BehaviorSubject, Observable, from, throwError, timer } from 'rxjs';
-// import { map, catchError, timeout, retry } from 'rxjs/operators'; 
+// import { from, Observable, of, throwError, firstValueFrom, timeout, catchError } from 'rxjs';
+// import { map, tap, finalize } from 'rxjs/operators';
 // import { SharedSupabaseService } from '../shared/services/shared-supabase.service';
+// import { RegistrationTransactionService, RegistrationTransactionResult } from '../shared/services/registration-transaction.service';
 // import { Session, User } from '@supabase/supabase-js';
 
- 
+// // NOTE: The interfaces are unchanged from the original file.
 // export interface SignUpData {
 //   email: string;
 //   password: string;
@@ -48,464 +46,336 @@
 //   avatarUrl?: string;
 //   isVerified: boolean;
 //   createdAt: string;
+//   organizationId?: string;
 // }
 
+// export interface AuthOperationResult {
+//   success: boolean;
+//   user: UserProfile | null;
+//   error: string | null;
+//   organizationId?: string;
+//   organizationCreated?: boolean;
+// }
+
+// interface LoadingState {
+//   registration: boolean;
+//   login: boolean;
+//   initialization: boolean;
+//   sessionUpdate: boolean;
+// }
+
+// /**
+//  * To fully implement this refactored service, you should make the following change in your app.config.ts:
+//  *
+//  * import { APP_INITIALIZER, ApplicationConfig } from '@angular/core';
+//  * import { AuthService } from './auth/auth.service';
+//  *
+//  * function initializeAuthFactory(authService: AuthService): () => Promise<void> {
+//  *   return () => authService.initializeAuth();
+//  * }
+//  *
+//  * export const appConfig: ApplicationConfig = {
+//  *   providers: [
+//  *     // ... other providers
+//  *     AuthService, // Ensure AuthService is provided
+//  *     {
+//  *       provide: APP_INITIALIZER,
+//  *       useFactory: initializeAuthFactory,
+//  *       deps: [AuthService],
+//  *       multi: true,
+//  *     },
+//  *   ],
+//  * };
+//  */
 // @Injectable({
 //   providedIn: 'root'
 // })
 // export class AuthService {
 //   private router = inject(Router);
 //   private supabaseService = inject(SharedSupabaseService);
-  
-//   // Reactive state
-//   private userSubject = new BehaviorSubject<UserProfile | null>(null);
-//   private sessionSubject = new BehaviorSubject<Session | null>(null);
-//   private loadingSubject = new BehaviorSubject<boolean>(true);
-  
-//   // Signals for component consumption
+//   private registrationTransaction = inject(RegistrationTransactionService);
+
+//   // --- State Management using Angular Signals ---
+//   private loadingState = signal<LoadingState>({
+//     registration: false,
+//     login: false,
+//     initialization: true,
+//     sessionUpdate: false
+//   });
+
 //   user = signal<UserProfile | null>(null);
 //   session = signal<Session | null>(null);
-//   isLoading = signal<boolean>(true);
+
+//   // --- Computed Signals for derived state ---
+//   isInitializing = computed(() => this.loadingState().initialization);
+//   isLoggingIn = computed(() => this.loadingState().login);
+//   isRegistering = computed(() => this.loadingState().registration);
+//   isSessionUpdating = computed(() => this.loadingState().sessionUpdate);
+
+//   isLoading = computed(() => {
+//     const state = this.loadingState();
+//     return state.registration || state.login || state.initialization || state.sessionUpdate;
+//   });
+
 //   isAuthenticated = computed(() => !!this.user());
 
-//   // Observables for reactive programming
-//   user$ = this.userSubject.asObservable();
-//   session$ = this.sessionSubject.asObservable();
-//   isLoading$ = this.loadingSubject.asObservable();
-//   isAuthenticated$ = this.user$.pipe(map(user => !!user));
+//   // --- APP INITIALIZATION ---
+//   // This method should be called by an APP_INITIALIZER factory.
+//   async initializeAuth(): Promise<void> {
+//     console.log('Starting auth initialization...');
+//     this.updateLoadingState({ initialization: true });
 
-//   constructor() {
-//     this.initializeAuth();
-//   }
-
-//   private async initializeAuth(): Promise<void> {
 //     try {
-//       console.log('🔐 Initializing auth...');
-      
-//       // Wait for Supabase client to be ready
-//       await this.supabaseService.getClient();
-      
-//       // Use timeout for the session request
-//       const sessionResult = await Promise.race([
-//         this.supabaseService.auth.getSession(),
-//         new Promise((_, reject) => 
-//           setTimeout(() => reject(new Error('Session request timeout')), 5000)
+//       await this.supabaseService.getClient(); // Ensure Supabase client is ready
+
+//       const sessionPromise = this.supabaseService.auth.getSession();
+//       const { data: { session }, error } = await firstValueFrom(
+//         from(sessionPromise).pipe(
+//           timeout(10000),
+//           catchError(() => {
+//             console.error('Session initialization timed out.');
+//             return of({ data: { session: null }, error: new Error('Session initialization timeout') });
+//           })
 //         )
-//       ]) as any;
+//       );
 
-//       const { data: { session }, error } = sessionResult;
-      
 //       if (error) {
-//         // Handle lock errors gracefully
-//         if (error.message?.includes('NavigatorLockAcquireTimeoutError') || 
-//             error.message?.includes('lock')) {
-//           console.warn('⚠️ Lock timeout occurred, continuing without session');
-//           this.clearAuthState();
-//           return;
-//         }
-//         console.error('❌ Session initialization error:', error);
+//         console.error('Session initialization error:', error.message);
 //         this.clearAuthState();
-//         return;
-//       }
-
-//       if (session?.user) {
-//         await this.setUserSession(session);
+//       } else if (session?.user) {
+//         await this.establishUserSession(session);
 //       } else {
 //         this.clearAuthState();
 //       }
 
-//       // Set up auth state change listener with error handling
-//       this.supabaseService.auth.onAuthStateChange(async (event, session) => {
-//         try {
-//           console.log('🔄 Auth state changed:', event, session?.user?.email);
-          
-//           if (session?.user) {
-//             await this.setUserSession(session);
-//           } else {
-//             this.clearAuthState();
-//             if (event === 'SIGNED_OUT') {
-//               this.router.navigate(['/auth/login']);
-//             }
-//           }
-//         } catch (stateChangeError: any) {
-//           console.error('❌ Error in auth state change handler:', stateChangeError);
-//           // Don't clear auth state on listener errors unless critical
-//           if (stateChangeError?.message?.includes('lock')) {
-//             console.warn('⚠️ Lock error in state change, continuing...');
-//           }
-//         }
-//       });
+//       this.listenToAuthStateChanges();
 
 //     } catch (error: any) {
-//       // Handle initialization errors gracefully
-//       if (error.message?.includes('NavigatorLockAcquireTimeoutError') || 
-//           error.message?.includes('lock') ||
-//           error.message?.includes('timeout')) {
-//         console.warn('⚠️ Auth initialization timeout/lock error, continuing without session');
-//       } else {
-//         console.error('❌ Auth initialization failed:', error);
-//       }
+//       console.error('Auth initialization failed:', error);
 //       this.clearAuthState();
 //     } finally {
-//       this.isLoading.set(false);
-//       this.loadingSubject.next(false);
+//       this.updateLoadingState({ initialization: false });
+//       console.log('Auth initialization completed.');
 //     }
 //   }
 
-//   // Register method with improved error handling
-//   register(credentials: RegisterRequest): Observable<{ user: UserProfile | null; error: string | null }> {
-//     return from(this.performRegister(credentials)).pipe(
-//       timeout(30000), // 30 second timeout
-//       retry({
-//         count: 2,
-//         delay: (error) => {
-//           // Retry on lock errors but not on validation errors
-//           if (error.message?.includes('lock') || error.message?.includes('timeout')) {
-//             return timer(1000); // Retry after 1 second
+//   private listenToAuthStateChanges(): void {
+//     this.supabaseService.auth.onAuthStateChange(async (event, session) => {
+//       console.log('Auth state changed:', event);
+//       this.updateLoadingState({ sessionUpdate: true });
+//       try {
+//         if (session?.user) {
+//           await this.establishUserSession(session);
+//         } else {
+//           this.clearAuthState();
+//           if (event === 'SIGNED_OUT') {
+//             this.router.navigate(['/auth/login']);
 //           }
-//           throw error; // Don't retry validation errors
 //         }
-//       }),
-//       catchError(error => {
-//         console.error('❌ Register error:', error);
-//         let errorMessage = 'Registration failed';
-        
-//         if (error.message?.includes('lock')) {
-//           errorMessage = 'Registration is temporarily unavailable. Please try again.';
-//         } else if (error.message?.includes('timeout')) {
-//           errorMessage = 'Registration timed out. Please check your connection and try again.';
-//         } else if (error.message) {
-//           errorMessage = error.message;
-//         }
-        
-//         return throwError(() => ({
-//           user: null,
-//           error: errorMessage
-//         }));
-//       })
-//     );
-//   }
-
-//   private async performRegister(credentials: RegisterRequest) {
-//     console.log('🚀 Starting registration process...');
-    
-//     // Validate terms agreement
-//     if (!credentials.agreeToTerms) {
-//       throw new Error('You must agree to the terms and conditions');
-//     }
-
-//     // Validate password confirmation
-//     if (credentials.password !== credentials.confirmPassword) {
-//       throw new Error('Passwords do not match');
-//     }
-
-//     try {
-//       // 1. Create Supabase auth user with timeout
-//       console.log('👤 Creating Supabase auth user...');
-      
-//       const authResult = await Promise.race([
-//         this.supabaseService.auth.signUp({
-//           email: credentials.email,
-//           password: credentials.password,
-//           options: {
-//             data: {
-//               first_name: credentials.firstName,
-//               last_name: credentials.lastName,
-//               phone: credentials.phone,
-//               user_type: credentials.userType,
-//               company_name: credentials.companyName
-//             }
-//           }
-//         }),
-//         new Promise((_, reject) => 
-//           setTimeout(() => reject(new Error('Auth signup timeout')), 15000)
-//         )
-//       ]) as any;
-
-//       const { data: authData, error: authError } = authResult;
-
-//       if (authError) {
-//         console.error('❌ Supabase auth error:', authError);
-//         throw new Error(`Authentication failed: ${authError.message}`);
-//       }
-
-//       if (!authData.user) {
-//         throw new Error('User creation failed - no user returned from Supabase');
-//       }
-
-//       console.log('✅ Supabase auth user created:', authData.user.id);
-
-//       // 2. Create user profile in database
-//       console.log('📝 Creating user profile in database...');
-//       const { error: profileError } = await this.supabaseService
-//         .from('users')
-//         .insert({
-//           id: authData.user.id,
-//           email: credentials.email,
-//           first_name: credentials.firstName,
-//           last_name: credentials.lastName,
-//           phone: credentials.phone,
-//           user_type: credentials.userType,
-//           company_name: credentials.companyName,
-//           status: 'active',
-//           email_verified: false
-//         });
-
-//       if (profileError) {
-//         console.error('❌ Profile creation error:', profileError);
-//         throw new Error(`Failed to create user profile: ${profileError.message}`);
-//       }
-
-//       console.log('✅ User profile created successfully');
-
-//       // 3. Create user_profile entry (optional)
-//       console.log('📋 Creating user profile metadata...');
-//       const { error: userProfileError } = await this.supabaseService
-//         .from('user_profiles')
-//         .insert({
-//           user_id: authData.user.id,
-//           display_name: `${credentials.firstName} ${credentials.lastName}`,
-//           profile_step: 0,
-//           completion_percentage: 0,
-//           is_active: true,
-//           is_verified: false
-//         });
-
-//       if (userProfileError) {
-//         console.error('⚠️ User profile metadata creation failed:', userProfileError);
-//         console.log('💡 User profile metadata can be created later');
-//       } else {
-//         console.log('✅ User profile metadata created successfully');
-//       }
-
-//       // 4. Build and return user profile
-//       console.log('🏗️ Building user profile object...');
-//       const userProfile = await this.buildUserProfile(authData.user);
-      
-//       console.log('🎉 Registration completed successfully!');
-//       return {
-//         user: userProfile,
-//         error: null
-//       };
-
-//     } catch (error: any) {
-//       console.error('💥 Registration failed:', error);
-//       throw error;
-//     }
-//   }
-
-//   // Login method with better error handling
-//   login(credentials: LoginRequest): Observable<{ user: UserProfile | null; error: string | null }> {
-//     return from(this.performLogin(credentials.email, credentials.password)).pipe(
-//       timeout(15000), // 15 second timeout
-//       retry({
-//         count: 2,
-//         delay: (error) => {
-//           if (error.message?.includes('lock') || error.message?.includes('timeout')) {
-//             return timer(1000);
-//           }
-//           throw error;
-//         }
-//       }),
-//       catchError(error => {
-//         console.error('❌ Login error:', error);
-//         let errorMessage = 'Login failed';
-        
-//         if (error.message?.includes('lock')) {
-//           errorMessage = 'Login is temporarily unavailable. Please try again.';
-//         } else if (error.message?.includes('timeout')) {
-//           errorMessage = 'Login timed out. Please check your connection and try again.';
-//         } else if (error.message) {
-//           errorMessage = error.message;
-//         }
-        
-//         return throwError(() => ({
-//           user: null,
-//           error: errorMessage
-//         }));
-//       })
-//     );
-//   }
-
-//   private async performLogin(email: string, password: string) {
-//     const loginResult = await Promise.race([
-//       this.supabaseService.auth.signInWithPassword({
-//         email,
-//         password
-//       }),
-//       new Promise((_, reject) => 
-//         setTimeout(() => reject(new Error('Login timeout')), 10000)
-//       )
-//     ]) as any;
-
-//     const { data, error } = loginResult;
-
-//     if (error) {
-//       throw new Error(error.message);
-//     }
-
-//     if (!data.user) {
-//       throw new Error('Login failed');
-//     }
-
-//     return {
-//       user: await this.buildUserProfile(data.user),
-//       error: null
-//     };
-//   }
-
-//   // Legacy signUp method (keeping for compatibility)
-//   signUp(credentials: SignUpData): Observable<{ user: UserProfile | null; error: string | null }> {
-//     return from(this.performSignUp(credentials)).pipe(
-//       timeout(30000),
-//       catchError(error => {
-//         console.error('SignUp error:', error);
-//         return throwError(() => ({
-//           user: null,
-//           error: error.message || 'Registration failed'
-//         }));
-//       })
-//     );
-//   }
-
-//   private async performSignUp(credentials: SignUpData) {
-//     const { data: authData, error: authError } = await this.supabaseService.auth.signUp({
-//       email: credentials.email,
-//       password: credentials.password,
-//       options: {
-//         data: {
-//           first_name: credentials.firstName,
-//           last_name: credentials.lastName,
-//           phone: credentials.phone,
-//           user_type: credentials.userType
-//         }
+//       } catch (error) {
+//         console.error('Error in auth state change handler:', error);
+//         this.clearAuthState();
+//       } finally {
+//         this.updateLoadingState({ sessionUpdate: false });
 //       }
 //     });
+//   }
 
-//     if (authError) {
-//       throw new Error(authError.message);
+//   // --- CORE AUTH METHODS ---
+
+//   register(credentials: RegisterRequest): Observable<AuthOperationResult> {
+//     this.updateLoadingState({ registration: true });
+
+//     const validationError = this.validateRegistrationInput(credentials);
+//     if (validationError) {
+//       this.updateLoadingState({ registration: false });
+//       return of({ success: false, user: null, error: validationError });
 //     }
 
-//     if (!authData.user) {
-//       throw new Error('User creation failed');
+//     return this.registrationTransaction.executeRegistrationTransaction(credentials).pipe(
+//       timeout(60000),
+//       tap((result: RegistrationTransactionResult) => {
+//         if (result.success && result.user) {
+//           const userProfile = result.user;
+//           userProfile.organizationId = result.organizationId;
+//           this.user.set(userProfile);
+//           console.log('Registration successful, auth state updated.');
+//         }
+//       }),
+//       map((result: RegistrationTransactionResult): AuthOperationResult => ({
+//         success: result.success,
+//         user: result.user,
+//         error: result.error || null,
+//         organizationId: result.organizationId,
+//         organizationCreated: !!result.organizationId
+//       })),
+//       catchError(error => {
+//         console.error('Registration failed:', error);
+//         return of({
+//           success: false,
+//           user: null,
+//           error: error.message || 'An unknown registration error occurred.'
+//         });
+//       }),
+//       finalize(() => this.updateLoadingState({ registration: false }))
+//     );
+//   }
+
+//   login(credentials: LoginRequest): Observable<AuthOperationResult> {
+//     this.updateLoadingState({ login: true });
+
+//     return from(this.performLogin(credentials)).pipe(
+//       timeout(30000),
+//       catchError(error => {
+//         console.error('Login failed:', error);
+//         return of({
+//             success: false,
+//             user: null,
+//             error: error.message || 'Login failed. Please try again.'
+//         });
+//       }),
+//       finalize(() => this.updateLoadingState({ login: false }))
+//     );
+//   }
+
+//   private async performLogin(credentials: LoginRequest): Promise<AuthOperationResult> {
+//     const { data, error } = await this.supabaseService.auth.signInWithPassword(credentials);
+
+//     if (error) {
+//       throw new Error(this.createLoginErrorMessage(error));
+//     }
+//     if (!data.user || !data.session) {
+//       throw new Error('Login failed: No user data returned.');
 //     }
 
-//     const { error: profileError } = await this.supabaseService
-//       .from('users')
-//       .insert({
-//         id: authData.user.id,
-//         email: credentials.email,
-//         first_name: credentials.firstName,
-//         last_name: credentials.lastName,
-//         phone: credentials.phone,
-//         user_type: credentials.userType,
-//         status: 'active',
-//         email_verified: false
-//       });
-
-//     if (profileError) {
-//       console.error('Profile creation error:', profileError);
-//     }
-
-//     const { error: userProfileError } = await this.supabaseService
-//       .from('user_profiles')
-//       .insert({
-//         user_id: authData.user.id,
-//         display_name: `${credentials.firstName} ${credentials.lastName}`,
-//         profile_step: 0,
-//         completion_percentage: 0,
-//         is_active: true,
-//         is_verified: false
-//       });
-
-//     if (userProfileError) {
-//       console.error('User profile creation error:', userProfileError);
-//     }
+//     // This will trigger onAuthStateChange, which calls establishUserSession
+//     // But we can pre-emptively update state for a faster UI response.
+//     await this.establishUserSession(data.session);
 
 //     return {
-//       user: await this.buildUserProfile(authData.user),
-//       error: null
+//       success: true,
+//       user: this.user(),
+//       error: null,
+//       organizationId: this.user()?.organizationId,
+//       organizationCreated: !!this.user()?.organizationId
 //     };
 //   }
 
 //   async signOut(): Promise<void> {
+//     console.log('Signing out...');
 //     try {
 //       const { error } = await this.supabaseService.auth.signOut();
-//       if (error && !error.message?.includes('lock')) {
-//         console.error('SignOut error:', error);
+//       if (error) {
+//         // Don't throw, just log, as the state will be cleared anyway.
+//         console.error('SignOut error:', error.message);
 //       }
+//     } catch (error: any) {
+//       console.error('SignOut failed:', error.message);
+//     } finally {
 //       this.clearAuthState();
 //       this.router.navigate(['/auth/login']);
-//     } catch (error: any) {
-//       if (!error.message?.includes('lock')) {
-//         console.error('SignOut failed:', error);
-//       }
-//       this.clearAuthState();
 //     }
 //   }
 
-//   private async setUserSession(session: Session): Promise<void> {
-//     try {
-//       this.session.set(session);
-//       this.sessionSubject.next(session);
+//   // --- SESSION & PROFILE MANAGEMENT ---
 
+//   private async establishUserSession(session: Session): Promise<void> {
+//     console.log('Establishing user session...');
+//     try {
 //       const userProfile = await this.buildUserProfile(session.user);
+//       this.session.set(session);
 //       this.user.set(userProfile);
-//       this.userSubject.next(userProfile);
-
-//       console.log('✅ User session established:', userProfile.email);
+//       console.log('User session established for:', userProfile.email);
 //     } catch (error) {
-//       console.error('Failed to set user session:', error);
-//       this.clearAuthState();
+//       console.error('Failed to establish user session:', error);
+//       this.clearAuthState(); // Clear state on failure
+//       throw error; // Re-throw to allow upstream handlers to catch it
 //     }
 //   }
 
-//   private clearAuthState(): void {
-//     this.user.set(null);
-//     this.session.set(null);
-//     this.userSubject.next(null);
-//     this.sessionSubject.next(null);
-//   }
-
+//   /**
+//    * OPTIMIZATION: This method can be improved by creating a single database function
+//    * (e.g., 'get_user_profile_with_organization') on the backend to fetch all data in one call.
+//    */
 //   private async buildUserProfile(user: User): Promise<UserProfile> {
-//     try {
-//       const { data: userRecord, error: userError } = await this.supabaseService
-//         .from('users')
-//         .select(`
-//           *,
-//           user_profiles (
-//             profile_step,
-//             completion_percentage,
-//             avatar_url,
-//             is_verified
-//           )
-//         `)
-//         .eq('id', user.id)
-//         .single();
+//     const { data, error } = await this.supabaseService
+//       .from('users')
+//       .select(`
+//         *,
+//         user_profiles (
+//           profile_step,
+//           completion_percentage,
+//           avatar_url,
+//           is_verified
+//         ),
+//         organization_users (
+//           organization_id
+//         )
+//       `)
+//       .eq('id', user.id)
+//       .single();
 
-//       if (userError || !userRecord) {
-//         console.warn('User record not found, creating from auth data');
-//         return this.createProfileFromAuthUser(user);
-//       }
-
-//       return {
-//         id: user.id,
-//         email: userRecord.email,
-//         firstName: userRecord.first_name,
-//         lastName: userRecord.last_name,
-//         phone: userRecord.phone,
-//         userType: userRecord.user_type,
-//         profileStep: userRecord.user_profiles?.[0]?.profile_step || 0,
-//         completionPercentage: userRecord.user_profiles?.[0]?.completion_percentage || 0,
-//         avatarUrl: userRecord.user_profiles?.[0]?.avatar_url,
-//         isVerified: userRecord.user_profiles?.[0]?.is_verified || false,
-//         createdAt: userRecord.created_at
-//       };
-
-//     } catch (error) {
-//       console.error('Error building user profile:', error);
+//     if (error) {
+//       console.warn('Failed to fetch user profile, creating from auth data.', error.message);
 //       return this.createProfileFromAuthUser(user);
 //     }
+
+//     const profileData = data.user_profiles?.[0] || {};
+//     return {
+//       id: user.id,
+//       email: data.email,
+//       firstName: data.first_name,
+//       lastName: data.last_name,
+//       phone: data.phone,
+//       userType: data.user_type,
+//       profileStep: profileData.profile_step || 0,
+//       completionPercentage: profileData.completion_percentage || 0,
+//       avatarUrl: profileData.avatar_url,
+//       isVerified: profileData.is_verified || false,
+//       createdAt: data.created_at,
+//       organizationId: data.organization_users?.[0]?.organization_id
+//     };
+//   }
+
+//   // --- UTILITY METHODS ---
+
+//   private clearAuthState(): void {
+//     console.log('Clearing auth state.');
+//     this.user.set(null);
+//     this.session.set(null);
+//     // Reset loading states, except for initialization if it's still running
+//     this.loadingState.set({
+//       registration: false,
+//       login: false,
+//       initialization: this.loadingState().initialization,
+//       sessionUpdate: false
+//     });
+//   }
+
+//   private updateLoadingState(updates: Partial<LoadingState>): void {
+//     this.loadingState.set({ ...this.loadingState(), ...updates });
+//   }
+
+//   private createLoginErrorMessage(error: any): string {
+//     const message = error.message || '';
+//     if (message.includes('Invalid login credentials')) {
+//       return 'Invalid email or password.';
+//     }
+//     if (message.includes('Email not confirmed')) {
+//       return 'Please confirm your email before logging in.';
+//     }
+//     if (message.includes('rate limit')) {
+//       return 'Too many login attempts. Please wait and try again.';
+//     }
+//     return message || 'An unknown login error occurred.';
+//   }
+
+//   private validateRegistrationInput(credentials: RegisterRequest): string | null {
+//     if (!credentials.agreeToTerms) return 'You must accept the terms and conditions.';
+//     if (credentials.password !== credentials.confirmPassword) return 'Passwords do not match.';
+//     if (credentials.password.length < 8) return 'Password must be at least 8 characters long.';
+//     if (!credentials.email || !credentials.firstName || !credentials.lastName) return 'Please fill in all required fields.';
+//     return null;
 //   }
 
 //   private createProfileFromAuthUser(user: User): UserProfile {
@@ -520,12 +390,25 @@
 //       profileStep: 0,
 //       completionPercentage: 0,
 //       isVerified: false,
-//       createdAt: user.created_at
+//       createdAt: user.created_at,
+//       organizationId: undefined
 //     };
 //   }
 
+//   // --- LEGACY & COMPATIBILITY ---
+
+//   // Kept for backward compatibility if needed, but delegates to new `register` method.
+//   signUp(credentials: SignUpData): Observable<AuthOperationResult> {
+//     const registerRequest: RegisterRequest = {
+//       ...credentials,
+//       confirmPassword: credentials.password,
+//       userType: credentials.userType as 'sme' | 'funder',
+//       agreeToTerms: true
+//     };
+//     return this.register(registerRequest);
+//   }
+
 //   getAccessToken(): string | null {
-//     const session = this.session();
-//     return session?.access_token || null;
+//     return this.session()?.access_token || null;
 //   }
 // }

@@ -1,281 +1,321 @@
- <div class="space-y-6">
-      <!-- Contact Information -->
-      <div class="bg-white rounded-lg border border-neutral-200">
-        <div class="px-6 py-4 border-b border-neutral-200">
-          <h3 class="text-lg font-medium text-neutral-900">Contact Information</h3>
-           
-        </div>
-
-        <form [formGroup]="contactForm" (ngSubmit)="onSave()" class="p-6">
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <!-- Email -->
-            <div>
-              <label class="block text-sm font-medium text-neutral-700 mb-2">
-                <lucide-icon [img]="MailIcon" [size]="16" class="inline mr-2" />
-                Email Address *
-              </label>
-              <input
-                type="email"
-                formControlName="email"
-                placeholder="contact@yourorganization.com"
-                class="block w-full px-3 py-2 border border-neutral-300 rounded-md shadow-sm placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                [class.border-red-300]="contactForm.get('email')?.invalid && contactForm.get('email')?.touched"
-              />
-              @if (contactForm.get('email')?.invalid && contactForm.get('email')?.touched) {
-                <p class="mt-1 text-sm text-red-600">
-                  @if (contactForm.get('email')?.errors?.['required']) {
-                    Email address is required
-                  } @else if (contactForm.get('email')?.errors?.['email']) {
-                    Please enter a valid email address
-                  }
-                </p>
-              }
-            </div>
-
-            <!-- Phone -->
-            <div>
-              <label class="block text-sm font-medium text-neutral-700 mb-2">
-                <lucide-icon [img]="PhoneIcon" [size]="16" class="inline mr-2" />
-                Phone Number *
-              </label>
-              <input
-                type="tel"
-                formControlName="phone"
-                placeholder="+27 11 123 4567"
-                class="block w-full px-3 py-2 border border-neutral-300 rounded-md shadow-sm placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                [class.border-red-300]="contactForm.get('phone')?.invalid && contactForm.get('phone')?.touched"
-              />
-              @if (contactForm.get('phone')?.invalid && contactForm.get('phone')?.touched) {
-                <p class="mt-1 text-sm text-red-600">Phone number is required</p>
-              }
-            </div>
-
-            <!-- Website -->
-            <div class="md:col-span-2">
-              <label class="block text-sm font-medium text-neutral-700 mb-2">
-                <lucide-icon [img]="GlobeIcon" [size]="16" class="inline mr-2" />
-                Website
-              </label>
-              <input
-                type="url"
-                formControlName="website"
-                placeholder="https://yourorganization.com"
-                class="block w-full px-3 py-2 border border-neutral-300 rounded-md shadow-sm placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                [class.border-red-300]="contactForm.get('website')?.invalid && contactForm.get('website')?.touched"
-              />
-              @if (contactForm.get('website')?.invalid && contactForm.get('website')?.touched) {
-                <p class="mt-1 text-sm text-red-600">Please enter a valid website URL</p>
-              }
-            </div>
-          </div>
-
-          <!-- Actions -->
-          <div class="flex items-center justify-between pt-6 border-t border-neutral-200 mt-6">
-            <div class="flex items-center text-sm">
-              @if (lastSaved()) {
-                <div class="flex items-center text-green-600">
-                  <lucide-icon [img]="CheckIcon" [size]="16" class="mr-2" />
-                  Last saved {{ formatLastSaved(lastSaved()) }}
-                </div>
-              } @else if (hasUnsavedChanges()) {
-                <div class="flex items-center text-amber-600">
-                  <lucide-icon [img]="AlertCircleIcon" [size]="16" class="mr-2" />
-                  You have unsaved changes
-                </div>
-              }
-            </div>
-
-            <div class="flex space-x-3">
-              <button
-                type="button"
-                (click)="onReset()"
-                [disabled]="isLoading || !hasUnsavedChanges()"
-                class="px-4 py-2 text-sm font-medium text-neutral-700 bg-white border border-neutral-300 rounded-md hover:bg-neutral-50 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Reset
-              </button>
-              
-              <button
-                type="submit"
-                [disabled]="contactForm.invalid || isLoading"
-                class="px-4 py-2 text-sm font-medium text-white bg-primary-600 border border-transparent rounded-md hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
-              >
-                @if (isLoading) {
-                  <div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-                  Saving...
-                } @else {
-                  <lucide-icon [img]="SaveIcon" [size]="16" class="mr-2" />
-                  Save Changes
-                }
-              </button>
-            </div>
-          </div>
-        </form>
-      </div>
-
-      <!-- Address Information -->
-      <div class="bg-white rounded-lg border border-neutral-200">
-        <div class="px-6 py-4 border-b border-neutral-200">
-          <h3 class="text-lg font-medium text-neutral-900">Address Information</h3>
-          <p class="text-sm text-neutral-600 mt-1">
-            Physical address for legal correspondence and verification
-          </p>
-        </div>
-
-        <form [formGroup]="addressForm" (ngSubmit)="onSaveAddress()" class="p-6">
-          <div class="space-y-6">
-            <!-- Address Line 1 -->
-            <div>
-              <label class="block text-sm font-medium text-neutral-700 mb-2">
-                <lucide-icon [img]="MapPinIcon" [size]="16" class="inline mr-2" />
-                Address Line 1 *
-              </label>
-              <input
-                type="text"
-                formControlName="addressLine1"
-                placeholder="123 Main Street"
-                class="block w-full px-3 py-2 border border-neutral-300 rounded-md shadow-sm placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                [class.border-red-300]="addressForm.get('addressLine1')?.invalid && addressForm.get('addressLine1')?.touched"
-              />
-              @if (addressForm.get('addressLine1')?.invalid && addressForm.get('addressLine1')?.touched) {
-                <p class="mt-1 text-sm text-red-600">Street address is required</p>
-              }
-            </div>
-
-            <!-- Address Line 2 -->
-            <div>
-              <label class="block text-sm font-medium text-neutral-700 mb-2">
-                Address Line 2
-              </label>
-              <input
-                type="text"
-                formControlName="addressLine2"
-                placeholder="Suite 456 (optional)"
-                class="block w-full px-3 py-2 border border-neutral-300 rounded-md shadow-sm placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-              />
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <!-- City -->
-              <div>
-                <label class="block text-sm font-medium text-neutral-700 mb-2">
-                  City *
-                </label>
-                <input
-                  type="text"
-                  formControlName="city"
-                  placeholder="Cape Town"
-                  class="block w-full px-3 py-2 border border-neutral-300 rounded-md shadow-sm placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                  [class.border-red-300]="addressForm.get('city')?.invalid && addressForm.get('city')?.touched"
-                />
-                @if (addressForm.get('city')?.invalid && addressForm.get('city')?.touched) {
-                  <p class="mt-1 text-sm text-red-600">City is required</p>
-                }
-              </div>
-
-              <!-- Province -->
-              <div>
-                <label class="block text-sm font-medium text-neutral-700 mb-2">
-                  Province *
-                </label>
-                <select
-                  formControlName="province"
-                  class="block w-full px-3 py-2 border border-neutral-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                  [class.border-red-300]="addressForm.get('province')?.invalid && addressForm.get('province')?.touched"
-                >
-                  <option value="">Select province</option>
-                  <option value="western_cape">Western Cape</option>
-                  <option value="gauteng">Gauteng</option>
-                  <option value="kwazulu_natal">KwaZulu-Natal</option>
-                  <option value="eastern_cape">Eastern Cape</option>
-                  <option value="free_state">Free State</option>
-                  <option value="limpopo">Limpopo</option>
-                  <option value="mpumalanga">Mpumalanga</option>
-                  <option value="north_west">North West</option>
-                  <option value="northern_cape">Northern Cape</option>
-                </select>
-                @if (addressForm.get('province')?.invalid && addressForm.get('province')?.touched) {
-                  <p class="mt-1 text-sm text-red-600">Province is required</p>
-                }
-              </div>
-
-              <!-- Postal Code -->
-              <div>
-                <label class="block text-sm font-medium text-neutral-700 mb-2">
-                  Postal Code
-                </label>
-                <input
-                  type="text"
-                  formControlName="postalCode"
-                  placeholder="8001"
-                  class="block w-full px-3 py-2 border border-neutral-300 rounded-md shadow-sm placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                />
-              </div>
-            </div>
-
-            <!-- Country -->
-            <div>
-              <label class="block text-sm font-medium text-neutral-700 mb-2">
-                Country *
-              </label>
-              <select
-                formControlName="country"
-                class="block w-full px-3 py-2 border border-neutral-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                [class.border-red-300]="addressForm.get('country')?.invalid && addressForm.get('country')?.touched"
-              >
-                <option value="South Africa">South Africa</option>
-                <option value="Botswana">Botswana</option>
-                <option value="Namibia">Namibia</option>
-                <option value="Zambia">Zambia</option>
-                <option value="Zimbabwe">Zimbabwe</option>
-              </select>
-              @if (addressForm.get('country')?.invalid && addressForm.get('country')?.touched) {
-                <p class="mt-1 text-sm text-red-600">Country is required</p>
-              }
-            </div>
-          </div>
-
-          <!-- Actions -->
-          <div class="flex items-center justify-between pt-6 border-t border-neutral-200 mt-6">
-            <div class="flex items-center text-sm">
-              @if (lastSaved()) {
-                <div class="flex items-center text-green-600">
-                  <lucide-icon [img]="CheckIcon" [size]="16" class="mr-2" />
-                  Last saved {{ formatLastSaved(lastSaved()) }}
-                </div>
-              } @else if (hasUnsavedAddressChanges()) {
-                <div class="flex items-center text-amber-600">
-                  <lucide-icon [img]="AlertCircleIcon" [size]="16" class="mr-2" />
-                  You have unsaved changes
-                </div>
-              }
-            </div>
-
-            <div class="flex space-x-3">
-              <button
-                type="button"
-                (click)="onResetAddress()"
-                [disabled]="isLoading || !hasUnsavedAddressChanges()"
-                class="px-4 py-2 text-sm font-medium text-neutral-700 bg-white border border-neutral-300 rounded-md hover:bg-neutral-50 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Reset
-              </button>
-              
-              <button
-                type="submit"
-                [disabled]="addressForm.invalid || isLoading"
-                class="px-4 py-2 text-sm font-medium text-white bg-primary-600 border border-transparent rounded-md hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
-              >
-                @if (isLoading) {
-                  <div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-                  Saving...
-                } @else {
-                  <lucide-icon [img]="SaveIcon" [size]="16" class="mr-2" />
-                  Save Address
-                }
-              </button>
-            </div>
-          </div>
-        </form>
-      </div>
+<!-- src/app/dashboard/components/settings/components/contact-details/contact-details.component.html -->
+<div class="space-y-6">
+  
+  <!-- Contact Information Card -->
+  <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+    
+    <!-- Card Header -->
+    <div class="px-8 py-6 border-b border-slate-200 bg-slate-50/50">
+      <h3 class="text-xl font-bold text-slate-900">Contact Information</h3>
+      <p class="text-sm text-slate-600 mt-1">Email, phone, and website details</p>
     </div>
+
+    <!-- Form Content -->
+    <form [formGroup]="contactForm" (ngSubmit)="onSave()" class="p-8 space-y-8">
+      
+      <!-- Contact Fields Grid -->
+      <div class="grid grid-cols-2 gap-6">
+        
+        <!-- Email -->
+        <div class="col-span-2 md:col-span-1">
+          <label class="block text-sm font-semibold text-slate-900 mb-2">
+            Email Address
+            <span class="text-orange-500">*</span>
+          </label>
+          <input
+            type="email"
+            formControlName="email"
+            placeholder="contact@yourorganization.com"
+            class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200"
+            [class.border-red-300]="contactForm.get('email')?.invalid && contactForm.get('email')?.touched"
+          />
+          @if (contactForm.get('email')?.invalid && contactForm.get('email')?.touched) {
+            <p class="mt-1.5 text-xs font-medium text-red-600 flex items-center gap-1">
+              <span class="w-1 h-1 rounded-full bg-red-600"></span>
+              @if (contactForm.get('email')?.errors?.['required']) {
+                Email address is required
+              } @else if (contactForm.get('email')?.errors?.['email']) {
+                Please enter a valid email address
+              }
+            </p>
+          }
+        </div>
+
+        <!-- Phone -->
+        <div class="col-span-2 md:col-span-1">
+          <label class="block text-sm font-semibold text-slate-900 mb-2">
+            Phone Number
+            <span class="text-orange-500">*</span>
+          </label>
+          <input
+            type="tel"
+            formControlName="phone"
+            placeholder="+27 11 123 4567"
+            class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200"
+            [class.border-red-300]="contactForm.get('phone')?.invalid && contactForm.get('phone')?.touched"
+          />
+          @if (contactForm.get('phone')?.invalid && contactForm.get('phone')?.touched) {
+            <p class="mt-1.5 text-xs font-medium text-red-600 flex items-center gap-1">
+              <span class="w-1 h-1 rounded-full bg-red-600"></span>
+              Phone number is required
+            </p>
+          }
+        </div>
+
+        <!-- Website -->
+        <div class="col-span-2">
+          <label class="block text-sm font-semibold text-slate-900 mb-2">
+            Website
+            <span class="text-slate-400 font-normal">(Optional)</span>
+          </label>
+          <input
+            type="url"
+            formControlName="website"
+            placeholder="https://yourorganization.com"
+            class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200"
+            [class.border-red-300]="contactForm.get('website')?.invalid && contactForm.get('website')?.touched"
+          />
+          @if (contactForm.get('website')?.invalid && contactForm.get('website')?.touched) {
+            <p class="mt-1.5 text-xs font-medium text-red-600 flex items-center gap-1">
+              <span class="w-1 h-1 rounded-full bg-red-600"></span>
+              Please enter a valid website URL
+            </p>
+          }
+        </div>
+      </div>
+
+      <!-- Form Footer -->
+      <div class="flex items-center justify-between pt-6 border-t border-slate-200">
+        
+        <!-- Status Message -->
+        <div class="text-sm">
+          @if (lastSaved()) {
+            <div class="flex items-center gap-1.5 text-green-600 font-medium">
+              <lucide-icon [img]="CheckIcon" [size]="16" />
+              Saved {{ formatLastSaved(lastSaved()) }}
+            </div>
+          } @else if (hasUnsavedChanges()) {
+            <div class="flex items-center gap-1.5 text-amber-600 font-medium">
+              <lucide-icon [img]="AlertCircleIcon" [size]="16" />
+              You have unsaved changes
+            </div>
+          }
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex items-center gap-3">
+          <button
+            type="button"
+            (click)="onReset()"
+            [disabled]="isLoading || !hasUnsavedChanges()"
+            class="px-4 py-2.5 text-sm font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Reset
+          </button>
+
+          <button
+            type="submit"
+            [disabled]="contactForm.invalid || isLoading"
+            class="px-4 py-2.5 text-sm font-medium text-white bg-orange-500 hover:bg-orange-600 active:bg-orange-700 rounded-xl transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+          >
+            @if (isLoading) {
+              <div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+              <span>Saving...</span>
+            } @else {
+              <lucide-icon [img]="SaveIcon" [size]="16" />
+              <span>Save Changes</span>
+            }
+          </button>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <!-- Address Information Card -->
+  <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+    
+    <!-- Card Header -->
+    <div class="px-8 py-6 border-b border-slate-200 bg-slate-50/50">
+      <h3 class="text-xl font-bold text-slate-900">Address Information</h3>
+      <p class="text-sm text-slate-600 mt-1">Physical address for legal correspondence and verification</p>
+    </div>
+
+    <!-- Form Content -->
+    <form [formGroup]="addressForm" (ngSubmit)="onSaveAddress()" class="p-8 space-y-8">
+      
+      <!-- Address Line 1 -->
+      <div>
+        <label class="block text-sm font-semibold text-slate-900 mb-2">
+          Street Address
+          <span class="text-orange-500">*</span>
+        </label>
+        <input
+          type="text"
+          formControlName="addressLine1"
+          placeholder="123 Main Street"
+          class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200"
+          [class.border-red-300]="addressForm.get('addressLine1')?.invalid && addressForm.get('addressLine1')?.touched"
+        />
+        @if (addressForm.get('addressLine1')?.invalid && addressForm.get('addressLine1')?.touched) {
+          <p class="mt-1.5 text-xs font-medium text-red-600 flex items-center gap-1">
+            <span class="w-1 h-1 rounded-full bg-red-600"></span>
+            Street address is required
+          </p>
+        }
+      </div>
+
+      <!-- Address Line 2 -->
+      <div>
+        <label class="block text-sm font-semibold text-slate-900 mb-2">
+          Apartment, suite, etc.
+          <span class="text-slate-400 font-normal">(Optional)</span>
+        </label>
+        <input
+          type="text"
+          formControlName="addressLine2"
+          placeholder="Suite 456"
+          class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200"
+        />
+      </div>
+
+      <!-- City, Province, Postal Code Grid -->
+      <div class="grid grid-cols-3 gap-6">
+        
+        <!-- City -->
+        <div>
+          <label class="block text-sm font-semibold text-slate-900 mb-2">
+            City
+            <span class="text-orange-500">*</span>
+          </label>
+          <input
+            type="text"
+            formControlName="city"
+            placeholder="Cape Town"
+            class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200"
+            [class.border-red-300]="addressForm.get('city')?.invalid && addressForm.get('city')?.touched"
+          />
+          @if (addressForm.get('city')?.invalid && addressForm.get('city')?.touched) {
+            <p class="mt-1.5 text-xs font-medium text-red-600 flex items-center gap-1">
+              <span class="w-1 h-1 rounded-full bg-red-600"></span>
+              City is required
+            </p>
+          }
+        </div>
+
+        <!-- Province -->
+        <div>
+          <label class="block text-sm font-semibold text-slate-900 mb-2">
+            Province
+            <span class="text-orange-500">*</span>
+          </label>
+          <select
+            formControlName="province"
+            class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200 bg-white"
+            [class.border-red-300]="addressForm.get('province')?.invalid && addressForm.get('province')?.touched"
+          >
+            <option value="">Select province...</option>
+            <option value="western_cape">Western Cape</option>
+            <option value="gauteng">Gauteng</option>
+            <option value="kwazulu_natal">KwaZulu-Natal</option>
+            <option value="eastern_cape">Eastern Cape</option>
+            <option value="free_state">Free State</option>
+            <option value="limpopo">Limpopo</option>
+            <option value="mpumalanga">Mpumalanga</option>
+            <option value="north_west">North West</option>
+            <option value="northern_cape">Northern Cape</option>
+          </select>
+          @if (addressForm.get('province')?.invalid && addressForm.get('province')?.touched) {
+            <p class="mt-1.5 text-xs font-medium text-red-600 flex items-center gap-1">
+              <span class="w-1 h-1 rounded-full bg-red-600"></span>
+              Province is required
+            </p>
+          }
+        </div>
+
+        <!-- Postal Code -->
+        <div>
+          <label class="block text-sm font-semibold text-slate-900 mb-2">
+            Postal Code
+            <span class="text-slate-400 font-normal">(Optional)</span>
+          </label>
+          <input
+            type="text"
+            formControlName="postalCode"
+            placeholder="8001"
+            class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200"
+          />
+        </div>
+      </div>
+
+      <!-- Country -->
+      <div>
+        <label class="block text-sm font-semibold text-slate-900 mb-2">
+          Country
+          <span class="text-orange-500">*</span>
+        </label>
+        <select
+          formControlName="country"
+          class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200 bg-white"
+          [class.border-red-300]="addressForm.get('country')?.invalid && addressForm.get('country')?.touched"
+        >
+          <option value="South Africa">South Africa</option>
+          <option value="Botswana">Botswana</option>
+          <option value="Namibia">Namibia</option>
+          <option value="Zambia">Zambia</option>
+          <option value="Zimbabwe">Zimbabwe</option>
+        </select>
+        @if (addressForm.get('country')?.invalid && addressForm.get('country')?.touched) {
+          <p class="mt-1.5 text-xs font-medium text-red-600 flex items-center gap-1">
+            <span class="w-1 h-1 rounded-full bg-red-600"></span>
+            Country is required
+          </p>
+        }
+      </div>
+
+      <!-- Form Footer -->
+      <div class="flex items-center justify-between pt-6 border-t border-slate-200">
+        
+        <!-- Status Message -->
+        <div class="text-sm">
+          @if (lastSaved()) {
+            <div class="flex items-center gap-1.5 text-green-600 font-medium">
+              <lucide-icon [img]="CheckIcon" [size]="16" />
+              Saved {{ formatLastSaved(lastSaved()) }}
+            </div>
+          } @else if (hasUnsavedAddressChanges()) {
+            <div class="flex items-center gap-1.5 text-amber-600 font-medium">
+              <lucide-icon [img]="AlertCircleIcon" [size]="16" />
+              You have unsaved changes
+            </div>
+          }
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex items-center gap-3">
+          <button
+            type="button"
+            (click)="onResetAddress()"
+            [disabled]="isLoading || !hasUnsavedAddressChanges()"
+            class="px-4 py-2.5 text-sm font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Reset
+          </button>
+
+          <button
+            type="submit"
+            [disabled]="addressForm.invalid || isLoading"
+            class="px-4 py-2.5 text-sm font-medium text-white bg-orange-500 hover:bg-orange-600 active:bg-orange-700 rounded-xl transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+          >
+            @if (isLoading) {
+              <div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+              <span>Saving...</span>
+            } @else {
+              <lucide-icon [img]="SaveIcon" [size]="16" />
+              <span>Save Address</span>
+            }
+          </button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>

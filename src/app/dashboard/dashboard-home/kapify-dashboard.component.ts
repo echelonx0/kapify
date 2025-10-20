@@ -106,26 +106,26 @@ export class KapifyDashboard implements OnInit {
       rightPanelContent: 'funding-types',
       color: 'green'
     },
-    {
-      id: 'tips-best-practices',
-      title: 'Funding Tips & Best Practices',
-      description: 'Learn insider tips on creating compelling applications, preparing for investor meetings, and negotiating terms. Our guides are written by experienced funding professionals.',
-      icon: this.LightbulbIcon,
-      type: 'info',
-      actionText: 'View Tips',
-      rightPanelContent: 'tips',
-      color: 'yellow'
-    },
-    {
-      id: 'security-compliance',
-      title: 'Security & Compliance',
-      description: 'Your data is protected with bank-level security. We comply with POPIA and international data protection standards to keep your business information safe.',
-      icon: this.ShieldIcon,
-      type: 'info',
-      actionText: 'Learn About Security',
-      rightPanelContent: 'security',
-      color: 'blue'
-    }
+    // {
+    //   id: 'tips-best-practices',
+    //   title: 'Funding Tips & Best Practices',
+    //   description: 'Learn insider tips on creating compelling applications, preparing for investor meetings, and negotiating terms. Our guides are written by experienced funding professionals.',
+    //   icon: this.LightbulbIcon,
+    //   type: 'info',
+    //   actionText: 'View Tips',
+    //   rightPanelContent: 'tips',
+    //   color: 'yellow'
+    // },
+    // {
+    //   id: 'security-compliance',
+    //   title: 'Security & Compliance',
+    //   description: 'Your data is protected with bank-level security. We comply with POPIA and international data protection standards to keep your business information safe.',
+    //   icon: this.ShieldIcon,
+    //   type: 'info',
+    //   actionText: 'Learn About Security',
+    //   rightPanelContent: 'security',
+    //   color: 'blue'
+    // }
   ];
 
   onboardingCards = signal<OnboardingCard[]>(this.onboardingData);

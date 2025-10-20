@@ -2,7 +2,6 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { LucideAngularModule, Share2, Download, Sparkles, Lock, ArrowLeft } from 'lucide-angular';
-import { UiButtonComponent } from 'src/app/shared/components';
 import { DataRoom, UserPermissions } from '../../models/data-room.models';
 
 @Component({
@@ -11,10 +10,10 @@ import { DataRoom, UserPermissions } from '../../models/data-room.models';
   imports: [
     CommonModule,
     LucideAngularModule,
-    UiButtonComponent
+ 
   ],
   template: `
-    <div class="bg-white border-b border-gray-200 px-8 py-6">
+    <div class="bg-white border-b border-gray-200 px-8 py-3">
       <div class="max-w-7xl mx-auto">
         <!-- Back Button (for viewers) -->
         @if (!permissions.canManage) {
@@ -61,48 +60,7 @@ import { DataRoom, UserPermissions } from '../../models/data-room.models';
             }
           </div>
 
-          <!-- Actions -->
-          <div class="flex items-center gap-3">
-            @if (permissions.canManage) {
-              <!-- Owner Actions -->
-              <ui-button 
-                variant="outline"
-                (clicked)="onEnhanceWithAI()"
-                [loading]="isAIAnalyzing"
-                [disabled]="isAIAnalyzing"
-              >
-                <lucide-icon 
-                  [img]="SparklesIcon" 
-                  [size]="16" 
-                  [class]="isAIAnalyzing ? 'animate-spin mr-2' : 'mr-2'"
-                />
-                {{ isAIAnalyzing ? 'Analyzing...' : 'Enhance with AI' }}
-              </ui-button>
-
-              <ui-button variant="outline" (clicked)="onExport()">
-                <lucide-icon [img]="DownloadIcon" [size]="16" class="mr-2" />
-                Export
-              </ui-button>
-
-              <ui-button variant="primary" (clicked)="onShare()">
-                <lucide-icon [img]="ShareIcon" [size]="16" class="mr-2" />
-                Share Data Room
-              </ui-button>
-
-              <ui-button variant="ghost" (clicked)="onViewAccessLog()">
-                <lucide-icon [img]="LockIcon" [size]="16" class="mr-2" />
-                Access Log
-              </ui-button>
-            } @else {
-              <!-- Viewer Actions -->
-              @if (permissions.canDownload) {
-                <ui-button variant="outline" (clicked)="onExport()">
-                  <lucide-icon [img]="DownloadIcon" [size]="16" class="mr-2" />
-                  Export
-                </ui-button>
-              }
-            }
-          </div>
+       
         </div>
 
         <!-- Stats Bar (Owner Only) -->

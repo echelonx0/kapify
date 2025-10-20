@@ -1,10 +1,9 @@
-// src/app/dashboard/components/settings/components/legal-info.component.ts
+// src/app/dashboard/components/settings/components/legal-info/legal-info.component.ts
 import { Component, Input, Output, EventEmitter, OnInit, inject, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { 
   LucideAngularModule, 
-  FileText, 
   Shield, 
   CheckCircle,
   Clock,
@@ -16,7 +15,6 @@ import {
 } from 'lucide-angular';
 import { OrganizationSettings, OrganizationSettingsService } from '../../../services/organization-settings.service';
 
- 
 @Component({
   selector: 'app-legal-info',
   standalone: true,
@@ -26,6 +24,40 @@ import { OrganizationSettings, OrganizationSettingsService } from '../../../serv
     LucideAngularModule
   ],
   templateUrl: './legal-info.component.html',
+  styles: [`
+    :host {
+      display: block;
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus {
+      outline: none;
+    }
+
+    /* Focus ring animation */
+    input:focus,
+    select:focus,
+    textarea:focus {
+      animation: focusPulse 0.2s ease-out;
+    }
+
+    @keyframes focusPulse {
+      from {
+        box-shadow: 0 0 0 0 rgba(255, 107, 53, 0.1);
+      }
+      to {
+        box-shadow: 0 0 0 4px rgba(255, 107, 53, 0.1);
+      }
+    }
+
+    /* Smooth transitions */
+    input,
+    select,
+    textarea {
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+  `]
 })
 export class LegalInfoComponent implements OnInit {
   @Input() organization: OrganizationSettings | null = null;
@@ -36,7 +68,6 @@ export class LegalInfoComponent implements OnInit {
   private fb = inject(FormBuilder);
 
   // Icons
-  FileTextIcon = FileText;
   ShieldIcon = Shield;
   CheckCircleIcon = CheckCircle;
   ClockIcon = Clock;
@@ -55,7 +86,6 @@ export class LegalInfoComponent implements OnInit {
   isRequestingVerification = signal(false);
 
   constructor() {
-    // Watch for last saved updates using effect
     effect(() => {
       const date = this.settingsService.lastSaved();
       this.lastSaved.set(date);
@@ -117,23 +147,23 @@ export class LegalInfoComponent implements OnInit {
       year: 'numeric',
       month: 'long',
       day: 'numeric'
-    }).format(date);
+    }).format(new Date(date));
   }
 
   getVerificationStatusClasses(): string {
-    const baseClasses = 'flex items-center px-3 py-1 rounded-full text-xs font-medium';
+    const baseClasses = 'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors duration-200';
     
     if (this.organization?.isVerified) {
-      return `${baseClasses} bg-green-100 text-green-700`;
+      return `${baseClasses} bg-green-50 text-green-700 border border-green-200/50`;
     }
     
     switch (this.organization?.status) {
       case 'pending_verification':
-        return `${baseClasses} bg-yellow-100 text-yellow-700`;
+        return `${baseClasses} bg-amber-50 text-amber-700 border border-amber-200/50`;
       case 'verification_rejected':
-        return `${baseClasses} bg-red-100 text-red-700`;
+        return `${baseClasses} bg-red-50 text-red-700 border border-red-200/50`;
       default:
-        return `${baseClasses} bg-neutral-100 text-neutral-700`;
+        return `${baseClasses} bg-slate-50 text-slate-700 border border-slate-200/50`;
     }
   }
 
@@ -188,7 +218,6 @@ export class LegalInfoComponent implements OnInit {
     this.settingsService.requestVerification().subscribe({
       next: () => {
         this.isRequestingVerification.set(false);
-        // The organization will be updated automatically through the service
       },
       error: (error) => {
         console.error('Verification request failed:', error);

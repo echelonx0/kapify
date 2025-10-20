@@ -1,8 +1,7 @@
-// src/app/auth/production.auth.service.ts
-import { Injectable, signal, computed, inject } from '@angular/core';
+import { Injectable, signal, computed, inject, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
-import { BehaviorSubject, Observable, from, of, throwError } from 'rxjs';
-import { map, catchError, timeout, tap, finalize } from 'rxjs/operators'; 
+import { Observable, from, of, throwError, Subject } from 'rxjs';
+import { map, catchError, timeout, tap, finalize, takeUntil } from 'rxjs/operators';
 import { SharedSupabaseService } from '../shared/services/shared-supabase.service';
 import { RegistrationTransactionService, RegistrationTransactionResult } from '../shared/services/registration-transaction.service';
 import { Session, User } from '@supabase/supabase-js';
@@ -49,14 +48,13 @@ export interface UserProfile {
 }
 
 export interface AuthOperationResult {
-  success: boolean;   
+  success: boolean;
   user: UserProfile | null;
   error: string | null;
   organizationId?: string;
   organizationCreated?: boolean;
 }
 
-// Enhanced loading state management
 interface LoadingState {
   registration: boolean;
   login: boolean;
@@ -64,95 +62,101 @@ interface LoadingState {
   sessionUpdate: boolean;
 }
 
+/**
+ * AuthService
+ * - Consolidates auth state using SharedSupabaseService
+ * - Eliminates duplicate state management
+ * - Single source of truth for session/user
+ * - Proper cleanup on destroy
+ */
 @Injectable({
   providedIn: 'root'
 })
-export class AuthService {
+export class AuthService implements OnDestroy {
   private router = inject(Router);
   private supabaseService = inject(SharedSupabaseService);
   private registrationTransaction = inject(RegistrationTransactionService);
-  
-  // Reactive state
-  private userSubject = new BehaviorSubject<UserProfile | null>(null);
-  private sessionSubject = new BehaviorSubject<Session | null>(null);
-  
-  // Enhanced loading state management
+  private destroy$ = new Subject<void>();
+
+  // Single source of truth: user profile (session comes from SharedSupabaseService)
+  private userSubject = signal<UserProfile | null>(null);
+
+  // Loading state management
   private loadingState = signal<LoadingState>({
     registration: false,
     login: false,
-    initialization: true,
+    initialization: false,
     sessionUpdate: false
   });
-  
-  // Signals for component consumption
-  user = signal<UserProfile | null>(null);
-  session = signal<Session | null>(null);
-  
-  // Computed loading states for different operations
+
+  // Public signals for component consumption
+  user = computed(() => this.userSubject());
+  isAuthenticated = computed(() => !!this.userSubject());
+
+  // Computed loading states
   isInitializing = computed(() => this.loadingState().initialization);
   isLoggingIn = computed(() => this.loadingState().login);
   isRegistering = computed(() => this.loadingState().registration);
   isSessionUpdating = computed(() => this.loadingState().sessionUpdate);
-  
-  // Overall loading state (true if ANY operation is loading)
+
   isLoading = computed(() => {
     const state = this.loadingState();
     return state.registration || state.login || state.initialization || state.sessionUpdate;
   });
-  
-  isAuthenticated = computed(() => !!this.user());
 
-  // Observables for reactive programming
-  user$ = this.userSubject.asObservable();
-  session$ = this.sessionSubject.asObservable();
-  isAuthenticated$ = this.user$.pipe(map(user => !!user));
+  // Expose SharedSupabaseService session$ for components that need reactive session
+  // This is the single source of truth for authentication state
+  session$ = this.supabaseService.session$;
+
+  // Observable interfaces for legacy/reactive code
+  user$ = new Observable<UserProfile | null>(subscriber => {
+    const subscription = this.supabaseService.session$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(async session => {
+        if (session?.user) {
+          const profile = await this.buildUserProfile(session.user);
+          subscriber.next(profile);
+        } else {
+          subscriber.next(null);
+        }
+      });
+    return () => subscription.unsubscribe();
+  });
+
+  isAuthenticated$ = this.session$.pipe(
+    map(session => !!session?.user),
+    takeUntil(this.destroy$)
+  );
 
   constructor() {
     this.initializeAuth();
   }
 
-  // ===============================
-  // ENHANCED INITIALIZATION
-  // ===============================
-
+  /**
+   * Initialize auth: wire up session changes to user profile loading
+   */
   private async initializeAuth(): Promise<void> {
-    console.log('Starting enhanced auth initialization...');
-    
+    console.log('🔐 Starting auth initialization...');
+
     this.updateLoadingState({ initialization: true });
 
     try {
-      // Wait for Supabase client to be ready
-      await this.supabaseService.getClient();
-      
-      // Get initial session with timeout
-      const sessionResult = await Promise.race([
-        this.supabaseService.auth.getSession(),
-        new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('Session initialization timeout')), 10000)
-        )
-      ]) as any;
+      // Ensure Supabase is initialized
+      await this.supabaseService.ensureInitialized();
 
-      const { data: { session }, error } = sessionResult;
-      
-      if (error) {
-        if (this.isLockTimeoutError(error)) {
-          console.warn('Lock timeout during initialization, continuing without session');
-          this.clearAuthState();
-        } else {
-          console.error('Session initialization error:', error);
-          this.clearAuthState();
-        }
-      } else if (session?.user) {
-        await this.establishUserSession(session);
+      // Get initial session and establish user
+      const initialSession = await this.supabaseService.waitForSession();
+      if (initialSession?.user) {
+        await this.establishUserSession(initialSession);
       } else {
         this.clearAuthState();
       }
 
-      // Set up auth state change listener
-      this.supabaseService.auth.onAuthStateChange(async (event, session) => {
+      // Subscribe to future session changes
+      this.supabaseService.onAuthStateChange(async (event, session) => {
         try {
-          console.log('Auth state changed:', event);
-          
+          console.log(`🔐 Auth state changed: ${event}`);
+
           if (session?.user) {
             await this.establishUserSession(session);
           } else {
@@ -161,133 +165,175 @@ export class AuthService {
               this.router.navigate(['/auth/login']);
             }
           }
-        } catch (stateChangeError: any) {
-          console.error('Error in auth state change handler:', stateChangeError);
-          if (!this.isLockTimeoutError(stateChangeError)) {
-            // Only clear state if it's not a lock timeout
+        } catch (error: any) {
+          console.error('Error handling auth state change:', error);
+          // Don't clear state on transient errors
+          if (!this.isTransientError(error)) {
             this.clearAuthState();
           }
         }
-      });
+      }).unsubscribe(); // Unsubscribe from the returned subscription (onAuthStateChange handles its own lifecycle)
 
     } catch (error: any) {
-      console.error('Auth initialization failed:', error);
+      console.error('❌ Auth initialization failed:', error);
       this.clearAuthState();
     } finally {
       this.updateLoadingState({ initialization: false });
-      console.log('Auth initialization completed');
+      console.log('✅ Auth initialization completed');
     }
   }
 
-  // ===============================
-  // ENHANCED REGISTRATION
-  // ===============================
+  /**
+   * Register new user
+   * Matches component: this.authService.register(formData)
+   */
+  register(credentials: RegisterRequest): Observable<AuthOperationResult> {
+    console.log('📝 Starting registration process...');
 
- 
-// Key fixes for enhanced-production.auth.service.ts
+    this.updateLoadingState({ registration: true });
 
-// 1. Fix the register method error handling
-register(credentials: RegisterRequest): Observable<AuthOperationResult> {
-  console.log('Starting enhanced registration process...');
-  
-  this.updateLoadingState({ registration: true });
-
-  const validationError = this.validateRegistrationInput(credentials);
-  if (validationError) {
-    this.updateLoadingState({ registration: false });
-    return of({
-      user: null,
-      error: validationError,
-      organizationCreated: false,
-      success: false
-    });
-  }
-
-  return this.registrationTransaction.executeRegistrationTransaction(credentials).pipe(
-    timeout(60000),
-    tap(result => {
-      if (result.success && result.user) {
-        console.log('Registration transaction completed, updating auth state');
-        this.updateAuthStateFromTransaction(result);
-      }
-    }),
-    map(result => this.mapTransactionResultToAuthResult(result)),
-    catchError(error => {
-      console.error('Registration failed:', error);
-      // FIXED: Pass the original error without converting to generic message
-      const errorResult: AuthOperationResult = {
+    // Validate input
+    const validationError = this.validateRegistrationInput(credentials);
+    if (validationError) {
+      this.updateLoadingState({ registration: false });
+      return of({
         user: null,
-        error: error.error || error.message || 'Registration failed. Please try again.',
+        error: validationError,
         organizationCreated: false,
         success: false
-      };
-      return of(errorResult);
-    }),
-    finalize(() => {
-      this.updateLoadingState({ registration: false });
-    })
-  );
-}
+      });
+    }
 
-// 2. Fix the login method error handling  
-login(credentials: LoginRequest): Observable<AuthOperationResult> {
-  console.log('Starting enhanced login process...');
-  
-  this.updateLoadingState({ login: true });
+    return this.registrationTransaction.executeRegistrationTransaction(credentials).pipe(
+      timeout(60000),
+      tap(result => {
+        if (result.success && result.user) {
+          console.log('✅ Registration transaction completed');
+          this.updateAuthStateFromTransaction(result);
+        }
+      }),
+      map(result => this.mapTransactionResultToAuthResult(result)),
+      catchError(error => {
+        console.error('❌ Registration failed:', error);
+        return of({
+          user: null,
+          error: error?.error || error?.message || 'Registration failed. Please try again.',
+          organizationCreated: false,
+          success: false
+        });
+      }),
+      finalize(() => {
+        this.updateLoadingState({ registration: false });
+      }),
+      takeUntil(this.destroy$)
+    );
+  }
 
-  return from(this.performLogin(credentials.email, credentials.password)).pipe(
-    timeout(30000),
-    tap(result => {
-      if (result.user) {
-        console.log('Login completed successfully');
+  /**
+   * Login with email and password
+   * Matches component: this.authService.login(formData)
+   */
+  login(credentials: LoginRequest): Observable<AuthOperationResult> {
+    console.log('🔑 Starting login process...');
+
+    this.updateLoadingState({ login: true });
+
+    return from(this.performLogin(credentials.email, credentials.password)).pipe(
+      timeout(30000),
+      tap(result => {
+        if (result.success) {
+          console.log('✅ Login completed successfully');
+        }
+      }),
+      catchError(error => {
+        console.error('❌ Login failed:', error);
+        return of({
+          user: null,
+          error: error?.message || 'Login failed. Please try again.',
+          success: false
+        });
+      }),
+      finalize(() => {
+        this.updateLoadingState({ login: false });
+      }),
+      takeUntil(this.destroy$)
+    );
+  }
+
+  /**
+   * Perform the actual login
+   */
+  private async performLogin(email: string, password: string): Promise<AuthOperationResult> {
+    try {
+      const loginResult = await Promise.race([
+        this.supabaseService.auth.signInWithPassword({ email, password }),
+        new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error('Login timeout')), 25000)
+        )
+      ]);
+
+      const { data, error } = loginResult;
+
+      if (error) {
+        throw new Error(this.createLoginErrorMessage(error));
       }
-    }),
-    catchError(error => {
-      console.error('Login failed:', error);
-      // FIXED: Return the actual error, don't use createAuthErrorResult which makes it generic
-      const errorResult: AuthOperationResult = {
-        user: null,
-        error: error.message || 'Login failed. Please try again.',
-        success: false
+
+      if (!data.user) {
+        throw new Error('Login failed - no user data returned');
+      }
+
+      // Build user profile
+      const userProfile = await this.buildUserProfile(data.user);
+
+      // Update local state
+      this.userSubject.set(userProfile);
+
+      return {
+        user: userProfile,
+        error: null,
+        organizationId: userProfile.organizationId,
+        organizationCreated: !!userProfile.organizationId,
+        success: true
       };
-      return of(errorResult);
-    }),
-    finalize(() => {
-      this.updateLoadingState({ login: false });
-    })
-  );
-}
+    } catch (error: any) {
+      console.error('Login operation failed:', error);
+      throw error;
+    }
+  }
 
-// 3. Improve createLoginErrorMessage to preserve specific Supabase errors
-private createLoginErrorMessage(error: any): string {
-  const message = error.message || '';
-  
-  // Check for specific Supabase error messages
-  if (message.includes('Invalid login credentials')) {
-    return 'Invalid email or password. Please check your credentials and try again.';
-  }
-  if (message.includes('Email not confirmed')) {
-    return 'Please check your email and click the confirmation link before logging in.';
-  }
-  if (message.includes('Too many requests') || message.includes('rate limit')) {
-    return 'Too many login attempts. Please wait a few minutes before trying again.';
-  }
-  if (message.includes('User not found')) {
-    return 'No account found with this email address.';
-  }
-  if (message.includes('Password')) {
-    return 'Invalid password. Please check your password and try again.';
-  }
-  
-  // Return the original error message if it's user-friendly, otherwise use a generic one
-  if (message && message.length < 100 && !message.includes('Error:')) {
-    return message;
-  }
-  
-  return 'Login failed. Please try again.';
-}
+  /**
+   * Create user-friendly login error messages
+   */
+  private createLoginErrorMessage(error: any): string {
+    const message = error?.message || '';
 
+    if (message.includes('Invalid login credentials')) {
+      return 'Invalid email or password. Please check your credentials and try again.';
+    }
+    if (message.includes('Email not confirmed')) {
+      return 'Please check your email and click the confirmation link before logging in.';
+    }
+    if (message.includes('Too many requests') || message.includes('rate limit')) {
+      return 'Too many login attempts. Please wait a few minutes before trying again.';
+    }
+    if (message.includes('User not found')) {
+      return 'No account found with this email address.';
+    }
+    if (message.includes('Password')) {
+      return 'Invalid password. Please check your password and try again.';
+    }
 
+    // Return original if user-friendly, otherwise generic
+    if (message && message.length < 100 && !message.includes('Error:')) {
+      return message;
+    }
+
+    return 'Login failed. Please try again.';
+  }
+
+  /**
+   * Validate registration input
+   */
   private validateRegistrationInput(credentials: RegisterRequest): string | null {
     if (!credentials.agreeToTerms) {
       return 'You must accept the terms and conditions to proceed';
@@ -308,18 +354,21 @@ private createLoginErrorMessage(error: any): string {
     return null;
   }
 
+  /**
+   * Establish user session from registration transaction
+   */
   private updateAuthStateFromTransaction(result: RegistrationTransactionResult): void {
     if (result.user && result.organizationId) {
       const userProfile = result.user;
       userProfile.organizationId = result.organizationId;
-      
-      this.user.set(userProfile);
-      this.userSubject.next(userProfile);
-      
-      console.log('Auth state updated with registration result');
+      this.userSubject.set(userProfile);
+      console.log('✅ Auth state updated with registration result');
     }
   }
 
+  /**
+   * Map transaction result to auth operation result
+   */
   private mapTransactionResultToAuthResult(result: RegistrationTransactionResult): AuthOperationResult {
     return {
       user: result.success ? result.user : null,
@@ -330,91 +379,18 @@ private createLoginErrorMessage(error: any): string {
     };
   }
 
- 
-
-  private async performLogin(email: string, password: string): Promise<AuthOperationResult> {
-    try {
-      const loginResult = await Promise.race([
-        this.supabaseService.auth.signInWithPassword({ email, password }),
-        new Promise<never>((_, reject) => 
-          setTimeout(() => reject(new Error('Login timeout')), 25000)
-        )
-      ]);
-
-      const { data, error } = loginResult;
-
-      if (error) {
-        throw new Error(this.createLoginErrorMessage(error));
-      }
-
-      if (!data.user) {
-        throw new Error('Login failed - no user data returned');
-      }
-
-      // Build user profile with organization context
-      const userProfile = await this.buildUserProfile(data.user);
-
-      // Update auth state
-      this.session.set(data.session);
-      this.sessionSubject.next(data.session);
-      this.user.set(userProfile);
-      this.userSubject.next(userProfile);
-
-      return {
-        user: userProfile,
-        error: null,
-        organizationId: userProfile.organizationId,
-        organizationCreated: !!userProfile.organizationId,
-        success: true
-      };
-
-    } catch (error: any) {
-      console.error('Login error:', error);
-      throw error;
-    }
-  }
-
- canActivateRoute(): Observable<boolean> {
-  // If still initializing, wait for it to complete
-  if (this.isInitializing()) {
-    return new Observable<boolean>(subscriber => {
-      const checkAuth = () => {
-        if (!this.isInitializing()) {
-          subscriber.next(this.isAuthenticated());
-          subscriber.complete();
-        } else {
-          setTimeout(checkAuth, 50);
-        }
-      };
-      checkAuth();
-    }).pipe(
-      timeout(10000),
-      catchError(() => of(false))
-    );
-  }
-  
-  // If not initializing, return current auth state
-  return of(this.isAuthenticated());
-}
-
-  // ===============================
-  // SESSION MANAGEMENT
-  // ===============================
-
+  /**
+   * Establish user session after login/auth state change
+   */
   private async establishUserSession(session: Session): Promise<void> {
-    console.log('Establishing user session...');
-    
+    console.log('🔐 Establishing user session...');
+
     this.updateLoadingState({ sessionUpdate: true });
 
     try {
-      this.session.set(session);
-      this.sessionSubject.next(session);
-
       const userProfile = await this.buildUserProfile(session.user);
-      this.user.set(userProfile);
-      this.userSubject.next(userProfile);
-
-      console.log('User session established:', userProfile.email);
+      this.userSubject.set(userProfile);
+      console.log('✅ User session established:', userProfile.email);
     } catch (error) {
       console.error('Failed to establish user session:', error);
       this.clearAuthState();
@@ -424,9 +400,12 @@ private createLoginErrorMessage(error: any): string {
     }
   }
 
+  /**
+   * Build complete user profile from Supabase user
+   */
   private async buildUserProfile(user: User): Promise<UserProfile> {
     try {
-      // Get user data with organization context
+      // Get user data from users table
       const { data: userData, error } = await this.supabaseService
         .from('users')
         .select(`
@@ -446,7 +425,7 @@ private createLoginErrorMessage(error: any): string {
         return this.createProfileFromAuthUser(user);
       }
 
-      // Get organization ID
+      // Get organization ID if exists
       const organizationId = await this.getUserOrganizationId(user.id);
 
       return {
@@ -463,13 +442,15 @@ private createLoginErrorMessage(error: any): string {
         createdAt: userData.created_at,
         organizationId
       };
-
     } catch (error) {
       console.error('Error building user profile:', error);
       return this.createProfileFromAuthUser(user);
     }
   }
 
+  /**
+   * Create minimal profile from auth user (fallback)
+   */
   private createProfileFromAuthUser(user: User): UserProfile {
     const metadata = user.user_metadata || {};
     return {
@@ -487,6 +468,9 @@ private createLoginErrorMessage(error: any): string {
     };
   }
 
+  /**
+   * Get user's organization ID
+   */
   private async getUserOrganizationId(userId: string): Promise<string | undefined> {
     try {
       const { data, error } = await this.supabaseService
@@ -506,20 +490,19 @@ private createLoginErrorMessage(error: any): string {
     }
   }
 
-  // ===============================
-  // LOGOUT
-  // ===============================
-
+  /**
+   * Sign out
+   */
   async signOut(): Promise<void> {
-    console.log('Starting sign out process...');
-    
+    console.log('🔓 Starting sign out...');
+
     try {
       const { error } = await this.supabaseService.auth.signOut();
-      if (error && !this.isLockTimeoutError(error)) {
+      if (error && !this.isTransientError(error)) {
         console.error('SignOut error:', error);
       }
     } catch (error: any) {
-      if (!this.isLockTimeoutError(error)) {
+      if (!this.isTransientError(error)) {
         console.error('SignOut failed:', error);
       }
     } finally {
@@ -528,81 +511,36 @@ private createLoginErrorMessage(error: any): string {
     }
   }
 
-  // ===============================
-  // STATE MANAGEMENT UTILITIES
-  // ===============================
+  /**
+   * Check if route can be activated (for route guards)
+   */
+  canActivateRoute(): Observable<boolean> {
+    // If still initializing, wait for completion
+    if (this.isInitializing()) {
+      return new Observable<boolean>(subscriber => {
+        const checkAuth = () => {
+          if (!this.isInitializing()) {
+            subscriber.next(this.isAuthenticated());
+            subscriber.complete();
+          } else {
+            setTimeout(checkAuth, 50);
+          }
+        };
+        checkAuth();
+      }).pipe(
+        timeout(10000),
+        catchError(() => of(false))
+      );
+    }
 
-  private updateLoadingState(updates: Partial<LoadingState>): void {
-    const current = this.loadingState();
-    this.loadingState.set({ ...current, ...updates });
+    return of(this.isAuthenticated());
   }
 
-  private clearAuthState(): void {
-    console.log('Clearing auth state');
-    this.user.set(null);
-    this.session.set(null);
-    this.userSubject.next(null);
-    this.sessionSubject.next(null);
-    
-    // Reset all loading states
-    this.loadingState.set({
-      registration: false,
-      login: false,
-      initialization: false,
-      sessionUpdate: false
-    });
-  }
-
-  private isLockTimeoutError(error: any): boolean {
-    const message = error?.message?.toLowerCase() || '';
-    return message.includes('lock') || 
-           message.includes('navigatorlockacquiretimeouterror') ||
-           message.includes('timeout');
-  }
-
- private createAuthErrorResult(error: any): AuthOperationResult {
-  let errorMessage = 'Operation failed. Please try again.';
-  
-  const errorString = error.message?.toLowerCase() || '';
-  
-  if (errorString.includes('timeout')) {
-    errorMessage = 'The operation timed out. Please check your connection and try again.';
-  } else if (errorString.includes('navigatorlockacquiretimeouterror') || errorString.includes('lock')) {
-    errorMessage = 'A temporary system issue occurred. Please try again in a moment.';
-  } else if (error.message) {
-    errorMessage = error.message;
-  }
-  
-  return {
-    user: null,
-    error: errorMessage,
-    organizationCreated: false,
-    success: false
-  };
-}
-
-
-  // ===============================
-  // ORGANIZATION UTILITIES
-  // ===============================
-
-  userHasOrganization(): boolean {
-    const user = this.user();
-    return !!(user?.organizationId);
-  }
-
-  getCurrentUserOrganizationId(): string | null {
-    const user = this.user();
-    return user?.organizationId || null;
-  }
-
-  // ===============================
-  // RECOVERY UTILITIES
-  // ===============================
-
-  // Check if current user needs organization recovery
+  /**
+   * Check if user needs organization recovery
+   */
   async checkCurrentUserNeedsOrganizationRecovery(): Promise<boolean> {
-    const user = this.user();
+    const user = this.userSubject();
     if (!user || user.organizationId) {
       return false;
     }
@@ -616,9 +554,11 @@ private createLoginErrorMessage(error: any): string {
     }
   }
 
-  // Recover organization for existing user (migration utility)
+  /**
+   * Recover organization for existing user
+   */
   recoverUserOrganization(): Observable<{ success: boolean; organizationId?: string }> {
-    const user = this.user();
+    const user = this.userSubject();
     if (!user) {
       return throwError(() => new Error('No authenticated user'));
     }
@@ -627,20 +567,19 @@ private createLoginErrorMessage(error: any): string {
       return of({ success: true, organizationId: user.organizationId });
     }
 
-    console.log('Attempting to recover organization for user:', user.id);
+    console.log('🔄 Attempting to recover organization for user:', user.id);
 
     const credentials: RegisterRequest = {
       firstName: user.firstName,
       lastName: user.lastName,
       email: user.email,
       phone: user.phone,
-      password: '', // Not needed for recovery
+      password: '',
       confirmPassword: '',
       userType: user.userType as 'sme' | 'funder',
       agreeToTerms: true
     };
 
-    // Create just the organization part
     return this.registrationTransaction.executeRegistrationTransaction(credentials).pipe(
       map(result => ({
         success: result.success,
@@ -648,25 +587,44 @@ private createLoginErrorMessage(error: any): string {
       })),
       tap(result => {
         if (result.success && result.organizationId) {
-          // Update current user with organization ID
           const updatedUser = { ...user, organizationId: result.organizationId };
-          this.user.set(updatedUser);
-          this.userSubject.next(updatedUser);
-          console.log('User organization recovered:', result.organizationId);
+          this.userSubject.set(updatedUser);
+          console.log('✅ User organization recovered:', result.organizationId);
         }
       }),
       catchError(error => {
-        console.error('Organization recovery failed:', error);
+        console.error('❌ Organization recovery failed:', error);
         return of({ success: false });
-      })
+      }),
+      takeUntil(this.destroy$)
     );
   }
+// ===================================
+// ORGANIZATION UTILITIES
+// ===================================
 
-  // ===============================
+/**
+ * Check if user has an organization
+ */
+userHasOrganization(): boolean {
+  const user = this.userSubject();
+  return !!(user?.organizationId);
+}
+
+/**
+ * Get current user's organization ID
+ */
+getCurrentUserOrganizationId(): string | null {
+  const user = this.userSubject();
+  return user?.organizationId || null;
+}
+  // ===================================
   // LEGACY COMPATIBILITY METHODS
-  // ===============================
+  // ===================================
 
-  // Legacy signUp method - delegates to new register method
+  /**
+   * Legacy signUp method - delegates to register
+   */
   signUp(credentials: SignUpData): Observable<AuthOperationResult> {
     const registerRequest: RegisterRequest = {
       firstName: credentials.firstName,
@@ -674,22 +632,70 @@ private createLoginErrorMessage(error: any): string {
       email: credentials.email,
       phone: credentials.phone,
       password: credentials.password,
-      confirmPassword: credentials.password, // Assume they match for legacy calls
+      confirmPassword: credentials.password,
       userType: credentials.userType as 'sme' | 'funder',
-      agreeToTerms: true // Assume consent for legacy calls
+      agreeToTerms: true
     };
 
     return this.register(registerRequest);
   }
 
-  // Legacy method for getting access token
+  /**
+   * Get current access token
+   */
   getAccessToken(): string | null {
-    const session = this.session();
+    const session = this.supabaseService.session;
     return session?.access_token || null;
   }
 
-  // Legacy loading state for backward compatibility
+  /**
+   * Get loading state as Observable (legacy)
+   */
   get isLoading$(): Observable<boolean> {
     return of(this.isLoading());
+  }
+
+  // ===================================
+  // PRIVATE UTILITIES
+  // ===================================
+
+  /**
+   * Update loading state
+   */
+  private updateLoadingState(updates: Partial<LoadingState>): void {
+    const current = this.loadingState();
+    this.loadingState.set({ ...current, ...updates });
+  }
+
+  /**
+   * Clear all auth state
+   */
+  private clearAuthState(): void {
+    console.log('🧹 Clearing auth state');
+    this.userSubject.set(null);
+    this.loadingState.set({
+      registration: false,
+      login: false,
+      initialization: false,
+      sessionUpdate: false
+    });
+  }
+
+  /**
+   * Check if error is transient (lock timeout, etc)
+   */
+  private isTransientError(error: any): boolean {
+    const message = error?.message?.toLowerCase() || '';
+    return message.includes('lock') ||
+           message.includes('navigatorlockacquiretimeouterror') ||
+           message.includes('timeout');
+  }
+
+  /**
+   * Cleanup on service destroy
+   */
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 }

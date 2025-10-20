@@ -273,17 +273,17 @@ export class AccessRequestsListComponent implements OnInit {
   loadRequests(): void {
     this.isLoading.set(true);
 
-    this.sharingService.getIncomingRequests(this.organizationId).subscribe({
-      next: (requests) => {
-        this.requests.set(requests);
-        this.pendingCount.set(requests.filter(r => r.status === 'pending').length);
-        this.isLoading.set(false);
-      },
-      error: (err) => {
-        console.error('Failed to load requests:', err);
-        this.isLoading.set(false);
-      }
-    });
+    // this.sharingService.getIncomingRequests(this.organizationId).subscribe({
+    //   next: (requests) => {
+    //     this.requests.set(requests);
+    //     this.pendingCount.set(requests.filter(r => r.status === 'pending').length);
+    //     this.isLoading.set(false);
+    //   },
+    //   error: (err) => {
+    //     console.error('Failed to load requests:', err);
+    //     this.isLoading.set(false);
+    //   }
+    // });
   }
 
   viewDetails(request: DataRoomAccessRequest): void {

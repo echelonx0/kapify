@@ -16,7 +16,6 @@ import {
 } from 'lucide-angular';
 import { UserType } from '../../models/user.models';
 
-// Unified interface for both SME and Funder applications
 export interface BaseApplicationCard {
   id: string;
   title: string;
@@ -30,18 +29,12 @@ export interface BaseApplicationCard {
   createdAt: Date;
   updatedAt: Date;
   submittedAt?: Date;
-  
-  // For funder view
   applicantName?: string;
   applicantCompany?: string;
-  
-  // For SME view
   opportunityTitle?: string;
   opportunityId?: string;
 }
-
  
-
 @Component({
   selector: 'app-application-list-card',
   standalone: true,
@@ -49,135 +42,46 @@ export interface BaseApplicationCard {
     CommonModule,
     LucideAngularModule
   ],
-  template: `
-    <div 
-      class="application-card"
-      [class.card-draft]="application.status === 'draft'"
-      [class.card-submitted]="application.status === 'submitted'"
-      [class.card-under-review]="application.status === 'under_review'"
-      [class.card-approved]="application.status === 'approved'"
-      [class.card-rejected]="application.status === 'rejected'"
-      [class.card-withdrawn]="application.status === 'withdrawn'"
-    >
-      <!-- Status Border -->
-      <div class="status-border"></div>
-      
-      <!-- Main Content -->
-      <div class="card-content">
-        <!-- Header Row -->
-        <div class="header-row">
-          <div class="header-info">
-            <div class="title-row">
-              <h3 class="application-title">{{ application.title }}</h3>
-              
-              <!-- Status Badge -->
-              <span class="status-badge" [class]="statusBadgeClass()">
-                <lucide-icon 
-                  [img]="statusIcon()" 
-                  [size]="12" 
-                  class="mr-1" 
-                />
-                {{ statusText() }}
-              </span>
-              
-              <!-- Stage Badge -->
-              @if (application.currentStage) {
-                <span class="stage-badge">
-                  {{ application.currentStage }}
-                </span>
-              }
-            </div>
-            
-            <!-- Application Number -->
-            @if (application.applicationNumber) {
-              <div class="application-number">
-                <lucide-icon [img]="FileTextIcon" [size]="14" class="mr-1" />
-                {{ application.applicationNumber }}
-              </div>
-            }
-          </div>
-          
-          <!-- Action Buttons Slot -->
-          <div class="action-buttons">
-            <ng-content select="[slot=actions]"></ng-content>
-          </div>
-        </div>
-        
-        <!-- Details Grid -->
-        <div class="details-grid">
-          <!-- Amount -->
-          <div class="detail-item">
-            <div class="detail-icon amount-icon">
-              <lucide-icon [img]="DollarSignIcon" [size]="16" />
-            </div>
-            <div>
-              <p class="detail-label">Requested Amount</p>
-              <p class="detail-value">{{ formatCurrency(application.requestedAmount, application.currency) }}</p>
-            </div>
-          </div>
-          
-          <!-- Date Info -->
-          <div class="detail-item">
-            <div class="detail-icon date-icon">
-              <lucide-icon [img]="CalendarIcon" [size]="16" />
-            </div>
-            <div>
-              <p class="detail-label">{{ dateLabel() }}</p>
-              <p class="detail-value">{{ formatDate(dateValue()) }}</p>
-            </div>
-          </div>
-          
-          <!-- Context-specific third column -->
-          @if (userType === 'funder' && (application.applicantName || application.applicantCompany)) {
-            <div class="detail-item">
-              <div class="detail-icon applicant-icon">
-                <lucide-icon [img]="application.applicantCompany ? BuildingIcon : UserIcon" [size]="16" />
-              </div>
-              <div>
-                <p class="detail-label">Applicant</p>
-                <p class="detail-value">
-                  {{ application.applicantCompany || application.applicantName }}
-                </p>
-              </div>
-            </div>
-          }
-          
-          @if (userType === 'sme' && application.opportunityTitle) {
-            <div class="detail-item">
-              <div class="detail-icon opportunity-icon">
-                <lucide-icon [img]="TrendingUpIcon" [size]="16" />
-              </div>
-              <div>
-                <p class="detail-label">Opportunity</p>
-                <p class="detail-value">{{ application.opportunityTitle }}</p>
-              </div>
-            </div>
-          }
-        </div>
-        
-        <!-- Description -->
-        @if (application.description) {
-          <div class="description">
-            <p>{{ application.description }}</p>
-          </div>
-        }
-        
-        <!-- Progress Bar -->
-        @if (showProgress && application.status !== 'draft') {
-          <div class="progress-container">
-            <div class="progress-bar">
-              <div 
-                class="progress-fill"
-                [style.width.%]="getProgress()"
-              ></div>
-            </div>
-            <span class="progress-text">{{ getProgress() }}% Complete</span>
-          </div>
-        }
-      </div>
-    </div>
-  `,
+  templateUrl: './application-list-card.component.html',
+  styles: [`
+    :host {
+      display: block;
+    }
 
+    /* Smooth hover animations */
+    :host ::ng-deep .group {
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    :host ::ng-deep .group:hover {
+      transform: translateY(-2px);
+    }
+
+    /* Status accent gradient */
+    .accent-draft {
+      background: linear-gradient(90deg, #94a3b8, #cbd5e1);
+    }
+
+    .accent-submitted {
+      background: linear-gradient(90deg, #3b82f6, #60a5fa);
+    }
+
+    .accent-under-review {
+      background: linear-gradient(90deg, #f59e0b, #fbbf24);
+    }
+
+    .accent-approved {
+      background: linear-gradient(90deg, #10b981, #34d399);
+    }
+
+    .accent-rejected {
+      background: linear-gradient(90deg, #ef4444, #f87171);
+    }
+
+    .accent-withdrawn {
+      background: linear-gradient(90deg, #6b7280, #9ca3af);
+    }
+  `]
 })
 export class ApplicationListCardComponent {
   @Input({ required: true }) application!: BaseApplicationCard;
@@ -200,6 +104,7 @@ export class ApplicationListCardComponent {
   AlertCircleIcon = AlertCircle;
   CheckCircleIcon = CheckCircle;
 
+  // Computed properties
   statusText = computed(() => {
     const statusMap: Record<string, string> = {
       draft: 'Draft',
@@ -213,8 +118,32 @@ export class ApplicationListCardComponent {
   });
 
   statusBadgeClass = computed(() => {
-    return `status-${this.application.status.replace('_', '-')}`;
+    const baseClass = 'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold';
+    const statusClass = `status-${this.application.status.replace('_', '-')}`;
+    
+    const classMap: Record<string, string> = {
+      'status-draft': `${baseClass} bg-slate-100 text-slate-700 border border-slate-200/50`,
+      'status-submitted': `${baseClass} bg-blue-50 text-blue-700 border border-blue-200/50`,
+      'status-under-review': `${baseClass} bg-amber-50 text-amber-700 border border-amber-200/50`,
+      'status-approved': `${baseClass} bg-green-50 text-green-700 border border-green-200/50`,
+      'status-rejected': `${baseClass} bg-red-50 text-red-700 border border-red-200/50`,
+      'status-withdrawn': `${baseClass} bg-slate-50 text-slate-700 border border-slate-200/50`
+    };
+    
+    return classMap[statusClass] || classMap['status-draft'];
   });
+
+  getStatusAccentClass = (): string => {
+    const classMap: Record<string, string> = {
+      'draft': 'accent-draft',
+      'submitted': 'accent-submitted',
+      'under_review': 'accent-under-review',
+      'approved': 'accent-approved',
+      'rejected': 'accent-rejected',
+      'withdrawn': 'accent-withdrawn'
+    };
+    return classMap[this.application.status] || 'accent-draft';
+  };
 
   statusIcon = computed(() => {
     const iconMap: Record<string, any> = {
@@ -239,6 +168,7 @@ export class ApplicationListCardComponent {
     return this.application.submittedAt || this.application.updatedAt;
   });
 
+  // Methods
   formatCurrency(amount: number, currency: string): string {
     return new Intl.NumberFormat('en-ZA', {
       style: 'currency',
@@ -249,11 +179,12 @@ export class ApplicationListCardComponent {
   }
 
   formatDate(date: Date): string {
+    if (!date) return '';
     return new Intl.DateTimeFormat('en-ZA', {
       month: 'short',
       day: 'numeric',
       year: 'numeric'
-    }).format(date);
+    }).format(new Date(date));
   }
 
   getProgress(): number {

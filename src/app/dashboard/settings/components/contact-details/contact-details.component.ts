@@ -1,20 +1,15 @@
-// src/app/dashboard/components/settings/components/contact-details.component.ts
+// src/app/dashboard/components/settings/components/contact-details/contact-details.component.ts
 import { Component, Input, Output, EventEmitter, OnInit, inject, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { 
   LucideAngularModule, 
-  Mail, 
-  Phone, 
-  Globe, 
-  MapPin,
   Save, 
   Check,
   AlertCircle
 } from 'lucide-angular';
 import { OrganizationSettings, OrganizationSettingsService } from '../../../services/organization-settings.service';
 
- 
 @Component({
   selector: 'app-contact-details',
   standalone: true,
@@ -24,6 +19,40 @@ import { OrganizationSettings, OrganizationSettingsService } from '../../../serv
     LucideAngularModule
   ],
   templateUrl: './contact-details.component.html',
+  styles: [`
+    :host {
+      display: block;
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus {
+      outline: none;
+    }
+
+    /* Focus ring animation */
+    input:focus,
+    select:focus,
+    textarea:focus {
+      animation: focusPulse 0.2s ease-out;
+    }
+
+    @keyframes focusPulse {
+      from {
+        box-shadow: 0 0 0 0 rgba(255, 107, 53, 0.1);
+      }
+      to {
+        box-shadow: 0 0 0 4px rgba(255, 107, 53, 0.1);
+      }
+    }
+
+    /* Smooth transitions */
+    input,
+    select,
+    textarea {
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+  `]
 })
 export class ContactDetailsComponent implements OnInit {
   @Input() organization: OrganizationSettings | null = null;
@@ -34,10 +63,6 @@ export class ContactDetailsComponent implements OnInit {
   private fb = inject(FormBuilder);
 
   // Icons
-  MailIcon = Mail;
-  PhoneIcon = Phone;
-  GlobeIcon = Globe;
-  MapPinIcon = MapPin;
   SaveIcon = Save;
   CheckIcon = Check;
   AlertCircleIcon = AlertCircle;
@@ -52,7 +77,6 @@ export class ContactDetailsComponent implements OnInit {
   initialAddressValue: any = null;
 
   constructor() {
-    // Watch for last saved updates using effect
     effect(() => {
       const date = this.settingsService.lastSaved();
       this.lastSaved.set(date);
@@ -68,7 +92,7 @@ export class ContactDetailsComponent implements OnInit {
     this.contactForm = this.fb.group({
       email: ['', [Validators.required, Validators.email, Validators.maxLength(255)]],
       phone: ['', [Validators.required, Validators.maxLength(20)]],
-      website: ['', [Validators.pattern(/^https?:\/\/.+/), Validators.maxLength(255)]]
+      website: ['', [Validators.pattern(/^(https?:\/\/.+)?$/), Validators.maxLength(255)]]
     });
 
     this.addressForm = this.fb.group({

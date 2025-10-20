@@ -1,217 +1,232 @@
-<!-- applications-home.component.html -->
-<div class="flex h-full bg-gray-50">
-  <!-- Main Content -->
-  <div class="flex-1 p-6">
+<!-- src/app/dashboard/components/applications/applications-home.component.html -->
+<div class="min-h-screen bg-slate-50">
+  <div class="max-w-7xl mx-auto px-8 py-8">
+    
     <!-- Header -->
-   
-    <!-- Error State -->
-    @if (error()) {
-      <div class="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
-        <div class="flex items-center">
-          <lucide-icon [name]="AlertCircleIcon" [size]="20" class="text-red-500" />
-          <div class="ml-3">
-            <p class="text-sm font-medium text-red-800">{{ error() }}</p>
-            <button 
-              (click)="loadApplications()" 
-              class="mt-2 text-sm text-red-600 hover:text-red-800 underline"
-            >
-              Try again
-            </button>
+    <div class="mb-8">
+      <h1 class="text-3xl font-bold text-slate-900">Applications</h1>
+      <p class="text-slate-600 mt-1">
+        @if (isFunder()) {
+          Manage and review funding applications from SMEs
+        } @else {
+          Track your funding applications
+        }
+      </p>
+    </div>
+
+    <!-- Search & Filter Bar -->
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 mb-8">
+      
+      <div class="flex items-center gap-4 mb-4">
+        <!-- Search Input -->
+        <div class="flex-1">
+          <div class="relative">
+          
+            <input
+              type="text"
+              placeholder="Search by title, company, or application ID..."
+              [value]="searchQuery()"
+              (input)="searchQuery.set($any($event.target).value)"
+              class="w-full pl-10 pr-4 py-2.5 border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200"
+            />
           </div>
         </div>
+
+        <!-- Filter Actions -->
+        <div class="flex items-center gap-2">
+          @if (hasActiveFilters()) {
+            <button
+              (click)="clearFilters()"
+              class="px-4 py-2.5 text-sm font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors duration-200 flex items-center gap-2"
+            >
+              <lucide-icon [img]="XIcon" [size]="16" />
+              Clear Filters
+            </button>
+          }
+
+          <button
+            (click)="toggleFilters()"
+            [class]="showFilters() ? 'bg-orange-50 border-orange-200 text-orange-700' : 'bg-white border-slate-200 text-slate-600'"
+            class="px-4 py-2.5 text-sm font-medium border rounded-xl hover:bg-slate-50 transition-colors duration-200 flex items-center gap-2"
+          >
+            <lucide-icon [img]="FilterIcon" [size]="16" />
+            <span>Filters</span>
+            @if (hasActiveFilters()) {
+              <span class="w-2 h-2 rounded-full bg-orange-500 ml-1"></span>
+            }
+          </button>
+        </div>
+      </div>
+
+      <!-- Filter Panel -->
+      @if (showFilters()) {
+        <div class="pt-4 border-t border-slate-200 space-y-4">
+          <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            
+            <!-- Status Filter -->
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 uppercase tracking-wide mb-2">Status</label>
+              <select
+                [value]="statusFilter()"
+                (change)="statusFilter.set($any($event.target).value)"
+                class="w-full px-3 py-2.5 border border-slate-200 rounded-xl text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200 bg-white"
+              >
+                <option value="">All Statuses</option>
+                <option value="draft">Draft</option>
+                <option value="submitted">Submitted</option>
+                <option value="under_review">Under Review</option>
+                <option value="approved">Approved</option>
+                <option value="rejected">Rejected</option>
+              </select>
+            </div>
+
+            <!-- Funding Type Filter -->
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 uppercase tracking-wide mb-2">Funding Type</label>
+              <select
+                [value]="fundingTypeFilter()"
+                (change)="fundingTypeFilter.set($any($event.target).value)"
+                class="w-full px-3 py-2.5 border border-slate-200 rounded-xl text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200 bg-white"
+              >
+                <option value="">All Types</option>
+                <option value="equity">Equity</option>
+                <option value="debt">Debt</option>
+                <option value="grant">Grant</option>
+                <option value="mezzanine">Mezzanine</option>
+              </select>
+            </div>
+
+            <!-- Amount Range Filter -->
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 uppercase tracking-wide mb-2">Amount Range</label>
+              <select
+                class="w-full px-3 py-2.5 border border-slate-200 rounded-xl text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200 bg-white"
+              >
+                <option value="">All Amounts</option>
+                <option value="0-100k">R0 - R100K</option>
+                <option value="100k-500k">R100K - R500K</option>
+                <option value="500k-1m">R500K - R1M</option>
+                <option value="1m+">R1M+</option>
+              </select>
+            </div>
+
+            <!-- Sort Filter -->
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 uppercase tracking-wide mb-2">Sort By</label>
+              <select
+                class="w-full px-3 py-2.5 border border-slate-200 rounded-xl text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200 bg-white"
+              >
+                <option value="recent">Most Recent</option>
+                <option value="oldest">Oldest First</option>
+                <option value="amount-high">Highest Amount</option>
+                <option value="amount-low">Lowest Amount</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+
+    <!-- Error State -->
+    @if (error()) {
+      <div class="mb-8 p-4 bg-red-50 border border-red-200/50 rounded-xl flex items-center gap-3">
+        <lucide-icon [img]="AlertCircleIcon" [size]="18" class="text-red-600 flex-shrink-0" />
+        <div class="flex-1">
+          <p class="text-sm font-medium text-red-900">{{ error() }}</p>
+        </div>
+        <button 
+          (click)="loadApplications()" 
+          class="text-sm font-medium text-red-700 hover:text-red-900 flex-shrink-0"
+        >
+          Try Again
+        </button>
       </div>
     }
 
-    <!-- Search and Filters -->
-    <div class="bg-white rounded-lg shadow-sm border mb-6">
-      <div class="p-4">
-        <div class="flex items-center justify-between mb-4">
-          <!-- Search -->
-          <div class="flex-1 max-w-lg">
-        <div class="relative">
-  <lucide-icon 
-    [name]="SearchIcon" 
-    [size]="20" 
-    class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pr-1 mr-2" 
-  />
-  <input
-    type="text"
-    placeholder="Search applications..."
-    [value]="searchQuery()"
-    (input)="searchQuery.set($any($event.target).value)"
-    class="w-full ml-4 pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-  >
-</div>
-
+    <!-- Applications Container -->
+    <div class="grid grid-cols-3 gap-8">
+      
+      <!-- Main Content -->
+      <div class="col-span-2 space-y-4">
+        
+        <!-- Loading State -->
+        @if (isLoading()) {
+          <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-12 text-center">
+            <div class="w-10 h-10 rounded-full border-2 border-slate-200 border-t-orange-500 animate-spin mx-auto mb-4"></div>
+            <p class="text-slate-600 font-medium">Loading applications...</p>
           </div>
+        }
 
-          <!-- Filter Toggle -->
-          <div class="flex items-center space-x-2 ml-4">
-            @if (hasActiveFilters()) {
-              <button
-                (click)="clearFilters()"
-                class="flex items-center space-x-1 px-3 py-2 text-sm text-gray-600 hover:text-gray-800 bg-gray-100 rounded-lg"
-              >
-                <lucide-icon [name]="XIcon" [size]="16" />
-                <span>Clear</span>
-              </button>
-            }
-            
+        <!-- Empty State - No Applications -->
+        @else if (filteredApplications().length === 0 && !hasActiveFilters()) {
+          <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-12 text-center">
+            <div class="w-16 h-16 bg-slate-100 rounded-xl flex items-center justify-center mx-auto mb-4">
+              <lucide-icon [img]="FileTextIcon" [size]="32" class="text-slate-400" />
+            </div>
+            <h3 class="text-lg font-bold text-slate-900 mb-2">No applications yet</h3>
+            <p class="text-slate-600 mb-6">
+              @if (isFunder()) {
+                Create opportunities to receive applications from SMEs
+              } @else {
+                Browse available opportunities to start your funding application
+              }
+            </p>
             <button
-              (click)="toggleFilters()"
-              [class]="showFilters() ? 'bg-blue-50 text-blue-700 border-blue-200' : 'bg-white text-gray-600 border-gray-300'"
-              class="flex items-center space-x-2 px-4 py-2 border rounded-lg hover:bg-gray-50 transition-colors"
+              (click)="isFunder() ? manageOpportunities() : createNewApplication()"
+              class="px-6 py-2.5 bg-orange-500 text-white font-medium rounded-xl hover:bg-orange-600 active:bg-orange-700 transition-colors duration-200"
             >
-              <lucide-icon [name]="FilterIcon" [size]="18" />
-              <span>Filters</span>
+              @if (isFunder()) {
+                Create Opportunity
+              } @else {
+                Browse Opportunities
+              }
             </button>
           </div>
-        </div>
+        }
 
-        <!-- Filter Panel -->
-        @if (showFilters()) {
-          <div class="border-t pt-4">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <!-- Status Filter -->
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
-                <select
-                  [value]="statusFilter()"
-                  (change)="statusFilter.set($any($event.target).value)"
-                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="">All Statuses</option>
-                  <option value="draft">Draft</option>
-                  <option value="submitted">Submitted</option>
-                  <option value="under_review">Under Review</option>
-                  <option value="approved">Approved</option>
-                  <option value="rejected">Rejected</option>
-                </select>
-              </div>
-
-              <!-- Funding Type Filter -->
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Funding Type</label>
-                <select
-                  [value]="fundingTypeFilter()"
-                  (change)="fundingTypeFilter.set($any($event.target).value)"
-                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="">All Types</option>
-                  <option value="equity">Equity</option>
-                  <option value="debt">Debt</option>
-                  <option value="grant">Grant</option>
-                  <option value="mezzanine">Mezzanine</option>
-                </select>
-              </div>
-
-              <!-- Extra Filter Slot -->
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">
-                  @if (isFunder()) {
-                    Opportunity
-                  } @else {
-                    Stage
-                  }
-                </label>
-                <select
-                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                  disabled
-                >
-                  <option>Coming Soon</option>
-                </select>
-              </div>
+        <!-- Empty State - No Results from Filters -->
+        @else if (filteredApplications().length === 0 && hasActiveFilters()) {
+          <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-12 text-center">
+            <div class="w-16 h-16 bg-slate-100 rounded-xl flex items-center justify-center mx-auto mb-4">
+              <lucide-icon [img]="SearchIcon" [size]="32" class="text-slate-400" />
             </div>
+            <h3 class="text-lg font-bold text-slate-900 mb-2">No matching applications</h3>
+            <p class="text-slate-600 mb-6">Try adjusting your search or filters</p>
+            <button
+              (click)="clearFilters()"
+              class="text-orange-600 hover:text-orange-700 font-medium text-sm"
+            >
+              Clear all filters
+            </button>
+          </div>
+        }
+
+        <!-- Applications List -->
+        @else {
+          <div class="space-y-4">
+            @for (application of filteredApplications(); track application.id) {
+              @if (userType()) {
+                <app-application-list-card
+                  [application]="transformToBaseCard(application)"
+                  [userType]="userType() === 'funder' ? 'funder' : 'sme'"
+                  [showProgress]="true"
+                  (viewDetails)="viewApplication($event.id)"
+                />
+              }
+            }
           </div>
         }
       </div>
-    </div>
 
-    <!-- Applications List -->
-    <div class="bg-white rounded-lg shadow-sm border">
-      @if (isLoading()) {
-        <div class="p-8 text-center">
-          <lucide-icon [name]="RefreshCwIcon" [size]="32" class="mx-auto animate-spin text-gray-400 mb-4" />
-          <p class="text-gray-500">Loading applications...</p>
+      <!-- Activity Sidebar -->
+      <div class="col-span-1">
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden sticky top-8">
+          <div class="px-6 py-4 border-b border-slate-200 bg-slate-50/50">
+            <h3 class="text-lg font-bold text-slate-900">Recent Activity</h3>
+          </div>
+          <app-activity-inbox />
         </div>
-      } @else if (filteredApplications().length === 0 && !hasActiveFilters()) {
-        <!-- Empty State -->
-        <div class="p-12 text-center">
-          <lucide-icon [name]="FileTextIcon" [size]="48" class="mx-auto text-gray-300 mb-4" />
-          <h3 class="text-lg font-medium text-gray-900 mb-2">No applications yet</h3>
-          <p class="text-gray-500 mb-6 max-w-sm mx-auto">
-            {{ getEmptyStateMessage() }}
-          </p>
-          <ui-button
-            [variant]="'primary'"
-            (click)="isFunder() ? manageOpportunities() : createNewApplication()"
-          >
-            @if (isFunder()) {
-              Manage Opportunities
-            } @else {
-              Browse Opportunities
-            }
-          </ui-button>
-        </div>
-      } @else if (filteredApplications().length === 0 && hasActiveFilters()) {
-        <!-- No Results -->
-        <div class="p-8 text-center">
-          <lucide-icon [name]="SearchIcon" [size]="32" class="mx-auto text-gray-300 mb-4" />
-          <h3 class="text-lg font-medium text-gray-900 mb-2">No matching applications</h3>
-          <p class="text-gray-500 mb-4">Try adjusting your search or filters</p>
-          <button
-            (click)="clearFilters()"
-            class="text-blue-600 hover:text-blue-800 font-medium"
-          >
-            Clear all filters
-          </button>
-        </div>
-      } @else {
-        <!-- Applications Grid -->
-   
-<div class="space-y-4">
-  @for (application of filteredApplications(); track application.id) {
-    @if (userType()) {
-      <app-application-list-card
-        [application]="transformToBaseCard(application)"
-        [userType]="userType() === 'funder' ? 'funder' : 'sme'"
-        [showProgress]="true"
-        (viewDetails)="viewApplication($event.id)"
-      >
-        <!-- Action buttons slot -->
-        <div slot="actions" class="flex items-center gap-2">
-          @if (isSME()) {
-            @if (application.status === 'draft') {
-              <ui-button variant="primary" (clicked)="continueApplication(application.id)">
-                Continue
-              </ui-button>
-            } @else {
-              <ui-button variant="outline" (clicked)="viewApplication(application.id)">
-                <lucide-icon [name]="EyeIcon" [size]="16" class="mr-2" />
-                View
-              </ui-button>
-            }
-          } @else {
-            <ui-button variant="primary" (clicked)="reviewApplication(application.id)">
-              <lucide-icon [name]="SettingsIcon" [size]="16" class="mr-2" />
-              Review
-            </ui-button>
-          }
-          
-          <ui-button variant="ghost" (clicked)="viewApplication(application.id)">
-            <lucide-icon [name]="EyeIcon" [size]="16" />
-          </ui-button>
-        </div>
-      </app-application-list-card>
-    }
-  }
-</div>
-      }
+      </div>
     </div>
-  </div>
-
-  <!-- Activity Sidebar -->
-  <div class="w-200 border-l border-gray-200 bg-white">
-    <app-activity-inbox />
   </div>
 </div>

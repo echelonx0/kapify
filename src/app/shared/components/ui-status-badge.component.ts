@@ -21,7 +21,7 @@ export class UiStatusBadgeComponent {
   showDot = input(true);
 
   badgeClasses = computed(() => {
-    const baseClasses = 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium';
+    const baseClasses = 'inline-flex items-center px-2.5 py-0.5 rounded text-xs font-medium';
     const colorClasses = {
       primary: 'bg-primary-100 text-primary-800',
       success: 'bg-green-100 text-green-800',
@@ -32,7 +32,7 @@ export class UiStatusBadgeComponent {
   });
 
   dotClasses = computed(() => {
-    const baseClasses = 'w-1.5 h-1.5 rounded-full mr-1.5';
+    const baseClasses = 'w-1.5 h-1.5 rounded mr-1.5';
     const colorClasses = {
       primary: 'bg-primary-500',
       success: 'bg-green-500',
