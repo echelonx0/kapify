@@ -85,80 +85,9 @@ export class StepNavigationService {
     }
   }
 
-  // Step validation - can user proceed from current step?
-  canContinue(): boolean {
-    const current = this.currentStep();
-    const stepErrors = this.formStateService.validationErrors().filter(error => 
-      this.getFieldStep(error.field) === current && error.type === 'error'
-    );
-    
-    if (stepErrors.length > 0) return false;
+ 
 
-    const data = this.formStateService.formData();
-    
-    switch (current) {
-      case 'basic':
-        return !!(data.title.trim() && data.shortDescription.trim() && data.description.trim());
-      case 'terms':
-        return !!(data.fundingType && data.totalAvailable && data.offerAmount && data.decisionTimeframe);
-      case 'eligibility':
-        return true; // Optional step
-      case 'settings':
-        return true; // Optional step
-      default:
-        return true;
-    }
-  }
-
-  // Check if a step has been completed (show green checkmark)
-  isStepCompleted(stepId: string): boolean {
-    const data = this.formStateService.formData();
-    
-    switch (stepId) {
-      case 'basic':
-        // Required: title, shortDescription, description
-        return !!(
-          data.title.trim() && 
-          data.shortDescription.trim() && 
-          data.description.trim()
-        );
-        
-      case 'terms':
-        // Required: fundingType, totalAvailable, offerAmount, decisionTimeframe
-        return !!(
-          data.fundingType && 
-          data.totalAvailable && 
-          data.offerAmount && 
-          data.decisionTimeframe
-        );
-        
-      case 'eligibility':
-        // Optional step - consider complete if user has set any criteria
-        // OR if they've moved past this step
-        return (
-          data.targetIndustries.length > 0 ||
-          data.businessStages.length > 0 ||
-          !!data.minRevenue ||
-          !!data.maxRevenue ||
-          !!data.minYearsOperation
-        );
-        
-      case 'settings':
-        // Optional step - consider complete if any setting is configured
-        // OR defaults are acceptable (isPublic default behavior)
-        return true; // Always consider complete since settings have defaults
-        
-      case 'review':
-        // Review step is complete when all required previous steps are done
-        return (
-          this.isStepCompleted('basic') && 
-          this.isStepCompleted('terms')
-        );
-        
-      default:
-        return false;
-    }
-  }
+   
 
   // Field to step mapping
   private getFieldStep(fieldName: string): string {
@@ -219,4 +148,84 @@ export class StepNavigationService {
     };
     return subtitles[this.currentStep()] || '';
   }
+
+  // In step-navigation.service.ts, replace the canContinue() method with this:
+
+canContinue(): boolean {
+  // Guard: if formStateService not initialized, allow continue
+  if (!this.formStateService) {
+    return true;
+  }
+
+  const current = this.currentStep();
+  const stepErrors = this.formStateService.validationErrors().filter(error => 
+    this.getFieldStep(error.field) === current && error.type === 'error'
+  );
+  
+  if (stepErrors.length > 0) return false;
+  
+  const data = this.formStateService.formData();
+  
+  switch (current) {
+    case 'basic':
+      return !!(data.title.trim() && data.shortDescription.trim() && data.description.trim());
+    case 'terms':
+      return !!(data.fundingType && data.totalAvailable && data.offerAmount && data.decisionTimeframe);
+    case 'eligibility':
+      return true; // Optional step
+    case 'settings':
+      return true; // Optional step
+    default:
+      return true;
+  }
+}
+
+// Also fix isStepCompleted() with the same guard:
+
+isStepCompleted(stepId: string): boolean {
+  // Guard: if formStateService not initialized, return false
+  if (!this.formStateService) {
+    return false;
+  }
+
+  const data = this.formStateService.formData();
+  
+  switch (stepId) {
+    case 'basic':
+      return !!(
+        data.title.trim() && 
+        data.shortDescription.trim() && 
+        data.description.trim()
+      );
+      
+    case 'terms':
+      return !!(
+        data.fundingType && 
+        data.totalAvailable && 
+        data.offerAmount && 
+        data.decisionTimeframe
+      );
+      
+    case 'eligibility':
+      return (
+        data.targetIndustries.length > 0 ||
+        data.businessStages.length > 0 ||
+        !!data.minRevenue ||
+        !!data.maxRevenue ||
+        !!data.minYearsOperation
+      );
+      
+    case 'settings':
+      return true;
+      
+    case 'review':
+      return (
+        this.isStepCompleted('basic') && 
+        this.isStepCompleted('terms')
+      );
+      
+    default:
+      return false;
+  }
+}
 }

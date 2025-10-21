@@ -1,7 +1,6 @@
 // src/app/funder/services/opportunity-form-state.service.ts
 import { Injectable, signal, computed, inject } from '@angular/core';
 import { Subject, debounceTime, distinctUntilChanged, takeUntil } from 'rxjs';
-import { FundingOpportunityService } from 'src/app/funding/services/funding-opportunity.service';
  
 export interface OpportunityFormData {
   title: string;
@@ -27,6 +26,7 @@ export interface OpportunityFormData {
   exitStrategy: string;
   applicationDeadline: string;
   decisionTimeframe: string;
+  investmentCriteria: string;  // ← ADD THIS
   targetIndustries: string[];
   businessStages: string[];
   minRevenue: string;
@@ -49,8 +49,7 @@ export interface ValidationError {
 @Injectable({
   providedIn: 'root'
 })
-export class OpportunityFormStateService {
-  private opportunityService = inject(FundingOpportunityService);
+export class OpportunityFormStateService { 
   private destroy$ = new Subject<void>();
   private localAutoSaveSubject = new Subject<OpportunityFormData>();
 
@@ -80,6 +79,7 @@ export class OpportunityFormStateService {
     applicationDeadline: '',
     decisionTimeframe: '30',
     targetIndustries: [],
+    investmentCriteria: '',
     businessStages: [],
     minRevenue: '',
     maxRevenue: '',
@@ -381,6 +381,7 @@ export class OpportunityFormStateService {
       exitStrategy: '',
       applicationDeadline: '',
       decisionTimeframe: '30',
+      investmentCriteria: '',
       targetIndustries: [],
       businessStages: [],
       minRevenue: '',
@@ -433,7 +434,8 @@ export class OpportunityFormStateService {
       totalAvailable: draftData.totalAvailable?.toString() || '',
       maxApplications: draftData.maxApplications?.toString() || '',
       autoMatch: draftData.autoMatch ?? true,
-      isPublic: true
+      isPublic: true,
+      investmentCriteria: draftData.investmentCriteria || '',
     });
   }
 

@@ -13,10 +13,9 @@ import { OpportunityUIHelperService } from 'src/app/funder/services/ui-helper.se
   standalone: true,
   imports: [CommonModule, FormsModule, LucideAngularModule],
   template: `
-    <div class="space-y-6">
+    <div class="space-y-2 mt-8">
       <div class="flex items-center justify-between mb-4">
-        <div class="flex items-center space-x-2">
-          <lucide-angular [img]="SparklesIcon" [size]="20" class="text-primary-600"></lucide-angular>
+        <div class="flex items-center space-x-2"> 
           <h3 class="text-lg font-semibold text-gray-900">Media & Branding</h3>
         </div>
         <span class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">Optional</span>

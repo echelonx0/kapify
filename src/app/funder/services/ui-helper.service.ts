@@ -247,4 +247,90 @@ export class OpportunityUIHelperService {
     { value: 'expansion', label: 'Expansion' },
     { value: 'mature', label: 'Mature' }
   ];
+
+    // ===============================
+  // 🔹 NEW STATIC CONFIGURATIONS
+  // ===============================
+
+  readonly industrySectors = [
+    'Agriculture - Primary',
+    'Agriculture - Secondary',
+    'Automotive',
+    'Professional & Technical Services',
+    'Education',
+    'Energy',
+    'Engineering & Construction',
+    'Financial Services',
+    'Franchise',
+    'Healthcare & Biotechnology',
+    'Hospitality',
+    'Information & Communication Technology',
+    'Manufacturing',
+    'Mining',
+    'Real Estate',
+    'Retail & Wholesale',
+    'Tourism',
+    'Transportation and Logistics',
+    'Waste Management'
+  ];
+
+  readonly fundingOptions = [
+    'Equity Investment',
+    'Debt Financing',
+    'Convertible Notes',
+    'Venture Capital',
+    'Angel Investment',
+    'Crowdfunding',
+    'Purchase Order Funding',
+    'Invoice Financing',
+    'Grant Funding'
+  ];
+
+  readonly investmentCriteria = [
+    'Business must be operational for at least 2 years',
+    'Strong management team with relevant experience',
+    'Clear path to profitability or scalability',
+    'Registered legal entity with compliant records',
+    'Ability to provide performance updates',
+    'Located within approved regions or sectors'
+  ];
+// Geographic regions (South African provinces + international)
+geographicRegions = [
+  { label: 'Western Cape', value: 'western-cape' },
+  { label: 'Eastern Cape', value: 'eastern-cape' },
+  { label: 'Northern Cape', value: 'northern-cape' },
+  { label: 'Free State', value: 'free-state' },
+  { label: 'KwaZulu-Natal', value: 'kwazulu-natal' },
+  { label: 'Gauteng', value: 'gauteng' },
+  { label: 'Limpopo', value: 'limpopo' },
+  { label: 'Mpumalanga', value: 'mpumalanga' },
+  { label: 'North West', value: 'north-west' },
+  { label: 'Southern Africa', value: 'southern-africa' },
+  { label: 'Sub-Saharan Africa', value: 'sub-saharan-africa' },
+  { label: 'International', value: 'international' }
+];
+  readonly excludedSectors = [
+    'Arms and Ammunition Manufacturing',
+    'Tobacco Production',
+    'Adult Entertainment',
+    'Gambling and Betting',
+    'Unregulated Crypto Assets',
+    'Political or Religious Organizations'
+  ];
+
+  readonly investmentRanges = [
+    { typicalInvestment: '$250,000', minInvestment: '$100,000', maxInvestment: '$1,000,000' },
+    { typicalInvestment: '$500,000', minInvestment: '$200,000', maxInvestment: '$2,000,000' }
+  ];
+
+  // ✅ Startup stage definitions with tooltips
+  readonly startupTerms = [
+    { value: 'idea', label: 'Idea Stage', tooltip: 'Concept or prototype, pre-revenue, testing market feasibility.' },
+    { value: 'startup', label: 'Startup', tooltip: 'Launched with initial customers or MVP, seeking product-market fit.' },
+    { value: 'early-stage', label: 'Early Stage', tooltip: 'Established product-market fit, generating revenue, building team and systems.' },
+    { value: 'growth', label: 'Growth Stage', tooltip: 'Strong market presence, revenue expansion, scaling operations or regions.' },
+    { value: 'expansion', label: 'Expansion', tooltip: 'Expanding to new markets, products, or geographies with proven model.' },
+    { value: 'mature', label: 'Mature', tooltip: 'Stable business with predictable cash flow and potential for acquisition or IPO.' }
+  ];
+
 }

@@ -242,7 +242,7 @@ export class CreateOpportunityComponent implements OnInit, OnDestroy {
 
   // Publishing and saving
   publishOpportunity() {
-    console.log('=== PUBLISH OPPORTUNITY ===');
+    console.log('=== PUBLISHING OPPORTUNITY ===');
     this.publishError.set(null);
 
     if (this.mode() === 'edit') {
@@ -317,76 +317,94 @@ export class CreateOpportunityComponent implements OnInit, OnDestroy {
   }
 
   // Build opportunity data for API
-  private buildOpportunityData(): Observable<Partial<FundingOpportunity>> {
-    return new Observable(observer => {
-      try {
-        const data = this.formState.formData();
-        const orgId = this.organizationState.organizationId();
-        
-        if (!orgId) {
-          observer.error(new Error('No organization found. Please complete your organization setup before creating opportunities.'));
-          return;
-        }
+// In create-opportunity.component.ts - buildOpportunityData() method
 
-        const validationError = this.validateRequiredFields(data);
-        if (validationError) {
-          observer.error(new Error(validationError));
-          return;
-        }
-
-        const opportunityData: Partial<FundingOpportunity> = {
-          title: data.title.trim(),
-          description: data.description.trim(),
-          shortDescription: data.shortDescription.trim(),
-          fundingOpportunityImageUrl: data.fundingOpportunityImageUrl?.trim() || undefined,
-          fundingOpportunityVideoUrl: data.fundingOpportunityVideoUrl?.trim() || undefined,
-          funderOrganizationName: data.funderOrganizationName?.trim() || undefined,
-          funderOrganizationLogoUrl: data.funderOrganizationLogoUrl?.trim() || undefined,
-          fundId: orgId,
-          organizationId: orgId,
-          offerAmount: Math.max(0, this.formState.parseNumberValue(data.offerAmount)),
-          minInvestment: this.formState.parseNumberValue(data.minInvestment) || undefined,
-          maxInvestment: this.formState.parseNumberValue(data.maxInvestment) || undefined,
-          currency: data.currency,
-          fundingType: data.fundingType as any,
-          interestRate: data.interestRate ? Number(data.interestRate) : undefined,
-          equityOffered: data.equityOffered ? Number(data.equityOffered) : undefined,
-          repaymentTerms: data.repaymentTerms?.trim() || undefined,
-          securityRequired: data.securityRequired?.trim() || undefined,
-          useOfFunds: data.useOfFunds?.trim(),
-          investmentStructure: data.investmentStructure?.trim(),
-          expectedReturns: data.expectedReturns ? Number(data.expectedReturns) : undefined,
-          investmentHorizon: data.investmentHorizon ? Number(data.investmentHorizon) : undefined,
-          exitStrategy: data.exitStrategy?.trim() || undefined,
-          applicationDeadline: data.applicationDeadline ? new Date(data.applicationDeadline) : undefined,
-          decisionTimeframe: Math.max(1, Number(data.decisionTimeframe) || 30),
-          totalAvailable: Math.max(0, this.formState.parseNumberValue(data.totalAvailable)),
-          maxApplications: data.maxApplications ? Math.max(1, this.formState.parseNumberValue(data.maxApplications)) : undefined,
-          autoMatch: data.autoMatch,
-          eligibilityCriteria: {
-            industries: data.targetIndustries || [],
-            businessStages: data.businessStages || [],
-            minRevenue: data.minRevenue ? Math.max(0, this.formState.parseNumberValue(data.minRevenue)) : undefined,
-            maxRevenue: data.maxRevenue ? Math.max(0, this.formState.parseNumberValue(data.maxRevenue)) : undefined,
-            minYearsOperation: data.minYearsOperation ? Math.max(0, Number(data.minYearsOperation)) : undefined,
-            geographicRestrictions: data.geographicRestrictions?.length > 0 ? data.geographicRestrictions : undefined,
-            requiresCollateral: data.requiresCollateral,
-            excludeCriteria: []
-          },
-          status: 'draft',
-          currentApplications: 0,
-          viewCount: 0,
-          applicationCount: 0
-        };
-
-        observer.next(opportunityData);
-        observer.complete();
-
-      } catch (error: any) {
-        observer.error(new Error(`Failed to prepare opportunity data: ${error.message || 'Unknown error'}`));
+private buildOpportunityData(): Observable<Partial<FundingOpportunity>> {
+  return new Observable(observer => {
+    try {
+      const data = this.formState.formData();
+      const orgId = this.organizationState.organizationId();
+      
+      if (!orgId) {
+        observer.error(new Error('No organization found. Please complete your organization setup before creating opportunities.'));
+        return;
       }
-    });
-  }
+
+      const validationError = this.validateRequiredFields(data);
+      if (validationError) {
+        observer.error(new Error(validationError));
+        return;
+      }
+
+      // Build opportunity data—maps flat form fields to nested DB structure
+      const opportunityData: Partial<FundingOpportunity> = {
+        // Basic Info
+        title: data.title.trim(),
+        description: data.description.trim(),
+        shortDescription: data.shortDescription.trim(),
+        
+        // Media & Branding
+        fundingOpportunityImageUrl: data.fundingOpportunityImageUrl?.trim() || undefined,
+        fundingOpportunityVideoUrl: data.fundingOpportunityVideoUrl?.trim() || undefined,
+        funderOrganizationName: data.funderOrganizationName?.trim() || undefined,
+        funderOrganizationLogoUrl: data.funderOrganizationLogoUrl?.trim() || undefined,
+        
+        // Organization & Fund
+        fundId: orgId,
+        organizationId: orgId,
+        
+        // Funding Terms
+        offerAmount: Math.max(0, this.formState.parseNumberValue(data.offerAmount)),
+        minInvestment: this.formState.parseNumberValue(data.minInvestment) || undefined,
+        maxInvestment: this.formState.parseNumberValue(data.maxInvestment) || undefined,
+        currency: data.currency,
+        fundingType: data.fundingType as any,
+        interestRate: data.interestRate ? Number(data.interestRate) : undefined,
+        equityOffered: data.equityOffered ? Number(data.equityOffered) : undefined,
+        repaymentTerms: data.repaymentTerms?.trim() || undefined,
+        securityRequired: data.securityRequired?.trim() || undefined,
+        useOfFunds: data.useOfFunds?.trim(),
+        investmentStructure: data.investmentStructure?.trim(),
+        expectedReturns: data.expectedReturns ? Number(data.expectedReturns) : undefined,
+        investmentHorizon: data.investmentHorizon ? Number(data.investmentHorizon) : undefined,
+        exitStrategy: data.exitStrategy?.trim() || undefined,
+        applicationDeadline: data.applicationDeadline ? new Date(data.applicationDeadline) : undefined,
+        decisionTimeframe: Math.max(1, Number(data.decisionTimeframe) || 30),
+        
+        // Availability
+        totalAvailable: Math.max(0, this.formState.parseNumberValue(data.totalAvailable)),
+        maxApplications: data.maxApplications ? Math.max(1, this.formState.parseNumberValue(data.maxApplications)) : undefined,
+        
+        // Eligibility Criteria (maps to DB eligibility_criteria JSONB)
+        eligibilityCriteria: {
+          industries: data.targetIndustries || [],
+          businessStages: data.businessStages || [],
+          minRevenue: data.minRevenue ? Math.max(0, this.formState.parseNumberValue(data.minRevenue)) : undefined,
+          maxRevenue: data.maxRevenue ? Math.max(0, this.formState.parseNumberValue(data.maxRevenue)) : undefined,
+          minYearsOperation: data.minYearsOperation ? Math.max(0, Number(data.minYearsOperation)) : undefined,
+          geographicRestrictions: data.geographicRestrictions?.length > 0 ? data.geographicRestrictions : undefined,
+          requiresCollateral: data.requiresCollateral,
+          excludeCriteria: [],
+          funderDefinedCriteria: data.investmentCriteria?.trim() || undefined
+        },
+        
+        // Settings
+        autoMatch: data.autoMatch,
+        status: 'draft',
+        
+        // Computed fields (will be set by backend)
+        currentApplications: 0,
+        viewCount: 0,
+        applicationCount: 0
+      };
+
+      observer.next(opportunityData);
+      observer.complete();
+    } catch (error: any) {
+      observer.error(new Error(`Failed to prepare opportunity data: ${error.message || 'Unknown error'}`));
+    }
+  });
+}
 
   private validateRequiredFields(data: OpportunityFormData): string | null {
     if (!data.title.trim()) return 'Opportunity title is required.';
