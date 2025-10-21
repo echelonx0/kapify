@@ -1,7 +1,4 @@
- 
-
-// src/app/funder/components/funder-dashboard.component.ts
-import { Component, signal, computed, OnInit, OnDestroy, inject } from '@angular/core';
+import { Component, signal, computed, OnInit, OnDestroy, inject, ViewContainerRef, ComponentRef } from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { Subject, takeUntil } from 'rxjs';
@@ -34,7 +31,8 @@ import { PublicProfileService } from '../services/public-profile.service';
 import { FunderApplicationsComponent } from '../application-details/funder-applications/funder-applications.component';
 import { DraftManagementService } from '../services/draft-management.service';
 import { SettingsComponent } from 'src/app/dashboard/settings/settings.component';
-
+import { OpportunityActionModalComponent } from 'src/app/shared/components/modal/app-modal.component';
+ 
 type TabId = 'overview' | 'opportunities' | 'applications' | 'settings';
 
 interface Tab {
@@ -66,11 +64,13 @@ export class FunderDashboardComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
   private publicProfileService = inject(PublicProfileService);
   protected draftService = inject(DraftManagementService);
+  private viewContainerRef = inject(ViewContainerRef);
+  
+  // Modal state
+  private modalRef: ComponentRef<OpportunityActionModalComponent> | null = null;
   
   // State
   activeTab = signal<TabId>('overview');
-  
-  // Document analysis toggle state
   isDocumentAnalysisExpanded = signal(true);
   
   tabs: Tab[] = [
@@ -139,6 +139,32 @@ export class FunderDashboardComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     this.destroy$.next();
     this.destroy$.complete();
+    this.closeModal();
+  }
+
+  // Modal management
+  private openModal(actionType: 'delete' | 'duplicate', opportunity: any, callbacks: { onConfirm: () => void, onCancel: () => void }) {
+    this.closeModal();
+    
+    const modalComponent = this.viewContainerRef.createComponent(OpportunityActionModalComponent);
+    this.modalRef = modalComponent;
+    
+    const instance = modalComponent.instance;
+    instance.setData({
+      actionType,
+      opportunityTitle: opportunity.title,
+      hasApplications: opportunity.currentApplications > 0,
+      applicationCount: opportunity.currentApplications
+    });
+    
+    instance.setCallbacks(callbacks.onConfirm, callbacks.onCancel);
+  }
+
+  private closeModal() {
+    if (this.modalRef) {
+      this.modalRef.destroy();
+      this.modalRef = null;
+    }
   }
 
   // Document Analysis Toggle Methods
@@ -170,13 +196,10 @@ export class FunderDashboardComponent implements OnInit, OnDestroy {
 
   // Draft management methods
   continueDraft() {
-    console.log('Continuing existing draft...');
     this.router.navigate(['/funding/create-opportunity']);
   }
 
   startFreshOpportunity() {
-    console.log('Starting fresh opportunity...');
-    
     this.draftService.checkDraftAndProceed()
       .pipe(takeUntil(this.destroy$))
       .subscribe({
@@ -217,9 +240,6 @@ export class FunderDashboardComponent implements OnInit, OnDestroy {
   }
 
   createOpportunity() {
-    console.log('Create opportunity method called');
-    console.log('Onboarding state:', this.onboardingState());
-    
     if (this.onboardingState()?.canCreateOpportunities) {
       this.handleCreateOpportunity();
     } else {
@@ -256,7 +276,6 @@ export class FunderDashboardComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => {
-          console.log('Draft cleared, navigating to create opportunity');
           this.navigateToCreateOpportunity();
         },
         error: (error) => {
@@ -267,8 +286,6 @@ export class FunderDashboardComponent implements OnInit, OnDestroy {
   }
 
   private navigateToCreateOpportunity() {
-    console.log('Navigating to create opportunity page...');
-    
     try {
       this.router.navigate(['/funding/create-opportunity']);
     } catch (error) {
@@ -319,7 +336,6 @@ export class FunderDashboardComponent implements OnInit, OnDestroy {
   }
 
   importOpportunity() {
-    console.log('Import opportunity method called');
     this.router.navigate(['/funder/opportunities/import']);
   }
 
@@ -363,25 +379,110 @@ export class FunderDashboardComponent implements OnInit, OnDestroy {
   }
 
   editOpportunity(opportunityId: string) {
-  this.router.navigate([
-    '/funder/opportunities/edit',
-    opportunityId
-  ]);
+    this.router.navigate([
+      '/funder/opportunities/edit',
+      opportunityId
+    ]);
+  }
+
+// REPLACE these methods in: src/app/funder/components/funder-dashboard.component.ts
+
+deleteOpportunity(opportunityId: string) {
+  const opportunity = this.recentOpportunities().find(o => o.id === opportunityId);
+  if (!opportunity) return;
+
+  this.openModal('delete', opportunity, {
+    onConfirm: () => this.performDelete(opportunityId),
+    onCancel: () => this.closeModal()
+  });
 }
 
+private performDelete(opportunityId: string) {
+  this.managementService.deleteOpportunity(opportunityId)
+    .pipe(takeUntil(this.destroy$))
+    .subscribe({
+      next: (result) => {
+        console.log('Opportunity deleted:', result.message);
+        this.closeModal();
+      },
+      error: (error) => {
+        console.error('Delete failed:', error);
+        const errorMsg = this.extractErrorMessage(error);
+        this.showErrorInModal(errorMsg);
+      }
+    });
+}
 
-  deleteOpportunity(opportunityId: string) {
+duplicateOpportunity(opportunityId: string) {
+  const opportunity = this.recentOpportunities().find(o => o.id === opportunityId);
+  if (!opportunity) return;
+
+  this.openModal('duplicate', opportunity, {
+    onConfirm: () => this.performDuplicate(opportunityId),
+    onCancel: () => this.closeModal()
+  });
+}
+
+private performDuplicate(opportunityId: string) {
+  this.managementService.duplicateOpportunity(opportunityId)
+    .pipe(takeUntil(this.destroy$))
+    .subscribe({
+      next: (result) => {
+        console.log('Opportunity duplicated:', result.newOpportunityId);
+        this.closeModal();
+        this.router.navigate([
+          '/funder/opportunities/edit',
+          result.newOpportunityId
+        ]);
+      },
+      error: (error) => {
+        console.error('Duplicate failed:', error);
+        const errorMsg = this.extractErrorMessage(error);
+        this.showErrorInModal(errorMsg);
+      }
+    });
+}
+
+private extractErrorMessage(error: any): string {
+  // Extract user-friendly error message from various error formats
+  if (typeof error === 'string') {
+    return error;
+  }
   
-}
-
-
-  duplicateOpportunity(opportunityId: string) {
+  if (error.message) {
+    const msg = error.message;
+    
+    // Check for specific error patterns
+    if (msg.includes('invalid input syntax for type uuid')) {
+      return 'Failed to create opportunity. Please try again.';
+    }
+    if (msg.includes('not found')) {
+      return 'Opportunity not found or has been deleted.';
+    }
+    if (msg.includes('access denied')) {
+      return 'You do not have permission to perform this action.';
+    }
+    if (msg.includes('not authenticated')) {
+      return 'Your session has expired. Please log in again.';
+    }
+    
+    // Default: clean up the error message
+    return msg
+      .replace(/Error: /g, '')
+      .replace(/at _/g, '')
+      .split(' at ')[0]
+      .trim();
+  }
   
+  return 'An error occurred. Please try again.';
 }
 
-
- 
-
+private showErrorInModal(message: string) {
+  if (this.modalRef) {
+    const instance = this.modalRef.instance;
+    instance.setError(message);
+  }
+}
   viewAnalytics() {
     // this.router.navigate(['/funder/analytics']);
   }
@@ -459,12 +560,10 @@ export class FunderDashboardComponent implements OnInit, OnDestroy {
   }
 
   completeOnboarding() {
-    console.log('Navigating to onboarding...');
     this.router.navigate(['/funder/onboarding']);
   }
 
   editOrganization() {
-    console.log('Navigating to organization edit...');
     this.router.navigate(['/funder/onboarding']);
   }
 }

@@ -3,6 +3,7 @@ import { Injectable, signal, inject } from '@angular/core';
 import { Observable, from, throwError, BehaviorSubject } from 'rxjs';
 import { tap, catchError, map } from 'rxjs/operators';
  
+import { v4 as uuidv4 } from 'uuid';  // ADD THIS IMPORT at top
 import { AuthService } from '../../auth/production.auth.service'; 
 import { SharedSupabaseService } from '../../shared/services/shared-supabase.service';
 
@@ -146,6 +147,140 @@ export class OpportunityManagementService {
   // ===============================
   // STATUS MANAGEMENT
   // ===============================
+ 
+
+deleteOpportunity(opportunityId: string): Observable<{success: boolean, message: string}> {
+  const currentAuth = this.authService.user();
+  if (!currentAuth) {
+    return throwError(() => new Error('User not authenticated'));
+  }
+
+  return from(this.performDeletion(opportunityId, currentAuth.id)).pipe(
+    tap(result => {
+      if (result.success) {
+        this.loadUserOpportunities().subscribe();
+      }
+    }),
+    catchError(error => {
+      this.error.set('Failed to delete opportunity');
+      console.error('Deletion error:', error);
+      return throwError(() => error);
+    })
+  );
+}
+
+private async performDeletion(
+  opportunityId: string, 
+  userId: string
+): Promise<{success: boolean, message: string}> {
+  try {
+    // Soft delete - maintains audit trail
+    const { error } = await this.supabaseService
+      .from('funding_opportunities')
+      .delete({ 
+       
+      })
+      .eq('id', opportunityId)
+      .eq('created_by', userId);
+
+    if (error) {
+      throw new Error(`Failed to delete opportunity: ${error.message}`);
+    }
+
+    await this.logActivity({
+      id: `activity_${opportunityId}_delete`,
+      type: 'status_change',
+      opportunityId,
+      opportunityTitle: opportunityId,
+      description: 'Opportunity was deleted',
+      timestamp: new Date()
+    });
+
+    return {
+      success: true,
+      message: 'Opportunity deleted successfully'
+    };
+  } catch (error) {
+    console.error('Error deleting opportunity:', error);
+    throw error;
+  }
+}
+
+// REPLACE the existing duplicateOpportunity method with this:
+
+duplicateOpportunity(opportunityId: string): Observable<{success: boolean, newOpportunityId: string}> {
+  const currentAuth = this.authService.user();
+  if (!currentAuth) {
+    return throwError(() => new Error('User not authenticated'));
+  }
+
+  return from(this.performDuplication(opportunityId, currentAuth.id)).pipe(
+    tap(result => {
+      if (result.success) {
+        this.loadUserOpportunities().subscribe();
+      }
+    }),
+    catchError(error => {
+      this.error.set('Failed to duplicate opportunity');
+      console.error('Duplication error:', error);
+      return throwError(() => error);
+    })
+  );
+}
+
+private async performDuplication(
+  opportunityId: string, 
+  userId: string
+): Promise<{success: boolean, newOpportunityId: string}> {
+  try {
+    // Fetch original opportunity
+    const { data: original, error: fetchError } = await this.supabaseService
+      .from('funding_opportunities')
+      .select('*')
+      .eq('id', opportunityId)
+      .eq('created_by', userId)
+      .single();
+
+    if (fetchError || !original) {
+      throw new Error('Opportunity not found or access denied');
+    }
+
+    // Create duplicate with proper UUID
+    const newId = uuidv4();  // Use proper UUID generation
+    const duplicateData = {
+      ...original,
+      id: newId,
+      title: `${original.title} (Copy)`,
+      status: 'draft',
+      published_at: null,
+      closed_at: null,
+      current_applications: 0,
+      view_count: 0,
+      application_count: 0,
+      conversion_rate: 0,
+      amount_committed: 0,
+      amount_deployed: 0,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+
+    const { error: insertError } = await this.supabaseService
+      .from('funding_opportunities')
+      .insert(duplicateData);
+
+    if (insertError) {
+      throw new Error(`Failed to create duplicate: ${insertError.message}`);
+    }
+
+    return {
+      success: true,
+      newOpportunityId: newId
+    };
+  } catch (error) {
+    console.error('Error duplicating opportunity:', error);
+    throw error;
+  }
+}
 
   updateOpportunityStatus(request: StatusUpdateRequest): Observable<{success: boolean, message: string}> {
     this.error.set(null);
@@ -465,79 +600,7 @@ export class OpportunityManagementService {
   // DUPLICATE OPPORTUNITY
   // ===============================
 
-  duplicateOpportunity(opportunityId: string): Observable<{success: boolean, newOpportunityId: string}> {
-    const currentAuth = this.authService.user();
-    if (!currentAuth) {
-      return throwError(() => new Error('User not authenticated'));
-    }
-
-    return from(this.performDuplication(opportunityId, currentAuth.id)).pipe(
-      tap(result => {
-        if (result.success) {
-          this.loadUserOpportunities().subscribe();
-        }
-      }),
-      catchError(error => {
-        this.error.set('Failed to duplicate opportunity');
-        console.error('Duplication error:', error);
-        return throwError(() => error);
-      })
-    );
-  }
-
-  private async performDuplication(
-    opportunityId: string, 
-    userId: string
-  ): Promise<{success: boolean, newOpportunityId: string}> {
-    try {
-      // Fetch original opportunity
-      const { data: original, error: fetchError } = await this.supabaseService
-        .from('funding_opportunities')
-        .select('*')
-        .eq('id', opportunityId)
-        .eq('created_by', userId)
-        .single();
-
-      if (fetchError || !original) {
-        throw new Error('Opportunity not found or access denied');
-      }
-
-      // Create duplicate with modified data
-      const newId = `opp_${Date.now()}`;
-      const duplicateData = {
-        ...original,
-        id: newId,
-        title: `${original.title} (Copy)`,
-        status: 'draft',
-        published_at: null,
-        closed_at: null,
-        current_applications: 0,
-        view_count: 0,
-        application_count: 0,
-        conversion_rate: 0,
-        amount_committed: 0,
-        amount_deployed: 0,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      };
-
-      const { error: insertError } = await this.supabaseService
-        .from('funding_opportunities')
-        .insert(duplicateData);
-
-      if (insertError) {
-        throw new Error(`Failed to create duplicate: ${insertError.message}`);
-      }
-
-      return {
-        success: true,
-        newOpportunityId: newId
-      };
-    } catch (error) {
-      console.error('Error duplicating opportunity:', error);
-      throw error;
-    }
-  }
+ 
 
   // ===============================
   // UTILITY METHODS
