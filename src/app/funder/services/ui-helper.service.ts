@@ -1,7 +1,7 @@
 // src/app/funder/services/opportunity-ui-helper.service.ts
 import { Injectable, inject } from '@angular/core';
 import { OpportunityFormStateService } from './opportunity-form-state.service';
-import { StepNavigationService, StepId } from './step-navigation.service';
+import { StepNavigationService, StepId } from '../create-opportunity/step-navigation.service';
 import { FundingOpportunityService } from 'src/app/funding/services/funding-opportunity.service';
  
 @Injectable({

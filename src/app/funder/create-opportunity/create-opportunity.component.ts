@@ -21,13 +21,13 @@ import { ModalService } from '../../shared/services/modal.service';
 import { OpportunityFormStateService } from '../services/opportunity-form-state.service';
 import { OpportunityFormData } from './shared/form-interfaces';
 import { OrganizationStateService } from '../services/organization-state.service';
-import { StepNavigationService } from '../services/step-navigation.service';
+import { StepNavigationService } from './step-navigation.service';
 import { OpportunityUIHelperService } from '../services/ui-helper.service';
 import { OpportunityBasicsComponent } from './steps/basic.component';
-import { EligibilityFiltersComponent } from './steps/eligibility.component';
+import { EligibilityFiltersComponent } from './steps/eligibility-terms/eligibility.component';
 import { MediaBrandingComponent } from './steps/media.component';
-import { ApplicationSettingsComponent } from './steps/settings.component';
-import { FundingStructureComponent } from './steps/structure.component'; 
+import { ApplicationSettingsComponent } from './steps/fund-terms/fund-terms.component';
+import { FundingStructureComponent } from './steps/fund-structure/fund-structure.component'; 
 import { SectorValidationModalComponent } from './components/sector-validation-modal.component';
 import { OpportunityStepsNavigationComponent } from './components/steps-navigation-component';
 

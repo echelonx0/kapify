@@ -1,19 +1,4 @@
-// src/app/funder/components/form-sections/eligibility-filters.component.ts
-import { Component, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { LucideAngularModule, Target, DollarSign } from 'lucide-angular';
-import { OpportunityFormStateService } from 'src/app/funder/services/opportunity-form-state.service';
-import { OpportunityUIHelperService } from 'src/app/funder/services/ui-helper.service';
-
- 
-
-@Component({
-  selector: 'app-eligibility-filters',
-  standalone: true,
-  imports: [CommonModule, FormsModule, LucideAngularModule],
-  template: `
-    <div class="space-y-6">
+   <div class="space-y-6">
       <!-- Target Industries -->
       <div class="space-y-3">
         <label class="block text-sm font-semibold text-gray-700">Target Industries</label>
@@ -32,60 +17,6 @@ import { OpportunityUIHelperService } from 'src/app/funder/services/ui-helper.se
               </div>
             </label>
           }
-        </div>
-      </div>
-
-      <!-- Revenue Range -->
-      <div class="space-y-4">
-        <div class="flex items-center space-x-2">
-          <lucide-angular [img]="DollarSignIcon" [size]="20" class="text-gray-600"></lucide-angular>
-          <h4 class="text-lg font-semibold text-gray-900">Revenue Requirements</h4>
-        </div>
-        
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <!-- Minimum Revenue -->
-          <div class="space-y-2">
-            <label class="block text-sm font-semibold text-gray-700">Minimum Annual Revenue</label>
-            <div class="relative">
-               <input 
-                type="text" 
-                placeholder="1,000,000"
-                [value]="ui.formatNumberWithCommas(formState.formData().minRevenue)"
-                (input)="ui.onNumberInputChange('minRevenue', $event)"
-                [class]="ui.getFieldClasses('minRevenue')"
-                class="pl-12"
-              >
-            </div>
-            @if (formState.getFieldError('minRevenue'); as error) {
-              <p class="text-sm" [class.text-red-600]="error.type === 'error'" [class.text-yellow-600]="error.type === 'warning'">
-                {{ error.message }}
-              </p>
-            } @else {
-              <p class="text-xs text-gray-500">Leave blank for no minimum</p>
-            }
-          </div>
-
-          <!-- Maximum Revenue -->
-          <div class="space-y-2">
-            <label class="block text-sm font-semibold text-gray-700">Maximum Annual Revenue</label>
-            <div class="relative">
-              <input 
-                type="text" 
-                placeholder="50,000,000"
-                [value]="ui.formatNumberWithCommas(formState.formData().maxRevenue)"
-                (input)="ui.onNumberInputChange('maxRevenue', $event)"
-                [class]="ui.getFieldClasses('maxRevenue')"
-                class="pl-12"
-              >
-            </div>
-            @if (formState.getFieldError('maxRevenue'); as error) {
-              <p class="text-sm" [class.text-red-600]="error.type === 'error'" [class.text-yellow-600]="error.type === 'warning'">
-                {{ error.message }}
-              </p>
-            } @else {
-              <p class="text-xs text-gray-500">Leave blank for no maximum</p>
-            }
-          </div>
         </div>
       </div>
 
@@ -148,13 +79,3 @@ import { OpportunityUIHelperService } from 'src/app/funder/services/ui-helper.se
         </div>
       </div>
     </div>
-  `
-})
-export class EligibilityFiltersComponent {
-  public formState = inject(OpportunityFormStateService);
-  public ui = inject(OpportunityUIHelperService);
-  
-  // Icons
-  TargetIcon = Target;
-  DollarSignIcon = DollarSign;
-}

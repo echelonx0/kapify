@@ -1,17 +1,4 @@
-// src/app/funder/create-opportunity/steps/settings.component.ts
-import { Component, inject, signal, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { LucideAngularModule, Eye, Settings, Calendar, Info } from 'lucide-angular';
-import { OpportunityFormStateService } from 'src/app/funder/services/opportunity-form-state.service';
-import { OpportunityUIHelperService } from 'src/app/funder/services/ui-helper.service';
-
-@Component({
-  selector: 'app-application-settings',
-  standalone: true,
-  imports: [CommonModule, FormsModule, LucideAngularModule],
-  template: `
-    <div class="space-y-6">
+   <div class="space-y-6">
       
       <!-- Visibility Settings Section -->
       <div class="settings-section">
@@ -116,7 +103,7 @@ import { OpportunityUIHelperService } from 'src/app/funder/services/ui-helper.se
           </div>
 
           <!-- Maximum Applications -->
-          <div class="space-y-2">
+          <!-- <div class="space-y-2">
             <label class="block text-sm font-semibold text-gray-700">
               Maximum Applications
             </label>
@@ -135,7 +122,7 @@ import { OpportunityUIHelperService } from 'src/app/funder/services/ui-helper.se
             } @else {
               <p class="text-xs text-gray-500">Leave blank for unlimited applications</p>
             }
-          </div>
+          </div> -->
         </div>
       </div>
 
@@ -153,42 +140,3 @@ import { OpportunityUIHelperService } from 'src/app/funder/services/ui-helper.se
         </div>
       </div>
     </div>
-  `,
-  styles: [`
-    :host {
-      display: block;
-    }
-  `]
-})
-export class ApplicationSettingsComponent implements OnInit {
-  public formState = inject(OpportunityFormStateService);
-  public ui = inject(OpportunityUIHelperService);
-  
-  // Icons
-  EyeIcon = Eye;
-  SettingsIcon = Settings;
-  CalendarIcon = Calendar;
-  InfoIcon = Info;
-
-  // Track deadline preference
-  hasDeadlinePreference = signal<boolean>(false);
-
-  ngOnInit() {
-    const existingDeadline = this.formState.formData().applicationDeadline;
-    this.hasDeadlinePreference.set(!!(existingDeadline && existingDeadline.trim()));
-  }
-
-  onDeadlineToggle(hasDeadline: boolean): void {
-    this.hasDeadlinePreference.set(hasDeadline);
-    
-    if (!hasDeadline) {
-      const event = { target: { value: '' } } as any;
-      this.ui.onFieldChange('applicationDeadline', event);
-    }
-  }
-
-  getMinDate(): string {
-    const today = new Date();
-    return today.toISOString().split('T')[0];
-  }
-}
