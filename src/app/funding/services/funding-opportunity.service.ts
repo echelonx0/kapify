@@ -543,17 +543,9 @@ private async publishToSupabase(
     }
     console.log('✅ Funding type valid:', formData.fundingType);
     
-    if (!formData.offerAmount || formData.offerAmount <= 0) {
-      console.error('❌ Validation failed: Invalid offer amount:', formData.offerAmount);
-      throw new Error('Valid offer amount is required');
-    }
-    console.log('✅ Offer amount valid:', formData.offerAmount);
-    
-    if (!formData.totalAvailable || formData.totalAvailable <= 0) {
-      console.error('❌ Validation failed: Invalid total available:', formData.totalAvailable);
-      throw new Error('Valid total available amount is required');
-    }
-    console.log('✅ Total available valid:', formData.totalAvailable);
+
+      console.log('✅ Typical investment valid:', formData.typicalInvestment);
+
 
     // Ensure investment amounts are valid
     const minInvestment = formData.minInvestment || 0;
@@ -581,7 +573,7 @@ private async publishToSupabase(
       target_company_profile: formData.targetCompanyProfile,
       offer_amount: formData.offerAmount || 0,
       min_investment: formData.minInvestment || 0,
-      max_investment: formData.maxInvestment || 0,
+      max_investment: formData.offerAmount || 0,
       currency: formData.currency || 'ZAR',
       funding_type: formData.fundingType,
       interest_rate: formData.interestRate,
@@ -598,7 +590,8 @@ private async publishToSupabase(
       application_process: formData.applicationProcess || {},
       eligibility_criteria: formData.eligibilityCriteria || {},
       status: 'active',
-      total_available: formData.totalAvailable || 0,
+      
+      total_available: formData.maxInvestment || 0,
       amount_committed: 0,
       amount_deployed: 0,
       max_applications: formData.maxApplications,
@@ -615,15 +608,15 @@ private async publishToSupabase(
       funder_organization_logo_url: formData.funderOrganizationLogoUrl,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
-      published_at: new Date().toISOString()
+      published_at: new Date().toISOString(),
+      typical_investment: formData.maxInvestment || 0
     };
 
     console.log('📝 Prepared opportunity data for insert:', JSON.stringify(opportunityData, null, 2));
     console.log('🔍 Key validation checks:');
     console.log('  - min_investment:', opportunityData.min_investment);
     console.log('  - max_investment:', opportunityData.max_investment);
-    console.log('  - offer_amount:', opportunityData.offer_amount);
-    console.log('  - total_available:', opportunityData.total_available);
+    console.log('  - offer_amount:', opportunityData.offer_amount); 
     console.log('  - Check constraint (max >= min):', opportunityData.max_investment >= opportunityData.min_investment);
 
     console.log('💾 Inserting into Supabase...');
@@ -847,7 +840,7 @@ async checkUserOrganization(userId: string): Promise<{
         applicationDeadline: formData.applicationDeadline
       },
       'settings': {
-        totalAvailable: formData.totalAvailable,
+        totalAvailable: formData.typicalInvestment,
         maxApplications: formData.maxApplications,
         autoMatch: formData.autoMatch,
         matchCriteria: formData.matchCriteria
@@ -877,7 +870,8 @@ async checkUserOrganization(userId: string): Promise<{
           
         case 'investment-terms':
           Object.assign(formData, {
-            offerAmount: data['offerAmount'],
+            typicalInvestment: data['typicalInvestment'] || data['offerAmount'],
+offerAmount: data['offerAmount'],
             minInvestment: data['minInvestment'],
             maxInvestment: data['maxInvestment'],
             currency: data['currency'],
@@ -908,7 +902,7 @@ async checkUserOrganization(userId: string): Promise<{
           
         case 'settings':
           Object.assign(formData, {
-            totalAvailable: data['totalAvailable'],
+            totalAvailable: data['totalAvailable'] || data['typicalInvestment'],
             maxApplications: data['maxApplications'],
             autoMatch: data['autoMatch'],
             matchCriteria: data['matchCriteria']
@@ -923,10 +917,10 @@ async checkUserOrganization(userId: string): Promise<{
   private calculateSectionCompletion(sectionType: string, sectionData: Record<string, any>): number {
     const requiredFields: Record<string, string[]> = {
       'basic-info': ['title', 'description', 'shortDescription'],
-      'investment-terms': ['fundingType', 'offerAmount', 'currency', 'decisionTimeframe'],
+'investment-terms': ['fundingType', 'typicalInvestment', 'offerAmount', 'currency', 'decisionTimeframe'],
       'eligibility-criteria': [], // Optional section
       'application-process': [], // Optional section
-      'settings': ['totalAvailable']
+      'settings': []
     };
 
     const required = requiredFields[sectionType] || [];
@@ -974,7 +968,8 @@ async checkUserOrganization(userId: string): Promise<{
       description: dbData.description,
       shortDescription: dbData.short_description,
       targetCompanyProfile: dbData.target_company_profile,
-      offerAmount: dbData.offer_amount,
+      typicalInvestment: dbData.typical_investment,
+offerAmount: dbData.offer_amount,
       minInvestment: dbData.min_investment,
       maxInvestment: dbData.max_investment,
       currency: dbData.currency,
@@ -993,7 +988,7 @@ async checkUserOrganization(userId: string): Promise<{
       applicationProcess: dbData.application_process,
       eligibilityCriteria: dbData.eligibility_criteria,
       status: dbData.status,
-      totalAvailable: dbData.total_available,
+      totalAvailable: dbData.total_available || dbData.typical_investment,
       amountCommitted: dbData.amount_committed,
       amountDeployed: dbData.amount_deployed,
       maxApplications: dbData.max_applications,
@@ -1060,7 +1055,8 @@ async checkUserOrganization(userId: string): Promise<{
    * Save only investment terms section
    */
   saveInvestmentTerms(termsData: {
-    offerAmount: number;
+    typicalInvestment: number;
+offerAmount: number;
     minInvestment: number;
     maxInvestment: number;
     currency: string;
@@ -1291,7 +1287,9 @@ private async updatePublishedOpportunity(
       description: formData.description,
       short_description: formData.shortDescription,
       target_company_profile: formData.targetCompanyProfile,
-      offer_amount: formData.offerAmount,
+     
+      offer_amount: formData.typicalInvestment || 0,
+      typical_investment: formData.typicalInvestment || 0,
       min_investment: formData.minInvestment,
       max_investment: formData.maxInvestment,
       currency: formData.currency,
@@ -1309,7 +1307,8 @@ private async updatePublishedOpportunity(
       decision_timeframe: formData.decisionTimeframe,
       application_process: formData.applicationProcess,
       eligibility_criteria: formData.eligibilityCriteria,
-      total_available: formData.totalAvailable,
+     typicalInvestment: formData.typicalInvestment,
+offerAmount: formData.typicalInvestment,
       max_applications: formData.maxApplications,
       auto_match: formData.autoMatch,
       match_criteria: formData.matchCriteria,
@@ -1430,7 +1429,8 @@ private transformDbToFormData(dbOpportunity: any): Partial<FundingOpportunity> {
     description: dbOpportunity.description,
     shortDescription: dbOpportunity.short_description,
     targetCompanyProfile: dbOpportunity.target_company_profile,
-    offerAmount: dbOpportunity.offer_amount,
+    typicalInvestment: dbOpportunity.typical_investment,
+offerAmount: dbOpportunity.offer_amount,
     minInvestment: dbOpportunity.min_investment,
     maxInvestment: dbOpportunity.max_investment,
     currency: dbOpportunity.currency,
@@ -1448,7 +1448,7 @@ private transformDbToFormData(dbOpportunity: any): Partial<FundingOpportunity> {
     decisionTimeframe: dbOpportunity.decision_timeframe,
     applicationProcess: dbOpportunity.application_process,
     eligibilityCriteria: dbOpportunity.eligibility_criteria,
-    totalAvailable: dbOpportunity.total_available,
+    totalAvailable: dbOpportunity.total_available || dbOpportunity.typical_investment,
     maxApplications: dbOpportunity.max_applications,
     autoMatch: dbOpportunity.auto_match,
     matchCriteria: dbOpportunity.match_criteria,
@@ -1467,6 +1467,7 @@ private transformFormDataToOpportunity(formData: any): Partial<FundingOpportunit
     description: formData.description,
     shortDescription: formData.shortDescription,
     offerAmount: Number(formData.offerAmount) || 0,
+    typicalInvestment: Number(formData.typicalInvestment) || 0,
     minInvestment: Number(formData.minInvestment) || 0,
     maxInvestment: Number(formData.maxInvestment) || 0,
     currency: formData.currency,
@@ -1482,7 +1483,7 @@ private transformFormDataToOpportunity(formData: any): Partial<FundingOpportunit
     exitStrategy: formData.exitStrategy,
     applicationDeadline: formData.applicationDeadline ? new Date(formData.applicationDeadline) : undefined,
     decisionTimeframe: Number(formData.decisionTimeframe) || 30,
-    totalAvailable: Number(formData.totalAvailable) || 0,
+    totalAvailable: Number(formData.typicalInvestment) || 0,
     maxApplications: formData.maxApplications ? Number(formData.maxApplications) : undefined,
     autoMatch: formData.autoMatch,
     eligibilityCriteria: {
@@ -1498,7 +1499,7 @@ private transformFormDataToOpportunity(formData: any): Partial<FundingOpportunit
 }
 
 private calculateFormCompletion(formData: any): number {
-  const requiredFields = ['title', 'description', 'shortDescription', 'fundingType', 'offerAmount', 'totalAvailable', 'decisionTimeframe'];
+  const requiredFields = ['title', 'description', 'shortDescription', 'fundingType', 'typicalInvestment', 'decisionTimeframe'];
   const completedFields = requiredFields.filter(field => 
     formData[field] !== undefined && formData[field] !== null && formData[field] !== ''
   );

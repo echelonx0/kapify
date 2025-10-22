@@ -89,7 +89,7 @@ export class KapifyDashboard implements OnInit {
     {
       id: 'how-it-works',
       title: 'How Kapify Works',
-      description: 'Kapify connects your business with the right funding partners through our intelligent matching system. Complete your profile, get matched with suitable funders, and track your application progress all in one place.',
+      description: 'Complete your profile, get matched with suitable organisations, and with kapify intelligent assist.',
       icon: this.BookOpenIcon,
       type: 'info',
       actionText: 'Learn the Process',
@@ -99,7 +99,7 @@ export class KapifyDashboard implements OnInit {
     {
       id: 'funding-types',
       title: 'Explore Funding Types',
-      description: 'Discover different funding options available including equity investment, debt financing, grants, and mezzanine funding. Each type has unique benefits depending on your business stage and needs.',
+      description: 'Discover different funding options available depending on your business stage and needs.',
       icon: this.DollarSignIcon,
       type: 'feature',
       actionText: 'View Funding Options',

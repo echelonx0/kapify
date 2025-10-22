@@ -6,6 +6,25 @@
         <!-- Scrollable Cards Section -->
         <div class="flex-1 overflow-y-auto">
           <div class="p-6 space-y-4">
+
+            <!-- Call to Action Card -->
+            <div class="bg-gradient-to-r from-orange-500 to-orange-600 rounded-lg p-8 text-white mb-2">
+              <div class="flex items-center justify-between">
+                <div>
+                  <h3 class="text-xl font-bold mb-2">Explore Kapify Executive</h3>
+                  <p class="text-green-100 mb-4 max-w-md">
+                   You can make yourself available to advice startups and SMEs looking for guidance on funding and growth strategies.
+                  </p>
+                  <ui-button variant="outline" (clicked)="startApplication()" class="bg-white text-green-600 border-white hover:bg-green-50">
+                    Start a Subscription to explore Kapify Executive
+                    <lucide-icon [img]="ArrowRightIcon" [size]="16" class="ml-2" />
+                  </ui-button>
+                </div>
+                <div class="hidden md:block">
+                  <lucide-icon [img]="ZapIcon" [size]="80" class="text-green-200 opacity-50" />
+                </div>
+              </div>
+            </div>
             @for (card of onboardingCards(); track card.id) {
               <div class="bg-white rounded-lg border border-gray-200 p-6 hover:shadow-md transition-all duration-200 cursor-pointer"
                    [class]="getCardBorderClass(card.color)"
@@ -47,24 +66,7 @@
               </div>
             }
 
-            <!-- Call to Action Card -->
-            <div class="bg-gradient-to-r from-green-500 to-green-600 rounded-lg p-8 text-white mt-8">
-              <div class="flex items-center justify-between">
-                <div>
-                  <h3 class="text-xl font-bold mb-2">Explore Kapify Subscription</h3>
-                  <p class="text-green-100 mb-4 max-w-md">
-                   Get Expanded features and Tooling.
-                  </p>
-                  <ui-button variant="outline" (clicked)="startApplication()" class="bg-white text-green-600 border-white hover:bg-green-50">
-                    Start Your Subscription
-                    <lucide-icon [img]="ArrowRightIcon" [size]="16" class="ml-2" />
-                  </ui-button>
-                </div>
-                <div class="hidden md:block">
-                  <lucide-icon [img]="ZapIcon" [size]="80" class="text-green-200 opacity-50" />
-                </div>
-              </div>
-            </div>
+            
           </div>
         </div>
       </div>

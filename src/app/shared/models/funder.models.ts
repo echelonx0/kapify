@@ -225,6 +225,7 @@ export interface FundingOpportunity {
   updatedAt: Date;
   publishedAt?: Date;
   closedAt?: Date;
+  typicalInvestment?: number;
 }
 
 export interface OpportunityEligibility {

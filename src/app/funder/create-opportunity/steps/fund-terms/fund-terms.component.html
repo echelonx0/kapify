@@ -102,27 +102,6 @@
             }
           </div>
 
-          <!-- Maximum Applications -->
-          <!-- <div class="space-y-2">
-            <label class="block text-sm font-semibold text-gray-700">
-              Maximum Applications
-            </label>
-            <input 
-              type="text" 
-              placeholder="No limit"
-              [value]="ui.formatNumberWithCommas(formState.formData().maxApplications)"
-              (input)="ui.onNumberInputChange('maxApplications', $event)"
-              [class]="ui.getFieldClasses('maxApplications')"
-              class="w-full max-w-xs"
-            >
-            @if (formState.getFieldError('maxApplications'); as error) {
-              <p class="text-sm" [class.text-red-600]="error.type === 'error'" [class.text-yellow-600]="error.type === 'warning'">
-                {{ error.message }}
-              </p>
-            } @else {
-              <p class="text-xs text-gray-500">Leave blank for unlimited applications</p>
-            }
-          </div> -->
         </div>
       </div>
 
