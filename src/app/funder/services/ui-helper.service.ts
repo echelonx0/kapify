@@ -201,11 +201,31 @@ export class OpportunityUIHelperService {
     this.formStateService.onNumberInput(field, value);
   }
 
-  onFieldChange(field: keyof import('./opportunity-form-state.service').OpportunityFormData, event: Event): void {
-    const target = event.target as HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement;
-    this.formStateService.updateField(field, target.value);
-  }
+  // onFieldChange(field: keyof import('./opportunity-form-state.service').OpportunityFormData, event: Event): void {
+  //   const target = event.target as HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement;
+  //   this.formStateService.updateField(field, target.value);
+  // }
+// Key changes from original:
+// 1. onFieldChange now properly extracts value from textarea events
+// 2. Added proper type checking for textarea elements
 
+onFieldChange(field: keyof import('./opportunity-form-state.service').OpportunityFormData, event: Event): void {
+  const target = event.target as HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement;
+  let value: string;
+  
+  if (target instanceof HTMLTextAreaElement) {
+    value = target.value;
+  } else if (target instanceof HTMLInputElement) {
+    value = target.value;
+  } else if (target instanceof HTMLSelectElement) {
+    value = target.value;
+  } else {
+    console.warn('Unexpected target type in onFieldChange');
+    return;
+  }
+  
+  this.formStateService.updateField(field, value);
+}
   onCheckboxChange(field: keyof import('./opportunity-form-state.service').OpportunityFormData, event: Event): void {
     const target = event.target as HTMLInputElement;
     this.formStateService.updateField(field, target.checked);

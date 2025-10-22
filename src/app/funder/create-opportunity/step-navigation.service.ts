@@ -170,7 +170,7 @@ canContinue(): boolean {
     case 'basic':
       return !!(data.title.trim() && data.shortDescription.trim() && data.description.trim());
     case 'terms':
-      return !!(data.fundingType && data.totalAvailable && data.offerAmount && data.decisionTimeframe);
+      return !!(data.fundingType && data.typicalInvestment && data.offerAmount && data.decisionTimeframe);
     case 'eligibility':
       return true; // Optional step
     case 'settings':
@@ -201,7 +201,7 @@ isStepCompleted(stepId: string): boolean {
     case 'terms':
       return !!(
         data.fundingType && 
-        data.totalAvailable && 
+        data.typicalInvestment && 
         data.offerAmount && 
         data.decisionTimeframe
       );

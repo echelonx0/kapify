@@ -45,7 +45,7 @@ export interface OpportunityFormData {
   requiresCollateral: boolean;
   
   // Availability
-  totalAvailable: string;
+  typicalInvestment: string;
   maxApplications: string;
   
   // Settings

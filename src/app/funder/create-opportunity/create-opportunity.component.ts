@@ -372,7 +372,7 @@ private buildOpportunityData(): Observable<Partial<FundingOpportunity>> {
         decisionTimeframe: Math.max(1, Number(data.decisionTimeframe) || 30),
         
         // Availability
-        totalAvailable: Math.max(0, this.formState.parseNumberValue(data.totalAvailable)),
+        totalAvailable: Math.max(0, this.formState.parseNumberValue(data.typicalInvestment)),
         maxApplications: data.maxApplications ? Math.max(1, this.formState.parseNumberValue(data.maxApplications)) : undefined,
         
         // Eligibility Criteria (maps to DB eligibility_criteria JSONB)
@@ -411,11 +411,11 @@ private buildOpportunityData(): Observable<Partial<FundingOpportunity>> {
     if (!data.shortDescription.trim()) return 'Short description is required.';
     if (!data.description.trim()) return 'Full description is required.';
     if (!data.fundingType) return 'Funding type must be selected.';
-    if (!data.totalAvailable || this.formState.parseNumberValue(data.totalAvailable) <= 0) {
-      return 'Total available funding must be specified and greater than zero.';
+    if (!data.typicalInvestment || this.formState.parseNumberValue(data.typicalInvestment) <= 0) {
+      return 'Typical investment must be specified and greater than zero.';
     }
     if (!data.offerAmount || this.formState.parseNumberValue(data.offerAmount) <= 0) {
-      return 'Typical investment amount must be specified and greater than zero.';
+      return 'Offer amount must be specified and greater than zero.';
     }
     if (!data.decisionTimeframe) return 'Decision timeframe must be specified.';
     return null;
@@ -435,7 +435,7 @@ private buildOpportunityData(): Observable<Partial<FundingOpportunity>> {
       data.shortDescription.trim() && 
       data.description.trim() &&
       data.fundingType &&
-      data.totalAvailable &&
+      data.typicalInvestment &&
       data.offerAmount &&
       data.decisionTimeframe
     );

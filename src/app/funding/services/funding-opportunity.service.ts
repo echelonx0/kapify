@@ -251,9 +251,7 @@ export class FundingOpportunityService {
   /**
    * Publish opportunity from draft or form data
    */
-/**
- * Publish opportunity from draft or form data
- */
+
 publishOpportunity(formData: Partial<FundingOpportunity>): Observable<PublishOpportunityResponse> {
   console.log('=== PUBLISH OPPORTUNITY SERVICE START ===');
   console.log('Input formData:', JSON.stringify(formData, null, 2));
