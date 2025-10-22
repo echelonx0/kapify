@@ -245,7 +245,7 @@
                 class="w-full transition-all duration-200 hover:scale-[1.01]"
               >
                 <lucide-icon [img]="PlusIcon" [size]="16" class="mr-2" />
-                Add {{ section.title.slice(0, -1) }}
+                Add New
               </ui-button>
             </div>
           }
@@ -338,22 +338,5 @@
     </div>
   }
 
-  <!-- Navigation -->
-  <!-- <div class="flex justify-between pt-8 border-t border-neutral-200">
-    <ui-button variant="outline" (clicked)="goBack()">
-      ← Back
-    </ui-button>
-    <ui-button 
-      variant="primary" 
-      (clicked)="saveAndContinue()"
-      [disabled]="isSaving()"
-      class="transition-all duration-200 hover:scale-105"
-    >
-      @if (isSWOTComplete()) {
-        Save and Continue →
-      } @else {
-        Save Progress →
-      }
-    </ui-button>
-  </div> -->
+ 
 </div>

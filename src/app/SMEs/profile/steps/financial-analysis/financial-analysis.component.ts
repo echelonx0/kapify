@@ -1,3 +1,5 @@
+ 
+
 // src/app/profile/steps/financial-analysis/financial-analysis.component.ts
 import { Component, signal, OnInit, OnDestroy, inject, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -16,7 +18,7 @@ import { FinancialDataTransformer } from './utils/financial-data.transformer';
 
 const EXPECTED_COLUMN_COUNT = 9;
 
-type FinancialTab = 'income-statement' | 'financial-ratios';
+type FinancialTab = 'income-statement' | 'financial-ratios' | 'notes' | 'health-score';
 
 @Component({
   selector: 'app-financial-analysis',
@@ -133,7 +135,7 @@ export class FinancialAnalysisComponent implements OnInit, OnDestroy {
     this.incomeStatementData.set(data.incomeStatement || []);
     this.financialRatiosData.set(data.financialRatios || []);
     this.columnHeaders.set(data.columnHeaders || []);
-    this.notesText.set('');
+    // this.notesText.set(data.notes || '');
   }
 
   private initializeEmptyData() {
@@ -242,97 +244,79 @@ export class FinancialAnalysisComponent implements OnInit, OnDestroy {
         },
         error: (error) => {
           console.error('❌ Upload failed:', error);
-          reject(new Error(`File upload failed: ${error.message}`));
+          reject(error);
         }
       });
     });
   }
 
+  private applyParsedData(parsedData: ParsedFinancialData) {
+    this.incomeStatementData.set(parsedData.incomeStatement || []);
+    this.financialRatiosData.set(parsedData.financialRatios || []);
+    this.columnHeaders.set(parsedData.columnHeaders || []);
+  }
+
   private checkDataQuality(data: ParsedFinancialData): string | null {
-    const totalCells = (data.incomeStatement.length + data.financialRatios.length) * EXPECTED_COLUMN_COUNT;
-    const filledCells = [...data.incomeStatement, ...data.financialRatios]
-      .reduce((count, row) => count + row.values.filter(val => val !== 0).length, 0);
-    
-    const fillPercentage = (filledCells / totalCells) * 100;
-    
-    if (fillPercentage < 50) {
-      return `Only ${Math.round(fillPercentage)}% of cells contain data. Consider filling in more financial information.`;
+    if (!data.incomeStatement?.length || !data.financialRatios?.length) {
+      return 'Warning: Some data sections are empty. Ensure your template is complete.';
     }
-    
     return null;
   }
 
-  private applyParsedData(data: ParsedFinancialData) {
-    this.incomeStatementData.set(data.incomeStatement);
-    this.financialRatiosData.set(data.financialRatios);
-    this.columnHeaders.set(data.columnHeaders);
-    this.recalculateFields();
-  }
-
-  // ===============================
-  // FILE MANAGEMENT
-  // ===============================
-
   removeTemplate() {
     this.uploadedTemplate.set(null);
+    this.incomeStatementData.set([]);
+    this.financialRatiosData.set([]);
     this.parseError.set(null);
     this.parseWarnings.set([]);
-    this.parseProgress.set(null);
-    
-    this.documentService.deleteDocumentByKey('financial-template').subscribe({
-      next: () => console.log('✅ Financial template file deleted'),
-      error: (error) => console.warn('⚠️ Failed to delete file from storage:', error)
-    });
-    
-    this.initializeEmptyData();
-    this.triggerDataChange();
   }
+
+  // ===============================
+  // TEMPLATE & DATA DOWNLOAD
+  // ===============================
 
   downloadTemplate() {
-    import('xlsx')
-      .then(XLSX => {
-        const templateData = this.createTemplateData();
-        const wb = XLSX.utils.book_new();
-        const ws = XLSX.utils.aoa_to_sheet(templateData);
-        
-        XLSX.utils.book_append_sheet(wb, ws, 'Financial Analysis');
-        XLSX.writeFile(wb, 'financial_analysis_template.xlsx');
-      })
-      .catch(error => {
-        console.error('Download failed:', error);
-        this.parseError.set('Failed to download template. Please try again.');
-      });
-  }
-
-  private createTemplateData(): (string | number)[][] {
-    const headers: (string | number)[] = ['Item', 'Y-3', 'Y-2', 'Y-1', 'Current', 'P+1', 'P+2', 'P+3', 'P+4', 'P+5'];
-    const data: (string | number)[][] = [headers];
+    const currentYear = new Date().getFullYear();
+    const years = Array.from({ length: 9 }, (_, i) => currentYear - 3 + i);
     
-    data.push(['INCOME STATEMENT', ...Array(EXPECTED_COLUMN_COUNT).fill('')]);
-    
-    const incomeRows = [
-      'Revenue', 'Cost of sales', 'Gross Profit', 'Administrative expenses',
-      'Other Operating Expenses (Excl depreciation & amortisation)', 'Salaries & Staff Cost',
-      'EBITDA', 'Interest Income', 'Finances Cost', 'Depreciation & Amortisation', 'Profit before tax'
+    const incomeLabels = [
+      'Revenue',
+      'Cost of sales',
+      'Gross Profit',
+      'Administrative expenses',
+      'Other Operating Expenses (Excl depreciation & amortisation)',
+      'Salaries & Staff Cost',
+      'EBITDA',
+      'Interest Income',
+      'Finances Cost',
+      'Depreciation & Amortisation',
+      'Profit before tax'
     ];
-    incomeRows.forEach(label => {
-      data.push([label, ...Array(EXPECTED_COLUMN_COUNT).fill(0)]);
-    });
-    
-    data.push(Array(EXPECTED_COLUMN_COUNT + 1).fill(''));
-    data.push(['FINANCIAL RATIOS', ...Array(EXPECTED_COLUMN_COUNT).fill('')]);
     
     const ratioRows = [
-      'Return on Equity (ROE)', 'Debt Equity Ratio (Total liabilities)', 'Current Ratio',
-      'Acid Test Ratio (Quick Ratio)', 'Equity Investment Value', 'Return on Investment (ROI)',
-      'Sales Growth', 'Gross profit margin', 'Cost to Income ratio', 'Operating margin (EBITDA)',
-      'Interest Cover Ratio', 'Net Operating Profit Margin'
+      'Gross Profit Margin',
+      'Net Profit Margin',
+      'Return on Assets (ROA)',
+      'Return on Equity (ROE)',
+      'Current Ratio',
+      'Debt to Equity Ratio',
+      'Interest Coverage Ratio',
+      'Asset Turnover'
     ];
+
+    const incomeData: (string | number)[][] = [['Item', ...years]];
+    incomeLabels.forEach(label => {
+      incomeData.push([label, ...Array(EXPECTED_COLUMN_COUNT).fill(0)]);
+    });
+
+    incomeData.push(Array(EXPECTED_COLUMN_COUNT + 1).fill(''));
+    
+    const ratioData: (string | number)[][] = [['Ratio', ...years]];
     ratioRows.forEach(label => {
-      data.push([label, ...Array(EXPECTED_COLUMN_COUNT).fill(0)]);
+      ratioData.push([label, ...Array(EXPECTED_COLUMN_COUNT).fill(0)]);
     });
     
-    return data;
+    this.downloadExcelFile(incomeData, 'financial_template.xlsx');
   }
 
   async downloadCurrentData() {
@@ -354,6 +338,18 @@ export class FinancialAnalysisComponent implements OnInit, OnDestroy {
     } catch (error) {
       console.error('Download failed:', error);
       this.parseError.set('Failed to download data. Please try again.');
+    }
+  }
+
+  private async downloadExcelFile(data: (string | number)[][], fileName: string) {
+    try {
+      const XLSX = await import('xlsx');
+      const wb = XLSX.utils.book_new();
+      const ws = XLSX.utils.aoa_to_sheet(data);
+      XLSX.utils.book_append_sheet(wb, ws, 'Financial Data');
+      XLSX.writeFile(wb, fileName);
+    } catch (error) {
+      console.error('Template download failed:', error);
     }
   }
 
@@ -511,6 +507,7 @@ export class FinancialAnalysisComponent implements OnInit, OnDestroy {
       incomeStatement: this.incomeStatementData(),
       financialRatios: this.financialRatiosData(),
       columnHeaders: this.columnHeaders(),
+      // notes: this.notesText(),
       lastUpdated: new Date().toISOString(),
       uploadedFile
     };
@@ -565,6 +562,7 @@ export class FinancialAnalysisComponent implements OnInit, OnDestroy {
   }
 
   onNotesSaved(notes: string) {
+    this.notesText.set(notes);
     this.triggerDataChange();
   }
 }

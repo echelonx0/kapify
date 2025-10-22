@@ -1,10 +1,9 @@
 <!-- src/app/profile/steps/financial-analysis/financial-analysis.component.html -->
-<div class="max-w-7xl mx-auto p-6 space-y-8">
+<div class="max-w-7xl mx-auto space-y-4">
   <!-- Header Section -->
   <div class="flex items-center justify-between mb-2 m-2">
     <div>
       <h1 class="text-2xl font-bold text-slate-700">Financial Analysis</h1>
-      
     </div>
     
     <!-- Save Status -->
@@ -34,56 +33,72 @@
     </div>
   </div>
 
-  <!-- Upload Component -->
-  <app-financial-upload
-    [hasData]="hasFinancialData()"
-    [uploadedFile]="uploadedTemplate()"
-    [isProcessing]="isParsingFile() || isUploading()"
-    [error]="parseError()"
-    [warnings]="parseWarnings()"
-    [progress]="parseProgress()"
-    [isValidTemplate]="hasValidTemplate()"
-    [completionPercentage]="getCompletionPercentage()"
-    (fileSelected)="onFileSelected($event)"
-    (templateDownload)="downloadTemplate()"
-    (dataDownload)="downloadCurrentData()"
-    (fileRemove)="removeTemplate()"
-    (errorClear)="clearErrors()"
-  />
+  @if (!hasFinancialData()) {
+    <!-- Upload Component -->
+    <app-financial-upload
+      [hasData]="hasFinancialData()"
+      [uploadedFile]="uploadedTemplate()"
+      [isProcessing]="isParsingFile() || isUploading()"
+      [error]="parseError()"
+      [warnings]="parseWarnings()"
+      [progress]="parseProgress()"
+      [isValidTemplate]="hasValidTemplate()"
+      [completionPercentage]="getCompletionPercentage()"
+      (fileSelected)="onFileSelected($event)"
+      (templateDownload)="downloadTemplate()"
+      (dataDownload)="downloadCurrentData()"
+      (fileRemove)="removeTemplate()"
+      (errorClear)="clearErrors()"
+    />
+  }
 
   <!-- Financial Data Display -->
   @if (hasFinancialData()) {
-    <!-- Tab Navigation (Desktop Only) -->
-    <div class="hidden lg:block">
-      <div class="border-b border-gray-200">
-        <nav class="-mb-px flex space-x-8">
-          <button
-            (click)="switchTab('income-statement')"
-            [class]="activeTab() === 'income-statement' 
-              ? 'border-primary-500 text-primary-600' 
-              : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
-            class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors duration-200">
-            Income Statement
-          </button>
-          <button
-            (click)="switchTab('financial-ratios')"
-            [class]="activeTab() === 'financial-ratios' 
-              ? 'border-primary-500 text-primary-600' 
-              : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
-            class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors duration-200">
-            Financial Ratios
-          </button>
-        </nav>
-      </div>
+    <!-- Tab Navigation -->
+    <div class="border-b border-gray-200">
+      <nav class="-mb-px flex space-x-8 overflow-x-auto">
+        <button
+          (click)="switchTab('income-statement')"
+          [class]="activeTab() === 'income-statement' 
+            ? 'border-primary-500 text-primary-600' 
+            : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+          class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors duration-200">
+          Income Statement
+        </button>
+        <button
+          (click)="switchTab('financial-ratios')"
+          [class]="activeTab() === 'financial-ratios' 
+            ? 'border-primary-500 text-primary-600' 
+            : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+          class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors duration-200">
+          Financial Ratios
+        </button>
+        <button
+          (click)="switchTab('notes')"
+          [class]="activeTab() === 'notes' 
+            ? 'border-primary-500 text-primary-600' 
+            : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+          class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors duration-200">
+          Notes
+        </button>
+        <button
+          (click)="switchTab('health-score')"
+          [class]="activeTab() === 'health-score' 
+            ? 'border-primary-500 text-primary-600' 
+            : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+          class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors duration-200">
+          Health Score
+        </button>
+      </nav>
     </div>
 
-    <!-- Desktop: Tabbed Content -->
-    <div class="hidden lg:block">
+    <!-- Tab Content -->
+    <div class="space-y-6">
+      <!-- Income Statement Tab -->
       @if (activeTab() === 'income-statement') {
-        <ui-card>
-          <div class="p-6">
+ 
             <div class="flex items-center justify-between mb-6">
-              <h3 class="text-lg font-semibold text-gray-900">Income Statement</h3>
+              
               <ui-button 
                 variant="outline" 
                 size="sm"
@@ -100,15 +115,14 @@
               itemLabel="Item"
               (cellValueChanged)="onIncomeStatementCellChanged($event)"
             />
-          </div>
-        </ui-card>
+      
       }
 
+      <!-- Financial Ratios Tab -->
       @if (activeTab() === 'financial-ratios') {
-        <ui-card>
-          <div class="p-6">
+     
             <div class="flex items-center justify-between mb-6">
-              <h3 class="text-lg font-semibold text-gray-900">Financial Ratios</h3>
+            
               <ui-button 
                 variant="outline" 
                 size="sm"
@@ -125,69 +139,33 @@
               itemLabel="Ratio"
               (cellValueChanged)="onFinancialRatiosCellChanged($event)"
             />
-          </div>
-        </ui-card>
+      
       }
-    </div>
 
-    <!-- Mobile/Tablet: Stacked Vertical Layout -->
-    <div class="lg:hidden space-y-6">
-      <!-- Income Statement -->
-      <ui-card>
-        <div class="p-2">
-          <div class="flex items-center justify-between mb-6">
-            <h3 class="text-lg font-semibold text-gray-900">Income Statement</h3>
-            <ui-button 
-              variant="outline" 
-              size="sm"
-              (clicked)="toggleEditMode()">
-              <lucide-icon [name]="EditIcon" [size]="16" class="mr-1" />
-              {{ editingMode() ? 'Done' : 'Edit' }}
-            </ui-button>
-          </div>
+      <!-- Notes Tab -->
+      @if (activeTab() === 'notes') {
+      
+       
+          <app-financial-notes
+              [(notes)]="notesText"
+              (notesSaved)="onNotesSaved($event)"
+            />
+       
+        
+      }
 
-          <app-financial-data-table
-            [sections]="incomeStatementSections()"
-            [columnHeaders]="columnHeaders()"
-            [editMode]="editingMode()"
-            itemLabel="Item"
-            (cellValueChanged)="onIncomeStatementCellChanged($event)"
-          />
-        </div>
-      </ui-card>
-
-      <!-- Financial Ratios -->
-      <ui-card>
-        <div class="p-6">
-          <h3 class="text-lg font-semibold text-gray-900 mb-6">Financial Ratios</h3>
-
-          <app-financial-data-table
-            [sections]="financialRatiosSections()"
-            [columnHeaders]="columnHeaders()"
-            [editMode]="editingMode()"
-            itemLabel="Ratio"
-            (cellValueChanged)="onFinancialRatiosCellChanged($event)"
-          />
-        </div>
-      </ui-card>
-    </div>
-
-    <!-- Notes Component -->
-    <div class="mt-2">
-       <app-financial-notes
-      [(notes)]="notesText"
-      (notesSaved)="onNotesSaved($event)"
-    />
-    </div>
-
-    <!-- Summary Component -->
-    <div class="mt-2">
-      <app-financial-summary
-      [completionPercentage]="getCompletionPercentage()"
-      [incomeStatementCount]="incomeStatementData().length"
-      [financialRatiosCount]="financialRatiosData().length"
-      [isValidTemplate]="hasValidTemplate()"
-    />
+      <!-- Health Score Tab -->
+      @if (activeTab() === 'health-score') {
+      
+         
+            <app-financial-summary
+              [completionPercentage]="getCompletionPercentage()"
+              [incomeStatementCount]="incomeStatementData().length"
+              [financialRatiosCount]="financialRatiosData().length"
+              [isValidTemplate]="hasValidTemplate()"
+            />
+         
+      }
     </div>
   }
 

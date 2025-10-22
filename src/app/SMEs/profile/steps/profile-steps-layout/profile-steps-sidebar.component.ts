@@ -2,8 +2,7 @@
 
 import { Component, input, output, inject, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { LucideAngularModule, Check, AlertCircle } from 'lucide-angular';
- 
+import { LucideAngularModule, Check, AlertCircle, Lock } from 'lucide-angular';
 import { FundingProfileSetupService } from 'src/app/SMEs/services/funding-profile-setup.service';
 
 export interface StepConfig {
@@ -30,133 +29,167 @@ export interface SectionData {
   standalone: true,
   imports: [CommonModule, LucideAngularModule],
   template: `
-    <div class="flex flex-col w-full h-full">
-      <!-- Header -->
-      <div class="p-4 border-b border-neutral-200 flex-shrink-0">
-        <h2 class="text-lg font-semibold text-neutral-900 mb-2">Progress</h2>
+    <div class="flex flex-col h-full bg-white">
+      
+      <!-- Header with Progress -->
+      <div class="px-6 py-6 border-b border-slate-200 flex-shrink-0">
+       
         
-        <!-- Overall Progress -->
-        <div class="flex items-center justify-between mb-3">
-          <span class="text-sm text-neutral-600">{{ completedSteps() }} of {{ totalSteps() }} sections</span>
-          <span class="text-sm font-bold text-primary-600">{{ overallProgress() }}%</span>
+        <!-- Overall Progress Metric -->
+        <div class="flex items-baseline gap-2 mb-4">
+          <span class="text-3xl font-bold text-slate-900">{{ overallProgress() }}%</span>
+          <span class="text-sm text-slate-600">{{ completedSteps() }} of {{ totalSteps() }} sections</span>
         </div>
         
-        <div class="w-full bg-neutral-200 rounded-full h-2">
+        <!-- Progress Bar -->
+        <div class="h-2 bg-slate-100 rounded-full overflow-hidden">
           <div 
-            class="bg-primary-500 h-2 rounded-full transition-all duration-500 ease-out"
+            class="h-full bg-gradient-to-r from-orange-400 to-orange-500 rounded-full transition-all duration-700 ease-out"
             [style.width.%]="overallProgress()"
           ></div>
         </div>
       </div>
 
-      <!-- Steps Navigation -->
-      <nav class="flex-1 p-4 space-y-2 overflow-y-auto">
-        @for (step of steps(); track step.id; let i = $index) {
-          <div class="relative">
-            <!-- Connection Line -->
-            @if (i < steps().length - 1) {
-              <div class="absolute left-6 top-12 w-0.5 h-8 bg-neutral-200"></div>
-            }
-            
-            <!-- Step Card -->
+      <!-- Steps List -->
+      <nav class="flex-1 overflow-y-auto">
+        <div class="p-4 space-y-3">
+          @for (step of steps(); track step.id; let i = $index) {
             <button
               (click)="stepClicked.emit(step.id)"
-              [class]="getStepCardClasses(step, i)"
               [disabled]="!canAccessStep(step.id)"
-              class="w-full text-left p-4 rounded-lg border transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500"
+              [class]="getStepCardClasses(step)"
+              class="w-full text-left transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 rounded-xl"
             >
-              <div class="flex items-start space-x-3 min-w-0">
-                <!-- Step Icon -->
-                <div [class]="getStepIconClasses(step)" class="flex-shrink-0">
-                  @if (isStepComplete(step.id)) {
-                    <lucide-icon [img]="CheckIcon" [size]="16" class="text-white" />
-                  } @else {
-                    <lucide-icon [img]="step.icon" [size]="16" />
-                  }
-                </div>
+              <!-- Step Card Container -->
+              <div class="px-4 py-3.5 rounded-xl border transition-all duration-200">
                 
-                <!-- Step Content -->
-                <div class="flex-1 min-w-0">
-                  <div class="flex items-center justify-between gap-2">
-                    <h3 [class]="getStepTitleClasses(step)" class="truncate">{{ step.shortTitle }}</h3>
-                    
-                    <!-- Status Badge - Only show if incomplete AND required -->
+                <!-- Top Row: Icon, Title, Badge -->
+                <div class="flex items-start gap-3 mb-2">
+                  <!-- Step Icon -->
+                  <div [class]="getStepIconClasses(step)" class="flex-shrink-0">
+                    @if (isStepComplete(step.id)) {
+                      <lucide-icon [img]="CheckIcon" [size]="16" class="text-white" />
+                    } @else if (!canAccessStep(step.id)) {
+                      <lucide-icon [img]="LockIcon" [size]="16" />
+                    } @else {
+                      <lucide-icon [img]="step.icon" [size]="16" />
+                    }
+                  </div>
+                  
+                  <!-- Title and Badge -->
+                  <div class="flex-1 min-w-0">
+                    <h3 [class]="getStepTitleClasses(step)" class="text-sm font-semibold truncate">
+                      {{ step.shortTitle }}
+                    </h3>
+                  </div>
+                  
+                  <!-- Status Badge -->
+                  <div class="flex items-center gap-2 flex-shrink-0">
                     @if (step.priority === 'high' && !isStepComplete(step.id)) {
-                      <span class="bg-red-100 text-red-600 text-xs px-2 py-1 rounded font-medium flex-shrink-0 whitespace-nowrap">
+                      <span class="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold bg-red-50 text-red-700 border border-red-200/50">
                         Required
                       </span>
                     }
                   </div>
-                  
-                  <!-- Status and Time Info -->
-                  <div class="flex items-center justify-between mt-1 text-xs">
-                    <div class="flex items-center space-x-2 flex-shrink-0">
-                      @if (isStepComplete(step.id)) {
-                        <span class="text-green-600 font-medium">Complete</span>
-                      } @else if (isCurrentStep(step.id)) {
-                        <span class="text-primary-600 font-medium">In Progress</span>
-                      } @else if (canAccessStep(step.id)) {
-                        <span class="text-neutral-500">Available</span>
-                      } @else {
-                        <span class="text-neutral-400">Locked</span>
-                      }
-                    </div>
-                    
-                    @if (!isStepComplete(step.id)) {
-                      <span class="text-neutral-500 flex-shrink-0">{{ step.estimatedTime }}</span>
+                </div>
+                
+                <!-- Status Info Row -->
+                <div class="flex items-center justify-between text-xs px-0.5 mb-2.5">
+                  <div class="flex items-center gap-1.5">
+                    @if (isStepComplete(step.id)) {
+                      <span class="font-semibold text-green-700">Complete</span>
+                    } @else if (isCurrentStep(step.id)) {
+                      <span class="font-semibold text-orange-700">In Progress</span>
+                    } @else if (canAccessStep(step.id)) {
+                      <span class="text-slate-600">Ready to start</span>
+                    } @else {
+                      <span class="text-slate-500">Locked</span>
                     }
                   </div>
                   
-                  <!-- Completion Percentage for Incomplete Steps -->
-                  @if (!isStepComplete(step.id) && getCompletionPercentage(step.id) > 0) {
-                    <div class="mt-2">
-                      <div class="w-full bg-neutral-200 rounded-full h-1.5">
-                        <div 
-                          class="bg-yellow-500 h-1.5 rounded-full transition-all duration-300"
-                          [style.width.%]="getCompletionPercentage(step.id)"
-                        ></div>
-                      </div>
-                      <div class="text-xs text-neutral-600 mt-1">
-                        {{ getCompletionPercentage(step.id) }}% complete
-                      </div>
-                    </div>
-                  }
-                  
-                  <!-- Missing Fields Alert - Only show if incomplete -->
-                  @if (!isStepComplete(step.id) && getMissingFields(step.id).length > 0) {
-                    <div class="mt-2 bg-orange-50 border border-orange-200 rounded p-2">
-                      <div class="flex items-start gap-2 min-w-0">
-                        <lucide-icon [img]="AlertCircleIcon" [size]="14" class="text-orange-600 flex-shrink-0 mt-0.5" />
-                        <div class="text-xs text-orange-700 min-w-0">
-                          <strong>Missing:</strong>
-                          <ul class="list-disc list-inside mt-1 space-y-0.5">
-                            @for (field of getMissingFields(step.id).slice(0, 2); track field) {
-                              <li class="truncate text-orange-700" [title]="field">{{ field }}</li>
-                            }
-                            @if (getMissingFields(step.id).length > 2) {
-                              <li class="text-orange-700">+{{ getMissingFields(step.id).length - 2 }} more</li>
-                            }
-                          </ul>
-                        </div>
-                      </div>
-                    </div>
+                  @if (!isStepComplete(step.id)) {
+                    <span class="text-slate-500">{{ step.estimatedTime }}</span>
                   }
                 </div>
+                
+                <!-- Progress Bar for In-Progress Steps -->
+                @if (!isStepComplete(step.id) && getCompletionPercentage(step.id) > 0) {
+                  <div class="mb-2.5">
+                    <div class="flex items-center justify-between mb-1">
+                      <span class="text-xs font-medium text-slate-600">Progress</span>
+                      <span class="text-xs font-bold text-slate-900">{{ getCompletionPercentage(step.id) }}%</span>
+                    </div>
+                    <div class="h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                      <div 
+                        class="h-full bg-gradient-to-r from-orange-300 to-orange-400 rounded-full transition-all duration-300"
+                        [style.width.%]="getCompletionPercentage(step.id)"
+                      ></div>
+                    </div>
+                  </div>
+                }
+                
+                <!-- Missing Fields Alert -->
+                @if (!isStepComplete(step.id) && getMissingFields(step.id).length > 0) {
+                  <div class="bg-orange-50 border border-orange-200/50 rounded-lg p-2.5 mt-2">
+                    <div class="flex gap-2 min-w-0">
+                      <lucide-icon [img]="AlertCircleIcon" [size]="14" class="text-orange-600 flex-shrink-0 mt-0.5" />
+                      <div class="text-xs text-orange-700 min-w-0">
+                        <strong class="block mb-1">Missing:</strong>
+                        <ul class="space-y-0.5">
+                          @for (field of getMissingFields(step.id).slice(0, 2); track field) {
+                            <li class="truncate" [title]="field">{{ field }}</li>
+                          }
+                          @if (getMissingFields(step.id).length > 2) {
+                            <li class="text-orange-600">+{{ getMissingFields(step.id).length - 2 }} more</li>
+                          }
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                }
               </div>
             </button>
-          </div>
-        }
+          }
+        </div>
       </nav>
+
+      <!-- Footer Stats -->
+      <div class="px-6 py-4 border-t border-slate-200 bg-slate-50/50 flex-shrink-0 space-y-2">
+        <div class="text-xs font-semibold text-slate-600 uppercase tracking-wide">Completion</div>
+        <div class="grid grid-cols-3 gap-2">
+          <div class="text-center">
+            <div class="text-lg font-bold text-green-600">{{ completedSteps() }}</div>
+            <div class="text-xs text-slate-600">Completed</div>
+          </div>
+          <div class="text-center">
+            <div class="text-lg font-bold text-orange-600">{{ inProgressSteps() }}</div>
+            <div class="text-xs text-slate-600">In Progress</div>
+          </div>
+          <div class="text-center">
+            <div class="text-lg font-bold text-slate-400">{{ lockedSteps() }}</div>
+            <div class="text-xs text-slate-600">Locked</div>
+          </div>
+        </div>
+      </div>
     </div>
   `,
   styles: [`
     :host {
       display: contents;
     }
+
+    :host ::ng-deep button:disabled {
+      cursor: not-allowed;
+    }
+
+    /* Smooth scroll */
+    :host ::ng-deep nav {
+      scroll-behavior: smooth;
+    }
   `]
 })
 export class ProfileStepsSidebarComponent {
-  private profileService = inject(FundingProfileSetupService);
+ 
 
   // Inputs
   steps = input.required<StepConfig[]>();
@@ -170,8 +203,9 @@ export class ProfileStepsSidebarComponent {
   // Icons
   CheckIcon = Check;
   AlertCircleIcon = AlertCircle;
+  LockIcon = Lock;
 
-  // Computed values
+  // Computed - Overall Progress
   overallProgress = computed(() => {
     const total = this.steps().length;
     const completed = this.steps().filter(s => this.isStepComplete(s.id)).length;
@@ -180,6 +214,18 @@ export class ProfileStepsSidebarComponent {
 
   completedSteps = computed(() => {
     return this.steps().filter(s => this.isStepComplete(s.id)).length;
+  });
+
+  inProgressSteps = computed(() => {
+    return this.steps().filter(s => 
+      !this.isStepComplete(s.id) && 
+      this.canAccessStep(s.id) && 
+      this.getCompletionPercentage(s.id) > 0
+    ).length;
+  });
+
+  lockedSteps = computed(() => {
+    return this.steps().filter(s => !this.canAccessStep(s.id)).length;
   });
 
   totalSteps = computed(() => {
@@ -210,45 +256,42 @@ export class ProfileStepsSidebarComponent {
     return data?.missingFields ?? [];
   }
 
-  getStepCardClasses(step: StepConfig, index: number): string {
-    const baseClasses = 'relative hover:shadow-sm transition-all duration-200';
-    
+  // Dynamic Styling
+  getStepCardClasses(step: StepConfig): string {
     if (this.isStepComplete(step.id)) {
-      return `${baseClasses} border-green-200 bg-green-50 hover:bg-green-100`;
+      return 'bg-green-50 border-green-200/50 hover:border-green-300/50 hover:shadow-sm';
     } else if (this.isCurrentStep(step.id)) {
-      return `${baseClasses} border-primary-300 bg-primary-50 hover:bg-primary-100 shadow-sm`;
+      return 'bg-orange-50 border-orange-300/50 hover:border-orange-400/50 shadow-sm';
     } else if (this.canAccessStep(step.id)) {
-      return `${baseClasses} border-neutral-200 bg-white hover:bg-neutral-50`;
+      return 'bg-white border-slate-200 hover:border-slate-300 hover:shadow-sm';
     } else {
-      return `${baseClasses} border-neutral-200 bg-neutral-50 opacity-60 cursor-not-allowed`;
+      return 'bg-slate-50 border-slate-200 opacity-60 cursor-not-allowed';
     }
   }
 
   getStepIconClasses(step: StepConfig): string {
-    const baseClasses = 'w-8 h-8 rounded-lg flex items-center justify-center';
+    const baseClasses = 'w-8 h-8 rounded-lg flex items-center justify-center font-semibold';
     
     if (this.isStepComplete(step.id)) {
-      return `${baseClasses} bg-green-500`;
+      return `${baseClasses} bg-green-600 text-white`;
     } else if (this.isCurrentStep(step.id)) {
-      return `${baseClasses} bg-primary-500 text-white`;
+      return `${baseClasses} bg-orange-500 text-white`;
     } else if (this.canAccessStep(step.id)) {
-      return `${baseClasses} bg-neutral-200 text-neutral-600`;
+      return `${baseClasses} bg-slate-100 text-slate-600`;
     } else {
-      return `${baseClasses} bg-neutral-100 text-neutral-400`;
+      return `${baseClasses} bg-slate-100 text-slate-400`;
     }
   }
 
   getStepTitleClasses(step: StepConfig): string {
-    const baseClasses = 'text-sm font-medium';
-    
     if (this.isStepComplete(step.id)) {
-      return `${baseClasses} text-green-900`;
+      return 'text-green-900';
     } else if (this.isCurrentStep(step.id)) {
-      return `${baseClasses} text-primary-900`;
+      return 'text-orange-900';
     } else if (this.canAccessStep(step.id)) {
-      return `${baseClasses} text-neutral-900`;
+      return 'text-slate-900';
     } else {
-      return `${baseClasses} text-neutral-500`;
+      return 'text-slate-500';
     }
   }
 }
