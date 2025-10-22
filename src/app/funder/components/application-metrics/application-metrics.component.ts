@@ -13,8 +13,8 @@ import {
 } from 'lucide-angular';
 
 import { FundingApplication } from 'src/app/SMEs/models/application.models';
-import { FundingOpportunity } from 'src/app/shared/models/funder.models';
-
+import { FundingOpportunity } from '../../create-opportunity/shared/funding.interfaces';
+ 
 interface TimelineEvent {
   label: string;
   date: Date | null;

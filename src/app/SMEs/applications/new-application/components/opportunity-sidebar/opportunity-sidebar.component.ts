@@ -3,9 +3,9 @@
 import { Component, input, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { LucideAngularModule, Building, DollarSign, Clock, AlertCircle, Users, Eye, TrendingUp, FileText } from 'lucide-angular';
-import { UiCardComponent } from 'src/app/shared/components';
-import { FundingOpportunity } from 'src/app/shared/models/funder.models'; 
+import { UiCardComponent } from 'src/app/shared/components'; 
 import { ApplicationStepId } from '../../models/application-form.model';
+import { FundingOpportunity } from 'src/app/funder/create-opportunity/shared/funding.interfaces';
 
 @Component({
   selector: 'app-opportunity-sidebar',

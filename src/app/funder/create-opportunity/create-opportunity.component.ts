@@ -15,11 +15,11 @@ import { trigger, transition, style, animate } from '@angular/animations';
 
 // Services 
 import { FundingOpportunityService } from '../../funding/services/funding-opportunity.service';
-import { FundingOpportunity } from '../../shared/models/funder.models';
+ 
 import { ModalService } from '../../shared/services/modal.service';
 // Components 
 import { OpportunityFormStateService } from '../services/opportunity-form-state.service';
-import { OpportunityFormData } from './shared/form-interfaces';
+import { FundingOpportunity, OpportunityFormData } from './shared/funding.interfaces';
 import { OrganizationStateService } from '../services/organization-state.service';
 import { StepNavigationService } from './step-navigation.service';
 import { OpportunityUIHelperService } from '../services/ui-helper.service';

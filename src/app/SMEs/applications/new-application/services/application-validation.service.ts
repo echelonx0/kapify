@@ -1,9 +1,8 @@
 // src/app/applications/components/new-application/services/application-validation.service.ts
 
 import { Injectable } from '@angular/core';
- 
-import { FundingOpportunity } from 'src/app/shared/models/funder.models';
 import { ApplicationFormData, ApplicationFormErrors, ApplicationFormValidation } from '../models/application-form.model';
+import { FundingOpportunity } from 'src/app/funder/create-opportunity/shared/funding.interfaces';
 
 @Injectable()
 export class ApplicationValidationService {

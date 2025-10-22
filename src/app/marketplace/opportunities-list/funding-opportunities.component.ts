@@ -5,8 +5,7 @@ import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { of, Subject } from 'rxjs';
 import { takeUntil, catchError } from 'rxjs/operators';
-import { AuthService } from 'src/app/auth/production.auth.service';
-import { FundingOpportunity } from 'src/app/shared/models/funder.models';
+import { AuthService } from 'src/app/auth/production.auth.service'; 
 import { SMEOpportunitiesService } from '../../funding/services/opportunities.service';
 import { AdvancedFiltersComponent } from '../components/filters.component';
 import { OpportunitiesGridComponent } from './opportunities-grid.component';
@@ -19,6 +18,7 @@ import { MarketplaceHeaderComponent } from '../components/marketplace-header.com
 import { SmartSuggestionsComponent } from '../components/smart-suggestions/smart-suggestions.component';
 import { LandingHeaderComponent } from '../../landing/landing-header.component';
 import { LandingFooterComponent } from '../../landing/landing-footer.component';
+import { FundingOpportunity } from 'src/app/funder/create-opportunity/shared/funding.interfaces';
 
 @Component({
   selector: 'app-funding-opportunities',

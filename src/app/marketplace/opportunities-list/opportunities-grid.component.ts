@@ -1,8 +1,8 @@
 // opportunities-grid.component.ts
 import { Component, Input, Output, EventEmitter } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FundingOpportunity } from '../../shared/models/funder.models';
+import { CommonModule } from '@angular/common'; 
 import { KapifyOpportunityCardComponent } from './opportunity-card.component';
+import { FundingOpportunity } from 'src/app/funder/create-opportunity/shared/funding.interfaces';
  
 @Component({
   selector: 'app-opportunities-grid',

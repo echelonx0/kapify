@@ -4,13 +4,13 @@ import { Component, inject, signal, computed, OnInit, OnDestroy } from '@angular
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { LucideAngularModule, CheckCircle2, AlertTriangle, Clock, FileText, Mail, ArrowLeft, ExternalLink, Download, Calendar, User, Building2 } from 'lucide-angular';
-import { UiButtonComponent, UiCardComponent } from 'src/app/shared/components';
-import { FundingOpportunity } from 'src/app/shared/models/funder.models';
+import { UiButtonComponent, UiCardComponent } from 'src/app/shared/components'; 
 import { takeUntil } from 'rxjs';
 import { Subject } from 'rxjs';
 import { Application } from 'src/app/shared/models/application.models'; 
 import { SMEOpportunitiesService } from 'src/app/funding/services/opportunities.service';
 import { DatabaseApplicationService } from 'src/app/SMEs/services/database-application.service';
+import { FundingOpportunity } from 'src/app/funder/create-opportunity/shared/funding.interfaces';
 
 interface SubmissionResult {
   success: boolean;

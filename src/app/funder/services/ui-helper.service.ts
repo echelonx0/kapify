@@ -1,6 +1,6 @@
 // src/app/funder/services/opportunity-ui-helper.service.ts
 import { Injectable, inject } from '@angular/core';
-import { OpportunityFormStateService } from './opportunity-form-state.service';
+import { CreateOpportunityFormData, OpportunityFormStateService } from './opportunity-form-state.service';
 import { StepNavigationService, StepId } from '../create-opportunity/step-navigation.service';
 import { FundingOpportunityService } from 'src/app/funding/services/funding-opportunity.service';
  
@@ -173,7 +173,7 @@ export class OpportunityUIHelperService {
     return this.formStateService.formatNumberWithCommas(value);
   }
 
-  getFormattedAmount(field: keyof import('./opportunity-form-state.service').OpportunityFormData): string {
+  getFormattedAmount(field: keyof import('./opportunity-form-state.service').CreateOpportunityFormData): string {
     return this.formStateService.getFormattedAmount(field);
   }
 
@@ -183,7 +183,7 @@ export class OpportunityUIHelperService {
   }
 
   // Form interaction helpers
-  onNumberInputChange(field: keyof import('./opportunity-form-state.service').OpportunityFormData, event: Event): void {
+  onNumberInputChange(field: keyof import('./opportunity-form-state.service').CreateOpportunityFormData, event: Event): void {
     const target = event.target as HTMLInputElement;
     let value = target.value;
     
@@ -201,15 +201,7 @@ export class OpportunityUIHelperService {
     this.formStateService.onNumberInput(field, value);
   }
 
-  // onFieldChange(field: keyof import('./opportunity-form-state.service').OpportunityFormData, event: Event): void {
-  //   const target = event.target as HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement;
-  //   this.formStateService.updateField(field, target.value);
-  // }
-// Key changes from original:
-// 1. onFieldChange now properly extracts value from textarea events
-// 2. Added proper type checking for textarea elements
-
-onFieldChange(field: keyof import('./opportunity-form-state.service').OpportunityFormData, event: Event): void {
+onFieldChange(field: keyof import('./opportunity-form-state.service').CreateOpportunityFormData, event: Event): void {
   const target = event.target as HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement;
   let value: string;
   
@@ -226,12 +218,21 @@ onFieldChange(field: keyof import('./opportunity-form-state.service').Opportunit
   
   this.formStateService.updateField(field, value);
 }
-  onCheckboxChange(field: keyof import('./opportunity-form-state.service').OpportunityFormData, event: Event): void {
+  onCheckboxChange(field: keyof import('./opportunity-form-state.service').CreateOpportunityFormData, event: Event): void {
     const target = event.target as HTMLInputElement;
     this.formStateService.updateField(field, target.checked);
   }
 
-  onMultiSelectChange(field: keyof import('./opportunity-form-state.service').OpportunityFormData, event: Event): void {
+onMultiSelectFieldChange(
+  field: keyof CreateOpportunityFormData,
+  value: string,
+  checked: boolean
+): void {
+  this.formStateService.updateMultiSelectField(field, value, checked);
+}
+
+
+  onMultiSelectChange(field: keyof import('./opportunity-form-state.service').CreateOpportunityFormData, event: Event): void {
     const target = event.target as HTMLInputElement;
     const value = target.value;
     const checked = target.checked;
@@ -239,7 +240,7 @@ onFieldChange(field: keyof import('./opportunity-form-state.service').Opportunit
   }
 
   // Image error handling
-  onImageError(field: keyof import('./opportunity-form-state.service').OpportunityFormData): void {
+  onImageError(field: keyof import('./opportunity-form-state.service').CreateOpportunityFormData): void {
     this.formStateService.onImageError(field);
   }
 
@@ -251,14 +252,7 @@ onFieldChange(field: keyof import('./opportunity-form-state.service').Opportunit
     { value: '90', label: '90 days', description: 'Comprehensive' }
   ];
 
-  readonly targetIndustries = [
-    { value: 'technology', label: 'Technology' },
-    { value: 'finance', label: 'Finance' },
-    { value: 'healthcare', label: 'Healthcare' },
-    { value: 'manufacturing', label: 'Manufacturing' },
-    { value: 'retail', label: 'Retail' },
-    { value: 'agriculture', label: 'Agriculture' }
-  ];
+
 
   readonly businessStages = [
     { value: 'startup', label: 'Startup' },
@@ -269,8 +263,36 @@ onFieldChange(field: keyof import('./opportunity-form-state.service').Opportunit
   ];
 
     // ===============================
-  // 🔹 NEW STATIC CONFIGURATIONS
+  //  STATIC CONFIGURATIONS
   // ===============================
+
+ readonly targetIndustries = [
+  { value: 'technology', label: 'Technology' },
+  { value: 'finance', label: 'Finance' },
+  { value: 'healthcare', label: 'Healthcare' },
+  { value: 'manufacturing', label: 'Manufacturing' },
+  { value: 'retail', label: 'Retail' },
+  { value: 'agriculture', label: 'Agriculture' },
+  { value: 'agriculture-primary', label: 'Agriculture - Primary' },
+  { value: 'agriculture-secondary', label: 'Agriculture - Secondary' },
+  { value: 'automotive', label: 'Automotive' },
+  { value: 'professional-technical-services', label: 'Professional & Technical Services' },
+  { value: 'education', label: 'Education' },
+  { value: 'energy', label: 'Energy' },
+  { value: 'engineering-construction', label: 'Engineering & Construction' },
+  { value: 'financial-services', label: 'Financial Services' },
+  { value: 'franchise', label: 'Franchise' },
+  { value: 'healthcare-biotechnology', label: 'Healthcare & Biotechnology' },
+  { value: 'hospitality', label: 'Hospitality' },
+  { value: 'information-communication-technology', label: 'Information & Communication Technology' },
+  { value: 'manufacturing', label: 'Manufacturing' },
+  { value: 'mining', label: 'Mining' },
+  { value: 'real-estate', label: 'Real Estate' },
+  { value: 'retail-wholesale', label: 'Retail & Wholesale' },
+  { value: 'tourism', label: 'Tourism' },
+  { value: 'transportation-logistics', label: 'Transportation and Logistics' },
+  { value: 'waste-management', label: 'Waste Management' }
+];
 
   readonly industrySectors = [
     'Agriculture - Primary',
@@ -352,5 +374,19 @@ geographicRegions = [
     { value: 'expansion', label: 'Expansion', tooltip: 'Expanding to new markets, products, or geographies with proven model.' },
     { value: 'mature', label: 'Mature', tooltip: 'Stable business with predictable cash flow and potential for acquisition or IPO.' }
   ];
+
+  // Add these signals or reactive properties
+public targetIndustriesOpen = false;
+public businessStagesOpen = false;
+public geoOpen = false;
+
+toggleDropdown(key: 'targetIndustriesOpen' | 'businessStagesOpen' | 'geoOpen') {
+  this[key] = !this[key];
+}
+
+closeDropdown(key: 'targetIndustriesOpen' | 'businessStagesOpen' | 'geoOpen') {
+  this[key] = false;
+}
+
 
 }

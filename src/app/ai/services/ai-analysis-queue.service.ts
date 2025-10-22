@@ -1,9 +1,8 @@
 // src/app/shared/services/ai-analysis-queue.service.ts
 import { Injectable, inject } from '@angular/core';
 import { Observable, from } from 'rxjs';
- 
-import { FundingOpportunity } from 'src/app/shared/models/funder.models';
 import { FundingApplicationProfile } from 'src/app/SMEs/applications/models/funding-application.models';
+import { FundingOpportunity } from 'src/app/funder/create-opportunity/shared/funding.interfaces';
 import { SharedSupabaseService } from 'src/app/shared/services/shared-supabase.service';
  
 export interface AIAnalysisJobRequest {

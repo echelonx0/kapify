@@ -6,6 +6,15 @@ import { LucideAngularModule, TrendingUp, PieChart, RefreshCw, FileText, DollarS
 import { OpportunityFormStateService } from 'src/app/funder/services/opportunity-form-state.service';
 import { OpportunityUIHelperService } from 'src/app/funder/services/ui-helper.service';
 
+type FundingType =
+  | 'debt'
+  | 'equity'
+  | 'convertible'
+  | 'mezzanine'
+  | 'grant'
+  | 'purchase_order'
+  | 'invoice_financing';
+
 @Component({
   selector: 'app-funding-structure',
   standalone: true,
@@ -16,6 +25,7 @@ export class FundingStructureComponent {
   public formState = inject(OpportunityFormStateService);
   public ui = inject(OpportunityUIHelperService);
 
+  
   // Icons
   TrendingUpIcon = TrendingUp;
   PieChartIcon = PieChart;
@@ -23,16 +33,33 @@ export class FundingStructureComponent {
   FileTextIcon = FileText;
   DollarSignIcon = DollarSign;
   GiftIcon = Gift;
+  
+// onFundingTypeToggle(value: string, event: Event) {
+//   const checked = (event.target as HTMLInputElement).checked;
+//   const current = this.formState.formData().fundingType || [];
+//   const updated = checked
+//     ? [...current, value]
+//     : current.filter(v => v !== value);
+
+//   this.ui.onFieldChange('fundingType', { target: { value: updated } } as any);
+// }
+
+onFundingTypeToggle(value: string, event: Event) {
+  const checked = (event.target as HTMLInputElement).checked;
+  this.ui.onMultiSelectFieldChange('fundingType', value, checked);
+}
+
 
   // Funding Types with Tooltip Definitions
-  fundingTypes = [
-    { value: 'debt', label: 'Debt', desc: 'Traditional loan', icon: this.TrendingUpIcon, tooltip: 'Funds are lent and repaid with interest, no equity given.' },
-    { value: 'equity', label: 'Equity', desc: 'Ownership stake', icon: this.PieChartIcon, tooltip: 'Investor receives shares in exchange for capital.' },
-    { value: 'convertible', label: 'Convertible', desc: 'Converts to equity', icon: this.RefreshCwIcon, tooltip: 'Starts as a loan and converts into equity later.' },
-    { value: 'purchase_order', label: 'Purchase Order Funding', desc: 'Fulfills confirmed orders', icon: this.FileTextIcon, tooltip: 'Short-term finance to fulfill a customer purchase order.' },
-    { value: 'invoice_financing', label: 'Invoice Financing', desc: 'Advance on invoices', icon: this.DollarSignIcon, tooltip: 'Receive cash flow by financing unpaid invoices.' },
-    { value: 'grant', label: 'Grant Funding', desc: 'Non-repayable capital', icon: this.GiftIcon, tooltip: 'Funds provided with no repayment required.' },
-  ];
+fundingTypes: { value: FundingType; label: string; desc: string; icon: any; tooltip: string }[] = [
+  { value: 'debt', label: 'Debt', desc: 'Traditional loan', icon: this.TrendingUpIcon, tooltip: 'Funds are lent and repaid with interest, no equity given.' },
+  { value: 'equity', label: 'Equity', desc: 'Ownership stake', icon: this.PieChartIcon, tooltip: 'Investor receives shares in exchange for capital.' },
+  { value: 'convertible', label: 'Convertible', desc: 'Converts to equity', icon: this.RefreshCwIcon, tooltip: 'Starts as a loan and converts into equity later.' },
+  { value: 'purchase_order', label: 'Purchase Order Funding', desc: 'Fulfills confirmed orders', icon: this.FileTextIcon, tooltip: 'Short-term finance to fulfill a customer purchase order.' },
+  { value: 'invoice_financing', label: 'Invoice Financing', desc: 'Advance on invoices', icon: this.DollarSignIcon, tooltip: 'Receive cash flow by financing unpaid invoices.' },
+  { value: 'grant', label: 'Grant Funding', desc: 'Non-repayable capital', icon: this.GiftIcon, tooltip: 'Funds provided with no repayment required.' },
+];
+
 
   // Startup & Investment Tooltips
   tooltip = {

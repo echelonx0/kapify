@@ -5,8 +5,8 @@ import { tap, catchError } from 'rxjs/operators';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { environment } from '../../../environments/environment';
 import { AuthService } from '../../auth/production.auth.service';
-import { FundingOpportunity } from '../../shared/models/funder.models';
-
+import { FundingOpportunity } from 'src/app/funder/create-opportunity/shared/funding.interfaces';
+ 
 // SME-specific interfaces
 interface OpportunityFilters {
   fundingTypes?: string[];

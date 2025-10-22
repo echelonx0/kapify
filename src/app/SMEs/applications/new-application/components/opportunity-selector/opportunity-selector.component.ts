@@ -3,9 +3,9 @@
 import { Component, input, output, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { LucideAngularModule, CheckCircle, AlertCircle, Building } from 'lucide-angular';
-import { UiButtonComponent, UiCardComponent } from 'src/app/shared/components';
-import { FundingOpportunity } from 'src/app/shared/models/funder.models';
-
+import { UiButtonComponent } from 'src/app/shared/components';
+import { FundingOpportunity } from 'src/app/funder/create-opportunity/shared/funding.interfaces';
+ 
 @Component({
   selector: 'app-opportunity-selector',
   standalone: true,

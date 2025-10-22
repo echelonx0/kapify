@@ -10,9 +10,7 @@ import {
   Loader2
 } from 'lucide-angular';
 import { Subject, takeUntil, forkJoin } from 'rxjs';
- 
 import { ApplicationManagementService } from 'src/app/SMEs/services/application-management.service';
-import { FundingOpportunity } from 'src/app/shared/models/funder.models';
 import { SMEOpportunitiesService } from 'src/app/funding/services/opportunities.service';
 import { AiAssistantComponent } from 'src/app/ai/ai-assistant/ai-assistant.component';
 import { ApplicationTabsComponent } from './components/application-tabs/application-tabs.component';
@@ -25,6 +23,7 @@ import { ApplicantProfileComponent } from './components/applicant-profile/applic
 import { ApplicationMetricsComponent } from '../components/application-metrics/application-metrics.component';
 import { ApplicationHeaderComponent } from '../components/application-header/application-header.component';
 import { StatusManagementModalComponent } from '../components/status-management-modal/status-management-modal.component';
+import { FundingOpportunity } from '../create-opportunity/shared/funding.interfaces';
  
 interface ApplicationFormData {
   requestedAmount?: number | string;

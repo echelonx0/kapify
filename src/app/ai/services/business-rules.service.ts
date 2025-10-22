@@ -1,7 +1,7 @@
 // src/app/shared/services/business-rules-analysis.service.ts
 import { Injectable, inject } from '@angular/core';
-import { Observable, of } from 'rxjs';
-import { FundingOpportunity } from 'src/app/shared/models/funder.models';
+import { Observable, of } from 'rxjs'; 
+import { FundingOpportunity } from 'src/app/funder/create-opportunity/shared/funding.interfaces';
 import { FundingApplicationProfile } from 'src/app/SMEs/applications/models/funding-application.models';
 import { ApplicationFormData } from 'src/app/SMEs/applications/new-application/models/application-form.model';
  

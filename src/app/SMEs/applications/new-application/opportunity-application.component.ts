@@ -6,8 +6,7 @@ import { Location } from '@angular/common';
 import { LucideAngularModule, ArrowLeft, Clock } from 'lucide-angular';
 import { SMEOpportunitiesService } from 'src/app/funding/services/opportunities.service';
 import { UiButtonComponent, UiCardComponent } from 'src/app/shared/components';
-import { Application } from 'src/app/shared/models/application.models';
-import {  FundingOpportunity } from 'src/app/shared/models/funder.models';
+import { Application } from 'src/app/shared/models/application.models'; 
 import { GlobalProfileValidationService } from 'src/app/shared/services/global-profile-validation.service';
 import { DatabaseApplicationService } from 'src/app/SMEs/services/database-application.service';
 import { FundingProfileBackendService } from 'src/app/SMEs/services/funding-profile-backend.service';
@@ -22,6 +21,7 @@ import { ReviewSummaryComponent } from './components/review-summary/review-summa
 import { OpportunitySidebarComponent } from './components/opportunity-sidebar/opportunity-sidebar.component';
 import { ApplicationFormStep, ApplicationStepId } from './models/application-form.model';
 import { FundingApplicationProfile } from '../models/funding-application.models';
+import { FundingOpportunity } from 'src/app/funder/create-opportunity/shared/funding.interfaces';
 
 @Component({
   selector: 'app-opportunity-application-form',

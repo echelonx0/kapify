@@ -1,7 +1,6 @@
-import { FundingOpportunity } from "src/app/shared/models/funder.models";
-import { ProfileData } from "./funding.models";
-
  
+import { FundingOpportunity } from "src/app/funder/create-opportunity/shared/funding.interfaces";
+import { ProfileData } from "./funding.models";
 
 // Application interfaces
 export interface OpportunityApplication {

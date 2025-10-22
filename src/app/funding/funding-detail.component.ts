@@ -5,9 +5,9 @@ import { CommonModule } from '@angular/common';
 import { SidebarNavComponent } from '../shared/components/sidenav/sidebar-nav.component';
 import { UiButtonComponent } from '../shared/components';
 import { LucideAngularModule, ArrowLeft, Building2, DollarSign, Calendar, MapPin, CheckCircle, FileText, Users, Eye } from 'lucide-angular';
-import { FundingOpportunity } from '../shared/models/funder.models';
 import { SMEOpportunitiesService } from './services/opportunities.service';
 import { AuthService } from '../auth/production.auth.service';
+import { FundingOpportunity } from '../funder/create-opportunity/shared/funding.interfaces';
 
 @Component({
   selector: 'app-opportunity-details',

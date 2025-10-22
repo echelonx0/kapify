@@ -2,7 +2,7 @@
 import { Component, Input, Output, EventEmitter, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { LucideAngularModule, ChevronDown, ChevronUp, DollarSign, Award, Building2, TrendingUp, Sparkles } from 'lucide-angular';
-import { FundingOpportunity } from 'src/app/shared/models/funder.models';
+import { FundingOpportunity } from 'src/app/funder/create-opportunity/shared/funding.interfaces';
  
 @Component({
   selector: 'app-suggestion-card',

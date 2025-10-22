@@ -10,14 +10,12 @@ import { BusinessRulesResultsComponent } from './components/business-rules-resul
 import { AiAnalysisProgressComponent } from './components/ai-analysis-progress.component';
 import { ComprehensiveAnalysisResultsComponent } from './components/comprehensive-analysis-results.component';
 import { AnalysisErrorComponent } from './components/analysis-error.component';
-
-// Services and Models
-import { FundingOpportunity } from 'src/app/shared/models/funder.models';
 import { FundingApplicationProfile } from 'src/app/SMEs/applications/models/funding-application.models';
 import { ModularAIAnalysisService, ComprehensiveAnalysis } from '../services/modular-ai-analysis.service';
 import { BusinessRulesAnalysisService, BusinessRulesResult } from '../services/business-rules.service';
 import { FundingProfileBackendService } from 'src/app/SMEs/services/funding-profile-backend.service';
 import { ApplicationFormData } from 'src/app/SMEs/applications/new-application/models/application-form.model';
+import { FundingOpportunity } from 'src/app/funder/create-opportunity/shared/funding.interfaces';
 
  
 type AnalysisState = 'pre-analysis' | 'business-rules' | 'ai-progress' | 'ai-results' | 'error';

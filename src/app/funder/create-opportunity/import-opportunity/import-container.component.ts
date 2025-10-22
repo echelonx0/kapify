@@ -8,8 +8,8 @@ import { MappingStepComponent } from './steps/mapping-step.component';
 import { PreviewStepComponent } from './steps/preview-step.component';
 import { ResultsStepComponent } from './steps/results-step.component';
 import { FundingOpportunityService } from '../../../funding/services/funding-opportunity.service';
-import { FundingOpportunity } from 'src/app/shared/models/funder.models';
-
+import { FundingOpportunity } from '../shared/funding.interfaces';
+ 
 type StepId = 'upload' | 'mapping' | 'preview' | 'results';
 
 interface StepConfig {
