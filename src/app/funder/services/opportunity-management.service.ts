@@ -2,7 +2,6 @@
 import { Injectable, signal, inject } from '@angular/core';
 import { Observable, from, throwError, BehaviorSubject } from 'rxjs';
 import { tap, catchError, map } from 'rxjs/operators';
- 
 import { v4 as uuidv4 } from 'uuid';  // ADD THIS IMPORT at top
 import { AuthService } from '../../auth/production.auth.service'; 
 import { SharedSupabaseService } from '../../shared/services/shared-supabase.service';

@@ -46,8 +46,13 @@ export interface CompanyInformation {
   taxComplianceStatus: 'compliant' | 'outstanding' | 'under_review';
   bbbeeLevel?: string;
   regulatoryLicenses: string[];
+  
+  // ← ADD THESE MISSING LEGAL FIELDS:
+  businessStage?: string;
+  cipcReturns?: string;
+  incomeTaxNumber?: string;
+  workmansCompensation?: string;
 }
-
 
 
 export interface SupportingDocuments {

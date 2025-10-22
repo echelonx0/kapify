@@ -1,294 +1,218 @@
 <div class="min-h-screen bg-neutral-50">
-      <!-- Mobile Header -->
-      <header class="lg:hidden bg-white border-b border-neutral-200 px-4 py-3 sticky top-0 z-40">
-        <div class="flex items-center justify-between">
-          <button (click)="toggleMobileNav()" class="p-2 -ml-2">
-            <lucide-icon [img]="MenuIcon" [size]="24" class="text-neutral-600" />
-          </button>
+  <!-- Mobile Header -->
+  <header class="lg:hidden bg-white border-b border-neutral-200 px-4 py-3 sticky top-0 z-40">
+    <div class="flex items-center justify-between">
+      <button (click)="toggleMobileNav()" class="p-2 -ml-2" type="button">
+        <lucide-icon [img]="MenuIcon" [size]="24" class="text-neutral-600" />
+      </button>
+      
+      <div class="text-center flex-1">
+        <h1 class="text-lg font-semibold text-neutral-900">{{ getCurrentStepTitle() }}</h1>
+        <div class="text-xs text-neutral-500">Step {{ getCurrentStepNumber() }} of {{ getTotalSteps() }}</div>
+      </div>
+      
+      <div class="text-xs font-medium text-primary-600">{{ getOverallProgress() }}%</div>
+    </div>
+    
+    <!-- Mobile Progress Bar -->
+    <div class="mt-3 w-full bg-neutral-200 rounded-full h-1">
+      <div 
+        class="bg-primary-500 h-1 rounded-full transition-all duration-500 ease-out"
+        [style.width.%]="getOverallProgress()"
+      ></div>
+    </div>
+  </header>
+
+  <div class="flex gap-0">
+    <!-- Main Content Area -->
+    <main class="flex-1 flex flex-col min-h-screen lg:min-h-0 border-r border-neutral-200">
+      <!-- Desktop Header -->
+      <header class="hidden lg:block bg-neutral-50 border-b border-neutral-200 px-8 py-6 sticky top-0 z-30">
+        <div class="max-w-4xl ml-16">
+          <h1 class="text-2xl font-bold text-neutral-900">{{ getCurrentStepTitle() }}</h1>
+          <p class="text-sm text-neutral-600 mt-1">{{ getCurrentStepDescription() }}</p>
           
-          <div class="text-center flex-1">
-            <h1 class="text-lg font-semibold text-neutral-900">{{ getCurrentStepTitle() }}</h1>
-            <div class="text-xs text-neutral-500">Step {{ getCurrentStepNumber() }} of {{ getTotalSteps() }}</div>
-          </div>
-          
-          <div class="w-10 flex justify-end">
-            <div class="text-right">
-              <div class="text-xs font-medium text-primary-600">{{ getOverallProgress() }}%</div>
-            </div>
-          </div>
-        </div>
-        
-        <!-- Mobile Progress Bar -->
-        <div class="mt-3">
-          <div class="w-full bg-neutral-200 rounded-full h-1">
-            <div 
-              class="bg-primary-500 h-1 rounded-full transition-all duration-300"
-              [style.width.%]="getOverallProgress()"
-            ></div>
+          <div class="flex items-center justify-between mt-4 text-sm text-neutral-500">
+            <span>Step {{ getCurrentStepNumber() }} of {{ getTotalSteps() }}</span>
+            <span>{{ getCurrentStepEstimatedTime() }}</span>
           </div>
         </div>
       </header>
 
-      <div class="flex">
-        <!-- Main Content Area - Now on the left -->
-        <main class="flex-1 flex flex-col min-h-screen lg:min-h-0 ml-8">
-          <!-- Desktop Content Header -->
-          <header class="hidden lg:block bg-neutral-50 border-neutral-200 px-8 py-6 sticky top-0 z-30">
-            <div class="max-w-4xl mx-auto">
-              <!-- Breadcrumb -->
-            
-
-              <div class="flex items-center justify-between">
-                <div>
-                  <h1 class="text-1xl font-bold text-neutral-900">{{ getCurrentStepTitle() }}</h1>
-                  <p class="text-sm text-neutral-600">{{ getCurrentStepDescription() }}</p>
-                </div>
-                
-                <!-- Step Progress Indicator -->
-                <div class="text-right">
-                  <div class="text-sm text-neutral-500">Step {{ getCurrentStepNumber() }} of {{ getTotalSteps() }}</div>
-                  <div class="text-xs text-neutral-400">{{ getCurrentStepEstimatedTime() }}</div>
-                </div>
-              </div>
-            </div>
-          </header>
-
-          <!-- Content Body -->
-          <div class="flex-1 overflow-y-auto">
-            <div class="max-w-5xl mx-auto px-4 lg:px-8 py-2">
-              <router-outlet />
-            </div>
-          </div>
-
-          <!-- Action Footer -->
-          <footer class=" bg-neutral-50 border-neutral-200 px-4 lg:px-8 py-4 sticky bottom-0">
-            <div class="max-w-4xl mx-auto flex items-center justify-between">
-              <!-- Back Button -->
-              @if (!isFirstStep()) {
-                <ui-button variant="outline" (clicked)="previousStep()">
-                  <lucide-icon [img]="ArrowLeftIcon" [size]="16" class="mr-2" />
-                  <span class="hidden sm:inline">Back</span>
-                </ui-button>
-              } @else {
-                <div></div>
-              }
-              
-              <!-- Primary Actions -->
-              <div class="flex items-center space-x-3">
-                @if (isLastStep()) {
-                  <ui-button 
-                    variant="primary"
-                    size="lg"
-                    (clicked)="submitProfile()"
-                    [disabled]="!canSubmit() || isSubmitting()"
-                  >
-                    @if (isSubmitting()) {
-                      <lucide-icon [img]="ClockIcon" [size]="16" class="mr-2 animate-spin" />
-                      <span class="hidden sm:inline">Submitting...</span>
-                      <span class="sm:hidden">...</span>
-                    } @else {
-                      <span class="hidden sm:inline">Save and Exit</span>
-                      <span class="sm:hidden">Submit</span>
-                    }
-                  </ui-button>
-                } @else {
-                  <ui-button 
-                    variant="primary"
-                    size="lg"
-                    (clicked)="saveAndContinue()"
-                    [disabled]="isSaving()"
-                  >
-                    @if (isSaving()) {
-                      <lucide-icon [img]="ClockIcon" [size]="16" class="mr-2 animate-spin" />
-                      <span class="hidden sm:inline">Saving...</span>
-                      <span class="sm:hidden">...</span>
-                    } @else {
-                      <span class="hidden sm:inline">Continue</span>
-                      <span class="sm:hidden">Next</span>
-                    }
-                  </ui-button>
-                }
-              </div>
-            </div>
-          </footer>
-        </main>
-
-        <!-- Desktop Sidebar - Now on the right -->
-        <aside class="hidden lg:flex w-80 bg-white bg-neutral-50  border-neutral-200 flex-col sticky top-0 h-screen z-40">
-        
-          
-
-          <!-- Step Navigation -->
-          <nav class="flex-1 p-4 space-y-2 overflow-y-auto bg-neutral-50">
-            @for (step of getStepInfo(); track step.id; let i = $index) {
-              <div class="relative">
-                <!-- Connection Line -->
-                @if (i < getStepInfo().length - 1) {
-                  <div class="absolute left-6 top-12 w-0.5 h-8 bg-neutral-200"></div>
-                }
-                
-                <!-- Step Card -->
-                <button
-                  (click)="goToStep(step.id)"
-                  [class]="getStepCardClasses(step, i)"
-                  [disabled]="!canAccessStep(step, i)"
-                  class="w-full text-left p-4 rounded-lg border transition-all duration-200"
-                >
-                  <div class="flex items-start space-x-3">
-                    <!-- Step Icon -->
-                    <div [class]="getStepIconClasses(step, i)">
-                      @if (getProfileStep(step.id)?.completed) {
-                        <lucide-icon [img]="CheckIcon" [size]="16" class="text-white" />
-                      } @else {
-                        <lucide-icon [img]="step.icon" [size]="16" />
-                      }
-                    </div>
-                    
-                    <!-- Step Content -->
-                    <div class="flex-1 min-w-0">
-                      <div class="flex items-center justify-between">
-                        <h3 [class]="getStepTitleClasses(step, i)">{{ step.shortTitle }}</h3>
-                        @if (step.priority === 'high') {
-                          <span class="bg-red-100 text-red-600 text-xs px-2 py-1 rounded font-medium">Required</span>
-                        }
-                      </div>
-                      
-                   
-                      <!-- Status and Time -->
-                      <div class="flex items-center justify-between mt-1">
-                        <div class="flex items-center space-x-2">
-                          @if (getProfileStep(step.id)?.completed) {
-                           
-                            <span class="text-xs text-green-600 font-medium">Complete</span>
-                          } @else if (isCurrentStep(step.id)) {
-                           
-                            <span class="text-xs text-slate-600 font-medium">In Progress</span>
-                          } @else if (canAccessStep(step, i)) {
-                            <span class="text-xs text-neutral-500">Available</span>
-                          } @else {
-                       
-                            <span class="text-xs text-neutral-400">Locked</span>
-                          }
-                        </div>
-                        
-                        @if (!getProfileStep(step.id)?.completed) {
-                          <span class="text-xs text-neutral-500">{{ step.estimatedTime }}</span>
-                        }
-                      </div>
-                    </div>
-                  </div>
-                </button>
-              </div>
-            }
-          </nav>
-
-        
-        </aside>
+      <!-- Content -->
+      <div class="flex-1 overflow-y-auto pb-24">
+        <div class="max-w-4xl mx-auto px-4 lg:px-8 py-6 w-full">
+          <router-outlet />
+        </div>
       </div>
 
-      <!-- Mobile Navigation Overlay -->
-      @if (showMobileNav()) {
-        <div class="fixed inset-0 z-50 lg:hidden">
-          <div class="fixed inset-0 bg-black bg-opacity-25" (click)="closeMobileNav()"></div>
-          <div class="fixed inset-y-0 left-0 w-80 bg-white shadow-xl">
-            <!-- Mobile Nav Header -->
-            <div class="p-4 border-b border-neutral-200 flex items-center justify-between">
-              <h2 class="text-lg font-semibold text-neutral-900">Application Steps</h2>
-              <button (click)="closeMobileNav()" class="p-2 -mr-2">
-                <lucide-icon [img]="XIcon" [size]="24" class="text-neutral-600" />
-              </button>
-            </div>
-
-            <!-- Mobile Progress -->
-            <div class="p-4 border-b border-neutral-200">
-              <div class="flex items-center justify-between mb-3">
-                <span class="text-sm font-medium text-neutral-700">Progress</span>
-                <span class="text-sm font-medium text-primary-600">{{ getOverallProgress() }}%</span>
-              </div>
-              
-              <div class="w-full bg-neutral-200 rounded-full h-2 mb-3">
-                <div 
-                  class="bg-primary-500 h-2 rounded-full transition-all duration-300"
-                  [style.width.%]="getOverallProgress()"
-                ></div>
-              </div>
-              
-              <div class="text-sm text-neutral-600">
-                {{ getCompletedSteps() }} of {{ getTotalSteps() }} sections complete
-              </div>
-            </div>
-
-            <!-- Mobile Step Navigation -->
-            <nav class="flex-1 p-4 space-y-2 overflow-y-auto">
-              @for (step of getStepInfo(); track step.id; let i = $index) {
-                <button
-                  (click)="goToStepAndCloseMobile(step.id)"
-                  [class]="getMobileStepCardClasses(step, i)"
-                  [disabled]="!canAccessStep(step, i)"
-                  class="w-full text-left p-3 rounded-lg border transition-all duration-200"
-                >
-                  <div class="flex items-center space-x-3">
-                    <!-- Step Icon -->
-                    <div [class]="getStepIconClasses(step, i)">
-                      @if (getProfileStep(step.id)?.completed) {
-                        <lucide-icon [img]="CheckIcon" [size]="14" class="text-white" />
-                      } @else {
-                        <span class="text-xs font-medium">{{ i + 1 }}</span>
-                      }
-                    </div>
-                    
-                    <!-- Step Content -->
-                    <div class="flex-1 min-w-0">
-                      <h3 [class]="getStepTitleClasses(step, i)">{{ step.shortTitle }}</h3>
-                      
-                      <!-- Status -->
-                      <div class="flex items-center space-x-2 mt-1">
-                        @if (getProfileStep(step.id)?.completed) {
-                          <span class="text-xs text-green-600 font-medium">Complete</span>
-                        } @else if (isCurrentStep(step.id)) {
-                          <span class="text-xs text-slate-600 font-medium">Current</span>
-                        } @else if (canAccessStep(step, i)) {
-                          <span class="text-xs text-neutral-500">Available</span>
-                        } @else {
-                          <span class="text-xs text-neutral-400">Locked</span>
-                        }
-                        
-                        @if (step.priority === 'high') {
-                          <span class="bg-red-100 text-red-600 text-xs px-1.5 py-0.5 rounded text-xs">Required</span>
-                        }
-                      </div>
-                    </div>
-                  </div>
-                </button>
-              }
-            </nav>
-
-            <!-- Mobile Footer -->
-            <div class="p-4 border-t border-neutral-200 space-y-2">
+      <!-- Footer Actions -->
+      <footer class="bg-neutral-50 border-t border-neutral-200 px-4 lg:px-8 py-4 sticky bottom-0 z-30">
+        <div class="max-w-4xl mx-auto flex items-center justify-between">
+          <!-- Back Button -->
+          @if (!isFirstStep()) {
+            <ui-button variant="outline" (clicked)="previousStep()">
+              <lucide-icon [img]="ArrowLeftIcon" [size]="16" class="mr-2" />
+              <span class="hidden sm:inline">Back</span>
+            </ui-button>
+          } @else {
+            <div></div>
+          }
+          
+          <!-- Next/Submit Button -->
+          <div class="flex items-center space-x-3">
+            @if (isLastStep()) {
               <ui-button 
-                variant="outline" 
-                size="sm" 
-                class="w-full"
-                (clicked)="saveProgress()"
+                variant="primary"
+                size="lg"
+                (clicked)="submitProfile()"
+                [disabled]="isSubmitting()"
+              >
+                @if (isSubmitting()) {
+                  <lucide-icon [img]="ClockIcon" [size]="16" class="mr-2 animate-spin" />
+                  <span class="hidden sm:inline">Saving...</span>
+                } @else {
+                  <span class="hidden sm:inline">Save and Exit</span>
+                  <span class="sm:hidden">Exit</span>
+                }
+              </ui-button>
+            } @else {
+              <ui-button 
+                variant="primary"
+                size="lg"
+                (clicked)="saveAndContinue()"
                 [disabled]="isSaving()"
               >
                 @if (isSaving()) {
                   <lucide-icon [img]="ClockIcon" [size]="16" class="mr-2 animate-spin" />
-                  Saving...
+                  <span class="hidden sm:inline">Saving...</span>
                 } @else {
-                  Save Progress
+                  <span class="hidden sm:inline">Continue</span>
+                  <span class="sm:hidden">Next</span>
                 }
               </ui-button>
-              
-            
-              @if (lastSaved()) {
-                <div class="text-xs text-neutral-500 text-center">
-                  <lucide-icon [img]="CheckIcon" [size]="12" class="inline mr-1 text-green-500" />
-                  Last saved {{ getLastSavedText() }}
-                </div>
-              }
-            </div>
+            }
           </div>
         </div>
-      }
+      </footer>
+    </main>
+
+    <!-- Desktop Sidebar (Fixed Layout Context) -->
+    <div class="hidden lg:flex lg:w-80 flex-col sticky top-0 h-screen z-40 bg-neutral-50 border-l border-neutral-200">
+      <app-profile-steps-sidebar
+        [steps]="stepConfigArray()"
+        [currentStepId]="profileService.currentStepId()"
+        [canAccessStepFn]="canAccessStep.bind(this)"
+        [sectionDataFn]="getSectionData.bind(this)"
+        (stepClicked)="goToStep($event)"
+      />
     </div>
+
+    <!-- Mobile Navigation (Fixed z-index) -->
+    @if (showMobileNav()) {
+      <div class="fixed inset-0 z-40 lg:hidden">
+        <div class="fixed inset-0 bg-black bg-opacity-25" (click)="closeMobileNav()"></div>
+        <div class="fixed inset-y-0 left-0 w-80 bg-white shadow-xl flex flex-col z-50">
+          <!-- Mobile Nav Header -->
+          <div class="p-4 border-b border-neutral-200 flex items-center justify-between">
+            <h2 class="text-lg font-semibold text-neutral-900">Application Steps</h2>
+            <button (click)="closeMobileNav()" class="p-2 -mr-2" type="button">
+              <lucide-icon [img]="XIcon" [size]="24" class="text-neutral-600" />
+            </button>
+          </div>
+
+          <!-- Mobile Progress -->
+          <div class="p-4 border-b border-neutral-200">
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-sm font-medium text-neutral-700">Progress</span>
+              <span class="text-sm font-medium text-primary-600">{{ getOverallProgress() }}%</span>
+            </div>
+            
+            <div class="w-full bg-neutral-200 rounded-full h-2 mb-3">
+              <div 
+                class="bg-primary-500 h-2 rounded-full transition-all duration-500 ease-out"
+                [style.width.%]="getOverallProgress()"
+              ></div>
+            </div>
+            
+            <div class="text-sm text-neutral-600">
+              {{ getCompletedSteps() }} of {{ getTotalSteps() }} sections complete
+            </div>
+          </div>
+
+          <!-- Mobile Step Navigation -->
+          <nav class="flex-1 p-4 space-y-2 overflow-y-auto">
+            @for (step of stepInfo; track step.id; let i = $index) {
+              <button
+                (click)="goToStepAndCloseMobile(step.id)"
+                [class]="getMobileStepCardClasses(step)"
+                [disabled]="!canAccessStep(step.id)"
+                class="w-full text-left p-3 rounded-lg border transition-all duration-200"
+                type="button"
+              >
+                <div class="flex items-center space-x-3">
+                  <!-- Icon -->
+                  <div [class]="getStepIconClasses(step)">
+                    @if (getProfileStep(step.id)?.completed) {
+                      <lucide-icon [img]="CheckIcon" [size]="14" class="text-white" />
+                    } @else {
+                      <span class="text-xs font-medium">{{ i + 1 }}</span>
+                    }
+                  </div>
+                  
+                  <!-- Content -->
+                  <div class="flex-1 min-w-0">
+                    <h3 [class]="getStepTitleClasses(step)">{{ step.title }}</h3>
+                    
+                    <div class="flex items-center space-x-2 mt-1 text-xs">
+                      @if (getProfileStep(step.id)?.completed) {
+                        <span class="text-green-600 font-medium">Complete</span>
+                      } @else if (isCurrentStep(step.id)) {
+                        <span class="text-primary-600 font-medium">Current</span>
+                      } @else if (canAccessStep(step.id)) {
+                        <span class="text-neutral-500">Available</span>
+                      } @else {
+                        <span class="text-neutral-400">Locked</span>
+                      }
+                      
+                      <!-- @if (step.priority === 'high' && !getProfileStep(step.id)?.completed) {
+                        <span class="bg-red-100 text-red-600 px-1.5 py-0.5 rounded font-medium">
+                          Required
+                        </span>
+                      } -->
+                    </div>
+                  </div>
+                </div>
+              </button>
+            }
+          </nav>
+
+          <!-- Mobile Footer -->
+          <div class="p-4 border-t border-neutral-200 space-y-2">
+            <ui-button 
+              variant="outline" 
+              size="sm" 
+              class="w-full"
+              (clicked)="saveProgress()"
+              [disabled]="isSaving()"
+            >
+              @if (isSaving()) {
+                <lucide-icon [img]="ClockIcon" [size]="16" class="mr-2 animate-spin" />
+                Saving...
+              } @else {
+                Save Progress
+              }
+            </ui-button>
+            
+            @if (lastSaved()) {
+              <div class="text-xs text-neutral-500 text-center">
+                <lucide-icon [img]="CheckIcon" [size]="12" class="inline mr-1 text-green-500" />
+                Last saved {{ getLastSavedText() }}
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+    }
+  </div>
+</div>

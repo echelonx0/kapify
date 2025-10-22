@@ -3,7 +3,6 @@ import { Component, signal, OnInit, OnDestroy, inject } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { LucideAngularModule, AlertTriangle, Plus, Edit, Trash2, ChevronDown, ChevronUp, Save, Clock } from 'lucide-angular';
 import { UiInputComponent, UiButtonComponent } from '../../../../shared/components';
- 
 import { interval, Subscription } from 'rxjs';
 import { takeWhile } from 'rxjs/operators';
 import { FundingProfileSetupService } from '../../../services/funding-profile-setup.service';
@@ -156,45 +155,51 @@ export class AdminInformationComponent implements OnInit, OnDestroy {
     this.loadExistingShareholders();
   }
 
-  private populateFormsFromData(data: CompanyInformation) {
-    // Populate main form
-    this.adminForm.patchValue({
-      // Contact details from contactPerson
-      firstName: data.contactPerson?.fullName?.split(' ')[0] || '',
-      lastName: data.contactPerson?.fullName?.split(' ').slice(1).join(' ') || '',
-      email: data.contactPerson?.email || '',
-      phone: data.contactPerson?.phone || '',
-      role: data.contactPerson?.position || '',
+private populateFormsFromData(data: CompanyInformation) {
+  this.adminForm.patchValue({
+    // Contact details from contactPerson
+    firstName: data.contactPerson?.fullName?.split(' ')[0] || '',
+    lastName: data.contactPerson?.fullName?.split(' ').slice(1).join(' ') || '',
+    email: data.contactPerson?.email || '',
+    phone: data.contactPerson?.phone || '',
+    role: data.contactPerson?.position || '',
 
-      // Business details
-      companyName: data.companyName || '',
-      registrationNumber: data.registrationNumber || '',
-      yearsInOperation: data.operationalYears || '',
-      addressLine1: data.operationalAddress?.street || '',
-      suburb: data.operationalAddress?.city || '',
-      province: data.operationalAddress?.province || '',
-      postalCode: data.operationalAddress?.postalCode || '',
-      industry: data.industryType || '',
-      businessDescription: data.businessActivity || '',
-      staffCount: data.employeeCount || '',
+    // Business details
+    companyName: data.companyName || '',
+    registrationNumber: data.registrationNumber || '',
+    yearsInOperation: data.operationalYears || '',
+    addressLine1: data.operationalAddress?.street || '',
+    suburb: data.operationalAddress?.city || '',
+    province: data.operationalAddress?.province || '',
+    postalCode: data.operationalAddress?.postalCode || '',
+    industry: data.industryType || '',
+    businessDescription: data.businessActivity || '',
+    staffCount: data.employeeCount || '',
 
-      // Legal compliance
-      vatNumber: data.vatNumber || '',
-      vatRegistered: data.vatNumber ? 'yes' : 'no',
-      taxCompliance: data.taxComplianceStatus === 'compliant' ? 'compliant' : 'outstanding'
-    });
+    // Legal compliance
+    vatNumber: data.vatNumber || '',
+    vatRegistered: data.vatNumber ? 'yes' : 'no',
+    taxCompliance: data.taxComplianceStatus === 'compliant' ? 'compliant' : 'outstanding',
+    
+    // ADD: Business Stage & Legal Fields
+    businessStage: data.businessStage || '',
+    bbbeeLevel: data.bbbeeLevel || '',
+    cipcReturns: data.cipcReturns || '',
+    incomeTaxNumber: data.incomeTaxNumber || '',
+    workmansComp: data.workmansCompensation || ''
+  });
 
-    // Convert ownership to shareholders format
-    if (data.ownership && data.ownership.length > 0) {
-      const shareholderData = data.ownership.map((owner, index) => ({
-        id: (index + 1).toString(),
-        fullName: owner.ownerName,
-        currentShareholding: owner.ownershipPercentage,
-        postInvestmentShareholding: owner.ownershipPercentage // Default to same
-      }));
-      this.shareholders.set(shareholderData);
-    }
+  // Convert ownership to shareholders format
+  if (data.ownership && data.ownership.length > 0) {
+    const shareholderData = data.ownership.map((owner, index) => ({
+      id: (index + 1).toString(),
+      fullName: owner.ownerName,
+      currentShareholding: owner.ownershipPercentage,
+      postInvestmentShareholding: owner.ownershipPercentage
+    }));
+    this.shareholders.set(shareholderData);
   }
+}
 
   private setupAutoSave() {
     // Auto-save every 30 seconds when data changes
@@ -250,58 +255,65 @@ export class AdminInformationComponent implements OnInit, OnDestroy {
     }
   }
 
-  private buildCompanyInfoData(): CompanyInformation {
-    const formValue = this.adminForm.value;
-    const shareholdersData = this.shareholders();
+private buildCompanyInfoData(): CompanyInformation {
+  const formValue = this.adminForm.value;
+  const shareholdersData = this.shareholders();
 
-    return {
-      companyName: formValue.companyName || '',
-      registrationNumber: formValue.registrationNumber || '',
-      vatNumber: formValue.vatRegistered === 'yes' ? formValue.vatNumber : undefined,
-      industryType: formValue.industry || '',
-      businessActivity: formValue.businessDescription || '',
-      foundingYear: new Date().getFullYear() - (formValue.yearsInOperation || 0),
-      operationalYears: formValue.yearsInOperation || 0,
-      companyType: 'pty_ltd', // Default, could be made selectable
-      employeeCount: formValue.staffCount?.toString() || '',
-      
-      // Convert shareholders to ownership structure
-      ownership: shareholdersData.map(shareholder => ({
-        ownerName: shareholder.fullName,
-        ownershipPercentage: shareholder.currentShareholding,
-        role: 'Shareholder'
-      })),
+  return {
+    companyName: formValue.companyName || '',
+    registrationNumber: formValue.registrationNumber || '',
+    vatNumber: formValue.vatRegistered === 'yes' ? formValue.vatNumber : undefined,
+    industryType: formValue.industry || '',
+    businessActivity: formValue.businessDescription || '',
+    foundingYear: new Date().getFullYear() - (formValue.yearsInOperation || 0),
+    operationalYears: formValue.yearsInOperation || 0,
+    companyType: 'pty_ltd',
+    employeeCount: formValue.staffCount?.toString() || '',
+    
+    // ADD: Business Stage
+    businessStage: formValue.businessStage || undefined,
+    
+    // Convert shareholders to ownership structure
+    ownership: shareholdersData.map(shareholder => ({
+      ownerName: shareholder.fullName,
+      ownershipPercentage: shareholder.currentShareholding,
+      role: 'Shareholder'
+    })),
 
-      registeredAddress: {
-        street: formValue.addressLine1 || '',
-        city: formValue.suburb || '',
-        province: formValue.province || '',
-        postalCode: formValue.postalCode || '',
-        country: 'South Africa'
-      },
+    registeredAddress: {
+      street: formValue.addressLine1 || '',
+      city: formValue.suburb || '',
+      province: formValue.province || '',
+      postalCode: formValue.postalCode || '',
+      country: 'South Africa'
+    },
 
-      operationalAddress: {
-        street: formValue.addressLine1 || '',
-        city: formValue.suburb || '',
-        province: formValue.province || '',
-        postalCode: formValue.postalCode || '',
-        country: 'South Africa'
-      },
+    operationalAddress: {
+      street: formValue.addressLine1 || '',
+      city: formValue.suburb || '',
+      province: formValue.province || '',
+      postalCode: formValue.postalCode || '',
+      country: 'South Africa'
+    },
 
-      contactPerson: {
-        fullName: `${formValue.firstName || ''} ${formValue.lastName || ''}`.trim(),
-        position: formValue.role || '',
-        email: formValue.email || '',
-        phone: formValue.phone || '',
-        idNumber: undefined // Would need to add this field
-      },
+    contactPerson: {
+      fullName: `${formValue.firstName || ''} ${formValue.lastName || ''}`.trim(),
+      position: formValue.role || '',
+      email: formValue.email || '',
+      phone: formValue.phone || '',
+      idNumber: undefined
+    },
 
-      taxComplianceStatus: formValue.taxCompliance === 'compliant' ? 'compliant' : 'outstanding',
-      bbbeeLevel: formValue.bbbeeLevel || undefined,
-      regulatoryLicenses: [] // Would be populated elsewhere
-    };
-  }
-
+    taxComplianceStatus: formValue.taxCompliance === 'compliant' ? 'compliant' : 'outstanding',
+    bbbeeLevel: formValue.bbbeeLevel || undefined,
+    regulatoryLicenses: [],
+    
+    // ADD: Legal Compliance Fields
+    cipcReturns: formValue.cipcReturns || undefined,
+    incomeTaxNumber: formValue.incomeTaxNumber || undefined,
+    workmansCompensation: formValue.workmansComp || undefined
+  };
+}
   // ===============================
   // UI HELPER METHODS
   // ===============================
