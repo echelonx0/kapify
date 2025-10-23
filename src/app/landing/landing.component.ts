@@ -22,11 +22,13 @@ import {
   FileText,
   Filter,
   ShieldCheck,
-  XCircle
+  XCircle,
+  Play
 } from 'lucide-angular';
 import { LandingFooterComponent } from './landing-footer.component';
 import { LandingHeaderComponent } from './landing-header.component';
 import { Router } from '@angular/router';
+import { SafeResourceUrl, DomSanitizer } from '@angular/platform-browser';
 
 interface Statistic {
   value: string;
@@ -67,34 +69,49 @@ interface ProblemSolution {
   templateUrl: 'landing.component.html',
 })
 export class LandingComponent {
+isPlaying = false;
+  videoUrl: SafeResourceUrl | null = null;
 
-    constructor(private router: Router) {}
+ 
+
+  playVideo() {
+    const youtubeUrl = 'https://www.youtube.com/embed/ybkhNejL3eQ?autoplay=1';
+    this.videoUrl = this.sanitizer.bypassSecurityTrustResourceUrl(youtubeUrl);
+    this.isPlaying = true;
+  }
+    constructor(private router: Router, private sanitizer: DomSanitizer) {}
 
   mobileMenuOpen = signal(false);
-  email = 'info@kapify.co.za';
+  email = 'info@kapify.africa';
+ 
+  // === Icons ===
+  ArrowRightIcon = ArrowRight;
+  PlayIcon = Play;
+  ShieldCheckIcon = ShieldCheck;
+  BuildingIcon = Building;
+  TargetIcon = Target;
+  ZapIcon = Zap;
+  FileTextIcon = FileText;
+  TrendingUpIcon = TrendingUp;
+  FilterIcon = Filter;
+  ClockIcon = Clock;
+  UsersIcon = Users;
 
   // Icons
   MenuIcon = Menu;
   XIcon = X;
   CheckCircleIcon = CheckCircle;
-  ArrowRightIcon = ArrowRight;
+ 
   MapPinIcon = MapPin;
   PhoneIcon = Phone;
   MailIcon = Mail;
   StarIcon = Star;
-  TrendingUpIcon = TrendingUp;
-  ClockIcon = Clock;
+ 
   ShieldIcon = Shield;
-  UsersIcon = Users;
-  TargetIcon = Target;
-  ZapIcon = Zap;
-
-  ShieldCheckIcon = ShieldCheck;
+ 
 XCircleIcon = XCircle;
 ArrowDownIcon = ArrowDown;
-BuildingIcon = Building;
-FilterIcon = Filter;
-FileTextIcon = FileText;
+ 
 
   heroStats: Statistic[] = [
     { value: '98%', label: 'MATCH SUCCESS', description: 'Of matches get funded' },
@@ -230,8 +247,22 @@ FileTextIcon = FileText;
     console.log('Watch demo...');
   }
 
+ 
+
+  // === Dynamic year for footer ===
+  currentYear = new Date().getFullYear();
+
+  // === Methods ===
+  openVideoModal() {
+    // 👇 Replace with your actual modal logic later
+    console.log('Video modal opened');
+    alert('🎥 Play Kapify Intro Video (modal placeholder)');
+  }
+
+ 
+
   scrollToMatching() {
     const element = document.getElementById('matching-section');
-    element?.scrollIntoView({ behavior: 'smooth' });
+    if (element) element.scrollIntoView({ behavior: 'smooth' });
   }
 }

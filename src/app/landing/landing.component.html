@@ -2,154 +2,63 @@
   <landing-header />
  
   <!-- Hero Section - Problem/Solution Focus -->
-  <section class="relative pt-32 pb-20 overflow-hidden">
-    <!-- Dark Gradient Background -->
-    <div class="absolute inset-0">
-      <div class="w-full h-full bg-gradient-to-br from-slate-900 via-slate-800 to-slate-700"></div>
-      <div class="absolute inset-0 bg-black/20"></div>
-      <!-- Subtle grid pattern -->
-      <div class="absolute inset-0 opacity-5" 
-           style="background-image: linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px); background-size: 40px 40px;">
-      </div>
-    </div>
+<section class="bg-[#0B0E11] text-white py-24">
+  <div class="max-w-7xl mx-auto px-6 lg:px-8 grid lg:grid-cols-2 gap-16 items-center">
     
-    <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="grid lg:grid-cols-2 gap-16 items-center min-h-[85vh]">
-        
-        <!-- Left Content - Value Proposition -->
-        <div class="space-y-10">
-          
-          <!-- Main Headline - Dual Message -->
-          <div class="space-y-6">
-            <h1 class="text-5xl lg:text-6xl font-bold text-white leading-tight">
-              Take chaos out of
-              <span class="block text-green-400 mt-2">Raising Kapital.</span>
-            </h1>
-            <p class="text-xl text-gray-200 leading-relaxed max-w-xl">
-             Kapify connects good businesses and startups with discerning investors
-            </p>
-          </div>
+    <!-- Left Text -->
+    <div>
+      <h1 class="text-5xl lg:text-6xl font-extrabold leading-tight">
+        Turn funding chaos<br />
+        <span class="text-green-400">into clarity.</span>
+      </h1>
 
-          <!-- Big Stats - Social Proof -->
-          <!-- <div class="grid grid-cols-3 gap-6">
-            <div class="text-center">
-              <div class="text-4xl lg:text-5xl font-bold text-white mb-2">R450M</div>
-              <div class="text-sm text-gray-300 font-medium">Available</div>
-            </div>
-            <div class="text-center">
-              <div class="text-4xl lg:text-5xl font-bold text-green-400 mb-2">98%</div>
-              <div class="text-sm text-gray-300 font-medium">Success Rate</div>
-            </div>
-            <div class="text-center">
-              <div class="text-4xl lg:text-5xl font-bold text-white mb-2">1,847</div>
-              <div class="text-sm text-gray-300 font-medium">Businesses</div>
-            </div>
-          </div> -->
+      <p class="mt-6 text-lg text-gray-300 max-w-md">
+        Kapify connects high-potential businesses with investors ready to close deals — faster, smarter, and transparently.
+      </p>
 
-          <!-- Dual CTAs -->
-          <div class="flex flex-col sm:flex-row gap-4">
-            <button 
-              class="inline-flex items-center justify-center px-8 py-4 bg-green-500 text-white text-lg font-bold rounded-lg hover:bg-green-600 transition-all shadow-lg hover:shadow-xl"
-              (click)="visitMarketPlace()"
-            >
-              Start the funding process
-              <lucide-icon [img]="ArrowRightIcon" [size]="20" class="ml-2" />
-            </button>
-            <button 
-              class="inline-flex items-center justify-center px-8 py-4 border-2 border-white text-white text-lg font-bold rounded-lg hover:bg-white hover:text-slate-900 transition-all"
-              (click)="scrollToMatching()"
-            >
-              The Kapify process
-            </button>
-          </div>
+      <div class="mt-10 flex flex-wrap gap-4">
+        <button
+          class="inline-flex items-center justify-center px-8 py-3 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg shadow-lg transition"
+        >
+          Start the funding process →
+        </button>
+        <button
+          class="inline-flex items-center justify-center px-8 py-3 border border-gray-600 text-white hover:bg-gray-800 rounded-lg font-semibold transition"
+        >
+          The Kapify process
+        </button>
+      </div>
 
-          <!-- Trust Line -->
-          <div class="flex items-center gap-3 text-gray-300">
-            <lucide-icon [img]="ShieldCheckIcon" [size]="20" class="text-green-400" />
-            <span class="text-sm">Trusted by institutional funders managing R12B+</span>
-          </div>
-        </div>
+      <div class="mt-6 flex items-center gap-2 text-sm text-gray-400">
+        <lucide-icon [img]="ShieldCheckIcon" [size]="16" />
+        <span>The smarter deal flow platform for founders and funders.</span>
+      </div>
+    </div>
 
-        <!-- Right Side - Before/After Visual -->
-        <div class="relative">
-          
-          <!-- Before/After Container -->
-          <div class="space-y-6">
-            
-            <!-- BEFORE: Traditional Way (Problem) -->
-            <div class="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-6">
-              <div class="flex items-center gap-3 mb-4">
-                <div class="w-10 h-10 rounded-full bg-red-500/20 flex items-center justify-center">
-                  <lucide-icon [img]="XCircleIcon" [size]="20" class="text-red-400" />
-                </div>
-                <h3 class="text-lg font-bold text-white">Traditional Funding</h3>
-              </div>
-              <div class="space-y-3">
-                <div class="flex items-start gap-3">
-                  <div class="w-1.5 h-1.5 rounded-full bg-red-400 mt-2"></div>
-                  <p class="text-sm text-gray-300">Apply to 20+ funders blindly</p>
-                </div>
-                <div class="flex items-start gap-3">
-                  <div class="w-1.5 h-1.5 rounded-full bg-red-400 mt-2"></div>
-                  <p class="text-sm text-gray-300">Wait 3-6 months for responses</p>
-                </div>
-                <div class="flex items-start gap-3">
-                  <div class="w-1.5 h-1.5 rounded-full bg-red-400 mt-2"></div>
-                  <p class="text-sm text-gray-300">85% rejection rate</p>
-                </div>
-                <div class="flex items-start gap-3">
-                  <div class="w-1.5 h-1.5 rounded-full bg-red-400 mt-2"></div>
-                  <p class="text-sm text-gray-300">No idea why you were rejected</p>
-                </div>
-              </div>
-            </div>
+    <!-- Right Video -->
+    <div
+      class="bg-gradient-to-b from-green-200 to-green-50 rounded-2xl shadow-2xl p-6 transition hover:scale-[1.02] duration-300"
+    >
+      <h3 class="text-2xl font-bold text-gray-900 mb-4 text-center">
+        Watch How Kapify Works
+      </h3>
+      <div class="rounded-xl overflow-hidden shadow-lg">
+       
 
-            <!-- Transition Arrow -->
-            <div class="flex justify-center">
-              <div class="w-12 h-12 rounded-full bg-green-500 flex items-center justify-center">
-                <lucide-icon [img]="ArrowDownIcon" [size]="24" class="text-white" />
-              </div>
-            </div>
-
-            <!-- AFTER: Kapify Way (Solution) -->
-            <div class="bg-gradient-to-br from-green-500/20 to-emerald-500/20 backdrop-blur-sm border border-green-400/30 rounded-2xl p-6">
-              <div class="flex items-center gap-3 mb-4">
-                <div class="w-10 h-10 rounded-full bg-green-500 flex items-center justify-center">
-                  <lucide-icon [img]="CheckCircleIcon" [size]="20" class="text-white" />
-                </div>
-                <h3 class="text-lg font-bold text-white">With Kapify</h3>
-              </div>
-              <div class="space-y-3">
-                <div class="flex items-start gap-3">
-                  <div class="w-1.5 h-1.5 rounded-full bg-green-400 mt-2"></div>
-                  <p class="text-sm text-gray-200">Prepare your documents and business</p>
-                </div>
-                <div class="flex items-start gap-3">
-                  <div class="w-1.5 h-1.5 rounded-full bg-green-400 mt-2"></div>
-                  <p class="text-sm text-gray-200">Receive feedback and guidance</p>
-                </div>
-                <div class="flex items-start gap-3">
-                  <div class="w-1.5 h-1.5 rounded-full bg-green-400 mt-2"></div>
-                  <p class="text-sm text-gray-200">Learn and improve</p>
-                </div>
-                <div class="flex items-start gap-3">
-                  <div class="w-1.5 h-1.5 rounded-full bg-green-400 mt-2"></div>
-                  <p class="text-sm text-gray-200">Get investor ready</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Floating Badge for Funders -->
-          <div class="absolute -top-4 -right-4 bg-white rounded-xl p-4 shadow-2xl border border-gray-100 max-w-[200px]">
-            <div class="text-xs font-semibold text-gray-500 uppercase mb-1">For Funders</div>
-            <p class="text-sm text-gray-700 leading-tight">Only see pre-qualified businesses that match your criteria</p>
-          </div>
-        </div>
+        <iframe
+  class="w-full aspect-video rounded-xl"
+  src="https://www.youtube.com/embed/ybkhNejL3eQ?rel=0&modestbranding=1&showinfo=0&autohide=1&color=white"
+  title="Kapify Welcome Video"
+  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+  allowfullscreen
+></iframe>
 
       </div>
     </div>
-  </section>
+
+  </div>
+</section>
+
 
   <!-- Dual Value Props - Split by Audience -->
   <section class="py-20 bg-gray-50">
@@ -339,65 +248,34 @@
       </div>
     </div>
   </section>
+ 
 
-  <!-- Social Proof -->
-  <!-- <section class="py-20 bg-white">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="text-center mb-16">
-        <h2 class="text-4xl font-bold text-gray-900 mb-4">
-          Real Results
-        </h2>
-        <p class="text-xl text-gray-600">Businesses funded through Kapify</p>
-      </div>
+<!-- Dealflow / Disclaimer Section -->
+<section class="py-24 bg-neutral-50">
+  <div class="max-w-5xl mx-auto px-6 lg:px-12">
+    <div class="border-t border-neutral-300 pt-12">
+      <p class="text-neutral-700 text-justify leading-relaxed text-lg font-medium">
+        <strong>Kapify</strong> provides smarter deal flow for startups, SMEs, venture funds, and corporate investors. 
+        Our platform enables founders to connect with capital partners through structured, transparent, and data-driven 
+        funding processes. We do not guarantee funding outcomes; all investment decisions are made independently by verified 
+        funders on the platform. Kapify facilitates introductions, provides due diligence infrastructure, and enhances visibility 
+        for both sides of the market.  
+      </p>
 
-      <div class="grid md:grid-cols-3 gap-8">
-        @for (testimonial of testimonials; track testimonial.name) {
-          <div class="bg-white p-8 rounded-2xl shadow-lg border border-gray-100 hover:shadow-xl transition-shadow">
-            <div class="space-y-6">
-              <blockquote class="text-gray-700 leading-relaxed">
-                "{{ testimonial.content }}"
-              </blockquote>
-              <div class="pt-6 border-t border-gray-200">
-                <div class="font-bold text-gray-900">{{ testimonial.name }}</div>
-                <div class="text-sm text-gray-600">{{ testimonial.role }}, {{ testimonial.company }}</div>
-                <div class="text-green-600 font-semibold text-sm mt-2">{{ testimonial.amount }}</div>
-              </div>
-            </div>
-          </div>
-        }
-      </div>
+      <p class="mt-8 text-neutral-600 text-justify leading-relaxed text-base">
+        Participation on the Kapify platform is subject to eligibility and compliance checks. Kapify does not provide 
+        investment advice, solicit investment, or act as a broker-dealer. While all information is verified to the extent possible, 
+        users are encouraged to conduct independent assessments before making any financial commitments.  
+      </p>
+
+      <p class="mt-8 text-neutral-500 text-justify leading-relaxed text-sm italic">
+        © {{ currentYear }} Kapify. All rights reserved. Kapify is the smarter deal flow platform for startups, SMEs, and investors. 
+        By using this platform, you agree to our <a href="#" class="underline hover:text-neutral-800">Terms of Service</a> 
+        and <a href="#" class="underline hover:text-neutral-800">Privacy Policy</a>.
+      </p>
     </div>
-  </section> -->
-
-  <!-- Final CTA -->
-  <section class="py-20 bg-green-600">
-    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-      <div class="space-y-8">
-        <h2 class="text-4xl lg:text-5xl font-bold text-white">
-          Ready to Get Funded?
-        </h2>
-        <p class="text-xl text-green-100">
-          Complete your profile. Get matched with funders who want your business. 
-          Receive funding offers within 48 hours.
-        </p>
-        <div class="flex flex-col sm:flex-row justify-center gap-6">
-          <button 
-            class="inline-flex items-center justify-center px-10 py-4 bg-white text-green-600 text-lg font-bold rounded-lg hover:bg-gray-50 transition-colors shadow-lg"
-            (click)="visitMarketPlace()"
-          >
-            Get Started 
-            <lucide-icon [img]="ArrowRightIcon" [size]="20" class="ml-2" />
-          </button>
-          <button 
-            class="inline-flex items-center justify-center px-10 py-4 border-2 border-white text-white text-lg font-bold rounded-lg hover:bg-white hover:text-green-600 transition-colors"
-            (click)="register()"
-          >
-            I'm a Funder
-          </button>
-        </div>
-      </div>
-    </div>
-  </section>
+  </div>
+</section>
 
   <landing-footer />
 </div>
