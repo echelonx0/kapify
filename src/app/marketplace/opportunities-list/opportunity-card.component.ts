@@ -189,6 +189,18 @@ export class KapifyOpportunityCardComponent {
   TrendingUpIcon = TrendingUp;
   AwardIcon = Award;
 
+  // --- New helper methods ---
+private getPrimaryFundingType(): string | undefined {
+  const ft = this.opportunity.fundingType;
+  return Array.isArray(ft) ? ft[0] : ft;
+}
+
+private getAllFundingTypes(): string[] {
+  const ft = this.opportunity.fundingType;
+  return Array.isArray(ft) ? ft : (ft ? [ft] : []);
+}
+
+
   onApply() {
     this.apply.emit(this.opportunity.id);
   }
@@ -219,26 +231,34 @@ export class KapifyOpportunityCardComponent {
   }
 
   getFundingTypeClass(): string {
-    switch (this.opportunity.fundingType) {
-      case 'equity': return 'status-badge bg-purple-100 text-purple-700';
-      case 'debt': return 'status-badge bg-blue-100 text-blue-700';
-      case 'grant': return 'status-badge bg-green-100 text-green-700';
-      case 'mezzanine': return 'status-badge bg-cyan-100 text-cyan-700';
-      case 'convertible': return 'status-badge bg-indigo-100 text-indigo-700';
-      default: return 'status-badge bg-neutral-100 text-neutral-700';
-    }
+  const primaryType = this.getPrimaryFundingType();
+switch (primaryType) {
+  case 'equity': return 'status-badge bg-purple-100 text-purple-700';
+  case 'debt': return 'status-badge bg-blue-100 text-blue-700';
+  case 'grant': return 'status-badge bg-green-100 text-green-700';
+  case 'mezzanine': return 'status-badge bg-cyan-100 text-cyan-700';
+  case 'convertible': return 'status-badge bg-indigo-100 text-indigo-700';
+  case 'purchase_order': return 'status-badge bg-amber-100 text-amber-700';
+  case 'invoice_financing': return 'status-badge bg-teal-100 text-teal-700';
+  default: return 'status-badge bg-neutral-100 text-neutral-700';
+}
+
   }
 
-  formatFundingType(): string {
-    const types: Record<string, string> = {
-      equity: 'Equity',
-      debt: 'Debt',
-      mezzanine: 'Mezzanine',
-      grant: 'Grant',
-      convertible: 'Convertible'
-    };
-    return types[this.opportunity.fundingType] || this.opportunity.fundingType;
-  }
+formatFundingType(): string {
+  const typeLabels: Record<string, string> = {
+    equity: 'Equity',
+    debt: 'Debt',
+    mezzanine: 'Mezzanine',
+    grant: 'Grant',
+    convertible: 'Convertible',
+    purchase_order: 'Purchase Order',
+    invoice_financing: 'Invoice Financing'
+  };
+
+  const allTypes = this.getAllFundingTypes();
+  return allTypes.map(t => typeLabels[t] || t).join(', ');
+}
 
   formatAmountRange(): string {
     const currency = this.opportunity.currency || 'ZAR';

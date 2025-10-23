@@ -156,7 +156,7 @@ export interface ApplicantInfo {
 export interface OpportunityInfo {
   id: string;
   title: string;
-  fundingType: string;
+  fundingType: string[];
   offerAmount: number;
   currency: string;
   organizationId: string;

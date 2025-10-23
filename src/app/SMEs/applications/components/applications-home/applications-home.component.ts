@@ -37,7 +37,7 @@ interface ApplicationData {
   title: string;
   applicationNumber?: string;
   status: 'draft' | 'submitted' | 'under_review' | 'approved' | 'rejected' | 'withdrawn';
-  fundingType?: string;
+  fundingType?: string[];
   requestedAmount: number;
   currency: string;
   currentStage?: string;
@@ -280,43 +280,54 @@ safeUserType = computed((): UserType => {
   // DATA TRANSFORMATION (UNCHANGED)
   // ===============================
 
-  private transformSMEApplication(app: OpportunityApplication): ApplicationData {
-    return { 
-      id: app.id,
-      title: app.title,
-      applicationNumber: `APP-${app.id.slice(-6).toUpperCase()}`,
-      status: app.status,
-      fundingType: app.opportunity?.fundingType || 'unknown',
-      requestedAmount: app.coverInformation.requestedAmount || 0,
-      currency: app.opportunity?.currency || 'ZAR',
-      currentStage: this.getStageDisplayName(app.stage),
-      description: app.description || app.coverInformation.purposeStatement,
-      createdAt: app.createdAt,
-      updatedAt: app.updatedAt,
-      submittedAt: app.submittedAt,
-      opportunityId: app.opportunityId,
-      opportunityTitle: app.opportunity?.title
-    };
-  }
+private transformSMEApplication(app: OpportunityApplication): ApplicationData {
+  const rawFundingType = app.opportunity?.fundingType;
+  return { 
+    id: app.id,
+    title: app.title,
+    applicationNumber: `APP-${app.id.slice(-6).toUpperCase()}`,
+    status: app.status,
+    fundingType: Array.isArray(rawFundingType)
+      ? rawFundingType
+      : rawFundingType
+        ? [rawFundingType]
+        : [],
+    requestedAmount: app.coverInformation.requestedAmount || 0,
+    currency: app.opportunity?.currency || 'ZAR',
+    currentStage: this.getStageDisplayName(app.stage),
+    description: app.description || app.coverInformation.purposeStatement,
+    createdAt: app.createdAt,
+    updatedAt: app.updatedAt,
+    submittedAt: app.submittedAt,
+    opportunityId: app.opportunityId,
+    opportunityTitle: app.opportunity?.title
+  };
+}
 
-  private transformFunderApplication(app: FundingApplication): ApplicationData {
-    return {
-      id: app.id,
-      title: app.title,
-      status: app.status,
-      fundingType: app.opportunity?.fundingType || 'unknown',
-      requestedAmount: this.extractRequestedAmount(app.formData),
-      currency: app.opportunity?.currency || 'ZAR',
-      currentStage: this.getStageDisplayName(app.stage),
-      description: app.description,
-      createdAt: app.createdAt,
-      updatedAt: app.updatedAt,
-      submittedAt: app.submittedAt,
-      applicantName: `${app.applicant?.firstName || ''} ${app.applicant?.lastName || ''}`.trim(),
-      applicantCompany: app.applicant?.companyName,
-      opportunityTitle: app.opportunity?.title
-    };
-  }
+private transformFunderApplication(app: FundingApplication): ApplicationData {
+  const rawFundingType = app.opportunity?.fundingType;
+  return {
+    id: app.id,
+    title: app.title,
+    status: app.status,
+    fundingType: Array.isArray(rawFundingType)
+      ? rawFundingType
+      : rawFundingType
+        ? [rawFundingType]
+        : [],
+    requestedAmount: this.extractRequestedAmount(app.formData),
+    currency: app.opportunity?.currency || 'ZAR',
+    currentStage: this.getStageDisplayName(app.stage),
+    description: app.description,
+    createdAt: app.createdAt,
+    updatedAt: app.updatedAt,
+    submittedAt: app.submittedAt,
+    applicantName: `${app.applicant?.firstName || ''} ${app.applicant?.lastName || ''}`.trim(),
+    applicantCompany: app.applicant?.companyName,
+    opportunityTitle: app.opportunity?.title
+  };
+}
+
 
   private extractRequestedAmount(formData: Record<string, any>): number {
     return formData?.['coverInformation']?.requestedAmount || 
@@ -358,9 +369,12 @@ safeUserType = computed((): UserType => {
       filtered = filtered.filter(app => app.status === this.statusFilter());
     }
 
-    if (this.fundingTypeFilter()) {
-      filtered = filtered.filter(app => app.fundingType === this.fundingTypeFilter());
-    }
+if (this.fundingTypeFilter()) {
+  filtered = filtered.filter(app =>
+    app.fundingType?.includes(this.fundingTypeFilter())
+  );
+}
+
 
     return filtered;
   });

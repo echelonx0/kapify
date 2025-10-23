@@ -354,7 +354,7 @@ private buildOpportunityData(): Observable<Partial<FundingOpportunity>> {
         organizationId: orgId,
         
         // Funding Terms
-        offerAmount: Math.max(0, this.formState.parseNumberValue(data.offerAmount)),
+        offerAmount: Math.max(0, this.formState.parseNumberValue(data.maxInvestment)),
         minInvestment: this.formState.parseNumberValue(data.minInvestment) || undefined,
         maxInvestment: this.formState.parseNumberValue(data.maxInvestment) || undefined,
         currency: data.currency,
@@ -414,9 +414,7 @@ private buildOpportunityData(): Observable<Partial<FundingOpportunity>> {
     if (!data.typicalInvestment || this.formState.parseNumberValue(data.typicalInvestment) <= 0) {
       return 'Typical investment must be specified and greater than zero.';
     }
-    if (!data.offerAmount || this.formState.parseNumberValue(data.offerAmount) <= 0) {
-      return 'Offer amount must be specified and greater than zero.';
-    }
+  
     if (!data.decisionTimeframe) return 'Decision timeframe must be specified.';
     return null;
   }
@@ -436,7 +434,7 @@ private buildOpportunityData(): Observable<Partial<FundingOpportunity>> {
       data.description.trim() &&
       data.fundingType &&
       data.typicalInvestment &&
-      data.offerAmount &&
+      data.maxInvestment &&
       data.decisionTimeframe
     );
   }

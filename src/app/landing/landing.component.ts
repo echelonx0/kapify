@@ -176,29 +176,29 @@ FileTextIcon = FileText;
     }
   ];
 
-  testimonials: Testimonial[] = [
-    {
-      name: 'Thabo Mthembu',
-      company: 'TechFlow Solutions',
-      role: 'CEO',
-      content: 'Got 3 funding offers in one week after being rejected by banks for months.',
-      amount: 'Funded: R2.5M Series A'
-    },
-    {
-      name: 'Sarah van der Merwe', 
-      company: 'GreenLeaf Organics',
-      role: 'Founder',
-      content: 'Matched with an impact investor who understood our business. Funded in 10 days.',
-      amount: 'Funded: R800K Growth Capital'
-    },
-    {
-      name: 'Mandla Ndlovu',
-      company: 'Digital Marketing Pro',
-      role: 'Managing Director', 
-      content: 'Applied to 12 lenders over 6 months - all rejected. Kapify found the right one in 3 days.',
-      amount: 'Funded: R1.2M Working Capital'
-    }
-  ];
+  // testimonials: Testimonial[] = [
+  //   {
+  //     name: 'Thabo Mthembu',
+  //     company: 'TechFlow Solutions',
+  //     role: 'CEO',
+  //     content: 'Got 3 funding offers in one week after being rejected by banks for months.',
+  //     amount: 'Funded: R2.5M Series A'
+  //   },
+  //   {
+  //     name: 'Sarah van der Merwe', 
+  //     company: 'GreenLeaf Organics',
+  //     role: 'Founder',
+  //     content: 'Matched with an impact investor who understood our business. Funded in 10 days.',
+  //     amount: 'Funded: R800K Growth Capital'
+  //   },
+  //   {
+  //     name: 'Mandla Ndlovu',
+  //     company: 'Digital Marketing Pro',
+  //     role: 'Managing Director', 
+  //     content: 'Applied to 12 lenders over 6 months - all rejected. Kapify found the right one in 3 days.',
+  //     amount: 'Funded: R1.2M Working Capital'
+  //   }
+  // ];
 
   getStepClasses(index: number): string {
     const completed = index < 1;

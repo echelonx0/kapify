@@ -57,7 +57,8 @@ export interface FundingOpportunity {
   currency: string;
   
   // Specific terms for this opportunity
-  fundingType: 'debt' | 'equity' | 'convertible' | 'mezzanine' | 'grant'; 
+  fundingType: string[];
+  
   interestRate?: number;
   equityOffered?: number;
   repaymentTerms?: string;

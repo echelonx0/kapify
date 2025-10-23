@@ -1,20 +1,6 @@
 <!-- eligibility.component.html -->
 <div class="space-y-6">
-  <!-- Investment Philosophy (text only) -->
-  <div class="space-y-2">
-    <ui-textarea
-      [label]="'Investment Philosophy'"
-      [placeholder]="'Describe your fund\'s investment approach, priorities, and values. E.g., focus on sustainable growth, support for minority-owned businesses, sector expertise, etc.'"
-      [value]="formState.formData().investmentCriteria"
-      (valueChange)="ui.onFieldChange('investmentCriteria', $event)"
-      [error]="formState.getFieldError('investmentCriteria')?.message || null"
-      [hint]="'This helps SMEs understand your investment thesis'"
-      [rows]="4"
-      [showCharCount]="true"
-      [maxLength]="1000"
-    ></ui-textarea>
-  </div>
-
+ 
   
     <div class="space-y-6">
   <!-- Investment Philosophy -->

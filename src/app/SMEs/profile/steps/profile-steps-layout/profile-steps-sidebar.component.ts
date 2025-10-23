@@ -269,19 +269,20 @@ export class ProfileStepsSidebarComponent {
     }
   }
 
-  getStepIconClasses(step: StepConfig): string {
-    const baseClasses = 'w-8 h-8 rounded-lg flex items-center justify-center font-semibold';
-    
-    if (this.isStepComplete(step.id)) {
-      return `${baseClasses} bg-green-600 text-white`;
-    } else if (this.isCurrentStep(step.id)) {
-      return `${baseClasses} bg-orange-500 text-white`;
-    } else if (this.canAccessStep(step.id)) {
-      return `${baseClasses} bg-slate-100 text-slate-600`;
-    } else {
-      return `${baseClasses} bg-slate-100 text-slate-400`;
-    }
+getStepIconClasses(step: StepConfig): string {
+  const baseClasses = 'w-6 h-6 rounded-md flex items-center justify-center font-semibold';
+  
+  if (this.isStepComplete(step.id)) {
+    return `${baseClasses} bg-green-600 text-white`;
+  } else if (this.isCurrentStep(step.id)) {
+    return `${baseClasses} bg-orange-500 text-white`;
+  } else if (this.canAccessStep(step.id)) {
+    return `${baseClasses} bg-slate-100 text-slate-600`;
+  } else {
+    return `${baseClasses} bg-slate-100 text-slate-400`;
   }
+}
+
 
   getStepTitleClasses(step: StepConfig): string {
     if (this.isStepComplete(step.id)) {

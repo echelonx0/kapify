@@ -21,7 +21,7 @@ export interface BaseApplicationCard {
   title: string;
   applicationNumber?: string;
   status: 'draft' | 'submitted' | 'under_review' | 'approved' | 'rejected' | 'withdrawn';
-  fundingType?: string;
+  fundingType?: string[];
   requestedAmount: number;
   currency: string;
   currentStage?: string;

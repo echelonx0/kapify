@@ -62,7 +62,7 @@ export const profileRoutes: Routes = [
           },
           { 
             path: 'business-strategy', 
-            loadComponent: () => import('./steps/business-plan/business-plan.component').then(c => c.BusinessPlanComponent),
+            loadComponent: () => import('./steps/business-strategy/business-strategy.component').then(c => c.BusinessPlanComponent),
             title: 'Business Strategy - Funding Application'
           },
           { 

@@ -107,9 +107,13 @@ export class FundingOpportunitiesComponent implements OnInit, OnDestroy {
       );
     }
 
-    if (this.selectedFundingType()) {
-      filtered = filtered.filter(opp => opp.fundingType === this.selectedFundingType());
-    }
+  if (this.selectedFundingType()) {
+  const selectedType = this.selectedFundingType();
+  filtered = filtered.filter(opp => 
+    Array.isArray(opp.fundingType) && opp.fundingType.includes(selectedType)
+  );
+}
+
 
     if (this.selectedIndustry()) {
       filtered = filtered.filter(opp => 

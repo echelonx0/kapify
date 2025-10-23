@@ -2,6 +2,7 @@
 import { Injectable, signal, computed, inject } from '@angular/core';
 import { Subject, debounceTime, distinctUntilChanged, takeUntil } from 'rxjs';
  
+
 export interface CreateOpportunityFormData {
   title: string;
   description: string;

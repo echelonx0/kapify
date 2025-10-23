@@ -35,7 +35,7 @@ interface BusinessPlanSection {
     UiTextareaComponent,
     UiSectionCardComponent
   ],
-  templateUrl: 'business-plan.component.html'
+  templateUrl: 'business-strategy.component.html'
 })
 export class BusinessPlanComponent implements OnInit, OnDestroy {
   @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
