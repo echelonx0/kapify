@@ -1,7 +1,6 @@
 // src/app/funder/services/opportunity-form-state.service.ts
 import { Injectable, signal, computed, inject } from '@angular/core';
 import { Subject, debounceTime, distinctUntilChanged, takeUntil } from 'rxjs';
- 
 
 export interface CreateOpportunityFormData {
   title: string;
@@ -35,10 +34,11 @@ export interface CreateOpportunityFormData {
   minYearsOperation: string;
   geographicRestrictions: string[];
   requiresCollateral: boolean;
-  typicalInvestment: string;  // ← Replaces totalAmount
+  typicalInvestment: string;
   maxApplications: string;
   autoMatch: boolean;
   isPublic: boolean;
+  exclusionCriteria: string;
 }
 
 export interface ValidationError {
@@ -50,7 +50,7 @@ export interface ValidationError {
 @Injectable({
   providedIn: 'root'
 })
-export class OpportunityFormStateService { 
+export class OpportunityFormStateService {
   private destroy$ = new Subject<void>();
   private localAutoSaveSubject = new Subject<CreateOpportunityFormData>();
 
@@ -90,7 +90,8 @@ export class OpportunityFormStateService {
     typicalInvestment: '',
     maxApplications: '',
     autoMatch: true,
-    isPublic: true
+    isPublic: true,
+    exclusionCriteria: ''
   });
 
   // State signals
@@ -187,6 +188,15 @@ export class OpportunityFormStateService {
       });
     }
 
+    // Exclusion criteria validation
+    if (data.exclusionCriteria && data.exclusionCriteria.length > 2000) {
+      errors.push({ 
+        field: 'exclusionCriteria', 
+        message: 'Exclusion criteria must be 2000 characters or less', 
+        type: 'warning' 
+      });
+    }
+
     // Basic validation
     if (!data.title.trim()) {
       errors.push({ field: 'title', message: 'Title is required', type: 'error' });
@@ -246,12 +256,10 @@ export class OpportunityFormStateService {
     const minInvestment = this.parseNumberValue(data.minInvestment);
     const maxInvestment = this.parseNumberValue(data.maxInvestment);
     const typicalInvestment = this.parseNumberValue(data.typicalInvestment);
-    console.log('Validating investment amounts:', { minInvestment, maxInvestment, typicalInvestment, fundingType: data.fundingType });
 
     if (!data.fundingType || data.fundingType.length === 0) {
-    errors.push({ field: 'fundingType', message: 'At least one funding type must be selected', type: 'error' });
-  }
-
+      errors.push({ field: 'fundingType', message: 'At least one funding type must be selected', type: 'error' });
+    }
 
     // Validate min/max relationship
     if (minInvestment > 0 && maxInvestment > 0 && maxInvestment < minInvestment) {
@@ -278,9 +286,6 @@ export class OpportunityFormStateService {
         type: 'error' 
       });
     }
-
-    // REMOVED: Old check that referenced totalAmount (no longer applicable)
-    // if (maxInvestment > 0 && typicalInvestment > 0 && maxInvestment > typicalInvestment) { ... }
 
     if (minInvestment > 0 && maxInvestment > 0 && minInvestment > maxInvestment) {
       errors.push({ 
@@ -330,7 +335,8 @@ export class OpportunityFormStateService {
   private setupLocalAutoSave() {
     this.localAutoSaveSubject.pipe(
       debounceTime(10000),
-      distinctUntilChanged((prev, curr) => JSON.stringify(prev) === JSON.stringify(curr))
+      distinctUntilChanged((prev, curr) => JSON.stringify(prev) === JSON.stringify(curr)),
+      takeUntil(this.destroy$)
     ).subscribe(formData => {
       this.saveToLocalStorage(formData);
     });
@@ -399,7 +405,8 @@ export class OpportunityFormStateService {
       typicalInvestment: '',
       maxApplications: '',
       autoMatch: true,
-      isPublic: true
+      isPublic: true,
+      exclusionCriteria: ''
     });
     this.hasUnsavedChanges.set(false);
     this.validationErrors.set([]);
@@ -415,7 +422,6 @@ export class OpportunityFormStateService {
       fundingOpportunityVideoUrl: draftData.fundingOpportunityVideoUrl || '',
       funderOrganizationName: draftData.funderOrganizationName || '',
       funderOrganizationLogoUrl: draftData.funderOrganizationLogoUrl || '',
-      
       offerAmount: draftData.offerAmount?.toString() || '',
       minInvestment: draftData.minInvestment?.toString() || '',
       maxInvestment: draftData.maxInvestment?.toString() || '',
@@ -432,6 +438,7 @@ export class OpportunityFormStateService {
       exitStrategy: draftData.exitStrategy || '',
       applicationDeadline: draftData.applicationDeadline?.toISOString().split('T')[0] || '',
       decisionTimeframe: draftData.decisionTimeframe?.toString() || '30',
+      investmentCriteria: draftData.investmentCriteria || '',
       targetIndustries: draftData.eligibilityCriteria?.industries || [],
       businessStages: draftData.eligibilityCriteria?.businessStages || [],
       minRevenue: draftData.eligibilityCriteria?.minRevenue?.toString() || '',
@@ -443,7 +450,7 @@ export class OpportunityFormStateService {
       maxApplications: draftData.maxApplications?.toString() || '',
       autoMatch: draftData.autoMatch ?? true,
       isPublic: true,
-      investmentCriteria: draftData.investmentCriteria || '',
+      exclusionCriteria: draftData.exclusionCriteria || ''
     });
   }
 

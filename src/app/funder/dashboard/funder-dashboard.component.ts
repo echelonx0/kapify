@@ -1,4 +1,4 @@
-import { Component, signal, computed, OnInit, OnDestroy, inject, ViewContainerRef, ComponentRef } from '@angular/core';
+import { Component, signal, computed, OnInit, OnDestroy, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { Subject, takeUntil } from 'rxjs';
@@ -32,6 +32,7 @@ import { FunderApplicationsComponent } from '../application-details/funder-appli
 import { DraftManagementService } from '../services/draft-management.service';
 import { SettingsComponent } from 'src/app/dashboard/settings/settings.component';
 import { OpportunityActionModalComponent } from 'src/app/shared/components/modal/app-modal.component';
+import { ActionModalService } from 'src/app/shared/components/modal/modal.service';
  
 type TabId = 'overview' | 'opportunities' | 'applications' | 'settings';
 
@@ -52,7 +53,8 @@ interface Tab {
     FunderDocumentAnalysisComponent,
     OrganizationStatusSidebarComponent,
     SettingsComponent,
-    FunderApplicationsComponent
+    FunderApplicationsComponent,
+    OpportunityActionModalComponent
   ],
   templateUrl: 'dashboard.component.html',
   styleUrl: 'funder-dashboard.component.css'
@@ -64,10 +66,7 @@ export class FunderDashboardComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
   private publicProfileService = inject(PublicProfileService);
   protected draftService = inject(DraftManagementService);
-  private viewContainerRef = inject(ViewContainerRef);
-  
-  // Modal state
-  private modalRef: ComponentRef<OpportunityActionModalComponent> | null = null;
+  private actionModalService = inject(ActionModalService);
   
   // State
   activeTab = signal<TabId>('overview');
@@ -139,32 +138,6 @@ export class FunderDashboardComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     this.destroy$.next();
     this.destroy$.complete();
-    this.closeModal();
-  }
-
-  // Modal management
-  private openModal(actionType: 'delete' | 'duplicate', opportunity: any, callbacks: { onConfirm: () => void, onCancel: () => void }) {
-    this.closeModal();
-    
-    const modalComponent = this.viewContainerRef.createComponent(OpportunityActionModalComponent);
-    this.modalRef = modalComponent;
-    
-    const instance = modalComponent.instance;
-    instance.setData({
-      actionType,
-      opportunityTitle: opportunity.title,
-      hasApplications: opportunity.currentApplications > 0,
-      applicationCount: opportunity.currentApplications
-    });
-    
-    instance.setCallbacks(callbacks.onConfirm, callbacks.onCancel);
-  }
-
-  private closeModal() {
-    if (this.modalRef) {
-      this.modalRef.destroy();
-      this.modalRef = null;
-    }
   }
 
   // Document Analysis Toggle Methods
@@ -374,6 +347,14 @@ export class FunderDashboardComponent implements OnInit, OnDestroy {
     this.router.navigate([
       '/funder/opportunities',
       opportunityId,
+     
+    ]);
+  }
+
+    manageApplications(opportunityId: string) {
+    this.router.navigate([
+      '/funder/opportunities',
+      opportunityId,
       'applications'
     ]);
   }
@@ -385,104 +366,116 @@ export class FunderDashboardComponent implements OnInit, OnDestroy {
     ]);
   }
 
-// REPLACE these methods in: src/app/funder/components/funder-dashboard.component.ts
+  // UPDATED: Use ActionModalService instead of ViewChild
+  deleteOpportunity(opportunityId: string) {
+    const opportunity = this.recentOpportunities().find(o => o.id === opportunityId);
+    if (!opportunity) return;
 
-deleteOpportunity(opportunityId: string) {
-  const opportunity = this.recentOpportunities().find(o => o.id === opportunityId);
-  if (!opportunity) return;
+    this.actionModalService.showDelete(
+      opportunity.title,
+      opportunity.currentApplications > 0,
+      opportunity.currentApplications
+    );
 
-  this.openModal('delete', opportunity, {
-    onConfirm: () => this.performDelete(opportunityId),
-    onCancel: () => this.closeModal()
-  });
-}
-
-private performDelete(opportunityId: string) {
-  this.managementService.deleteOpportunity(opportunityId)
-    .pipe(takeUntil(this.destroy$))
-    .subscribe({
-      next: (result) => {
-        console.log('Opportunity deleted:', result.message);
-        this.closeModal();
+    this.actionModalService.open(
+      {
+        actionType: 'delete',
+        opportunityTitle: opportunity.title,
+        hasApplications: opportunity.currentApplications > 0,
+        applicationCount: opportunity.currentApplications
       },
-      error: (error) => {
-        console.error('Delete failed:', error);
-        const errorMsg = this.extractErrorMessage(error);
-        this.showErrorInModal(errorMsg);
+      {
+        onConfirm: () => this.performDelete(opportunityId),
+        onCancel: () => this.actionModalService.close()
       }
-    });
-}
+    );
+  }
 
-duplicateOpportunity(opportunityId: string) {
-  const opportunity = this.recentOpportunities().find(o => o.id === opportunityId);
-  if (!opportunity) return;
+  private performDelete(opportunityId: string) {
+    this.managementService.deleteOpportunity(opportunityId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (result) => {
+          console.log('Opportunity deleted:', result.message);
+          this.actionModalService.close();
+        },
+        error: (error) => {
+          console.error('Delete failed:', error);
+          const errorMsg = this.extractErrorMessage(error);
+          this.actionModalService.setError(errorMsg);
+        }
+      });
+  }
 
-  this.openModal('duplicate', opportunity, {
-    onConfirm: () => this.performDuplicate(opportunityId),
-    onCancel: () => this.closeModal()
-  });
-}
+  duplicateOpportunity(opportunityId: string) {
+    const opportunity = this.recentOpportunities().find(o => o.id === opportunityId);
+    if (!opportunity) return;
 
-private performDuplicate(opportunityId: string) {
-  this.managementService.duplicateOpportunity(opportunityId)
-    .pipe(takeUntil(this.destroy$))
-    .subscribe({
-      next: (result) => {
-        console.log('Opportunity duplicated:', result.newOpportunityId);
-        this.closeModal();
-        this.router.navigate([
-          '/funder/opportunities/edit',
-          result.newOpportunityId
-        ]);
+    this.actionModalService.showDuplicate(opportunity.title);
+
+    this.actionModalService.open(
+      {
+        actionType: 'duplicate',
+        opportunityTitle: opportunity.title
       },
-      error: (error) => {
-        console.error('Duplicate failed:', error);
-        const errorMsg = this.extractErrorMessage(error);
-        this.showErrorInModal(errorMsg);
+      {
+        onConfirm: () => this.performDuplicate(opportunityId),
+        onCancel: () => this.actionModalService.close()
       }
-    });
-}
+    );
+  }
 
-private extractErrorMessage(error: any): string {
-  // Extract user-friendly error message from various error formats
-  if (typeof error === 'string') {
-    return error;
+  private performDuplicate(opportunityId: string) {
+    this.managementService.duplicateOpportunity(opportunityId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (result) => {
+          console.log('Opportunity duplicated:', result.newOpportunityId);
+          this.actionModalService.close();
+          this.router.navigate([
+            '/funder/opportunities/edit',
+            result.newOpportunityId
+          ]);
+        },
+        error: (error) => {
+          console.error('Duplicate failed:', error);
+          const errorMsg = this.extractErrorMessage(error);
+          this.actionModalService.setError(errorMsg);
+        }
+      });
   }
-  
-  if (error.message) {
-    const msg = error.message;
-    
-    // Check for specific error patterns
-    if (msg.includes('invalid input syntax for type uuid')) {
-      return 'Failed to create opportunity. Please try again.';
-    }
-    if (msg.includes('not found')) {
-      return 'Opportunity not found or has been deleted.';
-    }
-    if (msg.includes('access denied')) {
-      return 'You do not have permission to perform this action.';
-    }
-    if (msg.includes('not authenticated')) {
-      return 'Your session has expired. Please log in again.';
-    }
-    
-    // Default: clean up the error message
-    return msg
-      .replace(/Error: /g, '')
-      .replace(/at _/g, '')
-      .split(' at ')[0]
-      .trim();
-  }
-  
-  return 'An error occurred. Please try again.';
-}
 
-private showErrorInModal(message: string) {
-  if (this.modalRef) {
-    const instance = this.modalRef.instance;
-    instance.setError(message);
+  private extractErrorMessage(error: any): string {
+    if (typeof error === 'string') {
+      return error;
+    }
+    
+    if (error.message) {
+      const msg = error.message;
+      
+      if (msg.includes('invalid input syntax for type uuid')) {
+        return 'Failed to create opportunity. Please try again.';
+      }
+      if (msg.includes('not found')) {
+        return 'Opportunity not found or has been deleted.';
+      }
+      if (msg.includes('access denied')) {
+        return 'You do not have permission to perform this action.';
+      }
+      if (msg.includes('not authenticated')) {
+        return 'Your session has expired. Please log in again.';
+      }
+      
+      return msg
+        .replace(/Error: /g, '')
+        .replace(/at _/g, '')
+        .split(' at ')[0]
+        .trim();
+    }
+    
+    return 'An error occurred. Please try again.';
   }
-}
+
   viewAnalytics() {
     // this.router.navigate(['/funder/analytics']);
   }

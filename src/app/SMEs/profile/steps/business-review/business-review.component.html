@@ -25,52 +25,5 @@
       </form>
 
       <!-- Status & Actions -->
-      <div class="space-y-4">
-        <!-- Save Status -->
-        <div class="flex items-center gap-2 text-sm text-neutral-600">
-          <lucide-angular [img]="ClockIcon" class="w-4 h-4"></lucide-angular>
-          <span>
-            @if (lastSaved(); as saved) {
-              Last saved {{ getLastSavedText() }}
-            } @else {
-              Not saved yet
-            }
-          </span>
-        </div>
-
-        <!-- Action Buttons -->
-        <div class="flex gap-3">
-          <button
-            type="button"
-            (click)="goBack()"
-            class="flex-1 px-4 py-2 border border-neutral-300 rounded-md font-medium text-neutral-700 hover:bg-neutral-50 transition-colors"
-          >
-            Back
-          </button>
-
-          <button
-            type="button"
-            (click)="saveManually()"
-            [disabled]="isSaving()"
-            class="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-neutral-200 text-neutral-700 rounded-md font-medium hover:bg-neutral-300 disabled:opacity-60 transition-colors"
-          >
-            <lucide-angular [img]="SaveIcon" class="w-4 h-4"></lucide-angular>
-            {{ isSaving() ? 'Saving...' : 'Save' }}
-          </button>
-
-          <button
-            type="button"
-            (click)="saveAndContinue()"
-            [disabled]="isSaving()"
-            class="flex-1 px-4 py-2 bg-emerald-600 text-white rounded-md font-medium hover:bg-emerald-700 disabled:opacity-60 transition-colors"
-          >
-            Continue
-          </button>
-        </div>
-
-        <!-- Completion Indicator -->
-        <div class="text-sm text-neutral-600">
-          Progress: {{ getCompletionPercentage() }}% complete
-        </div>
-      </div>
+     
     </div>

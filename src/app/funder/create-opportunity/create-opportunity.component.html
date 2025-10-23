@@ -1,5 +1,8 @@
 <!-- create-opportunity.component.html -->
 
+<!-- ACTION MODAL - Always in DOM, controlled by service.isOpen() -->
+<app-opportunity-action-modal></app-opportunity-action-modal>
+
 <!-- SECTOR VALIDATION MODAL -->
 @if (showSectorModal()) {
   <app-sector-validation-modal (confirmed)="onSectorValidationComplete()"></app-sector-validation-modal>
@@ -378,3 +381,8 @@
 </div>
 
 }
+
+
+
+
+ 

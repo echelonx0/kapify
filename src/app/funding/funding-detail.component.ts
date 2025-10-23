@@ -15,7 +15,7 @@ import { FundingOpportunity } from '../funder/create-opportunity/shared/funding.
   imports: [
     CommonModule,
     SidebarNavComponent,
-    UiButtonComponent,
+  
     LucideAngularModule
   ],
   templateUrl: 'funding-detail.component.html'
@@ -120,7 +120,23 @@ manageApplications() {
   }
 }
 
+  // editOpportunity(opportunityId: string) {
+  //   this.router.navigate([
+  //     '/funder/opportunities/edit',
+  //     opportunityId
+  //   ]);
+  // }
+  editOpportunity() {
+    console.log('Editing opportunity')
+   const opportunityId = this.route.snapshot.paramMap.get('id');
+ 
+    this.router.navigate([
+      '/funder/opportunities/edit',
+     opportunityId
+    ]);
+ 
 
+  }
   redirectToLogin() {
     this.router.navigate(['/auth/login'], {
       queryParams: { returnUrl: this.router.url }

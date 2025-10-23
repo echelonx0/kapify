@@ -1,6 +1,10 @@
+<!-- dashboard.component.html - UPDATED: Add modal component -->
+
+<!-- ACTION MODAL - Always in DOM -->
+<app-opportunity-action-modal></app-opportunity-action-modal>
+
 <div class="min-h-screen bg-gray-50">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-
     <!-- Tab Navigation -->
     <div class="tab-navigation mb-8">
       <div class="tab-container">
@@ -30,11 +34,9 @@
       <!-- Main Content Area -->
       <div class="xl:col-span-3">
         <div class="tab-content">
-
           <!-- Overview Tab -->
           @if (activeTab() === 'overview') {
             <div id="overview-panel" role="tabpanel" class="space-y-8">
-
               <!-- Analytics Cards -->
               @if (analytics()) {
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -52,7 +54,6 @@
                       </div>
                     </div>
                   </div>
-
                   <!-- Total Applications -->
                   <div class="stat-card group">
                     <div class="flex items-center justify-between">
@@ -67,7 +68,6 @@
                       </div>
                     </div>
                   </div>
-
                   <!-- Conversion Rate -->
                   <div class="stat-card group">
                     <div class="flex items-center justify-between">
@@ -82,7 +82,6 @@
                       </div>
                     </div>
                   </div>
-
                   <!-- Total Views -->
                   <div class="stat-card group">
                     <div class="flex items-center justify-between">
@@ -167,7 +166,6 @@
                         </div>
                         <span class="text">Create Opportunity</span>
                       </button>
-
                       <button 
                         class="action-button"
                         (click)="importOpportunity()"
@@ -208,10 +206,6 @@
                           Create
                         </ui-button>
                       }
-                      <!-- <ui-button variant="outline" (clicked)="viewAllOpportunities()" class="w-full">
-                        Kapify Marketplace
-                        <lucide-icon [img]="ArrowRightIcon" [size]="16" class="ml-2" />
-                      </ui-button> -->
                     </div>
                   </div>
                 </div>
@@ -269,24 +263,21 @@
                       </div>
  
                       <!-- Manage Buttons -->
-           
-                    <div class="p-6 border-t border-gray-100 bg-gray-50">
-                      <div class="flex flex-col sm:flex-row gap-2"> <!-- Add flex container and gap -->
-                        <ui-button variant="outline" (clicked)="editOpportunity(opportunity.id)" class="w-full sm:w-auto">
-                          Edit 
-                        </ui-button>
-
-                        <ui-button variant="outline" (clicked)="deleteOpportunity(opportunity.id)" class="w-full sm:w-auto">
-                          Delete
-                        </ui-button>
-
-                          <!-- <ui-button variant="outline" (clicked)="duplicateOpportunity(opportunity.id)" class="w-full sm:w-auto">
-                        Duplicate
-                        </ui-button> -->
-                      </div>
-                    </div>
-
+                      <div class="p-6 border-t border-gray-100 bg-gray-50">
+                        <div class="flex flex-col sm:flex-row gap-2">
+                          <ui-button variant="outline" (clicked)="editOpportunity(opportunity.id)" class="w-full sm:w-auto">
+                            Edit 
+                          </ui-button>
+                          <ui-button variant="outline" (clicked)="deleteOpportunity(opportunity.id)" class="w-full sm:w-auto">
+                            Delete
+                          </ui-button>
                       
+                          <ui-button variant="outline" (clicked)="manageApplications(opportunity.id)" class="w-full sm:w-auto">
+                            Manage Applications
+                          </ui-button>
+                         
+                        </div>
+                      </div>
                     }
                   </div>
                 }
@@ -303,7 +294,6 @@
           @if (activeTab() === 'settings') {
             <app-settings></app-settings>
           }
-
         </div>
       </div>
 
@@ -343,10 +333,8 @@
               </div>
             </div>
           }
-
         </div>
       </div>
-
     </div>
   </div>
 </div>

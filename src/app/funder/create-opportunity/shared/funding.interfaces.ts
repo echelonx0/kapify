@@ -108,6 +108,7 @@ export interface FundingOpportunity {
   publishedAt?: Date;
   closedAt?: Date;
   typicalInvestment?: number;
+  exclusionCriteria?: string;
 }
 
 

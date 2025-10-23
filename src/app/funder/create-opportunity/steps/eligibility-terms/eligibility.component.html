@@ -3,21 +3,35 @@
  
   
     <div class="space-y-6">
-  <!-- Investment Philosophy -->
-  <div class="space-y-2">
-    <ui-textarea
-      [label]="'Investment Philosophy'"
-      [placeholder]="'Describe your fund\'s investment approach, priorities, and values.'"
-      [value]="formState.formData().investmentCriteria"
-      (valueChange)="ui.onFieldChange('investmentCriteria', $event)"
-      [error]="formState.getFieldError('investmentCriteria')?.message || null"
-      [hint]="'This helps SMEs understand your investment thesis'"
-      [rows]="4"
-      [showCharCount]="true"
-      [maxLength]="1000"
-    ></ui-textarea>
-  </div>
+      <!-- Investment Philosophy -->
+      <div class="space-y-2">
+        <ui-textarea
+          [label]="'Investment Philosophy'"
+          [placeholder]="'Describe your fund\'s investment approach, priorities, and values.'"
+          [value]="formState.formData().investmentCriteria"
+          (valueChange)="ui.onFieldChange('investmentCriteria', $event)"
+          [error]="formState.getFieldError('investmentCriteria')?.message || null"
+          [hint]="'This helps SMEs understand your investment thesis'"
+          [rows]="4"
+          [showCharCount]="true"
+          [maxLength]="1000"
+        ></ui-textarea>
+      </div>
 
+   <!-- Exclusion Criteria -->
+<div class="space-y-2">
+  <ui-textarea
+    [label]="'Automatic Exclusion Criteria'"
+    [placeholder]="'List specific criteria that will automatically disqualify applicants (e.g., companies with debt >50% of revenue, in sanctioned countries, etc.)'"
+    [value]="formState.formData().exclusionCriteria"
+    (valueChange)="ui.onFieldChange('exclusionCriteria', $event)"
+    [error]="formState.getFieldError('exclusionCriteria')?.message || null"
+    [hint]="'Leave blank for no automatic exclusions'"
+    [rows]="3"
+    [showCharCount]="true"
+    [maxLength]="2000"
+  ></ui-textarea>
+</div>
   <!-- Dropdown Multiselects Row -->
   <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
     <!-- Target Industries -->
@@ -135,48 +149,6 @@
 </div>
 
 
-  <!-- Target Industries -->
-  <!-- <div class="space-y-3">
-    <label class="block text-sm font-semibold text-gray-700">Included Industries</label>
-    <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
-      @for (industry of ui.targetIndustries; track industry.value) {
-        <label class="relative cursor-pointer">
-          <input 
-            type="checkbox" 
-            [value]="industry.value"
-            [checked]="formState.formData().targetIndustries.includes(industry.value)"
-            (change)="ui.onMultiSelectChange('targetIndustries', $event)"
-            class="sr-only peer"
-          >
-          <div class="p-3 border border-gray-200 rounded-lg hover:border-primary-300 peer-checked:border-primary-500 peer-checked:bg-primary-50 text-center transition-all">
-            <div class="text-sm font-medium text-gray-900">{{ industry.label }}</div>
-          </div>
-        </label>
-      }
-    </div>
-  </div> -->
-
-  <!-- Business Stages -->
-  <!-- <div class="space-y-3">
-    <label class="block text-sm font-semibold text-gray-700">Business Stages</label>
-    <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
-      @for (stage of ui.businessStages; track stage.value) {
-        <label class="relative cursor-pointer">
-          <input 
-            type="checkbox" 
-            [value]="stage.value"
-            [checked]="formState.formData().businessStages.includes(stage.value)"
-            (change)="ui.onMultiSelectChange('businessStages', $event)"
-            class="sr-only peer"
-          >
-          <div class="p-3 border border-gray-200 rounded-lg hover:border-primary-300 peer-checked:border-primary-500 peer-checked:bg-primary-50 text-center transition-all">
-            <div class="text-sm font-medium text-gray-900">{{ stage.label }}</div>
-          </div>
-        </label>
-      }
-    </div>
-  </div> -->
-
   <!-- Revenue Range -->
   <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
     <div class="space-y-2">
@@ -195,21 +167,7 @@
       }
     </div>
     
-    <!-- <div class="space-y-2">
-      <label class="block text-sm font-semibold text-gray-700">Maximum Annual Revenue</label>
-      <input
-        type="text"
-        placeholder="No limit"
-        [value]="formState.getFormattedAmount('maxRevenue')"
-        (input)="ui.onNumberInputChange('maxRevenue', $event)"
-        [class]="ui.getFieldClasses('maxRevenue')"
-      >
-      @if (formState.getFieldError('maxRevenue'); as error) {
-        <p class="text-sm" [class.text-red-600]="error.type === 'error'" [class.text-yellow-600]="error.type === 'warning'">
-          {{ error.message }}
-        </p>
-      }
-    </div> -->
+
 
       <!-- Years in Operation -->
   <div class="space-y-2">
@@ -248,46 +206,18 @@
     </label>
   </div>
 
-  <!-- Geographic Restrictions -->
-  <!-- <div class="space-y-3">
-    <label class="block text-sm font-semibold text-gray-700">Geographic Focus (Optional)</label>
-    <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
-      @for (region of ui.geographicRegions; track region.value) {
-        <label class="relative cursor-pointer">
-          <input 
-            type="checkbox" 
-            [value]="region.value"
-            [checked]="formState.formData().geographicRestrictions.includes(region.value)"
-            (change)="ui.onMultiSelectChange('geographicRestrictions', $event)"
-            class="sr-only peer"
-          >
-          <div class="p-3 border border-gray-200 rounded-lg hover:border-primary-300 peer-checked:border-primary-500 peer-checked:bg-primary-50 text-center transition-all">
-            <div class="text-sm font-medium text-gray-900">{{ region.label }}</div>
-          </div>
-        </label>
-      }
-    </div>
-  </div> -->
-
+ 
   <!-- Info Section -->
-  <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
-    <div class="flex items-start space-x-3">
-      <lucide-angular [img]="TargetIcon" [size]="20" class="text-blue-600 mt-0.5"></lucide-angular>
-      <div>
-        <h4 class="text-sm font-medium text-blue-900">Eligibility Criteria</h4>
-        <p class="text-sm text-blue-700 mt-1">
-          These criteria help match your opportunity with the right businesses. More specific criteria mean fewer but more qualified applications.
-        </p>
-        <!-- Excluded Sectors -->
-        <div class="mt-3">
-          <p class="text-sm font-semibold text-blue-800">Excluded Sectors:</p>
-          <ul class="mt-1 list-disc list-inside text-sm text-blue-700">
-            @for (sector of ui.excludedSectors; track sector) {
-              <li>{{ sector }}</li>
-            }
-          </ul>
-        </div>
-      </div>
+<!-- This info box just explains the concept—remove the excluded sectors list -->
+<div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+  <div class="flex items-start space-x-3">
+    <lucide-angular [img]="TargetIcon" [size]="20" class="text-blue-600 mt-0.5"></lucide-angular>
+    <div>
+      <h4 class="text-sm font-medium text-blue-900">Eligibility Criteria</h4>
+      <p class="text-sm text-blue-700 mt-1">
+        These criteria help match your opportunity with the right businesses. More specific criteria mean fewer but more qualified applications.
+      </p>
     </div>
   </div>
+</div>
 </div>
