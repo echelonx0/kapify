@@ -1,5 +1,4 @@
-// src/app/landing/landing.component.ts
-import { Component, signal } from '@angular/core';
+import { Component, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { 
   LucideAngularModule, 
@@ -62,24 +61,33 @@ interface ProblemSolution {
   icon: any;
 }
 
+interface AudienceView {
+  type: 'business' | 'funder';
+  headline: string;
+  description: string;
+  benefits: Benefit[];
+}
+
 @Component({
   selector: 'app-landing',
   standalone: true,
   imports: [CommonModule, LucideAngularModule, LandingHeaderComponent, LandingFooterComponent],
   templateUrl: 'landing.component.html',
+  styleUrl: 'landing.component.css'
 })
 export class LandingComponent {
-isPlaying = false;
+  isPlaying = false;
   videoUrl: SafeResourceUrl | null = null;
 
- 
+  // === Toggle State ===
+  activeAudience = signal<'business' | 'funder'>('business');
 
-  playVideo() {
-    const youtubeUrl = 'https://www.youtube.com/embed/ybkhNejL3eQ?autoplay=1';
-    this.videoUrl = this.sanitizer.bypassSecurityTrustResourceUrl(youtubeUrl);
-    this.isPlaying = true;
-  }
-    constructor(private router: Router, private sanitizer: DomSanitizer) {}
+  // === Computed Values ===
+  currentView = computed(() => this.audienceViews[this.activeAudience()]);
+  isBusinessView = computed(() => this.activeAudience() === 'business');
+  isFunderView = computed(() => this.activeAudience() === 'funder');
+
+  constructor(private router: Router, private sanitizer: DomSanitizer) {}
 
   mobileMenuOpen = signal(false);
   email = 'info@kapify.africa';
@@ -109,9 +117,56 @@ isPlaying = false;
  
   ShieldIcon = Shield;
  
-XCircleIcon = XCircle;
-ArrowDownIcon = ArrowDown;
- 
+  XCircleIcon = XCircle;
+  ArrowDownIcon = ArrowDown;
+
+  // === Audience-Specific Content (Replaces "Why Choose Kapify") ===
+  audienceViews: Record<'business' | 'funder', AudienceView> = {
+    business: {
+      type: 'business',
+      headline: 'For Businesses',
+      description: 'Stop wasting time on rejections',
+      benefits: [
+        {
+          icon: this.TargetIcon,
+          title: 'Smart Matching',
+          description: 'Only apply to funders who actually fund your industry, stage, and region'
+        },
+        {
+          icon: this.ZapIcon,
+          title: 'Quick Response time',
+          description: 'Get funding decisions in days, not months. No more waiting in the dark'
+        },
+        {
+          icon: this.FileTextIcon,
+          title: 'One Profile, Multiple Opportunities',
+          description: 'Complete your profile once, apply to dozens of opportunities with one click'
+        }
+      ]
+    },
+    funder: {
+      type: 'funder',
+      headline: 'For Funders',
+      description: 'Stop reviewing bad-fit applications',
+      benefits: [
+        {
+          icon: this.FilterIcon,
+          title: 'Pre-Qualified Pipeline',
+          description: 'Only see businesses that match your exact funding criteria and thesis'
+        },
+        {
+          icon: this.ClockIcon,
+          title: '80% Less Time on Review',
+          description: 'Standardized data, verified financials, and complete profiles save hours per deal'
+        },
+        {
+          icon: this.UsersIcon,
+          title: 'Better Deal Flow',
+          description: 'Access vetted businesses you\'d never find through traditional channels'
+        }
+      ]
+    }
+  };
 
   heroStats: Statistic[] = [
     { value: '98%', label: 'MATCH SUCCESS', description: 'Of matches get funded' },
@@ -193,30 +248,6 @@ ArrowDownIcon = ArrowDown;
     }
   ];
 
-  // testimonials: Testimonial[] = [
-  //   {
-  //     name: 'Thabo Mthembu',
-  //     company: 'TechFlow Solutions',
-  //     role: 'CEO',
-  //     content: 'Got 3 funding offers in one week after being rejected by banks for months.',
-  //     amount: 'Funded: R2.5M Series A'
-  //   },
-  //   {
-  //     name: 'Sarah van der Merwe', 
-  //     company: 'GreenLeaf Organics',
-  //     role: 'Founder',
-  //     content: 'Matched with an impact investor who understood our business. Funded in 10 days.',
-  //     amount: 'Funded: R800K Growth Capital'
-  //   },
-  //   {
-  //     name: 'Mandla Ndlovu',
-  //     company: 'Digital Marketing Pro',
-  //     role: 'Managing Director', 
-  //     content: 'Applied to 12 lenders over 6 months - all rejected. Kapify found the right one in 3 days.',
-  //     amount: 'Funded: R1.2M Working Capital'
-  //   }
-  // ];
-
   getStepClasses(index: number): string {
     const completed = index < 1;
     const active = index === 1;
@@ -234,12 +265,15 @@ ArrowDownIcon = ArrowDown;
     this.mobileMenuOpen.set(!this.mobileMenuOpen());
   }
 
+  toggleAudience(audience: 'business' | 'funder') {
+    this.activeAudience.set(audience);
+  }
+
   visitMarketPlace() {
    this.router.navigate(['/marketplace']);
   }
 
   register() {
-  // Navigate to funder registration
     this.router.navigate(['/register'], { queryParams: { userType: 'funder' } });
   }
 
@@ -247,19 +281,12 @@ ArrowDownIcon = ArrowDown;
     console.log('Watch demo...');
   }
 
- 
-
-  // === Dynamic year for footer ===
   currentYear = new Date().getFullYear();
 
-  // === Methods ===
   openVideoModal() {
-    // 👇 Replace with your actual modal logic later
     console.log('Video modal opened');
     alert('🎥 Play Kapify Intro Video (modal placeholder)');
   }
-
- 
 
   scrollToMatching() {
     const element = document.getElementById('matching-section');

@@ -1,0 +1,58 @@
+ 
+
+    .footer-top {
+      position: relative;
+      /* background: url('/images/brand-kapify.jpg') center/cover no-repeat; */
+      padding: 100px 60px;
+      color: #fff;
+      background-color: #211832;
+    }
+
+    .footer-top::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.55);
+    }
+
+    .footer-top-content {
+      position: relative;
+      max-width: 600px;
+    }
+
+    .footer-top h3 {
+      font-size: 14px;
+      letter-spacing: 2px;
+      color: rgb(0, 156, 255) 0%, rgb(99, 195, 255);
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+
+    .footer-top h1 {
+      font-size: 36px;
+      font-weight: 600;
+      margin-bottom: 10px;
+    }
+
+    .footer-top p {
+      font-size: 16px;
+      opacity: 0.9;
+      margin-bottom: 20px;
+    }
+
+    .footer-top button {
+      background: transparent;
+      border: 1px solid #fff;
+      color: #fff;
+      padding: 10px 24px;
+      cursor: pointer;
+      transition: 0.3s;
+      font-size: 14px;
+      text-transform: uppercase;
+    }
+
+    .footer-top button:hover {
+      background:rgb(0, 156, 255) 0%, rgb(99, 195, 255);
+      color: #000;
+    }
+    
