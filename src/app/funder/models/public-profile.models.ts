@@ -36,6 +36,7 @@ export interface TeamMember {
 export interface PublicProfile {
   id: string;
   organizationId: string;
+    organizationName: string; // ADD THIS
   slug: string; // URL-friendly identifier
   
   // Hero Section

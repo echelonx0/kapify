@@ -3,11 +3,12 @@ import { Component, signal, OnInit, inject, computed } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { SidebarNavComponent } from '../shared/components/sidenav/sidebar-nav.component';
-import { UiButtonComponent } from '../shared/components';
 import { LucideAngularModule, ArrowLeft, Building2, DollarSign, Calendar, MapPin, CheckCircle, FileText, Users, Eye } from 'lucide-angular';
 import { SMEOpportunitiesService } from './services/opportunities.service';
 import { AuthService } from '../auth/production.auth.service';
 import { FundingOpportunity } from '../funder/create-opportunity/shared/funding.interfaces';
+import { PublicProfileService } from '../funder/services/public-profile.service';
+import { Subject, takeUntil } from 'rxjs';
 
 @Component({
   selector: 'app-opportunity-details',
@@ -15,7 +16,6 @@ import { FundingOpportunity } from '../funder/create-opportunity/shared/funding.
   imports: [
     CommonModule,
     SidebarNavComponent,
-  
     LucideAngularModule
   ],
   templateUrl: 'funding-detail.component.html'
@@ -26,7 +26,7 @@ export class OpportunityDetailsComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private opportunitiesService = inject(SMEOpportunitiesService);
   private authService = inject(AuthService);
-
+  private publicProfileService = inject(PublicProfileService);
   // Icons
   ArrowLeftIcon = ArrowLeft;
   Building2Icon = Building2;
@@ -41,7 +41,9 @@ export class OpportunityDetailsComponent implements OnInit {
   // State
   opportunity = signal<FundingOpportunity | null>(null);
   isLoading = signal(true);
-
+  hasPublicProfile = signal(false);
+  isLoadingProfile = signal(false);
+  private destroy$ = new Subject<void>();
   // Computed user context
   currentUser = computed(() => this.authService.user());
 
@@ -57,6 +59,9 @@ export class OpportunityDetailsComponent implements OnInit {
     this.opportunitiesService.getOpportunityById(id).subscribe({
       next: (opportunity) => {
         this.opportunity.set(opportunity || null);
+        if (opportunity?.organizationId) {
+          this.loadPublicProfile(opportunity.organizationId);
+        }
         this.isLoading.set(false);
       },
       error: (error) => {
@@ -64,6 +69,23 @@ export class OpportunityDetailsComponent implements OnInit {
         this.isLoading.set(false);
       }
     });
+  }
+
+  private loadPublicProfile(organizationId: string) {
+    this.isLoadingProfile.set(true);
+    this.publicProfileService.loadOrganizationProfile(organizationId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (profile) => {
+          this.hasPublicProfile.set(!!profile);
+          this.isLoadingProfile.set(false);
+        },
+        error: (error) => {
+          console.log('No public profile found or error loading:', error);
+          this.hasPublicProfile.set(false);
+          this.isLoadingProfile.set(false);
+        }
+      });
   }
 
   // ===============================
@@ -82,6 +104,10 @@ export class OpportunityDetailsComponent implements OnInit {
     
     // Simple check - user is the deal lead
     return opp.dealLead === user.id;
+  }
+
+  canViewInvestorProfile(): boolean {
+    return this.hasPublicProfile();
   }
 
   getUserTypeLabel(): string {
@@ -108,35 +134,32 @@ export class OpportunityDetailsComponent implements OnInit {
     this.router.navigate(['/applications']);
   }
 
-manageApplications() {
-  const opp = this.opportunity();
-  if (opp?.id) {
-
-    this.router.navigate([
-      '/funder/opportunities',
-      opp.id,
-      'applications'
-    ]);
+  manageApplications() {
+    const opp = this.opportunity();
+    if (opp?.id) {
+      this.router.navigate([
+        '/funder/opportunities',
+        opp.id,
+        'applications'
+      ]);
+    }
   }
-}
 
-  // editOpportunity(opportunityId: string) {
-  //   this.router.navigate([
-  //     '/funder/opportunities/edit',
-  //     opportunityId
-  //   ]);
-  // }
   editOpportunity() {
-    console.log('Editing opportunity')
-   const opportunityId = this.route.snapshot.paramMap.get('id');
- 
+    const opportunityId = this.route.snapshot.paramMap.get('id');
     this.router.navigate([
       '/funder/opportunities/edit',
-     opportunityId
+      opportunityId
     ]);
- 
-
   }
+
+  viewInvestorProfile() {
+    const opp = this.opportunity();
+    if (opp?.organizationId && this.canViewInvestorProfile()) {
+      this.router.navigate(['/funder/profile', opp.organizationId]);
+    }
+  }
+
   redirectToLogin() {
     this.router.navigate(['/auth/login'], {
       queryParams: { returnUrl: this.router.url }

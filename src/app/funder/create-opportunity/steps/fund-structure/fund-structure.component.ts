@@ -34,15 +34,7 @@ export class FundingStructureComponent {
   DollarSignIcon = DollarSign;
   GiftIcon = Gift;
   
-// onFundingTypeToggle(value: string, event: Event) {
-//   const checked = (event.target as HTMLInputElement).checked;
-//   const current = this.formState.formData().fundingType || [];
-//   const updated = checked
-//     ? [...current, value]
-//     : current.filter(v => v !== value);
-
-//   this.ui.onFieldChange('fundingType', { target: { value: updated } } as any);
-// }
+ 
 
 onFundingTypeToggle(value: string, event: Event) {
   const checked = (event.target as HTMLInputElement).checked;

@@ -413,47 +413,101 @@ export class OpportunityFormStateService {
   }
 
   // Load from draft data
-  loadFromDraft(draftData: any) {
-    this.formData.set({
-      title: draftData.title || '',
-      description: draftData.description || '',
-      shortDescription: draftData.shortDescription || '',
-      fundingOpportunityImageUrl: draftData.fundingOpportunityImageUrl || '',
-      fundingOpportunityVideoUrl: draftData.fundingOpportunityVideoUrl || '',
-      funderOrganizationName: draftData.funderOrganizationName || '',
-      funderOrganizationLogoUrl: draftData.funderOrganizationLogoUrl || '',
-      offerAmount: draftData.offerAmount?.toString() || '',
-      minInvestment: draftData.minInvestment?.toString() || '',
-      maxInvestment: draftData.maxInvestment?.toString() || '',
-      currency: draftData.currency || 'ZAR',
-      fundingType: Array.isArray(draftData.fundingType) ? draftData.fundingType : [],
-      interestRate: draftData.interestRate?.toString() || '',
-      equityOffered: draftData.equityOffered?.toString() || '',
-      repaymentTerms: draftData.repaymentTerms || '',
-      securityRequired: draftData.securityRequired || '',
-      useOfFunds: draftData.useOfFunds || '',
-      investmentStructure: draftData.investmentStructure || '',
-      expectedReturns: draftData.expectedReturns?.toString() || '',
-      investmentHorizon: draftData.investmentHorizon?.toString() || '',
-      exitStrategy: draftData.exitStrategy || '',
-      applicationDeadline: draftData.applicationDeadline?.toISOString().split('T')[0] || '',
-      decisionTimeframe: draftData.decisionTimeframe?.toString() || '30',
-      investmentCriteria: draftData.investmentCriteria || '',
-      targetIndustries: draftData.eligibilityCriteria?.industries || [],
-      businessStages: draftData.eligibilityCriteria?.businessStages || [],
-      minRevenue: draftData.eligibilityCriteria?.minRevenue?.toString() || '',
-      maxRevenue: draftData.eligibilityCriteria?.maxRevenue?.toString() || '',
-      minYearsOperation: draftData.eligibilityCriteria?.minYearsOperation?.toString() || '',
-      geographicRestrictions: draftData.eligibilityCriteria?.geographicRestrictions || [],
-      requiresCollateral: draftData.eligibilityCriteria?.requiresCollateral || false,
-      typicalInvestment: draftData.typicalInvestment?.toString() || draftData.totalAvailable?.toString() || '',
-      maxApplications: draftData.maxApplications?.toString() || '',
-      autoMatch: draftData.autoMatch ?? true,
-      isPublic: true,
-      exclusionCriteria: draftData.exclusionCriteria || ''
-    });
+  // loadFromDraft(draftData: any) {
+  //   this.formData.set({
+  //     title: draftData.title || '',
+  //     description: draftData.description || '',
+  //     shortDescription: draftData.shortDescription || '',
+  //     fundingOpportunityImageUrl: draftData.fundingOpportunityImageUrl || '',
+  //     fundingOpportunityVideoUrl: draftData.fundingOpportunityVideoUrl || '',
+  //     funderOrganizationName: draftData.funderOrganizationName || '',
+  //     funderOrganizationLogoUrl: draftData.funderOrganizationLogoUrl || '',
+  //     offerAmount: draftData.offerAmount?.toString() || '',
+  //     minInvestment: draftData.minInvestment?.toString() || '',
+  //     maxInvestment: draftData.maxInvestment?.toString() || '',
+  //     currency: draftData.currency || 'ZAR',
+  //     fundingType: Array.isArray(draftData.fundingType) ? draftData.fundingType : [],
+  //     interestRate: draftData.interestRate?.toString() || '',
+  //     equityOffered: draftData.equityOffered?.toString() || '',
+  //     repaymentTerms: draftData.repaymentTerms || '',
+  //     securityRequired: draftData.securityRequired || '',
+  //     useOfFunds: draftData.useOfFunds || '',
+  //     investmentStructure: draftData.investmentStructure || '',
+  //     expectedReturns: draftData.expectedReturns?.toString() || '',
+  //     investmentHorizon: draftData.investmentHorizon?.toString() || '',
+  //     exitStrategy: draftData.exitStrategy || '',
+  //     applicationDeadline: draftData.applicationDeadline?.toISOString().split('T')[0] || '',
+  //     decisionTimeframe: draftData.decisionTimeframe?.toString() || '30',
+  //     investmentCriteria: draftData.investmentCriteria || '',
+  //     targetIndustries: draftData.eligibilityCriteria?.industries || [],
+  //     businessStages: draftData.eligibilityCriteria?.businessStages || [],
+  //     minRevenue: draftData.eligibilityCriteria?.minRevenue?.toString() || '',
+  //     maxRevenue: draftData.eligibilityCriteria?.maxRevenue?.toString() || '',
+  //     minYearsOperation: draftData.eligibilityCriteria?.minYearsOperation?.toString() || '',
+  //     geographicRestrictions: draftData.eligibilityCriteria?.geographicRestrictions || [],
+  //     requiresCollateral: draftData.eligibilityCriteria?.requiresCollateral || false,
+  //     typicalInvestment: draftData.typicalInvestment?.toString() || draftData.totalAvailable?.toString() || '',
+  //     maxApplications: draftData.maxApplications?.toString() || '',
+  //     autoMatch: draftData.autoMatch ?? true,
+  //     isPublic: true,
+  //     exclusionCriteria: draftData.exclusionCriteria || ''
+  //   });
+  // }
+
+  // FIXED: loadFromDraft() method in opportunity-form-state.service.ts
+// Replace the existing loadFromDraft method
+
+loadFromDraft(draftData: any) {
+  // Handle typical investment with fallback priority:
+  // 1. draftData.typicalInvestment (form field)
+  // 2. draftData.totalAvailable (database field)
+  // 3. If both zero/empty, use maxInvestment as fallback for edit mode
+  let typicalInv = draftData.typicalInvestment?.toString() || draftData.totalAvailable?.toString() || '';
+  
+  // If still empty or zero, try to use maxInvestment as sensible default
+  if (!typicalInv || this.parseNumberValue(typicalInv) === 0) {
+    typicalInv = draftData.maxInvestment?.toString() || '';
   }
 
+  this.formData.set({
+    title: draftData.title || '',
+    description: draftData.description || '',
+    shortDescription: draftData.shortDescription || '',
+    fundingOpportunityImageUrl: draftData.fundingOpportunityImageUrl || '',
+    fundingOpportunityVideoUrl: draftData.fundingOpportunityVideoUrl || '',
+    funderOrganizationName: draftData.funderOrganizationName || '',
+    funderOrganizationLogoUrl: draftData.funderOrganizationLogoUrl || '',
+    offerAmount: draftData.offerAmount?.toString() || '',
+    minInvestment: draftData.minInvestment?.toString() || '',
+    maxInvestment: draftData.maxInvestment?.toString() || '',
+    currency: draftData.currency || 'ZAR',
+    fundingType: Array.isArray(draftData.fundingType) ? draftData.fundingType : [],
+    interestRate: draftData.interestRate?.toString() || '',
+    equityOffered: draftData.equityOffered?.toString() || '',
+    repaymentTerms: draftData.repaymentTerms || '',
+    securityRequired: draftData.securityRequired || '',
+    useOfFunds: draftData.useOfFunds || '',
+    investmentStructure: draftData.investmentStructure || '',
+    expectedReturns: draftData.expectedReturns?.toString() || '',
+    investmentHorizon: draftData.investmentHorizon?.toString() || '',
+    exitStrategy: draftData.exitStrategy || '',
+    applicationDeadline: draftData.applicationDeadline?.toISOString().split('T')[0] || '',
+    decisionTimeframe: draftData.decisionTimeframe?.toString() || '30',
+    investmentCriteria: draftData.investmentCriteria || draftData.funderDefinedCriteria || '',
+    targetIndustries: draftData.eligibilityCriteria?.industries || [],
+    businessStages: draftData.eligibilityCriteria?.businessStages || [],
+    minRevenue: draftData.eligibilityCriteria?.minRevenue?.toString() || '',
+    maxRevenue: draftData.eligibilityCriteria?.maxRevenue?.toString() || '',
+    minYearsOperation: draftData.eligibilityCriteria?.minYearsOperation?.toString() || '',
+    geographicRestrictions: draftData.eligibilityCriteria?.geographicRestrictions || [],
+    requiresCollateral: draftData.eligibilityCriteria?.requiresCollateral || false,
+    typicalInvestment: typicalInv,
+    maxApplications: draftData.maxApplications?.toString() || '',
+    autoMatch: draftData.autoMatch ?? true,
+    isPublic: true,
+    exclusionCriteria: draftData.exclusionCriteria || draftData.exclusionCriteria || ''
+  });
+}
   destroy() {
     this.destroy$.next();
     this.destroy$.complete();

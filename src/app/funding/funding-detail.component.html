@@ -32,14 +32,14 @@
               </div>
             </div>
             
-@if (canManageOpportunity()) {
-  <button (click)="editOpportunity()">
-    <span class="inline-flex items-center gap-2 px-3 py-1.5 bg-orange-50 border border-orange-200/50 text-orange-700 text-xs font-semibold rounded-full">
-      <div class="w-2 h-2 bg-orange-600 rounded-full"></div>
-      Edit This Opportunity
-    </span>
-  </button>
-}
+            @if (canManageOpportunity()) {
+              <button (click)="editOpportunity()">
+                <span class="inline-flex items-center gap-2 px-3 py-1.5 bg-orange-50 border border-orange-200/50 text-orange-700 text-xs font-semibold rounded-full">
+                  <div class="w-2 h-2 bg-orange-600 rounded-full"></div>
+                  Edit This Opportunity
+                </span>
+              </button>
+            }
 
           </div>
         </div>
@@ -212,30 +212,42 @@
                 </div>
               </div>
 
-                 @if (!canManageOpportunity()) {
-             <button 
-                class="w-full mt-6 px-6 py-2.5 bg-orange-500 text-white text-sm font-medium rounded-xl hover:bg-orange-600 active:bg-orange-700 transition-colors duration-200"
-              >
-                Apply Now
-              </button>
-            }
-
-      
-             
+              @if (!canManageOpportunity()) {
+                <button 
+                  (click)="applyNow()"
+                  class="w-full mt-6 px-6 py-2.5 bg-orange-500 text-white text-sm font-medium rounded-xl hover:bg-orange-600 active:bg-orange-700 transition-colors duration-200"
+                >
+                  Apply Now
+                </button>
+              }
             </div>
-
-      
 
             <!-- Quick Links -->
             <div class="bg-white rounded-2xl border border-slate-200 p-6">
               <h3 class="text-base font-bold text-slate-900 mb-4">Investor</h3>
               <p class="text-sm text-slate-700 font-medium">{{ getInvestorName(opportunity()!) }}</p>
-              <button 
-                class="w-full mt-4 px-4 py-2 text-orange-600 text-sm font-medium hover:bg-orange-50 rounded-lg transition-colors duration-200"
-              >
-                View Investor Profile →
-              </button>
+              
+              @if (canViewInvestorProfile()) {
+                <button 
+                  (click)="viewInvestorProfile()"
+                  [disabled]="isLoadingProfile()"
+                  class="w-full mt-4 px-4 py-2 text-orange-600 text-sm font-medium hover:bg-orange-50 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg transition-colors duration-200"
+                >
+                  @if (isLoadingProfile()) {
+                    <span class="inline-flex items-center gap-2">
+                      <svg class="animate-spin w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      Loading...
+                    </span>
+                  } @else {
+                    View Investor Profile →
+                  }
+                </button>
+              }
             </div>
+
           </div>
         </div>
       }

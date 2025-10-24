@@ -48,6 +48,7 @@ export class PublicProfileManagementComponent implements OnInit, OnDestroy {
   // State
   profile = signal<PublicProfile | null>(null);
   organizationId = signal<string | null>(null);
+    organizationName = signal<string | null>(null);
   isLoading = signal(false);
   isSaving = signal(false);
   isCreating = signal(false);
@@ -208,6 +209,7 @@ hasChanges = computed(() => {
       .subscribe(state => {
         if (state?.organization?.id) {
           this.organizationId.set(state.organization.id);
+          this.organizationName.set(state.organization.name); // ADD THIS
           this.loadProfile(state.organization.id);
         }
       });
@@ -388,7 +390,7 @@ hasChanges = computed(() => {
 
   removeTeamMember(index: number) {
     this.teamMembersArray.removeAt(index);
-  }
+  } 
 
   // ===============================
   // ACTIONS
@@ -411,7 +413,9 @@ hasChanges = computed(() => {
 
     const saveOperation = this.profileExists() 
       ? this.profileService.updateProfile(this.profile()!.id, formData)
-      : this.profileService.createProfile(orgId, formData);
+      : this.profileService.createProfile(orgId, 
+        this.organizationName()!,  
+        formData);
 
     saveOperation
       .pipe(takeUntil(this.destroy$))

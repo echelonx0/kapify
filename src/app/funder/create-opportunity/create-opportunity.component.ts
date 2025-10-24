@@ -1,5 +1,4 @@
 // src/app/funder/create-opportunity/create-opportunity.component.ts
-// UPDATED: Use ActionModalService instead of @ViewChild
 import { Component, inject, signal, OnInit, OnDestroy, effect } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -233,81 +232,97 @@ export class CreateOpportunityComponent implements OnInit, OnDestroy {
       this.publish();
     }
   }
+ 
 
-  private buildOpportunityData(): Observable<Partial<FundingOpportunity>> {
-    return new Observable(observer => {
-      try {
-        const orgId = this.organizationState.organizationId();
-        const data = this.formState.formData();
-        if (!orgId) {
-          observer.error(new Error('Organization ID is required'));
-          return;
-        }
-        const validationError = this.validateRequiredFields(data);
-        if (validationError) {
-          observer.error(new Error(validationError));
-          return;
-        }
-        const opportunityData: Partial<FundingOpportunity> = {
-          title: data.title.trim(),
-          description: data.description.trim(),
-          shortDescription: data.shortDescription.trim(),
-          
-          fundingOpportunityImageUrl: data.fundingOpportunityImageUrl?.trim() || undefined,
-          fundingOpportunityVideoUrl: data.fundingOpportunityVideoUrl?.trim() || undefined,
-          funderOrganizationName: data.funderOrganizationName?.trim() || undefined,
-          funderOrganizationLogoUrl: data.funderOrganizationLogoUrl?.trim() || undefined,
-          
-          fundId: orgId,
-          organizationId: orgId,
-          
-          offerAmount: Math.max(0, this.formState.parseNumberValue(data.maxInvestment)),
-          minInvestment: this.formState.parseNumberValue(data.minInvestment) || undefined,
-          maxInvestment: this.formState.parseNumberValue(data.maxInvestment) || undefined,
-          currency: data.currency,
-          fundingType: data.fundingType as any,
-          interestRate: data.interestRate ? Number(data.interestRate) : undefined,
-          equityOffered: data.equityOffered ? Number(data.equityOffered) : undefined,
-          repaymentTerms: data.repaymentTerms?.trim() || undefined,
-          securityRequired: data.securityRequired?.trim() || undefined,
-          useOfFunds: data.useOfFunds?.trim(),
-          investmentStructure: data.investmentStructure?.trim(),
-          expectedReturns: data.expectedReturns ? Number(data.expectedReturns) : undefined,
-          investmentHorizon: data.investmentHorizon ? Number(data.investmentHorizon) : undefined,
-          exitStrategy: data.exitStrategy?.trim() || undefined,
-          applicationDeadline: data.applicationDeadline ? new Date(data.applicationDeadline) : undefined,
-          decisionTimeframe: Math.max(1, Number(data.decisionTimeframe) || 30),
-          
-          totalAvailable: Math.max(0, this.formState.parseNumberValue(data.typicalInvestment)),
-          maxApplications: data.maxApplications ? Math.max(1, this.formState.parseNumberValue(data.maxApplications)) : undefined,
-          
-          eligibilityCriteria: {
-            industries: data.targetIndustries || [],
-            businessStages: data.businessStages || [],
-            minRevenue: data.minRevenue ? Math.max(0, this.formState.parseNumberValue(data.minRevenue)) : undefined,
-            maxRevenue: data.maxRevenue ? Math.max(0, this.formState.parseNumberValue(data.maxRevenue)) : undefined,
-            minYearsOperation: data.minYearsOperation ? Math.max(0, Number(data.minYearsOperation)) : undefined,
-            geographicRestrictions: data.geographicRestrictions?.length > 0 ? data.geographicRestrictions : undefined,
-            requiresCollateral: data.requiresCollateral,
-            excludeCriteria: [],
-            funderDefinedCriteria: data.investmentCriteria?.trim() || undefined
-          },
-          
-          autoMatch: data.autoMatch,
-          status: 'draft',
-          
-          currentApplications: 0,
-          viewCount: 0,
-          applicationCount: 0
-        };
-        observer.next(opportunityData);
-        observer.complete();
-      } catch (error: any) {
-        observer.error(new Error(`Failed to prepare opportunity data: ${error.message || 'Unknown error'}`));
+private buildOpportunityData(): Observable<Partial<FundingOpportunity>> {
+  return new Observable(observer => {
+    try {
+      const orgId = this.organizationState.organizationId();
+      const data = this.formState.formData();
+      
+      if (!orgId) {
+        observer.error(new Error('Organization ID is required'));
+        return;
       }
-    });
-  }
+      
+      const validationError = this.validateRequiredFields(data);
+      if (validationError) {
+        observer.error(new Error(validationError));
+        return;
+      }
 
+      // ===== INVESTMENT BOUNDS VALIDATION =====
+      const typicalInv = this.formState.parseNumberValue(data.typicalInvestment) || 1;
+      const minInv = this.formState.parseNumberValue(data.minInvestment) || 1;
+      const maxInv = this.formState.parseNumberValue(data.maxInvestment) || typicalInv;
+      
+      // Ensure: min ≤ typical ≤ max, all > 0
+      const validatedMinInv = Math.max(1, minInv);
+      const validatedMaxInv = Math.max(validatedMinInv, maxInv);
+      const validatedTypicalInv = Math.max(validatedMinInv, Math.min(typicalInv, validatedMaxInv));
+
+      const opportunityData: Partial<FundingOpportunity> = {
+        title: data.title.trim(),
+        description: data.description.trim(),
+        shortDescription: data.shortDescription.trim(),
+        
+        fundingOpportunityImageUrl: data.fundingOpportunityImageUrl?.trim() || undefined,
+        fundingOpportunityVideoUrl: data.fundingOpportunityVideoUrl?.trim() || undefined,
+        funderOrganizationName: data.funderOrganizationName?.trim() || undefined,
+        funderOrganizationLogoUrl: data.funderOrganizationLogoUrl?.trim() || undefined,
+        
+        fundId: orgId,
+        organizationId: orgId,
+        
+        // Investment amounts with validated bounds
+        offerAmount: validatedMaxInv,
+        minInvestment: validatedMinInv,
+        maxInvestment: validatedMaxInv,
+        totalAvailable: validatedTypicalInv,
+        
+        currency: data.currency,
+        fundingType: data.fundingType as any,
+        interestRate: data.interestRate ? Number(data.interestRate) : undefined,
+        equityOffered: data.equityOffered ? Number(data.equityOffered) : undefined,
+        repaymentTerms: data.repaymentTerms?.trim() || undefined,
+        securityRequired: data.securityRequired?.trim() || undefined,
+        useOfFunds: data.useOfFunds?.trim(),
+        investmentStructure: data.investmentStructure?.trim(),
+        expectedReturns: data.expectedReturns ? Number(data.expectedReturns) : undefined,
+        investmentHorizon: data.investmentHorizon ? Number(data.investmentHorizon) : undefined,
+        exitStrategy: data.exitStrategy?.trim() || undefined,
+        applicationDeadline: data.applicationDeadline ? new Date(data.applicationDeadline) : undefined,
+        decisionTimeframe: Math.max(1, Number(data.decisionTimeframe) || 30),
+        
+        maxApplications: data.maxApplications ? Math.max(1, this.formState.parseNumberValue(data.maxApplications)) : undefined,
+        
+        eligibilityCriteria: {
+          industries: data.targetIndustries || [],
+          businessStages: data.businessStages || [],
+          minRevenue: data.minRevenue ? Math.max(0, this.formState.parseNumberValue(data.minRevenue)) : undefined,
+          maxRevenue: data.maxRevenue ? Math.max(0, this.formState.parseNumberValue(data.maxRevenue)) : undefined,
+          minYearsOperation: data.minYearsOperation ? Math.max(0, Number(data.minYearsOperation)) : undefined,
+          geographicRestrictions: data.geographicRestrictions?.length > 0 ? data.geographicRestrictions : undefined,
+          requiresCollateral: data.requiresCollateral,
+          excludeCriteria: [],
+          funderDefinedCriteria: data.investmentCriteria?.trim() || undefined
+        },
+        
+        autoMatch: data.autoMatch,
+        status: 'draft',
+        
+        currentApplications: 0,
+        viewCount: 0,
+        applicationCount: 0
+      };
+      
+      observer.next(opportunityData);
+      observer.complete();
+    } catch (error: any) {
+      observer.error(new Error(`Failed to prepare opportunity data: ${error.message || 'Unknown error'}`));
+    }
+  });
+}
   private validateRequiredFields(data: OpportunityFormData): string | null {
     if (!data.title.trim()) return 'Opportunity title is required.';
     if (!data.shortDescription.trim()) return 'Short description is required.';

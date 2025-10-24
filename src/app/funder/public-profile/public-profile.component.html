@@ -1,421 +1,330 @@
-   <div class="min-h-screen bg-gray-50">
-      
-      @if (isLoading()) {
-        <!-- Loading State -->
-        <div class="flex items-center justify-center min-h-screen">
-          <div class="text-center">
-            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto mb-4"></div>
-            <p class="text-gray-600">Loading profile...</p>
-          </div>
-        </div>
-      } @else if (error()) {
-        <!-- Error State -->
-       <!-- Enhanced Profile Not Found Page -->
-<div class="min-h-screen bg-gradient-to-br from-gray-50 to-cyan-50 flex items-center justify-center px-4">
-  <div class="max-w-2xl mx-auto text-center">
-    
-    <!-- Icon and Title -->
-    <div class="mb-8">
-      <div class="w-20 h-20 bg-cyan-100 rounded-full flex items-center justify-center mx-auto mb-6">
-        <lucide-icon [img]="GlobeIcon" [size]="36" class="text-cyan-600" />
-      </div>
-      <h1 class="text-3xl font-bold text-gray-900 mb-3">Profile Not Found</h1>
-      <p class="text-lg text-gray-600 max-w-lg mx-auto">
-        This funder profile doesn't exist or hasn't been published yet.
-      </p>
-    </div>
-
-    <!-- Tutorial Section -->
-    <div class="bg-white rounded-xl p-6 mb-8 border border-gray-200 shadow-sm">
-      <h2 class="text-xl font-semibold text-gray-900 mb-4">Are you a funder?</h2>
-      <div class="text-left space-y-4 max-w-lg mx-auto">
-        <div class="flex items-start gap-3">
-          <div class="w-6 h-6 bg-cyan-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-            <span class="text-xs font-bold text-cyan-600">1</span>
-          </div>
-          <p class="text-gray-600">Create your public profile to attract high-quality SME applications</p>
-        </div>
-        <div class="flex items-start gap-3">
-          <div class="w-6 h-6 bg-cyan-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-            <span class="text-xs font-bold text-cyan-600">2</span>
-          </div>
-          <p class="text-gray-600">Showcase your investment criteria and track record</p>
-        </div>
-        <div class="flex items-start gap-3">
-          <div class="w-6 h-6 bg-cyan-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-            <span class="text-xs font-bold text-cyan-600">3</span>
-          </div>
-          <p class="text-gray-600">Share your unique URL to drive targeted applications</p>
-        </div>
-      </div>
-    </div>
-
-    <!-- Action Buttons -->
-    <div class="flex flex-col sm:flex-row gap-4 justify-center">
-      <ui-button variant="outline" (clicked)="goBack()" class="shadow-sm">
-        <lucide-icon [img]="ArrowLeftIcon" [size]="16" class="mr-2" />
-        Go Back
-      </ui-button>
-      
-      <ui-button variant="primary" (clicked)="createProfile()" class="shadow-sm">
-    
-        Create Public Profile
-      </ui-button>
-      
-      <ui-button variant="ghost" (clicked)="goHome()">
-        <lucide-icon [img]="HomeIcon" [size]="16" class="mr-2" />
-        Homepage
-      </ui-button>
-    </div>
-
-    <!-- Help Text -->
-    <p class="text-sm text-gray-500 mt-8">
-      Looking for funding opportunities? 
-      <a href="/marketplace" class="text-cyan-600 hover:text-cyan-700 font-medium">Browse our marketplace</a>
-    </p>
-  </div>
-</div>
-      } @else if (profile()) {
-        <!-- Profile Content -->
-        <div >
-          
-          <!-- Hero Section -->
-          <section class="relative bg-gradient-to-br from-cyan-600 via-slate-700 to-primary-800 text-white">
-            <div class="absolute inset-0 bg-black bg-opacity-20"></div>
-            <div class="relative px-4 sm:px-6 lg:px-8 py-16 lg:py-24">
-              <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-                
-                <!-- Hero Content -->
-                <div class="space-y-6">
-                  <div class="flex items-center gap-4">
-                    @if (profile()!.logoUrl) {
-                      <img 
-                        [src]="profile()!.logoUrl" 
-                        [alt]="getOrganizationName() + ' logo'"
-                        class="w-16 h-16 rounded-xl object-cover bg-white p-2"
-                      />
-                    }
-                    <div>
-                      <h1 class="text-3xl lg:text-4xl font-bold">{{ getOrganizationName() }}</h1>
-                      @if (isVerified()) {
-                        <div class="flex items-center gap-2 mt-2">
-                          <lucide-icon [img]="ShieldIcon" [size]="16" class="text-green-400" />
-                          <span class="text-green-400 text-sm font-medium">Verified Funder</span>
-                        </div>
-                      }
-                    </div>
-                  </div>
-                  
-                  <h2 class="text-xl lg:text-2xl font-medium text-cyan-100 leading-relaxed">
-                    {{ profile()!.tagline }}
-                  </h2>
-                  
-                  @if (profile()!.elevator_pitch) {
-                    <p class="text-lg text-cyan-50 leading-relaxed max-w-2xl">
-                      {{ profile()!.elevator_pitch }}
-                    </p>
-                  }
-
-                  <!-- Social Proof Highlights -->
-                  @if (profile()!.portfolioHighlights.length > 0) {
-                    <div class="flex flex-wrap gap-4 pt-4">
-                      @for (highlight of profile()!.portfolioHighlights.slice(0, 3); track highlight) {
-                        <div class="bg-white bg-opacity-10 backdrop-blur-sm rounded-lg px-4 py-2">
-                          <span class="text-white font-medium">{{ highlight }}</span>
-                        </div>
-                      }
-                    </div>
-                  }
-
-                  <!-- CTA Buttons -->
-                  <div class="flex flex-col sm:flex-row gap-4 pt-6">
-                    <ui-button 
-                      variant="primary" 
-                      size="lg" 
-                      (clicked)="startApplication()"
-                     
-                    >
-                      <lucide-icon [img]="ArrowRightIcon" [size]="20" class="mr-2" />
-                      Apply for Funding
-                    </ui-button>
-                    
-                    @if (profile()!.responseTimePromise) {
-                      <div class="flex items-center gap-2 text-cyan-100">
-                        <lucide-icon [img]="ClockIcon" [size]="16" />
-                        <span class="text-sm">{{ profile()!.responseTimePromise }}</span>
-                      </div>
-                    }
-                  </div>
-                </div>
-
-                <!-- Hero Video or Image -->
-                <div class="lg:order-last">
-                  @if (profile()!.heroVideo?.url) {
-                    <div class="relative rounded-xl overflow-hidden shadow-2xl">
-                      <div class="aspect-video bg-black bg-opacity-20 flex items-center justify-center">
-                        <button 
-                          (click)="playVideo()"
-                          class="w-20 h-20 bg-white bg-opacity-90 rounded-full flex items-center justify-center hover:bg-opacity-100 transition-all transform hover:scale-105"
-                        >
-                          <lucide-icon [img]="PlayIcon" [size]="32" class="text-cyan-600 ml-1" />
-                        </button>
-                      </div>
-                    </div>
-                  } @else {
-                    <!-- Placeholder or featured portfolio logos -->
-                    <div class="grid grid-cols-2 gap-4">
-                      @for (logo of profile()!.featuredPortfolioLogos?.slice(0, 4); track logo) {
-                        <div class="bg-white bg-opacity-10 backdrop-blur-sm rounded-lg p-6 flex items-center justify-center">
-                          <img [src]="logo" [alt]="'Portfolio company'" class="max-h-12 max-w-full object-contain opacity-80" />
-                        </div>
-                      }
-                    </div>
-                  }
-                </div>
-              </div>
-            </div>
-          </section>
-
-          <!-- Key Metrics -->
-          @if (profile()!.successMetrics.length > 0) {
-            <section class="bg-white py-16">
-              <div class="px-4 sm:px-6 lg:px-8">
-                <div class="text-center mb-12">
-                  <h2 class="text-3xl font-bold text-gray-900 mb-4">Our Track Record</h2>
-                  <p class="text-lg text-gray-600 max-w-2xl mx-auto">
-                    Numbers that demonstrate our commitment to SME success
-                  </p>
-                </div>
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-                  @for (metric of getDisplayMetrics(); track metric.label) {
-                    <div class="text-center" [class.lg:col-span-2]="metric.emphasis">
-                      <div class="w-16 h-16 bg-cyan-100 rounded-xl flex items-center justify-center mx-auto mb-4">
-                        <lucide-icon [img]="getMetricIcon(metric)" [size]="24" class="text-cyan-600" />
-                      </div>
-                      <div class="text-3xl font-bold text-gray-900 mb-2" [class.text-4xl]="metric.emphasis">
-                        {{ metric.value }}
-                      </div>
-                      <div class="text-gray-600 font-medium" [class.text-lg]="metric.emphasis">
-                        {{ metric.label }}
-                      </div>
-                    </div>
-                  }
-                </div>
-              </div>
-            </section>
-          }
-
-          <!-- What We Fund -->
-          <section class="bg-gray-50 py-16">
-            <div class="px-4 sm:px-6 lg:px-8">
-              <div class="text-center mb-12">
-                <h2 class="text-3xl font-bold text-gray-900 mb-4">What We Fund</h2>
-                <p class="text-lg text-gray-600 max-w-2xl mx-auto">
-                  See if your business aligns with our investment focus
-                </p>
-              </div>
-
-              <!-- Investment Range -->
-              @if (profile()!.investmentRange) {
-                <div class="bg-gradient-to-r from-cyan-500 to-slate-600 rounded-2xl p-8 mb-12 text-white text-center">
-                  <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div>
-                      <div class="text-sm text-cyan-100 mb-1">Minimum Investment</div>
-                      <div class="text-2xl font-bold">{{ formatAmount(profile()!.investmentRange.min) }}</div>
-                    </div>
-                    <div>
-                      <div class="text-sm text-cyan-100 mb-1">Maximum Investment</div>
-                      <div class="text-2xl font-bold">{{ formatAmount(profile()!.investmentRange.max) }}</div>
-                    </div>
-                    @if (profile()!.investmentRange.typical) {
-                      <div>
-                        <div class="text-sm text-cyan-100 mb-1">Typical Investment</div>
-                        <div class="text-2xl font-bold">{{ formatAmount(profile()!.investmentRange.typical!) }}</div>
-                      </div>
-                    }
-                  </div>
-                </div>
-              }
-
-              <!-- Funding Areas -->
-              @if (profile()!.fundingAreas.length > 0) {
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  @for (area of profile()!.fundingAreas; track area.name) {
-                    <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
-                      <div class="flex items-center gap-3 mb-4">
-                        <div class="w-12 h-12 bg-slate-100 rounded-lg flex items-center justify-center">
-                          <lucide-icon [img]="TargetIcon" [size]="20" class="text-slate-600" />
-                        </div>
-                        <h3 class="text-lg font-semibold text-gray-900">{{ area.name }}</h3>
-                      </div>
-                      
-                      @if (area.description) {
-                        <p class="text-gray-600 mb-4">{{ area.description }}</p>
-                      }
-                      
-                      @if (area.tags.length > 0) {
-                        <div class="flex flex-wrap gap-2">
-                          @for (tag of area.tags; track tag) {
-                            <span class="px-3 py-1 bg-gray-100 text-gray-700 text-sm rounded-full">
-                              {{ tag }}
-                            </span>
-                          }
-                        </div>
-                      }
-                    </div>
-                  }
-                </div>
-              }
-            </div>
-          </section>
-
-          <!-- How to Apply -->
-          <section class="bg-white py-16">
-            <div class="px-4 sm:px-6 lg:px-8">
-              <div class="max-w-4xl mx-auto text-center">
-                <h2 class="text-3xl font-bold text-gray-900 mb-6">Ready to Apply?</h2>
-                <p class="text-lg text-gray-600 mb-8 max-w-2xl mx-auto">
-                  {{ profile()!.applicationProcess || 'Start your funding journey with us today' }}
-                </p>
-                
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
-                  <div class="text-center">
-                    <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <span class="text-2xl font-bold text-green-600">1</span>
-                    </div>
-                    <h3 class="text-lg font-semibold text-gray-900 mb-2">Complete Application</h3>
-                    <p class="text-gray-600">Fill out our streamlined application form with your business details</p>
-                  </div>
-                  
-                  <div class="text-center">
-                    <div class="w-16 h-16 bg-cyan-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <span class="text-2xl font-bold text-cyan-600">2</span>
-                    </div>
-                    <h3 class="text-lg font-semibold text-gray-900 mb-2">Review Process</h3>
-                    <p class="text-gray-600">
-                      {{ profile()!.responseTimePromise || 'Our team reviews your application promptly' }}
-                    </p>
-                  </div>
-                  
-                  <div class="text-center">
-                    <div class="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <span class="text-2xl font-bold text-primary-600">3</span>
-                    </div>
-                    <h3 class="text-lg font-semibold text-gray-900 mb-2">Get Funded</h3>
-                    <p class="text-gray-600">Receive funding and ongoing support to scale your business</p>
-                  </div>
-                </div>
-
-                <ui-button 
-                  variant="primary" 
-                  size="lg" 
-                  (clicked)="startApplication()"
-                  class="shadow-lg"
-                >
-                  <lucide-icon [img]="ArrowRightIcon" [size]="20" class="mr-2" />
-                  Start Your Application
-                </ui-button>
-              </div>
-            </div>
-          </section>
-
-          <!-- About Section -->
-          @if (shouldShowAboutSection()) {
-            <section class="bg-gray-50 py-16">
-              <div class="px-4 sm:px-6 lg:px-8">
-                <div class="max-w-4xl mx-auto">
-                  
-                  @if (profile()!.foundingStory || profile()!.investmentApproach) {
-                    <div class="text-center mb-12">
-                      <h2 class="text-3xl font-bold text-gray-900 mb-4">About {{ getOrganizationName() }}</h2>
-                    </div>
-
-                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-16">
-                      @if (profile()!.foundingStory) {
-                        <div>
-                          <h3 class="text-xl font-semibold text-gray-900 mb-4">Our Story</h3>
-                          <p class="text-gray-600 leading-relaxed">{{ profile()!.foundingStory }}</p>
-                        </div>
-                      }
-                      
-                      @if (profile()!.investmentApproach) {
-                        <div>
-                          <h3 class="text-xl font-semibold text-gray-900 mb-4">Investment Approach</h3>
-                          <p class="text-gray-600 leading-relaxed">{{ profile()!.investmentApproach }}</p>
-                        </div>
-                      }
-                    </div>
-                  }
-
-                  <!-- Team Members -->
-                  @if (profile()!.teamMembers.length > 0) {
-                    <div>
-                      <h3 class="text-2xl font-bold text-gray-900 text-center mb-12">Meet Our Team</h3>
-                      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                        @for (member of profile()!.teamMembers; track member.name) {
-                          <div class="text-center bg-white rounded-xl p-6 shadow-sm border border-gray-200">
-                            @if (member.imageUrl) {
-                              <img 
-                                [src]="member.imageUrl" 
-                                [alt]="member.name"
-                                class="w-20 h-20 rounded-full mx-auto mb-4 object-cover"
-                              />
-                            } @else {
-                              <div class="w-20 h-20 bg-gray-200 rounded-full mx-auto mb-4 flex items-center justify-center">
-                                <lucide-icon [img]="UsersIcon" [size]="24" class="text-gray-500" />
-                              </div>
-                            }
-                            
-                            <h4 class="text-lg font-semibold text-gray-900 mb-1">{{ member.name }}</h4>
-                            <p class="text-cyan-600 font-medium mb-3">{{ member.title }}</p>
-                            
-                            @if (member.bio) {
-                              <p class="text-sm text-gray-600 mb-4">{{ member.bio }}</p>
-                            }
-                            
-                            @if (member.linkedinUrl) {
-                              <a 
-                                [href]="member.linkedinUrl" 
-                                target="_blank" 
-                                class="inline-flex items-center gap-1 text-cyan-600 hover:text-cyan-700 text-sm"
-                              >
-                                <lucide-icon [img]="LinkedinIcon" [size]="16" />
-                                <span>LinkedIn</span>
-                              </a>
-                            }
-                          </div>
-                        }
-                      </div>
-                    </div>
-                  }
-                </div>
-              </div>
-            </section>
-          }
-
-          <!-- Social Links & Contact -->
-          @if (profile()!.socialLinks.length > 0) {
-            <section class="bg-white py-16 border-t border-gray-200">
-              <div class="px-4 sm:px-6 lg:px-8">
-                <div class="max-w-4xl mx-auto text-center">
-                  <h3 class="text-xl font-semibold text-gray-900 mb-8">Connect With Us</h3>
-                  <div class="flex justify-center gap-6">
-                    @for (link of profile()!.socialLinks; track link.url) {
-                      <a 
-                        [href]="link.url" 
-                        target="_blank"
-                        class="w-12 h-12 bg-gray-100 hover:bg-gray-200 rounded-lg flex items-center justify-center transition-colors"
-                      >
-                        <lucide-icon [img]="getSocialIcon(link.platform)" [size]="20" class="text-gray-600" />
-                      </a>
-                    }
-                  </div>
-                </div>
-              </div>
-            </section>
-          }
-
-        </div>
+<div class="min-h-screen bg-white">
+  
+  <!-- Sticky Header -->
+  <header class="sticky top-0 z-50 bg-white border-b border-slate-200">
+    <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+      @if (profile()?.logoUrl) {
+        <img [src]="profile()!.logoUrl" [alt]="profile()!.organizationName" class="h-8 w-auto" />
+      } @else {
+        <span class="text-lg font-bold text-slate-900">{{ profile()?.organizationName }}</span>
       }
+      <button 
+        (click)="startApplication()"
+        class="px-6 py-2.5 bg-slate-900 text-white text-sm font-semibold rounded-lg hover:bg-slate-800 transition-colors"
+      >
+        Apply Now
+      </button>
     </div>
+  </header>
+
+  @if (isLoading()) {
+    <div class="min-h-screen flex items-center justify-center">
+      <div class="w-8 h-8 border-2 border-slate-200 border-t-slate-900 rounded-full animate-spin"></div>
+    </div>
+  } @else if (error()) {
+    <div class="min-h-screen flex items-center justify-center px-6">
+      <div class="max-w-md text-center">
+        <h1 class="text-2xl font-bold text-slate-900 mb-2">Profile Not Found</h1>
+        <p class="text-slate-600">This funder profile doesn't exist or has been archived.</p>
+      </div>
+    </div>
+  } @else if (profile()) {
+
+    <!-- ============================================ -->
+    <!-- 1. HERO SECTION (15s read) -->
+    <!-- ============================================ -->
+    <section class="relative overflow-hidden bg-gradient-to-br from-slate-900 via-purple-700 to-cyan-500 py-24 lg:py-32">
+      <div class="absolute inset-0 opacity-20">
+        <svg viewBox="0 0 1200 600" preserveAspectRatio="xMidYMid slice" class="w-full h-full">
+          <circle cx="100" cy="100" r="80" fill="white" opacity="0.1"/>
+          <circle cx="1100" cy="500" r="150" fill="white" opacity="0.1"/>
+        </svg>
+      </div>
+
+      <div class="relative max-w-7xl mx-auto px-6">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+          
+          <!-- Text -->
+          <div class="space-y-6 text-white">
+            <h1 class="text-5xl lg:text-6xl font-black leading-tight">
+              {{ profile()!.tagline }}
+            </h1>
+            @if (profile()!.elevator_pitch) {
+              <p class="text-lg text-white/90 leading-relaxed">
+                {{ profile()!.elevator_pitch }}
+              </p>
+            }
+            <button 
+              (click)="startApplication()"
+              class="inline-block px-8 py-4 bg-white text-slate-900 font-bold rounded-lg hover:bg-slate-100 transition-colors shadow-lg"
+            >
+              Apply Now
+            </button>
+            @if (profile()!.portfolioHighlights.length > 0) {
+              <div class="space-y-2 pt-4 text-white/95">
+                @for (highlight of profile()!.portfolioHighlights.slice(0, 2); track highlight) {
+                  <div class="flex items-center gap-2">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                      <path fill-rule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 10 10.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                    </svg>
+                    <span class="font-medium">{{ highlight }}</span>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+
+          <!-- Hero Visual -->
+          @if (profile()!.heroVideo?.url) {
+            <div class="hidden lg:flex h-80 rounded-2xl overflow-hidden shadow-2xl bg-white/10 backdrop-blur-sm items-center justify-center cursor-pointer group" (click)="playVideo()">
+              <button class="w-20 h-20 bg-white rounded-full flex items-center justify-center shadow-xl hover:scale-110 transition-transform">
+                <svg class="w-8 h-8 text-slate-900 ml-1" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z"/>
+                </svg>
+              </button>
+            </div>
+          } @else {
+            <div class="hidden lg:block h-80 rounded-2xl bg-gradient-to-br from-white/20 to-white/5 shadow-2xl"></div>
+          }
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================ -->
+    <!-- 2. KEY METRICS (20s read) -->
+    <!-- ============================================ -->
+    @if (getKeyMetrics().length > 0) {
+      <section class="py-16 bg-gradient-to-r from-pink-600 via-purple-600 to-cyan-500">
+        <div class="max-w-7xl mx-auto px-6">
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-12 text-white text-center">
+            @for (metric of getKeyMetrics(); track metric.label) {
+              <div>
+                <div class="text-5xl lg:text-6xl font-black mb-2">{{ metric.value }}</div>
+                <div class="text-sm font-semibold text-white/90">{{ metric.label }}</div>
+              </div>
+            }
+          </div>
+        </div>
+      </section>
+    }
+
+    <!-- ============================================ -->
+    <!-- 3. WHAT WE FUND (20s read) -->
+    <!-- ============================================ -->
+    @if (profile()!.fundingAreas.length > 0) {
+      <section class="py-20 lg:py-28 bg-white">
+        <div class="max-w-7xl mx-auto px-6">
+          <h2 class="text-4xl lg:text-5xl font-black text-slate-900 mb-16">What We Fund</h2>
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            @for (area of getTopFundingAreas(); track area.name) {
+              <div class="p-6 rounded-xl bg-slate-50 hover:shadow-lg transition-shadow">
+                <div class="flex items-center justify-center h-12 w-12 rounded-lg bg-gradient-to-br from-purple-600 to-cyan-500 text-white mb-4">
+                  <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M9.243 3.5a.75.75 0 01.502.211l7.5 6.5a.75.75 0 11-.992 1.122L10 5.361l-6.253 5.972a.75.75 0 11-.992-1.122l7.5-6.5a.75.75 0 01.988 0z" clip-rule="evenodd"/>
+                  </svg>
+                </div>
+                <h3 class="text-lg font-bold text-slate-900 mb-2">{{ area.name }}</h3>
+                @if (area.description) {
+                  <p class="text-sm text-slate-600 leading-relaxed mb-3">{{ area.description }}</p>
+                }
+                @if (area.tags.length > 0) {
+                  <div class="flex flex-wrap gap-1">
+                    @for (tag of area.tags.slice(0, 2); track tag) {
+                      <span class="px-2 py-1 bg-slate-200 text-slate-700 text-xs font-semibold rounded">
+                        {{ tag }}
+                      </span>
+                    }
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        </div>
+      </section>
+    }
+
+    <!-- ============================================ -->
+    <!-- 4. INVESTMENT RANGE (15s scan) -->
+    <!-- ============================================ -->
+    <section *ngIf="profile()?.investmentRange" class="py-16 lg:py-20 bg-slate-50">
+      <div class="max-w-7xl mx-auto px-6">
+        <h3 class="text-2xl lg:text-3xl font-black text-slate-900 mb-10">Investment Range</h3>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div class="bg-white rounded-lg p-8 shadow-sm">
+            <div class="text-xs uppercase tracking-wider text-slate-500 font-bold mb-2">Min</div>
+            <div class="text-3xl lg:text-4xl font-black text-slate-900">
+              {{ formatAmount(profile()!.investmentRange!.min) }}
+            </div>
+          </div>
+          <div *ngIf="typicalInvestment > 0" class="bg-white rounded-lg p-8 shadow-sm border-2 border-purple-200">
+            <div class="text-xs uppercase tracking-wider text-purple-600 font-bold mb-2">Typical</div>
+            <div class="text-3xl lg:text-4xl font-black text-slate-900">
+              {{ formatAmount(typicalInvestment) }}
+            </div>
+          </div>
+
+
+          <div class="bg-white rounded-lg p-8 shadow-sm">
+            <div class="text-xs uppercase tracking-wider text-slate-500 font-bold mb-2">Max</div>
+            <div class="text-3xl lg:text-4xl font-black text-slate-900">
+              {{ formatAmount(profile()!.investmentRange!.max) }}
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================ -->
+    <!-- 5. WHY US (15s read) -->
+    <!-- ============================================ -->
+    @if (profile()!.investmentApproach) {
+      <section class="py-20 lg:py-28 bg-white">
+        <div class="max-w-7xl mx-auto px-6">
+          <h2 class="text-4xl lg:text-5xl font-black text-slate-900 mb-8">Our Investment Approach</h2>
+          <div class="max-w-3xl">
+            <p class="text-lg text-slate-600 leading-relaxed mb-8">
+              {{ profile()!.investmentApproach }}
+            </p>
+          </div>
+        </div>
+      </section>
+    }
+
+    <!-- ============================================ -->
+    <!-- 6. HOW IT WORKS (10s scan) -->
+    <!-- ============================================ -->
+    <section class="py-16 lg:py-20 bg-slate-50">
+      <div class="max-w-7xl mx-auto px-6">
+        <h3 class="text-3xl font-black text-slate-900 mb-12">How It Works</h3>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+          <div class="flex gap-4">
+            <div class="flex-shrink-0">
+              <div class="flex items-center justify-center h-12 w-12 rounded-full border-2 border-slate-900 bg-slate-900 text-white font-black">1</div>
+            </div>
+            <div>
+              <h4 class="font-bold text-slate-900 mb-1">Submit</h4>
+              <p class="text-sm text-slate-600">Share your basics & metrics.</p>
+            </div>
+          </div>
+          <div class="flex gap-4">
+            <div class="flex-shrink-0">
+              <div class="flex items-center justify-center h-12 w-12 rounded-full border-2 border-slate-900 bg-slate-900 text-white font-black">2</div>
+            </div>
+            <div>
+              <h4 class="font-bold text-slate-900 mb-1">Review</h4>
+              <p class="text-sm text-slate-600">
+                @if (profile()!.responseTimePromise) {
+                  {{ profile()!.responseTimePromise }}
+                } @else {
+                  Response within 5–7 days.
+                }
+              </p>
+            </div>
+          </div>
+          <div class="flex gap-4">
+            <div class="flex-shrink-0">
+              <div class="flex items-center justify-center h-12 w-12 rounded-full border-2 border-slate-900 bg-slate-900 text-white font-black">3</div>
+            </div>
+            <div>
+              <h4 class="font-bold text-slate-900 mb-1">Partner</h4>
+              <p class="text-sm text-slate-600">Move to due diligence.</p>
+            </div>
+          </div>
+        </div>
+
+        <button 
+          (click)="startApplication()"
+          class="px-8 py-4 bg-slate-900 text-white font-bold rounded-lg hover:bg-slate-800 transition-colors"
+        >
+          Start Application
+        </button>
+      </div>
+    </section>
+
+    <!-- ============================================ -->
+    <!-- 7. TEAM (optional, 10s) -->
+    <!-- ============================================ -->
+    @if (getLeadership().length > 0) {
+      <section class="py-20 lg:py-28 bg-white">
+        <div class="max-w-7xl mx-auto px-6">
+          <h2 class="text-3xl lg:text-4xl font-black text-slate-900 mb-12">Leadership</h2>
+          
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            @for (member of getLeadership(); track member.name) {
+              <div class="p-6 rounded-xl bg-slate-50 hover:shadow-lg transition-shadow">
+                <div class="flex items-center gap-4 mb-4">
+                  @if (member.imageUrl) {
+                    <img 
+                      [src]="member.imageUrl" 
+                      [alt]="member.name"
+                      class="w-14 h-14 rounded-full object-cover"
+                    />
+                  } @else {
+                    <div class="w-14 h-14 rounded-full bg-gradient-to-br from-purple-300 to-cyan-300"></div>
+                  }
+                  <div>
+                    <h4 class="font-bold text-slate-900">{{ member.name }}</h4>
+                    <p class="text-xs text-slate-600">{{ member.title }}</p>
+                  </div>
+                </div>
+                @if (member.linkedinUrl) {
+                  <a 
+                    [href]="member.linkedinUrl" 
+                    target="_blank"
+                    class="text-sm text-purple-600 hover:text-purple-700 font-semibold"
+                  >
+                    LinkedIn →
+                  </a>
+                }
+              </div>
+            }
+          </div>
+        </div>
+      </section>
+    }
+
+    <!-- ============================================ -->
+    <!-- 8. FOOTER -->
+    <!-- ============================================ -->
+    <footer class="bg-slate-900 text-slate-400 py-12 border-t border-slate-800">
+      <div class="max-w-7xl mx-auto px-6">
+        <div class="flex flex-col md:flex-row justify-between items-start gap-8 mb-8">
+          
+          <div>
+            <h4 class="text-white font-bold mb-2">{{ profile()!.organizationName }}</h4>
+            @if (profile()!.socialLinks.length > 0) {
+              <div class="flex gap-4 mt-4">
+                @for (link of profile()!.socialLinks; track link.url) {
+                  <a 
+                    [href]="link.url" 
+                    target="_blank"
+                    class="hover:text-white transition-colors text-xs capitalize"
+                  >
+                    {{ link.platform }}
+                  </a>
+                }
+              </div>
+            }
+          </div>
+
+          <div class="text-right">
+            <button 
+              (click)="startApplication()"
+              class="inline-block px-6 py-3 bg-white text-slate-900 font-bold rounded-lg hover:bg-slate-100 transition-colors"
+            >
+              Apply Now
+            </button>
+          </div>
+        </div>
+
+        <div class="border-t border-slate-800 pt-8 text-center text-sm text-slate-500">
+          <p>&copy; {{ profile()!.organizationName }}. All rights reserved. <a href="#" class="hover:text-slate-300">Privacy</a> · <a href="#" class="hover:text-slate-300">Terms</a></p>
+        </div>
+      </div>
+    </footer>
+
+  }
+</div>

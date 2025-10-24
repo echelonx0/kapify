@@ -5,7 +5,7 @@ import { AuthService } from '../../auth/production.auth.service';
 import { SharedSupabaseService } from '../../shared/services/shared-supabase.service';
 import { FundingOpportunity } from 'src/app/funder/create-opportunity/shared/funding.interfaces';
 
-// Section-based data structures to match existing schema
+//   data structures to match existing schema
 interface OpportunitySection {
   id?: string;
   user_id: string;
@@ -883,9 +883,11 @@ export class FundingOpportunityService {
         funder_organization_name: formData.funderOrganizationName,
         funder_organization_logo_url: formData.funderOrganizationLogoUrl,
         exclusion_criteria: formData.exclusionCriteria,
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
+        
       };
 
+      console.log('This is the update data', updateData)
       const { data, error } = await this.supabaseService
         .from('funding_opportunities')
         .update(updateData)

@@ -104,7 +104,7 @@ export class PublicProfileService {
     );
   }
 
-  createProfile(organizationId: string, profileData: Partial<PublicProfile>): Observable<PublicProfile> {
+  createProfile(organizationId: string,organizationName: string,  profileData: Partial<PublicProfile>): Observable<PublicProfile> {
     this.isLoading.set(true);
     this.error.set(null);
 
@@ -112,6 +112,7 @@ export class PublicProfileService {
     
     const dbData = {
       organization_id: organizationId,
+        organization_name: organizationName,
       slug,
       tagline: profileData.tagline || '',
       elevator_pitch: profileData.elevator_pitch,
@@ -290,6 +291,7 @@ export class PublicProfileService {
     return {
       id: dbData.id,
       organizationId: dbData.organization_id,
+       organizationName: dbData.organization_name, 
       slug: dbData.slug,
       heroVideo: dbData.hero_video,
       tagline: dbData.tagline,
