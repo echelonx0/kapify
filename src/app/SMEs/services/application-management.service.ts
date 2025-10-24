@@ -1,6 +1,6 @@
 // src/app/SMEs/services/application-management.service.ts
 import { Injectable, inject, signal } from '@angular/core';
-import { Observable, from, throwError } from 'rxjs';
+import { Observable, from, of, throwError } from 'rxjs';
 import { tap, catchError } from 'rxjs/operators';
 import { AuthService } from '../../auth/production.auth.service';
 import { SharedSupabaseService } from '../../shared/services/shared-supabase.service';
@@ -1127,6 +1127,86 @@ private async fetchApplicationStats(
   } catch (error) {
     console.error('Error fetching application stats:', error);
     throw error;
+  }
+}
+
+
+/**
+ * Get all applications a funder can manage
+ * Fetches applications from all active opportunities
+ */
+getAllManageableApplications(includeDocuments: boolean = false): Observable<FundingApplication[]> {
+  this.isLoading.set(true);
+  this.error.set(null);
+  
+  return from(this.fetchAllManageableApplications(includeDocuments)).pipe(
+    tap((apps) => {
+      console.log('✅ All manageable applications loaded:', apps.length);
+      this.isLoading.set(false);
+    }),
+    catchError(error => {
+      console.error('Error loading manageable applications:', error);
+      this.error.set('Failed to load applications');
+      this.isLoading.set(false);
+      return of([]);
+    })
+  );
+}
+
+private async fetchAllManageableApplications(includeDocuments: boolean = false): Promise<FundingApplication[]> {
+  try {
+    console.log('🔍 Fetching all manageable applications');
+    
+    // Get all active opportunities
+    const { data: opportunities, error: oppError } = await this.supabase
+      .from('funding_opportunities')
+      .select('id')
+      .in('status', ['active', 'paused']);
+
+    if (oppError) {
+      console.error('Failed to fetch opportunities:', oppError);
+      return [];
+    }
+
+    if (!opportunities?.length) {
+      console.log('📭 No active opportunities found');
+      return [];
+    }
+
+    const opportunityIds = opportunities.map(opp => opp.id);
+    console.log('✅ Found opportunities:', opportunityIds.length);
+
+    // Get applications for all those opportunities
+    const { data, error } = await this.supabase
+      .from('applications')
+      .select('*')
+      .in('opportunity_id', opportunityIds)
+      .not('status', 'in', '(withdrawn,draft)')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Failed to fetch applications:', error);
+      return [];
+    }
+
+    if (!data?.length) {
+      console.log('📭 No applications found');
+      return [];
+    }
+
+    console.log('✅ Applications found:', data.length);
+    
+    let applications = this.transformApplicationsData(data);
+
+    // Optionally enrich with documents
+    if (includeDocuments) {
+      applications = await this.enrichApplicationsWithDocuments(applications);
+    }
+
+    return applications;
+  } catch (error) {
+    console.error('💥 Error in fetchAllManageableApplications:', error);
+    return [];
   }
 }
 

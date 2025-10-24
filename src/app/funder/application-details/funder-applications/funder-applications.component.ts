@@ -13,7 +13,7 @@ import {
 import { ApplicationManagementService  } from 'src/app/SMEs/services/application-management.service';
 import { ApplicationListCardComponent, BaseApplicationCard } from 'src/app/shared/components/application-list-card/application-list-card.component';
 import { UiButtonComponent } from 'src/app/shared/components';
-import { FunderOnboardingService, OnboardingState } from '../../services/funder-onboarding.service';
+import { FunderOnboardingService } from '../../services/funder-onboarding.service';
 import { FundingApplication, ApplicationStats } from 'src/app/SMEs/models/application.models';
 
 @Component({
@@ -94,7 +94,7 @@ export class FunderApplicationsComponent implements OnInit, OnDestroy {
 
   // State
   allApplications = signal<FundingApplication[]>([]);
-  applicationStats = signal<ApplicationStats | null>(null);
+  applicationStats = signal<ApplicationStats | null | undefined>(null);
   applicationsLoading = signal(false);
   applicationsError = signal<string | null>(null);
   selectedOpportunityFilter = signal<string>('');
@@ -104,43 +104,34 @@ export class FunderApplicationsComponent implements OnInit, OnDestroy {
   filteredApplications = computed(() => {
     const apps = this.allApplications();
     const opportunityFilter = this.selectedOpportunityFilter();
-    
-    if (!opportunityFilter) {
-      return apps;
-    }
-    
-    return apps.filter(app => app.opportunityId === opportunityFilter);
+    return !opportunityFilter ? apps : apps.filter(app => app.opportunityId === opportunityFilter);
   });
 
-  recentApplicationsComputed = computed(() => {
-    return this.allApplications()
+  recentApplicationsComputed = computed(() =>
+    this.allApplications()
       .slice()
       .sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime())
-      .slice(0, 10);
-  });
+      .slice(0, 10)
+  );
 
   uniqueOpportunities = computed(() => {
-    const apps = this.allApplications();
     const opportunityMap = new Map();
-    
-    apps.forEach(app => {
+    this.allApplications().forEach(app => {
       if (app.opportunity && !opportunityMap.has(app.opportunityId)) {
         opportunityMap.set(app.opportunityId, app.opportunity);
       }
     });
-    
     return Array.from(opportunityMap.values());
   });
 
-  applicationsInReview = computed(() => {
-    return this.allApplications().filter(app => 
+  applicationsInReview = computed(() =>
+    this.allApplications().filter(app => 
       app.status === 'submitted' || app.status === 'under_review'
-    );
-  });
+    )
+  );
 
-  ngOnInit() {
-    this.setupSubscriptions();
-    this.loadApplicationsData();
+  async ngOnInit() {
+     await this.loadApplicationsData();
   }
 
   ngOnDestroy() {
@@ -148,58 +139,38 @@ export class FunderApplicationsComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
-  private setupSubscriptions() {
-    // Subscribe to onboarding state to get organization ID
-    this.onboardingService.onboardingState$
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(state => {
-        if (state?.organization?.id) {
-          this.organizationId.set(state.organization.id);
-          this.loadApplicationsData();
-        }
-      });
-  }
-
-  private loadApplicationsData() {
-    const orgId = this.organizationId();
-    
-    if (!orgId) {
-      console.log('No organization ID available for loading applications');
-      return;
-    }
-
+ 
+private async loadApplicationsData() {
+  try {
     this.applicationsLoading.set(true);
     this.applicationsError.set(null);
 
-    // Load applications for the organization
-    this.applicationService.getApplicationsByOrganization(orgId, undefined, false)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (applications) => {
-          this.allApplications.set(applications);
-          this.applicationsLoading.set(false);
-          this.loadApplicationStats(orgId);
-        },
-        error: (error) => {
-          console.error('Failed to load applications:', error);
-          this.applicationsError.set('Failed to load applications');
-          this.applicationsLoading.set(false);
-        }
-      });
-  }
+    // Load ALL active opportunities that funder can manage
+    const applications = await this.applicationService
+      .getAllManageableApplications()
+      .toPromise();
 
-  private loadApplicationStats(organizationId: string) {
-    this.applicationService.getApplicationStats(undefined, organizationId)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (stats) => {
-          this.applicationStats.set(stats);
-        },
-        error: (error) => {
-          console.error('Failed to load application stats:', error);
-        }
-      });
+    this.allApplications.set(applications || []);
+    this.loadApplicationStats();
+  } catch (error) {
+    console.error('Failed to load applications:', error);
+    this.applicationsError.set('Failed to load applications');
+  } finally {
+    this.applicationsLoading.set(false);
   }
+}
+
+private async loadApplicationStats() {
+  try {
+    // Get stats for all applications
+    const stats = await this.applicationService
+      .getApplicationStats()
+      .toPromise();
+    this.applicationStats.set(stats ?? null);
+  } catch (error) {
+    console.error('Failed to load stats:', error);
+  }
+}
 
   // Event handlers
   onOpportunityFilterChange(event: Event) {
@@ -215,7 +186,7 @@ export class FunderApplicationsComponent implements OnInit, OnDestroy {
     this.loadApplicationsData();
   }
 
-  // Application management methods
+  // Transform & display
   transformToApplicationCard(app: FundingApplication): BaseApplicationCard {
     return {
       id: app.id,
@@ -238,16 +209,10 @@ export class FunderApplicationsComponent implements OnInit, OnDestroy {
   }
 
   private extractRequestedAmount(formData: Record<string, any>): number {
-    if (formData?.['coverInformation']?.requestedAmount) {
-      return formData['coverInformation'].requestedAmount;
-    }
-    if (formData?.['requestedAmount']) {
-      return formData['requestedAmount'];
-    }
-    if (formData?.['fundingInformation']?.requestedAmount) {
-      return formData['fundingInformation'].requestedAmount;
-    }
-    return 0;
+    return formData?.['coverInformation']?.requestedAmount ??
+           formData?.['requestedAmount'] ??
+           formData?.['fundingInformation']?.requestedAmount ??
+           0;
   }
 
   private formatStage(stage: string): string {

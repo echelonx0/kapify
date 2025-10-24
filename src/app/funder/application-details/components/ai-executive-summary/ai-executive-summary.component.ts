@@ -203,7 +203,8 @@ export class AiExecutiveSummaryComponent implements OnInit {
       score = Math.min(10, Math.max(1, factors.reduce((sum, factor) => sum + factor, 0)));
     }
 
-    return score;
+   return Number(score.toFixed(2));
+
   }
 
   private getScoreFactors(): number[] {

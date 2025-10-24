@@ -1,5 +1,5 @@
-// src/app/shared/components/application-list-card/application-list-card.component.ts
-import { Component, Input, Output, EventEmitter, computed } from '@angular/core';
+ 
+import { Component, Input, Output, EventEmitter, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { 
   LucideAngularModule, 
@@ -7,14 +7,17 @@ import {
   Clock, 
   TrendingUp, 
   DollarSign,
-  Eye,
   Calendar,
   Building,
   User,
   AlertCircle,
-  CheckCircle
+  CheckCircle,
+  LogOut
 } from 'lucide-angular';
 import { UserType } from '../../models/user.models';
+import { ApplicationManagementService } from 'src/app/SMEs/services/application-management.service';
+import { ActionModalService } from '../modal/modal.service';
+ 
 
 export interface BaseApplicationCard {
   id: string;
@@ -38,46 +41,33 @@ export interface BaseApplicationCard {
 @Component({
   selector: 'app-application-list-card',
   standalone: true,
-  imports: [
-    CommonModule,
-    LucideAngularModule
-  ],
+  imports: [CommonModule, LucideAngularModule],
   templateUrl: './application-list-card.component.html',
   styles: [`
     :host {
       display: block;
     }
-
-    /* Smooth hover animations */
     :host ::ng-deep .group {
       transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     }
-
     :host ::ng-deep .group:hover {
       transform: translateY(-2px);
     }
-
-    /* Status accent gradient */
     .accent-draft {
       background: linear-gradient(90deg, #94a3b8, #cbd5e1);
     }
-
     .accent-submitted {
       background: linear-gradient(90deg, #3b82f6, #60a5fa);
     }
-
     .accent-under-review {
       background: linear-gradient(90deg, #f59e0b, #fbbf24);
     }
-
     .accent-approved {
       background: linear-gradient(90deg, #10b981, #34d399);
     }
-
     .accent-rejected {
       background: linear-gradient(90deg, #ef4444, #f87171);
     }
-
     .accent-withdrawn {
       background: linear-gradient(90deg, #6b7280, #9ca3af);
     }
@@ -92,19 +82,25 @@ export class ApplicationListCardComponent {
   @Output() secondaryAction = new EventEmitter<BaseApplicationCard>();
   @Output() viewDetails = new EventEmitter<BaseApplicationCard>();
 
+   appManagementService = inject(ApplicationManagementService);
+   modalService = inject(ActionModalService);
+  canWithdraw = computed(() => {
+    // Only SMEs can withdraw their own applications
+    return this.userType === 'sme' && 
+           (this.application.status === 'draft' || this.application.status === 'submitted');
+  });
   // Icons
   FileTextIcon = FileText;
   ClockIcon = Clock;
   TrendingUpIcon = TrendingUp;
   DollarSignIcon = DollarSign;
-  EyeIcon = Eye;
   CalendarIcon = Calendar;
   BuildingIcon = Building;
   UserIcon = User;
   AlertCircleIcon = AlertCircle;
   CheckCircleIcon = CheckCircle;
+  LogOutIcon = LogOut;
 
-  // Computed properties
   statusText = computed(() => {
     const statusMap: Record<string, string> = {
       draft: 'Draft',
@@ -168,7 +164,10 @@ export class ApplicationListCardComponent {
     return this.application.submittedAt || this.application.updatedAt;
   });
 
-  // Methods
+  // canWithdraw = computed(() => {
+  //   return ['submitted', 'under_review', 'draft'].includes(this.application.status);
+  // });
+
   formatCurrency(amount: number, currency: string): string {
     return new Intl.NumberFormat('en-ZA', {
       style: 'currency',
@@ -197,5 +196,57 @@ export class ApplicationListCardComponent {
       withdrawn: 0
     };
     return progressMap[this.application.status] || 0;
+  }
+
+  getFundingTypeTags(): string[] {
+    if (!this.application.fundingType || this.application.fundingType.length === 0) {
+      return [];
+    }
+    return this.application.fundingType.map(type => 
+      type.split('_').join(' ').charAt(0).toUpperCase() + type.split('_').join(' ').slice(1)
+    );
+  }
+
+  getFundingTypeColor(type: string): string {
+    const colorMap: Record<string, string> = {
+      'Debt': 'bg-blue-100 text-blue-700 border border-blue-200',
+      'Equity': 'bg-purple-100 text-purple-700 border border-purple-200',
+      'Convertible': 'bg-indigo-100 text-indigo-700 border border-indigo-200',
+      'Mezzanine': 'bg-amber-100 text-amber-700 border border-amber-200',
+      'Grant': 'bg-green-100 text-green-700 border border-green-200',
+      'Purchase Order': 'bg-cyan-100 text-cyan-700 border border-cyan-200',
+      'Invoice Financing': 'bg-teal-100 text-teal-700 border border-teal-200'
+    };
+    return colorMap[type] || 'bg-slate-100 text-slate-700 border border-slate-200';
+  }
+
+  withdrawApplication(): void {
+    this.modalService.showWithdrawConfirm(
+      this.application.title,
+      this.application.applicationNumber
+    );
+
+    const subscription = this.modalService.confirmed$.subscribe(() => {
+      this.performWithdrawal();
+      subscription.unsubscribe();
+    });
+  }
+
+  private performWithdrawal(): void {
+    this.appManagementService.updateApplicationStatus(
+      this.application.id,
+      'withdrawn'
+    ).subscribe({
+      next: (updatedApp) => {
+        this.modalService.showWithdrawSuccess(this.application.title);
+        this.secondaryAction.emit(updatedApp as any);
+      },
+      error: (error) => {
+        this.modalService.showWithdrawError(
+          this.application.title,
+          error.message || 'Failed to withdraw application. Please try again.'
+        );
+      }
+    });
   }
 }

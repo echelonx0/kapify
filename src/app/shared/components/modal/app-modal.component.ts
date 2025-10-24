@@ -168,7 +168,14 @@ export class OpportunityActionModalComponent {
   CopyIcon = Copy;
   XIcon = X;
 
+ 
+ 
+  // APPLY THIS FIX TO: src/app/shared/components/modal/opportunity-action-modal.component.ts
+
+// Replace these 4 methods with proper defaults:
+
   getIcon() {
+    const type = this.modalService.actionType();
     switch (this.modalService.actionType()) {
       case 'delete':
         return this.Trash2Icon;
@@ -178,6 +185,8 @@ export class OpportunityActionModalComponent {
         return this.CheckCircleIcon;
       case 'publish-error':
         return this.AlertCircleIcon;
+      default:
+        return this.AlertCircleIcon; // ← ADD THIS
     }
   }
 
@@ -191,6 +200,8 @@ export class OpportunityActionModalComponent {
         return 'bg-green-50';
       case 'publish-error':
         return 'bg-red-50';
+      default:
+        return 'bg-slate-50'; // ← ADD THIS
     }
   }
 
@@ -204,6 +215,8 @@ export class OpportunityActionModalComponent {
         return 'text-green-600';
       case 'publish-error':
         return 'text-red-600';
+      default:
+        return 'text-slate-600'; // ← ADD THIS
     }
   }
 
@@ -217,11 +230,14 @@ export class OpportunityActionModalComponent {
         return 'Opportunity published!';
       case 'publish-error':
         return 'Publishing failed';
+      default:
+        return 'Confirm action?'; // ← ADD THIS
     }
   }
 
   getSubtitle(): string {
-    return `"${this.modalService.data().opportunityTitle}"`;
+    const title = this.modalService.data().opportunityTitle || '';
+    return `"${title}"`;
   }
 
   getActionButtonText(): string {

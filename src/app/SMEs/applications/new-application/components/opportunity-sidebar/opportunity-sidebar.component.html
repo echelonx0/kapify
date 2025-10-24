@@ -1,14 +1,12 @@
-<!-- opportunity-sidebar.component.html -->
 @if (opportunity(); as opp) {
   <ui-card class="sticky top-6 hover:shadow-lg transition-shadow duration-300">
     <div class="space-y-4">
   
-
       <div class="bg-gradient-to-br from-neutral-50 to-neutral-100 rounded-lg p-4 border border-neutral-200">
         <h4 class="font-medium text-neutral-900 mb-3">{{ opp.title }}</h4>
         
         <div class="space-y-3 text-sm">
-          <div class="flex justify-between items-center p-2 bg-white rounded border">
+          <!-- <div class="flex justify-between items-center p-2 bg-white rounded border">
             <span class="text-neutral-600 flex items-center">
               <lucide-icon [img]="BuildingIcon" [size]="12" class="mr-1" />
               Type:
@@ -16,7 +14,7 @@
             <span class="font-medium capitalize bg-primary-100 text-primary-800 px-2 py-1 rounded-full text-xs">
               {{ opp.fundingType }}
             </span>
-          </div>
+          </div> -->
           
           <div class="flex justify-between items-center p-2 bg-white rounded border">
             <span class="text-neutral-600 flex items-center">
@@ -56,6 +54,51 @@
         </div>
       </div>
 
+      <!-- Funding Types -->
+      <div class="bg-white border border-neutral-200 rounded-lg p-4 hover:shadow-sm transition-shadow">
+        <h4 class="font-medium text-neutral-900 mb-2 flex items-center">
+          <lucide-icon [img]="DollarSignIcon" [size]="14" class="mr-1 text-emerald-600" />
+          Funding Types
+        </h4>
+        <p class="text-sm text-neutral-600 leading-relaxed">{{ getFundingTypesDisplay() }}</p>
+      </div>
+
+      <!-- Eligibility Criteria -->
+      @if (getEligibilitySummary().length > 0) {
+        <div class="bg-white border border-neutral-200 rounded-lg p-4 hover:shadow-sm transition-shadow">
+          <h4 class="font-medium text-neutral-900 mb-3 flex items-center">
+             
+            Who We're Looking For
+          </h4>
+          <ul class="space-y-2">
+            @for (criterion of getEligibilitySummary(); track criterion) {
+              <li class="text-sm text-neutral-600 flex items-start">
+                <span class="text-blue-600 mr-2 flex-shrink-0 mt-0.5">•</span>
+                <span>{{ criterion }}</span>
+              </li>
+            }
+          </ul>
+        </div>
+      }
+
+      <!-- Exclusion Criteria (Warning) -->
+      @if (getExclusionCriteria().length > 0) {
+        <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+          <h4 class="font-medium text-red-900 mb-3 flex items-center">
+            <lucide-icon [img]="BanIcon" [size]="14" class="mr-1 text-red-600" />
+            Not Eligible If
+          </h4>
+          <ul class="space-y-2">
+            @for (exclusion of getExclusionCriteria(); track exclusion) {
+              <li class="text-sm text-red-700 flex items-start">
+                <span class="text-red-600 mr-2 flex-shrink-0 mt-0.5">×</span>
+                <span>{{ exclusion }}</span>
+              </li>
+            }
+          </ul>
+        </div>
+      }
+
       @if (opp.shortDescription) {
         <div class="bg-white border border-neutral-200 rounded-lg p-4 hover:shadow-sm transition-shadow">
           <h4 class="font-medium text-neutral-900 mb-2 flex items-center">
@@ -77,62 +120,6 @@
           </div>
         </div>
       }
-
-      <!-- AI Insights Sidebar -->
-      <!-- @if (showAIInsights()) {
-        <div class="bg-gradient-to-br from-blue-50 via-indigo-50 to-slate-50 border-2 border-blue-200 rounded-lg p-4 hover:shadow-md transition-shadow">
-          <div class="flex items-center space-x-2 mb-3">
-            <div class="w-6 h-6 bg-gradient-to-r from-blue-500 to-slate-600 rounded flex items-center justify-center">
-              <lucide-icon [img]="DollarSignIcon" [size]="12" class="text-white" />
-            </div>
-            <h4 class="font-medium text-neutral-900">AI Insights</h4>
-          </div>
-
-          @if (aiAnalysisResult()) {
-            <div class="space-y-3">
-              <div class="bg-white/60 backdrop-blur rounded p-3">
-                <div class="flex justify-between items-center">
-                  <span class="text-neutral-600 text-sm">Match Score:</span>
-                  <div class="flex items-center space-x-2">
-                    <div class="w-12 h-1.5 bg-neutral-200 rounded-full overflow-hidden">
-                      <div class="h-full bg-gradient-to-r from-blue-400 to-blue-600 transition-all duration-1000"
-                           [style.width.%]="aiAnalysisResult().matchScore"></div>
-                    </div>
-                    <span class="font-medium text-blue-600 text-sm">{{ aiAnalysisResult().matchScore }}%</span>
-                  </div>
-                </div>
-              </div>
-              
-              <div class="bg-white/60 backdrop-blur rounded p-3">
-                <div class="flex justify-between items-center">
-                  <span class="text-neutral-600 text-sm">Success Rate:</span>
-                  <div class="flex items-center space-x-2">
-                    <div class="w-12 h-1.5 bg-neutral-200 rounded-full overflow-hidden">
-                      <div class="h-full bg-gradient-to-r from-green-400 to-green-600 transition-all duration-1000"
-                           [style.width.%]="aiAnalysisResult().successProbability"></div>
-                    </div>
-                    <span class="font-medium text-green-600 text-sm">{{ aiAnalysisResult().successProbability }}%</span>
-                  </div>
-                </div>
-              </div>
-              
-              <div class="bg-white/60 backdrop-blur rounded p-3">
-                <div class="flex justify-between items-center">
-                  <span class="text-neutral-600 text-sm">Position:</span>
-                  <span class="font-medium capitalize text-slate-600 text-sm bg-slate-100 px-2 py-1 rounded-full">
-                    {{ aiAnalysisResult().competitivePositioning }}
-                  </span>
-                </div>
-              </div>
-            </div>
-          } @else {
-            <div class="text-center py-4">
-              <div class="w-8 h-8 border-2 border-blue-300 border-t-blue-600 rounded-full animate-spin mx-auto mb-2"></div>
-              <p class="text-sm text-neutral-600">Complete application details to get AI analysis</p>
-            </div>
-          }
-        </div>
-      } -->
 
       <!-- Statistics -->
       <div class="pt-4 border-t-2 border-neutral-200 space-y-3">

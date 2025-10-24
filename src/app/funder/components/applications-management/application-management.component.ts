@@ -33,8 +33,6 @@ import { FundingOpportunity } from '../../create-opportunity/shared/funding.inte
  
 type TabId = 'overview' | 'all' | 'review-queue' | 'completed';
 
- 
-
 @Component({
   selector: 'app-application-management',
   standalone: true,
