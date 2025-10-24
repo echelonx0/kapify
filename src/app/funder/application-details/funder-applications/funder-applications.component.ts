@@ -1,8 +1,7 @@
-// src/app/funder/components/funder-applications/funder-applications.component.ts
 import { Component, signal, computed, OnInit, OnDestroy, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { Subject, takeUntil } from 'rxjs';
+import { Subject } from 'rxjs';
 import { 
   LucideAngularModule, 
   AlertCircle,
@@ -10,11 +9,13 @@ import {
   Eye,
   ArrowRight
 } from 'lucide-angular';
-import { ApplicationManagementService  } from 'src/app/SMEs/services/application-management.service';
+import { ApplicationManagementService } from 'src/app/SMEs/services/application-management.service';
 import { ApplicationListCardComponent, BaseApplicationCard } from 'src/app/shared/components/application-list-card/application-list-card.component';
-import { UiButtonComponent } from 'src/app/shared/components';
 import { FunderOnboardingService } from '../../services/funder-onboarding.service';
 import { FundingApplication, ApplicationStats } from 'src/app/SMEs/models/application.models';
+import { FormsModule } from '@angular/forms';
+import { SMEOpportunitiesService } from 'src/app/funding/services/opportunities.service';
+import { UiSelectComponent, SelectOption } from 'src/app/shared/components/ui-select/ui-select.component';
 
 @Component({
   selector: 'app-funder-applications',
@@ -23,66 +24,15 @@ import { FundingApplication, ApplicationStats } from 'src/app/SMEs/models/applic
     CommonModule,
     LucideAngularModule,
     ApplicationListCardComponent,
-    UiButtonComponent
+    FormsModule,
+    UiSelectComponent
   ],
-  templateUrl: './funder-applications.component.html',
-  styles: [`
-    .section-card {
-      background: white;
-      border-radius: 0.75rem;
-      border: 1px solid #e5e7eb;
-      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
-    }
-
-    .section-header {
-      padding: 1.5rem;
-      border-bottom: 1px solid #e5e7eb;
-    }
-
-    .section-title {
-      font-size: 1.125rem;
-      font-weight: 600;
-      color: #111827;
-      margin-bottom: 0.25rem;
-    }
-
-    .section-description {
-      font-size: 0.875rem;
-      color: #6b7280;
-    }
-
-    .empty-state {
-      padding: 3rem;
-      text-align: center;
-    }
-
-    .empty-icon {
-      width: 48px;
-      height: 48px;
-      margin: 0 auto 1rem;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background-color: #f3f4f6;
-      border-radius: 50%;
-    }
-
-    .empty-title {
-      font-size: 1.125rem;
-      font-weight: 600;
-      color: #111827;
-      margin-bottom: 0.5rem;
-    }
-
-    .empty-description {
-      color: #6b7280;
-      margin-bottom: 1.5rem;
-    }
-  `]
+  templateUrl: './funder-applications.component.html'
 })
 export class FunderApplicationsComponent implements OnInit, OnDestroy {
   private router = inject(Router);
   private applicationService = inject(ApplicationManagementService);
+  private opportunitiesService = inject(SMEOpportunitiesService);
   private onboardingService = inject(FunderOnboardingService);
   private destroy$ = new Subject<void>();
 
@@ -94,8 +44,10 @@ export class FunderApplicationsComponent implements OnInit, OnDestroy {
 
   // State
   allApplications = signal<FundingApplication[]>([]);
+  opportunities = signal<any[]>([]);
   applicationStats = signal<ApplicationStats | null | undefined>(null);
   applicationsLoading = signal(false);
+  opportunitiesLoading = signal(false);
   applicationsError = signal<string | null>(null);
   selectedOpportunityFilter = signal<string>('');
   organizationId = signal<string | null>(null);
@@ -114,15 +66,7 @@ export class FunderApplicationsComponent implements OnInit, OnDestroy {
       .slice(0, 10)
   );
 
-  uniqueOpportunities = computed(() => {
-    const opportunityMap = new Map();
-    this.allApplications().forEach(app => {
-      if (app.opportunity && !opportunityMap.has(app.opportunityId)) {
-        opportunityMap.set(app.opportunityId, app.opportunity);
-      }
-    });
-    return Array.from(opportunityMap.values());
-  });
+  uniqueOpportunities = computed(() => this.opportunities());
 
   applicationsInReview = computed(() =>
     this.allApplications().filter(app => 
@@ -131,7 +75,10 @@ export class FunderApplicationsComponent implements OnInit, OnDestroy {
   );
 
   async ngOnInit() {
-     await this.loadApplicationsData();
+    await Promise.all([
+      this.loadApplicationsData(),
+      this.loadOpportunitiesData()
+    ]);
   }
 
   ngOnDestroy() {
@@ -139,45 +86,64 @@ export class FunderApplicationsComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
- 
-private async loadApplicationsData() {
-  try {
-    this.applicationsLoading.set(true);
-    this.applicationsError.set(null);
+  private async loadApplicationsData() {
+    try {
+      this.applicationsLoading.set(true);
+      this.applicationsError.set(null);
 
-    // Load ALL active opportunities that funder can manage
-    const applications = await this.applicationService
-      .getAllManageableApplications()
-      .toPromise();
+      const applications = await this.applicationService
+        .getAllManageableApplications()
+        .toPromise();
 
-    this.allApplications.set(applications || []);
-    this.loadApplicationStats();
-  } catch (error) {
-    console.error('Failed to load applications:', error);
-    this.applicationsError.set('Failed to load applications');
-  } finally {
-    this.applicationsLoading.set(false);
+      this.allApplications.set(applications || []);
+      this.loadApplicationStats();
+    } catch (error) {
+      console.error('Failed to load applications:', error);
+      this.applicationsError.set('Failed to load applications');
+    } finally {
+      this.applicationsLoading.set(false);
+    }
   }
-}
 
-private async loadApplicationStats() {
-  try {
-    // Get stats for all applications
-    const stats = await this.applicationService
-      .getApplicationStats()
-      .toPromise();
-    this.applicationStats.set(stats ?? null);
-  } catch (error) {
-    console.error('Failed to load stats:', error);
+  private async loadOpportunitiesData() {
+    try {
+      this.opportunitiesLoading.set(true);
+
+      // Load opportunities from SMEOpportunitiesService
+      const opps = await this.opportunitiesService.loadActiveOpportunities().toPromise();
+      this.opportunities.set(opps || []);
+      
+      console.log('✅ Opportunities loaded:', opps?.length);
+    } catch (error) {
+      console.error('Failed to load opportunities:', error);
+      this.opportunities.set([]);
+    } finally {
+      this.opportunitiesLoading.set(false);
+    }
   }
-}
+
+  private async loadApplicationStats() {
+    try {
+      const stats = await this.applicationService
+        .getApplicationStats()
+        .toPromise();
+      this.applicationStats.set(stats ?? null);
+    } catch (error) {
+      console.error('Failed to load stats:', error);
+    }
+  }
+
+  /**
+   * Convert opportunities to SelectOption format for ui-select component
+   */
+  getOpportunityOptions(): SelectOption[] {
+    return this.opportunities().map(opp => ({
+      label: opp.title,
+      value: opp.id
+    }));
+  }
 
   // Event handlers
-  onOpportunityFilterChange(event: Event) {
-    const target = event.target as HTMLSelectElement;
-    this.selectedOpportunityFilter.set(target.value);
-  }
-
   clearFilter() {
     this.selectedOpportunityFilter.set('');
   }

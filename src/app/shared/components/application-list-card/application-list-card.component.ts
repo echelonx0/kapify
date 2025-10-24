@@ -164,9 +164,7 @@ export class ApplicationListCardComponent {
     return this.application.submittedAt || this.application.updatedAt;
   });
 
-  // canWithdraw = computed(() => {
-  //   return ['submitted', 'under_review', 'draft'].includes(this.application.status);
-  // });
+  
 
   formatCurrency(amount: number, currency: string): string {
     return new Intl.NumberFormat('en-ZA', {

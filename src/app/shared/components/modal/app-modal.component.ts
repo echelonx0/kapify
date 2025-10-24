@@ -237,7 +237,7 @@ export class OpportunityActionModalComponent {
 
   getSubtitle(): string {
     const title = this.modalService.data().opportunityTitle || '';
-    return `"${title}"`;
+    return `${title}`;
   }
 
   getActionButtonText(): string {
