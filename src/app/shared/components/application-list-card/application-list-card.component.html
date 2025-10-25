@@ -1,6 +1,7 @@
 <!-- src/app/shared/components/application-list-card/application-list-card.component.html -->
 <div 
   class="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden cursor-pointer"
+  (click)="viewDetails.emit(application)"
 >
   <!-- Status Accent Bar -->
   <div 

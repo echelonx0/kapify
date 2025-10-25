@@ -145,13 +145,13 @@
 //   }
 // }
 
-
-import { Component, input, output } from '@angular/core';
+ import { Component, input, output } from '@angular/core';
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { LucideAngularModule, ChevronDown, ChevronUp } from 'lucide-angular';
-import { SelectOption, UiSelectComponent } from 'src/app/shared/components/ui-select/ui-select.component';
- 
+import { SelectOption, UiSelectComponent } from 'src/app/shared/components/ui-select/ui-select.component'; 
+import { FormFieldComponent } from 'src/app/shared/components/form-field/app-form-field.component';
+
 @Component({
   selector: 'app-business-financial-statements',
   standalone: true,
@@ -159,7 +159,8 @@ import { SelectOption, UiSelectComponent } from 'src/app/shared/components/ui-se
     CommonModule,
     ReactiveFormsModule,
     LucideAngularModule,
-    UiSelectComponent
+    UiSelectComponent,
+    FormFieldComponent
   ],
   template: `
     <div class="space-y-6">
@@ -186,8 +187,7 @@ import { SelectOption, UiSelectComponent } from 'src/app/shared/components/ui-se
         <div [formGroup]="form()" class="space-y-6">
           <!-- Audit Status & Budget Row -->
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label class="text-sm font-medium text-neutral-700 mb-2 block">Are the financial statements audited, reviewed, compiled or unaudited?</label>
+            <app-form-field label="Are the financial statements audited, reviewed, compiled or unaudited?">
               <ui-select
                 placeholder="Are they audited?"
                 [options]="auditOptions"
@@ -195,10 +195,9 @@ import { SelectOption, UiSelectComponent } from 'src/app/shared/components/ui-se
                 formControlName="financialStatementsAudited"
                 [error]="getFieldError('financialStatementsAudited')"
               ></ui-select>
-            </div>
+            </app-form-field>
 
-            <div>
-              <label class="text-sm font-medium text-neutral-700 mb-2 block">Is a budget available?</label>
+            <app-form-field label="Is a budget available?">
               <ui-select
                 placeholder="Do you have a budget?"
                 [options]="yesNoOptions"
@@ -206,13 +205,12 @@ import { SelectOption, UiSelectComponent } from 'src/app/shared/components/ui-se
                 formControlName="budgetAvailable"
                 [error]="getFieldError('budgetAvailable')"
               ></ui-select>
-            </div>
+            </app-form-field>
           </div>
 
           <!-- Contracts & Funding Row -->
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label class="text-sm font-medium text-neutral-700 mb-2 block">Are there any long term contracts in place?</label>
+            <app-form-field label="Are there any long term contracts in place?">
               <ui-select
                 placeholder="Do you have any?"
                 [options]="yesNoOptions"
@@ -220,10 +218,9 @@ import { SelectOption, UiSelectComponent } from 'src/app/shared/components/ui-se
                 formControlName="longTermContracts"
                 [error]="getFieldError('longTermContracts')"
               ></ui-select>
-            </div>
+            </app-form-field>
 
-            <div>
-              <label class="text-sm font-medium text-neutral-700 mb-2 block">Is there any off balance sheet funding?</label>
+            <app-form-field label="Is there any off balance sheet funding?">
               <ui-select
                 placeholder="Do you use this?"
                 [options]="yesNoOptions"
@@ -231,13 +228,12 @@ import { SelectOption, UiSelectComponent } from 'src/app/shared/components/ui-se
                 formControlName="offBalanceSheetFunding"
                 [error]="getFieldError('offBalanceSheetFunding')"
               ></ui-select>
-            </div>
+            </app-form-field>
           </div>
 
           <!-- Asset Register & Permissions Row -->
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label class="text-sm font-medium text-neutral-700 mb-2 block">Is there an asset register available?</label>
+            <app-form-field label="Is there an asset register available?">
               <ui-select
                 placeholder="Do you maintain one?"
                 [options]="yesNoOptions"
@@ -245,10 +241,9 @@ import { SelectOption, UiSelectComponent } from 'src/app/shared/components/ui-se
                 formControlName="assetRegisterAvailable"
                 [error]="getFieldError('assetRegisterAvailable')"
               ></ui-select>
-            </div>
+            </app-form-field>
 
-            <div>
-              <label class="text-sm font-medium text-neutral-700 mb-2 block">Will lender permissions be required?</label>
+            <app-form-field label="Will lender permissions be required?">
               <ui-select
                 placeholder="Will lenders need approval?"
                 [options]="yesNoOptions"
@@ -256,7 +251,7 @@ import { SelectOption, UiSelectComponent } from 'src/app/shared/components/ui-se
                 formControlName="lenderPermissionsRequired"
                 [error]="getFieldError('lenderPermissionsRequired')"
               ></ui-select>
-            </div>
+            </app-form-field>
           </div>
         </div>
       }

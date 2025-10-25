@@ -7,6 +7,7 @@ import { interval, Subscription } from 'rxjs';
 import { takeWhile } from 'rxjs/operators';
 import { FundingProfileSetupService } from '../../../services/funding-profile-setup.service';
 import { CompanyInformation } from 'src/app/SMEs/applications/models/funding-application.models';
+import { FormFieldComponent } from 'src/app/shared/components/form-field/app-form-field.component';
  
 
 interface Shareholder {
@@ -20,13 +21,16 @@ interface SectionStates {
   contact: boolean;
   business: boolean;
   legal: boolean;
+  compliance: boolean;  // ADD THIS
   shareholders: boolean;
 }
+
+
 
 @Component({
   selector: 'app-admin-information',
   standalone: true,
-  imports: [ReactiveFormsModule, LucideAngularModule, UiInputComponent, UiButtonComponent],
+  imports: [ReactiveFormsModule, LucideAngularModule, UiInputComponent, UiButtonComponent, FormFieldComponent],
   templateUrl: 'admin-information.component.html'
 })
 export class AdminInformationComponent implements OnInit, OnDestroy {
@@ -55,13 +59,14 @@ export class AdminInformationComponent implements OnInit, OnDestroy {
   ClockIcon = Clock;
 
   // Section states with proper typing
-  private sectionStates = signal<SectionStates>({
-    contact: true,
-    business: true,
-    legal: true,
-    shareholders: false
-  });
-
+// Then update the signal initialization:
+private sectionStates = signal<SectionStates>({
+  contact: true,
+  business: true,
+  legal: true,
+  compliance: false,  // ADD THIS
+  shareholders: false
+});
   // Auto-save subscription
   private autoSaveSubscription?: Subscription;
   
@@ -454,7 +459,7 @@ private buildCompanyInfoData(): CompanyInformation {
       this.closeShareholderModal();
       this.saveData();
     }
-  }
+  } 
 
   private loadExistingShareholders() {
     // Check if shareholders exist in the funding application data

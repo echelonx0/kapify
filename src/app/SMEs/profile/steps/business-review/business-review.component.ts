@@ -16,7 +16,6 @@ import { BusinessAssessmentMapper } from './business-assessment.mapper';
   imports: [
     ReactiveFormsModule,
     LucideAngularModule,
-    
     BusinessBackOfficeComponent,
     BusinessFinancialStatementsComponent
   ],

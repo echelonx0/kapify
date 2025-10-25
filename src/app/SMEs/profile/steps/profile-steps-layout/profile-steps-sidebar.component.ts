@@ -1,10 +1,9 @@
 // src/app/profile/steps/components/profile-steps-sidebar/profile-steps-sidebar.component.ts
 
-import { Component, input, output, inject, computed } from '@angular/core';
+import { Component, input, output, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { LucideAngularModule, Check, AlertCircle, Lock } from 'lucide-angular';
-import { FundingProfileSetupService } from 'src/app/SMEs/services/funding-profile-setup.service';
-
+ 
 export interface StepConfig {
   id: string;
   title: string;

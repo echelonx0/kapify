@@ -87,7 +87,7 @@ export class ApplicationListCardComponent {
   canWithdraw = computed(() => {
     // Only SMEs can withdraw their own applications
     return this.userType === 'sme' && 
-           (this.application.status === 'draft' || this.application.status === 'submitted');
+           (this.application.status === 'draft' || this.application.status === 'submitted' || this.application.status === 'under_review');
   });
   // Icons
   FileTextIcon = FileText;

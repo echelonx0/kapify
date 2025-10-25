@@ -185,8 +185,6 @@ export class ApplicationManagementComponent implements OnInit {
     }
   }
 
-  // Add this method to your ApplicationManagementComponent class
-
 private extractRequestedAmount(formData: Record<string, any>): number {
   // Handle different possible data structures in formData
   if (formData?.['coverInformation']?.requestedAmount) {
@@ -291,6 +289,7 @@ private extractRequestedAmount(formData: Record<string, any>): number {
   // Application actions
 viewApplication(applicationId: string) {
   // Navigate to detailed application view instead of generic applications route
+  console.log('Viewing application for ', applicationId)
   this.router.navigate(['/funder/applications', applicationId]);
 }
 

@@ -229,13 +229,13 @@
 //     return undefined;
 //   }
 // }
-
-import { Component, input, output } from '@angular/core';
+ import { Component, input, output } from '@angular/core';
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { LucideAngularModule, ChevronDown, ChevronUp } from 'lucide-angular'; 
 import { UiInputComponent } from '../../../../shared/components/ui-input.component';
-import { SelectOption, UiSelectComponent } from 'src/app/shared/components/ui-select/ui-select.component';
+import { SelectOption, UiSelectComponent } from 'src/app/shared/components/ui-select/ui-select.component'; 
+import { FormFieldComponent } from 'src/app/shared/components/form-field/app-form-field.component';
 
 @Component({
   selector: 'app-business-back-office',
@@ -245,7 +245,8 @@ import { SelectOption, UiSelectComponent } from 'src/app/shared/components/ui-se
     ReactiveFormsModule,
     LucideAngularModule,
     UiSelectComponent,
-    UiInputComponent
+    UiInputComponent,
+    FormFieldComponent
   ],
   template: `
     <div class="space-y-6">
@@ -274,30 +275,27 @@ import { SelectOption, UiSelectComponent } from 'src/app/shared/components/ui-se
           <div class="space-y-3">
             <p class="text-sm text-neutral-600">Please provide details about the back-office environment of the business.</p>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label class="text-sm font-medium text-neutral-700 mb-2 block">Provide the name of your current accounting system</label>
+              <app-form-field label="Provide the name of your current accounting system">
                 <ui-input
                   placeholder="Sage Pastel"
                   formControlName="accountingSystem"
                   [error]="getFieldError('accountingSystem')"
                 ></ui-input>
-              </div>
+              </app-form-field>
 
-              <div>
-                <label class="text-sm font-medium text-neutral-700 mb-2 block">Please provide the name of the payroll system in place</label>
+              <app-form-field label="Please provide the name of the payroll system in place">
                 <ui-input
                   placeholder="PaySpace"
                   formControlName="payrollSystem"
                   [error]="getFieldError('payrollSystem')"
                 ></ui-input>
-              </div>
+              </app-form-field>
             </div>
           </div>
 
           <!-- Finance Function & Staff Row -->
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label class="text-sm font-medium text-neutral-700 mb-2 block">Are the accounting and finance functions performed internally or by external consultants?</label>
+            <app-form-field label="Are the accounting and finance functions performed internally or by external consultants?">
               <ui-select
                 placeholder="Select type"
                 [options]="financeOptions"
@@ -305,10 +303,9 @@ import { SelectOption, UiSelectComponent } from 'src/app/shared/components/ui-se
                 formControlName="financeFunction"
                 [error]="getFieldError('financeFunction')"
               ></ui-select>
-            </div>
+            </app-form-field>
 
-            <div>
-              <label class="text-sm font-medium text-neutral-700 mb-2 block">If finance functions are performed internally how many people are working in the finance department?</label>
+            <app-form-field label="If finance functions are performed internally how many people are working in the finance department?">
               <ui-input
                 type="number"
                 placeholder="0"
@@ -316,13 +313,12 @@ import { SelectOption, UiSelectComponent } from 'src/app/shared/components/ui-se
                 formControlName="financeStaffCount"
                 [error]="getFieldError('financeStaffCount')"
               ></ui-input>
-            </div>
+            </app-form-field>
           </div>
 
           <!-- Financial Manager & Total Staff Row -->
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label class="text-sm font-medium text-neutral-700 mb-2 block">Do you have a financial manager and or financial director.</label>
+            <app-form-field label="Do you have a financial manager and or financial director?">
               <ui-select
                 placeholder="Do you have one?"
                 [options]="yesNoOptions"
@@ -330,10 +326,9 @@ import { SelectOption, UiSelectComponent } from 'src/app/shared/components/ui-se
                 formControlName="hasFinancialManager"
                 [error]="getFieldError('hasFinancialManager')"
               ></ui-select>
-            </div>
+            </app-form-field>
 
-            <div>
-              <label class="text-sm font-medium text-neutral-700 mb-2 block">What is the total staff compliment of the company?</label>
+            <app-form-field label="What is the total staff compliment of the company?">
               <ui-input
                 type="number"
                 placeholder="0"
@@ -341,13 +336,12 @@ import { SelectOption, UiSelectComponent } from 'src/app/shared/components/ui-se
                 formControlName="totalStaffCount"
                 [error]="getFieldError('totalStaffCount')"
               ></ui-input>
-            </div>
+            </app-form-field>
           </div>
 
           <!-- HR Functions & Policies Row -->
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label class="text-sm font-medium text-neutral-700 mb-2 block">Are the HR functions outsources or inhouse? (Such as Recruitment and Selection, Training and Development, Performance Management, Employee Relations, Employment Law and Compliance, Compensation and Benefits and Administration, Payroll & HR Systems)</label>
+            <app-form-field label="Are the HR functions outsources or inhouse? (Such as Recruitment and Selection, Training and Development, etc)">
               <ui-select
                 placeholder="Select scope"
                 [options]="hrOptions"
@@ -355,10 +349,9 @@ import { SelectOption, UiSelectComponent } from 'src/app/shared/components/ui-se
                 formControlName="hrFunctions"
                 [error]="getFieldError('hrFunctions')"
               ></ui-select>
-            </div>
+            </app-form-field>
 
-            <div>
-              <label class="text-sm font-medium text-neutral-700 mb-2 block">Do you have policies and procedures? (finance, HR, etc)</label>
+            <app-form-field label="Do you have policies and procedures? (finance, HR, etc)">
               <ui-select
                 placeholder="Do you have them?"
                 [options]="yesNoOptions"
@@ -366,13 +359,12 @@ import { SelectOption, UiSelectComponent } from 'src/app/shared/components/ui-se
                 formControlName="hasPoliciesAndProcedures"
                 [error]="getFieldError('hasPoliciesAndProcedures')"
               ></ui-select>
-            </div>
+            </app-form-field>
           </div>
 
           <!-- Asset Insurance & Critical Systems Row -->
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label class="text-sm font-medium text-neutral-700 mb-2 block">Are all company assets adequately insured?</label>
+            <app-form-field label="Are all company assets adequately insured?">
               <ui-select
                 placeholder="Coverage status?"
                 [options]="insuranceOptions"
@@ -380,29 +372,27 @@ import { SelectOption, UiSelectComponent } from 'src/app/shared/components/ui-se
                 formControlName="assetsInsured"
                 [error]="getFieldError('assetsInsured')"
               ></ui-select>
-            </div>
+            </app-form-field>
 
-            <div>
-              <label class="text-sm font-medium text-neutral-700 mb-2 block">What other critical system are in place to aid the back office functions?</label>
+            <app-form-field label="What other critical system are in place to aid the back office functions?">
               <ui-input
                 placeholder="e.g., ERP, CMS, Food service"
                 formControlName="criticalSystems"
                 [hint]="'Optional - describe any additional systems'"
               ></ui-input>
-            </div>
+            </app-form-field>
           </div>
 
           <!-- Policy Review Frequency (Conditional) -->
           @if (shouldShowPolicyReview()) {
-            <div>
-              <label class="text-sm font-medium text-neutral-700 mb-2 block">How frequently are the policies reviewed?</label>
+            <app-form-field label="How frequently are the policies reviewed?">
               <ui-select
                 placeholder="How often?"
                 [options]="frequencyOptions"
                 formControlName="policyReviewFrequency"
                 [error]="getFieldError('policyReviewFrequency')"
               ></ui-select>
-            </div>
+            </app-form-field>
           }
         </div>
       }
