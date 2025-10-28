@@ -1,11 +1,11 @@
 // src/app/funder/funder.component.ts
 import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import { FunderHeaderComponent } from './header/funder-header.component';
 import { SidebarNavComponent } from '../shared/components';
+import { FunderHeaderComponent } from '../funder/header/funder-header.component';
 
 @Component({
-  selector: 'app-applications',
+  selector: 'app-finance',
   standalone: true,
   imports: [RouterOutlet, SidebarNavComponent, FunderHeaderComponent],
   template: `
@@ -23,4 +23,4 @@ import { SidebarNavComponent } from '../shared/components';
     </div>
   `,
 })
-export class FunderComponent {}
+export class FinanceComponent {}

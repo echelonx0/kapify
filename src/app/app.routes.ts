@@ -1,7 +1,7 @@
-// app.routes.ts 
+// app.routes.ts
 import { Routes } from '@angular/router';
 import { LandingComponent } from './landing/landing.component';
-import { LoginComponent } from './auth/login/login.component'; 
+import { LoginComponent } from './auth/login/login.component';
 import { AuthGuard } from './guards/auth.guard';
 import { GuestGuard } from './guards/guest.guard';
 import { RegisterComponent } from './auth/register/register.component';
@@ -13,108 +13,126 @@ import { SuccessPageComponent } from './shared/components/success-page/success-p
 
 export const routes: Routes = [
   // Public routes
-  { 
-    path: '', 
+  {
+    path: '',
     component: LandingComponent,
-    title: 'Kapify - Smart Funding for South African SMEs'
+    title: 'Kapify - Smart Funding for South African SMEs',
   },
 
   // Public marketplace (no authentication required)
-  { 
-    path: 'marketplace', 
+  {
+    path: 'marketplace',
     component: FundingOpportunitiesComponent,
-    title: 'Funding Opportunities - Kapify'
+    title: 'Funding Opportunities - Kapify',
   },
 
   // Auth routes (only accessible when not logged in)
-  { 
-    path: 'login', 
+  {
+    path: 'login',
     component: LoginComponent,
     canActivate: [GuestGuard],
-    title: 'Sign In - Kapify'
+    title: 'Sign In - Kapify',
   },
-  { 
-    path: 'register', 
+  {
+    path: 'register',
     component: RegisterComponent,
     canActivate: [GuestGuard],
-    title: 'Create Account - Kapify'
+    title: 'Create Account - Kapify',
   },
 
   // Admin routes
   {
     path: 'administrator',
-    loadChildren: () => import('./admin/admin.routes').then(m => m.adminRoutes)
+    loadChildren: () =>
+      import('./admin/admin.routes').then((m) => m.adminRoutes),
   },
 
   // Protected routes (require authentication)
-  { 
+  {
     path: 'dashboard',
     canActivate: [AuthGuard],
-    loadChildren: () => import('./dashboard/dashboard.routes').then(m => m.dashboardRoutes)
+    loadChildren: () =>
+      import('./dashboard/dashboard.routes').then((m) => m.dashboardRoutes),
   },
 
-   // Success pages for major actions
+  // Success pages for major actions
   {
     path: 'success/:type',
     component: SuccessPageComponent,
-    title: 'Success'
+    title: 'Success',
   },
   {
     path: 'success/:type/:id',
     component: SuccessPageComponent,
-    title: 'Success'
+    title: 'Success',
   },
-  
+
   // Profile routes
   {
     path: 'profile',
     canActivate: [AuthGuard],
-    loadChildren: () => import('./SMEs/profile/profile.routes').then(m => m.profileRoutes),
-    title: 'Profile Setup - Kapify'
+    loadChildren: () =>
+      import('./SMEs/profile/profile.routes').then((m) => m.profileRoutes),
+    title: 'Profile Setup - Kapify',
   },
 
   // Applications routes
   {
     path: 'applications',
     canActivate: [AuthGuard],
-    loadChildren: () => import('./SMEs/applications/applications.routes').then(m => m.applicationRoutes)
+    loadChildren: () =>
+      import('./SMEs/applications/applications.routes').then(
+        (m) => m.applicationRoutes
+      ),
   },
 
+  {
+    path: 'finance',
+    canActivate: [AuthGuard],
+    loadChildren: () =>
+      import('./finance/finance.routes').then((m) => m.financeRoutes),
+  },
   // Funding routes
   {
     path: 'funding',
     canActivate: [AuthGuard, ProfileCompletionGuard],
-    loadChildren: () => import('./funding/funding.routes').then(m => m.fundingRoutes)
+    loadChildren: () =>
+      import('./funding/funding.routes').then((m) => m.fundingRoutes),
   },
 
   //  Funder routes (SPECIFIC) come FIRST
   {
     path: 'funder',
     canActivate: [AuthGuard, RoleGuard],
-    loadChildren: () => import('./funder/funder.routes').then(m => m.funderRoutes)
+    loadChildren: () =>
+      import('./funder/funder.routes').then((m) => m.funderRoutes),
   },
 
-  //  Public funder profile (PARAMETERIZED) comes SECOND  
+  //  Public funder profile (PARAMETERIZED) comes SECOND
   {
     path: 'funder/:slug',
-    loadComponent: () => import('./funder/public-profile/public-profile.component').then(m => m.FunderProfileComponent),
-    title: 'Funder Profile - Kapify'
+    loadComponent: () =>
+      import('./funder/public-profile/public-profile.component').then(
+        (m) => m.FunderProfileComponent
+      ),
+    title: 'Funder Profile - Kapify',
   },
- {
+  {
     path: 'test/parser',
-    loadComponent: () => import('./test/parser-test.component').then(m => m.ParserTestComponent),
-    title: 'Excel Parser Test'
+    loadComponent: () =>
+      import('./test/parser-test.component').then((m) => m.ParserTestComponent),
+    title: 'Excel Parser Test',
   },
   // 404 Page - MUST come before catch-all
   {
     path: '404',
     component: NotFoundComponent,
-    title: 'Page Not Found - Kapify'
+    title: 'Page Not Found - Kapify',
   },
 
   // Catch all - redirect to 404
-  { 
-    path: '**', 
-    redirectTo: '/404'
-  }
+  {
+    path: '**',
+    redirectTo: '/404',
+  },
 ];

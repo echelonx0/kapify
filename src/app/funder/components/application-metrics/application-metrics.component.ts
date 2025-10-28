@@ -1,5 +1,5 @@
 // src/app/funder/components/application-detail/components/application-metrics/application-metrics.component.ts
-import { Component, Input, computed } from '@angular/core';
+import { Component, Input, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   LucideAngularModule,
@@ -17,10 +17,35 @@ import {
   Users,
   Target,
   FileText,
+  Activity,
+  BarChart3,
+  Lightbulb,
+  AlertCircle,
+  AlertTriangle,
 } from 'lucide-angular';
 import { FundingApplication } from 'src/app/SMEs/models/application.models';
 import { FundingOpportunity } from '../../create-opportunity/shared/funding.interfaces';
 import { ProfileData } from 'src/app/SMEs/profile/models/funding.models';
+import {
+  ManagementMember,
+  BoardMember,
+} from 'src/app/SMEs/applications/models/funding-application.models';
+
+type TabId =
+  | 'overview'
+  | 'personal'
+  | 'business'
+  | 'financial'
+  | 'funding'
+  | 'management'
+  | 'swot'
+  | 'strategy';
+
+interface Tab {
+  id: TabId;
+  label: string;
+  icon: any;
+}
 
 @Component({
   selector: 'app-application-metrics',
@@ -49,6 +74,26 @@ export class ApplicationMetricsComponent {
   UsersIcon = Users;
   TargetIcon = Target;
   FileTextIcon = FileText;
+  ActivityIcon = Activity;
+  BarChart3Icon = BarChart3;
+  LightbulbIcon = Lightbulb;
+  AlertCircleIcon = AlertCircle;
+  AlertTriangleIcon = AlertTriangle;
+
+  // Active tab state
+  activeTab = signal<TabId>('overview');
+
+  // Tab configuration
+  tabs: Tab[] = [
+    { id: 'overview', label: 'Overview', icon: this.ActivityIcon },
+    // { id: 'personal', label: 'Contact', icon: this.UserIcon },
+    { id: 'business', label: 'Business', icon: this.BuildingIcon },
+    { id: 'financial', label: 'Financials', icon: this.BarChart3Icon },
+    // { id: 'funding', label: 'Funding', icon: this.DollarSignIcon },
+    { id: 'management', label: 'Leadership', icon: this.UsersIcon },
+    { id: 'swot', label: 'SWOT', icon: this.LightbulbIcon },
+    { id: 'strategy', label: 'Strategy', icon: this.TargetIcon },
+  ];
 
   requestedAmount = computed(() => {
     const formData = this.application?.formData as any;
@@ -85,15 +130,27 @@ export class ApplicationMetricsComponent {
 
   fundingInfo = computed(() => this.profileData?.fundingInfo);
 
+  businessReview = computed(() => this.profileData?.businessReview);
+
   managementTeam = computed(
-    () => this.profileData?.managementGovernance?.managementTeam || []
+    (): ManagementMember[] =>
+      this.profileData?.managementGovernance?.managementTeam || []
   );
 
   boardOfDirectors = computed(
-    () => this.profileData?.managementGovernance?.boardOfDirectors || []
+    (): BoardMember[] =>
+      this.profileData?.managementGovernance?.boardOfDirectors || []
   );
 
   swotAnalysis = computed(() => this.profileData?.swotAnalysis);
+
+  businessStrategy = computed(() => this.profileData?.businessPlan);
+
+  financialAnalysis = computed(() => this.profileData?.financialAnalysis);
+
+  setActiveTab(tabId: TabId) {
+    this.activeTab.set(tabId);
+  }
 
   formatCurrency(amount: number, currency: string = 'ZAR'): string {
     return new Intl.NumberFormat('en-ZA', {

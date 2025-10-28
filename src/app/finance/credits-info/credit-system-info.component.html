@@ -1,0 +1,314 @@
+<div class="min-h-screen bg-slate-50">
+  <!-- Header Section -->
+  <div class="bg-gradient-to-r from-orange-500 to-orange-600 text-white py-16">
+    <div class="max-w-7xl mx-auto px-6">
+      <div class="max-w-3xl">
+        <div class="flex items-center space-x-2 mb-4">
+          <lucide-icon [img]="ZapIcon" [size]="32" />
+          <h1 class="text-4xl font-bold">Kapify Credit System</h1>
+        </div>
+        <p class="text-xl text-orange-100">
+          Pay only for what you use. No subscriptions. No hidden fees. Just
+          simple, transparent pricing.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="max-w-7xl mx-auto px-6 py-12">
+    <!-- How It Works Section -->
+    <div class="mb-16">
+      <h2 class="text-3xl font-bold text-slate-900 mb-8">How It Works</h2>
+
+      <div class="grid md:grid-cols-3 gap-6 mb-12">
+        <div class="bg-white rounded-2xl border border-slate-200 p-6">
+          <div
+            class="w-12 h-12 rounded-xl bg-orange-100 flex items-center justify-center text-orange-600 mb-4"
+          >
+            <lucide-icon [img]="CreditCardIcon" [size]="24" />
+          </div>
+          <h3 class="text-lg font-semibold text-slate-900 mb-2">
+            1. Buy Credits
+          </h3>
+          <p class="text-slate-600">
+            Purchase a credit package that fits your needs. Larger packages
+            offer better rates.
+          </p>
+        </div>
+
+        <div class="bg-white rounded-2xl border border-slate-200 p-6">
+          <div
+            class="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center text-blue-600 mb-4"
+          >
+            <lucide-icon [img]="EyeIcon" [size]="24" />
+          </div>
+          <h3 class="text-lg font-semibold text-slate-900 mb-2">
+            2. Use Credits
+          </h3>
+          <p class="text-slate-600">
+            Spend credits to view applications, download documents, and contact
+            businesses.
+          </p>
+        </div>
+
+        <div class="bg-white rounded-2xl border border-slate-200 p-6">
+          <div
+            class="w-12 h-12 rounded-xl bg-green-100 flex items-center justify-center text-green-600 mb-4"
+          >
+            <lucide-icon [img]="TrendingUpIcon" [size]="24" />
+          </div>
+          <h3 class="text-lg font-semibold text-slate-900 mb-2">
+            3. Find Opportunities
+          </h3>
+          <p class="text-slate-600">
+            Connect with vetted businesses that match your investment criteria.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Credit Actions Section -->
+    <div class="mb-16">
+      <h2 class="text-3xl font-bold text-slate-900 mb-3">
+        What Credits Unlock
+      </h2>
+      <p class="text-slate-600 mb-8">
+        Every action on Kapify has a transparent credit cost.
+      </p>
+
+      <div class="grid md:grid-cols-2 gap-4">
+        @for (action of creditActions(); track action.id) {
+        <div
+          class="bg-white rounded-2xl border border-slate-200 p-6 hover:shadow-md transition-all duration-200"
+        >
+          <div class="flex items-start justify-between mb-4">
+            <div class="flex items-start space-x-4">
+              <div
+                class="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
+                [class]="getActionIconClass(action.color)"
+              >
+                <lucide-icon [img]="action.icon" [size]="24" />
+              </div>
+              <div class="flex-1">
+                <h3 class="text-lg font-semibold text-slate-900 mb-1">
+                  {{ action.title }}
+                </h3>
+                <p class="text-sm text-slate-600">{{ action.description }}</p>
+              </div>
+            </div>
+            <div class="flex flex-col items-end">
+              <span class="text-2xl font-bold text-orange-600">{{
+                action.cost
+              }}</span>
+              <span class="text-xs text-slate-500">credits</span>
+            </div>
+          </div>
+        </div>
+        }
+      </div>
+    </div>
+
+    <!-- Pricing Packages Section -->
+    <div class="mb-16">
+      <h2 class="text-3xl font-bold text-slate-900 mb-3">
+        Choose Your Package
+      </h2>
+      <p class="text-slate-600 mb-8">
+        Buy more credits at once to unlock better rates. Credits never expire.
+      </p>
+
+      <div class="grid md:grid-cols-4 gap-6">
+        @for (pkg of packages(); track pkg.id) {
+        <div
+          class="relative bg-white rounded-2xl border transition-all duration-200 cursor-pointer"
+          [class.border-orange-500]="selectedPackageId() === pkg.id"
+          [class.border-slate-200]="selectedPackageId() !== pkg.id"
+          [class.shadow-lg]="selectedPackageId() === pkg.id"
+          (click)="selectPackage(pkg.id)"
+        >
+          @if (pkg.popular) {
+          <div class="absolute -top-3 left-1/2 -translate-x-1/2">
+            <span
+              class="px-4 py-1 bg-gradient-to-r from-orange-400 to-orange-500 text-white text-xs font-semibold rounded-full"
+            >
+              Most Popular
+            </span>
+          </div>
+          }
+
+          <div class="p-6">
+            <!-- Credits Count -->
+            <div class="text-center mb-4">
+              <div class="text-4xl font-bold text-slate-900 mb-1">
+                {{ pkg.credits }}
+              </div>
+              <div class="text-sm text-slate-500">credits</div>
+            </div>
+
+            <!-- Price -->
+            <div class="text-center mb-4">
+              <div class="text-2xl font-bold text-slate-900">
+                {{ formatCurrency(pkg.price) }}
+              </div>
+              <div class="text-sm text-slate-500">
+                {{ formatCurrency(pkg.pricePerCredit) }} per credit
+              </div>
+            </div>
+
+            <!-- Savings Badge -->
+            @if (pkg.savings) {
+            <div class="flex justify-center mb-4">
+              <span
+                class="px-3 py-1 bg-green-100 text-green-700 text-xs font-medium rounded-xl"
+              >
+                {{ pkg.savings }}
+              </span>
+            </div>
+            }
+
+            <!-- Selection Indicator -->
+            <div class="flex items-center justify-center">
+              @if (selectedPackageId() === pkg.id) {
+              <div
+                class="w-6 h-6 rounded-full bg-orange-500 flex items-center justify-center"
+              >
+                <lucide-icon
+                  [img]="CheckCircleIcon"
+                  [size]="16"
+                  class="text-white"
+                />
+              </div>
+              } @else {
+              <div class="w-6 h-6 rounded-full border-2 border-slate-300"></div>
+              }
+            </div>
+          </div>
+        </div>
+        }
+      </div>
+
+      <!-- Purchase Button -->
+      <div class="mt-8 flex justify-center">
+        <ui-button
+          variant="primary"
+          size="lg"
+          (clicked)="purchaseCredits()"
+          class="px-8"
+        >
+          Purchase Credits
+          <lucide-icon [img]="ArrowRightIcon" [size]="20" class="ml-2" />
+        </ui-button>
+      </div>
+    </div>
+
+    <!-- Benefits Section -->
+    <div class="mb-16">
+      <h2 class="text-3xl font-bold text-slate-900 mb-8">Why Use Credits?</h2>
+
+      <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+        @for (benefit of benefits(); track benefit.title) {
+        <div class="bg-white rounded-2xl border border-slate-200 p-6">
+          <div
+            class="w-12 h-12 rounded-xl bg-orange-100 flex items-center justify-center text-orange-600 mb-4"
+          >
+            <lucide-icon [img]="benefit.icon" [size]="24" />
+          </div>
+          <h3 class="text-lg font-semibold text-slate-900 mb-2">
+            {{ benefit.title }}
+          </h3>
+          <p class="text-sm text-slate-600">{{ benefit.description }}</p>
+        </div>
+        }
+      </div>
+    </div>
+
+    <!-- FAQ Section -->
+    <div class="bg-white rounded-2xl border border-slate-200 p-8 mb-16">
+      <h2 class="text-2xl font-bold text-slate-900 mb-6">
+        Frequently Asked Questions
+      </h2>
+
+      <div class="space-y-6">
+        <div>
+          <h3 class="text-lg font-semibold text-slate-900 mb-2">
+            Do credits expire?
+          </h3>
+          <p class="text-slate-600">
+            No. Your credits remain active indefinitely and can be used whenever
+            you need them.
+          </p>
+        </div>
+
+        <div>
+          <h3 class="text-lg font-semibold text-slate-900 mb-2">
+            Can I refund unused credits?
+          </h3>
+          <p class="text-slate-600">
+            Credits are non-refundable once purchased. However, they never
+            expire, so you can use them at any time.
+          </p>
+        </div>
+
+        <div>
+          <h3 class="text-lg font-semibold text-slate-900 mb-2">
+            What happens if I run out of credits?
+          </h3>
+          <p class="text-slate-600">
+            You can purchase more credits anytime. We'll notify you when your
+            balance is running low.
+          </p>
+        </div>
+
+        <div>
+          <h3 class="text-lg font-semibold text-slate-900 mb-2">
+            Are there volume discounts?
+          </h3>
+          <p class="text-slate-600">
+            Yes! Larger credit packages offer better per-credit rates, with
+            savings up to 30%.
+          </p>
+        </div>
+
+        <div>
+          <h3 class="text-lg font-semibold text-slate-900 mb-2">
+            Can I share credits with my team?
+          </h3>
+          <p class="text-slate-600">
+            Enterprise plans support team credit pools. Contact us for custom
+            team pricing.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- CTA Section -->
+    <div
+      class="bg-gradient-to-r from-orange-500 to-orange-600 rounded-2xl p-12 text-center text-white"
+    >
+      <h2 class="text-3xl font-bold mb-4">Ready to Start Investing?</h2>
+      <p class="text-xl text-orange-100 mb-8 max-w-2xl mx-auto">
+        Purchase credits now and get immediate access to vetted business
+        applications.
+      </p>
+      <div class="flex flex-col sm:flex-row gap-4 justify-center">
+        <ui-button
+          variant="outline"
+          size="lg"
+          (clicked)="purchaseCredits()"
+          class="bg-white text-orange-600 border-white hover:bg-orange-50"
+        >
+          Purchase Credits
+        </ui-button>
+        <ui-button
+          variant="outline"
+          size="lg"
+          (clicked)="goToApplications()"
+          class="border-white text-white hover:bg-white/10"
+        >
+          Browse Applications
+        </ui-button>
+      </div>
+    </div>
+  </div>
+</div>

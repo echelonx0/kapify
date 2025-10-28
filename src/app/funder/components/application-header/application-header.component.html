@@ -3,70 +3,80 @@
 <header class="bg-white border-b border-gray-200 sticky top-0 z-40">
   <div class="max-w-7xl mx-auto px-6 py-4">
     <div class="flex items-center justify-between">
-      
       <!-- Left Section: Back Button & Status -->
       <div class="flex items-center space-x-4">
-        <button 
+        <button
           (click)="onBack()"
           class="flex items-center space-x-2 text-gray-600 hover:text-gray-900 transition-colors"
         >
           <lucide-icon [img]="ArrowLeftIcon" [size]="16"></lucide-icon>
           <span class="font-medium">Back to Applications</span>
         </button>
-        
+
         <div class="h-6 w-px bg-gray-300"></div>
-        
-        <div>
-          <div class="flex items-center space-x-3">
-            <span [class]="statusBadgeClass()">
-              {{ statusText() }}
-            </span>
-            
-            @if (internalStatus()) {
-              <span class="status-badge bg-gray-100 text-gray-700 text-xs">
-                Internal: {{ internalStatus() }}
-              </span>
-            }
-            
-            @if (priority()) {
-              <span [class]="'status-badge text-xs ' + 
-                (priority() === 'urgent' ? 'bg-red-100 text-red-700' : 
-                 priority() === 'high' ? 'bg-orange-100 text-orange-700' :
-                 priority() === 'medium' ? 'bg-yellow-100 text-yellow-700' :
-                 'bg-blue-100 text-blue-700')">
-                {{ priority() }} priority
-              </span>
-            }
-          </div>
-          
-          <span class="text-sm text-gray-500 mt-1 block">
+
+        <div class="flex items-center space-x-3">
+          <!-- Status + Priority + Internal -->
+          <span [class]="statusBadgeClass()">
+            {{ statusText() }}
+          </span>
+
+          @if (internalStatus()) {
+          <span class="status-badge bg-gray-100 text-gray-700 text-xs">
+            Internal: {{ internalStatus() }}
+          </span>
+          } @if (priority()) {
+          <span
+            [class]="
+              'status-badge text-xs ' +
+              (priority() === 'urgent'
+                ? 'bg-red-100 text-red-700'
+                : priority() === 'high'
+                ? 'bg-orange-100 text-orange-700'
+                : priority() === 'medium'
+                ? 'bg-yellow-100 text-yellow-700'
+                : 'bg-blue-100 text-blue-700')
+            "
+          >
+            {{ priority() }} priority
+          </span>
+          }
+
+          <!-- Date -->
+          <span class="text-sm text-gray-500">
             {{ formatDate(application.submittedAt || application.createdAt) }}
           </span>
         </div>
       </div>
-      
+
       <!-- Right Section: Status Indicators & Actions -->
       <div class="flex items-center space-x-3">
-        <!-- Profile Loading Status -->
         @if (profileLoading) {
-          <div class="flex items-center space-x-2 text-sm">
-            <lucide-icon [img]="Loader2Icon" [size]="14" class="animate-spin text-blue-500"></lucide-icon>
-            <span class="text-gray-600">Loading Profile...</span>
-          </div>
+        <div class="flex items-center space-x-2 text-sm">
+          <lucide-icon
+            [img]="Loader2Icon"
+            [size]="14"
+            class="animate-spin text-blue-500"
+          ></lucide-icon>
+          <span class="text-gray-600">Loading Profile...</span>
+        </div>
         } @else if (profileError) {
-          <div class="flex items-center space-x-2 text-sm">
-            <lucide-icon [img]="AlertCircleIcon" [size]="14" class="text-red-500"></lucide-icon>
-            <span class="text-red-600">Profile Error</span>
-          </div>
+        <div class="flex items-center space-x-2 text-sm">
+          <lucide-icon
+            [img]="AlertCircleIcon"
+            [size]="14"
+            class="text-red-500"
+          ></lucide-icon>
+          <span class="text-red-600">Profile Error</span>
+        </div>
         } @else if (hasCompleteData) {
-          <div class="flex items-center space-x-2 text-sm">
-            <div class="w-2 h-2 bg-green-500 rounded-full"></div>
-            <span class="text-gray-600">Data Complete</span>
-          </div>
+        <div class="flex items-center space-x-2 text-sm">
+          <div class="w-2 h-2 bg-green-500 rounded-full"></div>
+          <span class="text-gray-600">Data Complete</span>
+        </div>
         }
 
-        <!-- Manage Status Button -->
-        <button 
+        <button
           (click)="onManageStatus()"
           class="flex items-center space-x-2 bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
         >

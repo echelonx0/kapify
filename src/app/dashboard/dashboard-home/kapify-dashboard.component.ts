@@ -1,13 +1,13 @@
-// kapify-dashboard.component.ts (Updated)
-import { Component, signal, computed, OnInit } from '@angular/core';
+// kapify-dashboard.component.ts (Updated with User Type Logic)
+import { Component, signal, computed, OnInit, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { 
-  LucideAngularModule, 
-  FileText, 
-  Clock, 
-  TrendingUp, 
+import {
+  LucideAngularModule,
+  FileText,
+  Clock,
+  TrendingUp,
   DollarSign,
   Plus,
   Filter,
@@ -21,11 +21,15 @@ import {
   ArrowRight,
   Lightbulb,
   Shield,
-  Zap
+  Zap,
 } from 'lucide-angular';
 import { UiButtonComponent } from '../../shared/components';
-import { RightPanelContent, RightPanelComponent } from '../components/right-panel.component';
- 
+import {
+  RightPanelContent,
+  RightPanelComponent,
+} from '../components/right-panel.component';
+import { ProfileManagementService } from 'src/app/shared/services/profile-management.service';
+import { AuthService } from 'src/app/auth/production.auth.service';
 
 interface OnboardingCard {
   id: string;
@@ -48,17 +52,19 @@ interface OnboardingCard {
     FormsModule,
     LucideAngularModule,
     UiButtonComponent,
-    RightPanelComponent
+    RightPanelComponent,
   ],
   templateUrl: './kapify-dashboard.component.html',
-  styles: [`
-    .line-clamp-2 {
-      display: -webkit-box;
-      -webkit-line-clamp: 2;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
-    }
-  `]
+  styles: [
+    `
+      .line-clamp-2 {
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+      }
+    `,
+  ],
 })
 export class KapifyDashboard implements OnInit {
   // Icons
@@ -83,66 +89,131 @@ export class KapifyDashboard implements OnInit {
   // State
   isLoading = signal(false);
   rightPanelContent = signal<RightPanelContent>('activity-inbox');
+  currentUser = computed(() => this.profileService.currentUser());
+  userType = computed(() => this.authService.user()?.userType || 'sme');
 
-  // Updated onboarding cards data with right panel mappings
-  private onboardingData: OnboardingCard[] = [
+  private profileService = inject(ProfileManagementService);
+  private authService = inject(AuthService);
+
+  // SME-specific onboarding content
+  private smeOnboardingData: OnboardingCard[] = [
     {
       id: 'how-it-works',
       title: 'How Kapify Works',
-      description: 'Complete your profile, get matched with suitable organisations, and with kapify intelligent assist.',
+      description:
+        'Complete your profile, get matched with suitable organisations, and with kapify intelligent assist.',
       icon: this.BookOpenIcon,
       type: 'info',
       actionText: 'Learn the Process',
       rightPanelContent: 'how-it-works',
-      color: 'blue'
+      color: 'blue',
     },
     {
       id: 'funding-types',
       title: 'Explore Funding Types',
-      description: 'Discover different funding options available depending on your business stage and needs.',
+      description:
+        'Discover different funding options available depending on your business stage and needs.',
       icon: this.DollarSignIcon,
       type: 'feature',
       actionText: 'View Funding Options',
       rightPanelContent: 'funding-types',
-      color: 'green'
+      color: 'green',
     },
-    // {
-    //   id: 'tips-best-practices',
-    //   title: 'Funding Tips & Best Practices',
-    //   description: 'Learn insider tips on creating compelling applications, preparing for investor meetings, and negotiating terms. Our guides are written by experienced funding professionals.',
-    //   icon: this.LightbulbIcon,
-    //   type: 'info',
-    //   actionText: 'View Tips',
-    //   rightPanelContent: 'tips',
-    //   color: 'yellow'
-    // },
-    // {
-    //   id: 'security-compliance',
-    //   title: 'Security & Compliance',
-    //   description: 'Your data is protected with bank-level security. We comply with POPIA and international data protection standards to keep your business information safe.',
-    //   icon: this.ShieldIcon,
-    //   type: 'info',
-    //   actionText: 'Learn About Security',
-    //   rightPanelContent: 'security',
-    //   color: 'blue'
-    // }
   ];
 
-  onboardingCards = signal<OnboardingCard[]>(this.onboardingData);
+  // Funder-specific onboarding content
+  private funderOnboardingData: OnboardingCard[] = [
+    {
+      id: 'how-it-works-funder',
+      title: 'How Kapify Works for Funders',
+      description:
+        'Set up your funding criteria, review applications, and connect with vetted businesses seeking funding.',
+      icon: this.BookOpenIcon,
+      type: 'info',
+      actionText: 'Learn the Process',
+      rightPanelContent: 'how-it-works',
+      color: 'blue',
+    },
+    // {
+    //   id: 'review-applications',
+    //   title: 'Review Applications',
+    //   description:
+    //     'Access a pipeline of pre-screened businesses that match your investment criteria and funding focus.',
+    //   icon: this.FileTextIcon,
+    //   type: 'action',
+    //   actionText: 'View Your Opportunities',
+    //   actionRoute: '/funding/opportunities',
+    //   color: 'purple',
+    // },
+    {
+      id: 'manage-criteria',
+      title: 'Set Funding Criteria',
+      description:
+        'Define your investment preferences, funding amounts, sectors, and business stages to receive relevant matches.',
+      icon: this.TargetIcon,
+      type: 'action',
+      actionText: 'Manage Profile',
+      actionRoute: '/funder/dashboard',
+      color: 'orange',
+    },
+  ];
+
+  // Dynamically compute cards based on user type
+  onboardingCards = computed(() =>
+    this.userType() === 'funder'
+      ? this.funderOnboardingData
+      : this.smeOnboardingData
+  );
+
+  // Computed CTA content based on user type
+  ctaContent = computed(() => {
+    if (this.userType() === 'funder') {
+      return {
+        title: 'Kapify uses a credit system',
+        description:
+          'You only pay for what you use. There is no subscription. Just buy credits, and then use them in the platform',
+        buttonText: 'How it works',
+        route: '/finance/credit-info',
+      };
+    }
+    return {
+      title: 'Explore Kapify Executive',
+      description:
+        'You can make yourself available to advice startups and SMEs looking for guidance on funding and growth strategies.',
+      buttonText: 'Start a Subscription to explore Kapify Executive',
+      route: '/subscriptions/executive',
+    };
+  });
 
   constructor(private router: Router) {}
 
   ngOnInit() {
-    // Initialize component
+    // Load profile data if not already loaded
+    if (!this.currentUser()) {
+      const user = this.authService.user();
+      this.profileService.loadProfileData().subscribe({
+        error: (error) => {
+          console.error('Failed to load profile data:', error);
+        },
+      });
+    }
   }
 
-  // Computed properties for stats
+  // Computed properties for stats (different for SME vs Funder)
   stats = computed(() => {
+    if (this.userType() === 'funder') {
+      return {
+        total: 0, // Applications reviewed
+        businesses: 1240, // Active businesses seeking funding
+        avgDealSize: 1.2, // Million ZAR
+        successRate: 87, // Match success rate
+      };
+    }
     return {
-      total: 0, // Will be updated when user has applications
-      funders: 250, // Number of active funders on platform
+      total: 0, // Applications submitted
+      funders: 250, // Active funders on platform
       successRate: 87, // Platform success rate
-      totalFunded: 2.4 // Billion ZAR funded through platform
+      totalFunded: 2.4, // Billion ZAR funded through platform
     };
   });
 
@@ -152,15 +223,14 @@ export class KapifyDashboard implements OnInit {
   }
 
   startApplication() {
-    this.router.navigate(['/funding/applications/new']);
+    const route = this.ctaContent().route;
+    this.router.navigate([route]);
   }
 
   handleCardAction(card: OnboardingCard) {
     if (card.rightPanelContent) {
-      // Show content in right panel
       this.rightPanelContent.set(card.rightPanelContent);
     } else if (card.actionRoute) {
-      // Navigate to external route
       this.router.navigate([card.actionRoute]);
     }
   }
@@ -176,7 +246,7 @@ export class KapifyDashboard implements OnInit {
       green: 'hover:border-green-200',
       purple: 'hover:border-purple-200',
       orange: 'hover:border-orange-200',
-      yellow: 'hover:border-yellow-200'
+      yellow: 'hover:border-yellow-200',
     };
     return classMap[color] || 'hover:border-gray-200';
   }
@@ -187,7 +257,7 @@ export class KapifyDashboard implements OnInit {
       green: 'bg-green-100',
       purple: 'bg-purple-100',
       orange: 'bg-orange-100',
-      yellow: 'bg-yellow-100'
+      yellow: 'bg-yellow-100',
     };
     return classMap[color] || 'bg-gray-100';
   }
@@ -198,7 +268,7 @@ export class KapifyDashboard implements OnInit {
       green: 'text-green-600',
       purple: 'text-purple-600',
       orange: 'text-orange-600',
-      yellow: 'text-yellow-600'
+      yellow: 'text-yellow-600',
     };
     return classMap[color] || 'text-gray-600';
   }
@@ -208,7 +278,7 @@ export class KapifyDashboard implements OnInit {
       style: 'currency',
       currency: 'ZAR',
       notation: 'compact',
-      maximumFractionDigits: 1
-    }).format(2400000000); // 2.4 billion
+      maximumFractionDigits: 1,
+    }).format(2400000000);
   }
 }

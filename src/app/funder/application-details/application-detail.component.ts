@@ -1,14 +1,16 @@
 // src/app/funder/components/application-detail/application-detail.component.ts - REFACTORED
 
-import { Component, signal, computed, OnInit, OnDestroy, inject } from '@angular/core';
+import {
+  Component,
+  signal,
+  computed,
+  OnInit,
+  OnDestroy,
+  inject,
+} from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { 
-  LucideAngularModule, 
-  Bot,
-  AlertCircle,
-  Loader2
-} from 'lucide-angular';
+import { LucideAngularModule, Bot, AlertCircle, Loader2 } from 'lucide-angular';
 import { Subject, takeUntil, forkJoin } from 'rxjs';
 import { ApplicationManagementService } from 'src/app/SMEs/services/application-management.service';
 import { SMEOpportunitiesService } from 'src/app/funding/services/opportunities.service';
@@ -19,12 +21,12 @@ import { ProfileDataTransformerService } from 'src/app/SMEs/services/profile-dat
 import { ProfileData } from 'src/app/SMEs/profile/models/funding.models';
 import { FundingApplication } from 'src/app/SMEs/models/application.models';
 import { AiExecutiveSummaryComponent } from './components/ai-executive-summary/ai-executive-summary.component';
-import { ApplicantProfileComponent } from './components/applicant-profile/applicant-profile.component';
+
 import { ApplicationMetricsComponent } from '../components/application-metrics/application-metrics.component';
 import { ApplicationHeaderComponent } from '../components/application-header/application-header.component';
 import { StatusManagementModalComponent } from '../components/status-management-modal/status-management-modal.component';
 import { FundingOpportunity } from '../create-opportunity/shared/funding.interfaces';
- 
+
 interface ApplicationFormData {
   requestedAmount?: number | string;
   purposeStatement?: string;
@@ -43,13 +45,13 @@ interface ApplicationFormData {
     AiExecutiveSummaryComponent,
     ApplicationTabsComponent,
     AiAssistantComponent,
-    ApplicantProfileComponent,
+    // ApplicantProfileComponent,
     StatusManagementModalComponent,
     ApplicationHeaderComponent,
-    ApplicationMetricsComponent
+    ApplicationMetricsComponent,
   ],
   templateUrl: './application-detail.component.html',
-  styleUrls: ['./application-detail.component.css']
+  styleUrls: ['./application-detail.component.css'],
 })
 export class ApplicationDetailComponent implements OnInit, OnDestroy {
   // Services
@@ -71,19 +73,19 @@ export class ApplicationDetailComponent implements OnInit, OnDestroy {
   application = signal<FundingApplication | null>(null);
   opportunity = signal<FundingOpportunity | null>(null);
   profileData = signal<Partial<ProfileData> | null>(null);
-  
+
   // Loading & Error States
   isLoading = signal(true);
   profileLoading = signal(false);
   error = signal<string | null>(null);
   profileError = signal<string | null>(null);
-  
+
   // UI State
   showStatusModal = signal(false);
 
   // Computed
-  hasCompleteDataForAnalysis = computed(() => 
-    !!(this.application() && this.opportunity() && this.profileData())
+  hasCompleteDataForAnalysis = computed(
+    () => !!(this.application() && this.opportunity() && this.profileData())
   );
 
   applicationForAI = computed(() => {
@@ -91,7 +93,7 @@ export class ApplicationDetailComponent implements OnInit, OnDestroy {
     const opp = this.opportunity();
     const profile = this.profileData();
     const formData = this.formData();
-    
+
     if (!app || !opp) return null;
 
     return {
@@ -103,8 +105,8 @@ export class ApplicationDetailComponent implements OnInit, OnDestroy {
         purposeStatement: formData.purposeStatement || app.description || '',
         useOfFunds: formData.useOfFunds || '',
         timeline: formData.timeline || '',
-        opportunityAlignment: formData.opportunityAlignment || ''
-      }
+        opportunityAlignment: formData.opportunityAlignment || '',
+      },
     };
   });
 
@@ -158,7 +160,7 @@ export class ApplicationDetailComponent implements OnInit, OnDestroy {
         opportunity: this.opportunitiesService
           .getOpportunityById(application.opportunityId)
           .pipe(takeUntil(this.destroy$)),
-        profile: this.loadApplicantProfile(application.applicantId)
+        profile: this.loadApplicantProfile(application.applicantId),
       });
 
       const results = await parallelLoads.toPromise();
@@ -166,7 +168,6 @@ export class ApplicationDetailComponent implements OnInit, OnDestroy {
       if (results?.opportunity) {
         this.opportunity.set(results.opportunity);
       }
-      
     } catch (error) {
       console.error('Error loading application data:', error);
       this.error.set('Failed to load application details');
@@ -181,23 +182,23 @@ export class ApplicationDetailComponent implements OnInit, OnDestroy {
   private async loadApplicantProfile(applicantId: string): Promise<void> {
     this.profileLoading.set(true);
     this.profileError.set(null);
-    
+
     try {
       const fundingProfile = await this.backendService
         .loadSavedProfileForUser(applicantId)
         .pipe(takeUntil(this.destroy$))
         .toPromise();
-      
+
       if (fundingProfile) {
-        const profileData = this.transformer.transformFromFundingProfile(fundingProfile);
+        const profileData =
+          this.transformer.transformFromFundingProfile(fundingProfile);
         this.profileData.set(profileData);
       } else {
         throw new Error('No profile data returned');
       }
-      
     } catch (error) {
       console.error('Failed to load applicant profile:', error);
-      
+
       let errorMessage = 'Unable to load applicant profile data.';
       if (error instanceof Error) {
         if (error.message.includes('No profile data found')) {
@@ -206,7 +207,7 @@ export class ApplicationDetailComponent implements OnInit, OnDestroy {
           errorMessage = 'Invalid applicant information.';
         }
       }
-      
+
       this.profileError.set(errorMessage);
     } finally {
       this.profileLoading.set(false);
@@ -229,7 +230,7 @@ export class ApplicationDetailComponent implements OnInit, OnDestroy {
   getRequestedAmount(): number | null {
     const formData = this.formData();
     const amount = formData.requestedAmount;
-    
+
     if (typeof amount === 'number') return amount;
     if (typeof amount === 'string') {
       const parsed = parseFloat(amount);
@@ -244,7 +245,11 @@ export class ApplicationDetailComponent implements OnInit, OnDestroy {
   goBack() {
     const application = this.application();
     if (application?.opportunityId) {
-      this.router.navigate(['/funder/opportunities', application.opportunityId, 'applications']);
+      this.router.navigate([
+        '/funder/opportunities',
+        application.opportunityId,
+        'applications',
+      ]);
     } else {
       this.router.navigate(['/funder/dashboard']);
     }

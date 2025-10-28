@@ -52,7 +52,7 @@ export class SidebarNavComponent implements OnInit {
   // State
   showNotifications = signal(false);
   isOnline = signal(true);
-  unreadNotifications = signal(3); // TODO: Get from notifications service
+  unreadNotifications = signal(1); // TODO: Get from notifications service
 
   // Admin email configuration
   private readonly ADMIN_EMAILS = [
@@ -61,7 +61,6 @@ export class SidebarNavComponent implements OnInit {
     'support@kapify.com',
     'operations@kapify.com',
     'zivaigwe@gmail.com',
-    // Add more admin emails as needed
   ];
 
   // Profile data
