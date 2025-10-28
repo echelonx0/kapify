@@ -1,9 +1,10 @@
-
 <div class="min-h-screen flex relative">
   <!-- Top-right header (moved here from form panel) -->
   <div class="absolute top-6 right-8 flex items-center space-x-6 z-40">
     <div class="flex items-center space-x-3">
-      <div class="w-10 h-10 bg-primary-600 rounded-xl flex items-center justify-center shadow-md">
+      <div
+        class="w-10 h-10 bg-primary-600 rounded-xl flex items-center justify-center shadow-md"
+      >
         <span class="text-white font-bold text-lg">K</span>
       </div>
       <h1 class="text-2xl font-bold text-white drop-shadow-md">Join Kapify</h1>
@@ -22,27 +23,44 @@
       <!-- 🧩 Removed the old header section from here -->
 
       <!-- Form -->
-      <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="space-y-6">
-
+      <form
+        [formGroup]="registerForm"
+        (ngSubmit)="onSubmit()"
+        class="space-y-6"
+      >
         <!-- User Type Selection -->
         <div class="mb-6">
-          <label class="block text-sm font-medium text-neutral-700 mb-3">Register as</label>
+          <label class="block text-sm font-medium text-neutral-700 mb-3"
+            >Register as</label
+          >
           <div class="grid grid-cols-2 gap-4">
             <button
               type="button"
-              [class]="getUserTypeButtonClasses('sme') + ' bg-white hover:bg-primary-50 border border-slate-200 rounded-lg p-4 flex flex-col items-center justify-center shadow-sm hover:shadow-md transition-all'"
+              [class]="
+                getUserTypeButtonClasses('sme') +
+                ' bg-white hover:bg-primary-50 border border-slate-200 rounded-lg p-4 flex flex-col items-center justify-center shadow-sm hover:shadow-md transition-all'
+              "
               (click)="selectUserType('sme')"
-            > 
-              <div class="font-medium text-sm text-neutral-900">Business Owner</div>
-              <div class="text-xs text-neutral-500 mt-1 text-center">I need funding</div>
+            >
+              <div class="font-medium text-sm text-neutral-900">
+                Business Owner
+              </div>
+              <div class="text-xs text-neutral-500 mt-1 text-center">
+                I need funding
+              </div>
             </button>
             <button
               type="button"
-              [class]="getUserTypeButtonClasses('funder') + ' bg-white hover:bg-primary-50 border border-slate-200 rounded-lg p-4 flex flex-col items-center justify-center shadow-sm hover:shadow-md transition-all'"
+              [class]="
+                getUserTypeButtonClasses('funder') +
+                ' bg-white hover:bg-primary-50 border border-slate-200 rounded-lg p-4 flex flex-col items-center justify-center shadow-sm hover:shadow-md transition-all'
+              "
               (click)="selectUserType('funder')"
-            > 
+            >
               <div class="font-medium text-sm text-neutral-900">Investor</div>
-              <div class="text-xs text-neutral-500 mt-1 text-center">I provide funding</div>
+              <div class="text-xs text-neutral-500 mt-1 text-center">
+                I provide funding
+              </div>
             </button>
           </div>
         </div>
@@ -50,7 +68,9 @@
         <!-- Rest of your form untouched -->
         <div class="grid grid-cols-2 gap-4">
           <div>
-            <label class="block text-sm font-medium text-neutral-700 mb-2">First name</label>
+            <label class="block text-sm font-medium text-neutral-700 mb-2"
+              >First name</label
+            >
             <input
               type="text"
               formControlName="firstName"
@@ -58,11 +78,15 @@
               [class]="getInputClasses('firstName')"
             />
             @if (getFieldError('firstName')) {
-              <p class="mt-1 text-sm text-red-600">{{ getFieldError('firstName') }}</p>
+            <p class="mt-1 text-sm text-red-600">
+              {{ getFieldError("firstName") }}
+            </p>
             }
           </div>
           <div>
-            <label class="block text-sm font-medium text-neutral-700 mb-2">Last name</label>
+            <label class="block text-sm font-medium text-neutral-700 mb-2"
+              >Last name</label
+            >
             <input
               type="text"
               formControlName="lastName"
@@ -70,16 +94,20 @@
               [class]="getInputClasses('lastName')"
             />
             @if (getFieldError('lastName')) {
-              <p class="mt-1 text-sm text-red-600">{{ getFieldError('lastName') }}</p>
+            <p class="mt-1 text-sm text-red-600">
+              {{ getFieldError("lastName") }}
+            </p>
             }
           </div>
         </div>
 
         <!-- ... rest of form unchanged ... -->
 
-                <!-- Email -->
+        <!-- Email -->
         <div>
-          <label class="block text-sm font-medium text-neutral-700 mb-2">Email address</label>
+          <label class="block text-sm font-medium text-neutral-700 mb-2"
+            >Email address</label
+          >
           <input
             type="email"
             formControlName="email"
@@ -87,13 +115,15 @@
             [class]="getInputClasses('email')"
           />
           @if (getFieldError('email')) {
-            <p class="mt-1 text-sm text-red-600">{{ getFieldError('email') }}</p>
+          <p class="mt-1 text-sm text-red-600">{{ getFieldError("email") }}</p>
           }
         </div>
 
         <!-- Phone -->
         <div>
-          <label class="block text-sm font-medium text-neutral-700 mb-2">Phone number</label>
+          <label class="block text-sm font-medium text-neutral-700 mb-2"
+            >Phone number</label
+          >
           <input
             type="tel"
             formControlName="phone"
@@ -101,29 +131,35 @@
             [class]="getInputClasses('phone')"
           />
           @if (getFieldError('phone')) {
-            <p class="mt-1 text-sm text-red-600">{{ getFieldError('phone') }}</p>
+          <p class="mt-1 text-sm text-red-600">{{ getFieldError("phone") }}</p>
           }
         </div>
 
         <!-- Company Name (SME only) -->
         @if (selectedUserType() === 'sme') {
-          <div>
-            <label class="block text-sm font-medium text-neutral-700 mb-2">Company name</label>
-            <input
-              type="text"
-              formControlName="companyName"
-              placeholder="Your Company (Pty) Ltd"
-              [class]="getInputClasses('companyName')"
-            />
-            @if (getFieldError('companyName')) {
-              <p class="mt-1 text-sm text-red-600">{{ getFieldError('companyName') }}</p>
-            }
-          </div>
+        <div>
+          <label class="block text-sm font-medium text-neutral-700 mb-2"
+            >Company name</label
+          >
+          <input
+            type="text"
+            formControlName="companyName"
+            placeholder="Your Company (Pty) Ltd"
+            [class]="getInputClasses('companyName')"
+          />
+          @if (getFieldError('companyName')) {
+          <p class="mt-1 text-sm text-red-600">
+            {{ getFieldError("companyName") }}
+          </p>
+          }
+        </div>
         }
 
         <!-- Password -->
         <div>
-          <label class="block text-sm font-medium text-neutral-700 mb-2">Password</label>
+          <label class="block text-sm font-medium text-neutral-700 mb-2"
+            >Password</label
+          >
           <div class="relative">
             <input
               [type]="showPassword() ? 'text' : 'password'"
@@ -136,18 +172,27 @@
               class="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600 transition-colors"
               (click)="togglePasswordVisibility()"
             >
-              <lucide-icon [img]="showPassword() ? EyeOffIcon : EyeIcon" [size]="20" />
+              <lucide-icon
+                [img]="showPassword() ? EyeOffIcon : EyeIcon"
+                [size]="20"
+              />
             </button>
           </div>
           @if (getFieldError('password')) {
-            <p class="mt-1 text-sm text-red-600">{{ getFieldError('password') }}</p>
+          <p class="mt-1 text-sm text-red-600">
+            {{ getFieldError("password") }}
+          </p>
           }
-          <p class="mt-1 text-sm text-neutral-500">Must be at least 8 characters</p>
+          <p class="mt-1 text-sm text-neutral-500">
+            Must be at least 8 characters
+          </p>
         </div>
 
         <!-- Confirm Password -->
         <div>
-          <label class="block text-sm font-medium text-neutral-700 mb-2">Confirm password</label>
+          <label class="block text-sm font-medium text-neutral-700 mb-2"
+            >Confirm password</label
+          >
           <div class="relative">
             <input
               [type]="showConfirmPassword() ? 'text' : 'password'"
@@ -160,19 +205,26 @@
               class="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600 transition-colors"
               (click)="toggleConfirmPasswordVisibility()"
             >
-              <lucide-icon [img]="showConfirmPassword() ? EyeOffIcon : EyeIcon" [size]="20" />
+              <lucide-icon
+                [img]="showConfirmPassword() ? EyeOffIcon : EyeIcon"
+                [size]="20"
+              />
             </button>
           </div>
           @if (getFieldError('confirmPassword')) {
-            <p class="mt-1 text-sm text-red-600">{{ getFieldError('confirmPassword') }}</p>
+          <p class="mt-1 text-sm text-red-600">
+            {{ getFieldError("confirmPassword") }}
+          </p>
           }
         </div>
 
         <!-- Error Message -->
         @if (error()) {
-          <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
-            {{ error() }}
-          </div>
+        <div
+          class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm"
+        >
+          {{ error() }}
+        </div>
         }
 
         <!-- Submit Button -->
@@ -182,23 +234,34 @@
           class="w-full bg-primary-600 hover:bg-primary-700 disabled:bg-primary-300 text-white font-medium py-3 px-4 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 flex items-center justify-center"
         >
           @if (isLoading()) {
-            <div class="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-            <span class="ml-2">Creating account...</span>
+          <div
+            class="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"
+          ></div>
+          <span class="ml-2">Creating account...</span>
           } @else {
-            <span>I confirm. Create my account</span>
-            <!-- <lucide-icon [img]="ArrowRightIcon" [size]="20" class="ml-2" /> -->
+          <span>I confirm. Create my account</span>
+          <!-- <lucide-icon [img]="ArrowRightIcon" [size]="20" class="ml-2" /> -->
           }
         </button>
-
       </form>
 
       <!-- Terms / Privacy Text -->
-      <div class="mt-2 text-justify text-xs text-slate-700"> 
-        Please review our 
-        <a href="/privacy" class="text-slate-700 font-medium hover:text-slate-900">Privacy Policy</a> 
-        and 
-        <a href="/terms" class="text-slate-700 font-medium hover:text-slate-900">Data Protection Policy</a> 
-        before using this platform. By logging in and continuing to use our services, you confirm that you have read, understood, and accepted our Privacy Policy. You also consent to the handling, storage, and sharing of your data strictly in accordance with these policies, and understand that your data will only be used within the platform as outlined.
+      <div class="mt-2 text-justify text-xs text-slate-700">
+        Please review our
+        <a
+          href="/privacy"
+          class="text-slate-700 font-medium hover:text-slate-900"
+          >Privacy Policy</a
+        >
+        and
+        <a href="/terms" class="text-slate-700 font-medium hover:text-slate-900"
+          >Data Protection Policy</a
+        >
+        before using this platform. By logging in and continuing to use our
+        services, you confirm that you have read, understood, and accepted our
+        Privacy Policy. You also consent to the handling, storage, and sharing
+        of your data strictly in accordance with these policies, and understand
+        that your data will only be used within the platform as outlined.
       </div>
     </div>
   </div>
@@ -219,7 +282,9 @@
       />
     </ng-container>
 
-    <div class="absolute inset-0 pointer-events-none bg-gradient-to-t from-black/55 via-black/30 to-transparent"></div>
+    <div
+      class="absolute inset-0 pointer-events-none bg-gradient-to-t from-black/55 via-black/30 to-transparent"
+    ></div>
 
     <div class="absolute left-8 bottom-12 max-w-lg text-white z-30">
       <h2 class="text-3xl md:text-4xl font-serif leading-tight drop-shadow-md">
@@ -233,7 +298,7 @@
         <div class="flex items-center space-x-2">
           <button
             *ngFor="let s of slides(); let idx = index"
-            (click)="selectSlide(idx); stopAutoplay();"
+            (click)="selectSlide(idx); stopAutoplay()"
             [attr.aria-label]="'Go to slide ' + (idx + 1)"
             class="w-3 h-3 rounded-full transform transition-all duration-200"
             [ngClass]="{

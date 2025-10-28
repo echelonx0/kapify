@@ -2,7 +2,19 @@
 import { Component, computed, signal, inject, OnInit } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { LucideAngularModule, Home, User, FileText, DollarSign, Settings, LogOut, Building, ChevronDown, Bell, BookOpen } from 'lucide-angular';
+import {
+  LucideAngularModule,
+  Home,
+  User,
+  FileText,
+  DollarSign,
+  Settings,
+  LogOut,
+  Building,
+  ChevronDown,
+  Bell,
+  BookOpen,
+} from 'lucide-angular';
 import { AuthService } from 'src/app/auth/production.auth.service';
 import { ProfileManagementService } from '../../services/profile-management.service';
 
@@ -10,7 +22,7 @@ interface NavItem {
   label: string;
   icon: any;
   route: string;
-  userTypes: ('sme' | 'funder')[]; 
+  userTypes: ('sme' | 'funder')[];
   badge?: number;
 }
 
@@ -18,7 +30,7 @@ interface NavItem {
   selector: 'sidebar-nav',
   standalone: true,
   imports: [RouterModule, LucideAngularModule, CommonModule],
-  templateUrl: 'sidenav.component.html'
+  templateUrl: 'sidenav.component.html',
 })
 export class SidebarNavComponent implements OnInit {
   private authService = inject(AuthService);
@@ -48,7 +60,7 @@ export class SidebarNavComponent implements OnInit {
     'admin@kapify.com',
     'support@kapify.com',
     'operations@kapify.com',
-    'zivaigwe@gmail.com'
+    'zivaigwe@gmail.com',
     // Add more admin emails as needed
   ];
 
@@ -57,22 +69,58 @@ export class SidebarNavComponent implements OnInit {
   userDisplayName = computed(() => this.profileService.userDisplayName());
 
   isAdminUser = computed(() => {
-    const user = this.currentUser(); 
+    const user = this.currentUser();
     if (!user?.email) return false;
-    
+
     return this.ADMIN_EMAILS.includes(user.email.toLowerCase());
   });
 
   // Navigation items with potential badges
   private navItems: NavItem[] = [
-    { label: 'Home', icon: Home, route: '/dashboard/home', userTypes: ['sme', 'funder'] },
+    {
+      label: 'Home',
+      icon: Home,
+      route: '/dashboard/home',
+      userTypes: ['sme', 'funder'],
+    },
     { label: 'Profile', icon: User, route: '/profile', userTypes: ['sme'] },
-    { label: 'Funding Opportunities', icon: DollarSign, route: '/funding', userTypes: ['sme'] },
-    { label: 'Manage', icon: Building, route: '/dashboard/funder-dashboard', userTypes: ['funder'] },
-    { label: 'Applications', icon: FileText, route: '/applications', userTypes: ['sme'], badge: 2 }, 
-    { label: 'Data Room', icon: FileText, route: '/profile/data-room', userTypes: ['sme', 'funder'] },
-    { label: 'Resources', icon: BookOpen, route: '/dashboard/resources', userTypes: ['sme', 'funder'] },
-  { label: 'Admin Console', icon: Settings, route: '/administrator', userTypes: ['sme', 'funder'] }
+    {
+      label: 'Funding Opportunities',
+      icon: DollarSign,
+      route: '/funding',
+      userTypes: ['sme'],
+    },
+    {
+      label: 'Manage',
+      icon: Building,
+      route: '/dashboard/funder-dashboard',
+      userTypes: ['funder'],
+    },
+    {
+      label: 'Applications',
+      icon: FileText,
+      route: '/applications',
+      userTypes: ['sme'],
+      badge: 2,
+    },
+    {
+      label: 'Data Room',
+      icon: FileText,
+      route: '/profile/data-room',
+      userTypes: ['sme', 'funder'],
+    },
+    {
+      label: 'Resources',
+      icon: BookOpen,
+      route: '/dashboard/resources',
+      userTypes: ['sme', 'funder'],
+    },
+    {
+      label: 'Admin Console',
+      icon: Settings,
+      route: '/administrator',
+      userTypes: ['sme', 'funder'],
+    },
   ];
 
   visibleNavItems = computed(() => {
@@ -80,13 +128,13 @@ export class SidebarNavComponent implements OnInit {
     const userType = user?.userType || 'sme';
     const mappedUserType = this.mapUserTypeForNavigation(userType);
     const isAdmin = this.isAdminUser();
-    
-    return this.navItems.filter(item => {
+
+    return this.navItems.filter((item) => {
       // Show admin route only for admin users
       if (item.route === '/admin') {
         return isAdmin;
       }
-      
+
       // Show other routes based on user type
       return item.userTypes.includes(mappedUserType);
     });
@@ -98,7 +146,7 @@ export class SidebarNavComponent implements OnInit {
       this.profileService.loadProfileData().subscribe({
         error: (error) => {
           console.error('Failed to load profile data:', error);
-        }
+        },
       });
     }
 
@@ -108,18 +156,22 @@ export class SidebarNavComponent implements OnInit {
 
   private setupOnlineStatusDetection() {
     this.isOnline.set(navigator.onLine);
-    
+
     window.addEventListener('online', () => this.isOnline.set(true));
     window.addEventListener('offline', () => this.isOnline.set(false));
   }
 
   private mapUserTypeForNavigation(userType: string): 'sme' | 'funder' {
     switch (userType) {
-      case 'sme': return 'sme';
-      case 'funder': return 'funder';
+      case 'sme':
+        return 'sme';
+      case 'funder':
+        return 'funder';
       case 'admin':
-      case 'consultant': return 'funder';
-      default: return 'sme';
+      case 'consultant':
+        return 'funder';
+      default:
+        return 'sme';
     }
   }
 
@@ -146,7 +198,7 @@ export class SidebarNavComponent implements OnInit {
   }
 
   toggleNotifications() {
-    this.showNotifications.update(current => !current);
+    this.showNotifications.update((current) => !current);
   }
 
   logout() {
@@ -161,6 +213,8 @@ export class SidebarNavComponent implements OnInit {
 
   getUserTypeDisplayName(): string {
     const user = this.currentUser();
-    return user ? this.profileService.getUserTypeDisplayName(user.userType) : '';
+    return user
+      ? this.profileService.getUserTypeDisplayName(user.userType)
+      : '';
   }
 }

@@ -1,0 +1,110 @@
+<div class="gradient-border">
+  <div class="gradient-content">
+    <div class="flex items-start justify-between mb-4">
+      <h2 class="text-lg font-semibold text-gray-900 flex items-center">
+        <lucide-icon
+          [img]="ZapIcon"
+          [size]="20"
+          class="text-slate-600 mr-2"
+        ></lucide-icon>
+        Quick Evaluation
+      </h2>
+      <div class="flex items-center space-x-2">
+        <span class="text-xs font-medium" [class]="getConfidenceColorClass()">
+          {{ overallConfidence() }}% Confidence
+        </span>
+        <div class="w-16 h-1 bg-gray-200 rounded-full">
+          <div
+            class="h-1 rounded-full transition-all duration-500"
+            [class]="getConfidenceBarClass()"
+            [style.width.%]="overallConfidence()"
+          ></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Key Metrics -->
+    <div class="grid grid-cols-3 gap-4 mb-4">
+      <div
+        class="metric-card rounded-lg p-4"
+        [class]="getOverallScoreCardClass()"
+      >
+        <div class="text-2xl font-bold" [class]="getOverallScoreTextClass()">
+          {{ overallScore() }}/10
+        </div>
+        <div class="text-sm font-medium text-gray-700">Overall Score</div>
+        <div class="text-xs text-gray-500 mt-1">
+          {{ getScoreDescription() }}
+        </div>
+      </div>
+
+      <div class="metric-card rounded-lg p-4" [class]="getRiskCardClass()">
+        <div class="text-2xl font-bold" [class]="getRiskTextClass()">
+          {{ riskAssessment().level | titlecase }}
+        </div>
+        <div class="text-sm font-medium text-gray-700">Risk Level</div>
+        <div class="text-xs text-gray-500 mt-1">
+          {{ getRiskDescription() }}
+        </div>
+      </div>
+
+      <div class="metric-card rounded-lg p-4" [class]="getMarketFitCardClass()">
+        <div class="text-2xl font-bold" [class]="getMarketFitTextClass()">
+          {{ marketFit().score }}%
+        </div>
+        <div class="text-sm font-medium text-gray-700">Market Fit</div>
+        <div class="text-xs text-gray-500 mt-1">
+          {{ marketFit().potential }}
+        </div>
+      </div>
+    </div>
+
+    <!-- AI Key Insight -->
+    <div class="border-l-4 p-4 rounded-r-lg" [class]="getInsightBorderClass()">
+      <p class="font-medium mb-2" [class]="getInsightTitleClass()">
+        <lucide-icon
+          [img]="getInsightIcon()"
+          [size]="16"
+          class="inline mr-1"
+        ></lucide-icon>
+        Key AI Insight
+      </p>
+      <p class="text-sm leading-relaxed" [class]="getInsightTextClass()">
+        {{ keyInsight().message }}
+      </p>
+      @if (keyInsight().confidence < 70) {
+      <p class="text-xs mt-2 text-amber-600">
+        <lucide-icon
+          [img]="AlertTriangleIcon"
+          [size]="12"
+          class="inline mr-1"
+        ></lucide-icon>
+        Lower confidence - manual review recommended
+      </p>
+      }
+    </div>
+
+    <!-- Additional Insights -->
+    @if (additionalInsights().length > 0) {
+    <div class="mt-4 space-y-2">
+      <h4 class="text-sm font-medium text-gray-700 mb-2">
+        Additional Analysis
+      </h4>
+      @for (insight of additionalInsights(); track insight.message) {
+      <div class="flex items-start space-x-2 text-sm">
+        <lucide-icon
+          [img]="getInsightTypeIcon(insight.type)"
+          [size]="14"
+          [class]="getInsightTypeClass(insight.type)"
+        >
+        </lucide-icon>
+        <span class="text-gray-700">{{ insight.message }}</span>
+        <span class="text-xs text-gray-500 ml-auto">
+          {{ insight.confidence }}%
+        </span>
+      </div>
+      }
+    </div>
+    }
+  </div>
+</div>

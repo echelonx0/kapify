@@ -1,9 +1,19 @@
 import { Injectable, signal, computed, inject, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { Observable, from, of, throwError, Subject } from 'rxjs';
-import { map, catchError, timeout, tap, finalize, takeUntil } from 'rxjs/operators';
+import {
+  map,
+  catchError,
+  timeout,
+  tap,
+  finalize,
+  takeUntil,
+} from 'rxjs/operators';
 import { SharedSupabaseService } from '../shared/services/shared-supabase.service';
-import { RegistrationTransactionService, RegistrationTransactionResult } from '../shared/services/registration-transaction.service';
+import {
+  RegistrationTransactionService,
+  RegistrationTransactionResult,
+} from '../shared/services/registration-transaction.service';
 import { Session, User } from '@supabase/supabase-js';
 
 export interface SignUpData {
@@ -70,7 +80,7 @@ interface LoadingState {
  * - Proper cleanup on destroy
  */
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class AuthService implements OnDestroy {
   private router = inject(Router);
@@ -86,7 +96,7 @@ export class AuthService implements OnDestroy {
     registration: false,
     login: false,
     initialization: false,
-    sessionUpdate: false
+    sessionUpdate: false,
   });
 
   // Public signals for component consumption
@@ -101,7 +111,12 @@ export class AuthService implements OnDestroy {
 
   isLoading = computed(() => {
     const state = this.loadingState();
-    return state.registration || state.login || state.initialization || state.sessionUpdate;
+    return (
+      state.registration ||
+      state.login ||
+      state.initialization ||
+      state.sessionUpdate
+    );
   });
 
   // Expose SharedSupabaseService session$ for components that need reactive session
@@ -109,10 +124,10 @@ export class AuthService implements OnDestroy {
   session$ = this.supabaseService.session$;
 
   // Observable interfaces for legacy/reactive code
-  user$ = new Observable<UserProfile | null>(subscriber => {
+  user$ = new Observable<UserProfile | null>((subscriber) => {
     const subscription = this.supabaseService.session$
       .pipe(takeUntil(this.destroy$))
-      .subscribe(async session => {
+      .subscribe(async (session) => {
         if (session?.user) {
           const profile = await this.buildUserProfile(session.user);
           subscriber.next(profile);
@@ -124,7 +139,7 @@ export class AuthService implements OnDestroy {
   });
 
   isAuthenticated$ = this.session$.pipe(
-    map(session => !!session?.user),
+    map((session) => !!session?.user),
     takeUntil(this.destroy$)
   );
 
@@ -153,27 +168,28 @@ export class AuthService implements OnDestroy {
       }
 
       // Subscribe to future session changes
-      this.supabaseService.onAuthStateChange(async (event, session) => {
-        try {
-          console.log(`🔐 Auth state changed: ${event}`);
+      this.supabaseService
+        .onAuthStateChange(async (event, session) => {
+          try {
+            console.log(`🔐 Auth state changed: ${event}`);
 
-          if (session?.user) {
-            await this.establishUserSession(session);
-          } else {
-            this.clearAuthState();
-            if (event === 'SIGNED_OUT') {
-              this.router.navigate(['/auth/login']);
+            if (session?.user) {
+              await this.establishUserSession(session);
+            } else {
+              this.clearAuthState();
+              if (event === 'SIGNED_OUT') {
+                this.router.navigate(['/auth/login']);
+              }
+            }
+          } catch (error: any) {
+            console.error('Error handling auth state change:', error);
+            // Don't clear state on transient errors
+            if (!this.isTransientError(error)) {
+              this.clearAuthState();
             }
           }
-        } catch (error: any) {
-          console.error('Error handling auth state change:', error);
-          // Don't clear state on transient errors
-          if (!this.isTransientError(error)) {
-            this.clearAuthState();
-          }
-        }
-      }).unsubscribe(); // Unsubscribe from the returned subscription (onAuthStateChange handles its own lifecycle)
-
+        })
+        .unsubscribe(); // Unsubscribe from the returned subscription (onAuthStateChange handles its own lifecycle)
     } catch (error: any) {
       console.error('❌ Auth initialization failed:', error);
       this.clearAuthState();
@@ -200,33 +216,38 @@ export class AuthService implements OnDestroy {
         user: null,
         error: validationError,
         organizationCreated: false,
-        success: false
+        success: false,
       });
     }
 
-    return this.registrationTransaction.executeRegistrationTransaction(credentials).pipe(
-      timeout(60000),
-      tap(result => {
-        if (result.success && result.user) {
-          console.log('✅ Registration transaction completed');
-          this.updateAuthStateFromTransaction(result);
-        }
-      }),
-      map(result => this.mapTransactionResultToAuthResult(result)),
-      catchError(error => {
-        console.error('❌ Registration failed:', error);
-        return of({
-          user: null,
-          error: error?.error || error?.message || 'Registration failed. Please try again.',
-          organizationCreated: false,
-          success: false
-        });
-      }),
-      finalize(() => {
-        this.updateLoadingState({ registration: false });
-      }),
-      takeUntil(this.destroy$)
-    );
+    return this.registrationTransaction
+      .executeRegistrationTransaction(credentials)
+      .pipe(
+        timeout(60000),
+        tap((result) => {
+          if (result.success && result.user) {
+            console.log('✅ Registration transaction completed');
+            this.updateAuthStateFromTransaction(result);
+          }
+        }),
+        map((result) => this.mapTransactionResultToAuthResult(result)),
+        catchError((error) => {
+          console.error('❌ Registration failed:', error);
+          return of({
+            user: null,
+            error:
+              error?.error ||
+              error?.message ||
+              'Registration failed. Please try again.',
+            organizationCreated: false,
+            success: false,
+          });
+        }),
+        finalize(() => {
+          this.updateLoadingState({ registration: false });
+        }),
+        takeUntil(this.destroy$)
+      );
   }
 
   /**
@@ -238,19 +259,21 @@ export class AuthService implements OnDestroy {
 
     this.updateLoadingState({ login: true });
 
-    return from(this.performLogin(credentials.email, credentials.password)).pipe(
+    return from(
+      this.performLogin(credentials.email, credentials.password)
+    ).pipe(
       timeout(30000),
-      tap(result => {
+      tap((result) => {
         if (result.success) {
           console.log('✅ Login completed successfully');
         }
       }),
-      catchError(error => {
+      catchError((error) => {
         console.error('❌ Login failed:', error);
         return of({
           user: null,
           error: error?.message || 'Login failed. Please try again.',
-          success: false
+          success: false,
         });
       }),
       finalize(() => {
@@ -263,13 +286,16 @@ export class AuthService implements OnDestroy {
   /**
    * Perform the actual login
    */
-  private async performLogin(email: string, password: string): Promise<AuthOperationResult> {
+  private async performLogin(
+    email: string,
+    password: string
+  ): Promise<AuthOperationResult> {
     try {
       const loginResult = await Promise.race([
         this.supabaseService.auth.signInWithPassword({ email, password }),
         new Promise<never>((_, reject) =>
           setTimeout(() => reject(new Error('Login timeout')), 25000)
-        )
+        ),
       ]);
 
       const { data, error } = loginResult;
@@ -293,7 +319,7 @@ export class AuthService implements OnDestroy {
         error: null,
         organizationId: userProfile.organizationId,
         organizationCreated: !!userProfile.organizationId,
-        success: true
+        success: true,
       };
     } catch (error: any) {
       console.error('Login operation failed:', error);
@@ -313,7 +339,10 @@ export class AuthService implements OnDestroy {
     if (message.includes('Email not confirmed')) {
       return 'Please check your email and click the confirmation link before logging in.';
     }
-    if (message.includes('Too many requests') || message.includes('rate limit')) {
+    if (
+      message.includes('Too many requests') ||
+      message.includes('rate limit')
+    ) {
       return 'Too many login attempts. Please wait a few minutes before trying again.';
     }
     if (message.includes('User not found')) {
@@ -334,7 +363,9 @@ export class AuthService implements OnDestroy {
   /**
    * Validate registration input
    */
-  private validateRegistrationInput(credentials: RegisterRequest): string | null {
+  private validateRegistrationInput(
+    credentials: RegisterRequest
+  ): string | null {
     if (!credentials.agreeToTerms) {
       return 'You must accept the terms and conditions to proceed';
     }
@@ -357,7 +388,9 @@ export class AuthService implements OnDestroy {
   /**
    * Establish user session from registration transaction
    */
-  private updateAuthStateFromTransaction(result: RegistrationTransactionResult): void {
+  private updateAuthStateFromTransaction(
+    result: RegistrationTransactionResult
+  ): void {
     if (result.user && result.organizationId) {
       const userProfile = result.user;
       userProfile.organizationId = result.organizationId;
@@ -369,13 +402,15 @@ export class AuthService implements OnDestroy {
   /**
    * Map transaction result to auth operation result
    */
-  private mapTransactionResultToAuthResult(result: RegistrationTransactionResult): AuthOperationResult {
+  private mapTransactionResultToAuthResult(
+    result: RegistrationTransactionResult
+  ): AuthOperationResult {
     return {
       user: result.success ? result.user : null,
-      error: result.success ? null : (result.error || 'Registration failed'),
+      error: result.success ? null : result.error || 'Registration failed',
       organizationId: result.organizationId,
       organizationCreated: !!result.organizationId,
-      success: result.success
+      success: result.success,
     };
   }
 
@@ -408,7 +443,8 @@ export class AuthService implements OnDestroy {
       // Get user data from users table
       const { data: userData, error } = await this.supabaseService
         .from('users')
-        .select(`
+        .select(
+          `
           *,
           user_profiles (
             profile_step,
@@ -416,7 +452,8 @@ export class AuthService implements OnDestroy {
             avatar_url,
             is_verified
           )
-        `)
+        `
+        )
         .eq('id', user.id)
         .single();
 
@@ -436,11 +473,12 @@ export class AuthService implements OnDestroy {
         phone: userData.phone,
         userType: userData.user_type,
         profileStep: userData.user_profiles?.[0]?.profile_step || 0,
-        completionPercentage: userData.user_profiles?.[0]?.completion_percentage || 0,
+        completionPercentage:
+          userData.user_profiles?.[0]?.completion_percentage || 0,
         avatarUrl: userData.user_profiles?.[0]?.avatar_url,
         isVerified: userData.user_profiles?.[0]?.is_verified || false,
         createdAt: userData.created_at,
-        organizationId
+        organizationId,
       };
     } catch (error) {
       console.error('Error building user profile:', error);
@@ -464,14 +502,16 @@ export class AuthService implements OnDestroy {
       completionPercentage: 0,
       isVerified: false,
       createdAt: user.created_at,
-      organizationId: undefined
+      organizationId: undefined,
     };
   }
 
   /**
    * Get user's organization ID
    */
-  private async getUserOrganizationId(userId: string): Promise<string | undefined> {
+  private async getUserOrganizationId(
+    userId: string
+  ): Promise<string | undefined> {
     try {
       const { data, error } = await this.supabaseService
         .from('organization_users')
@@ -517,7 +557,7 @@ export class AuthService implements OnDestroy {
   canActivateRoute(): Observable<boolean> {
     // If still initializing, wait for completion
     if (this.isInitializing()) {
-      return new Observable<boolean>(subscriber => {
+      return new Observable<boolean>((subscriber) => {
         const checkAuth = () => {
           if (!this.isInitializing()) {
             subscriber.next(this.isAuthenticated());
@@ -546,8 +586,12 @@ export class AuthService implements OnDestroy {
     }
 
     try {
-      const recoveryCheck = await this.registrationTransaction.checkUserNeedsRecovery(user.id);
-      return recoveryCheck.needsRecovery && recoveryCheck.missingComponents.includes('organization');
+      const recoveryCheck =
+        await this.registrationTransaction.checkUserNeedsRecovery(user.id);
+      return (
+        recoveryCheck.needsRecovery &&
+        recoveryCheck.missingComponents.includes('organization')
+      );
     } catch (error) {
       console.error('Error checking organization recovery needs:', error);
       return false;
@@ -557,7 +601,10 @@ export class AuthService implements OnDestroy {
   /**
    * Recover organization for existing user
    */
-  recoverUserOrganization(): Observable<{ success: boolean; organizationId?: string }> {
+  recoverUserOrganization(): Observable<{
+    success: boolean;
+    organizationId?: string;
+  }> {
     const user = this.userSubject();
     if (!user) {
       return throwError(() => new Error('No authenticated user'));
@@ -577,47 +624,56 @@ export class AuthService implements OnDestroy {
       password: '',
       confirmPassword: '',
       userType: user.userType as 'sme' | 'funder',
-      agreeToTerms: true
+      agreeToTerms: true,
     };
 
-    return this.registrationTransaction.executeRegistrationTransaction(credentials).pipe(
-      map(result => ({
-        success: result.success,
-        organizationId: result.organizationId
-      })),
-      tap(result => {
-        if (result.success && result.organizationId) {
-          const updatedUser = { ...user, organizationId: result.organizationId };
-          this.userSubject.set(updatedUser);
-          console.log('✅ User organization recovered:', result.organizationId);
-        }
-      }),
-      catchError(error => {
-        console.error('❌ Organization recovery failed:', error);
-        return of({ success: false });
-      }),
-      takeUntil(this.destroy$)
-    );
+    return this.registrationTransaction
+      .executeRegistrationTransaction(credentials)
+      .pipe(
+        map((result) => ({
+          success: result.success,
+          organizationId: result.organizationId,
+        })),
+        tap((result) => {
+          if (result.success && result.organizationId) {
+            const updatedUser = {
+              ...user,
+              organizationId: result.organizationId,
+            };
+            this.userSubject.set(updatedUser);
+            console.log(
+              '✅ User organization recovered:',
+              result.organizationId
+            );
+          }
+        }),
+        catchError((error) => {
+          console.error('❌ Organization recovery failed:', error);
+          return of({ success: false });
+        }),
+        takeUntil(this.destroy$)
+      );
   }
-// ===================================
-// ORGANIZATION UTILITIES
-// ===================================
 
-/**
- * Check if user has an organization
- */
-userHasOrganization(): boolean {
-  const user = this.userSubject();
-  return !!(user?.organizationId);
-}
+  // ===================================
+  // ORGANIZATION UTILITIES
+  // ===================================
 
-/**
- * Get current user's organization ID
- */
-getCurrentUserOrganizationId(): string | null {
-  const user = this.userSubject();
-  return user?.organizationId || null;
-}
+  /**
+   * Check if user has an organization
+   */
+  userHasOrganization(): boolean {
+    const user = this.userSubject();
+    return !!user?.organizationId;
+  }
+
+  /**
+   * Get current user's organization ID
+   */
+  getCurrentUserOrganizationId(): string | null {
+    const user = this.userSubject();
+    return user?.organizationId || null;
+  }
   // ===================================
   // LEGACY COMPATIBILITY METHODS
   // ===================================
@@ -634,7 +690,7 @@ getCurrentUserOrganizationId(): string | null {
       password: credentials.password,
       confirmPassword: credentials.password,
       userType: credentials.userType as 'sme' | 'funder',
-      agreeToTerms: true
+      agreeToTerms: true,
     };
 
     return this.register(registerRequest);
@@ -677,7 +733,7 @@ getCurrentUserOrganizationId(): string | null {
       registration: false,
       login: false,
       initialization: false,
-      sessionUpdate: false
+      sessionUpdate: false,
     });
   }
 
@@ -686,9 +742,11 @@ getCurrentUserOrganizationId(): string | null {
    */
   private isTransientError(error: any): boolean {
     const message = error?.message?.toLowerCase() || '';
-    return message.includes('lock') ||
-           message.includes('navigatorlockacquiretimeouterror') ||
-           message.includes('timeout');
+    return (
+      message.includes('lock') ||
+      message.includes('navigatorlockacquiretimeouterror') ||
+      message.includes('timeout')
+    );
   }
 
   /**

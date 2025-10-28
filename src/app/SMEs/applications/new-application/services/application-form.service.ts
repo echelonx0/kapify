@@ -2,7 +2,6 @@
 
 import { Injectable, signal, computed } from '@angular/core';
 import { ApplicationFormData } from '../models/application-form.model';
- 
 
 @Injectable()
 export class ApplicationFormService {
@@ -10,7 +9,7 @@ export class ApplicationFormService {
     requestedAmount: '',
     purposeStatement: '',
     useOfFunds: '',
-    coverStatement: undefined
+    coverStatement: undefined,
   });
 
   // Public readonly signals
@@ -36,38 +35,38 @@ export class ApplicationFormService {
 
   // Update methods
   updateRequestedAmount(amount: string): void {
-    this.formDataSignal.update(current => ({
+    this.formDataSignal.update((current) => ({
       ...current,
-      requestedAmount: amount
+      requestedAmount: amount,
     }));
   }
 
   updatePurposeStatement(statement: string): void {
-    this.formDataSignal.update(current => ({
+    this.formDataSignal.update((current) => ({
       ...current,
-      purposeStatement: statement
+      purposeStatement: statement,
     }));
   }
 
   updateUseOfFunds(useOfFunds: string): void {
-    this.formDataSignal.update(current => ({
+    this.formDataSignal.update((current) => ({
       ...current,
-      useOfFunds: useOfFunds
+      useOfFunds: useOfFunds,
     }));
   }
 
   updateCoverStatement(file: File | undefined): void {
-    this.formDataSignal.update(current => ({
+    this.formDataSignal.update((current) => ({
       ...current,
-      coverStatement: file
+      coverStatement: file,
     }));
   }
 
   // Pre-fill from route or draft
   prefillForm(data: Partial<ApplicationFormData>): void {
-    this.formDataSignal.update(current => ({
+    this.formDataSignal.update((current) => ({
       ...current,
-      ...data
+      ...data,
     }));
   }
 
@@ -77,14 +76,12 @@ export class ApplicationFormService {
       requestedAmount: '',
       purposeStatement: '',
       useOfFunds: '',
-      coverStatement: undefined
+      coverStatement: undefined,
     });
   }
 
   // Get plain object for saving
   getFormDataForSave(): ApplicationFormData {
-    return { ...this.formDataSignal(),
-     
-     };
+    return { ...this.formDataSignal() };
   }
 }

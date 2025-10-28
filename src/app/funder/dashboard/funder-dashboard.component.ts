@@ -1,12 +1,19 @@
-import { Component, signal, computed, OnInit, OnDestroy, inject } from '@angular/core';
+import {
+  Component,
+  signal,
+  computed,
+  OnInit,
+  OnDestroy,
+  inject,
+} from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { Subject, takeUntil } from 'rxjs';
-import { 
-  LucideAngularModule, 
-  Plus, 
-  TrendingUp, 
-  Users, 
+import {
+  LucideAngularModule,
+  Plus,
+  TrendingUp,
+  Users,
   DollarSign,
   Building2,
   AlertCircle,
@@ -19,21 +26,27 @@ import {
   Settings,
   Home,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
 } from 'lucide-angular';
 import { UiButtonComponent } from '../../shared/components';
-import { FunderOnboardingService, OnboardingState } from '../services/funder-onboarding.service';
+import {
+  FunderOnboardingService,
+  OnboardingState,
+} from '../services/funder-onboarding.service';
 import { OpportunityManagementService } from '../services/opportunity-management.service';
 import { FunderDocumentAnalysisComponent } from 'src/app/ai/document-analysis/funder-document-analysis.component';
-import { ActionEvent, OrganizationStatusSidebarComponent } from '../components/status-sidebar/status-sidebar.component';
+import {
+  ActionEvent,
+  OrganizationStatusSidebarComponent,
+} from '../components/status-sidebar/status-sidebar.component';
 import { PublicProfile } from '../models/public-profile.models';
-import { PublicProfileService } from '../services/public-profile.service'; 
+import { PublicProfileService } from '../services/public-profile.service';
 import { FunderApplicationsComponent } from '../application-details/funder-applications/funder-applications.component';
 import { DraftManagementService } from '../services/draft-management.service';
 import { SettingsComponent } from 'src/app/dashboard/settings/settings.component';
 import { OpportunityActionModalComponent } from 'src/app/shared/components/modal/app-modal.component';
 import { ActionModalService } from 'src/app/shared/components/modal/modal.service';
- 
+
 type TabId = 'overview' | 'opportunities' | 'applications' | 'settings';
 
 interface Tab {
@@ -54,10 +67,10 @@ interface Tab {
     OrganizationStatusSidebarComponent,
     SettingsComponent,
     FunderApplicationsComponent,
-    OpportunityActionModalComponent
+    OpportunityActionModalComponent,
   ],
   templateUrl: 'dashboard.component.html',
-  styleUrl: 'funder-dashboard.component.css'
+  styleUrl: 'funder-dashboard.component.css',
 })
 export class FunderDashboardComponent implements OnInit, OnDestroy {
   private router = inject(Router);
@@ -67,36 +80,36 @@ export class FunderDashboardComponent implements OnInit, OnDestroy {
   private publicProfileService = inject(PublicProfileService);
   protected draftService = inject(DraftManagementService);
   private actionModalService = inject(ActionModalService);
-  
+
   // State
   activeTab = signal<TabId>('overview');
   isDocumentAnalysisExpanded = signal(true);
-  
+
   tabs: Tab[] = [
     {
       id: 'overview',
       label: 'Overview',
       icon: Home,
-      description: 'Dashboard overview and key metrics'
+      description: 'Dashboard overview and key metrics',
     },
     {
       id: 'opportunities',
       label: 'Opportunities',
       icon: FolderOpen,
-      description: 'Manage your funding opportunities'
+      description: 'Manage your funding opportunities',
     },
     {
       id: 'applications',
       label: 'Applications',
       icon: FileText,
-      description: 'Review and manage applications'
+      description: 'Review and manage applications',
     },
     {
       id: 'settings',
       label: 'Settings',
       icon: Settings,
-      description: 'Organization settings and preferences'
-    }
+      description: 'Organization settings and preferences',
+    },
   ];
 
   // Icons
@@ -125,7 +138,9 @@ export class FunderDashboardComponent implements OnInit, OnDestroy {
   hasPublicProfile = computed(() => !!this.publicProfile());
   publicProfileUrl = computed(() => {
     const profile = this.publicProfile();
-    return profile?.slug ? `${window.location.origin}/funder/${profile.slug}` : null;
+    return profile?.slug
+      ? `${window.location.origin}/funder/${profile.slug}`
+      : null;
   });
 
   ngOnInit() {
@@ -173,7 +188,8 @@ export class FunderDashboardComponent implements OnInit, OnDestroy {
   }
 
   startFreshOpportunity() {
-    this.draftService.checkDraftAndProceed()
+    this.draftService
+      .checkDraftAndProceed()
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (action) => {
@@ -192,13 +208,18 @@ export class FunderDashboardComponent implements OnInit, OnDestroy {
         error: (error) => {
           console.error('Error checking draft:', error);
           this.navigateToCreateOpportunity();
-        }
+        },
       });
   }
 
   deleteDraft() {
-    if (confirm('Are you sure you want to delete your draft? This action cannot be undone.')) {
-      this.draftService.clearAllDrafts()
+    if (
+      confirm(
+        'Are you sure you want to delete your draft? This action cannot be undone.'
+      )
+    ) {
+      this.draftService
+        .clearAllDrafts()
         .pipe(takeUntil(this.destroy$))
         .subscribe({
           next: () => {
@@ -207,7 +228,7 @@ export class FunderDashboardComponent implements OnInit, OnDestroy {
           error: (error) => {
             console.error('Failed to delete draft:', error);
             alert('Failed to delete draft. Please try again.');
-          }
+          },
         });
     }
   }
@@ -221,7 +242,8 @@ export class FunderDashboardComponent implements OnInit, OnDestroy {
   }
 
   private handleCreateOpportunity() {
-    this.draftService.checkDraftAndProceed()
+    this.draftService
+      .checkDraftAndProceed()
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (action) => {
@@ -240,12 +262,13 @@ export class FunderDashboardComponent implements OnInit, OnDestroy {
         error: (error) => {
           console.error('Error in create opportunity flow:', error);
           this.navigateToCreateOpportunity();
-        }
+        },
       });
   }
 
   private clearDraftAndStartFresh() {
-    this.draftService.clearAllDrafts()
+    this.draftService
+      .clearAllDrafts()
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => {
@@ -254,7 +277,7 @@ export class FunderDashboardComponent implements OnInit, OnDestroy {
         error: (error) => {
           console.error('Failed to clear draft:', error);
           this.navigateToCreateOpportunity();
-        }
+        },
       });
   }
 
@@ -270,7 +293,8 @@ export class FunderDashboardComponent implements OnInit, OnDestroy {
   private loadPublicProfile() {
     const organizationId = this.onboardingState()?.organization?.id;
     if (organizationId) {
-      this.publicProfileService.loadOrganizationProfile(organizationId)
+      this.publicProfileService
+        .loadOrganizationProfile(organizationId)
         .pipe(takeUntil(this.destroy$))
         .subscribe({
           next: (profile) => {
@@ -278,7 +302,7 @@ export class FunderDashboardComponent implements OnInit, OnDestroy {
           },
           error: (error) => {
             console.log('No public profile found or error loading:', error);
-          }
+          },
         });
     }
   }
@@ -321,19 +345,19 @@ export class FunderDashboardComponent implements OnInit, OnDestroy {
   private setupSubscriptions() {
     this.onboardingService.onboardingState$
       .pipe(takeUntil(this.destroy$))
-      .subscribe(state => {
+      .subscribe((state) => {
         this.onboardingState.set(state);
       });
 
     this.managementService.analytics$
       .pipe(takeUntil(this.destroy$))
-      .subscribe(analytics => {
+      .subscribe((analytics) => {
         this.analytics.set(analytics);
       });
 
     this.managementService.opportunities$
       .pipe(takeUntil(this.destroy$))
-      .subscribe(opportunities => {
+      .subscribe((opportunities) => {
         this.recentOpportunities.set(opportunities.slice(0, 5));
       });
   }
@@ -344,31 +368,26 @@ export class FunderDashboardComponent implements OnInit, OnDestroy {
   }
 
   viewOpportunity(opportunityId: string) {
-    this.router.navigate([
-      '/funder/opportunities',
-      opportunityId,
-     
-    ]);
+    this.router.navigate(['/funder/opportunities', opportunityId]);
   }
 
-    manageApplications(opportunityId: string) {
+  manageApplications(opportunityId: string) {
     this.router.navigate([
       '/funder/opportunities',
       opportunityId,
-      'applications'
+      'applications',
     ]);
   }
 
   editOpportunity(opportunityId: string) {
-    this.router.navigate([
-      '/funder/opportunities/edit',
-      opportunityId
-    ]);
+    this.router.navigate(['/funder/opportunities/edit', opportunityId]);
   }
 
   // UPDATED: Use ActionModalService instead of ViewChild
   deleteOpportunity(opportunityId: string) {
-    const opportunity = this.recentOpportunities().find(o => o.id === opportunityId);
+    const opportunity = this.recentOpportunities().find(
+      (o) => o.id === opportunityId
+    );
     if (!opportunity) return;
 
     this.actionModalService.showDelete(
@@ -382,17 +401,18 @@ export class FunderDashboardComponent implements OnInit, OnDestroy {
         actionType: 'delete',
         opportunityTitle: opportunity.title,
         hasApplications: opportunity.currentApplications > 0,
-        applicationCount: opportunity.currentApplications
+        applicationCount: opportunity.currentApplications,
       },
       {
         onConfirm: () => this.performDelete(opportunityId),
-        onCancel: () => this.actionModalService.close()
+        onCancel: () => this.actionModalService.close(),
       }
     );
   }
 
   private performDelete(opportunityId: string) {
-    this.managementService.deleteOpportunity(opportunityId)
+    this.managementService
+      .deleteOpportunity(opportunityId)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (result) => {
@@ -403,12 +423,14 @@ export class FunderDashboardComponent implements OnInit, OnDestroy {
           console.error('Delete failed:', error);
           const errorMsg = this.extractErrorMessage(error);
           this.actionModalService.setError(errorMsg);
-        }
+        },
       });
   }
 
   duplicateOpportunity(opportunityId: string) {
-    const opportunity = this.recentOpportunities().find(o => o.id === opportunityId);
+    const opportunity = this.recentOpportunities().find(
+      (o) => o.id === opportunityId
+    );
     if (!opportunity) return;
 
     this.actionModalService.showDuplicate(opportunity.title);
@@ -416,17 +438,18 @@ export class FunderDashboardComponent implements OnInit, OnDestroy {
     this.actionModalService.open(
       {
         actionType: 'duplicate',
-        opportunityTitle: opportunity.title
+        opportunityTitle: opportunity.title,
       },
       {
         onConfirm: () => this.performDuplicate(opportunityId),
-        onCancel: () => this.actionModalService.close()
+        onCancel: () => this.actionModalService.close(),
       }
     );
   }
 
   private performDuplicate(opportunityId: string) {
-    this.managementService.duplicateOpportunity(opportunityId)
+    this.managementService
+      .duplicateOpportunity(opportunityId)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (result) => {
@@ -434,14 +457,14 @@ export class FunderDashboardComponent implements OnInit, OnDestroy {
           this.actionModalService.close();
           this.router.navigate([
             '/funder/opportunities/edit',
-            result.newOpportunityId
+            result.newOpportunityId,
           ]);
         },
         error: (error) => {
           console.error('Duplicate failed:', error);
           const errorMsg = this.extractErrorMessage(error);
           this.actionModalService.setError(errorMsg);
-        }
+        },
       });
   }
 
@@ -449,10 +472,10 @@ export class FunderDashboardComponent implements OnInit, OnDestroy {
     if (typeof error === 'string') {
       return error;
     }
-    
+
     if (error.message) {
       const msg = error.message;
-      
+
       if (msg.includes('invalid input syntax for type uuid')) {
         return 'Failed to create opportunity. Please try again.';
       }
@@ -465,14 +488,14 @@ export class FunderDashboardComponent implements OnInit, OnDestroy {
       if (msg.includes('not authenticated')) {
         return 'Your session has expired. Please log in again.';
       }
-      
+
       return msg
         .replace(/Error: /g, '')
         .replace(/at _/g, '')
         .split(' at ')[0]
         .trim();
     }
-    
+
     return 'An error occurred. Please try again.';
   }
 
@@ -481,14 +504,15 @@ export class FunderDashboardComponent implements OnInit, OnDestroy {
   }
 
   improveProfile() {
-    this.router.navigate(['/funder/onboarding'], { 
-      fragment: 'verification' 
+    this.router.navigate(['/funder/onboarding'], {
+      fragment: 'verification',
     });
   }
 
   // Helper methods
   getActiveOpportunitiesCount(): number {
-    return this.recentOpportunities().filter(opp => opp.status === 'active').length;
+    return this.recentOpportunities().filter((opp) => opp.status === 'active')
+      .length;
   }
 
   formatStatus(status: string): string {
@@ -496,7 +520,7 @@ export class FunderDashboardComponent implements OnInit, OnDestroy {
       draft: 'Draft',
       active: 'Active',
       paused: 'Paused',
-      closed: 'Closed'
+      closed: 'Closed',
     };
     return statuses[status] || status;
   }
@@ -506,7 +530,7 @@ export class FunderDashboardComponent implements OnInit, OnDestroy {
       style: 'currency',
       currency: 'ZAR',
       minimumFractionDigits: 0,
-      maximumFractionDigits: 0
+      maximumFractionDigits: 0,
     }).format(amount);
   }
 
@@ -516,31 +540,32 @@ export class FunderDashboardComponent implements OnInit, OnDestroy {
 
   handleOrganizationAction(event: ActionEvent) {
     console.log('Organization action:', event);
-    
+
     switch (event.type) {
       case 'complete_setup':
         this.completeOnboarding();
         break;
-      
+
       case 'get_verified':
         this.requestVerification();
         break;
-      
+
       case 'edit_organization':
         this.editOrganization();
         break;
-      
+
       case 'manage_public_profile':
         this.managePublicProfile();
         break;
-      
+
       default:
         console.warn('Unknown organization action:', event.type);
     }
   }
 
   private requestVerification() {
-    this.onboardingService.requestVerification()
+    this.onboardingService
+      .requestVerification()
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (result) => {
@@ -548,7 +573,7 @@ export class FunderDashboardComponent implements OnInit, OnDestroy {
         },
         error: (error) => {
           console.error('Verification request failed:', error);
-        }
+        },
       });
   }
 

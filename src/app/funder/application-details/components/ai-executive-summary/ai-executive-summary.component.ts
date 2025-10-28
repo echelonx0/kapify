@@ -1,19 +1,19 @@
 // src/app/funder/components/ai-executive-summary/ai-executive-summary.component.ts
 import { Component, Input, computed, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { 
-  LucideAngularModule, 
-  Zap, 
-  TrendingUp, 
-  Shield, 
+import {
+  LucideAngularModule,
+  Zap,
+  TrendingUp,
+  Shield,
   Target,
   AlertTriangle,
   CheckCircle,
-  BarChart3
-} from 'lucide-angular';  
+  BarChart3,
+} from 'lucide-angular';
 import { FundingApplication } from 'src/app/SMEs/models/application.models';
 import { FundingOpportunity } from 'src/app/funder/create-opportunity/shared/funding.interfaces';
- 
+
 interface AIInsight {
   type: 'positive' | 'negative' | 'neutral';
   message: string;
@@ -35,132 +35,9 @@ interface MarketFit {
 @Component({
   selector: 'app-ai-executive-summary',
   standalone: true,
-  imports: [
-    CommonModule,
-    LucideAngularModule
-  ],
-  template: `
-    <div class="gradient-border">
-      <div class="gradient-content">
-        <div class="flex items-start justify-between mb-4">
-          <h2 class="text-lg font-semibold text-gray-900 flex items-center">
-            <lucide-icon [img]="ZapIcon" [size]="20" class="text-slate-600 mr-2"></lucide-icon>
-            Quick Evaluation
-          </h2>
-          <div class="flex items-center space-x-2">
-            <span class="text-xs font-medium" [class]="getConfidenceColorClass()">
-              {{ overallConfidence() }}% Confidence
-            </span>
-            <div class="w-16 h-1 bg-gray-200 rounded-full">
-              <div 
-                class="h-1 rounded-full transition-all duration-500" 
-                [class]="getConfidenceBarClass()"
-                [style.width.%]="overallConfidence()">
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        <!-- Key Metrics -->
-        <div class="grid grid-cols-3 gap-4 mb-4">
-          <div class="metric-card rounded-lg p-4" [class]="getOverallScoreCardClass()">
-            <div class="text-2xl font-bold" [class]="getOverallScoreTextClass()">
-              {{ overallScore() }}/10
-            </div>
-            <div class="text-sm font-medium text-gray-700">Overall Score</div>
-            <div class="text-xs text-gray-500 mt-1">{{ getScoreDescription() }}</div>
-          </div>
-          
-          <div class="metric-card rounded-lg p-4" [class]="getRiskCardClass()">
-            <div class="text-2xl font-bold" [class]="getRiskTextClass()">
-              {{ riskAssessment().level | titlecase }}
-            </div>
-            <div class="text-sm font-medium text-gray-700">Risk Level</div>
-            <div class="text-xs text-gray-500 mt-1">{{ getRiskDescription() }}</div>
-          </div>
-          
-          <div class="metric-card rounded-lg p-4" [class]="getMarketFitCardClass()">
-            <div class="text-2xl font-bold" [class]="getMarketFitTextClass()">
-              {{ marketFit().score }}%
-            </div>
-            <div class="text-sm font-medium text-gray-700">Market Fit</div>
-            <div class="text-xs text-gray-500 mt-1">{{ marketFit().potential }}</div>
-          </div>
-        </div>
-
-        <!-- AI Key Insight -->
-        <div class="border-l-4 p-4 rounded-r-lg" [class]="getInsightBorderClass()">
-          <p class="font-medium mb-2" [class]="getInsightTitleClass()">
-            <lucide-icon [img]="getInsightIcon()" [size]="16" class="inline mr-1"></lucide-icon>
-            Key AI Insight
-          </p>
-          <p class="text-sm leading-relaxed" [class]="getInsightTextClass()">
-            {{ keyInsight().message }}
-          </p>
-          @if (keyInsight().confidence < 70) {
-            <p class="text-xs mt-2 text-amber-600">
-              <lucide-icon [img]="AlertTriangleIcon" [size]="12" class="inline mr-1"></lucide-icon>
-              Lower confidence - manual review recommended
-            </p>
-          }
-        </div>
-
-        <!-- Additional Insights -->
-        @if (additionalInsights().length > 0) {
-          <div class="mt-4 space-y-2">
-            <h4 class="text-sm font-medium text-gray-700 mb-2">Additional Analysis</h4>
-            @for (insight of additionalInsights(); track insight.message) {
-              <div class="flex items-start space-x-2 text-sm">
-                <lucide-icon 
-                  [img]="getInsightTypeIcon(insight.type)" 
-                  [size]="14" 
-                  [class]="getInsightTypeClass(insight.type)">
-                </lucide-icon>
-                <span class="text-gray-700">{{ insight.message }}</span>
-                <span class="text-xs text-gray-500 ml-auto">
-                  {{ insight.confidence }}%
-                </span>
-              </div>
-            }
-          </div>
-        }
-      </div>
-    </div>
-  `,
-  styles: [`
-    .gradient-border {
-      background: linear-gradient(135deg, #26667F 0%, #26667F 100%);
-      padding: 2px;
-      border-radius: 12px;
-    }
-    
-    .gradient-content {
-      background: white;
-      border-radius: 10px;
-      padding: 1.5rem;
-    }
-    
-    .metric-card {
-      transition: all 0.2s ease;
-    }
-    
-    .metric-card:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    }
-    
-    .risk-low {
-      background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
-    }
-    
-    .risk-medium {
-      background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
-    }
-    
-    .risk-high {
-      background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
-    }
-  `]
+  imports: [CommonModule, LucideAngularModule],
+  templateUrl: 'ai-executive-summary.component.html',
+  styleUrl: 'ai-executive-summary.component.css',
 })
 export class AiExecutiveSummaryComponent implements OnInit {
   @Input() application!: FundingApplication;
@@ -200,21 +77,26 @@ export class AiExecutiveSummaryComponent implements OnInit {
     } else {
       // Calculate based on available data
       const factors = this.getScoreFactors();
-      score = Math.min(10, Math.max(1, factors.reduce((sum, factor) => sum + factor, 0)));
+      score = Math.min(
+        10,
+        Math.max(
+          1,
+          factors.reduce((sum, factor) => sum + factor, 0)
+        )
+      );
     }
 
-   return Number(score.toFixed(2));
-
+    return Number(score.toFixed(2));
   }
 
   private getScoreFactors(): number[] {
     const factors: number[] = [];
     const formData = this.application.formData || {};
-    
+
     // Application completeness (0-2 points)
     const completeness = this.calculateCompleteness();
     factors.push(completeness * 2);
-    
+
     // Funding amount alignment (0-3 points)
     const requestedAmount = this.getRequestedAmount();
     if (requestedAmount && this.opportunity.offerAmount) {
@@ -225,14 +107,14 @@ export class AiExecutiveSummaryComponent implements OnInit {
     } else {
       factors.push(1); // Missing data
     }
-    
+
     // Timeline reasonableness (0-2 points)
     if (formData['timeline']) {
       factors.push(2); // Has timeline
     } else {
       factors.push(1); // No timeline
     }
-    
+
     // Use of funds clarity (0-3 points)
     const useOfFunds = formData['useOfFunds'];
     if (useOfFunds && useOfFunds.length > 50) {
@@ -249,7 +131,9 @@ export class AiExecutiveSummaryComponent implements OnInit {
   private calculateCompleteness(): number {
     const formData = this.application.formData || {};
     const requiredFields = ['requestedAmount', 'useOfFunds', 'timeline'];
-    const completedFields = requiredFields.filter(field => formData[field]).length;
+    const completedFields = requiredFields.filter(
+      (field) => formData[field]
+    ).length;
     return completedFields / requiredFields.length;
   }
 
@@ -259,11 +143,17 @@ export class AiExecutiveSummaryComponent implements OnInit {
     let confidence = 50; // Base confidence
 
     // Increase confidence based on data availability
-    if (this.application.formData && Object.keys(this.application.formData).length > 3) {
+    if (
+      this.application.formData &&
+      Object.keys(this.application.formData).length > 3
+    ) {
       confidence += 20;
     }
 
-    if (this.application.documents && Object.keys(this.application.documents).length > 0) {
+    if (
+      this.application.documents &&
+      Object.keys(this.application.documents).length > 0
+    ) {
       confidence += 15;
     }
 
@@ -357,7 +247,10 @@ export class AiExecutiveSummaryComponent implements OnInit {
     }
 
     // Project description quality
-    if (this.application.description && this.application.description.length > 100) {
+    if (
+      this.application.description &&
+      this.application.description.length > 100
+    ) {
       score += 10;
     }
 
@@ -380,8 +273,9 @@ export class AiExecutiveSummaryComponent implements OnInit {
     if (!this.application || !this.opportunity) {
       return {
         type: 'neutral',
-        message: 'Insufficient data for comprehensive analysis. Manual review required.',
-        confidence: 30
+        message:
+          'Insufficient data for comprehensive analysis. Manual review required.',
+        confidence: 30,
       };
     }
 
@@ -397,34 +291,39 @@ export class AiExecutiveSummaryComponent implements OnInit {
     if (overallScore >= 8) {
       type = 'positive';
       message = `Strong application with ${market.score}% market fit. `;
-      
+
       if (requestedAmount && this.opportunity.offerAmount) {
         const ratio = requestedAmount / this.opportunity.offerAmount;
         if (ratio <= 0.8) {
-          message += `Conservative funding request (${this.formatCurrency(requestedAmount)}) shows financial prudence.`;
+          message += `Conservative funding request (${this.formatCurrency(
+            requestedAmount
+          )}) shows financial prudence.`;
         } else {
           message += `Funding request aligns well with opportunity parameters.`;
         }
       }
-      
+
       if (risk.level === 'low') {
-        message += ' Low risk profile with manageable due diligence requirements.';
+        message +=
+          ' Low risk profile with manageable due diligence requirements.';
       }
     } else if (overallScore <= 4) {
       type = 'negative';
-      message = `Application requires significant improvement. Key concerns: ${risk.factors.slice(0, 2).join(', ')}.`;
-      
+      message = `Application requires significant improvement. Key concerns: ${risk.factors
+        .slice(0, 2)
+        .join(', ')}.`;
+
       if (risk.level === 'high') {
         message += ' High-risk profile requires careful evaluation.';
       }
     } else {
       type = 'neutral';
       message = `Moderate application with ${market.potential.toLowerCase()}. `;
-      
+
       if (risk.factors.length > 0) {
         message += `Primary considerations: ${risk.factors[0]}.`;
       }
-      
+
       message += ' Standard review process recommended.';
     }
 
@@ -440,12 +339,14 @@ export class AiExecutiveSummaryComponent implements OnInit {
 
     // Funding efficiency insight
     if (requestedAmount && this.opportunity.offerAmount) {
-      const efficiency = (this.opportunity.offerAmount - requestedAmount) / this.opportunity.offerAmount;
+      const efficiency =
+        (this.opportunity.offerAmount - requestedAmount) /
+        this.opportunity.offerAmount;
       if (efficiency > 0.3) {
         insights.push({
           type: 'positive',
           message: `Efficient funding request - 32% below maximum, indicating realistic planning`,
-          confidence: 85
+          confidence: 85,
         });
       }
     }
@@ -455,23 +356,25 @@ export class AiExecutiveSummaryComponent implements OnInit {
       insights.push({
         type: 'positive',
         message: `Project timeline provided - demonstrates planning capability`,
-        confidence: 75
+        confidence: 75,
       });
     }
 
     // Documentation insight
-    const docCount = this.application.documents ? Object.keys(this.application.documents).length : 0;
+    const docCount = this.application.documents
+      ? Object.keys(this.application.documents).length
+      : 0;
     if (docCount > 2) {
       insights.push({
         type: 'positive',
         message: `Well-documented application with ${docCount} supporting documents`,
-        confidence: 80
+        confidence: 80,
       });
     } else if (docCount === 0) {
       insights.push({
         type: 'negative',
         message: `No supporting documents uploaded - may require additional verification`,
-        confidence: 90
+        confidence: 90,
       });
     }
 
@@ -481,7 +384,7 @@ export class AiExecutiveSummaryComponent implements OnInit {
   private getRequestedAmount(): number | null {
     const formData = this.application?.formData || {};
     const amount = formData['requestedAmount'];
-    
+
     if (typeof amount === 'number') return amount;
     if (typeof amount === 'string') {
       const parsed = parseFloat(amount);
@@ -493,7 +396,7 @@ export class AiExecutiveSummaryComponent implements OnInit {
   private formatCurrency(amount: number): string {
     return new Intl.NumberFormat('en-ZA', {
       style: 'currency',
-      currency: this.opportunity?.currency || 'ZAR'
+      currency: this.opportunity?.currency || 'ZAR',
     }).format(amount);
   }
 
