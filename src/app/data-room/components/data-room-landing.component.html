@@ -3,20 +3,21 @@
     <!-- SME View -->
     @if (userType() === 'sme') {
     <!-- Header -->
-    <div class="mb-8 animate-fade-in-up">
-      <h1 class="text-4xl font-bold text-slate-900 mb-2">Data Room</h1>
-      <p class="text-lg text-slate-600">
-        Securely share your business documents with potential funders
-      </p>
+    <div class="mb-2 animate-fade-in-up">
+      <h1 class="text-2xl font-bold text-slate-900 mb-1">Data Room</h1>
+      <p class="text-sm text-slate-600">Securely document repository</p>
     </div>
 
     <!-- Bento Grid -->
-    <div class="grid grid-cols-12 gap-6">
+    <div
+      *ngIf="!isLoadingDocuments() && userDocuments().length"
+      class="grid grid-cols-12 gap-6"
+    >
       <!-- Stats Card - Top Left (Large) -->
       <div class="col-span-12 lg:col-span-4 bento-card p-8 animate-fade-in-up">
         <div class="mb-6">
           <div class="stat-number text-slate-900">
-            {{ stats().totalDocuments }}+
+            {{ userDocuments().length }}+
           </div>
           <div class="text-slate-600 text-lg mt-2">Documents</div>
         </div>
@@ -57,8 +58,9 @@
               <h3 class="text-xl font-bold text-slate-900">Data Room</h3>
             </div>
             <p class="text-slate-600 text-sm leading-relaxed">
-              A secure virtual space where you can organize and share documents
-              and resources with potential investors and funders.
+              Organize documents and resources to share with potential investors
+              and funders. All documents in your profile already exist in your
+              data room
             </p>
           </div>
         </div>
@@ -104,7 +106,7 @@
               <lucide-icon [img]="SparklesIcon" [size]="24" />
             </div>
             <h3 class="text-lg font-bold mb-2">Full Data Room</h3>
-            <p class="text-orange-600 text-sm">
+            <p class="text-orange-50 text-sm">
               View and manage all your documents
             </p>
           </div>
@@ -118,13 +120,13 @@
         </div>
       </div>
 
-      <!-- Shared Documents Card - Middle Left -->
+      <!-- Your Documents Card - Middle Left -->
       <div
         class="col-span-12 lg:col-span-7 bento-card p-8 animate-fade-in-up"
         style="animation-delay: 0.3s"
       >
         <div class="flex items-center justify-between mb-6">
-          <h3 class="text-xl font-bold text-slate-900">Recently Shared</h3>
+          <h3 class="text-xl font-bold text-slate-900">Your Documents</h3>
           <button
             class="text-sm text-orange-600 hover:text-orange-700 font-medium"
           >
@@ -132,43 +134,81 @@
           </button>
         </div>
 
+        @if (isLoadingDocuments()) {
+        <div class="text-center py-12">
+          <div
+            class="animate-spin rounded-full h-10 w-10 border-b-2 border-orange-500 mx-auto"
+          ></div>
+          <p class="text-sm text-slate-600 mt-3">Loading documents...</p>
+        </div>
+        } @if (documentsError()) {
+        <div class="p-4 bg-red-50 rounded-xl">
+          <p class="text-sm text-red-600">{{ documentsError() }}</p>
+        </div>
+        } @if (!isLoadingDocuments() && !documentsError() &&
+        userDocuments().length === 0) {
+        <div class="text-center py-12">
+          <div
+            class="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-4"
+          >
+            <lucide-icon
+              [img]="FileTextIcon"
+              [size]="24"
+              class="text-slate-400"
+            />
+          </div>
+          <p class="text-slate-600 mb-2">No documents yet</p>
+          <p class="text-sm text-slate-500">
+            Upload your first document to get started
+          </p>
+        </div>
+        } @if (!isLoadingDocuments() && !documentsError() &&
+        userDocuments().length > 0) {
         <div class="space-y-4">
-          @for (doc of sharedDocuments(); track doc.id) {
+          @for (doc of userDocuments().slice(0, 5); track doc.id) {
           <div
             class="flex items-center justify-between p-4 bg-slate-50 rounded-xl hover:bg-slate-100 transition-colors cursor-pointer"
-            (click)="viewSharedDocument(doc.id)"
+            (click)="viewDocument(doc.documentKey)"
           >
             <div class="flex items-center flex-1">
               <div
-                class="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center mr-4"
+                class="w-10 h-10 rounded-lg flex items-center justify-center mr-4"
+                [class]="getDocumentIconColor(doc.mimeType)"
               >
                 <lucide-icon
-                  [img]="FileTextIcon"
+                  [img]="getDocumentIcon(doc.mimeType)"
                   [size]="20"
-                  class="text-blue-600"
                 />
               </div>
               <div>
                 <div class="font-semibold text-slate-900 text-sm">
-                  {{ doc.name }}
+                  {{ doc.originalName }}
                 </div>
-                <div class="text-xs text-slate-500 mt-0.5">
-                  Shared with {{ doc.sharedWith }} funders •
-                  {{ formatDate(doc.lastAccessed) }}
+                <div
+                  class="flex items-center text-xs text-slate-500 mt-0.5 space-x-2"
+                >
+                  <span>{{ formatFileSize(doc.fileSize) }}</span>
+                  <span>•</span>
+                  <span>{{ doc.category }}</span>
+                  <span>•</span>
+                  <span>{{ formatUploadDate(doc.uploadedAt) }}</span>
                 </div>
               </div>
             </div>
-            <lucide-icon
-              [img]="ArrowRightIcon"
-              [size]="16"
-              class="text-slate-400"
-            />
+            <div class="flex items-center space-x-2">
+              <lucide-icon
+                [img]="ArrowRightIcon"
+                [size]="16"
+                class="text-slate-400"
+              />
+            </div>
           </div>
           }
         </div>
+        }
       </div>
 
-      <!-- Generate Documents Card - Middle Right -->
+      <!-- Platform Assistance Card - Middle Right -->
       <div
         class="col-span-12 lg:col-span-5 bento-card p-8 animate-fade-in-up"
         style="animation-delay: 0.4s"

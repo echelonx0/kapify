@@ -1,5 +1,5 @@
 // data-room-landing.component.ts
-import { Component, signal, computed, inject } from '@angular/core';
+import { Component, signal, computed, inject, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -22,7 +22,11 @@ import {
   Calendar,
 } from 'lucide-angular';
 import { AuthService } from 'src/app/auth/production.auth.service';
-import { UiButtonComponent } from 'src/app/shared/components';
+
+import {
+  DocumentMetadata,
+  SupabaseDocumentService,
+} from 'src/app/shared/services/supabase-document.service';
 
 interface SharedDocument {
   id: string;
@@ -95,7 +99,7 @@ interface SharedDataRoom {
     `,
   ],
 })
-export class DataRoomLandingComponent {
+export class DataRoomLandingComponent implements OnInit {
   // Icons
   FolderIcon = Folder;
   FileTextIcon = FileText;
@@ -114,6 +118,7 @@ export class DataRoomLandingComponent {
   CalendarIcon = Calendar;
 
   private authService = inject(AuthService);
+  private documentService = inject(SupabaseDocumentService);
   private router = inject(Router);
 
   // State
@@ -121,6 +126,10 @@ export class DataRoomLandingComponent {
   currentUser = computed(() => this.authService.user());
   userType = computed(() => this.currentUser()?.userType || 'sme');
 
+  // UI Signals
+  isLoadingDocuments = signal(false);
+  documentsError = signal<string | null>(null);
+  userDocuments = signal<DocumentMetadata[]>([]);
   // SME Data
   sharedDocuments = signal<SharedDocument[]>([
     {
@@ -138,26 +147,47 @@ export class DataRoomLandingComponent {
       type: 'DOCX',
     },
   ]);
+  ngOnInit(): void {
+    this.fetchUserDocuments();
+  }
+  private fetchUserDocuments(): void {
+    this.isLoadingDocuments.set(true);
+    this.documentsError.set(null);
 
+    this.documentService.getDocumentsByUser().subscribe({
+      next: (docMap) => {
+        // Convert Map to array for easier display
+        const docs = Array.from(docMap.values());
+        this.userDocuments.set(docs);
+        this.isLoadingDocuments.set(false);
+        console.log('✅ User documents loaded:', docs);
+      },
+      error: (err) => {
+        console.error('❌ Failed to load user documents:', err);
+        this.documentsError.set(err.message || 'Failed to load documents');
+        this.isLoadingDocuments.set(false);
+      },
+    });
+  }
   generatableDocuments = signal<GeneratableDocument[]>([
     {
       id: 'pitch-deck',
       title: 'Pitch Deck',
-      description: 'AI-generated investor presentation',
+      description: 'Generate investor presentations',
       icon: this.FileTextIcon,
       color: 'blue',
     },
     {
       id: 'financial-model',
       title: 'Financial Model',
-      description: 'Projected 3-year financials',
+      description: 'Financial Modelling with Kapify',
       icon: this.TrendingUpIcon,
       color: 'green',
     },
     {
       id: 'compliance-docs',
       title: 'Compliance Pack',
-      description: 'Required legal documents',
+      description: 'Complete your compliance checklist',
       icon: this.ShieldIcon,
       color: 'purple',
     },
@@ -226,15 +256,6 @@ export class DataRoomLandingComponent {
     this.router.navigate(['/data-room', dataRoomId]);
   }
 
-  getStatusColor(status: string): string {
-    const colors: Record<string, string> = {
-      active: 'bg-green-100 text-green-700',
-      pending: 'bg-amber-100 text-amber-700',
-      expired: 'bg-slate-100 text-slate-700',
-    };
-    return colors[status] || colors['active'];
-  }
-
   getDocIconColor(color: string): string {
     const colors: Record<string, string> = {
       blue: 'bg-blue-100 text-blue-600',
@@ -254,5 +275,57 @@ export class DataRoomLandingComponent {
     if (days === 1) return 'Yesterday';
     if (days < 7) return `${days} days ago`;
     return date.toLocaleDateString('en-ZA', { month: 'short', day: 'numeric' });
+  }
+
+  // Add to data-room-landing.component.ts
+
+  viewDocument(documentKey: string): void {
+    console.log('Viewing document:', documentKey);
+    // Navigate to document viewer or trigger download
+    this.documentService.downloadDocumentByKey(documentKey).subscribe({
+      next: () => console.log('Download initiated'),
+      error: (err) => console.error('Download failed:', err),
+    });
+  }
+
+  getDocumentIcon(mimeType: string): any {
+    if (mimeType.includes('pdf')) return this.FileTextIcon;
+    if (mimeType.includes('word') || mimeType.includes('document'))
+      return this.FileTextIcon;
+    if (mimeType.includes('sheet') || mimeType.includes('excel'))
+      return this.TrendingUpIcon;
+    if (mimeType.includes('image')) return this.EyeIcon;
+    return this.FileTextIcon;
+  }
+
+  getDocumentIconColor(mimeType: string): string {
+    if (mimeType.includes('pdf')) return 'bg-red-100 text-red-600';
+    if (mimeType.includes('word') || mimeType.includes('document'))
+      return 'bg-blue-100 text-blue-600';
+    if (mimeType.includes('sheet') || mimeType.includes('excel'))
+      return 'bg-green-100 text-green-600';
+    if (mimeType.includes('image')) return 'bg-purple-100 text-purple-600';
+    return 'bg-slate-100 text-slate-600';
+  }
+
+  getStatusColor(status: string): string {
+    const colors: Record<string, string> = {
+      uploaded: 'bg-blue-100 text-blue-700',
+      processing: 'bg-amber-100 text-amber-700',
+      approved: 'bg-green-100 text-green-700',
+      rejected: 'bg-red-100 text-red-700',
+    };
+    return colors[status] || 'bg-slate-100 text-slate-700';
+  }
+  // Add this helper method to your component
+  formatUploadDate(dateString: string): string {
+    return this.formatDate(new Date(dateString));
+  }
+  formatFileSize(bytes: number): string {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   }
 }

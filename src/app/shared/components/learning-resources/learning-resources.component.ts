@@ -157,7 +157,7 @@ export class LearningResourcesComponent {
     { id: 'pitch-deck', label: 'Pitch Deck', color: 'orange' }
   ];
 
-  // Sample video data - replace with your actual content
+ 
   videos: VideoResource[] = [
     {
       id: '1',
@@ -165,7 +165,7 @@ export class LearningResourcesComponent {
       description: 'Learn the essential elements of a successful grant proposal from industry experts. This comprehensive guide covers everything from research and planning to writing techniques that capture funders\' attention and demonstrate your project\'s value and impact.',
       duration: '12:34',
       category: 'funding-tips',
-      youtubeId: 'IUIUB72nSKs', // Replace with actual YouTube video ID
+      youtubeId: 'IUIUB72nSKs',  
       thumbnailUrl: 'https://img.youtube.com/vi/dQw4w9WgXcQ/mqdefault.jpg',
       views: '2.3k'
     },
@@ -175,7 +175,7 @@ export class LearningResourcesComponent {
       description: 'A step-by-step guide to completing your business profile effectively. Understand what funders are looking for and how to present your business in the best possible light to increase your chances of funding approval.',
       duration: '8:45',
       category: 'business-planning',
-      youtubeId: 'dQw4w9WgXcQ', // Replace with actual YouTube video ID
+      youtubeId: 'dQw4w9WgXcQ',  
       thumbnailUrl: 'https://img.youtube.com/vi/dQw4w9WgXcQ/mqdefault.jpg',
       views: '1.8k'
     },
