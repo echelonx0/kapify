@@ -1,9 +1,24 @@
 // src/app/profile/steps/business-assessment/manpower/manpower.component.ts
-import { Component, Input, Output, EventEmitter, OnInit, signal, inject } from '@angular/core';
+import {
+  Component,
+  Input,
+  Output,
+  EventEmitter,
+  OnInit,
+  signal,
+  inject,
+} from '@angular/core';
 import { ReactiveFormsModule, FormBuilder, FormGroup } from '@angular/forms';
-import { LucideAngularModule, ChevronDown, ChevronUp } from 'lucide-angular';
+import {
+  LucideAngularModule,
+  ChevronDown,
+  ChevronUp,
+  FileText,
+  Trash2,
+  Upload,
+} from 'lucide-angular';
 import { UiInputComponent } from 'src/app/shared/components';
- 
+import { SupabaseDocumentService } from 'src/app/shared/services/supabase-document.service';
 
 export interface ManpowerData {
   hasSpecialistSkills?: boolean;
@@ -11,7 +26,7 @@ export interface ManpowerData {
   isRequiredLabourAvailable?: boolean;
   labourAvailabilityDetails?: string;
   hasOrganogram?: boolean;
-  organogramDescription?: string;
+  organogramDocumentId?: string;
   isStaffUnionised?: boolean;
   unionDetails?: string;
   hasSuccessionPlan?: boolean;
@@ -26,7 +41,7 @@ export interface ManpowerData {
   selector: 'app-manpower',
   standalone: true,
   imports: [ReactiveFormsModule, LucideAngularModule],
-  templateUrl: './manpower.component.html'
+  templateUrl: './manpower.component.html',
 })
 export class ManpowerComponent implements OnInit {
   @Input() initialData: ManpowerData = {};
@@ -42,6 +57,17 @@ export class ManpowerComponent implements OnInit {
   ChevronDownIcon = ChevronDown;
   ChevronUpIcon = ChevronUp;
 
+  private documentService = inject(SupabaseDocumentService);
+
+  UploadIcon = Upload;
+  FileTextIcon = FileText;
+  Trash2Icon = Trash2;
+
+  // Document state
+  organogramDocumentId = signal<string | undefined>(undefined);
+  organogramFileName = signal<string | undefined>(undefined);
+  isUploadingOrganogram = signal(false);
+
   constructor() {
     this.manpowerForm = this.fb.group({
       hasSpecialistSkills: [false],
@@ -49,7 +75,7 @@ export class ManpowerComponent implements OnInit {
       isRequiredLabourAvailable: [true],
       labourAvailabilityDetails: [''],
       hasOrganogram: [true],
-      organogramDescription: [''],
+      organogramDocumentId: [''],
       isStaffUnionised: [false],
       unionDetails: [''],
       hasSuccessionPlan: [true],
@@ -57,7 +83,7 @@ export class ManpowerComponent implements OnInit {
       hasSkillShortfall: [false],
       skillShortfallDetails: [''],
       hasLabourDisputes: [false],
-      labourDisputeDetails: ['']
+      labourDisputeDetails: [''],
     });
   }
 
@@ -65,12 +91,30 @@ export class ManpowerComponent implements OnInit {
     // Populate form with initial data
     if (this.initialData && Object.keys(this.initialData).length > 0) {
       this.manpowerForm.patchValue(this.initialData);
-      this.isExpanded.set(true); // Auto-expand if there's existing data
+
+      // Load organogram document if exists
+      if (this.initialData.organogramDocumentId) {
+        this.organogramDocumentId.set(this.initialData.organogramDocumentId);
+        this.loadOrganogramFileName();
+      }
+
+      this.isExpanded.set(true);
     }
 
     // Subscribe to form changes
-    this.manpowerForm.valueChanges.subscribe(value => {
+    this.manpowerForm.valueChanges.subscribe((value) => {
       this.dataChanged.emit(value);
+    });
+  }
+
+  private loadOrganogramFileName(): void {
+    this.documentService.getDocumentsByUser().subscribe({
+      next: (docs) => {
+        const organogramDoc = docs.get('organogram');
+        if (organogramDoc) {
+          this.organogramFileName.set(organogramDoc.originalName);
+        }
+      },
     });
   }
 
@@ -96,15 +140,15 @@ export class ManpowerComponent implements OnInit {
     // Count base questions (always count these)
     const baseQuestions = [
       'hasSpecialistSkills',
-      'isRequiredLabourAvailable', 
+      'isRequiredLabourAvailable',
       'hasOrganogram',
       'isStaffUnionised',
       'hasSuccessionPlan',
       'hasSkillShortfall',
-      'hasLabourDisputes'
+      'hasLabourDisputes',
     ];
 
-    baseQuestions.forEach(question => {
+    baseQuestions.forEach((question) => {
       total++;
       if (formValue[question] !== null && formValue[question] !== undefined) {
         answered++;
@@ -112,7 +156,10 @@ export class ManpowerComponent implements OnInit {
     });
 
     // Count conditional detail fields only if their parent is true
-    if (formValue.hasSpecialistSkills && formValue.specialistSkillsDetails?.trim()) {
+    if (
+      formValue.hasSpecialistSkills &&
+      formValue.specialistSkillsDetails?.trim()
+    ) {
       answered++;
     }
     if (formValue.hasSpecialistSkills) total++;
@@ -127,12 +174,18 @@ export class ManpowerComponent implements OnInit {
     }
     if (formValue.isStaffUnionised) total++;
 
-    if (formValue.hasSuccessionPlan && formValue.successionPlanDetails?.trim()) {
+    if (
+      formValue.hasSuccessionPlan &&
+      formValue.successionPlanDetails?.trim()
+    ) {
       answered++;
     }
     if (formValue.hasSuccessionPlan) total++;
 
-    if (formValue.hasSkillShortfall && formValue.skillShortfallDetails?.trim()) {
+    if (
+      formValue.hasSkillShortfall &&
+      formValue.skillShortfallDetails?.trim()
+    ) {
       answered++;
     }
     if (formValue.hasSkillShortfall) total++;
@@ -147,11 +200,56 @@ export class ManpowerComponent implements OnInit {
 
   hasData(): boolean {
     const formValue = this.manpowerForm.value;
-    return Object.values(formValue).some(value => 
-      value !== null && 
-      value !== undefined && 
-      value !== '' && 
-      value !== false
+    return Object.values(formValue).some(
+      (value) =>
+        value !== null && value !== undefined && value !== '' && value !== false
     );
+  }
+
+  // Organogram file upload methods
+  onOrganogramFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (!input.files?.length) return;
+
+    const file = input.files[0];
+    this.isUploadingOrganogram.set(true);
+
+    this.documentService
+      .uploadDocument(file, 'organogram', undefined, 'business-assessment')
+      .subscribe({
+        next: (result) => {
+          this.organogramDocumentId.set(result.id);
+          this.organogramFileName.set(result.originalName);
+          this.manpowerForm.patchValue({ organogramDocumentId: result.id });
+          this.isUploadingOrganogram.set(false);
+        },
+        error: (error) => {
+          console.error('Organogram upload failed:', error);
+          this.isUploadingOrganogram.set(false);
+          alert('Upload failed. Please try again.');
+        },
+      });
+  }
+
+  downloadOrganogram(): void {
+    if (!this.organogramDocumentId()) return;
+    this.documentService.downloadDocumentByKey('organogram').subscribe();
+  }
+
+  deleteOrganogram(): void {
+    if (!this.organogramDocumentId()) return;
+    if (!confirm('Delete organogram document?')) return;
+
+    this.documentService.deleteDocumentByKey('organogram').subscribe({
+      next: () => {
+        this.organogramDocumentId.set(undefined);
+        this.organogramFileName.set(undefined);
+        this.manpowerForm.patchValue({ organogramDocumentId: '' });
+      },
+      error: (error) => {
+        console.error('Delete failed:', error);
+        alert('Failed to delete document.');
+      },
+    });
   }
 }

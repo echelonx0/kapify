@@ -1,23 +1,23 @@
 // src/app/profile/models/funding-application.models.ts
 export interface FundingApplicationProfile {
-  // Company Information  
+  // Company Information
   companyInfo?: CompanyInformation;
-  
-  // Supporting Documents  
+
+  // Supporting Documents
   supportingDocuments?: SupportingDocuments;
-  
-  // Business Assessment  
+
+  // Business Assessment
   businessAssessment?: BusinessAssessment;
-  
-  // Strategic Analysis 
+
+  // Strategic Analysis
   swotAnalysis?: SWOTAnalysis;
-  
+
   // Leadership & Governance (formerly management)
   managementStructure?: ManagementStructure;
-  
+
   // Business Strategy (formerly business-plan)
   businessStrategy?: BusinessStrategy;
-  
+
   // Financial Profile (formerly financial)
   financialProfile?: FinancialProfile;
 }
@@ -31,29 +31,33 @@ export interface CompanyInformation {
   businessActivity: string;
   foundingYear: number;
   operationalYears: number;
-  
+
   // Company Structure
-  companyType: 'pty_ltd' | 'close_corporation' | 'sole_proprietor' | 'partnership' | 'npo';
+  companyType:
+    | 'pty_ltd'
+    | 'close_corporation'
+    | 'sole_proprietor'
+    | 'partnership'
+    | 'npo';
   ownership: OwnershipStructure[];
   employeeCount: string;
-  
+
   // Contact & Location
   registeredAddress: Address;
   operationalAddress: Address;
   contactPerson: ContactPerson;
-  
+
   // Compliance Status
   taxComplianceStatus: 'compliant' | 'outstanding' | 'under_review';
   bbbeeLevel?: string;
   regulatoryLicenses: string[];
-  
+
   // ← ADD THESE MISSING LEGAL FIELDS:
   businessStage?: string;
   cipcReturns?: string;
   incomeTaxNumber?: string;
   workmansCompensation?: string;
 }
-
 
 export interface SupportingDocuments {
   // Company Documents
@@ -66,7 +70,7 @@ export interface SupportingDocuments {
   fundingApplicationRequest?: FileUpload;
   pitchDeck?: FileUpload;
 
-  // Financial Documents  
+  // Financial Documents
   currentYearFinancials?: FileUpload;
   priorYearFinancialYear1?: FileUpload;
   priorYearFinancialYear2?: FileUpload;
@@ -108,113 +112,116 @@ export interface FileUpload {
 }
 
 // Helper type for document categories
-export type DocumentCategory = 
+export type DocumentCategory =
   | 'company'
-  | 'financial' 
+  | 'financial'
   | 'additional'
   | 'legacy';
 
 // Document field mapping for validation and organization
-export const DocumentFieldMapping: Record<string, {
-  category: DocumentCategory;
-  required: boolean;
-  description: string;
-}> = {
+export const DocumentFieldMapping: Record<
+  string,
+  {
+    category: DocumentCategory;
+    required: boolean;
+    description: string;
+  }
+> = {
   // Company Documents
   companyProfile: {
     category: 'company',
     required: true,
-    description: 'Company Information Profile (CIP) or CIPC certificate'
+    description: 'Company Information Profile (CIP) or CIPC certificate',
   },
   companyRegistrationDocument: {
     category: 'company',
     required: true,
-    description: 'CIPC registration or incorporation documents'
+    description: 'CIPC registration or incorporation documents',
   },
   taxPin: {
     category: 'company',
     required: true,
-    description: 'Tax PIN document from SARS'
+    description: 'Tax PIN document from SARS',
   },
   beeAffidavit: {
     category: 'company',
     required: false,
-    description: 'B-BBEE affidavit or certificate'
+    description: 'B-BBEE affidavit or certificate',
   },
   businessPlan: {
     category: 'company',
     required: false,
-    description: 'Current business plan with financial projections'
+    description: 'Current business plan with financial projections',
   },
   shareholderRegister: {
     category: 'company',
     required: false,
-    description: 'Current shareholder register and ownership structure'
+    description: 'Current shareholder register and ownership structure',
   },
   fundingApplicationRequest: {
     category: 'company',
     required: false,
-    description: 'Formal funding application request document'
+    description: 'Formal funding application request document',
   },
   pitchDeck: {
     category: 'company',
     required: false,
-    description: 'Investment pitch deck presentation'
+    description: 'Investment pitch deck presentation',
   },
 
   // Financial Documents
   currentYearFinancials: {
     category: 'financial',
     required: true,
-    description: 'Latest audited or reviewed financial statements'
+    description: 'Latest audited or reviewed financial statements',
   },
   priorYearFinancialYear1: {
     category: 'financial',
     required: true,
-    description: 'Previous year audited financial statements'
+    description: 'Previous year audited financial statements',
   },
   priorYearFinancialYear2: {
     category: 'financial',
     required: false,
-    description: 'Two years ago audited financial statements'
+    description: 'Two years ago audited financial statements',
   },
   assetRegister: {
     category: 'financial',
     required: false,
-    description: 'Current asset register with valuations'
+    description: 'Current asset register with valuations',
   },
   financialProjections: {
     category: 'financial',
     required: true,
-    description: 'Financial projections and cash flow forecasts'
+    description: 'Financial projections and cash flow forecasts',
   },
   salesPipeline: {
     category: 'financial',
     required: false,
-    description: 'Current sales pipeline and customer contracts'
+    description: 'Current sales pipeline and customer contracts',
   },
 
   // Additional Documents
   letterOfIntent: {
     category: 'additional',
     required: false,
-    description: 'Letters of intent from potential customers or partners'
+    description: 'Letters of intent from potential customers or partners',
   },
   quotations: {
     category: 'additional',
     required: false,
-    description: 'Quotations for equipment or services to be purchased'
+    description: 'Quotations for equipment or services to be purchased',
   },
   mouOrSaleAgreements: {
     category: 'additional',
     required: false,
-    description: 'Memorandums of understanding or sale agreements'
+    description: 'Memorandums of understanding or sale agreements',
   },
   other: {
     category: 'additional',
     required: false,
-    description: 'Any other relevant supporting documents'
-  }
+    description: 'Any other relevant supporting documents',
+  },
 };
 
 // Utility functions for document validation
@@ -241,13 +248,17 @@ export class DocumentValidator {
     completionPercentage: number;
   } {
     const requiredDocs = this.getRequiredDocuments();
-    const missingRequired = requiredDocs.filter(key => !documents[key as keyof SupportingDocuments]);
+    const missingRequired = requiredDocs.filter(
+      (key) => !documents[key as keyof SupportingDocuments]
+    );
     const completedRequired = requiredDocs.length - missingRequired.length;
-    
+
     return {
       isComplete: missingRequired.length === 0,
       missingRequired,
-      completionPercentage: Math.round((completedRequired / requiredDocs.length) * 100)
+      completionPercentage: Math.round(
+        (completedRequired / requiredDocs.length) * 100
+      ),
     };
   }
 }
@@ -258,31 +269,31 @@ export interface BusinessAssessment {
   valueProposition: string;
   targetMarkets: string[];
   customerSegments: string;
-  
+
   // Market Position
   marketSize: string;
   competitivePosition: string;
   marketShare?: number;
   growthRate?: number;
-  
+
   // Operations
   operationalCapacity: string;
   supplyChain: string;
   technologyUse: string;
   qualityStandards: string;
-  
+
   // Performance Metrics
   keyPerformanceIndicators: KPI[];
   salesChannels: string[];
   customerRetention?: number;
 
   //Manpower section
-   hasSpecialistSkills?: boolean;
+  hasSpecialistSkills?: boolean;
   specialistSkillsDetails?: string;
   isRequiredLabourAvailable?: boolean;
   labourAvailabilityDetails?: string;
   hasOrganogram?: boolean;
-  organogramDescription?: string;
+  organogramDocumentId?: string;
   isStaffUnionised?: boolean;
   unionDetails?: string;
   hasSuccessionPlan?: boolean;
@@ -298,7 +309,7 @@ export interface SWOTAnalysis {
   weaknesses: string[];
   opportunities: string[];
   threats: string[];
-  
+
   // Strategic Insights
   strategicPriorities: string[];
   riskMitigation: string[];
@@ -310,12 +321,12 @@ export interface ManagementStructure {
   executiveTeam: ExecutiveMember[];
   managementTeam: ManagementMember[];
   boardOfDirectors: BoardMember[];
-  
+
   // Governance
   governanceStructure: string;
   decisionMakingProcess: string;
   reportingStructure: string;
-  
+
   // Advisory Support
   advisors?: AdvisoryMember[];
   consultants?: ConsultantInfo[];
@@ -327,25 +338,25 @@ export interface BusinessStrategy {
   missionStatement: string;
   visionStatement: string;
   strategicObjectives: string[];
-  
+  businessPlanDocumentId?: string; // ← ADD THIS LINE
   // Market Strategy
   marketAnalysis: string;
   competitiveStrategy: string;
   pricingStrategy: string;
   marketingStrategy: string;
-  
+
   // Growth Plans
   expansionPlans: string;
   productDevelopment: string;
   marketEntry: string;
   scalingStrategy: string;
-  
+
   // Financial Projections
   revenueProjections: FinancialProjection[];
   profitabilityTimeline: string;
   breakEvenAnalysis: string;
   returnOnInvestment: string;
-  
+
   // Funding Strategy
   fundingRequirements: FundingRequirements;
   useOfFunds: string;
@@ -356,7 +367,7 @@ export interface BusinessStrategy {
 export interface FinancialProfile {
   // Historical Performance
   historicalFinancials: HistoricalFinancial[];
-  
+
   // Current Financial Position
   currentAssets: number;
   currentLiabilities: number;
@@ -364,18 +375,18 @@ export interface FinancialProfile {
   monthlyRevenue: number;
   monthlyCosts: number;
   cashFlow: number;
-  
+
   // Financial Projections
   projectedRevenue: ProjectedFinancial[];
   projectedProfitability: ProjectedFinancial[];
   cashFlowProjections: CashFlowProjection[];
-  
+
   // Financial Ratios
   profitMargin: number;
   debtToEquity: number;
   currentRatio: number;
   returnOnAssets: number;
-  
+
   // Banking Relationships
   primaryBank: string;
   bankingHistory: number; // years
@@ -439,6 +450,7 @@ export interface ManagementMember {
   role: string;
   department: string;
   qualification: string;
+  fieldOfStudy?: string; // ← Optional
   yearsOfExperience: number;
   reportsTo?: string;
 }

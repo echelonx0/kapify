@@ -1,22 +1,32 @@
 // src/app/marketplace/components/suggestion-card.component.ts
 import { Component, Input, Output, EventEmitter, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { LucideAngularModule, ChevronDown, ChevronUp, DollarSign, Award, Building2, TrendingUp, Sparkles } from 'lucide-angular';
+import {
+  LucideAngularModule,
+  ChevronDown,
+  ChevronUp,
+  DollarSign,
+  Award,
+  Building2,
+  TrendingUp,
+  Sparkles,
+  Info,
+} from 'lucide-angular';
 import { FundingOpportunity } from 'src/app/funder/create-opportunity/shared/funding.interfaces';
- 
+
 @Component({
   selector: 'app-suggestion-card',
   standalone: true,
   imports: [CommonModule, LucideAngularModule],
   templateUrl: 'suggestion-card.component.html',
-  styleUrl: 'suggestion-card.component.css'
+  styleUrl: 'suggestion-card.component.css',
 })
 export class SuggestionCardComponent {
   @Input() opportunity!: FundingOpportunity;
   @Input() matchScore: number = 0;
   @Input() matchReasons: string[] = [];
   @Input() canApply: boolean = false;
-
+  @Input() reasonMessage: string = '';
   @Output() apply = new EventEmitter<string>();
   @Output() viewDetails = new EventEmitter<string>();
   @Output() signIn = new EventEmitter<void>();
@@ -31,39 +41,43 @@ export class SuggestionCardComponent {
   BuildingIcon = Building2;
   TrendingUpIcon = TrendingUp;
   SparklesIcon = Sparkles;
-
+  InfoIcon = Info;
   toggle() {
-    this.isExpanded.update(v => !v);
+    this.isExpanded.update((v) => !v);
   }
 
-  
- getFundingTypeClass(): string {
-  // Return the first type for styling, fallback to 'debt'
-  if (Array.isArray(this.opportunity.fundingType) && this.opportunity.fundingType.length > 0) {
-    return this.opportunity.fundingType[0].toLowerCase();
-  }
-  return 'debt';
-}
-
-formatFundingType(): string {
-  const types: Record<string, string> = {
-    equity: 'Equity',
-    debt: 'Debt',
-    mezzanine: 'Mezzanine',
-    grant: 'Grant',
-    convertible: 'Convertible'
-  };
-
-  if (Array.isArray(this.opportunity.fundingType) && this.opportunity.fundingType.length > 0) {
-    // Map array values to formatted labels
-    return this.opportunity.fundingType
-      .map(type => types[type.toLowerCase()] || type)
-      .join(', ');
+  getFundingTypeClass(): string {
+    // Return the first type for styling, fallback to 'debt'
+    if (
+      Array.isArray(this.opportunity.fundingType) &&
+      this.opportunity.fundingType.length > 0
+    ) {
+      return this.opportunity.fundingType[0].toLowerCase();
+    }
+    return 'debt';
   }
 
-  return 'Funding';
-}
+  formatFundingType(): string {
+    const types: Record<string, string> = {
+      equity: 'Equity',
+      debt: 'Debt',
+      mezzanine: 'Mezzanine',
+      grant: 'Grant',
+      convertible: 'Convertible',
+    };
 
+    if (
+      Array.isArray(this.opportunity.fundingType) &&
+      this.opportunity.fundingType.length > 0
+    ) {
+      // Map array values to formatted labels
+      return this.opportunity.fundingType
+        .map((type) => types[type.toLowerCase()] || type)
+        .join(', ');
+    }
+
+    return 'Funding';
+  }
 
   formatAmountRange(): string {
     const currency = this.opportunity.currency || 'ZAR';
@@ -90,7 +104,7 @@ formatFundingType(): string {
   }
 
   formatIndustry(industry: string): string {
-    return industry.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+    return industry.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
   }
 
   getProgressPercentage(): number {
@@ -100,7 +114,8 @@ formatFundingType(): string {
   }
 
   formatAvailable(): string {
-    const remaining = this.opportunity.totalAvailable - (this.opportunity.amountDeployed || 0);
+    const remaining =
+      this.opportunity.totalAvailable - (this.opportunity.amountDeployed || 0);
     return this.formatAmount(remaining);
   }
 

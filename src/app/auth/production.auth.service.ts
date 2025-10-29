@@ -547,7 +547,7 @@ export class AuthService implements OnDestroy {
       }
     } finally {
       this.clearAuthState();
-      this.router.navigate(['/auth/login']);
+      this.router.navigate(['/login']);
     }
   }
 

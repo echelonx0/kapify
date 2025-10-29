@@ -9,340 +9,356 @@
     <div>
       <h3 class="text-lg font-semibold text-neutral-900">Manpower</h3>
       <p class="text-sm text-neutral-600 mt-1">
-        Provide an overview of your company's manpower. Include information on key skills, 
-        organizational structure, and workforce capabilities.
+        Provide an overview of your company's manpower. Include information on
+        key skills, organizational structure, and workforce capabilities.
       </p>
     </div>
-    <lucide-icon 
-      [img]="isExpanded() ? ChevronUpIcon : ChevronDownIcon" 
-      [size]="20" 
+    <lucide-icon
+      [img]="isExpanded() ? ChevronUpIcon : ChevronDownIcon"
+      [size]="20"
       class="text-neutral-400"
     />
   </button>
 
   <!-- Expandable Content -->
   @if (isExpanded()) {
-    <div class="px-6 pb-6 border-t border-neutral-200">
-      <form [formGroup]="manpowerForm" class="mt-4 space-y-6">
-        
-        <!-- Specialist Skills -->
-        <div class="space-y-4">
-          <div>
-            <h4 class="font-medium text-neutral-900 mb-3">
-              Are there any key and/or specialist skills required by the business?
-            </h4>
-            <div class="flex space-x-4">
-              <label class="flex items-center">
-                <input
-                  type="radio"
-                  [checked]="getBooleanValue('hasSpecialistSkills')"
-                  (change)="setBooleanValue('hasSpecialistSkills', true)"
-                  class="w-4 h-4 text-primary-600 border-neutral-300 focus:ring-primary-500"
-                />
-                <span class="ml-2 text-sm text-neutral-700">Yes</span>
-              </label>
-              <label class="flex items-center">
-                <input
-                  type="radio"
-                  [checked]="!getBooleanValue('hasSpecialistSkills')"
-                  (change)="setBooleanValue('hasSpecialistSkills', false)"
-                  class="w-4 h-4 text-primary-600 border-neutral-300 focus:ring-primary-500"
-                />
-                <span class="ml-2 text-sm text-neutral-700">No</span>
-              </label>
-            </div>
+  <div class="px-6 pb-6 border-t border-neutral-200">
+    <form [formGroup]="manpowerForm" class="mt-4 space-y-6">
+      <!-- Specialist Skills -->
+      <div class="space-y-4">
+        <div>
+          <h4 class="font-medium text-neutral-900 mb-3">
+            Are there any key and/or specialist skills required by the business?
+          </h4>
+          <div class="flex space-x-4">
+            <label class="flex items-center">
+              <input
+                type="radio"
+                [checked]="getBooleanValue('hasSpecialistSkills')"
+                (change)="setBooleanValue('hasSpecialistSkills', true)"
+                class="w-4 h-4 text-primary-600 border-neutral-300 focus:ring-primary-500"
+              />
+              <span class="ml-2 text-sm text-neutral-700">Yes</span>
+            </label>
+            <label class="flex items-center">
+              <input
+                type="radio"
+                [checked]="!getBooleanValue('hasSpecialistSkills')"
+                (change)="setBooleanValue('hasSpecialistSkills', false)"
+                class="w-4 h-4 text-primary-600 border-neutral-300 focus:ring-primary-500"
+              />
+              <span class="ml-2 text-sm text-neutral-700">No</span>
+            </label>
           </div>
-          
-          @if (getBooleanValue('hasSpecialistSkills')) {
-            <div>
-              <label class="block text-sm font-medium text-neutral-700 mb-2">
-                Please specify the specialist skills
-              </label>
-              <textarea
-                formControlName="specialistSkillsDetails"
-                rows="3"
-                placeholder="Describe the specialist skills required..."
-                class="block w-full px-3 py-2 border border-neutral-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
-              ></textarea>
-            </div>
-          }
         </div>
 
-        <!-- Labour Availability -->
-        <div class="space-y-4">
-          <div>
-            <h4 class="font-medium text-neutral-900 mb-3">
-              Is the required labour (if any) freely available?
-            </h4>
-            <div class="flex space-x-4">
-              <label class="flex items-center">
-                <input
-                  type="radio"
-                  [checked]="getBooleanValue('isRequiredLabourAvailable')"
-                  (change)="setBooleanValue('isRequiredLabourAvailable', true)"
-                  class="w-4 h-4 text-primary-600 border-neutral-300 focus:ring-primary-500"
-                />
-                <span class="ml-2 text-sm text-neutral-700">Yes</span>
-              </label>
-              <label class="flex items-center">
-                <input
-                  type="radio"
-                  [checked]="!getBooleanValue('isRequiredLabourAvailable')"
-                  (change)="setBooleanValue('isRequiredLabourAvailable', false)"
-                  class="w-4 h-4 text-primary-600 border-neutral-300 focus:ring-primary-500"
-                />
-                <span class="ml-2 text-sm text-neutral-700">No</span>
-              </label>
-            </div>
+        @if (getBooleanValue('hasSpecialistSkills')) {
+        <div>
+          <label class="block text-sm font-medium text-neutral-700 mb-2">
+            Please specify the specialist skills
+          </label>
+          <textarea
+            formControlName="specialistSkillsDetails"
+            rows="3"
+            placeholder="Describe the specialist skills required..."
+            class="block w-full px-3 py-2 border border-neutral-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+          ></textarea>
+        </div>
+        }
+      </div>
+
+      <!-- Labour Availability -->
+      <div class="space-y-4">
+        <div>
+          <h4 class="font-medium text-neutral-900 mb-3">
+            Is the required labour (if any) freely available?
+          </h4>
+          <div class="flex space-x-4">
+            <label class="flex items-center">
+              <input
+                type="radio"
+                [checked]="getBooleanValue('isRequiredLabourAvailable')"
+                (change)="setBooleanValue('isRequiredLabourAvailable', true)"
+                class="w-4 h-4 text-primary-600 border-neutral-300 focus:ring-primary-500"
+              />
+              <span class="ml-2 text-sm text-neutral-700">Yes</span>
+            </label>
+            <label class="flex items-center">
+              <input
+                type="radio"
+                [checked]="!getBooleanValue('isRequiredLabourAvailable')"
+                (change)="setBooleanValue('isRequiredLabourAvailable', false)"
+                class="w-4 h-4 text-primary-600 border-neutral-300 focus:ring-primary-500"
+              />
+              <span class="ml-2 text-sm text-neutral-700">No</span>
+            </label>
           </div>
-          
-          @if (!getBooleanValue('isRequiredLabourAvailable')) {
-            <div>
-              <label class="block text-sm font-medium text-neutral-700 mb-2">
-                Please explain the labour availability challenges
-              </label>
-              <textarea
-                formControlName="labourAvailabilityDetails"
-                rows="3"
-                placeholder="Describe labour availability issues and mitigation strategies..."
-                class="block w-full px-3 py-2 border border-neutral-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
-              ></textarea>
-            </div>
-          }
         </div>
 
-        <!-- Organogram -->
-        <div class="space-y-4">
-          <div>
-            <h4 class="font-medium text-neutral-900 mb-3">
-              Is there an organogram in place?
-            </h4>
-            <div class="flex space-x-4">
-              <label class="flex items-center">
-                <input
-                  type="radio"
-                  [checked]="getBooleanValue('hasOrganogram')"
-                  (change)="setBooleanValue('hasOrganogram', true)"
-                  class="w-4 h-4 text-primary-600 border-neutral-300 focus:ring-primary-500"
-                />
-                <span class="ml-2 text-sm text-neutral-700">Yes</span>
-              </label>
-              <label class="flex items-center">
-                <input
-                  type="radio"
-                  [checked]="!getBooleanValue('hasOrganogram')"
-                  (change)="setBooleanValue('hasOrganogram', false)"
-                  class="w-4 h-4 text-primary-600 border-neutral-300 focus:ring-primary-500"
-                />
-                <span class="ml-2 text-sm text-neutral-700">No</span>
-              </label>
-            </div>
+        @if (!getBooleanValue('isRequiredLabourAvailable')) {
+        <div>
+          <label class="block text-sm font-medium text-neutral-700 mb-2">
+            Please explain the labour availability challenges
+          </label>
+          <textarea
+            formControlName="labourAvailabilityDetails"
+            rows="3"
+            placeholder="Describe labour availability issues and mitigation strategies..."
+            class="block w-full px-3 py-2 border border-neutral-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+          ></textarea>
+        </div>
+        }
+      </div>
+
+      <!-- Organogram -->
+      <div class="space-y-4">
+        <div>
+          <h4 class="font-medium text-neutral-900 mb-3">
+            Is there an organogram in place?
+          </h4>
+          <div class="flex space-x-4">
+            <label class="flex items-center">
+              <input
+                type="radio"
+                [checked]="getBooleanValue('hasOrganogram')"
+                (change)="setBooleanValue('hasOrganogram', true)"
+                class="w-4 h-4 text-primary-600 border-neutral-300 focus:ring-primary-500"
+              />
+              <span class="ml-2 text-sm text-neutral-700">Yes</span>
+            </label>
+            <label class="flex items-center">
+              <input
+                type="radio"
+                [checked]="!getBooleanValue('hasOrganogram')"
+                (change)="setBooleanValue('hasOrganogram', false)"
+                class="w-4 h-4 text-primary-600 border-neutral-300 focus:ring-primary-500"
+              />
+              <span class="ml-2 text-sm text-neutral-700">No</span>
+            </label>
           </div>
-          
-          @if (getBooleanValue('hasOrganogram')) {
-            <div>
-              <label class="block text-sm font-medium text-neutral-700 mb-2">
-                Describe the organizational structure
-              </label>
-              <textarea
-                formControlName="organogramDescription"
-                rows="3"
-                placeholder="Describe your organizational structure, reporting lines, and departmental breakdown..."
-                class="block w-full px-3 py-2 border border-neutral-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
-              ></textarea>
-            </div>
-          }
         </div>
 
-        <!-- Staff Unionization -->
-        <div class="space-y-4">
-          <div>
-            <h4 class="font-medium text-neutral-900 mb-3">
-              Are the staff unionised?
-            </h4>
-            <div class="flex space-x-4">
-              <label class="flex items-center">
-                <input
-                  type="radio"
-                  [checked]="!getBooleanValue('isStaffUnionised')"
-                  (change)="setBooleanValue('isStaffUnionised', false)"
-                  class="w-4 h-4 text-primary-600 border-neutral-300 focus:ring-primary-500"
+        @if (getBooleanValue('hasOrganogram')) {
+        <div>
+          <label class="block text-sm font-medium text-neutral-700 mb-2">
+            Upload Organogram Document
+          </label>
+
+          @if (!organogramDocumentId()) {
+          <div class="flex items-center justify-center w-full">
+            <label
+              class="flex flex-col items-center justify-center w-full h-32 border-2 border-neutral-300 border-dashed rounded-lg cursor-pointer bg-neutral-50 hover:bg-neutral-100 transition-colors"
+            >
+              <div class="flex flex-col items-center justify-center pt-5 pb-6">
+                <lucide-icon
+                  [img]="UploadIcon"
+                  [size]="24"
+                  class="text-neutral-400 mb-2"
                 />
-                <span class="ml-2 text-sm text-neutral-700">No</span>
-              </label>
-              <label class="flex items-center">
-                <input
-                  type="radio"
-                  [checked]="getBooleanValue('isStaffUnionised')"
-                  (change)="setBooleanValue('isStaffUnionised', true)"
-                  class="w-4 h-4 text-primary-600 border-neutral-300 focus:ring-primary-500"
-                />
-                <span class="ml-2 text-sm text-neutral-700">Yes</span>
-              </label>
+                <p class="mb-2 text-sm text-neutral-600">
+                  <span class="font-semibold">Click to upload</span> organogram
+                </p>
+                <p class="text-xs text-neutral-500">
+                  PDF, DOC, DOCX, PNG, JPG (MAX. 50MB)
+                </p>
+              </div>
+              <input
+                type="file"
+                class="hidden"
+                accept=".pdf,.doc,.docx,.png,.jpg,.jpeg"
+                (change)="onOrganogramFileSelected($event)"
+                [disabled]="isUploadingOrganogram()"
+              />
+            </label>
+          </div>
+
+          @if (isUploadingOrganogram()) {
+          <p class="text-sm text-primary-600 mt-2">Uploading...</p>
+          } } @else {
+          <div
+            class="flex items-center justify-between p-3 bg-neutral-50 border border-neutral-200 rounded-md"
+          >
+            <div class="flex items-center space-x-3">
+              <lucide-icon
+                [img]="FileTextIcon"
+                [size]="20"
+                class="text-neutral-600"
+              />
+              <span class="text-sm text-neutral-700">{{
+                organogramFileName()
+              }}</span>
+            </div>
+            <div class="flex space-x-2">
+              <button
+                type="button"
+                (click)="downloadOrganogram()"
+                class="text-primary-600 hover:text-primary-700 text-sm font-medium"
+              >
+                Download
+              </button>
+              <button
+                type="button"
+                (click)="deleteOrganogram()"
+                class="text-red-600 hover:text-red-700"
+              >
+                <lucide-icon [img]="Trash2Icon" [size]="16" />
+              </button>
             </div>
           </div>
-          
-          @if (getBooleanValue('isStaffUnionised')) {
-            <div>
-              <label class="block text-sm font-medium text-neutral-700 mb-2">
-                Please provide details about union membership
-              </label>
-              <textarea
-                formControlName="unionDetails"
-                rows="3"
-                placeholder="Describe union membership, collective agreements, and relationship management..."
-                class="block w-full px-3 py-2 border border-neutral-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
-              ></textarea>
-            </div>
           }
         </div>
+        }
+      </div>
 
-        <!-- Succession Plan -->
-        <div class="space-y-4">
-          <div>
-            <h4 class="font-medium text-neutral-900 mb-3">
-              Is a succession plan in place?
-            </h4>
-            <div class="flex space-x-4">
-              <label class="flex items-center">
-                <input
-                  type="radio"
-                  [checked]="getBooleanValue('hasSuccessionPlan')"
-                  (change)="setBooleanValue('hasSuccessionPlan', true)"
-                  class="w-4 h-4 text-primary-600 border-neutral-300 focus:ring-primary-500"
-                />
-                <span class="ml-2 text-sm text-neutral-700">Yes</span>
-              </label>
-              <label class="flex items-center">
-                <input
-                  type="radio"
-                  [checked]="!getBooleanValue('hasSuccessionPlan')"
-                  (change)="setBooleanValue('hasSuccessionPlan', false)"
-                  class="w-4 h-4 text-primary-600 border-neutral-300 focus:ring-primary-500"
-                />
-                <span class="ml-2 text-sm text-neutral-700">No</span>
-              </label>
-            </div>
+      <!-- Staff Unionization -->
+      <div class="space-y-4">
+        <div>
+          <h4 class="font-medium text-neutral-900 mb-3">
+            Are the staff unionised?
+          </h4>
+          <div class="flex space-x-4">
+            <label class="flex items-center">
+              <input
+                type="radio"
+                [checked]="!getBooleanValue('isStaffUnionised')"
+                (change)="setBooleanValue('isStaffUnionised', false)"
+                class="w-4 h-4 text-primary-600 border-neutral-300 focus:ring-primary-500"
+              />
+              <span class="ml-2 text-sm text-neutral-700">No</span>
+            </label>
+            <label class="flex items-center">
+              <input
+                type="radio"
+                [checked]="getBooleanValue('isStaffUnionised')"
+                (change)="setBooleanValue('isStaffUnionised', true)"
+                class="w-4 h-4 text-primary-600 border-neutral-300 focus:ring-primary-500"
+              />
+              <span class="ml-2 text-sm text-neutral-700">Yes</span>
+            </label>
           </div>
-          
-          @if (getBooleanValue('hasSuccessionPlan')) {
-            <div>
-              <label class="block text-sm font-medium text-neutral-700 mb-2">
-                Describe the succession planning strategy
-              </label>
-              <textarea
-                formControlName="successionPlanDetails"
-                rows="3"
-                placeholder="Outline key position succession plans and knowledge transfer strategies..."
-                class="block w-full px-3 py-2 border border-neutral-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
-              ></textarea>
-            </div>
-          }
         </div>
 
-        <!-- Skills Shortfall -->
-        <div class="space-y-4">
-          <div>
-            <h4 class="font-medium text-neutral-900 mb-3">
-              Are there any identified skills/managerial shortfall currently in the business?
-            </h4>
-            <div class="flex space-x-4">
-              <label class="flex items-center">
-                <input
-                  type="radio"
-                  [checked]="!getBooleanValue('hasSkillShortfall')"
-                  (change)="setBooleanValue('hasSkillShortfall', false)"
-                  class="w-4 h-4 text-primary-600 border-neutral-300 focus:ring-primary-500"
-                />
-                <span class="ml-2 text-sm text-neutral-700">No</span>
-              </label>
-              <label class="flex items-center">
-                <input
-                  type="radio"
-                  [checked]="getBooleanValue('hasSkillShortfall')"
-                  (change)="setBooleanValue('hasSkillShortfall', true)"
-                  class="w-4 h-4 text-primary-600 border-neutral-300 focus:ring-primary-500"
-                />
-                <span class="ml-2 text-sm text-neutral-700">Yes</span>
-              </label>
-            </div>
+        @if (getBooleanValue('isStaffUnionised')) {
+        <div>
+          <label class="block text-sm font-medium text-neutral-700 mb-2">
+            Please provide details about union membership
+          </label>
+          <textarea
+            formControlName="unionDetails"
+            rows="3"
+            placeholder="Describe union membership, collective agreements, and relationship management..."
+            class="block w-full px-3 py-2 border border-neutral-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+          ></textarea>
+        </div>
+        }
+      </div>
+
+      <!-- Skills Shortfall -->
+      <div class="space-y-4">
+        <div>
+          <h4 class="font-medium text-neutral-900 mb-3">
+            Are there any identified skills/managerial shortfall currently in
+            the business?
+          </h4>
+          <div class="flex space-x-4">
+            <label class="flex items-center">
+              <input
+                type="radio"
+                [checked]="!getBooleanValue('hasSkillShortfall')"
+                (change)="setBooleanValue('hasSkillShortfall', false)"
+                class="w-4 h-4 text-primary-600 border-neutral-300 focus:ring-primary-500"
+              />
+              <span class="ml-2 text-sm text-neutral-700">No</span>
+            </label>
+            <label class="flex items-center">
+              <input
+                type="radio"
+                [checked]="getBooleanValue('hasSkillShortfall')"
+                (change)="setBooleanValue('hasSkillShortfall', true)"
+                class="w-4 h-4 text-primary-600 border-neutral-300 focus:ring-primary-500"
+              />
+              <span class="ml-2 text-sm text-neutral-700">Yes</span>
+            </label>
           </div>
-          
-          @if (getBooleanValue('hasSkillShortfall')) {
-            <div>
-              <label class="block text-sm font-medium text-neutral-700 mb-2">
-                Please describe the skills shortfall and mitigation plans
-              </label>
-              <textarea
-                formControlName="skillShortfallDetails"
-                rows="3"
-                placeholder="Detail the specific skills gaps and your plans to address them..."
-                class="block w-full px-3 py-2 border border-neutral-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
-              ></textarea>
-            </div>
-          }
         </div>
 
-        <!-- Labour Disputes -->
-        <div class="space-y-4">
-          <div>
-            <h4 class="font-medium text-neutral-900 mb-3">
-              Have there been any labour disputes, arbitration, or grievances settled or 
-              outstanding over the past three years?
-            </h4>
-            <div class="flex space-x-4">
-              <label class="flex items-center">
-                <input
-                  type="radio"
-                  [checked]="!getBooleanValue('hasLabourDisputes')"
-                  (change)="setBooleanValue('hasLabourDisputes', false)"
-                  class="w-4 h-4 text-primary-600 border-neutral-300 focus:ring-primary-500"
-                />
-                <span class="ml-2 text-sm text-neutral-700">No</span>
-              </label>
-              <label class="flex items-center">
-                <input
-                  type="radio"
-                  [checked]="getBooleanValue('hasLabourDisputes')"
-                  (change)="setBooleanValue('hasLabourDisputes', true)"
-                  class="w-4 h-4 text-primary-600 border-neutral-300 focus:ring-primary-500"
-                />
-                <span class="ml-2 text-sm text-neutral-700">Yes</span>
-              </label>
-            </div>
-          </div>
-          
-          @if (getBooleanValue('hasLabourDisputes')) {
-            <div>
-              <label class="block text-sm font-medium text-neutral-700 mb-2">
-                Please provide details of labour disputes and their resolution
-              </label>
-              <textarea
-                formControlName="labourDisputeDetails"
-                rows="3"
-                placeholder="Describe any labour disputes, their outcomes, and lessons learned..."
-                class="block w-full px-3 py-2 border border-neutral-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
-              ></textarea>
-            </div>
-          }
+        @if (getBooleanValue('hasSkillShortfall')) {
+        <div>
+          <label class="block text-sm font-medium text-neutral-700 mb-2">
+            Please describe the skills shortfall and mitigation plans
+          </label>
+          <textarea
+            formControlName="skillShortfallDetails"
+            rows="3"
+            placeholder="Detail the specific skills gaps and your plans to address them..."
+            class="block w-full px-3 py-2 border border-neutral-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+          ></textarea>
         </div>
-      </form>
+        }
+      </div>
 
-      <!-- Progress Indicator -->
-      @if (hasData()) {
-        <div class="mt-6 pt-4 border-t border-neutral-200">
-          <div class="flex items-center justify-between text-sm text-neutral-600">
-            <span>Section Progress</span>
-            <span class="font-medium">{{ getCompletionPercentage() }}% Complete</span>
-          </div>
-          <div class="mt-2 w-full bg-neutral-200 rounded-full h-2">
-            <div 
-              class="bg-primary-500 h-2 rounded-full transition-all duration-300"
-              [style.width.%]="getCompletionPercentage()"
-            ></div>
+      <!-- Labour Disputes -->
+      <div class="space-y-4">
+        <div>
+          <h4 class="font-medium text-neutral-900 mb-3">
+            Have there been any labour disputes, arbitration, or grievances
+            settled or outstanding over the past three years?
+          </h4>
+          <div class="flex space-x-4">
+            <label class="flex items-center">
+              <input
+                type="radio"
+                [checked]="!getBooleanValue('hasLabourDisputes')"
+                (change)="setBooleanValue('hasLabourDisputes', false)"
+                class="w-4 h-4 text-primary-600 border-neutral-300 focus:ring-primary-500"
+              />
+              <span class="ml-2 text-sm text-neutral-700">No</span>
+            </label>
+            <label class="flex items-center">
+              <input
+                type="radio"
+                [checked]="getBooleanValue('hasLabourDisputes')"
+                (change)="setBooleanValue('hasLabourDisputes', true)"
+                class="w-4 h-4 text-primary-600 border-neutral-300 focus:ring-primary-500"
+              />
+              <span class="ml-2 text-sm text-neutral-700">Yes</span>
+            </label>
           </div>
         </div>
-      }
+
+        @if (getBooleanValue('hasLabourDisputes')) {
+        <div>
+          <label class="block text-sm font-medium text-neutral-700 mb-2">
+            Please provide details of labour disputes and their resolution
+          </label>
+          <textarea
+            formControlName="labourDisputeDetails"
+            rows="3"
+            placeholder="Describe any labour disputes, their outcomes, and lessons learned..."
+            class="block w-full px-3 py-2 border border-neutral-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+          ></textarea>
+        </div>
+        }
+      </div>
+    </form>
+
+    <!-- Progress Indicator -->
+    @if (hasData()) {
+    <div class="mt-6 pt-4 border-t border-neutral-200">
+      <div class="flex items-center justify-between text-sm text-neutral-600">
+        <span>Section Progress</span>
+        <span class="font-medium"
+          >{{ getCompletionPercentage() }}% Complete</span
+        >
+      </div>
+      <div class="mt-2 w-full bg-neutral-200 rounded-full h-2">
+        <div
+          class="bg-primary-500 h-2 rounded-full transition-all duration-300"
+          [style.width.%]="getCompletionPercentage()"
+        ></div>
+      </div>
     </div>
+    }
+  </div>
   }
 </div>

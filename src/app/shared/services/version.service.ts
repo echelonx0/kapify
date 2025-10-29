@@ -10,16 +10,16 @@ export interface VersionInfo {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class VersionService {
   // Global version signal accessible throughout the app
   private versionInfo = signal<VersionInfo>({
-    version: '2.7.3',
-    buildDate: '23rd October, 2025',
-    environment: 'production',  
+    version: '2.7.4',
+    buildDate: '29th October, 2025',
+    environment: 'production',
     buildNumber: '1',
-    commitHash: 'a8a6481' // First 7 chars of git commit
+    commitHash: 'a8a6481', // First 7 chars of git commit
   });
 
   // Public read-only access
@@ -34,7 +34,7 @@ export class VersionService {
 
   // Formatted version strings for different use cases
   public readonly shortVersion = () => `v${this.versionInfo().version}`;
-  public readonly fullVersion = () => 
+  public readonly fullVersion = () =>
     `v${this.versionInfo().version} (${this.versionInfo().buildNumber})`;
   public readonly detailedVersion = () => {
     const info = this.versionInfo();
@@ -43,7 +43,7 @@ export class VersionService {
 
   // Method to update version info (for build processes)
   updateVersionInfo(info: Partial<VersionInfo>) {
-    this.versionInfo.update(current => ({ ...current, ...info }));
+    this.versionInfo.update((current) => ({ ...current, ...info }));
   }
 
   // Get environment-specific styling
