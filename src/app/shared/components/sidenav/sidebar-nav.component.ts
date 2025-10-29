@@ -109,9 +109,9 @@ export class SidebarNavComponent implements OnInit {
       userTypes: ['sme', 'funder'],
     },
     {
-      label: 'Resources',
+      label: 'Kapify Academy',
       icon: BookOpen,
-      route: '/dashboard/resources',
+      route: '/dashboard/kapify-academy',
       userTypes: ['sme', 'funder'],
     },
     {

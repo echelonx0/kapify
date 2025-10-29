@@ -1,0 +1,462 @@
+<div class="min-h-screen bg-slate-50 p-6">
+  <div class="max-w-7xl mx-auto">
+    <!-- Header -->
+    <div class="mb-8 animate-fade-in">
+      <div class="flex items-center mb-3">
+        <div
+          class="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center mr-4"
+        >
+          <lucide-icon [img]="SparklesIcon" [size]="24" class="text-white" />
+        </div>
+        <div>
+          <h1 class="text-4xl font-bold text-slate-900">
+            {{ welcomeMessage().title }}
+          </h1>
+          <p class="text-lg text-slate-600 mt-1">
+            {{ welcomeMessage().subtitle }}
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stats Row -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+      @for (stat of stats(); track stat.label) {
+      <div class="bento-card p-6 animate-fade-in">
+        <div class="flex items-center justify-between">
+          <div>
+            <div class="text-3xl font-bold text-slate-900 mb-1">
+              {{ stat.value }}
+            </div>
+            <div class="text-sm text-slate-600">{{ stat.label }}</div>
+          </div>
+          <div
+            class="w-12 h-12 rounded-xl bg-orange-100 flex items-center justify-center"
+          >
+            <lucide-icon
+              [img]="stat.icon"
+              [size]="24"
+              class="text-orange-600"
+            />
+          </div>
+        </div>
+      </div>
+      }
+    </div>
+
+    <!-- Tab Navigation -->
+    <div class="bg-slate-100 rounded-2xl p-2 mb-6 flex flex-wrap gap-2">
+      @for (tab of tabs; track tab.id) {
+      <button
+        class="tab-button"
+        [class.active]="activeTab() === tab.id"
+        (click)="selectTab(tab.id)"
+      >
+        <lucide-icon [img]="tab.icon" [size]="18" />
+        <span>{{ tab.label }}</span>
+        @if (tab.count) {
+        <span class="px-2 py-0.5 bg-orange-500 text-white text-xs rounded-full">
+          {{ tab.count }}
+        </span>
+        }
+      </button>
+      }
+    </div>
+
+    <!-- Videos Tab -->
+    @if (activeTab() === 'videos') {
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <!-- Featured Video - Large -->
+      <div class="lg:col-span-8 bento-card overflow-hidden animate-fade-in">
+        @if (selectedVideo(); as video) {
+        <div class="video-thumbnail aspect-video" (click)="selectVideo(video)">
+          <img [src]="video.thumbnailUrl" [alt]="video.title" />
+          <div class="play-overlay">
+            <div
+              class="w-16 h-16 rounded-full bg-orange-500 flex items-center justify-center"
+            >
+              <lucide-icon [img]="PlayIcon" [size]="32" class="text-white" />
+            </div>
+          </div>
+          <div
+            class="absolute bottom-3 right-3 px-3 py-1 bg-slate-900/80 text-white text-sm rounded-lg"
+          >
+            {{ video.duration }}
+          </div>
+        </div>
+        <div class="p-6">
+          <span
+            class="px-3 py-1 bg-orange-100 text-orange-700 text-xs font-semibold rounded-full"
+          >
+            {{ video.category }}
+          </span>
+          <h2 class="text-2xl font-bold text-slate-900 mt-3 mb-2">
+            {{ video.title }}
+          </h2>
+          <p class="text-slate-600 mb-4">{{ video.description }}</p>
+          <div class="flex items-center text-sm text-slate-500">
+            <lucide-icon [img]="ClockIcon" [size]="16" class="mr-1" />
+            <span class="mr-4">{{ video.duration }}</span>
+            <span>{{ video.views }} views</span>
+          </div>
+        </div>
+        }
+      </div>
+
+      <!-- Video List - Sidebar -->
+      <div class="lg:col-span-4 space-y-4">
+        <div class="bento-card p-6 animate-fade-in">
+          <h3 class="text-lg font-bold text-slate-900 mb-4">More Videos</h3>
+          <div class="space-y-3 max-h-[600px] overflow-y-auto">
+            @for (video of videos(); track video.id) {
+            <div
+              class="flex items-start p-3 bg-slate-50 rounded-xl hover:bg-slate-100 transition-colors cursor-pointer"
+              [class.ring-2]="selectedVideo()?.id === video.id"
+              [class.ring-orange-500]="selectedVideo()?.id === video.id"
+              (click)="selectVideo(video)"
+            >
+              <div class="relative flex-shrink-0 mr-3">
+                <img
+                  [src]="video.thumbnailUrl"
+                  [alt]="video.title"
+                  class="w-24 h-14 object-cover rounded-lg"
+                />
+                <div class="absolute inset-0 flex items-center justify-center">
+                  <div
+                    class="w-8 h-8 rounded-full bg-slate-900/70 flex items-center justify-center"
+                  >
+                    <lucide-icon
+                      [img]="PlayIcon"
+                      [size]="14"
+                      class="text-white"
+                    />
+                  </div>
+                </div>
+              </div>
+              <div class="flex-1 min-w-0">
+                <h4
+                  class="text-sm font-semibold text-slate-900 mb-1 line-clamp-2"
+                >
+                  {{ video.title }}
+                </h4>
+                <div class="flex items-center text-xs text-slate-500">
+                  <span>{{ video.duration }}</span>
+                  <span class="mx-1">•</span>
+                  <span>{{ video.views }} views</span>
+                </div>
+              </div>
+            </div>
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+    }
+
+    <!-- Guides & Templates Tab -->
+    @if (activeTab() === 'guides') {
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      @for (resource of resources(); track resource.id) {
+      <div
+        class="bento-card p-6 animate-fade-in hover:shadow-lg transition-all cursor-pointer"
+        (click)="
+          resource.downloadUrl
+            ? downloadResource(resource)
+            : openExternalResource(resource)
+        "
+      >
+        <div class="flex items-start justify-between mb-4">
+          <div
+            class="w-14 h-14 rounded-xl flex items-center justify-center"
+            [class]="getResourceIconColor(resource.color)"
+          >
+            <lucide-icon [img]="resource.icon" [size]="28" />
+          </div>
+          <span
+            class="px-3 py-1 bg-slate-100 text-slate-700 text-xs font-medium rounded-full"
+          >
+            {{ resource.type }}
+          </span>
+        </div>
+
+        <h3 class="text-lg font-bold text-slate-900 mb-2">
+          {{ resource.title }}
+        </h3>
+        <p class="text-sm text-slate-600 mb-4">{{ resource.description }}</p>
+
+        <div
+          class="flex items-center justify-between pt-4 border-t border-slate-100"
+        >
+          <span class="text-sm font-medium text-orange-600">
+            @if (resource.downloadUrl) { Download } @else { View Guide }
+          </span>
+          <lucide-icon
+            [img]="resource.downloadUrl ? DownloadIcon : ExternalLinkIcon"
+            [size]="16"
+            class="text-orange-600"
+          />
+        </div>
+      </div>
+      }
+    </div>
+    }
+
+    <!-- Webinars Tab -->
+    @if (activeTab() === 'webinars') {
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <!-- Upcoming Webinar Card -->
+      <div
+        class="bento-card p-8 bg-gradient-to-br from-orange-500 to-orange-600 text-white animate-fade-in"
+      >
+        <div class="flex items-start justify-between mb-6">
+          <div>
+            <span
+              class="px-3 py-1 bg-white/20 text-white text-xs font-semibold rounded-full"
+            >
+              UPCOMING
+            </span>
+            <h3 class="text-2xl font-bold mt-4 mb-2">
+              @if (userType() === 'sme') { Mastering Funding Applications }
+              @else { Advanced Due Diligence Workshop }
+            </h3>
+            <p class="text-orange-100">
+              @if (userType() === 'sme') { Join our experts for a live Q&A on
+              funding strategies } @else { Learn from top investors about risk
+              assessment }
+            </p>
+          </div>
+        </div>
+
+        <div class="space-y-3 mb-6">
+          <div class="flex items-center text-orange-100">
+            <lucide-icon [img]="ClockIcon" [size]="16" class="mr-2" />
+            <span class="text-sm">November 5, 2025 - 2:00 PM SAST</span>
+          </div>
+          <div class="flex items-center text-orange-100">
+            <lucide-icon [img]="UsersIcon" [size]="16" class="mr-2" />
+            <span class="text-sm">75 registered</span>
+          </div>
+        </div>
+
+        <button
+          class="w-full px-6 py-3 bg-white text-orange-600 rounded-xl font-semibold hover:bg-orange-50 transition-colors"
+        >
+          Register Now
+        </button>
+      </div>
+
+      <!-- Past Webinar -->
+      <div class="bento-card p-6 animate-fade-in">
+        <div
+          class="aspect-video bg-slate-100 rounded-xl mb-4 flex items-center justify-center"
+        >
+          <lucide-icon [img]="PlayIcon" [size]="48" class="text-slate-400" />
+        </div>
+        <span
+          class="px-3 py-1 bg-slate-100 text-slate-700 text-xs font-medium rounded-full"
+        >
+          RECORDED
+        </span>
+        <h3 class="text-xl font-bold text-slate-900 mt-3 mb-2">
+          @if (userType() === 'sme') { Pitch Perfect: Winning Investor
+          Presentations } @else { Portfolio Optimization Strategies }
+        </h3>
+        <p class="text-sm text-slate-600 mb-4">
+          Watch the recording from our October 2025 session
+        </p>
+        <button
+          class="flex items-center text-orange-600 font-medium hover:text-orange-700"
+        >
+          Watch Recording
+          <lucide-icon [img]="ArrowRightIcon" [size]="16" class="ml-2" />
+        </button>
+      </div>
+    </div>
+    }
+
+    <!-- Courses Tab -->
+    @if (activeTab() === 'courses') {
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <!-- Coming Soon Card -->
+      <div class="lg:col-span-2 bento-card p-12 text-center animate-fade-in">
+        <div
+          class="w-20 h-20 rounded-full bg-orange-100 flex items-center justify-center mx-auto mb-6"
+        >
+          <lucide-icon [img]="AwardIcon" [size]="40" class="text-orange-600" />
+        </div>
+        <h2 class="text-3xl font-bold text-slate-900 mb-3">
+          Structured Courses Coming Soon
+        </h2>
+        <p class="text-lg text-slate-600 max-w-2xl mx-auto mb-8">
+          @if (userType() === 'sme') { We're developing comprehensive courses on
+          fundraising, business planning, and growth strategies. Be the first to
+          know when they launch! } @else { We're creating advanced courses on
+          investment analysis, portfolio management, and due diligence. Get
+          notified when they're ready! }
+        </p>
+        <button
+          class="px-8 py-3 bg-orange-500 text-white rounded-xl font-semibold hover:bg-orange-600 transition-colors"
+        >
+          Notify Me
+        </button>
+      </div>
+
+      <!-- Interest Card -->
+      <div class="bento-card p-6 animate-fade-in">
+        <h3 class="text-xl font-bold text-slate-900 mb-4">Planned Topics</h3>
+        <div class="space-y-3">
+          @if (userType() === 'sme') {
+          <div class="flex items-start">
+            <div
+              class="w-6 h-6 rounded-full bg-green-100 flex items-center justify-center mr-3 mt-0.5 flex-shrink-0"
+            >
+              <lucide-icon
+                [img]="AwardIcon"
+                [size]="14"
+                class="text-green-600"
+              />
+            </div>
+            <div>
+              <div class="font-semibold text-slate-900 text-sm">
+                Funding Fundamentals
+              </div>
+              <div class="text-xs text-slate-600">6 modules</div>
+            </div>
+          </div>
+          <div class="flex items-start">
+            <div
+              class="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center mr-3 mt-0.5 flex-shrink-0"
+            >
+              <lucide-icon
+                [img]="TrendingUpIcon"
+                [size]="14"
+                class="text-blue-600"
+              />
+            </div>
+            <div>
+              <div class="font-semibold text-slate-900 text-sm">
+                Financial Planning Mastery
+              </div>
+              <div class="text-xs text-slate-600">8 modules</div>
+            </div>
+          </div>
+          <div class="flex items-start">
+            <div
+              class="w-6 h-6 rounded-full bg-purple-100 flex items-center justify-center mr-3 mt-0.5 flex-shrink-0"
+            >
+              <lucide-icon
+                [img]="UsersIcon"
+                [size]="14"
+                class="text-purple-600"
+              />
+            </div>
+            <div>
+              <div class="font-semibold text-slate-900 text-sm">
+                Pitch & Presentation Skills
+              </div>
+              <div class="text-xs text-slate-600">5 modules</div>
+            </div>
+          </div>
+          } @else {
+          <div class="flex items-start">
+            <div
+              class="w-6 h-6 rounded-full bg-green-100 flex items-center justify-center mr-3 mt-0.5 flex-shrink-0"
+            >
+              <lucide-icon
+                [img]="TrendingUpIcon"
+                [size]="14"
+                class="text-green-600"
+              />
+            </div>
+            <div>
+              <div class="font-semibold text-slate-900 text-sm">
+                Investment Analysis
+              </div>
+              <div class="text-xs text-slate-600">10 modules</div>
+            </div>
+          </div>
+          <div class="flex items-start">
+            <div
+              class="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center mr-3 mt-0.5 flex-shrink-0"
+            >
+              <lucide-icon
+                [img]="FileTextIcon"
+                [size]="14"
+                class="text-blue-600"
+              />
+            </div>
+            <div>
+              <div class="font-semibold text-slate-900 text-sm">
+                Due Diligence Deep Dive
+              </div>
+              <div class="text-xs text-slate-600">12 modules</div>
+            </div>
+          </div>
+          <div class="flex items-start">
+            <div
+              class="w-6 h-6 rounded-full bg-purple-100 flex items-center justify-center mr-3 mt-0.5 flex-shrink-0"
+            >
+              <lucide-icon
+                [img]="UsersIcon"
+                [size]="14"
+                class="text-purple-600"
+              />
+            </div>
+            <div>
+              <div class="font-semibold text-slate-900 text-sm">
+                Portfolio Strategy
+              </div>
+              <div class="text-xs text-slate-600">8 modules</div>
+            </div>
+          </div>
+          }
+        </div>
+      </div>
+    </div>
+    }
+  </div>
+</div>
+
+<!-- Video Modal -->
+@if (showVideoModal() && selectedVideo(); as video) {
+<div class="video-modal" (click)="closeVideoModal()">
+  <div class="video-modal-content" (click)="$event.stopPropagation()">
+    <iframe
+      class="video-player"
+      [src]="getVideoEmbedUrl(video.youtubeId)"
+      title="YouTube video player"
+      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+      allowfullscreen
+    >
+    </iframe>
+    <div class="p-6">
+      <div class="flex items-start justify-between mb-3">
+        <div>
+          <h2 class="text-2xl font-bold text-slate-900 mb-2">
+            {{ video.title }}
+          </h2>
+          <div class="flex items-center text-sm text-slate-500">
+            <span
+              class="px-3 py-1 bg-orange-100 text-orange-700 text-xs font-semibold rounded-full mr-3"
+            >
+              {{ video.category }}
+            </span>
+            <span class="flex items-center mr-3">
+              <lucide-icon [img]="ClockIcon" [size]="14" class="mr-1" />
+              {{ video.duration }}
+            </span>
+            <span>{{ video.views }} views</span>
+          </div>
+        </div>
+        <button
+          (click)="closeVideoModal()"
+          class="w-10 h-10 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center transition-colors"
+        >
+          <span class="text-slate-600 text-xl">×</span>
+        </button>
+      </div>
+      <p class="text-slate-600">{{ video.description }}</p>
+    </div>
+  </div>
+</div>
+}
