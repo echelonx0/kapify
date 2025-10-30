@@ -2,90 +2,95 @@
 import { Component, signal, OnInit, inject, HostListener } from '@angular/core';
 import { Router, RouterOutlet } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { 
-  LucideAngularModule, 
-  ArrowLeft, 
-  Check, 
-  Building2, 
-  FileText, 
+import {
+  LucideAngularModule,
+  ArrowLeft,
+  Check,
+  Building2,
+  FileText,
   Shield,
-  Home, 
-  Clock, 
-  AlertCircle, 
-  CheckCircle, 
-  Menu, 
+  Home,
+  Clock,
+  AlertCircle,
+  CheckCircle,
+  Menu,
   X,
   Save,
   ShieldIcon,
-  ArrowRightIcon
+  ArrowRightIcon,
 } from 'lucide-angular';
 import { UiButtonComponent } from '../../../shared/components';
-import { FunderOnboardingService, OnboardingStep } from '../../services/funder-onboarding.service';
+import {
+  FunderOnboardingService,
+  OnboardingStep,
+} from '../../services/funder-onboarding.service';
 
 @Component({
   selector: 'app-organization-onboarding-layout',
   standalone: true,
   imports: [RouterOutlet, LucideAngularModule, UiButtonComponent, CommonModule],
   templateUrl: 'org-onboarding-layout.component.html',
-  styles: [`
-    .line-clamp-2 {
-      display: -webkit-box;
-      -webkit-line-clamp: 2;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
-    }
-    
-    /* Custom scrollbar for sidebar */
-    nav::-webkit-scrollbar {
-      width: 4px;
-    }
-    
-    nav::-webkit-scrollbar-track {
-      background: transparent;
-    }
-    
-    nav::-webkit-scrollbar-thumb {
-      background: #d1d5db;
-      border-radius: 2px;
-    }
-    
-    nav::-webkit-scrollbar-thumb:hover {
-      background: #9ca3af;
-    }
-
-    /* Smooth transitions */
-    .transition-all {
-      transition-property: all;
-      transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-      transition-duration: 200ms;
-    }
-
-    /* Enhanced hover states */
-    button:hover:not(:disabled) {
-      transform: translateY(-1px);
-    }
-
-    button:active:not(:disabled) {
-      transform: translateY(0);
-    }
-
-    /* Mobile optimizations */
-    @media (max-width: 1023px) {
-      .sticky {
-        position: -webkit-sticky;
-        position: sticky;
+  styles: [
+    `
+      .line-clamp-2 {
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
       }
-    }
-  `]
+
+      /* Custom scrollbar for sidebar */
+      nav::-webkit-scrollbar {
+        width: 4px;
+      }
+
+      nav::-webkit-scrollbar-track {
+        background: transparent;
+      }
+
+      nav::-webkit-scrollbar-thumb {
+        background: #d1d5db;
+        border-radius: 2px;
+      }
+
+      nav::-webkit-scrollbar-thumb:hover {
+        background: #9ca3af;
+      }
+
+      /* Smooth transitions */
+      .transition-all {
+        transition-property: all;
+        transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+        transition-duration: 200ms;
+      }
+
+      /* Enhanced hover states */
+      button:hover:not(:disabled) {
+        transform: translateY(-1px);
+      }
+
+      button:active:not(:disabled) {
+        transform: translateY(0);
+      }
+
+      /* Mobile optimizations */
+      @media (max-width: 1023px) {
+        .sticky {
+          position: -webkit-sticky;
+          position: sticky;
+        }
+      }
+    `,
+  ],
 })
 export class OrganizationOnboardingLayoutComponent implements OnInit {
   private router = inject(Router);
-   public onboardingService = inject(FunderOnboardingService);
+  public onboardingService = inject(FunderOnboardingService);
 
   // State
   showMobileNav = signal(false);
   isMobile = signal(false);
-  
+
   // Icons
   CheckIcon = Check;
   ArrowLeftIcon = ArrowLeft;
@@ -107,7 +112,7 @@ export class OrganizationOnboardingLayoutComponent implements OnInit {
   ngOnInit() {
     this.checkMobile();
     this.onboardingService.checkOnboardingStatus().subscribe();
-   // this.onboardingService.startAutoSave();
+    // this.onboardingService.startAutoSave();
   }
 
   private checkMobile() {
@@ -122,7 +127,7 @@ export class OrganizationOnboardingLayoutComponent implements OnInit {
   // ===============================
 
   toggleMobileNav() {
-    this.showMobileNav.update(show => !show);
+    this.showMobileNav.update((show) => !show);
   }
 
   closeMobileNav() {
@@ -137,8 +142,6 @@ export class OrganizationOnboardingLayoutComponent implements OnInit {
   // ===============================
   // NAVIGATION METHODS
   // ===============================
-
- 
 
   goToFunderDashboard() {
     this.router.navigate(['/funder/']);
@@ -157,26 +160,24 @@ export class OrganizationOnboardingLayoutComponent implements OnInit {
     return this.onboardingService.getOnboardingSteps();
   }
 
-
   getCurrentStepEstimatedTime(): string {
-    const currentStep = this.getStepInfo().find(step => step.id === this.onboardingService.currentStep());
+    const currentStep = this.getStepInfo().find(
+      (step) => step.id === this.onboardingService.currentStep()
+    );
     return currentStep?.estimatedTime || '';
   }
-
- 
 
   getTotalSteps(): number {
     return this.getStepInfo().length;
   }
- 
 
   getRemainingTime(): string {
-    const remainingSteps = this.getStepInfo().filter(step => !step.completed);
+    const remainingSteps = this.getStepInfo().filter((step) => !step.completed);
     const totalMinutes = remainingSteps.reduce((total, step) => {
       const minutes = parseInt(step.estimatedTime.split(' ')[0]);
       return total + minutes;
     }, 0);
-    
+
     if (totalMinutes < 60) {
       return `${totalMinutes} min`;
     } else {
@@ -189,22 +190,21 @@ export class OrganizationOnboardingLayoutComponent implements OnInit {
   getLastSavedText(): string {
     const lastSaved = this.onboardingService.lastSavedLocally();
     if (!lastSaved) return '';
-    
+
     const now = new Date();
     const diff = now.getTime() - lastSaved.getTime();
     const minutes = Math.floor(diff / 60000);
-    
+
     if (minutes === 0) return 'just now';
     if (minutes === 1) return '1 minute ago';
     if (minutes < 60) return `${minutes} minutes ago`;
-    
+
     const hours = Math.floor(minutes / 60);
     if (hours === 1) return '1 hour ago';
     if (hours < 24) return `${hours} hours ago`;
-    
+
     return 'over a day ago';
   }
-
 
   getStepIcon(stepId: string) {
     switch (stepId) {
@@ -219,22 +219,20 @@ export class OrganizationOnboardingLayoutComponent implements OnInit {
     }
   }
 
- 
-
   goToStep(stepId: string) {
     // Check if user can access this step
     if (!this.canAccessStep(stepId)) {
       console.warn(`Cannot access step ${stepId} - prerequisites not met`);
       return;
     }
-    
+
     this.onboardingService.setCurrentStep(stepId);
     this.router.navigate(['/funder/onboarding', stepId]);
   }
 
   previousStep() {
     const currentStep = this.onboardingService.currentStep();
-    
+
     switch (currentStep) {
       case 'legal-compliance':
         this.goToStep('organization-info');
@@ -256,7 +254,7 @@ export class OrganizationOnboardingLayoutComponent implements OnInit {
   }
   nextStep() {
     const currentStep = this.onboardingService.currentStep();
-    
+
     switch (currentStep) {
       case 'organization-info':
         if (this.onboardingService.isBasicInfoValid()) {
@@ -282,37 +280,43 @@ export class OrganizationOnboardingLayoutComponent implements OnInit {
 
   saveAndContinue() {
     const currentStep = this.onboardingService.currentStep();
-    
+
     // Always save to local storage first
     console.log('💾 Saving current step progress...');
-    
+
     // Validate current step completion
     let canContinue = false;
-    
+
     switch (currentStep) {
       case 'organization-info':
         canContinue = this.onboardingService.isBasicInfoValid();
         if (!canContinue) {
-          console.warn('⚠️ Please complete all required basic information fields');
+          console.warn(
+            '⚠️ Please complete all required basic information fields'
+          );
           return;
         }
         break;
       case 'legal-compliance':
         canContinue = this.onboardingService.isLegalInfoValid();
         if (!canContinue) {
-          console.warn('⚠️ Please complete all required legal information fields');
+          console.warn(
+            '⚠️ Please complete all required legal information fields'
+          );
           return;
         }
         break;
       case 'verification':
         canContinue = this.onboardingService.isReadyForVerification();
         if (!canContinue) {
-          console.warn('⚠️ Previous steps must be completed before verification');
+          console.warn(
+            '⚠️ Previous steps must be completed before verification'
+          );
           return;
         }
         break;
     }
-    
+
     if (canContinue) {
       // Save to database and continue to next step
       this.onboardingService.saveToDatabase().subscribe({
@@ -328,7 +332,7 @@ export class OrganizationOnboardingLayoutComponent implements OnInit {
           if (!this.isLastStep()) {
             this.nextStep();
           }
-        }
+        },
       });
     }
   }
@@ -363,25 +367,25 @@ export class OrganizationOnboardingLayoutComponent implements OnInit {
 
   getCurrentStepTitle(): string {
     const currentStep = this.onboardingService.currentStep();
-    const stepInfo = this.getStepInfo().find(step => step.id === currentStep);
+    const stepInfo = this.getStepInfo().find((step) => step.id === currentStep);
     return stepInfo?.title || 'Organization Setup';
   }
 
   getCurrentStepDescription(): string {
     const currentStep = this.onboardingService.currentStep();
-    const stepInfo = this.getStepInfo().find(step => step.id === currentStep);
+    const stepInfo = this.getStepInfo().find((step) => step.id === currentStep);
     return stepInfo?.description || '';
   }
 
   getCurrentStepNumber(): number {
     const currentStep = this.onboardingService.currentStep();
     const steps = this.getStepInfo();
-    const currentIndex = steps.findIndex(step => step.id === currentStep);
+    const currentIndex = steps.findIndex((step) => step.id === currentStep);
     return currentIndex + 1;
   }
 
   getCompletedSteps(): number {
-    return this.getStepInfo().filter(step => step.completed).length;
+    return this.getStepInfo().filter((step) => step.completed).length;
   }
 
   getOverallProgress(): number {
@@ -393,15 +397,14 @@ export class OrganizationOnboardingLayoutComponent implements OnInit {
   // UPDATED STYLING METHODS
   // ===============================
 
- 
-
   getStepIconClasses(step: OnboardingStep): string {
-    const baseClasses = 'w-8 h-8 rounded-lg flex items-center justify-center transition-colors';
-    
+    const baseClasses =
+      'w-8 h-8 rounded-lg flex items-center justify-center transition-colors';
+
     if (step.completed) {
       return `${baseClasses} bg-green-500 text-white`;
     } else if (this.isCurrentStep(step.id)) {
-      return `${baseClasses} bg-blue-500 text-white`;
+      return `${baseClasses} bg-slate-500 text-white`;
     } else if (this.canAccessStep(step.id)) {
       return `${baseClasses} bg-neutral-100 text-neutral-600`;
     } else {
@@ -411,11 +414,11 @@ export class OrganizationOnboardingLayoutComponent implements OnInit {
 
   getStepTitleClasses(step: OnboardingStep): string {
     const baseClasses = 'text-sm font-medium';
-    
+
     if (step.completed) {
       return `${baseClasses} text-green-900`;
     } else if (this.isCurrentStep(step.id)) {
-      return `${baseClasses} text-blue-900`;
+      return `${baseClasses} text-slate-900`;
     } else if (this.canAccessStep(step.id)) {
       return `${baseClasses} text-neutral-900`;
     } else {
@@ -434,12 +437,12 @@ export class OrganizationOnboardingLayoutComponent implements OnInit {
     }
 
     console.log('🛡️ Submitting for verification from layout...');
-    
+
     // Save data first, then request verification
     this.onboardingService.saveToDatabase().subscribe({
       next: (saveResult) => {
         console.log('✅ Data saved, requesting verification...');
-        
+
         this.onboardingService.requestVerification().subscribe({
           next: (result) => {
             console.log('✅ Verification requested:', result.message);
@@ -447,22 +450,22 @@ export class OrganizationOnboardingLayoutComponent implements OnInit {
           },
           error: (error) => {
             console.error('❌ Verification request failed:', error);
-          }
+          },
         });
       },
       error: (error) => {
         console.error('❌ Save failed before verification:', error);
-      }
+      },
     });
   }
 
-   getStepCardClasses(step: OnboardingStep): string {
+  getStepCardClasses(step: OnboardingStep): string {
     const baseClasses = 'relative hover:shadow-sm transition-all duration-200';
-    
+
     if (step.completed) {
       return `${baseClasses} bg-green-50 border-green-200 hover:border-green-300`;
     } else if (this.isCurrentStep(step.id)) {
-      return `${baseClasses} bg-blue-50 border-blue-200 hover:border-blue-300 ring-2 ring-blue-100`;
+      return `${baseClasses} bg-slate-50 border-slate-200 hover:border-slate-300 ring-2 ring-slate-100`;
     } else if (this.canAccessStep(step.id)) {
       return `${baseClasses} bg-white border-neutral-200 hover:border-neutral-300`;
     } else {
@@ -472,17 +475,15 @@ export class OrganizationOnboardingLayoutComponent implements OnInit {
 
   getMobileStepCardClasses(step: OnboardingStep): string {
     const baseClasses = 'relative transition-all duration-200';
-    
+
     if (step.completed) {
       return `${baseClasses} bg-green-50 border-green-200`;
     } else if (this.isCurrentStep(step.id)) {
-      return `${baseClasses} bg-blue-50 border-blue-200 ring-2 ring-blue-100`;
+      return `${baseClasses} bg-slate-50 border-slate-200 ring-2 ring-slate-100`;
     } else if (this.canAccessStep(step.id)) {
       return `${baseClasses} bg-white border-neutral-200`;
     } else {
       return `${baseClasses} bg-neutral-50 border-neutral-200 opacity-60 cursor-not-allowed`;
     }
   }
- 
-  
 }

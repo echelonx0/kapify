@@ -1,11 +1,21 @@
 // src/app/funder/components/organization-onboarding.component.ts
-import { Component, signal, OnInit, OnDestroy, inject, computed } from '@angular/core';
+import {
+  Component,
+  signal,
+  OnInit,
+  OnDestroy,
+  inject,
+  computed,
+} from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { Subject, takeUntil } from 'rxjs';
 import { LucideAngularModule, AlertCircle } from 'lucide-angular';
 import { AuthService } from '../../auth/production.auth.service';
-import { FunderOnboardingService, OnboardingState } from '../services/funder-onboarding.service';
+import {
+  FunderOnboardingService,
+  OnboardingState,
+} from '../services/funder-onboarding.service';
 import { MobileHeaderComponent } from './components/mobile-header.component';
 import { PendingVerificationStateComponent } from './components/pending-verification.component';
 import { SetupStateComponent } from './components/setup-state.component';
@@ -13,9 +23,13 @@ import { VerificationReadyStateComponent } from './components/verification-ready
 import { VerifiedStateComponent } from './components/verified.component';
 
 // Import child components
- 
 
-type WelcomeView = 'setup' | 'ready-verification' | 'pending-verification' | 'verified' | 'rejected';
+type WelcomeView =
+  | 'setup'
+  | 'ready-verification'
+  | 'pending-verification'
+  | 'verified'
+  | 'rejected';
 
 @Component({
   selector: 'app-organization-onboarding',
@@ -23,15 +37,15 @@ type WelcomeView = 'setup' | 'ready-verification' | 'pending-verification' | 've
   imports: [
     CommonModule,
     LucideAngularModule,
-   
+
     MobileHeaderComponent,
     SetupStateComponent,
     VerificationReadyStateComponent,
     PendingVerificationStateComponent,
-    VerifiedStateComponent
+    VerifiedStateComponent,
   ],
   templateUrl: 'organization-onboarding.component.html',
-  styleUrls: ['./organisation-onboarding.component.css']
+  styleUrls: ['./organisation-onboarding.component.css'],
 })
 export class OrganizationOnboardingComponent implements OnInit, OnDestroy {
   private router = inject(Router);
@@ -48,7 +62,7 @@ export class OrganizationOnboardingComponent implements OnInit, OnDestroy {
 
   // Computed properties for dynamic content
   currentTime = computed(() => new Date());
-  
+
   ngOnInit() {
     console.log('🎯 Modular OrganizationOnboardingComponent initialized');
     this.checkOnboardingStatus();
@@ -67,7 +81,7 @@ export class OrganizationOnboardingComponent implements OnInit, OnDestroy {
   private setupSubscriptions() {
     this.onboardingService.onboardingState$
       .pipe(takeUntil(this.destroy$))
-      .subscribe(state => {
+      .subscribe((state) => {
         this.onboardingState.set(state);
         this.updateViewBasedOnState(state);
       });
@@ -75,7 +89,7 @@ export class OrganizationOnboardingComponent implements OnInit, OnDestroy {
 
   private updateViewBasedOnState(state: OnboardingState) {
     const org = state.organization;
-    
+
     if (!org || !org.name || !state.canCreateOpportunities) {
       this.currentView.set('setup');
     } else if (org.status === 'pending_verification') {
@@ -126,7 +140,7 @@ export class OrganizationOnboardingComponent implements OnInit, OnDestroy {
       weekday: 'long',
       year: 'numeric',
       month: 'long',
-      day: 'numeric'
+      day: 'numeric',
     });
   }
 
@@ -136,7 +150,7 @@ export class OrganizationOnboardingComponent implements OnInit, OnDestroy {
       return new Date(org.verificationDate).toLocaleDateString('en-US', {
         year: 'numeric',
         month: 'long',
-        day: 'numeric'
+        day: 'numeric',
       });
     }
     return 'recently';
@@ -145,24 +159,28 @@ export class OrganizationOnboardingComponent implements OnInit, OnDestroy {
   getStatusText(): string {
     const org = this.onboardingState()?.organization;
     if (!org) return 'Setup Required';
-    
+
     switch (org.status) {
-      case 'pending_verification': return 'Under Review';
-      case 'verification_rejected': return 'Needs Update';
-      default: return org.isVerified ? 'Verified' : 'Active';
+      case 'pending_verification':
+        return 'Under Review';
+      case 'verification_rejected':
+        return 'Needs Update';
+      default:
+        return org.isVerified ? 'Verified' : 'Active';
     }
   }
 
   getStatusBadgeClass(): string {
     const org = this.onboardingState()?.organization;
-    if (!org) return 'px-2 py-1 text-xs font-medium bg-slate-100 text-slate-700 rounded-full';
-    
+    if (!org)
+      return 'px-2 py-1 text-xs font-medium bg-slate-100 text-slate-700 rounded-full';
+
     const baseClasses = 'px-2 py-1 text-xs font-medium rounded-full';
-    
+
     if (org.isVerified) {
       return `${baseClasses} bg-green-100 text-green-800`;
     }
-    
+
     switch (org.status) {
       case 'pending_verification':
         return `${baseClasses} bg-orange-100 text-orange-800`;
@@ -225,7 +243,8 @@ export class OrganizationOnboardingComponent implements OnInit, OnDestroy {
         console.log('✅ Verification requested successfully:', result.message);
         this.currentView.set('pending-verification');
       },
-      error: (error) => console.error('❌ Failed to request verification:', error)
+      error: (error) =>
+        console.error('❌ Failed to request verification:', error),
     });
   }
 }

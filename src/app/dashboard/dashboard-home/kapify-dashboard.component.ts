@@ -250,7 +250,9 @@ export class KapifyDashboard implements OnInit {
     };
     return classMap[color] || 'hover:border-gray-200';
   }
-
+  navigate() {
+    this.router.navigate(['/funder/onboarding/welcome']);
+  }
   getCardIconClass(color: string): string {
     const classMap: Record<string, string> = {
       blue: 'bg-blue-100',

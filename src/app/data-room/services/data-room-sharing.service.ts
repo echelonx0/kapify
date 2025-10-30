@@ -1,5 +1,5 @@
 import { Injectable, inject, OnDestroy } from '@angular/core';
-import { Observable, from, throwError, Subject } from 'rxjs';
+import { Observable, from, throwError, Subject, of } from 'rxjs';
 import {
   map,
   switchMap,
@@ -70,9 +70,160 @@ export class DataRoomSharingService implements OnDestroy {
       })
     );
   }
-  // ============================================
-  // FUNDER: ACCESS REQUEST METHODS
-  // ============================================
+
+  /**
+   * Get incoming access requests for SME's data room
+   * Uses RPC function to get requester details from auth.users
+   */
+  // getIncomingRequests(
+  //   organizationId?: string
+  // ): Observable<DataRoomAccessRequest[]> {
+  //   const userId = organizationId || this.supabase.getCurrentUserId();
+
+  //   if (!userId) {
+  //     return throwError(() => new Error('User not authenticated'));
+  //   }
+
+  //   return from(
+  //     this.supabase.rpc('get_access_requests_with_requester', {
+  //       org_id: userId,
+  //     })
+  //   ).pipe(
+  //     map(({ data, error }) => {
+  //       if (error) throw error;
+
+  //       return (data || []).map(
+  //         (req: {
+  //           requester_id: any;
+  //           requester_email: any;
+  //           contact_email: any;
+  //           requester_name: any;
+  //           organization_name: any;
+  //           data_room_id: any;
+  //           data_room_title: any;
+  //         }) => {
+  //           const transformed = transformAccessRequestFromDB(req);
+
+  //           // Use data from RPC function
+  //           transformed.requester = {
+  //             id: req.requester_id,
+  //             email: req.requester_email || req.contact_email,
+  //             name: req.requester_name || req.organization_name,
+  //           };
+
+  //           transformed.dataRoom = {
+  //             id: req.data_room_id,
+  //             title: req.data_room_title,
+  //           };
+
+  //           return transformed;
+  //         }
+  //       );
+  //     }),
+  //     catchError((error) => {
+  //       console.error('❌ Failed to load incoming requests:', error);
+  //       return of([]);
+  //     })
+  //   );
+  // }
+
+  // Update createAccessRequest to use correct column:
+  createAccessRequest(
+    request: CreateAccessRequestRequest
+  ): Observable<DataRoomAccessRequest> {
+    const userId = this.supabase.getCurrentUserId();
+
+    if (!userId) {
+      return throwError(() => new Error('User not authenticated'));
+    }
+
+    const accessRequestData = {
+      data_room_id: request.dataRoomId,
+      requester_id: userId, // Changed from requested_by_user_id
+      requested_sections: request.requestedSections || null,
+      request_reason: request.requestReason || null, // Changed from message
+      organization_name: request.organizationName || null,
+      contact_email: request.contactEmail || null,
+      status: 'pending' as const,
+      metadata: {},
+    };
+
+    return from(
+      this.supabase
+        .from('data_room_access_requests')
+        .insert(accessRequestData)
+        .select()
+        .single()
+    ).pipe(
+      map(({ data, error }) => {
+        if (error) throw error;
+        return transformAccessRequestFromDB(data);
+      }),
+      tap(() => this.invalidateAllShareCaches()),
+      catchError((error) => {
+        console.error('❌ Error creating access request:', error);
+        return throwError(() => error);
+      }),
+      takeUntil(this.destroy$)
+    );
+  }
+
+  // Update approveAccessRequest method:
+  private async createShareFromApproval(
+    userId: string,
+    accessRequest: any,
+    approvalRequest: ApproveAccessRequestRequest
+  ): Promise<DataRoomShare> {
+    const shareData = {
+      data_room_id: accessRequest.data_room_id,
+      shared_with_user_id: accessRequest.requester_id, // Changed from requested_by_user_id
+      shared_by_user_id: userId,
+      permission_level: approvalRequest.permissionLevel,
+      allowed_sections:
+        approvalRequest.allowedSections || accessRequest.requested_sections,
+      internal_notes: null,
+      status: 'active',
+      expires_at: approvalRequest.expiresAt
+        ? approvalRequest.expiresAt.toISOString()
+        : null,
+    };
+
+    const { data: shareData_, error: shareError } = await this.supabase
+      .from('data_room_shares')
+      .insert(shareData)
+      .select()
+      .single();
+
+    if (shareError) throw shareError;
+
+    // Update access request
+    await this.supabase
+      .from('data_room_access_requests')
+      .update({
+        status: 'approved' as const,
+        reviewed_by_user_id: userId,
+        reviewed_at: new Date().toISOString(),
+      })
+      .eq('id', accessRequest.id);
+
+    return transformShareFromDB(shareData_);
+  }
+
+  // Update getPendingRequestForUser method:
+  private async getPendingRequestForUser(
+    dataRoomId: string,
+    userId: string
+  ): Promise<DataRoomAccessRequest | null> {
+    const { data } = await this.supabase
+      .from('data_room_access_requests')
+      .select('*')
+      .eq('data_room_id', dataRoomId)
+      .eq('requester_id', userId) // Changed from requested_by_user_id
+      .eq('status', 'pending')
+      .maybeSingle();
+
+    return data ? transformAccessRequestFromDB(data) : null;
+  }
   // ============================================
   // SME: REQUEST MANAGEMENT METHODS
   // ============================================
@@ -80,63 +231,6 @@ export class DataRoomSharingService implements OnDestroy {
   /**
    * Get incoming access requests for SME's data room
    */
-  getIncomingRequests(
-    organizationId?: string
-  ): Observable<DataRoomAccessRequest[]> {
-    const userId = organizationId || this.supabase.getCurrentUserId();
-
-    if (!userId) {
-      return throwError(() => new Error('User not authenticated'));
-    }
-
-    return from(
-      this.supabase
-        .from('data_room_access_requests')
-        .select(
-          `
-          *,
-          requester:requester_id (
-            id,
-            email,
-            raw_user_meta_data
-          ),
-          data_rooms!inner (
-            id,
-            title,
-            organization_id
-          )
-        `
-        )
-        .eq('data_rooms.organization_id', userId)
-        .in('status', ['pending'])
-        .order('created_at', { ascending: false })
-    ).pipe(
-      map(({ data, error }) => {
-        if (error) throw error;
-
-        return data.map((req) => {
-          const transformed = transformAccessRequestFromDB(req);
-
-          if (req.requester) {
-            transformed.requester = {
-              id: req.requester.id,
-              email: req.requester.email,
-              name: req.requester.raw_user_meta_data?.full_name,
-            };
-          }
-
-          if (req.data_rooms) {
-            transformed.dataRoom = {
-              id: req.data_rooms.id,
-              title: req.data_rooms.title,
-            };
-          }
-
-          return transformed;
-        });
-      })
-    );
-  }
 
   /**
    * Request access to a data room
@@ -441,43 +535,6 @@ export class DataRoomSharingService implements OnDestroy {
   /**
    * Create access request (for funders to request access)
    */
-  createAccessRequest(
-    request: CreateAccessRequestRequest
-  ): Observable<DataRoomAccessRequest> {
-    const userId = this.supabase.getCurrentUserId();
-
-    if (!userId) {
-      return throwError(() => new Error('User not authenticated'));
-    }
-
-    const accessRequestData = {
-      data_room_id: request.dataRoomId,
-      requested_by_user_id: userId,
-      requested_sections: request.requestedSections || null,
-      message: request.requestReason || null,
-      status: 'pending' as const,
-      metadata: {},
-    };
-
-    return from(
-      this.supabase
-        .from('data_room_access_requests')
-        .insert(accessRequestData)
-        .select()
-        .single()
-    ).pipe(
-      map(({ data, error }) => {
-        if (error) throw error;
-        return transformAccessRequestFromDB(data);
-      }),
-      tap(() => this.invalidateAllShareCaches()),
-      catchError((error) => {
-        console.error('❌ Error creating access request:', error);
-        return throwError(() => error);
-      }),
-      takeUntil(this.destroy$)
-    );
-  }
 
   /**
    * Get access requests for a data room
@@ -784,42 +841,6 @@ export class DataRoomSharingService implements OnDestroy {
   /**
    * Create share from approved request
    */
-  private async createShareFromApproval(
-    userId: string,
-    accessRequest: any,
-    approvalRequest: ApproveAccessRequestRequest
-  ): Promise<DataRoomShare> {
-    // Create share
-    const shareData = {
-      data_room_id: accessRequest.data_room_id,
-      shared_with_user_id: accessRequest.requested_by_user_id,
-      shared_by_user_id: userId,
-      permission_level: approvalRequest.permissionLevel,
-      allowed_sections:
-        approvalRequest.allowedSections || accessRequest.requested_sections,
-      internal_notes: null,
-      status: 'active',
-      expires_at: approvalRequest.expiresAt
-        ? approvalRequest.expiresAt.toISOString()
-        : null,
-    };
-
-    const { data: shareData_, error: shareError } = await this.supabase
-      .from('data_room_shares')
-      .insert(shareData)
-      .select()
-      .single();
-
-    if (shareError) throw shareError;
-
-    // Update access request status
-    await this.supabase
-      .from('data_room_access_requests')
-      .update({ status: 'approved' as const })
-      .eq('id', accessRequest.id);
-
-    return transformShareFromDB(shareData_);
-  }
 
   /**
    * Get active share for a user
@@ -842,20 +863,6 @@ export class DataRoomSharingService implements OnDestroy {
   /**
    * Get pending request for a user
    */
-  private async getPendingRequestForUser(
-    dataRoomId: string,
-    userId: string
-  ): Promise<DataRoomAccessRequest | null> {
-    const { data } = await this.supabase
-      .from('data_room_access_requests')
-      .select('*')
-      .eq('data_room_id', dataRoomId)
-      .eq('requested_by_user_id', userId)
-      .eq('status', 'pending')
-      .maybeSingle();
-
-    return data ? transformAccessRequestFromDB(data) : null;
-  }
 
   /**
    * Trigger share notification

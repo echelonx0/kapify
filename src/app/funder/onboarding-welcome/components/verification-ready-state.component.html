@@ -1,0 +1,130 @@
+<div class="min-h-screen bg-slate-50 flex py-4 lg:py-16">
+  <div class="w-full max-w-4xl mx-auto px-4 lg:px-8">
+    <!-- Header -->
+    <div class="text-center mb-2">
+      <h1 class="text-2xl lg:text-2xl font-bold text-slate-900 mb-4">
+        Verification in Progress
+      </h1>
+      <p class="text-sm text-slate-600 max-w-2xl mx-auto leading-relaxed">
+        Your organization details have been submitted and are currently being
+        reviewed. We’ll notify you once your verification is complete. In the
+        meantime, you can continue exploring the platform.
+      </p>
+    </div>
+
+    <!-- Organization Summary Card -->
+    @if (onboardingState?.organization) {
+    <div
+      class="bg-white rounded-2xl border border-slate-200 p-6 lg:p-8 mb-8 shadow-sm"
+    >
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <!-- Org Name -->
+        <div>
+          <div
+            class="inline-flex items-center justify-center w-10 h-10 bg-orange-100 rounded-lg mb-3"
+          >
+            <svg
+              class="w-5 h-5 text-orange-600"
+              fill="currentColor"
+              viewBox="0 0 20 20"
+            >
+              <path
+                d="M4 4a2 2 0 012-2h8a2 2 0 012 2v12a1 1 0 110 2h-3a1 1 0 01-1-1v-2a1 1 0 00-1-1H9a1 1 0 00-1 1v2a1 1 0 01-1 1H4a1 1 0 110-2V4z"
+              />
+            </svg>
+          </div>
+          <h4 class="text-base font-semibold text-slate-900 mb-1">
+            {{ getOrgName() }}
+          </h4>
+          <p class="text-sm text-slate-600">{{ getOrgType() }}</p>
+        </div>
+
+        <!-- Founded Year -->
+        <div>
+          <div
+            class="inline-flex items-center justify-center w-10 h-10 bg-orange-100 rounded-lg mb-3"
+          >
+            <svg
+              class="w-5 h-5 text-orange-600"
+              fill="currentColor"
+              viewBox="0 0 20 20"
+            >
+              <path
+                fill-rule="evenodd"
+                d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v2h16V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2H8a2 2 0 01-2-2V7z"
+                clip-rule="evenodd"
+              />
+            </svg>
+          </div>
+          <h4 class="text-base font-semibold text-slate-900 mb-1">
+            {{ getFoundedYear() }}
+          </h4>
+          <p class="text-sm text-slate-600">Registration Number</p>
+        </div>
+
+        <!-- Location -->
+        <div>
+          <div
+            class="inline-flex items-center justify-center w-10 h-10 bg-orange-100 rounded-lg mb-3"
+          >
+            <svg
+              class="w-5 h-5 text-orange-600"
+              fill="currentColor"
+              viewBox="0 0 20 20"
+            >
+              <path
+                fill-rule="evenodd"
+                d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z"
+                clip-rule="evenodd"
+              />
+            </svg>
+          </div>
+          <h4 class="text-base font-semibold text-slate-900 mb-1">
+            {{ getCountry() }}
+          </h4>
+          <p class="text-sm text-slate-600">Location</p>
+        </div>
+      </div>
+    </div>
+    }
+
+    <!-- CTA Buttons -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+      <!-- Primary CTA: Create Opportunity -->
+      <button
+        (click)="onCreateOpportunity()"
+        class="inline-flex items-center justify-center gap-2 bg-orange-500 text-white font-semibold rounded-xl px-6 py-3 text-base hover:bg-orange-600 active:bg-orange-700 transition-colors duration-200 shadow-sm"
+      >
+        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+          <path
+            d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 11-2 0V5H5v12h6a1 1 0 110 2H4a1 1 0 01-1-1V4z"
+          />
+        </svg>
+        Create First Opportunity
+      </button>
+
+      <!-- Secondary CTA: Go to Dashboard -->
+      <button
+        (click)="onGoToDashboard()"
+        class="inline-flex items-center justify-center gap-2 bg-slate-100 text-slate-700 font-semibold rounded-xl px-6 py-3 text-base hover:bg-slate-200 active:bg-slate-300 transition-colors duration-200"
+      >
+        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+          <path
+            d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"
+          />
+        </svg>
+        Go to Dashboard
+      </button>
+    </div>
+
+    <!-- Divider + Secondary Actions -->
+    <div
+      class="flex flex-col sm:flex-row gap-4 justify-center pt-4 border-t border-slate-200"
+    >
+      <p class="text-sm text-slate-500 text-center sm:text-left">
+        Need to update your details? You can modify your organization profile
+        after verification is complete.
+      </p>
+    </div>
+  </div>
+</div>

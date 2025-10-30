@@ -1,8 +1,9 @@
 // src/app/funder/funder.component.ts
-import { Component } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { Component, computed } from '@angular/core';
+import { RouterOutlet, Router } from '@angular/router';
 import { FunderHeaderComponent } from './header/funder-header.component';
 import { SidebarNavComponent } from '../shared/components';
+import { NgIf } from '@angular/common';
 
 @Component({
   selector: 'app-applications',
@@ -11,11 +12,14 @@ import { SidebarNavComponent } from '../shared/components';
   template: `
     <div class="min-h-screen bg-neutral-50">
       <sidebar-nav />
-      <!-- Main Content -->
 
+      <!-- Only show header if NOT in onboarding route -->
+      @if (!isOnboardingRoute()) {
       <div class="sticky top-0 z-10 bg-neutral-50 border-b border-gray-200">
         <funder-header></funder-header>
       </div>
+      }
+
       <!-- Page Content -->
       <main class="ml-16">
         <router-outlet />
@@ -23,4 +27,10 @@ import { SidebarNavComponent } from '../shared/components';
     </div>
   `,
 })
-export class FunderComponent {}
+export class FunderComponent {
+  constructor(private router: Router) {}
+
+  isOnboardingRoute = computed(() =>
+    this.router.url.startsWith('/funder/onboarding')
+  );
+}
