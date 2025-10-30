@@ -1,59 +1,772 @@
-<!-- src/app/admin/components/organization-verification/organization-verification.component.html -->
-<div class="h-screen flex flex-col bg-neutral-50">
+<!-- organization-verification.component.html -->
+<div class="min-h-screen bg-slate-50">
   <!-- Header with Stats -->
-  <app-verification-header 
-    [stats]="stats()" 
-    (refreshRequested)="refreshData()">
-  </app-verification-header>
+  <div class="bg-white border-b border-slate-200 sticky top-0 z-30">
+    <div class="px-8 py-6">
+      <div class="flex items-center justify-between mb-6">
+        <div>
+          <h1 class="text-3xl font-bold text-slate-900">
+            Organization Verification
+          </h1>
+          <p class="text-slate-600 mt-1">
+            Review and approve pending organizations
+          </p>
+        </div>
+        <button
+          (click)="refreshData()"
+          class="px-4 py-2.5 bg-slate-100 text-slate-700 rounded-xl hover:bg-slate-200 transition-colors duration-200 flex items-center space-x-2"
+        >
+          <svg
+            class="w-4 h-4"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+            ></path>
+          </svg>
+          <span class="text-sm font-medium">Refresh</span>
+        </button>
+      </div>
 
-  <!-- Main Split Panel Content -->
-  <div class="flex-1 flex overflow-hidden verification-container">
-    <!-- Left Panel - Organizations List -->
-    <app-verification-sidebar
-      class="w-1/3 border-r border-neutral-200 bg-white"
-      [organizations]="filteredOrganizations()"
-      [selectedOrganization]="selectedOrganization()"
-      [isLoading]="isLoading()"
-      [searchTerm]="searchTerm()"
-      [statusFilter]="statusFilter()"
-      (organizationSelected)="selectOrganization($event)"
-      (searchChanged)="searchTerm.set($event)"
-      (filterChanged)="statusFilter.set($event)">
-    </app-verification-sidebar>
-
-    <!-- Right Panel - Details -->
-    <app-verification-details
-      class="flex-1 bg-white"
-      [selectedOrganization]="selectedOrganization()"
-      [activeTab]="activeTab()"
-      [documents]="documents()"
-      [verificationThread]="verificationThread()"
-      (tabChanged)="setActiveTab($event)"
-      (approveRequested)="openApprovalModal()"
-      (rejectRequested)="openRejectionModal()"
-      (infoRequested)="openInfoRequestModal()">
-    </app-verification-details>
+      <!-- Stats Pills -->
+      <div class="flex items-center space-x-2">
+        <button
+          (click)="onFilterChanged('all')"
+          [class]="getFilterButtonClasses('all')"
+        >
+          <span>All</span>
+        </button>
+        <button
+          (click)="onFilterChanged('pending')"
+          [class]="getFilterButtonClasses('pending')"
+        >
+          <span>Pending</span>
+          <span class="px-2 py-0.5 bg-white/20 rounded-full text-xs">{{
+            stats().pendingCount
+          }}</span>
+        </button>
+        <button
+          (click)="onFilterChanged('with_docs')"
+          [class]="getFilterButtonClasses('with_docs')"
+        >
+          <span>With Documents</span>
+        </button>
+        <button
+          (click)="onFilterChanged('no_docs')"
+          [class]="getFilterButtonClasses('no_docs')"
+        >
+          <span>No Documents</span>
+        </button>
+        <button
+          class="px-4 py-2 bg-slate-100 text-slate-700 rounded-xl text-sm font-medium hover:bg-slate-200 transition-colors flex items-center space-x-2"
+        >
+          <span>Approved Today</span>
+          <span
+            class="px-2 py-0.5 bg-green-100 text-green-700 rounded-full text-xs font-semibold"
+            >{{ stats().approvedToday }}</span
+          >
+        </button>
+        <button
+          class="px-4 py-2 bg-slate-100 text-slate-700 rounded-xl text-sm font-medium hover:bg-slate-200 transition-colors flex items-center space-x-2"
+        >
+          <span>Rejected Today</span>
+          <span
+            class="px-2 py-0.5 bg-red-100 text-red-700 rounded-full text-xs font-semibold"
+            >{{ stats().rejectedToday }}</span
+          >
+        </button>
+        <button
+          class="px-4 py-2 bg-slate-100 text-slate-700 rounded-xl text-sm font-medium hover:bg-slate-200 transition-colors flex items-center space-x-2"
+        >
+          <span>Total Verified</span>
+          <span
+            class="px-2 py-0.5 bg-blue-100 text-blue-700 rounded-full text-xs font-semibold"
+            >{{ stats().totalProcessed }}</span
+          >
+        </button>
+      </div>
+    </div>
   </div>
 
-  <!-- Modals -->
-  <app-verification-modals
-    [showApprovalModal]="showApprovalModal()"
-    [showRejectionModal]="showRejectionModal()"
-    [showInfoRequestModal]="showInfoRequestModal()"
-    [selectedOrganization]="selectedOrganization()"
-    [approvalForm]="approvalForm"
-    [rejectionForm]="rejectionForm"
-    [infoRequestForm]="infoRequestForm"
-    (modalClosed)="closeModal()"
-    (organizationApproved)="approveOrganization()"
-    (organizationRejected)="rejectOrganization()"
-    (infoRequested)="requestMoreInfo()">
-  </app-verification-modals>
+  <!-- Main Content -->
+  <div class="px-8 py-6">
+    <!-- Top Filters -->
+    <div class="flex items-center justify-between mb-6">
+      <div class="flex items-center space-x-4 flex-1">
+        <!-- Search -->
+        <div class="relative flex-1 max-w-md">
+          <input
+            type="text"
+            [value]="searchTerm()"
+            (input)="onSearchChanged($any($event.target).value)"
+            placeholder="Search organization name"
+            class="w-full pl-10 pr-4 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
+          />
+        </div>
 
-  <!-- Error Toast -->
-  <app-error-toast 
-    *ngIf="error()" 
-    [message]="error()!" 
-    (dismissed)="error.set(null)">
-  </app-error-toast>
+        <!-- Date Range -->
+        <div
+          class="flex items-center space-x-2 px-4 py-2.5 border border-slate-300 rounded-xl bg-white"
+        >
+          <svg
+            class="w-4 h-4 text-slate-500"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+            ></path>
+          </svg>
+          <span class="text-sm text-slate-700">{{
+            getCurrentDateRange()
+          }}</span>
+        </div>
+      </div>
+
+      <div class="flex items-center space-x-3">
+        <button
+          class="px-4 py-2.5 bg-white border border-slate-300 rounded-xl hover:bg-slate-50 transition-colors flex items-center space-x-2"
+        >
+          <svg
+            class="w-4 h-4 text-slate-600"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+            ></path>
+          </svg>
+          <span class="text-sm font-medium text-slate-700">Export</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Loading State -->
+    <div *ngIf="isLoading()" class="flex items-center justify-center py-20">
+      <div class="text-center">
+        <div class="relative w-16 h-16 mx-auto mb-4">
+          <div
+            class="absolute top-0 left-0 w-16 h-16 border-4 border-orange-200 rounded-full"
+          ></div>
+          <div
+            class="absolute top-0 left-0 w-16 h-16 border-4 border-orange-500 rounded-full border-t-transparent animate-spin"
+          ></div>
+        </div>
+        <p class="text-slate-600 font-medium">Loading verifications...</p>
+      </div>
+    </div>
+
+    <!-- Table -->
+    <div
+      *ngIf="!isLoading()"
+      class="bg-white rounded-2xl border border-slate-200 overflow-hidden"
+    >
+      <!-- Secondary Filters -->
+      <div class="px-6 py-4 border-b border-slate-200">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center space-x-2">
+            <button
+              *ngFor="let subFilter of subFilterOptions()"
+              (click)="onSubFilterChanged(subFilter.value)"
+              [class]="getSubFilterButtonClasses(subFilter.value)"
+            >
+              <span>{{ subFilter.label }}</span>
+              <span
+                *ngIf="subFilter.count !== undefined"
+                [class]="getSubFilterCountClasses(subFilter.value)"
+              >
+                {{ subFilter.count }}
+              </span>
+            </button>
+          </div>
+
+          <div class="flex items-center space-x-3">
+            <button
+              (click)="toggleSort()"
+              class="flex items-center space-x-2 px-4 py-2 text-sm text-slate-600 hover:text-slate-900"
+            >
+              <svg
+                class="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12"
+                ></path>
+              </svg>
+              <span>Sort</span>
+            </button>
+            <button
+              class="flex items-center space-x-2 px-4 py-2 text-sm text-slate-600 hover:text-slate-900"
+            >
+              <svg
+                class="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"
+                ></path>
+              </svg>
+              <span>Add filter</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Table Header -->
+      <div class="px-6 py-3 bg-slate-50 border-b border-slate-200">
+        <div
+          class="grid grid-cols-12 gap-4 text-xs font-semibold text-slate-500 uppercase tracking-wide"
+        >
+          <div class="col-span-3">Organization</div>
+          <div class="col-span-2">Type</div>
+          <div class="col-span-2">Location</div>
+          <div class="col-span-1">Documents</div>
+          <div class="col-span-2">Created By</div>
+          <div class="col-span-2 text-right">Action</div>
+        </div>
+      </div>
+
+      <!-- Table Body -->
+      <div class="divide-y divide-slate-100">
+        <div
+          *ngFor="let org of sortedOrganizations()"
+          class="px-6 py-4 hover:bg-slate-50 transition-colors cursor-pointer"
+          (click)="selectOrganization(org)"
+        >
+          <!-- Organization Row -->
+          <div class="grid grid-cols-12 gap-4 items-center">
+            <!-- Organization Name with Avatar -->
+            <div class="col-span-3">
+              <div class="flex items-center space-x-3">
+                <div
+                  class="w-10 h-10 bg-gradient-to-br from-orange-400 to-orange-600 rounded-xl flex items-center justify-center flex-shrink-0"
+                >
+                  <span class="text-xs font-bold text-white">{{
+                    getOrgInitials(org)
+                  }}</span>
+                </div>
+                <div class="min-w-0">
+                  <p class="text-sm font-semibold text-slate-900 truncate">
+                    {{ org.name }}
+                  </p>
+                  <p class="text-xs text-slate-500 truncate">{{ org.email }}</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Type -->
+            <div class="col-span-2">
+              <span class="text-sm text-slate-700">{{
+                org.organizationType | titlecase
+              }}</span>
+            </div>
+
+            <!-- Location -->
+            <div class="col-span-2">
+              <p class="text-sm text-slate-700">{{ org.city }}</p>
+              <p class="text-xs text-slate-500">{{ org.country }}</p>
+            </div>
+
+            <!-- Documents -->
+            <div class="col-span-1">
+              <span
+                *ngIf="org.documentCount && org.documentCount > 0"
+                class="inline-flex items-center px-2.5 py-1 bg-blue-50 text-blue-700 border border-blue-200/50 rounded-full text-xs font-semibold"
+              >
+                {{ org.documentCount }}
+              </span>
+              <span
+                *ngIf="!org.documentCount || org.documentCount === 0"
+                class="text-xs text-slate-400"
+              >
+                None
+              </span>
+            </div>
+
+            <!-- Created By -->
+            <div class="col-span-2">
+              <div
+                *ngIf="org.createdByUser"
+                class="flex items-center space-x-2"
+              >
+                <div
+                  class="w-6 h-6 bg-slate-200 rounded-lg flex items-center justify-center"
+                >
+                  <span class="text-xs font-semibold text-slate-600">
+                    {{ org.createdByUser.firstName.charAt(0)
+                    }}{{ org.createdByUser.lastName.charAt(0) }}
+                  </span>
+                </div>
+                <div class="min-w-0">
+                  <p class="text-sm text-slate-900 truncate">
+                    {{ org.createdByUser.firstName }}
+                    {{ org.createdByUser.lastName }}
+                  </p>
+                  <p class="text-xs text-slate-500">
+                    {{ getTimeAgo(org.createdAt) }}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Action -->
+            <div class="col-span-2 flex items-center justify-end space-x-2">
+              <button
+                (click)="
+                  openApprovalModal();
+                  selectOrganization(org);
+                  $event.stopPropagation()
+                "
+                class="px-4 py-2 bg-green-500 text-white rounded-xl hover:bg-green-600 transition-colors text-xs font-medium"
+              >
+                Approve
+              </button>
+              <button
+                (click)="
+                  openRejectionModal();
+                  selectOrganization(org);
+                  $event.stopPropagation()
+                "
+                class="px-4 py-2 bg-red-500 text-white rounded-xl hover:bg-red-600 transition-colors text-xs font-medium"
+              >
+                Reject
+              </button>
+            </div>
+          </div>
+
+          <!-- Expanded Details (shown when selected) -->
+          <div
+            *ngIf="selectedOrganization()?.id === org.id"
+            class="mt-4 pt-4 border-t border-slate-200"
+            (click)="$event.stopPropagation()"
+          >
+            <div class="grid grid-cols-3 gap-6">
+              <!-- Details Column -->
+              <div class="col-span-2 space-y-4">
+                <div>
+                  <h4 class="text-sm font-bold text-slate-900 mb-3">
+                    Organization Details
+                  </h4>
+                  <div class="grid grid-cols-2 gap-3">
+                    <div class="bg-slate-50 p-3 rounded-xl">
+                      <p
+                        class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1"
+                      >
+                        Legal Name
+                      </p>
+                      <p class="text-sm text-slate-900">
+                        {{ org.legalName || "Not provided" }}
+                      </p>
+                    </div>
+                    <div class="bg-slate-50 p-3 rounded-xl">
+                      <p
+                        class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1"
+                      >
+                        Registration Number
+                      </p>
+                      <p class="text-sm text-slate-900">
+                        {{ org.registrationNumber || "Not provided" }}
+                      </p>
+                    </div>
+                    <div class="bg-slate-50 p-3 rounded-xl">
+                      <p
+                        class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1"
+                      >
+                        Phone
+                      </p>
+                      <p class="text-sm text-slate-900">
+                        {{ org.phone || "Not provided" }}
+                      </p>
+                    </div>
+                    <div class="bg-slate-50 p-3 rounded-xl">
+                      <p
+                        class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1"
+                      >
+                        Website
+                      </p>
+                      <p class="text-sm text-slate-900">
+                        {{ org.website || "Not provided" }}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div *ngIf="documents().length > 0">
+                  <h4 class="text-sm font-bold text-slate-900 mb-3">
+                    Documents
+                  </h4>
+                  <div class="space-y-2">
+                    <div
+                      *ngFor="let doc of documents()"
+                      class="flex items-center justify-between p-3 bg-slate-50 rounded-xl hover:bg-slate-100 transition-colors"
+                    >
+                      <div class="flex items-center space-x-3">
+                        <div
+                          class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center"
+                        >
+                          <svg
+                            class="w-4 h-4 text-blue-600"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              stroke-width="2"
+                              d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"
+                            ></path>
+                          </svg>
+                        </div>
+                        <div>
+                          <p class="text-sm font-medium text-slate-900">
+                            {{ doc.originalName }}
+                          </p>
+                          <p class="text-xs text-slate-500">
+                            {{ formatFileSize(doc.fileSize) }}
+                          </p>
+                        </div>
+                      </div>
+                      <div class="flex items-center space-x-2">
+                        <button
+                          (click)="previewDocument(doc)"
+                          class="px-3 py-1.5 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors text-xs font-medium text-slate-700"
+                        >
+                          Preview
+                        </button>
+                        <button
+                          (click)="downloadDocument(doc)"
+                          class="px-3 py-1.5 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors text-xs font-medium"
+                        >
+                          Download
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Actions Column -->
+              <div class="col-span-1">
+                <div class="bg-slate-50 p-4 rounded-xl space-y-3">
+                  <h4 class="text-sm font-bold text-slate-900 mb-3">
+                    Quick Actions
+                  </h4>
+                  <button
+                    (click)="openApprovalModal()"
+                    class="w-full px-4 py-2.5 bg-green-500 text-white rounded-xl hover:bg-green-600 transition-colors text-sm font-medium flex items-center justify-center space-x-2"
+                  >
+                    <svg
+                      class="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M5 13l4 4L19 7"
+                      ></path>
+                    </svg>
+                    <span>Approve</span>
+                  </button>
+                  <button
+                    (click)="openInfoRequestModal()"
+                    class="w-full px-4 py-2.5 bg-blue-500 text-white rounded-xl hover:bg-blue-600 transition-colors text-sm font-medium flex items-center justify-center space-x-2"
+                  >
+                    <svg
+                      class="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"
+                      ></path>
+                    </svg>
+                    <span>Request Info</span>
+                  </button>
+                  <button
+                    (click)="openRejectionModal()"
+                    class="w-full px-4 py-2.5 bg-red-500 text-white rounded-xl hover:bg-red-600 transition-colors text-sm font-medium flex items-center justify-center space-x-2"
+                  >
+                    <svg
+                      class="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M6 18L18 6M6 6l12 12"
+                      ></path>
+                    </svg>
+                    <span>Reject</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Empty State -->
+        <div
+          *ngIf="sortedOrganizations().length === 0"
+          class="p-12 text-center"
+        >
+          <svg
+            class="w-16 h-16 text-slate-300 mx-auto mb-4"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+            ></path>
+          </svg>
+          <p class="text-slate-600 font-medium">No organizations found</p>
+          <p class="text-slate-400 text-sm mt-1">
+            Try adjusting your search or filters
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Approval Modal -->
+<div
+  *ngIf="showApprovalModal()"
+  class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+>
+  <div class="bg-white rounded-2xl max-w-md w-full p-6">
+    <h3 class="text-xl font-bold text-slate-900 mb-4">Approve Organization</h3>
+    <p class="text-sm text-slate-600 mb-6">
+      Are you sure you want to approve
+      <strong>{{ selectedOrganization()?.name }}</strong
+      >? This will grant them full access to the platform.
+    </p>
+
+    <form [formGroup]="approvalForm">
+      <div class="mb-6">
+        <label class="block text-sm font-semibold text-slate-700 mb-2"
+          >Admin Notes (Optional)</label
+        >
+        <textarea
+          formControlName="adminNotes"
+          rows="3"
+          placeholder="Add any internal notes..."
+          class="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent resize-none"
+        ></textarea>
+      </div>
+
+      <div class="flex items-center space-x-3">
+        <button
+          type="button"
+          (click)="closeModal()"
+          class="flex-1 px-6 py-2.5 bg-slate-100 text-slate-700 rounded-xl hover:bg-slate-200 transition-colors text-sm font-medium"
+        >
+          Cancel
+        </button>
+        <button
+          type="button"
+          (click)="approveOrganization()"
+          class="flex-1 px-6 py-2.5 bg-green-500 text-white rounded-xl hover:bg-green-600 transition-colors text-sm font-medium"
+        >
+          Approve
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Rejection Modal -->
+<div
+  *ngIf="showRejectionModal()"
+  class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+>
+  <div class="bg-white rounded-2xl max-w-md w-full p-6">
+    <h3 class="text-xl font-bold text-slate-900 mb-4">Reject Organization</h3>
+    <p class="text-sm text-slate-600 mb-6">
+      Please provide a reason for rejecting
+      <strong>{{ selectedOrganization()?.name }}</strong
+      >. This will be sent to the organization owner.
+    </p>
+
+    <form [formGroup]="rejectionForm">
+      <div class="mb-6">
+        <label class="block text-sm font-semibold text-slate-700 mb-2">
+          Rejection Reason <span class="text-red-500">*</span>
+        </label>
+        <textarea
+          formControlName="reason"
+          rows="4"
+          placeholder="Explain why this organization cannot be approved..."
+          class="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent resize-none"
+        ></textarea>
+        <p
+          *ngIf="
+            rejectionForm.get('reason')?.invalid &&
+            rejectionForm.get('reason')?.touched
+          "
+          class="text-xs text-red-600 mt-1"
+        >
+          Reason is required
+        </p>
+      </div>
+
+      <div class="flex items-center space-x-3">
+        <button
+          type="button"
+          (click)="closeModal()"
+          class="flex-1 px-6 py-2.5 bg-slate-100 text-slate-700 rounded-xl hover:bg-slate-200 transition-colors text-sm font-medium"
+        >
+          Cancel
+        </button>
+        <button
+          type="button"
+          (click)="rejectOrganization()"
+          [disabled]="rejectionForm.invalid"
+          class="flex-1 px-6 py-2.5 bg-red-500 text-white rounded-xl hover:bg-red-600 transition-colors text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          Reject
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Info Request Modal -->
+<div
+  *ngIf="showInfoRequestModal()"
+  class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+>
+  <div class="bg-white rounded-2xl max-w-md w-full p-6">
+    <h3 class="text-xl font-bold text-slate-900 mb-4">
+      Request Additional Information
+    </h3>
+    <p class="text-sm text-slate-600 mb-6">
+      Send a message to
+      <strong>{{ selectedOrganization()?.name }}</strong> requesting more
+      information or documentation.
+    </p>
+
+    <form [formGroup]="infoRequestForm">
+      <div class="mb-6">
+        <label class="block text-sm font-semibold text-slate-700 mb-2">
+          Message <span class="text-red-500">*</span>
+        </label>
+        <textarea
+          formControlName="messageContent"
+          rows="5"
+          placeholder="What additional information do you need?"
+          class="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent resize-none"
+        ></textarea>
+        <p
+          *ngIf="
+            infoRequestForm.get('messageContent')?.invalid &&
+            infoRequestForm.get('messageContent')?.touched
+          "
+          class="text-xs text-red-600 mt-1"
+        >
+          Message is required
+        </p>
+      </div>
+
+      <div class="flex items-center space-x-3">
+        <button
+          type="button"
+          (click)="closeModal()"
+          class="flex-1 px-6 py-2.5 bg-slate-100 text-slate-700 rounded-xl hover:bg-slate-200 transition-colors text-sm font-medium"
+        >
+          Cancel
+        </button>
+        <button
+          type="button"
+          (click)="requestMoreInfo()"
+          [disabled]="infoRequestForm.invalid"
+          class="flex-1 px-6 py-2.5 bg-blue-500 text-white rounded-xl hover:bg-blue-600 transition-colors text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          Send Request
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Error Toast -->
+<div
+  *ngIf="error()"
+  class="fixed bottom-6 right-6 bg-red-50 border-l-4 border-red-500 rounded-r-xl p-4 shadow-lg max-w-md z-50"
+>
+  <div class="flex items-start">
+    <div class="flex-shrink-0">
+      <svg
+        class="w-5 h-5 text-red-500"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+        ></path>
+      </svg>
+    </div>
+    <div class="ml-3 flex-1">
+      <p class="text-sm font-medium text-red-800">{{ error() }}</p>
+    </div>
+    <button
+      (click)="error.set(null)"
+      class="ml-3 flex-shrink-0 text-red-500 hover:text-red-700"
+    >
+      <svg
+        class="w-4 h-4"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M6 18L18 6M6 6l12 12"
+        ></path>
+      </svg>
+    </button>
+  </div>
 </div>

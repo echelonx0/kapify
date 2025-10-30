@@ -1,29 +1,53 @@
- <div> 
-  <div class="bg-white/80 backdrop-blur-sm border-b border-neutral-200/50 sticky top-0 z-40">
-    <div class="px-6 lg:px-8">
+<div>
+  <div
+    class="bg-white/80 backdrop-blur-sm border-b border-slate-200/50 sticky top-0 z-40"
+  >
+    <div class="px-8">
       <div class="flex justify-between items-center h-16">
         <div class="flex items-center space-x-4">
-          <div class="w-8 h-8 bg-gradient-to-r from-primary-500 to-primary-600 rounded-lg flex items-center justify-center">
-            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+          <div
+            class="w-8 h-8 bg-gradient-to-r from-orange-500 to-orange-600 rounded-xl flex items-center justify-center"
+          >
+            <svg
+              class="w-5 h-5 text-white"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+              ></path>
             </svg>
           </div>
-          <h1 class="text-2xl font-bold bg-gradient-to-r from-neutral-800 to-neutral-600 bg-clip-text text-transparent">
+          <h1
+            class="text-2xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent"
+          >
             Kapify Admin
           </h1>
         </div>
         <div class="flex items-center space-x-4">
           <div class="hidden sm:flex items-center space-x-3">
-            <div class="w-2 h-2 bg-primary-500 rounded-full animate-pulse"></div>
-            <span class="text-sm font-medium text-neutral-600">{{ getCurrentUser()?.email }}</span>
+            <div class="w-2 h-2 bg-orange-500 rounded-full animate-pulse"></div>
+            <span class="text-sm font-medium text-slate-600">{{
+              getCurrentUser()?.email
+            }}</span>
           </div>
-          <ui-button
-            variant="ghost"
-            size="sm"
-            (clicked)="signOut()"
-          >
-            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+          <ui-button variant="ghost" size="sm" (clicked)="signOut()">
+            <svg
+              class="w-4 h-4 mr-2"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+              ></path>
             </svg>
             Sign Out
           </ui-button>
@@ -33,49 +57,65 @@
   </div>
 
   <!-- Enhanced Navigation Tabs -->
-  <div class="bg-white/60 backdrop-blur-sm border-b border-neutral-200/50">
-    <div class="px-6 lg:px-8">
+  <div class="bg-white/60 backdrop-blur-sm border-b border-slate-200/50">
+    <div class="px-8">
       <nav class="flex space-x-1 py-2">
-       
-
         <button
-  *ngFor="let tab of tabs()"
-  (click)="setActiveTab(tab.id)"
-  [class]="getEnhancedTabClasses(tab.id)"
->
-  <span class="font-medium">{{ tab.label }}</span>
-  <span 
-    *ngIf="tab.count !== undefined"
-    [class]="getTabCountClasses(tab.id)"
-  >
-    {{ tab.count }}
-  </span>
-</button>
+          *ngFor="let tab of tabs()"
+          (click)="setActiveTab(tab.id)"
+          [class]="getEnhancedTabClasses(tab.id)"
+        >
+          <span class="font-medium">{{ tab.label }}</span>
+          <span
+            *ngIf="tab.count !== undefined"
+            [class]="getTabCountClasses(tab.id)"
+          >
+            {{ tab.count }}
+          </span>
+        </button>
       </nav>
     </div>
   </div>
 
   <!-- Main Content Container -->
-  <div class="px-6 lg:px-8 py-8 max-w-7xl mx-auto">
+  <div class="px-8 py-8 max-w-7xl mx-auto">
     <!-- Enhanced Loading State -->
     <div *ngIf="isLoading()" class="flex items-center justify-center py-20">
       <div class="text-center">
         <div class="relative w-16 h-16 mx-auto mb-4">
-          <div class="absolute top-0 left-0 w-16 h-16 border-4 border-primary-200 rounded-full"></div>
-          <div class="absolute top-0 left-0 w-16 h-16 border-4 border-primary-500 rounded-full border-t-transparent animate-spin"></div>
+          <div
+            class="absolute top-0 left-0 w-16 h-16 border-4 border-orange-200 rounded-full"
+          ></div>
+          <div
+            class="absolute top-0 left-0 w-16 h-16 border-4 border-orange-500 rounded-full border-t-transparent animate-spin"
+          ></div>
         </div>
-        <p class="text-neutral-600 font-medium">Loading admin data...</p>
-        <p class="text-neutral-400 text-sm mt-1">This may take a few moments</p>
+        <p class="text-slate-600 font-medium">Loading admin data...</p>
+        <p class="text-slate-400 text-sm mt-1">This may take a few moments</p>
       </div>
     </div>
 
     <!-- Enhanced Error State -->
     <div *ngIf="error()" class="mb-8">
-      <div class="bg-gradient-to-r from-red-50 to-red-100/50 border-l-4 border-red-400 p-6 rounded-r-xl shadow-sm">
+      <div
+        class="bg-gradient-to-r from-red-50 to-red-100/50 border-l-4 border-red-400 p-6 rounded-r-xl shadow-sm"
+      >
         <div class="flex items-center">
-          <div class="w-6 h-6 bg-red-400 rounded-full flex items-center justify-center mr-3">
-            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          <div
+            class="w-6 h-6 bg-red-400 rounded-full flex items-center justify-center mr-3"
+          >
+            <svg
+              class="w-4 h-4 text-white"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M6 18L18 6M6 6l12 12"
+              ></path>
             </svg>
           </div>
           <div>
@@ -87,8 +127,8 @@
     </div>
 
     <div *ngIf="activeTab() === 'verification'" class="h-full">
-  <app-organization-verification></app-organization-verification>
-</div>
+      <app-organization-verification></app-organization-verification>
+    </div>
 
     <!-- Overview Tab - Enhanced Stats Cards -->
     <div *ngIf="activeTab() === 'overview' && !isLoading()">
@@ -98,14 +138,14 @@
           <div class="p-6">
             <div class="flex items-center justify-between">
               <div>
-                <p class="text-sm font-medium text-neutral-500 uppercase tracking-wide">Total Users</p>
-                <p class="text-3xl font-bold text-neutral-900 mt-2">{{ stats()?.totalUsers || 0 | number }}</p>
-                <p class="text-sm text-primary-600 mt-1 font-medium">+12% this month</p>
-              </div>
-              <div class="w-12 h-12 bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
-                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"></path>
-                </svg>
+                <p
+                  class="text-sm font-medium text-slate-500 uppercase tracking-wide"
+                >
+                  Total Users
+                </p>
+                <p class="text-3xl font-bold text-slate-900 mt-2">
+                  {{ stats()?.totalUsers || 0 | number }}
+                </p>
               </div>
             </div>
           </div>
@@ -116,14 +156,14 @@
           <div class="p-6">
             <div class="flex items-center justify-between">
               <div>
-                <p class="text-sm font-medium text-neutral-500 uppercase tracking-wide">Organizations</p>
-                <p class="text-3xl font-bold text-neutral-900 mt-2">{{ stats()?.totalOrganizations || 0 | number }}</p>
-                <p class="text-sm text-primary-600 mt-1 font-medium">+8% this month</p>
-              </div>
-              <div class="w-12 h-12 bg-gradient-to-r from-primary-500 to-primary-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
-                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
-                </svg>
+                <p
+                  class="text-sm font-medium text-slate-500 uppercase tracking-wide"
+                >
+                  Organizations
+                </p>
+                <p class="text-3xl font-bold text-slate-900 mt-2">
+                  {{ stats()?.totalOrganizations || 0 | number }}
+                </p>
               </div>
             </div>
           </div>
@@ -134,14 +174,14 @@
           <div class="p-6">
             <div class="flex items-center justify-between">
               <div>
-                <p class="text-sm font-medium text-neutral-500 uppercase tracking-wide">Opportunities</p>
-                <p class="text-3xl font-bold text-neutral-900 mt-2">{{ stats()?.totalOpportunities || 0 | number }}</p>
-                <p class="text-sm text-warning mt-1 font-medium">{{ getActiveOpportunitiesCount() }} active</p>
-              </div>
-              <div class="w-12 h-12 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
-                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
-                </svg>
+                <p
+                  class="text-sm font-medium text-slate-500 uppercase tracking-wide"
+                >
+                  Opportunities
+                </p>
+                <p class="text-3xl font-bold text-slate-900 mt-2">
+                  {{ stats()?.totalOpportunities || 0 | number }}
+                </p>
               </div>
             </div>
           </div>
@@ -152,14 +192,14 @@
           <div class="p-6">
             <div class="flex items-center justify-between">
               <div>
-                <p class="text-sm font-medium text-neutral-500 uppercase tracking-wide">Applications</p>
-                <p class="text-3xl font-bold text-neutral-900 mt-2">{{ stats()?.activeApplications || 0 | number }}</p>
-                <p class="text-sm text-info mt-1 font-medium">Pending review</p>
-              </div>
-              <div class="w-12 h-12 bg-gradient-to-r from-purple-500 to-purple-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
-                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                </svg>
+                <p
+                  class="text-sm font-medium text-slate-500 uppercase tracking-wide"
+                >
+                  Applications
+                </p>
+                <p class="text-3xl font-bold text-slate-900 mt-2">
+                  {{ stats()?.activeApplications || 0 | number }}
+                </p>
               </div>
             </div>
           </div>
@@ -167,17 +207,27 @@
       </div>
 
       <!-- Enhanced Recent Activity -->
-      <ui-card title="Recent Activity" subtitle="Latest platform activity and changes" variant="elevated">
+      <ui-card
+        title="Recent Activity"
+        subtitle="Latest platform activity and changes"
+        variant="elevated"
+      >
         <div class="space-y-4">
-          <div *ngFor="let activity of recentActivity(); let i = index" 
-               class="flex items-center p-4 rounded-xl hover:bg-neutral-50 transition-colors"
-               [class.bg-neutral-25]="i < 3">
+          <div
+            *ngFor="let activity of recentActivity(); let i = index"
+            class="flex items-center p-4 rounded-xl hover:bg-slate-50 transition-colors"
+            [class.bg-slate-25]="i < 3"
+          >
             <div [class]="getEnhancedActivityIcon(activity.type)"></div>
             <div class="ml-4 flex-1">
-              <p class="text-sm font-medium text-neutral-900">{{ activity.message }}</p>
-              <p class="text-xs text-neutral-500 mt-1">{{ formatTime(activity.createdAt) }}</p>
+              <p class="text-sm font-medium text-slate-900">
+                {{ activity.message }}
+              </p>
+              <p class="text-xs text-slate-500 mt-1">
+                {{ formatTime(activity.createdAt) }}
+              </p>
             </div>
-            <div class="w-2 h-2 bg-primary-400 rounded-full opacity-75"></div>
+            <div class="w-2 h-2 bg-orange-400 rounded-full opacity-75"></div>
           </div>
         </div>
       </ui-card>
@@ -186,87 +236,141 @@
     <!-- Users Tab - Enhanced Design -->
     <div *ngIf="activeTab() === 'users' && !isLoading()">
       <!-- Enhanced Filters Card -->
-   <div class="mb-4">
-       <ui-card title="Filter Users"   variant="gradient" class="mb-2">
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mt-2">
-          <div>
-            <label class="block text-sm font-semibold text-neutral-700 mb-2">Search Users</label>
-            <div class="relative">
-              <input
-                type="text"
-                [(ngModel)]="filters.users.search"
-                (input)="onFilterChange()"
-                placeholder="Search by name or email..."
-                class="w-full pl-10 pr-4 py-3 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 bg-white/80 backdrop-blur-sm transition-all"
+      <div class="mb-4">
+        <ui-card title="Filter Users" variant="gradient" class="mb-2">
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mt-2">
+            <div>
+              <label class="block text-sm font-semibold text-slate-700 mb-2"
+                >Search Users</label
+              >
+              <div class="relative">
+                <input
+                  type="text"
+                  [(ngModel)]="filters.users.search"
+                  (input)="onFilterChange()"
+                  placeholder="Search by name or email..."
+                  class="w-full pl-10 pr-4 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 bg-white/80 backdrop-blur-sm transition-all"
+                />
+                <svg
+                  class="absolute left-3 top-3.5 w-4 h-4 text-slate-400"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                  ></path>
+                </svg>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-sm font-semibold text-slate-700 mb-2"
+                >Status</label
+              >
+              <ui-dropdown
+                [options]="getUserStatusOptions()"
+                [selectedValue]="filters.users.status"
+                placeholder="All Status"
+                (selectionChange)="updateUserStatusFilter($event)"
               />
-              <svg class="absolute left-3 top-3.5 w-4 h-4 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-              </svg>
+            </div>
+
+            <div>
+              <label class="block text-sm font-semibold text-slate-700 mb-2"
+                >User Type</label
+              >
+              <ui-dropdown
+                [options]="getUserTypeOptions()"
+                [selectedValue]="filters.users.userType"
+                placeholder="All Types"
+                (selectionChange)="updateUserTypeFilter($event)"
+              />
+            </div>
+
+            <div class="flex items-end">
+              <ui-button
+                variant="secondary"
+                [fullWidth]="true"
+                (clicked)="resetUserFilters()"
+              >
+                <svg
+                  class="w-4 h-4 mr-2"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                  ></path>
+                </svg>
+                Reset Filters
+              </ui-button>
             </div>
           </div>
-          
-          <div>
-            <label class="block text-sm font-semibold text-neutral-700 mb-2">Status</label>
-            <ui-dropdown
-              [options]="getUserStatusOptions()"
-              [selectedValue]="filters.users.status"
-              placeholder="All Status"
-              (selectionChange)="updateUserStatusFilter($event)"
-            />
-          </div>
-          
-          <div>
-            <label class="block text-sm font-semibold text-neutral-700 mb-2">User Type</label>
-            <ui-dropdown
-              [options]="getUserTypeOptions()"
-              [selectedValue]="filters.users.userType"
-              placeholder="All Types"
-              (selectionChange)="updateUserTypeFilter($event)"
-            />
-          </div>
-          
-          <div class="flex items-end">
-            <ui-button
-              variant="secondary"
-              [fullWidth]="true"
-              (clicked)="resetUserFilters()"
-            >
-              <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
-              </svg>
-              Reset Filters
-            </ui-button>
-          </div>
-        </div>
-      </ui-card>
-   </div>
+        </ui-card>
+      </div>
 
       <!-- Enhanced Users Table -->
       <ui-card variant="elevated">
         <div class="flow-root">
           <div class="-mx-6 -my-2 overflow-x-auto">
             <div class="inline-block min-w-full py-2 align-middle">
-              <table class="min-w-full divide-y divide-neutral-200">
-                <thead class="bg-gradient-to-r from-neutral-50 to-neutral-100">
+              <table class="min-w-full divide-y divide-slate-200">
+                <thead class="bg-gradient-to-r from-slate-50 to-slate-100">
                   <tr>
-                    <th class="px-6 py-4 text-left text-xs font-bold text-neutral-500 uppercase tracking-wider">User</th>
-                    <th class="px-6 py-4 text-left text-xs font-bold text-neutral-500 uppercase tracking-wider">Status</th>
-                    <th class="px-6 py-4 text-left text-xs font-bold text-neutral-500 uppercase tracking-wider">Type</th>
-                    <th class="px-6 py-4 text-left text-xs font-bold text-neutral-500 uppercase tracking-wider">Joined</th>
-                    <th class="relative px-6 py-4"><span class="sr-only">Actions</span></th>
+                    <th
+                      class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider"
+                    >
+                      User
+                    </th>
+                    <th
+                      class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider"
+                    >
+                      Status
+                    </th>
+                    <th
+                      class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider"
+                    >
+                      Type
+                    </th>
+                    <th
+                      class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider"
+                    >
+                      Joined
+                    </th>
+                    <th class="relative px-6 py-4">
+                      <span class="sr-only">Actions</span>
+                    </th>
                   </tr>
                 </thead>
-                <tbody class="bg-white divide-y divide-neutral-100">
-                  <tr *ngFor="let user of filteredUsers(); let i = index" 
-                      class="group hover:bg-gradient-to-r hover:from-primary-25 hover:to-transparent transition-all duration-200">
+                <tbody class="bg-white divide-y divide-slate-100">
+                  <tr
+                    *ngFor="let user of filteredUsers(); let i = index"
+                    class="group hover:bg-gradient-to-r hover:from-orange-25 hover:to-transparent transition-all duration-200"
+                  >
                     <td class="px-6 py-6 whitespace-nowrap">
                       <div class="flex items-center">
-                        <div class="w-12 h-12 bg-gradient-to-br from-primary-400 to-primary-600 rounded-xl flex items-center justify-center shadow-sm">
-                          <span class="text-sm font-bold text-white">{{ getUserInitials(user) }}</span>
+                        <div
+                          class="w-12 h-12 bg-gradient-to-br from-orange-400 to-orange-600 rounded-xl flex items-center justify-center shadow-sm"
+                        >
+                          <span class="text-sm font-bold text-white">{{
+                            getUserInitials(user)
+                          }}</span>
                         </div>
                         <div class="ml-4">
-                          <div class="text-sm font-semibold text-neutral-900">{{ user.firstName }} {{ user.lastName }}</div>
-                          <div class="text-sm text-neutral-500">{{ user.email }}</div>
+                          <div class="text-sm font-semibold text-slate-900">
+                            {{ user.firstName }} {{ user.lastName }}
+                          </div>
+                          <div class="text-sm text-slate-500">
+                            {{ user.email }}
+                          </div>
                         </div>
                       </div>
                     </td>
@@ -275,14 +379,22 @@
                         {{ user.status }}
                       </span>
                     </td>
-                    <td class="px-6 py-6 whitespace-nowrap text-sm text-neutral-600 font-medium">
+                    <td
+                      class="px-6 py-6 whitespace-nowrap text-sm text-slate-600 font-medium"
+                    >
                       {{ user.userType | titlecase }}
                     </td>
-                    <td class="px-6 py-6 whitespace-nowrap text-sm text-neutral-500">
+                    <td
+                      class="px-6 py-6 whitespace-nowrap text-sm text-slate-500"
+                    >
                       {{ formatDate(user.createdAt) }}
                     </td>
-                    <td class="px-6 py-6 whitespace-nowrap text-right text-sm font-medium">
-                      <div class="flex items-center justify-end space-x-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <td
+                      class="px-6 py-6 whitespace-nowrap text-right text-sm font-medium"
+                    >
+                      <div
+                        class="flex items-center justify-end space-x-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
                         <ui-button
                           variant="ghost"
                           size="sm"
@@ -291,11 +403,15 @@
                           View
                         </ui-button>
                         <ui-button
-                          [variant]="user.status === 'active' ? 'ghost' : 'ghost'"
+                          [variant]="
+                            user.status === 'active' ? 'ghost' : 'ghost'
+                          "
                           size="sm"
                           (clicked)="toggleUserStatus(user)"
                         >
-                          {{ user.status === 'active' ? 'Suspend' : 'Activate' }}
+                          {{
+                            user.status === "active" ? "Suspend" : "Activate"
+                          }}
                         </ui-button>
                       </div>
                     </td>
@@ -311,94 +427,160 @@
     <!-- Organizations Tab - Enhanced Design -->
     <div *ngIf="activeTab() === 'organizations' && !isLoading()">
       <!-- Enhanced Filters -->
- <div class="mb-4">
-       <ui-card title="Filter Organizations" subtitle="Find and manage organizations" variant="gradient" class="mb-8">
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-          <div>
-            <label class="block text-sm font-semibold text-neutral-700 mb-2">Search</label>
-            <div class="relative">
-              <input
-                type="text"
-                [(ngModel)]="filters.organizations.search"
-                (input)="onFilterChange()"
-                placeholder="Search organizations..."
-                class="w-full pl-10 pr-4 py-3 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 bg-white/80 backdrop-blur-sm transition-all"
+      <div class="mb-4">
+        <ui-card
+          title="Filter Organizations"
+          subtitle="Find and manage organizations"
+          variant="gradient"
+          class="mb-8"
+        >
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <div>
+              <label class="block text-sm font-semibold text-slate-700 mb-2"
+                >Search</label
+              >
+              <div class="relative">
+                <input
+                  type="text"
+                  [(ngModel)]="filters.organizations.search"
+                  (input)="onFilterChange()"
+                  placeholder="Search organizations..."
+                  class="w-full pl-10 pr-4 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 bg-white/80 backdrop-blur-sm transition-all"
+                />
+                <svg
+                  class="absolute left-3 top-3.5 w-4 h-4 text-slate-400"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                  ></path>
+                </svg>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-sm font-semibold text-slate-700 mb-2"
+                >Status</label
+              >
+              <ui-dropdown
+                [options]="getOrganizationStatusOptions()"
+                [selectedValue]="filters.organizations.status"
+                placeholder="All Status"
+                (selectionChange)="updateOrgStatusFilter($event)"
               />
-              <svg class="absolute left-3 top-3.5 w-4 h-4 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-              </svg>
+            </div>
+
+            <div>
+              <label class="block text-sm font-semibold text-slate-700 mb-2"
+                >Type</label
+              >
+              <ui-dropdown
+                [options]="getOrganizationTypeOptions()"
+                [selectedValue]="filters.organizations.type"
+                placeholder="All Types"
+                (selectionChange)="updateOrgTypeFilter($event)"
+              />
+            </div>
+
+            <div class="flex items-end">
+              <ui-button
+                variant="secondary"
+                [fullWidth]="true"
+                (clicked)="resetOrganizationFilters()"
+              >
+                <svg
+                  class="w-4 h-4 mr-2"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                  ></path>
+                </svg>
+                Reset Filters
+              </ui-button>
             </div>
           </div>
-          
-          <div>
-            <label class="block text-sm font-semibold text-neutral-700 mb-2">Status</label>
-            <ui-dropdown
-              [options]="getOrganizationStatusOptions()"
-              [selectedValue]="filters.organizations.status"
-              placeholder="All Status"
-              (selectionChange)="updateOrgStatusFilter($event)"
-            />
-          </div>
-          
-          <div>
-            <label class="block text-sm font-semibold text-neutral-700 mb-2">Type</label>
-            <ui-dropdown
-              [options]="getOrganizationTypeOptions()"
-              [selectedValue]="filters.organizations.type"
-              placeholder="All Types"
-              (selectionChange)="updateOrgTypeFilter($event)"
-            />
-          </div>
-          
-          <div class="flex items-end">
-            <ui-button
-              variant="secondary"
-              [fullWidth]="true"
-              (clicked)="resetOrganizationFilters()"
-            >
-              <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
-              </svg>
-              Reset Filters
-            </ui-button>
-          </div>
-        </div>
-      </ui-card>
- </div>
+        </ui-card>
+      </div>
 
       <!-- Enhanced Organizations Table -->
       <ui-card variant="elevated">
         <div class="flow-root">
           <div class="-mx-6 -my-2 overflow-x-auto">
             <div class="inline-block min-w-full py-2 align-middle">
-              <table class="min-w-full divide-y divide-neutral-200">
-                <thead class="bg-gradient-to-r from-neutral-50 to-neutral-100">
+              <table class="min-w-full divide-y divide-slate-200">
+                <thead class="bg-gradient-to-r from-slate-50 to-slate-100">
                   <tr>
-                    <th class="px-6 py-4 text-left text-xs font-bold text-neutral-500 uppercase tracking-wider">Organization</th>
-                    <th class="px-6 py-4 text-left text-xs font-bold text-neutral-500 uppercase tracking-wider">Status</th>
-                    <th class="px-6 py-4 text-left text-xs font-bold text-neutral-500 uppercase tracking-wider">Type</th>
-                    <th class="px-6 py-4 text-left text-xs font-bold text-neutral-500 uppercase tracking-wider">Location</th>
-                    <th class="relative px-6 py-4"><span class="sr-only">Actions</span></th>
+                    <th
+                      class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider"
+                    >
+                      Organization
+                    </th>
+                    <th
+                      class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider"
+                    >
+                      Status
+                    </th>
+                    <th
+                      class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider"
+                    >
+                      Type
+                    </th>
+                    <th
+                      class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider"
+                    >
+                      Location
+                    </th>
+                    <th class="relative px-6 py-4">
+                      <span class="sr-only">Actions</span>
+                    </th>
                   </tr>
                 </thead>
-                <tbody class="bg-white divide-y divide-neutral-100">
-                  <tr *ngFor="let org of filteredOrganizations()" 
-                      class="group hover:bg-gradient-to-r hover:from-primary-25 hover:to-transparent transition-all duration-200">
+                <tbody class="bg-white divide-y divide-slate-100">
+                  <tr
+                    *ngFor="let org of filteredOrganizations()"
+                    class="group hover:bg-gradient-to-r hover:from-orange-25 hover:to-transparent transition-all duration-200"
+                  >
                     <td class="px-6 py-6 whitespace-nowrap">
                       <div class="flex items-center">
-                        <div class="w-12 h-12 bg-gradient-to-br from-neutral-200 to-neutral-300 rounded-xl flex items-center justify-center shadow-sm">
-                          <svg class="w-6 h-6 text-neutral-600" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                        <div
+                          class="w-12 h-12 bg-gradient-to-br from-slate-200 to-slate-300 rounded-xl flex items-center justify-center shadow-sm"
+                        >
+                          <svg
+                            class="w-6 h-6 text-slate-600"
+                            fill="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
+                            />
                           </svg>
                         </div>
                         <div class="ml-4">
                           <div class="flex items-center">
-                            <div class="text-sm font-semibold text-neutral-900">{{ org.name }}</div>
-                            <span *ngIf="org.isVerified" class="ml-3 bg-gradient-to-r from-primary-100 to-primary-200 text-primary-800 px-2 py-1 rounded-full text-xs font-semibold">
+                            <div class="text-sm font-semibold text-slate-900">
+                              {{ org.name }}
+                            </div>
+                            <span
+                              *ngIf="org.isVerified"
+                              class="ml-3 bg-gradient-to-r from-orange-100 to-orange-200 text-orange-800 px-2 py-1 rounded-full text-xs font-semibold"
+                            >
                               Verified
                             </span>
                           </div>
-                          <div class="text-xs text-neutral-500 mt-1">Created {{ formatDate(org.createdAt) }}</div>
+                          <div class="text-xs text-slate-500 mt-1">
+                            Created {{ formatDate(org.createdAt) }}
+                          </div>
                         </div>
                       </div>
                     </td>
@@ -407,37 +589,40 @@
                         {{ org.status }}
                       </span>
                     </td>
-                    <td class="px-6 py-6 whitespace-nowrap text-sm text-neutral-600 font-medium">
+                    <td
+                      class="px-6 py-6 whitespace-nowrap text-sm text-slate-600 font-medium"
+                    >
                       {{ org.organizationType | titlecase }}
                     </td>
-                    <td class="px-6 py-6 whitespace-nowrap text-sm text-neutral-500">
+                    <td
+                      class="px-6 py-6 whitespace-nowrap text-sm text-slate-500"
+                    >
                       {{ org.city }}, {{ org.country }}
                     </td>
                     <td class="px-6 py-6 whitespace-nowrap text-right">
-                      <div class="flex items-center justify-end space-x-2 opacity-100 group-hover:opacity-90 transition-opacity">
-                        <ui-button variant="ghost" size="sm" (clicked)="viewOrganization(org)">View</ui-button>
-                        <ui-button 
+                      <div
+                        class="flex items-center justify-end space-x-2 opacity-100 group-hover:opacity-90 transition-opacity"
+                      >
+                        <ui-button
+                          variant="ghost"
+                          size="sm"
+                          (clicked)="viewOrganization(org)"
+                          >View</ui-button
+                        >
+                        <ui-button
                           *ngIf="org.status === 'pending_verification'"
-                  
-                          size="sm" 
+                          size="sm"
                           (clicked)="verifyOrganization(org)"
                         >
                           Verify
                         </ui-button>
-                        <ui-button 
-                   
-                          size="sm" 
+                        <ui-button
+                          size="sm"
                           (clicked)="toggleOrganizationStatus(org)"
                         >
-                          {{ org.status === 'active' ? 'Suspend' : 'Activate' }}
+                          {{ org.status === "active" ? "Suspend" : "Activate" }}
                         </ui-button>
-                          <ui-button 
-                   
-                          size="sm" 
-                         
-                        >
-                        Import Opportunity
-                        </ui-button>
+                        <ui-button size="sm"> Import Opportunity </ui-button>
                       </div>
                     </td>
                   </tr>
@@ -452,113 +637,221 @@
     <!-- Opportunities Tab - Enhanced Design -->
     <div *ngIf="activeTab() === 'opportunities' && !isLoading()">
       <!-- Enhanced Filters with Create Button -->
-   <div class="mb-4">
-       <ui-card title="Manage Opportunities" subtitle="Create and filter funding opportunities" variant="gradient" class="mb-8">
-        <div slot="actions">
-          <ui-button
-            variant="primary"
-            (clicked)="createOpportunity()"
-          >
-            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-            </svg>
-            New Opportunity
-          </ui-button>
-        </div>
-        
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-4">
-          <div>
-            <label class="block text-sm font-semibold text-neutral-700 mb-2">Search</label>
-            <div class="relative">
-              <input
-                type="text"
-                [(ngModel)]="filters.opportunities.search"
-                (input)="onFilterChange()"
-                placeholder="Search opportunities..."
-                class="w-full pl-10 pr-4 py-2 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 bg-white/80 backdrop-blur-sm transition-all"
-              />
-              <svg class="absolute left-3 top-3.5 w-4 h-4 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+      <div class="mb-4">
+        <ui-card
+          title="Manage Opportunities"
+          subtitle="Create and filter funding opportunities"
+          variant="gradient"
+          class="mb-8"
+        >
+          <div slot="actions">
+            <ui-button variant="primary" (clicked)="createOpportunity()">
+              <svg
+                class="w-4 h-4 mr-2"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M12 4v16m8-8H4"
+                ></path>
               </svg>
+              New Opportunity
+            </ui-button>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-4">
+            <div>
+              <label class="block text-sm font-semibold text-slate-700 mb-2"
+                >Search</label
+              >
+              <div class="relative">
+                <input
+                  type="text"
+                  [(ngModel)]="filters.opportunities.search"
+                  (input)="onFilterChange()"
+                  placeholder="Search opportunities..."
+                  class="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 bg-white/80 backdrop-blur-sm transition-all"
+                />
+                <svg
+                  class="absolute left-3 top-3.5 w-4 h-4 text-slate-400"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                  ></path>
+                </svg>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-sm font-semibold text-slate-700 mb-2"
+                >Status</label
+              >
+              <ui-dropdown
+                [options]="getOpportunityStatusOptions()"
+                [selectedValue]="filters.opportunities.status"
+                placeholder="All Status"
+                (selectionChange)="updateOpportunityStatusFilter($event)"
+              />
+            </div>
+
+            <div>
+              <label class="block text-sm font-semibold text-slate-700 mb-2"
+                >Funding Type</label
+              >
+              <ui-dropdown
+                [options]="getOpportunityTypeOptions()"
+                [selectedValue]="filters.opportunities.type"
+                placeholder="All Types"
+                (selectionChange)="updateOpportunityTypeFilter($event)"
+              />
             </div>
           </div>
-          
-          <div>
-            <label class="block text-sm font-semibold text-neutral-700 mb-2">Status</label>
-            <ui-dropdown
-              [options]="getOpportunityStatusOptions()"
-              [selectedValue]="filters.opportunities.status"
-              placeholder="All Status"
-              (selectionChange)="updateOpportunityStatusFilter($event)"
-            />
-          </div>
-          
-          <div>
-            <label class="block text-sm font-semibold text-neutral-700 mb-2">Funding Type</label>
-            <ui-dropdown
-              [options]="getOpportunityTypeOptions()"
-              [selectedValue]="filters.opportunities.type"
-              placeholder="All Types"
-              (selectionChange)="updateOpportunityTypeFilter($event)"
-            />
-          </div>
-        </div>
-      </ui-card>
-
-   </div>
+        </ui-card>
+      </div>
       <!-- Enhanced Opportunities Table -->
       <ui-card variant="elevated">
         <div class="flow-root">
           <div class="-mx-6 -my-2 overflow-x-auto">
             <div class="inline-block min-w-full py-2 align-middle">
-              <table class="min-w-full divide-y divide-neutral-200">
-                <thead class="bg-gradient-to-r from-neutral-50 to-neutral-100">
+              <table class="min-w-full divide-y divide-slate-200">
+                <thead class="bg-gradient-to-r from-slate-50 to-slate-100">
                   <tr>
-                    <th class="px-6 py-4 text-left text-xs font-bold text-neutral-500 uppercase tracking-wider">Opportunity</th>
-                    <th class="px-6 py-4 text-left text-xs font-bold text-neutral-500 uppercase tracking-wider">Status</th>
-                    <th class="px-6 py-4 text-left text-xs font-bold text-neutral-500 uppercase tracking-wider">Amount Range</th>
-                    <th class="px-6 py-4 text-left text-xs font-bold text-neutral-500 uppercase tracking-wider">Applications</th>
-                    <th class="px-6 py-4 text-left text-xs font-bold text-neutral-500 uppercase tracking-wider">Deadline</th>
-                    <th class="relative px-6 py-4"><span class="sr-only">Actions</span></th>
+                    <th
+                      class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider"
+                    >
+                      Opportunity
+                    </th>
+                    <th
+                      class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider"
+                    >
+                      Status
+                    </th>
+                    <th
+                      class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider"
+                    >
+                      Amount Range
+                    </th>
+                    <th
+                      class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider"
+                    >
+                      Applications
+                    </th>
+                    <th
+                      class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider"
+                    >
+                      Deadline
+                    </th>
+                    <th class="relative px-6 py-4">
+                      <span class="sr-only">Actions</span>
+                    </th>
                   </tr>
                 </thead>
-                <tbody class="bg-white divide-y divide-neutral-100">
-                  <tr *ngFor="let opportunity of filteredOpportunities()" 
-                      class="group hover:bg-gradient-to-r hover:from-primary-25 hover:to-transparent transition-all duration-200">
+                <tbody class="bg-white divide-y divide-slate-100">
+                  <tr
+                    *ngFor="let opportunity of filteredOpportunities()"
+                    class="group hover:bg-gradient-to-r hover:from-orange-25 hover:to-transparent transition-all duration-200"
+                  >
                     <td class="px-6 py-6 whitespace-nowrap">
                       <div>
-                        <div class="text-sm font-semibold text-neutral-900">{{ opportunity.title }}</div>
-                        <div class="text-sm text-neutral-500">{{ opportunity.organizationName }}</div>
-                        <div class="text-xs text-neutral-400 mt-1">{{ opportunity.fundingType | titlecase }}</div>
+                        <div class="text-sm font-semibold text-slate-900">
+                          {{ opportunity.title }}
+                        </div>
+                        <div class="text-sm text-slate-500">
+                          {{ opportunity.organizationName }}
+                        </div>
+                        <div class="flex flex-wrap gap-1 mt-2">
+                          <span
+                            *ngFor="let type of opportunity.fundingType"
+                            class="inline-block px-2 py-0.5 bg-orange-50 text-orange-700 border border-orange-200/50 rounded-full text-xs font-semibold"
+                          >
+                            {{ type | titlecase }}
+                          </span>
+                        </div>
                       </div>
                     </td>
                     <td class="px-6 py-6 whitespace-nowrap">
-                      <span [class]="getEnhancedStatusBadge(opportunity.status)">
+                      <span
+                        [class]="getEnhancedStatusBadge(opportunity.status)"
+                      >
                         {{ opportunity.status }}
                       </span>
                     </td>
-                    <td class="px-6 py-6 whitespace-nowrap text-sm text-neutral-600 font-medium">
-                      {{ formatCurrency(opportunity.minAmount) }} - {{ formatCurrency(opportunity.maxAmount) }}
+                    <td
+                      class="px-6 py-6 whitespace-nowrap text-sm text-slate-600 font-medium"
+                    >
+                      {{ formatCurrency(opportunity.minAmount) }} -
+                      {{ formatCurrency(opportunity.maxAmount) }}
                     </td>
                     <td class="px-6 py-6 whitespace-nowrap">
                       <div class="flex items-center">
-                        <span class="text-sm font-semibold text-neutral-900">{{ opportunity.applicationsCount || 0 }}</span>
-                        <span class="text-xs text-neutral-500 ml-1">applications</span>
+                        <span class="text-sm font-semibold text-slate-900">{{
+                          opportunity.applicationsCount || 0
+                        }}</span>
+                        <span class="text-xs text-slate-500 ml-1"
+                          >applications</span
+                        >
                       </div>
                     </td>
-                    <td class="px-6 py-6 whitespace-nowrap text-sm text-neutral-500">
-                      <span *ngIf="opportunity.deadline; else noDeadline">{{ formatDate(opportunity.deadline) }}</span>
-                      <ng-template #noDeadline><span class="text-neutral-400">No deadline</span></ng-template>
+                    <td
+                      class="px-6 py-6 whitespace-nowrap text-sm text-slate-500"
+                    >
+                      <span *ngIf="opportunity.deadline; else noDeadline">{{
+                        formatDate(opportunity.deadline)
+                      }}</span>
+                      <ng-template #noDeadline
+                        ><span class="text-slate-400"
+                          >No deadline</span
+                        ></ng-template
+                      >
                     </td>
                     <td class="px-6 py-6 whitespace-nowrap text-right">
-                      <div class="flex items-center justify-end space-x-2 opacity-100 group-hover:opacity-80 transition-opacity">
-                        <ui-button variant="ghost" size="sm" (clicked)="viewOpportunity(opportunity)">View</ui-button>
-                        <ui-button variant="ghost" size="sm" (clicked)="toggleOpportunityStatus(opportunity)">
-                          {{ opportunity.status === 'active' ? 'Pause' : 'Activate' }}
+                      <div
+                        class="flex items-center justify-end space-x-2 opacity-100 group-hover:opacity-80 transition-opacity"
+                      >
+                        <ui-button
+                          variant="ghost"
+                          size="sm"
+                          (clicked)="viewOpportunity(opportunity)"
+                          >View</ui-button
+                        >
+                        <ui-button
+                          variant="ghost"
+                          size="sm"
+                          (clicked)="toggleOpportunityStatus(opportunity)"
+                        >
+                          {{
+                            opportunity.status === "active"
+                              ? "Pause"
+                              : "Activate"
+                          }}
                         </ui-button>
-                        <ui-button variant="ghost" size="sm" (clicked)="deleteOpportunity(opportunity)">
-                          <svg class="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                        <ui-button
+                          variant="ghost"
+                          size="sm"
+                          (clicked)="deleteOpportunity(opportunity)"
+                        >
+                          <svg
+                            class="w-4 h-4 text-red-500"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              stroke-width="2"
+                              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                            ></path>
                           </svg>
                         </ui-button>
                       </div>
@@ -574,37 +867,65 @@
   </div>
 
   <!-- User Detail Modal -->
-  <div *ngIf="selectedUser()" class="fixed inset-0 bg-black/50 backdrop-blur-sm overflow-y-auto h-full w-full z-50 flex items-center justify-center p-4">
+  <div
+    *ngIf="selectedUser()"
+    class="fixed inset-0 bg-black/50 backdrop-blur-sm overflow-y-auto h-full w-full z-50 flex items-center justify-center p-4"
+  >
     <div class="relative w-full max-w-2xl mx-auto">
       <ui-card variant="elevated" size="lg">
         <!-- Modal Header -->
         <div class="flex justify-between items-center mb-6">
           <div>
-            <h3 class="text-2xl font-bold text-neutral-900">User Details</h3>
-            <p class="text-neutral-600 mt-1">Manage user account and permissions</p>
+            <h3 class="text-2xl font-bold text-slate-900">User Details</h3>
+            <p class="text-slate-600 mt-1">
+              Manage user account and permissions
+            </p>
           </div>
-          <button 
-            (click)="closeModal()" 
-            class="w-10 h-10 rounded-xl bg-neutral-100 hover:bg-neutral-200 flex items-center justify-center transition-colors"
+          <button
+            (click)="closeModal()"
+            class="w-10 h-10 rounded-xl bg-slate-100 hover:bg-slate-200 flex items-center justify-center transition-colors"
           >
-            <svg class="w-5 h-5 text-neutral-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            <svg
+              class="w-5 h-5 text-slate-600"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M6 18L18 6M6 6l12 12"
+              ></path>
             </svg>
           </button>
         </div>
-        
+
         <div *ngIf="selectedUser()" class="space-y-6">
           <!-- User Avatar & Basic Info -->
-          <div class="flex items-center space-x-6 p-6 bg-gradient-to-r from-primary-50 to-primary-100/50 rounded-xl">
-            <div class="w-20 h-20 bg-gradient-to-br from-primary-400 to-primary-600 rounded-2xl flex items-center justify-center shadow-lg">
-              <span class="text-2xl font-bold text-white">{{ getUserInitials(selectedUser()!) }}</span>
+          <div
+            class="flex items-center space-x-6 p-6 bg-gradient-to-r from-orange-50 to-orange-100/50 rounded-xl"
+          >
+            <div
+              class="w-20 h-20 bg-gradient-to-br from-orange-400 to-orange-600 rounded-2xl flex items-center justify-center shadow-lg"
+            >
+              <span class="text-2xl font-bold text-white">{{
+                getUserInitials(selectedUser()!)
+              }}</span>
             </div>
             <div>
-              <h4 class="text-xl font-bold text-neutral-900">{{ selectedUser()?.firstName }} {{ selectedUser()?.lastName }}</h4>
-              <p class="text-neutral-600">{{ selectedUser()?.email }}</p>
+              <h4 class="text-xl font-bold text-slate-900">
+                {{ selectedUser()?.firstName }} {{ selectedUser()?.lastName }}
+              </h4>
+              <p class="text-slate-600">{{ selectedUser()?.email }}</p>
               <div class="flex items-center space-x-2 mt-2">
-                <span [class]="getEnhancedStatusBadge(selectedUser()?.status!)">{{ selectedUser()?.status }}</span>
-                <span class="bg-neutral-100 text-neutral-700 px-3 py-1 rounded-full text-xs font-semibold">
+                <span
+                  [class]="getEnhancedStatusBadge(selectedUser()?.status!)"
+                  >{{ selectedUser()?.status }}</span
+                >
+                <span
+                  class="bg-slate-100 text-slate-700 px-3 py-1 rounded-full text-xs font-semibold"
+                >
                   {{ selectedUser()?.userType | titlecase }}
                 </span>
               </div>
@@ -615,59 +936,102 @@
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div class="space-y-4">
               <div>
-                <label class="block text-sm font-semibold text-neutral-700 mb-1">Contact Information</label>
-                <div class="bg-neutral-50 p-4 rounded-xl">
-                  <p class="text-sm text-neutral-600 mb-2">
-                    <span class="font-medium">Phone:</span> 
-                    {{ selectedUser()?.phone || 'Not provided' }}
+                <label class="block text-sm font-semibold text-slate-700 mb-1"
+                  >Contact Information</label
+                >
+                <div class="bg-slate-50 p-4 rounded-xl">
+                  <p class="text-sm text-slate-600 mb-2">
+                    <span class="font-medium">Phone:</span>
+                    {{ selectedUser()?.phone || "Not provided" }}
                   </p>
-                  <p class="text-sm text-neutral-600">
-                    <span class="font-medium">Email Verified:</span> 
-                    <span [class]="selectedUser()?.emailVerified ? 'text-primary-600' : 'text-warning'">
-                      {{ selectedUser()?.emailVerified ? 'Yes' : 'No' }}
+                  <p class="text-sm text-slate-600">
+                    <span class="font-medium">Email Verified:</span>
+                    <span
+                      [class]="
+                        selectedUser()?.emailVerified
+                          ? 'text-orange-600'
+                          : 'text-warning'
+                      "
+                    >
+                      {{ selectedUser()?.emailVerified ? "Yes" : "No" }}
                     </span>
                   </p>
                 </div>
               </div>
             </div>
-            
+
             <div class="space-y-4">
               <div>
-                <label class="block text-sm font-semibold text-neutral-700 mb-1">Account Details</label>
-                <div class="bg-neutral-50 p-4 rounded-xl">
-                  <p class="text-sm text-neutral-600 mb-2">
-                    <span class="font-medium">Created:</span> 
+                <label class="block text-sm font-semibold text-slate-700 mb-1"
+                  >Account Details</label
+                >
+                <div class="bg-slate-50 p-4 rounded-xl">
+                  <p class="text-sm text-slate-600 mb-2">
+                    <span class="font-medium">Created:</span>
                     {{ formatDate(selectedUser()?.createdAt!) }}
                   </p>
-                  <p class="text-sm text-neutral-600">
-                    <span class="font-medium">Last Activity:</span> 
-                    {{ formatTime(selectedUser()?.lastLoginAt || selectedUser()?.createdAt!) }}
+                  <p class="text-sm text-slate-600">
+                    <span class="font-medium">Last Activity:</span>
+                    {{
+                      formatTime(
+                        selectedUser()?.lastLoginAt ||
+                          selectedUser()?.createdAt!
+                      )
+                    }}
                   </p>
                 </div>
               </div>
             </div>
           </div>
-          
+
           <!-- Action Buttons -->
-          <div class="flex flex-col sm:flex-row gap-3 pt-4 border-t border-neutral-200">
+          <div
+            class="flex flex-col sm:flex-row gap-3 pt-4 border-t border-slate-200"
+          >
             <ui-button
-              [variant]="selectedUser()?.status === 'active' ? 'outline' : 'primary'"
+              [variant]="
+                selectedUser()?.status === 'active' ? 'outline' : 'primary'
+              "
               (clicked)="toggleUserStatus(selectedUser()!)"
               class="flex-1"
             >
-              <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-1a2 2 0 00-2-2H6a2 2 0 00-2 2v1a2 2 0 002 2z"></path>
+              <svg
+                class="w-4 h-4 mr-2"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-1a2 2 0 00-2-2H6a2 2 0 00-2 2v1a2 2 0 002 2z"
+                ></path>
               </svg>
-              {{ selectedUser()?.status === 'active' ? 'Suspend User' : 'Activate User' }}
+              {{
+                selectedUser()?.status === "active"
+                  ? "Suspend User"
+                  : "Activate User"
+              }}
             </ui-button>
-            
+
             <ui-button
               variant="secondary"
               (clicked)="resetUserPassword(selectedUser()!)"
               class="flex-1"
             >
-              <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"></path>
+              <svg
+                class="w-4 h-4 mr-2"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"
+                ></path>
               </svg>
               Reset Password
             </ui-button>

@@ -1,9 +1,8 @@
 import { Injectable, inject, signal, OnDestroy } from '@angular/core';
 import { Observable, from, throwError, BehaviorSubject, Subject } from 'rxjs';
-import { tap, catchError, takeUntil, switchMap } from 'rxjs/operators';
+import { tap, catchError, takeUntil } from 'rxjs/operators';
 import { SharedSupabaseService } from '../../shared/services/shared-supabase.service';
 import { ActivityService } from '../../shared/services/activity.service';
-import { SupabaseDocumentService } from '../../shared/services/supabase-document.service';
 import { MessagingService } from 'src/app/messaging/services/messaging.service';
 
 export interface VerificationOrganization {
@@ -21,6 +20,7 @@ export interface VerificationOrganization {
   country?: string;
   createdAt: string;
   updatedAt: string;
+  createdBy?: string;
   createdByUser?: {
     firstName: string;
     lastName: string;
@@ -29,14 +29,6 @@ export interface VerificationOrganization {
   verificationThreadId?: string;
   documentCount?: number;
   lastActivityDate?: string;
-}
-
-export interface VerificationAction {
-  organizationId: string;
-  action: 'approve' | 'reject' | 'request_info';
-  notes?: string;
-  reason?: string;
-  messageContent?: string;
 }
 
 export interface VerificationStats {
@@ -48,30 +40,27 @@ export interface VerificationStats {
 
 /**
  * OrganizationVerificationService
- * - Eliminates N+1 queries with proper joins
- * - Removes debug logging (production-ready)
- * - Removes AuthService injection
- * - Centralized error handling
- * - Proper subscription cleanup
- * - Reduced coupling
+ * FIXED: Organizations.created_by -> auth.users (not public.users)
+ * Solution: Fetch user data separately via organization_users junction table
  */
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class OrganizationVerificationService implements OnDestroy {
   private supabase = inject(SharedSupabaseService);
   private messagingService = inject(MessagingService);
   private activityService = inject(ActivityService);
-  private documentService = inject(SupabaseDocumentService);
   private destroy$ = new Subject<void>();
 
   // State management
-  private organizationsSubject = new BehaviorSubject<VerificationOrganization[]>([]);
+  private organizationsSubject = new BehaviorSubject<
+    VerificationOrganization[]
+  >([]);
   private statsSubject = new BehaviorSubject<VerificationStats>({
     pendingCount: 0,
     approvedToday: 0,
     rejectedToday: 0,
-    totalProcessed: 0
+    totalProcessed: 0,
   });
 
   // Public observables
@@ -87,39 +76,18 @@ export class OrganizationVerificationService implements OnDestroy {
   }
 
   /**
-   * Load pending organizations for verification (NO N+1 QUERIES)
-   * Uses single query with joins instead of looping
+   * Load pending organizations for verification
+   * FIXED: Separate queries for user data (created_by is auth.users)
    */
   async loadPendingVerifications(): Promise<void> {
     this.isLoading.set(true);
     this.error.set(null);
 
     try {
-      // Single query with joins (no N+1)
+      // Fetch organizations (without direct user join)
       const { data: orgsData, error: orgsError } = await this.supabase
         .from('organizations')
-        .select(`
-          id,
-          name,
-          organization_type,
-          status,
-          is_verified,
-          legal_name,
-          registration_number,
-          email,
-          phone,
-          website,
-          city,
-          country,
-          created_at,
-          updated_at,
-          created_by,
-          users!inner (
-            first_name,
-            last_name,
-            email
-          )
-        `)
+        .select('*')
         .eq('status', 'pending_verification')
         .order('created_at', { ascending: true });
 
@@ -131,7 +99,7 @@ export class OrganizationVerificationService implements OnDestroy {
         return;
       }
 
-      // Transform data efficiently (batch all lookups)
+      // Enrich with user data and other info
       const organizations = await this.enrichOrganizations(orgsData);
 
       this.organizationsSubject.next(organizations);
@@ -146,19 +114,61 @@ export class OrganizationVerificationService implements OnDestroy {
   }
 
   /**
-   * Enrich organizations with document counts and thread IDs (batched)
+   * Enrich organizations with user data, document counts, and thread IDs
+   * Uses organization_users to get actual user data from public.users
    */
-  private async enrichOrganizations(orgsData: any[]): Promise<VerificationOrganization[]> {
-    // Batch fetch all document counts and threads in parallel
-    const orgIds = orgsData.map(o => o.id);
+  private async enrichOrganizations(
+    orgsData: any[]
+  ): Promise<VerificationOrganization[]> {
+    const orgIds = orgsData.map((o) => o.id);
 
-    // Get all verification threads in one query
+    // Get organization owners via organization_users junction table
+    const { data: orgUsersData } = await this.supabase
+      .from('organization_users')
+      .select(
+        `
+        organization_id,
+        role,
+        users!fk_organization_users_user (
+          id,
+          first_name,
+          last_name,
+          email
+        )
+      `
+      )
+      .in('organization_id', orgIds)
+      .in('role', ['owner', 'admin']);
+
+    // Create lookup map for organization owners
+    const ownerMap = new Map<string, any>();
+    orgUsersData?.forEach((ou: any) => {
+      if (
+        ou.users &&
+        ou.role === 'owner' &&
+        !ownerMap.has(ou.organization_id)
+      ) {
+        ownerMap.set(ou.organization_id, ou.users);
+      }
+    });
+
+    // Fallback: if no owner, use any admin
+    orgUsersData?.forEach((ou: any) => {
+      if (
+        ou.users &&
+        ou.role === 'admin' &&
+        !ownerMap.has(ou.organization_id)
+      ) {
+        ownerMap.set(ou.organization_id, ou.users);
+      }
+    });
+
+    // Get verification threads
     const { data: threadsData } = await this.supabase
       .from('message_threads')
       .select('id, metadata')
       .ilike('subject', '%Verification:%');
 
-    // Create lookup map for threads
     const threadMap = new Map<string, string>();
     threadsData?.forEach((thread: any) => {
       if (thread.metadata?.organizationId) {
@@ -166,32 +176,27 @@ export class OrganizationVerificationService implements OnDestroy {
       }
     });
 
-    // Get document counts for all organizations (batch query)
-    const createdByIds = orgsData.map(o => o.created_by).filter(Boolean);
+    // Get document counts (by user_id from ownerMap)
+    const userIds = Array.from(
+      new Set(Array.from(ownerMap.values()).map((user: any) => user.id))
+    );
+
     const docCountMap = new Map<string, number>();
+    if (userIds.length > 0) {
+      for (const userId of userIds) {
+        const { count } = await this.supabase
+          .from('documents')
+          .select('*', { count: 'exact', head: true })
+          .eq('user_id', userId);
 
-    // For each user, count their documents
-    if (createdByIds.length > 0) {
-      const { data: docCountData } = await this.supabase
-        .from('documents')
-        .select('user_id', { count: 'exact' })
-        .in('user_id', createdByIds);
-
-      // Manual grouping (Supabase limitation)
-      const grouped: Record<string, number> = {};
-      createdByIds.forEach(userId => {
-        grouped[userId] = (docCountData || []).filter(
-          (d: any) => d.user_id === userId
-        ).length;
-      });
-
-      Object.entries(grouped).forEach(([userId, count]) => {
-        docCountMap.set(userId, count as number);
-      });
+        docCountMap.set(userId, count || 0);
+      }
     }
 
-    // Transform orgs efficiently
-    return orgsData.map(org => this.transformOrganization(org, threadMap, docCountMap));
+    // Transform organizations
+    return orgsData.map((org) =>
+      this.transformOrganization(org, ownerMap, threadMap, docCountMap)
+    );
   }
 
   /**
@@ -199,9 +204,12 @@ export class OrganizationVerificationService implements OnDestroy {
    */
   private transformOrganization(
     org: any,
+    ownerMap: Map<string, any>,
     threadMap: Map<string, string>,
     docCountMap: Map<string, number>
   ): VerificationOrganization {
+    const owner = ownerMap.get(org.id);
+
     return {
       id: org.id,
       name: org.name,
@@ -217,24 +225,30 @@ export class OrganizationVerificationService implements OnDestroy {
       country: org.country,
       createdAt: org.created_at,
       updatedAt: org.updated_at,
-      createdByUser: org.users ? {
-        firstName: org.users.first_name,
-        lastName: org.users.last_name,
-        email: org.users.email
-      } : undefined,
+      createdBy: org.created_by,
+      createdByUser: owner
+        ? {
+            firstName: owner.first_name,
+            lastName: owner.last_name,
+            email: owner.email,
+          }
+        : undefined,
       verificationThreadId: threadMap.get(org.id),
-      documentCount: docCountMap.get(org.created_by) || 0,
-      lastActivityDate: org.updated_at
+      documentCount: owner ? docCountMap.get(owner.id) || 0 : 0,
+      lastActivityDate: org.updated_at,
     };
   }
 
   /**
    * Approve organization
    */
-  approveOrganization(organizationId: string, adminNotes?: string): Observable<boolean> {
+  approveOrganization(
+    organizationId: string,
+    adminNotes?: string
+  ): Observable<boolean> {
     return from(this.performApproval(organizationId, adminNotes)).pipe(
       tap(() => this.loadPendingVerifications()),
-      catchError(error => {
+      catchError((error) => {
         this.error.set('Failed to approve organization');
         return throwError(() => error);
       }),
@@ -245,11 +259,16 @@ export class OrganizationVerificationService implements OnDestroy {
   /**
    * Perform approval
    */
-  private async performApproval(organizationId: string, adminNotes?: string): Promise<boolean> {
+  private async performApproval(
+    organizationId: string,
+    adminNotes?: string
+  ): Promise<boolean> {
     const userId = this.supabase.getCurrentUserId();
     if (!userId) throw new Error('Not authenticated');
 
-    const org = this.organizationsSubject.value.find(o => o.id === organizationId);
+    const org = this.organizationsSubject.value.find(
+      (o) => o.id === organizationId
+    );
     if (!org) throw new Error('Organization not found');
 
     // Update organization
@@ -259,29 +278,40 @@ export class OrganizationVerificationService implements OnDestroy {
         status: 'active',
         is_verified: true,
         verification_date: new Date().toISOString(),
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
       })
       .eq('id', organizationId);
 
     if (updateError) throw updateError;
 
     // Log activity (async, don't wait)
-    this.activityService.createActivity({
-      type: 'verification',
-      action: 'verified',
-      message: `Organization "${org.name}" verified and approved`,
-      metadata: {
-        organizationId,
-        organizationName: org.name,
-        adminNotes,
-        verifiedBy: userId
-      }
-    }).pipe(takeUntil(this.destroy$)).subscribe();
+    this.activityService
+      .createActivity({
+        type: 'verification',
+        action: 'verified',
+        message: `Organization "${org.name}" verified and approved`,
+        metadata: {
+          organizationId,
+          organizationName: org.name,
+          adminNotes,
+          verifiedBy: userId,
+        },
+      })
+      .pipe(takeUntil(this.destroy$))
+      .subscribe();
 
     // Send message if thread exists
     if (org.verificationThreadId) {
-      const message = `Your organization "${org.name}" has been verified and approved. You now have full access to the platform.${adminNotes ? `\n\nAdmin notes: ${adminNotes}` : ''}`;
-      await this.messagingService.sendMessage(org.verificationThreadId, message, 'system');
+      const message = `Your organization "${
+        org.name
+      }" has been verified and approved. You now have full access to the platform.${
+        adminNotes ? `\n\nAdmin notes: ${adminNotes}` : ''
+      }`;
+      await this.messagingService.sendMessage(
+        org.verificationThreadId,
+        message,
+        'system'
+      );
     }
 
     return true;
@@ -290,10 +320,13 @@ export class OrganizationVerificationService implements OnDestroy {
   /**
    * Reject organization
    */
-  rejectOrganization(organizationId: string, reason: string): Observable<boolean> {
+  rejectOrganization(
+    organizationId: string,
+    reason: string
+  ): Observable<boolean> {
     return from(this.performRejection(organizationId, reason)).pipe(
       tap(() => this.loadPendingVerifications()),
-      catchError(error => {
+      catchError((error) => {
         this.error.set('Failed to reject organization');
         return throwError(() => error);
       }),
@@ -304,11 +337,16 @@ export class OrganizationVerificationService implements OnDestroy {
   /**
    * Perform rejection
    */
-  private async performRejection(organizationId: string, reason: string): Promise<boolean> {
+  private async performRejection(
+    organizationId: string,
+    reason: string
+  ): Promise<boolean> {
     const userId = this.supabase.getCurrentUserId();
     if (!userId) throw new Error('Not authenticated');
 
-    const org = this.organizationsSubject.value.find(o => o.id === organizationId);
+    const org = this.organizationsSubject.value.find(
+      (o) => o.id === organizationId
+    );
     if (!org) throw new Error('Organization not found');
 
     // Update organization
@@ -316,29 +354,34 @@ export class OrganizationVerificationService implements OnDestroy {
       .from('organizations')
       .update({
         status: 'rejected',
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
       })
       .eq('id', organizationId);
 
     if (updateError) throw updateError;
 
     // Log activity (async, don't wait)
-    this.activityService.createActivity({
-      type: 'verification',
-      action: 'rejected',
-      message: `Organization "${org.name}" verification rejected`,
-      metadata: {
-        organizationId,
-        organizationName: org.name,
-        reason,
-        rejectedBy: userId
-      }
-    }).pipe(takeUntil(this.destroy$)).subscribe();
+    this.activityService
+      .createActivity({
+        type: 'verification',
+        action: 'rejected',
+        message: `Organization "${org.name}" verification rejected`,
+        metadata: {
+          organizationId,
+          organizationName: org.name,
+          reason,
+          rejectedBy: userId,
+        },
+      })
+      .pipe(takeUntil(this.destroy$))
+      .subscribe();
 
     // Send message (create thread if needed)
     let threadId: string | undefined = org.verificationThreadId;
     if (!threadId) {
-      threadId = await this.getOrCreateVerificationThread(organizationId, org.name, org.createdByUser?.email) ?? undefined;
+      threadId =
+        (await this.getOrCreateVerificationThread(organizationId, org.name)) ??
+        undefined;
     }
 
     if (threadId) {
@@ -352,10 +395,13 @@ export class OrganizationVerificationService implements OnDestroy {
   /**
    * Request more information
    */
-  requestMoreInformation(organizationId: string, messageContent: string): Observable<boolean> {
+  requestMoreInformation(
+    organizationId: string,
+    messageContent: string
+  ): Observable<boolean> {
     return from(this.performInfoRequest(organizationId, messageContent)).pipe(
       tap(() => this.loadPendingVerifications()),
-      catchError(error => {
+      catchError((error) => {
         this.error.set('Failed to request additional information');
         return throwError(() => error);
       }),
@@ -366,49 +412,61 @@ export class OrganizationVerificationService implements OnDestroy {
   /**
    * Perform info request
    */
-  private async performInfoRequest(organizationId: string, messageContent: string): Promise<boolean> {
+  private async performInfoRequest(
+    organizationId: string,
+    messageContent: string
+  ): Promise<boolean> {
     const userId = this.supabase.getCurrentUserId();
     if (!userId) throw new Error('Not authenticated');
 
-    const org = this.organizationsSubject.value.find(o => o.id === organizationId);
+    const org = this.organizationsSubject.value.find(
+      (o) => o.id === organizationId
+    );
     if (!org) throw new Error('Organization not found');
 
     // Get or create verification thread
     let threadId: string | undefined = org.verificationThreadId;
     if (!threadId) {
-      threadId = await this.getOrCreateVerificationThread(organizationId, org.name, org.createdByUser?.email) ?? undefined;
+      threadId =
+        (await this.getOrCreateVerificationThread(organizationId, org.name)) ??
+        undefined;
     }
 
     if (!threadId) throw new Error('Failed to create verification thread');
 
     // Send message
-    const success = await this.messagingService.sendMessage(threadId, messageContent, 'message');
+    const success = await this.messagingService.sendMessage(
+      threadId,
+      messageContent,
+      'message'
+    );
     if (!success) throw new Error('Failed to send message');
 
     // Log activity (async, don't wait)
-    this.activityService.createActivity({
-      type: 'verification',
-      action: 'info_requested',
-      message: `Additional information requested from "${org.name}"`,
-      metadata: {
-        organizationId,
-        organizationName: org.name,
-        requestedBy: userId,
-        message: messageContent
-      }
-    }).pipe(takeUntil(this.destroy$)).subscribe();
+    this.activityService
+      .createActivity({
+        type: 'verification',
+        action: 'info_requested',
+        message: `Additional information requested from "${org.name}"`,
+        metadata: {
+          organizationId,
+          organizationName: org.name,
+          requestedBy: userId,
+          message: messageContent,
+        },
+      })
+      .pipe(takeUntil(this.destroy$))
+      .subscribe();
 
     return true;
   }
 
   /**
    * Get or create verification thread
-   * Centralized thread management (no duplication)
    */
   private async getOrCreateVerificationThread(
     organizationId: string,
-    organizationName: string,
-    participantEmail?: string
+    organizationName: string
   ): Promise<string | null> {
     try {
       // Try to find existing thread
@@ -423,37 +481,63 @@ export class OrganizationVerificationService implements OnDestroy {
         return existingThread.id;
       }
 
-      // Get organization creator to include in thread
-      const { data: orgData, error: orgError } = await this.supabase
-        .from('organizations')
-        .select('created_by')
-        .eq('id', organizationId)
+      // Try to get owner/admin via organization_users
+      const { data: orgUserData } = await this.supabase
+        .from('organization_users')
+        .select('user_id')
+        .eq('organization_id', organizationId)
+        .in('role', ['owner', 'admin'])
+        .limit(1)
         .maybeSingle();
 
-      if (orgError || !orgData?.created_by) {
+      let userId = orgUserData?.user_id;
+
+      // Fallback: use created_by from organization if no owner found
+      if (!userId) {
+        console.warn(
+          '⚠️ No owner/admin in organization_users, using created_by'
+        );
+        const { data: orgData } = await this.supabase
+          .from('organizations')
+          .select('created_by')
+          .eq('id', organizationId)
+          .single();
+
+        userId = orgData?.created_by;
+      }
+
+      if (!userId) {
+        console.error('❌ No user found for organization:', organizationId);
         return null;
       }
 
       // Create thread
       const threadId = await this.messagingService.createThread(
         `Verification: ${organizationName}`,
-        [orgData.created_by]
+        [userId]
       );
 
-      // Update local state
-      if (threadId) {
-        const currentOrgs = this.organizationsSubject.value;
-        const updatedOrgs = currentOrgs.map(org =>
-          org.id === organizationId
-            ? { ...org, verificationThreadId: threadId }
-            : org
+      if (!threadId) {
+        console.error(
+          '❌ Failed to create thread for organization:',
+          organizationId
         );
-        this.organizationsSubject.next(updatedOrgs);
+        return null;
       }
 
+      // Update local state
+      const currentOrgs = this.organizationsSubject.value;
+      const updatedOrgs = currentOrgs.map((org) =>
+        org.id === organizationId
+          ? { ...org, verificationThreadId: threadId }
+          : org
+      );
+      this.organizationsSubject.next(updatedOrgs);
+
+      console.log('✅ Verification thread created:', threadId);
       return threadId;
     } catch (error) {
-      console.error('Error getting/creating verification thread:', error);
+      console.error('❌ Error getting/creating verification thread:', error);
       return null;
     }
   }
@@ -495,7 +579,7 @@ export class OrganizationVerificationService implements OnDestroy {
         pendingCount,
         approvedToday: approvedToday || 0,
         rejectedToday: rejectedToday || 0,
-        totalProcessed: totalProcessed || 0
+        totalProcessed: totalProcessed || 0,
       });
     } catch (error) {
       console.error('Error updating stats:', error);
@@ -506,7 +590,11 @@ export class OrganizationVerificationService implements OnDestroy {
    * Get organization by ID from cached list
    */
   getOrganizationById(organizationId: string): VerificationOrganization | null {
-    return this.organizationsSubject.value.find(org => org.id === organizationId) || null;
+    return (
+      this.organizationsSubject.value.find(
+        (org) => org.id === organizationId
+      ) || null
+    );
   }
 
   /**
@@ -531,11 +619,7 @@ export class OrganizationVerificationService implements OnDestroy {
     }
 
     return from(
-      this.getOrCreateVerificationThread(
-        organizationId,
-        org.name,
-        org.createdByUser?.email
-      )
+      this.getOrCreateVerificationThread(organizationId, org.name)
     ).pipe(takeUntil(this.destroy$));
   }
 
@@ -547,7 +631,7 @@ export class OrganizationVerificationService implements OnDestroy {
   }
 
   /**
-   * Get organization documents (from SupabaseDocumentService)
+   * Get organization documents
    */
   getOrganizationDocuments(organizationId: string): Observable<any[]> {
     const org = this.getOrganizationById(organizationId);
@@ -555,7 +639,6 @@ export class OrganizationVerificationService implements OnDestroy {
       return throwError(() => new Error('Organization or user not found'));
     }
 
-    // Return empty observable (documents would be fetched separately if needed)
     return from([]);
   }
 

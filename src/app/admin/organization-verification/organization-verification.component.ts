@@ -1,38 +1,46 @@
 // src/app/admin/components/organization-verification/organization-verification.component.ts
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  inject,
+  signal,
+  computed,
+  OnDestroy,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms'; 
-import { MessagingService, MessageThread } from 'src/app/messaging/services/messaging.service';
-import {  DocumentMetadata } from 'src/app/shared/services/supabase-document.service';
-import { ErrorToastComponent } from './components/error-toast.component';
-import { VerificationDetailsComponent } from './components/verification-details/verification-details.component';
-import { VerificationHeaderComponent } from './components/verification-header.component';
-import { VerificationModalsComponent } from './components/verification-modals/verification-modals.component';
-import { VerificationSidebarComponent } from './components/verification-sidebar.component';
-import { OrganizationVerificationService, VerificationOrganization, VerificationStats } from '../services/organization-verification.service';
- 
-type ActiveTab = 'details' | 'documents' | 'messaging' | 'activity';
+import {
+  FormsModule,
+  ReactiveFormsModule,
+  FormBuilder,
+  FormGroup,
+  Validators,
+} from '@angular/forms';
+import { Subject, takeUntil } from 'rxjs';
+import {
+  MessagingService,
+  MessageThread,
+} from 'src/app/messaging/services/messaging.service';
+import { DocumentMetadata } from 'src/app/shared/services/supabase-document.service';
+import {
+  OrganizationVerificationService,
+  VerificationOrganization,
+  VerificationStats,
+} from '../services/organization-verification.service';
+
+type ActiveTab = 'details' | 'documents' | 'messaging';
+type SortDirection = 'asc' | 'desc';
 
 @Component({
   selector: 'app-organization-verification',
   standalone: true,
-  imports: [
-    CommonModule,
-    FormsModule,
-    ReactiveFormsModule,
-    VerificationHeaderComponent,
-    VerificationSidebarComponent,
-    VerificationDetailsComponent,
-    VerificationModalsComponent,
-    ErrorToastComponent
-  ],
-  templateUrl: './organization-verification.component.html'
+  imports: [CommonModule, FormsModule, ReactiveFormsModule],
+  templateUrl: './organization-verification.component.html',
 })
-export class OrganizationVerificationComponent implements OnInit {
+export class OrganizationVerificationComponent implements OnInit, OnDestroy {
   private verificationService = inject(OrganizationVerificationService);
   private messagingService = inject(MessagingService);
- 
   private fb = inject(FormBuilder);
+  private destroy$ = new Subject<void>();
 
   // State signals
   organizations = signal<VerificationOrganization[]>([]);
@@ -40,77 +48,123 @@ export class OrganizationVerificationComponent implements OnInit {
     pendingCount: 0,
     approvedToday: 0,
     rejectedToday: 0,
-    totalProcessed: 0
+    totalProcessed: 0,
   });
-  
+
   selectedOrganization = signal<VerificationOrganization | null>(null);
   activeTab = signal<ActiveTab>('details');
   isLoading = signal(false);
   error = signal<string | null>(null);
-  
+
   // Right panel data
   documents = signal<DocumentMetadata[]>([]);
   verificationThread = signal<MessageThread | null>(null);
-  selectedDocument = signal<DocumentMetadata | null>(null);
-  
+
   // Filters
   searchTerm = signal('');
-  statusFilter = signal('all');
-  
+  statusFilter = signal('pending'); // Default to pending
+  subFilter = signal('all');
+  sortDirection = signal<SortDirection>('desc');
+
+  // Sub-filter options for secondary bar
+  subFilterOptions = computed(() => {
+    const filtered = this.filteredOrganizations();
+    const withDocs = filtered.filter((org) => (org.documentCount || 0) > 0);
+    const processed = filtered.filter((org) => org.verificationThreadId);
+
+    return [
+      { label: 'All', value: 'all', count: filtered.length },
+      { label: 'With Documents', value: 'with_docs', count: withDocs.length },
+      {
+        label: 'Has been processed',
+        value: 'processed',
+        count: processed.length,
+      },
+    ];
+  });
+
   // Modal states
   showApprovalModal = signal(false);
   showRejectionModal = signal(false);
   showInfoRequestModal = signal(false);
-  
+
   // Forms
   approvalForm: FormGroup;
   rejectionForm: FormGroup;
   infoRequestForm: FormGroup;
-  
-  // Computed properties - CRITICAL: This must be included
+
+  // Computed properties
   filteredOrganizations = computed(() => {
     const orgs = this.organizations();
     const search = this.searchTerm().toLowerCase();
     const status = this.statusFilter();
-    
-    return orgs.filter(org => {
-      const matchesSearch = !search || 
+
+    return orgs.filter((org) => {
+      const matchesSearch =
+        !search ||
         org.name.toLowerCase().includes(search) ||
         org.legalName?.toLowerCase().includes(search) ||
-        org.registrationNumber?.toLowerCase().includes(search);
-      
-      const matchesStatus = status === 'all' || 
+        org.registrationNumber?.toLowerCase().includes(search) ||
+        org.email?.toLowerCase().includes(search);
+
+      const matchesStatus =
+        status === 'all' ||
         (status === 'pending' && org.status === 'pending_verification') ||
         (status === 'with_docs' && (org.documentCount || 0) > 0) ||
         (status === 'no_docs' && (org.documentCount || 0) === 0);
-      
+
       return matchesSearch && matchesStatus;
+    });
+  });
+
+  sortedOrganizations = computed(() => {
+    const filtered = this.filteredOrganizations();
+    const subFilterValue = this.subFilter();
+    const direction = this.sortDirection();
+
+    // Apply sub-filter
+    let result = filtered;
+    if (subFilterValue === 'with_docs') {
+      result = filtered.filter((org) => (org.documentCount || 0) > 0);
+    } else if (subFilterValue === 'processed') {
+      result = filtered.filter((org) => org.verificationThreadId);
+    }
+
+    // Sort by created date
+    return [...result].sort((a, b) => {
+      const dateA = new Date(a.createdAt).getTime();
+      const dateB = new Date(b.createdAt).getTime();
+      return direction === 'desc' ? dateB - dateA : dateA - dateB;
     });
   });
 
   constructor() {
     // Initialize forms
     this.approvalForm = this.fb.group({
-      adminNotes: ['']
+      adminNotes: [''],
     });
 
     this.rejectionForm = this.fb.group({
-      reason: ['', Validators.required]
+      reason: ['', Validators.required],
     });
 
     this.infoRequestForm = this.fb.group({
-      messageContent: ['', Validators.required]
+      messageContent: ['', Validators.required],
     });
   }
 
   ngOnInit() {
-    
     this.loadVerificationData();
     this.setupSubscriptions();
   }
 
+  ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
   // ===============================
-  // MAIN COMPONENT METHODS
+  // SETUP & DATA LOADING
   // ===============================
 
   private loadVerificationData() {
@@ -119,30 +173,33 @@ export class OrganizationVerificationComponent implements OnInit {
   }
 
   private setupSubscriptions() {
-    // Subscribe to verification service data
-    this.verificationService.organizations$.subscribe({
-      next: (orgs) => {
-        this.organizations.set(orgs);
-        this.isLoading.set(false);
-        
-        // If we have a selected org, update it
-        const selectedId = this.selectedOrganization()?.id;
-        if (selectedId) {
-          const updatedSelected = orgs.find(org => org.id === selectedId);
-          if (updatedSelected) {
-            this.selectedOrganization.set(updatedSelected);
-          }
-        }
-      },
-      error: (error) => {
-        console.error('Error loading organizations:', error);
-        this.error.set('Failed to load verification requests');
-        this.isLoading.set(false);
-      }
-    });
+    this.verificationService.organizations$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (orgs) => {
+          this.organizations.set(orgs);
+          this.isLoading.set(false);
 
-    this.verificationService.stats$.subscribe({
-      next: (stats) => this.stats.set(stats)
+          // If we have a selected org, update it
+          const selectedId = this.selectedOrganization()?.id;
+          if (selectedId) {
+            const updatedSelected = orgs.find((org) => org.id === selectedId);
+            if (updatedSelected) {
+              this.selectedOrganization.set(updatedSelected);
+            } else {
+              this.selectedOrganization.set(null);
+            }
+          }
+        },
+        error: (error) => {
+          console.error('Error loading organizations:', error);
+          this.error.set('Failed to load verification requests');
+          this.isLoading.set(false);
+        },
+      });
+
+    this.verificationService.stats$.pipe(takeUntil(this.destroy$)).subscribe({
+      next: (stats) => this.stats.set(stats),
     });
   }
 
@@ -155,17 +212,20 @@ export class OrganizationVerificationComponent implements OnInit {
   // ===============================
 
   selectOrganization(org: VerificationOrganization) {
-    this.selectedOrganization.set(org);
-    this.activeTab.set('details');
-    this.loadOrganizationData(org);
+    // Toggle selection
+    if (this.selectedOrganization()?.id === org.id) {
+      this.selectedOrganization.set(null);
+      this.documents.set([]);
+    } else {
+      this.selectedOrganization.set(org);
+      this.loadOrganizationData(org);
+    }
   }
 
   private async loadOrganizationData(org: VerificationOrganization) {
     try {
-      // Load documents
       await this.loadOrganizationDocuments(org.id);
-      
-      // Load verification thread if it exists
+
       if (org.verificationThreadId) {
         await this.loadVerificationThread(org.verificationThreadId);
       }
@@ -175,8 +235,7 @@ export class OrganizationVerificationComponent implements OnInit {
   }
 
   private async loadOrganizationDocuments(organizationId: string) {
-    // This would need integration with your document service
-    // For now, we'll set empty array as placeholder
+    // Placeholder - integrate with your document service
     this.documents.set([]);
   }
 
@@ -190,26 +249,24 @@ export class OrganizationVerificationComponent implements OnInit {
   }
 
   // ===============================
-  // TAB MANAGEMENT
+  // FILTER & SORT MANAGEMENT
   // ===============================
 
-  setActiveTab(tab: ActiveTab) {
-    this.activeTab.set(tab);
-    
-    // Load data for specific tabs
-    const selectedOrg = this.selectedOrganization();
-    if (!selectedOrg) return;
+  onSearchChanged(searchTerm: string) {
+    this.searchTerm.set(searchTerm);
+  }
 
-    switch (tab) {
-      case 'documents':
-        this.loadOrganizationDocuments(selectedOrg.id);
-        break;
-      case 'messaging':
-        if (!this.verificationThread() && selectedOrg.verificationThreadId) {
-          this.loadVerificationThread(selectedOrg.verificationThreadId);
-        }
-        break;
-    }
+  onFilterChanged(filter: string) {
+    this.statusFilter.set(filter);
+    this.subFilter.set('all'); // Reset sub-filter when main filter changes
+  }
+
+  onSubFilterChanged(filter: string) {
+    this.subFilter.set(filter);
+  }
+
+  toggleSort() {
+    this.sortDirection.set(this.sortDirection() === 'desc' ? 'asc' : 'desc');
   }
 
   // ===============================
@@ -236,20 +293,22 @@ export class OrganizationVerificationComponent implements OnInit {
     if (!selectedOrg || !this.approvalForm.valid) return;
 
     const adminNotes = this.approvalForm.get('adminNotes')?.value;
-    
-    this.verificationService.approveOrganization(selectedOrg.id, adminNotes).subscribe({
-      next: (success) => {
-        if (success) {
-          this.showApprovalModal.set(false);
-          this.selectedOrganization.set(null);
-          console.log('Organization approved successfully');
-        }
-      },
-      error: (error) => {
-        console.error('Approval failed:', error);
-        this.error.set('Failed to approve organization');
-      }
-    });
+
+    this.verificationService
+      .approveOrganization(selectedOrg.id, adminNotes)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (success) => {
+          if (success) {
+            this.showApprovalModal.set(false);
+            this.selectedOrganization.set(null);
+          }
+        },
+        error: (error) => {
+          console.error('Approval failed:', error);
+          this.error.set('Failed to approve organization');
+        },
+      });
   }
 
   rejectOrganization() {
@@ -257,20 +316,22 @@ export class OrganizationVerificationComponent implements OnInit {
     if (!selectedOrg || !this.rejectionForm.valid) return;
 
     const reason = this.rejectionForm.get('reason')?.value;
-    
-    this.verificationService.rejectOrganization(selectedOrg.id, reason).subscribe({
-      next: (success) => {
-        if (success) {
-          this.showRejectionModal.set(false);
-          this.selectedOrganization.set(null);
-          console.log('Organization rejected successfully');
-        }
-      },
-      error: (error) => {
-        console.error('Rejection failed:', error);
-        this.error.set('Failed to reject organization');
-      }
-    });
+
+    this.verificationService
+      .rejectOrganization(selectedOrg.id, reason)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (success) => {
+          if (success) {
+            this.showRejectionModal.set(false);
+            this.selectedOrganization.set(null);
+          }
+        },
+        error: (error) => {
+          console.error('Rejection failed:', error);
+          this.error.set('Failed to reject organization');
+        },
+      });
   }
 
   requestMoreInfo() {
@@ -278,44 +339,43 @@ export class OrganizationVerificationComponent implements OnInit {
     if (!selectedOrg || !this.infoRequestForm.valid) return;
 
     const messageContent = this.infoRequestForm.get('messageContent')?.value;
-    
-    this.verificationService.requestMoreInformation(selectedOrg.id, messageContent).subscribe({
-      next: (success) => {
-        if (success) {
-          this.showInfoRequestModal.set(false);
-          this.setActiveTab('messaging'); // Switch to messaging tab
-          // Reload the thread
-          this.verificationService.ensureVerificationThread(selectedOrg.id).subscribe(threadId => {
-            if (threadId) {
-              this.loadVerificationThread(threadId);
-            }
-          });
-        }
-      },
-      error: (error) => {
-        console.error('Info request failed:', error);
-        this.error.set('Failed to request additional information');
-      }
-    });
+
+    this.verificationService
+      .requestMoreInformation(selectedOrg.id, messageContent)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (success) => {
+          if (success) {
+            this.showInfoRequestModal.set(false);
+
+            // Reload the thread
+            this.verificationService
+              .ensureVerificationThread(selectedOrg.id)
+              .pipe(takeUntil(this.destroy$))
+              .subscribe((threadId) => {
+                if (threadId) {
+                  this.loadVerificationThread(threadId);
+                }
+              });
+          }
+        },
+        error: (error) => {
+          console.error('Info request failed:', error);
+          this.error.set('Failed to request additional information');
+        },
+      });
   }
 
   // ===============================
   // DOCUMENT MANAGEMENT
   // ===============================
 
-  selectDocument(doc: DocumentMetadata) {
-    this.selectedDocument.set(doc);
-  }
-
   previewDocument(doc: DocumentMetadata) {
     if (doc.mimeType.includes('pdf')) {
-      // Open PDF in new tab for preview
       window.open(doc.publicUrl, '_blank');
     } else if (doc.mimeType.includes('image')) {
-      // Show image preview modal (implement as needed)
-      this.selectedDocument.set(doc);
+      window.open(doc.publicUrl, '_blank');
     } else {
-      // Download for other file types
       this.downloadDocument(doc);
     }
   }
@@ -338,58 +398,94 @@ export class OrganizationVerificationComponent implements OnInit {
   }
 
   // ===============================
-  // EVENT HANDLERS FOR CHILD COMPONENTS
+  // UI HELPER METHODS
   // ===============================
 
-  onSearchChanged(searchTerm: string) {
-    this.searchTerm.set(searchTerm);
+  getOrgInitials(org: VerificationOrganization): string {
+    const words = org.name.split(' ');
+    if (words.length >= 2) {
+      return (words[0][0] + words[1][0]).toUpperCase();
+    }
+    return org.name.substring(0, 2).toUpperCase();
   }
 
-  onFilterChanged(filter: string) {
-    this.statusFilter.set(filter);
+  getTimeAgo(dateString: string): string {
+    const date = new Date(dateString);
+    const now = new Date();
+    const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+
+    if (seconds < 60) return 'Just now';
+    if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
+    if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
+    if (seconds < 604800) return `${Math.floor(seconds / 86400)}d ago`;
+
+    return date.toLocaleDateString();
   }
 
-  onTabChanged(tab: ActiveTab) {
-    this.setActiveTab(tab);
+  formatDateTime(dateString: string): string {
+    const date = new Date(dateString);
+    return date.toLocaleString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
   }
 
-  onDocumentSelected(doc: DocumentMetadata) {
-    this.selectDocument(doc);
+  formatFileSize(bytes: number): string {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i];
   }
 
-  onDocumentPreviewed(doc: DocumentMetadata) {
-    this.previewDocument(doc);
+  getCurrentDateRange(): string {
+    const today = new Date();
+    const weekAgo = new Date(today);
+    weekAgo.setDate(today.getDate() - 7);
+
+    const formatDate = (date: Date) => {
+      return date.toLocaleDateString('en-US', {
+        month: '2-digit',
+        day: '2-digit',
+        year: 'numeric',
+      });
+    };
+
+    return `${formatDate(weekAgo)} - ${formatDate(today)}`;
   }
 
-  onDocumentDownloaded(doc: DocumentMetadata) {
-    this.downloadDocument(doc);
+  getFilterButtonClasses(filterValue: string): string {
+    const isActive = this.statusFilter() === filterValue;
+    const baseClasses =
+      'px-4 py-2 rounded-xl text-sm font-medium transition-colors duration-200 flex items-center space-x-2';
+    const activeClasses = isActive
+      ? 'bg-orange-500 text-white'
+      : 'bg-slate-100 text-slate-700 hover:bg-slate-200';
+
+    return `${baseClasses} ${activeClasses}`;
   }
 
-  onApproveRequested() {
-    this.openApprovalModal();
+  getSubFilterButtonClasses(filterValue: string): string {
+    const isActive = this.subFilter() === filterValue;
+    const baseClasses =
+      'px-4 py-2 rounded-xl text-sm font-medium transition-colors duration-200 flex items-center space-x-2';
+    const activeClasses = isActive
+      ? 'bg-blue-500 text-white'
+      : 'bg-slate-100 text-slate-700 hover:bg-slate-200';
+
+    return `${baseClasses} ${activeClasses}`;
   }
 
-  onRejectRequested() {
-    this.openRejectionModal();
-  }
+  getSubFilterCountClasses(filterValue: string): string {
+    const isActive = this.subFilter() === filterValue;
+    const baseClasses = 'px-2 py-0.5 rounded-full text-xs font-semibold';
+    const activeClasses = isActive
+      ? 'bg-white/20 text-white'
+      : 'bg-slate-200 text-slate-700';
 
-  onInfoRequested() {
-    this.openInfoRequestModal();
-  }
-
-  onModalClosed() {
-    this.closeModal();
-  }
-
-  onOrganizationApproved() {
-    this.approveOrganization();
-  }
-
-  onOrganizationRejected() {
-    this.rejectOrganization();
-  }
-
-  onInfoRequestSubmitted() {
-    this.requestMoreInfo();
+    return `${baseClasses} ${activeClasses}`;
   }
 }
