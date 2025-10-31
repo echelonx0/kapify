@@ -466,7 +466,7 @@ export class ApplicationsHomeComponent implements OnInit, OnDestroy {
   }
 
   // ===============================
-  // USER ACTIONS (UNCHANGED)
+  // USER ACTIONS
   // ===============================
 
   toggleFilters() {

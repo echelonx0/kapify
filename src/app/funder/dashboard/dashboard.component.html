@@ -10,19 +10,19 @@
       <div class="tab-container">
         <nav class="tab-list" aria-label="Dashboard Navigation">
           @for (tab of tabs; track tab.id) {
-            <button
-              type="button"
-              class="tab-button"
-              [class.active]="isActiveTab(tab.id)"
-              (click)="switchTab(tab.id)"
-              [attr.aria-selected]="isActiveTab(tab.id)"
-              [attr.aria-controls]="tab.id + '-panel'"
-            >
-              <div class="flex items-center gap-2">
-                <lucide-icon [img]="tab.icon" [size]="16" />
-                <span class="hidden sm:inline">{{ tab.label }}</span>
-              </div>
-            </button>
+          <button
+            type="button"
+            class="tab-button"
+            [class.active]="isActiveTab(tab.id)"
+            (click)="switchTab(tab.id)"
+            [attr.aria-selected]="isActiveTab(tab.id)"
+            [attr.aria-controls]="tab.id + '-panel'"
+          >
+            <div class="flex items-center gap-2">
+              <lucide-icon [img]="tab.icon" [size]="16" />
+              <span class="hidden sm:inline">{{ tab.label }}</span>
+            </div>
+          </button>
           }
         </nav>
       </div>
@@ -30,278 +30,380 @@
 
     <!-- Two-column layout -->
     <div class="grid grid-cols-1 xl:grid-cols-4 gap-8">
-      
       <!-- Main Content Area -->
       <div class="xl:col-span-3">
         <div class="tab-content">
           <!-- Overview Tab -->
           @if (activeTab() === 'overview') {
-            <div id="overview-panel" role="tabpanel" class="space-y-8">
-              <!-- Analytics Cards -->
-              @if (analytics()) {
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                  <!-- Active Opportunities -->
-                  <div class="stat-card group">
-                    <div class="flex items-center justify-between">
-                      <div class="flex-1">
-                        <div class="flex items-center gap-3 mb-4">
-                          <div class="stat-icon bg-blue-50 group-hover:bg-blue-100 transition-colors">
-                            <lucide-icon [img]="TrendingUpIcon" [size]="24" class="text-blue-600" />
-                          </div>
-                        </div>
-                        <p class="stat-value">{{ getActiveOpportunitiesCount() }}</p>
-                        <p class="stat-label">Active Opportunities</p>
+          <div id="overview-panel" role="tabpanel" class="space-y-8">
+            <!-- Analytics Cards -->
+            @if (analytics()) {
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              <!-- Active Opportunities -->
+              <div class="stat-card group">
+                <div class="flex items-center justify-between">
+                  <div class="flex-1">
+                    <div class="flex items-center gap-3 mb-4">
+                      <div
+                        class="stat-icon bg-blue-50 group-hover:bg-blue-100 transition-colors"
+                      >
+                        <lucide-icon
+                          [img]="TrendingUpIcon"
+                          [size]="24"
+                          class="text-blue-600"
+                        />
                       </div>
                     </div>
-                  </div>
-                  <!-- Total Applications -->
-                  <div class="stat-card group">
-                    <div class="flex items-center justify-between">
-                      <div class="flex-1">
-                        <div class="flex items-center gap-3 mb-4">
-                          <div class="stat-icon bg-green-50 group-hover:bg-green-100 transition-colors">
-                            <lucide-icon [img]="UsersIcon" [size]="24" class="text-green-600" />
-                          </div>
-                        </div>
-                        <p class="stat-value">{{ formatNumber(analytics()!.totalApplications) }}</p>
-                        <p class="stat-label">Total Applications</p>
-                      </div>
-                    </div>
-                  </div>
-                  <!-- Conversion Rate -->
-                  <div class="stat-card group">
-                    <div class="flex items-center justify-between">
-                      <div class="flex-1">
-                        <div class="flex items-center gap-3 mb-4">
-                          <div class="stat-icon bg-cyan-50 group-hover:bg-cyan-100 transition-colors">
-                            <lucide-icon [img]="DollarSignIcon" [size]="24" class="text-cyan-600" />
-                          </div>
-                        </div>
-                        <p class="stat-value">{{ analytics()!.averageConversionRate.toFixed(1) }}%</p>
-                        <p class="stat-label">Conversion Rate</p>
-                      </div>
-                    </div>
-                  </div>
-                  <!-- Total Views -->
-                  <div class="stat-card group">
-                    <div class="flex items-center justify-between">
-                      <div class="flex-1">
-                        <div class="flex items-center gap-3 mb-4">
-                          <div class="stat-icon bg-orange-50 group-hover:bg-orange-100 transition-colors">
-                            <lucide-icon [img]="BarChart3Icon" [size]="24" class="text-orange-600" />
-                          </div>
-                        </div>
-                        <p class="stat-value">{{ formatNumber(analytics()!.totalViews) }}</p>
-                        <p class="stat-label">Total Views</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              }
-
-              <!-- Document Analysis Section -->
-              <div class="section-card">
-                <!-- Collapsible Header -->
-                <div 
-                  class="section-header clickable"
-                  (click)="toggleDocumentAnalysis()"
-                  role="button"
-                  tabindex="0"
-                  [attr.aria-expanded]="isDocumentAnalysisExpanded()"
-                  aria-controls="document-analysis-content"
-                >
-                  <div class="flex items-center justify-between">
-                    <div>
-                      <h3 class="section-title">Quick Evaluator</h3>
-                      <p class="section-description">Upload a proposal and see Kapify in action</p>
-                    </div>
-                    
-                    <button 
-                      class="toggle-button"
-                      [attr.aria-label]="isDocumentAnalysisExpanded() ? 'Collapse document analysis' : 'Expand document analysis'"
-                      tabindex="-1"
-                    >
-                      <span class="text-sm">
-                        {{ isDocumentAnalysisExpanded() ? 'Hide' : 'Show' }}
-                      </span>
-                      <lucide-icon 
-                        [img]="ChevronDownIcon" 
-                        [size]="16" 
-                        class="toggle-icon"
-                        [class.expanded]="isDocumentAnalysisExpanded()"
-                      />
-                    </button>
-                  </div>
-                </div>
-
-                <!-- Collapsible Content -->
-                <div 
-                  id="document-analysis-content"
-                  class="collapsible-content"
-                  [class.expanded]="isDocumentAnalysisExpanded()"
-                  [class.collapsed]="!isDocumentAnalysisExpanded()"
-                  [attr.aria-hidden]="!isDocumentAnalysisExpanded()"
-                >
-                  <div class="content-wrapper">
-                    <app-funder-document-analysis></app-funder-document-analysis>
+                    <p class="stat-value">
+                      {{ getActiveOpportunitiesCount() }}
+                    </p>
+                    <p class="stat-label">Active Opportunities</p>
                   </div>
                 </div>
               </div>
-
-              <!-- Quick Actions -->
-              <div class="grid grid-cols-1 gap-8">
-                <div class="section-card">
-                  <div class="section-header">
-                    <h3 class="section-title">Quick Actions</h3>
-                    <p class="section-description">Get started with key tasks</p>
+              <!-- Total Applications -->
+              <div class="stat-card group">
+                <div class="flex items-center justify-between">
+                  <div class="flex-1">
+                    <div class="flex items-center gap-3 mb-4">
+                      <div
+                        class="stat-icon bg-green-50 group-hover:bg-green-100 transition-colors"
+                      >
+                        <lucide-icon
+                          [img]="UsersIcon"
+                          [size]="24"
+                          class="text-green-600"
+                        />
+                      </div>
+                    </div>
+                    <p class="stat-value">
+                      {{ formatNumber(analytics()!.totalApplications) }}
+                    </p>
+                    <p class="stat-label">Accepted Applications</p>
                   </div>
-                  <div class="p-6 space-y-3">
-                    @if (onboardingState()?.canCreateOpportunities) {
-                      <button 
-                        class="action-button"
-                        (click)="createOpportunity()"
+                </div>
+              </div>
+              <!-- Conversion Rate -->
+              <div class="stat-card group">
+                <div class="flex items-center justify-between">
+                  <div class="flex-1">
+                    <div class="flex items-center gap-3 mb-4">
+                      <div
+                        class="stat-icon bg-cyan-50 group-hover:bg-cyan-100 transition-colors"
                       >
-                        <div class="icon">
-                          <lucide-icon [img]="PlusIcon" [size]="18" class="text-blue-600" />
-                        </div>
-                        <span class="text">Create Opportunity</span>
-                      </button>
-                      <button 
-                        class="action-button"
-                        (click)="importOpportunity()"
+                        <lucide-icon
+                          [img]="DollarSignIcon"
+                          [size]="24"
+                          class="text-cyan-600"
+                        />
+                      </div>
+                    </div>
+                    <p class="stat-value">
+                      {{ analytics()!.averageConversionRate.toFixed(1) }}%
+                    </p>
+                    <p class="stat-label">Rejected Applicationså</p>
+                  </div>
+                </div>
+              </div>
+              <!-- Total Views -->
+              <div class="stat-card group">
+                <div class="flex items-center justify-between">
+                  <div class="flex-1">
+                    <div class="flex items-center gap-3 mb-4">
+                      <div
+                        class="stat-icon bg-orange-50 group-hover:bg-orange-100 transition-colors"
                       >
-                        <div class="icon">
-                          <lucide-icon [img]="FileTextIcon" [size]="18" class="text-green-600" />
-                        </div>
-                        <span class="text">Import Opportunity</span>
-                      </button>
-                    }
+                        <lucide-icon
+                          [img]="BarChart3Icon"
+                          [size]="24"
+                          class="text-orange-600"
+                        />
+                      </div>
+                    </div>
+                    <p class="stat-value">
+                      {{ formatNumber(analytics()!.totalViews) }}
+                    </p>
+                    <p class="stat-label">Total Views</p>
                   </div>
                 </div>
               </div>
             </div>
+            }
+
+            <!-- Document Analysis Section -->
+            <div class="section-card">
+              <!-- Collapsible Header -->
+              <div
+                class="section-header clickable"
+                (click)="toggleDocumentAnalysis()"
+                role="button"
+                tabindex="0"
+                [attr.aria-expanded]="isDocumentAnalysisExpanded()"
+                aria-controls="document-analysis-content"
+              >
+                <div class="flex items-center justify-between">
+                  <div>
+                    <h3 class="section-title">Quick Evaluator</h3>
+                    <p class="section-description">
+                      Upload a proposal and see Kapify in action
+                    </p>
+                  </div>
+
+                  <button
+                    class="toggle-button"
+                    [attr.aria-label]="
+                      isDocumentAnalysisExpanded()
+                        ? 'Collapse document analysis'
+                        : 'Expand document analysis'
+                    "
+                    tabindex="-1"
+                  >
+                    <span class="text-sm">
+                      {{ isDocumentAnalysisExpanded() ? "Hide" : "Show" }}
+                    </span>
+                    <lucide-icon
+                      [img]="ChevronDownIcon"
+                      [size]="16"
+                      class="toggle-icon"
+                      [class.expanded]="isDocumentAnalysisExpanded()"
+                    />
+                  </button>
+                </div>
+              </div>
+
+              <!-- Collapsible Content -->
+              <div
+                id="document-analysis-content"
+                class="collapsible-content"
+                [class.expanded]="isDocumentAnalysisExpanded()"
+                [class.collapsed]="!isDocumentAnalysisExpanded()"
+                [attr.aria-hidden]="!isDocumentAnalysisExpanded()"
+              >
+                <div class="content-wrapper">
+                  <app-funder-document-analysis></app-funder-document-analysis>
+                </div>
+              </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="grid grid-cols-1 gap-8">
+              <div class="section-card">
+                <div class="section-header">
+                  <h3 class="section-title">Quick Actions</h3>
+                  <p class="section-description">Get started with key tasks</p>
+                </div>
+                <div class="p-6 space-y-3">
+                  @if (onboardingState()?.canCreateOpportunities) {
+                  <button class="action-button" (click)="createOpportunity()">
+                    <div class="icon">
+                      <lucide-icon
+                        [img]="PlusIcon"
+                        [size]="18"
+                        class="text-blue-600"
+                      />
+                    </div>
+                    <span class="text">Create Opportunity</span>
+                  </button>
+                  <button class="action-button" (click)="importOpportunity()">
+                    <div class="icon">
+                      <lucide-icon
+                        [img]="FileTextIcon"
+                        [size]="18"
+                        class="text-green-600"
+                      />
+                    </div>
+                    <span class="text">Import Opportunity</span>
+                  </button>
+                  }
+                </div>
+              </div>
+            </div>
+          </div>
           }
 
           <!-- Opportunities Tab -->
           @if (activeTab() === 'opportunities') {
-            <div id="opportunities-panel" role="tabpanel" class="space-y-6">
-              
-              <!-- Opportunities Management -->
-              <div class="section-card">
-                <!-- Header -->
-                <div class="section-header">
-                  <div class="flex items-center justify-between">
-                    <div>
-                      <h2 class="section-title">Your Opportunities</h2>
-                      <p class="section-description">Manage your funding opportunities</p>
-                    </div>
-                    <div class="flex gap-2">
-                      @if (onboardingState()?.canCreateOpportunities) {
-                        <ui-button variant="outline" size="sm" (clicked)="importOpportunity()">
-                          <lucide-icon [img]="FileTextIcon" [size]="14" class="mr-2" />
-                          Import
-                        </ui-button>
-                        <ui-button variant="primary" size="sm" (clicked)="createOpportunity()">
-                          <lucide-icon [img]="PlusIcon" [size]="14" class="mr-2" />
-                          Create
-                        </ui-button>
-                      }
-                    </div>
-                  </div>
-                </div>
-                
-                <!-- Content -->
-                @if (recentOpportunities().length === 0) {
-                  <!-- Empty State -->
-                  <div class="empty-state">
-                    <div class="empty-icon">
-                      <lucide-icon [img]="PlusIcon" [size]="32" class="text-gray-400" />
-                    </div>
-                    <h3 class="empty-title">No opportunities yet</h3>
-                    <p class="empty-description">
-                      Create your first funding opportunity to start connecting with SMEs and track applications.
+          <div id="opportunities-panel" role="tabpanel" class="space-y-6">
+            <!-- Opportunities Management -->
+            <div class="section-card">
+              <!-- Header -->
+              <div class="section-header">
+                <div class="flex items-center justify-between">
+                  <div>
+                    <h2 class="section-title">Your Opportunities</h2>
+                    <p class="section-description">
+                      Manage your funding opportunities
                     </p>
-                    
-                    <div class="flex flex-col sm:flex-row gap-3 justify-center">
-                      @if (onboardingState()?.canCreateOpportunities) {
-                        <ui-button variant="primary" (clicked)="createOpportunity()" class="shadow-sm">
-                          <lucide-icon [img]="PlusIcon" [size]="16" class="mr-2" />
-                          Create Opportunity
-                        </ui-button>
-                        <ui-button variant="outline" (clicked)="importOpportunity()" class="shadow-sm">
-                          <lucide-icon [img]="FileTextIcon" [size]="16" class="mr-2" />
-                          Import Opportunity
-                        </ui-button>
-                      } @else {
-                        <ui-button variant="outline" (clicked)="completeOnboarding()" class="shadow-sm">
-                          Complete Setup First
-                        </ui-button>
-                      }
-                    </div>
                   </div>
-                } @else {
-                  <!-- Opportunities List -->
-                  <div class="divide-y divide-gray-100">
-                    @for (opportunity of recentOpportunities(); track opportunity.id) {
-                      <div class="list-item group" (click)="viewOpportunity(opportunity.id)">
-                        <div class="flex items-center justify-between">
-                          <div class="flex-1 min-w-0 pr-4">
-                            <h4 class="text-base font-semibold text-gray-900 mb-3 group-hover:text-blue-600 transition-colors">
-                              {{ opportunity.title }}
-                            </h4>
-                            <div class="flex flex-wrap items-center gap-4">
-                              <span class="status-badge"
-                                    [class]="'status-' + opportunity.status">
-                                {{ formatStatus(opportunity.status) }}
-                              </span>
-                              <span class="text-sm font-semibold text-gray-900">{{ formatCurrency(opportunity.totalAvailable) }}</span>
-                              <span class="text-sm text-gray-600">{{ opportunity.currentApplications }} applications</span>
-                            </div>
-                          </div>
-                          <lucide-icon [img]="ArrowRightIcon" [size]="20" class="text-gray-400 group-hover:text-gray-600 transition-colors shrink-0" />
-                        </div>
-                      </div>
- 
-                      <!-- Manage Buttons -->
-                      <div class="p-6 border-t border-gray-100 bg-gray-50">
-                        <div class="flex flex-col sm:flex-row gap-2">
-                          <ui-button variant="outline" (clicked)="editOpportunity(opportunity.id)" class="w-full sm:w-auto">
-                            Edit 
-                          </ui-button>
-                          <ui-button variant="outline" (clicked)="deleteOpportunity(opportunity.id)" class="w-full sm:w-auto">
-                            Delete
-                          </ui-button>
-                      
-                          <ui-button variant="outline" (clicked)="manageApplications(opportunity.id)" class="w-full sm:w-auto">
-                            Manage Applications
-                          </ui-button>
-                         
-                        </div>
-                      </div>
+                  <div class="flex gap-2">
+                    @if (onboardingState()?.canCreateOpportunities) {
+                    <ui-button
+                      variant="outline"
+                      size="sm"
+                      (clicked)="importOpportunity()"
+                    >
+                      <lucide-icon
+                        [img]="FileTextIcon"
+                        [size]="14"
+                        class="mr-2"
+                      />
+                      Import
+                    </ui-button>
+                    <ui-button
+                      variant="primary"
+                      size="sm"
+                      (clicked)="createOpportunity()"
+                    >
+                      <lucide-icon [img]="PlusIcon" [size]="14" class="mr-2" />
+                      Create
+                    </ui-button>
                     }
                   </div>
+                </div>
+              </div>
+
+              <!-- Content -->
+              @if (recentOpportunities().length === 0) {
+              <!-- Empty State -->
+              <div class="empty-state">
+                <div class="empty-icon">
+                  <lucide-icon
+                    [img]="PlusIcon"
+                    [size]="32"
+                    class="text-gray-400"
+                  />
+                </div>
+                <h3 class="empty-title">No opportunities yet</h3>
+                <p class="empty-description">
+                  Create your first funding opportunity to start connecting with
+                  SMEs and track applications.
+                </p>
+
+                <div class="flex flex-col sm:flex-row gap-3 justify-center">
+                  @if (onboardingState()?.canCreateOpportunities) {
+                  <ui-button
+                    variant="primary"
+                    (clicked)="createOpportunity()"
+                    class="shadow-sm"
+                  >
+                    <lucide-icon [img]="PlusIcon" [size]="16" class="mr-2" />
+                    Create Opportunity
+                  </ui-button>
+                  <ui-button
+                    variant="outline"
+                    (clicked)="importOpportunity()"
+                    class="shadow-sm"
+                  >
+                    <lucide-icon
+                      [img]="FileTextIcon"
+                      [size]="16"
+                      class="mr-2"
+                    />
+                    Import Opportunity
+                  </ui-button>
+                  } @else {
+                  <ui-button
+                    variant="outline"
+                    (clicked)="completeOnboarding()"
+                    class="shadow-sm"
+                  >
+                    Complete Setup First
+                  </ui-button>
+                  }
+                </div>
+              </div>
+              } @else {
+              <!-- Opportunities List -->
+              <div class="divide-y divide-gray-100">
+                @for (opportunity of recentOpportunities(); track
+                opportunity.id) {
+                <div
+                  class="list-item group"
+                  (click)="viewOpportunity(opportunity.id)"
+                >
+                  <div class="flex items-center justify-between">
+                    <div class="flex-1 min-w-0 pr-4">
+                      <h4
+                        class="text-base font-semibold text-gray-900 mb-3 group-hover:text-blue-600 transition-colors"
+                      >
+                        {{ opportunity.title }}
+                      </h4>
+                      <div class="flex flex-wrap items-center gap-4">
+                        <span
+                          class="status-badge"
+                          [class]="'status-' + opportunity.status"
+                        >
+                          {{ formatStatus(opportunity.status) }}
+                        </span>
+                        <span class="text-sm font-semibold text-gray-900">{{
+                          formatCurrency(opportunity.totalAvailable)
+                        }}</span>
+                        <span class="text-sm text-gray-600"
+                          >{{
+                            opportunity.currentApplications
+                          }}
+                          applications</span
+                        >
+                      </div>
+                    </div>
+                    <lucide-icon
+                      [img]="ArrowRightIcon"
+                      [size]="20"
+                      class="text-gray-400 group-hover:text-gray-600 transition-colors shrink-0"
+                    />
+                  </div>
+                </div>
+
+                <!-- Manage Buttons -->
+                <div class="p-6 border-t border-gray-100 bg-gray-50">
+                  <div class="flex flex-col sm:flex-row gap-2">
+                    <ui-button
+                      variant="outline"
+                      (clicked)="editOpportunity(opportunity.id)"
+                      class="w-full sm:w-auto"
+                    >
+                      Edit
+                    </ui-button>
+                    <ui-button
+                      variant="outline"
+                      (clicked)="deleteOpportunity(opportunity.id)"
+                      class="w-full sm:w-auto"
+                    >
+                      Delete
+                    </ui-button>
+
+                    <ui-button
+                      variant="outline"
+                      (clicked)="manageApplications(opportunity.id)"
+                      class="w-full sm:w-auto"
+                    >
+                      Manage Applications
+                    </ui-button>
+                  </div>
+                </div>
                 }
               </div>
+              }
             </div>
+          </div>
           }
 
           <!-- Applications Tab -->
           @if (activeTab() === 'applications') {
-            
-            <app-funder-applications></app-funder-applications>
+
+          <app-funder-applications></app-funder-applications>
           }
 
           <!-- Settings Tab -->
-          @if (activeTab() === 'settings') {
+          <!-- @if (activeTab() === 'settings') {
             <app-settings></app-settings>
-          }
+          } -->
         </div>
       </div>
 
       <!-- Right Sidebar -->
       <div class="xl:col-span-1">
-        <div >
-          
+        <div>
           <!-- Organization Status Sidebar -->
           <app-organization-status-sidebar
             (actionClicked)="handleOrganizationAction($event)"
@@ -309,30 +411,49 @@
 
           <!-- Compact Draft Status for Sidebar -->
           @if (draftService.canContinueDraft()) {
-            <div class="bg-gradient-to-br from-slate-500 via-cyan-600 to-stone-600 p-0.5 rounded-xl">
-              <div class="bg-white rounded-xl p-4">
-                <div class="flex items-center space-x-3 mb-3">
-                  <div class="w-6 h-6 bg-gradient-to-r from-slate-500 to-cyan-600 rounded-lg flex items-center justify-center">
-                    <lucide-icon [img]="FileTextIcon" [size]="14" class="text-white"></lucide-icon>
-                  </div>
-                  <h3 class="font-semibold text-gray-900 text-sm">Draft Opportunity</h3>
+          <div
+            class="bg-gradient-to-br from-slate-500 via-cyan-600 to-stone-600 p-0.5 rounded-xl"
+          >
+            <div class="bg-white rounded-xl p-4">
+              <div class="flex items-center space-x-3 mb-3">
+                <div
+                  class="w-6 h-6 bg-gradient-to-r from-slate-500 to-cyan-600 rounded-lg flex items-center justify-center"
+                >
+                  <lucide-icon
+                    [img]="FileTextIcon"
+                    [size]="14"
+                    class="text-white"
+                  ></lucide-icon>
                 </div>
-                
-                <p class="text-xs text-gray-600 mb-3">
-                  {{ draftService.draftTitle() }} - {{ draftService.completionText() }}
-                </p>
-                
-                <div class="flex space-x-2">
-                  <ui-button variant="primary" size="sm" (clicked)="continueDraft()">
-                    Continue
-                  </ui-button>
-                  
-                  <ui-button variant="outline" size="sm" (clicked)="startFreshOpportunity()">
-                    Start Fresh
-                  </ui-button>
-                </div>
+                <h3 class="font-semibold text-gray-900 text-sm">
+                  Draft Opportunity
+                </h3>
+              </div>
+
+              <p class="text-xs text-gray-600 mb-3">
+                {{ draftService.draftTitle() }} -
+                {{ draftService.completionText() }}
+              </p>
+
+              <div class="flex space-x-2">
+                <ui-button
+                  variant="primary"
+                  size="sm"
+                  (clicked)="continueDraft()"
+                >
+                  Continue
+                </ui-button>
+
+                <ui-button
+                  variant="outline"
+                  size="sm"
+                  (clicked)="startFreshOpportunity()"
+                >
+                  Start Fresh
+                </ui-button>
               </div>
             </div>
+          </div>
           }
         </div>
       </div>

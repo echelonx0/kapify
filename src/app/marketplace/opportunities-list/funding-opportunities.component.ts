@@ -1,17 +1,23 @@
- 
 // src/app/marketplace/opportunities-list/funding-opportunities.component.ts
-import { Component, signal, OnInit, OnDestroy, inject, computed } from '@angular/core';
+import {
+  Component,
+  signal,
+  OnInit,
+  OnDestroy,
+  inject,
+  computed,
+} from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { of, Subject } from 'rxjs';
 import { takeUntil, catchError } from 'rxjs/operators';
-import { AuthService } from 'src/app/auth/production.auth.service'; 
+import { AuthService } from 'src/app/auth/production.auth.service';
 import { SMEOpportunitiesService } from '../../funding/services/opportunities.service';
 import { AdvancedFiltersComponent } from '../components/filters.component';
 import { OpportunitiesGridComponent } from './opportunities-grid.component';
 import { SearchStatsBarComponent } from './search-stats-bar.component';
 import { EmptyStateComponent } from '../components/empty-state.component';
-import { InsightsWidgetComponent } from '../components/insights-widget.component';
+
 import { NewsletterSignupComponent } from '../components/newsletter-signup.component';
 import { LoadingStateComponent } from './loading-state.component';
 import { MarketplaceHeaderComponent } from '../components/marketplace-header.component';
@@ -31,11 +37,11 @@ import { FundingOpportunity } from 'src/app/funder/create-opportunity/shared/fun
     EmptyStateComponent,
     OpportunitiesGridComponent,
     AdvancedFiltersComponent,
-    InsightsWidgetComponent,
+
     NewsletterSignupComponent,
     SmartSuggestionsComponent,
     LandingHeaderComponent,
-    LandingFooterComponent
+    LandingFooterComponent,
   ],
   templateUrl: './funding-opportunities.component.html',
 })
@@ -49,7 +55,7 @@ export class FundingOpportunitiesComponent implements OnInit, OnDestroy {
   opportunities = signal<FundingOpportunity[]>([]);
   filteredOpportunities = signal<FundingOpportunity[]>([]);
   isLoading = signal(true);
-  
+
   searchQuery = signal('');
   selectedFundingType = signal('');
   selectedIndustry = signal('');
@@ -72,27 +78,30 @@ export class FundingOpportunitiesComponent implements OnInit, OnDestroy {
 
   loadOpportunities() {
     this.isLoading.set(true);
-    
-    this.opportunitiesService.loadActiveOpportunities().pipe(
-      takeUntil(this.destroy$),
-      catchError(error => {
-        console.error('Error loading opportunities:', error);
-        this.isLoading.set(false);
-        return of([]);
-      })
-    ).subscribe({
-      next: (opportunities) => {
-        this.opportunities.set(opportunities);
-        this.applyFilters();
-        this.isLoading.set(false);
-      },
-      error: (error) => {
-        console.error('Subscription error:', error);
-        this.isLoading.set(false);
-        this.opportunities.set([]);
-        this.applyFilters();
-      }
-    });
+
+    this.opportunitiesService
+      .loadActiveOpportunities()
+      .pipe(
+        takeUntil(this.destroy$),
+        catchError((error) => {
+          console.error('Error loading opportunities:', error);
+          this.isLoading.set(false);
+          return of([]);
+        })
+      )
+      .subscribe({
+        next: (opportunities) => {
+          this.opportunities.set(opportunities);
+          this.applyFilters();
+          this.isLoading.set(false);
+        },
+        error: (error) => {
+          console.error('Subscription error:', error);
+          this.isLoading.set(false);
+          this.opportunities.set([]);
+          this.applyFilters();
+        },
+      });
   }
 
   applyFilters() {
@@ -100,42 +109,46 @@ export class FundingOpportunitiesComponent implements OnInit, OnDestroy {
 
     const query = this.searchQuery().toLowerCase();
     if (query) {
-      filtered = filtered.filter(opp => 
-        opp.title.toLowerCase().includes(query) ||
-        opp.description.toLowerCase().includes(query) ||
-        opp.shortDescription.toLowerCase().includes(query)
+      filtered = filtered.filter(
+        (opp) =>
+          opp.title.toLowerCase().includes(query) ||
+          opp.description.toLowerCase().includes(query) ||
+          opp.shortDescription.toLowerCase().includes(query)
       );
     }
 
-  if (this.selectedFundingType()) {
-  const selectedType = this.selectedFundingType();
-  filtered = filtered.filter(opp => 
-    Array.isArray(opp.fundingType) && opp.fundingType.includes(selectedType)
-  );
-}
-
+    if (this.selectedFundingType()) {
+      const selectedType = this.selectedFundingType();
+      filtered = filtered.filter(
+        (opp) =>
+          Array.isArray(opp.fundingType) &&
+          opp.fundingType.includes(selectedType)
+      );
+    }
 
     if (this.selectedIndustry()) {
-      filtered = filtered.filter(opp => 
+      filtered = filtered.filter((opp) =>
         opp.eligibilityCriteria.industries.includes(this.selectedIndustry())
       );
     }
 
     if (this.selectedCurrency()) {
-      filtered = filtered.filter(opp => opp.currency === this.selectedCurrency());
+      filtered = filtered.filter(
+        (opp) => opp.currency === this.selectedCurrency()
+      );
     }
 
     if (this.minAmount()) {
       const min = Number(this.minAmount());
-      filtered = filtered.filter(opp => opp.maxInvestment >= min);
+      filtered = filtered.filter((opp) => opp.maxInvestment >= min);
     }
 
     if (this.maxAmount()) {
       const max = Number(this.maxAmount());
-      filtered = filtered.filter(opp => opp.minInvestment <= max);
+      filtered = filtered.filter((opp) => opp.minInvestment <= max);
     }
 
-    filtered = filtered.filter(opp => opp.status === 'active');
+    filtered = filtered.filter((opp) => opp.status === 'active');
 
     this.filteredOpportunities.set(filtered);
   }
@@ -197,7 +210,11 @@ export class FundingOpportunitiesComponent implements OnInit, OnDestroy {
   getUserTypeLabel(): string {
     const user = this.currentUser();
     if (!user) return 'Guest';
-    return user.userType === 'sme' ? 'SME' : user.userType === 'funder' ? 'Funder' : 'User';
+    return user.userType === 'sme'
+      ? 'SME'
+      : user.userType === 'funder'
+      ? 'Funder'
+      : 'User';
   }
 
   viewOpportunityDetails(opportunityId: string) {
@@ -205,18 +222,22 @@ export class FundingOpportunitiesComponent implements OnInit, OnDestroy {
   }
 
   applyToOpportunity(opportunityId: string) {
-    this.router.navigate(['/applications/new'], { 
-      queryParams: { opportunityId } 
+    this.router.navigate(['/applications/new'], {
+      queryParams: { opportunityId },
     });
   }
 
   manageApplications(opportunityId: string) {
-    this.router.navigate(['/funder/opportunities', opportunityId, 'applications']);
+    this.router.navigate([
+      '/funder/opportunities',
+      opportunityId,
+      'applications',
+    ]);
   }
 
   redirectToLogin() {
     this.router.navigate(['/auth/login'], {
-      queryParams: { returnUrl: this.router.url }
+      queryParams: { returnUrl: this.router.url },
     });
   }
 }

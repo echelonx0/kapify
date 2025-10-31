@@ -24,7 +24,7 @@ export class ImportValidationService {
     if (file.size > this.MAX_FILE_SIZE) {
       return {
         isValid: false,
-        error: 'File too large. Please upload a file smaller than 10MB.'
+        error: 'File too large. Please upload a file smaller than 10MB.',
       };
     }
 
@@ -33,7 +33,7 @@ export class ImportValidationService {
     if (!extension || !this.VALID_EXTENSIONS.includes(extension)) {
       return {
         isValid: false,
-        error: 'Invalid file type. Please upload a CSV or Excel file.'
+        error: 'Invalid file type. Please upload a CSV or Excel file.',
       };
     }
 
@@ -42,7 +42,7 @@ export class ImportValidationService {
 
   async parseFile(file: File): Promise<ParsedFileData> {
     const extension = file.name.split('.').pop()?.toLowerCase();
-    
+
     try {
       let rawData: any[];
       let detectedColumns: string[];
@@ -62,18 +62,19 @@ export class ImportValidationService {
         detectedColumns,
         sampleData: rawData.slice(0, 5),
         fileName: file.name,
-        fileSize: file.size
+        fileSize: file.size,
       };
-
     } catch (error: any) {
       throw new Error(`Failed to parse file: ${error.message}`);
     }
   }
 
-  private async parseCsvFile(file: File): Promise<{ data: any[], columns: string[] }> {
+  private async parseCsvFile(
+    file: File
+  ): Promise<{ data: any[]; columns: string[] }> {
     // Dynamic import for better tree-shaking
     const Papa = await import('papaparse');
-    
+
     return new Promise((resolve, reject) => {
       Papa.parse(file, {
         header: true,
@@ -82,97 +83,105 @@ export class ImportValidationService {
         delimitersToGuess: [',', '\t', '|', ';'],
         complete: (results) => {
           if (results.errors.length > 0) {
-            const errorMessages = results.errors.map(e => e.message).join(', ');
+            const errorMessages = results.errors
+              .map((e) => e.message)
+              .join(', ');
             reject(new Error(`CSV parsing errors: ${errorMessages}`));
             return;
           }
-          
+
           resolve({
             data: results.data as any[],
-            columns: results.meta.fields || []
+            columns: results.meta.fields || [],
           });
         },
         error: (error) => {
           reject(new Error(`Failed to parse CSV: ${error.message}`));
-        }
+        },
       });
     });
   }
 
-  private async parseExcelFile(file: File): Promise<{ data: any[], columns: string[] }> {
+  private async parseExcelFile(
+    file: File
+  ): Promise<{ data: any[]; columns: string[] }> {
     // Dynamic import for better tree-shaking
     const XLSX = await import('xlsx');
-    
+
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
-      
+
       reader.onload = (e) => {
         try {
           const data = new Uint8Array(e.target?.result as ArrayBuffer);
-          const workbook = XLSX.read(data, { 
+          const workbook = XLSX.read(data, {
             type: 'array',
             cellDates: true,
             cellNF: true,
-            cellStyles: true
+            cellStyles: true,
           });
-          
+
           // Use the first sheet
           const firstSheetName = workbook.SheetNames[0];
           if (!firstSheetName) {
             reject(new Error('No sheets found in Excel file'));
             return;
           }
-          
+
           const worksheet = workbook.Sheets[firstSheetName];
-          
+
           // Convert to JSON with headers
-          const jsonData = XLSX.utils.sheet_to_json(worksheet, { 
+          const jsonData = XLSX.utils.sheet_to_json(worksheet, {
             header: 1,
             defval: null,
-            blankrows: false
+            blankrows: false,
           }) as any[][];
-          
+
           if (jsonData.length === 0) {
             reject(new Error('Excel file appears to be empty'));
             return;
           }
-          
+
           // Extract headers and clean them
           const headers = jsonData[0]
-            .map(h => String(h || '').trim())
-            .filter(h => h);
-          
+            .map((h) => String(h || '').trim())
+            .filter((h) => h);
+
           if (headers.length === 0) {
             reject(new Error('No valid headers found in Excel file'));
             return;
           }
-          
+
           // Extract data rows and convert to objects
-          const dataRows = jsonData.slice(1)
-            .filter(row => row.some(cell => cell !== null && cell !== undefined && cell !== ''));
-          
-          const parsedData = dataRows.map(row => {
+          const dataRows = jsonData
+            .slice(1)
+            .filter((row) =>
+              row.some(
+                (cell) => cell !== null && cell !== undefined && cell !== ''
+              )
+            );
+
+          const parsedData = dataRows.map((row) => {
             const obj: any = {};
             headers.forEach((header, index) => {
               obj[header] = row[index] || null;
             });
             return obj;
           });
-          
+
           resolve({
             data: parsedData,
-            columns: headers
+            columns: headers,
           });
-          
         } catch (error: any) {
           reject(new Error(`Failed to parse Excel file: ${error.message}`));
         }
       };
-      
+
       reader.onerror = () => {
         reject(new Error('Failed to read file'));
       };
-      
+
       reader.readAsArrayBuffer(file);
     });
   }
@@ -181,9 +190,10 @@ export class ImportValidationService {
     const templateData = [
       {
         title: 'Example Growth Capital Fund',
-        description: 'Funding for established SMEs looking to expand operations and market reach',
+        description:
+          'Funding for established SMEs looking to expand operations and market reach',
         shortDescription: 'Growth capital for expanding SMEs',
-        fundingType: 'equity',
+        fundingType: ['equity'],
         offerAmount: 500000,
         minInvestment: 100000,
         maxInvestment: 2000000,
@@ -194,13 +204,14 @@ export class ImportValidationService {
         equityOffered: 15,
         expectedReturns: 25,
         investmentHorizon: 5,
-        applicationDeadline: '2024-12-31'
+        applicationDeadline: '2024-12-31',
       },
       {
         title: 'SME Debt Financing Program',
-        description: 'Traditional debt financing for working capital and equipment purchases',
+        description:
+          'Traditional debt financing for working capital and equipment purchases',
         shortDescription: 'Working capital and equipment financing',
-        fundingType: 'debt',
+        fundingType: ['debt'],
         offerAmount: 250000,
         minInvestment: 50000,
         maxInvestment: 1000000,
@@ -211,8 +222,8 @@ export class ImportValidationService {
         equityOffered: null,
         expectedReturns: null,
         investmentHorizon: 3,
-        applicationDeadline: '2025-11-30'
-      }
+        applicationDeadline: '2025-11-30',
+      },
     ];
 
     if (format === 'csv') {
@@ -228,7 +239,11 @@ export class ImportValidationService {
     }
   }
 
-  private downloadFile(content: string, filename: string, mimeType: string): void {
+  private downloadFile(
+    content: string,
+    filename: string,
+    mimeType: string
+  ): void {
     const blob = new Blob([content], { type: mimeType });
     const url = window.URL.createObjectURL(blob);
     const link = document.createElement('a');
@@ -248,26 +263,30 @@ export class ImportValidationService {
 
     switch (dataType) {
       case 'number':
-        const numValue = typeof value === 'string' ? 
-          parseFloat(value.replace(/[,\s]/g, '')) : Number(value);
+        const numValue =
+          typeof value === 'string'
+            ? parseFloat(value.replace(/[,\s]/g, ''))
+            : Number(value);
         return isNaN(numValue) ? null : numValue;
-        
+
       case 'string':
         return String(value).trim();
-        
+
       case 'date':
         try {
           const date = new Date(value);
-          return isNaN(date.getTime()) ? null : date.toISOString().split('T')[0];
+          return isNaN(date.getTime())
+            ? null
+            : date.toISOString().split('T')[0];
         } catch {
           return null;
         }
-        
+
       case 'boolean':
         if (typeof value === 'boolean') return value;
         const str = String(value).toLowerCase();
         return ['true', 'yes', '1', 'y'].includes(str);
-        
+
       default:
         return value;
     }
@@ -279,9 +298,27 @@ export class ImportValidationService {
 
     switch (field) {
       case 'fundingType':
-        const validTypes = ['debt', 'equity', 'convertible', 'mezzanine', 'grant'];
-        if (!validTypes.includes(String(value).toLowerCase())) {
-          return `Funding type must be one of: ${validTypes.join(', ')}`;
+        const validTypes = [
+          'debt',
+          'equity',
+          'convertible',
+          'mezzanine',
+          'grant',
+        ];
+        if (Array.isArray(value)) {
+          const invalidTypes = value.filter(
+            (type) => !validTypes.includes(String(type).toLowerCase())
+          );
+          if (invalidTypes.length > 0) {
+            return `Invalid funding types: ${invalidTypes.join(
+              ', '
+            )}. Must be one of: ${validTypes.join(', ')}`;
+          }
+        } else {
+          // Handle legacy single string values
+          if (!validTypes.includes(String(value).toLowerCase())) {
+            return `Funding type must be one of: ${validTypes.join(', ')}`;
+          }
         }
         break;
 
@@ -304,7 +341,10 @@ export class ImportValidationService {
 
       case 'currency':
         const validCurrencies = ['ZAR', 'USD', 'EUR', 'GBP'];
-        if (typeof value === 'string' && !validCurrencies.includes(value.toUpperCase())) {
+        if (
+          typeof value === 'string' &&
+          !validCurrencies.includes(value.toUpperCase())
+        ) {
           return `Currency should be one of: ${validCurrencies.join(', ')}`;
         }
         break;

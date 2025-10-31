@@ -106,19 +106,19 @@ export class SidebarNavComponent implements OnInit {
       label: 'Data Room',
       icon: FileText,
       route: '/profile/data-room',
-      userTypes: ['sme', 'funder'],
+      userTypes: ['sme'],
     },
     {
       label: 'Kapify Academy',
       icon: BookOpen,
       route: '/dashboard/kapify-academy',
-      userTypes: ['sme', 'funder'],
+      userTypes: ['sme'],
     },
     {
       label: 'Admin Console',
       icon: Settings,
       route: '/administrator',
-      userTypes: ['sme', 'funder'],
+      userTypes: ['funder'],
     },
   ];
 

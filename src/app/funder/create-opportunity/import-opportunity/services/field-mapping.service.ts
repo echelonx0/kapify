@@ -12,7 +12,6 @@ interface FieldMapping {
 
 @Injectable()
 export class FieldMappingService {
-  
   getDefaultFieldMappings(): FieldMapping[] {
     return [
       {
@@ -21,7 +20,7 @@ export class FieldMappingService {
         required: true,
         dataType: 'string',
         displayName: 'Title',
-        description: 'Name of the funding opportunity'
+        description: 'Name of the funding opportunity',
       },
       {
         sourceField: '',
@@ -29,7 +28,7 @@ export class FieldMappingService {
         required: true,
         dataType: 'string',
         displayName: 'Description',
-        description: 'Detailed description of the opportunity'
+        description: 'Detailed description of the opportunity',
       },
       {
         sourceField: '',
@@ -37,15 +36,16 @@ export class FieldMappingService {
         required: true,
         dataType: 'string',
         displayName: 'Short Description',
-        description: 'Brief summary for listings'
+        description: 'Brief summary for listings',
       },
       {
         sourceField: '',
         targetField: 'fundingType',
         required: true,
-        dataType: 'string',
+        dataType: 'string', // Keep as string for CSV input, will transform to array
         displayName: 'Funding Type',
-        description: 'Type: debt, equity, convertible, mezzanine, grant'
+        description:
+          'Type: debt, equity, convertible, mezzanine, grant (comma-separated for multiple)',
       },
       {
         sourceField: '',
@@ -53,7 +53,7 @@ export class FieldMappingService {
         required: true,
         dataType: 'number',
         displayName: 'Offer Amount',
-        description: 'Typical investment amount per business'
+        description: 'Typical investment amount per business',
       },
       {
         sourceField: '',
@@ -61,7 +61,7 @@ export class FieldMappingService {
         required: true,
         dataType: 'number',
         displayName: 'Total Available',
-        description: 'Total funding pool available'
+        description: 'Total funding pool available',
       },
       {
         sourceField: '',
@@ -69,7 +69,7 @@ export class FieldMappingService {
         required: false,
         dataType: 'number',
         displayName: 'Minimum Investment',
-        description: 'Minimum investment amount'
+        description: 'Minimum investment amount',
       },
       {
         sourceField: '',
@@ -77,7 +77,7 @@ export class FieldMappingService {
         required: false,
         dataType: 'number',
         displayName: 'Maximum Investment',
-        description: 'Maximum investment amount'
+        description: 'Maximum investment amount',
       },
       {
         sourceField: '',
@@ -85,7 +85,7 @@ export class FieldMappingService {
         required: false,
         dataType: 'string',
         displayName: 'Currency',
-        description: 'Currency code (e.g., ZAR, USD)'
+        description: 'Currency code (e.g., ZAR, USD)',
       },
       {
         sourceField: '',
@@ -93,7 +93,7 @@ export class FieldMappingService {
         required: false,
         dataType: 'number',
         displayName: 'Decision Timeframe',
-        description: 'Days to make funding decision'
+        description: 'Days to make funding decision',
       },
       {
         sourceField: '',
@@ -101,7 +101,7 @@ export class FieldMappingService {
         required: false,
         dataType: 'number',
         displayName: 'Interest Rate (%)',
-        description: 'Annual interest rate for debt funding'
+        description: 'Annual interest rate for debt funding',
       },
       {
         sourceField: '',
@@ -109,7 +109,7 @@ export class FieldMappingService {
         required: false,
         dataType: 'number',
         displayName: 'Equity Offered (%)',
-        description: 'Percentage of equity offered'
+        description: 'Percentage of equity offered',
       },
       {
         sourceField: '',
@@ -117,7 +117,7 @@ export class FieldMappingService {
         required: false,
         dataType: 'number',
         displayName: 'Expected Returns (%)',
-        description: 'Expected annual return percentage'
+        description: 'Expected annual return percentage',
       },
       {
         sourceField: '',
@@ -125,7 +125,7 @@ export class FieldMappingService {
         required: false,
         dataType: 'number',
         displayName: 'Investment Horizon (years)',
-        description: 'Expected investment duration in years'
+        description: 'Expected investment duration in years',
       },
       {
         sourceField: '',
@@ -133,42 +133,109 @@ export class FieldMappingService {
         required: false,
         dataType: 'date',
         displayName: 'Application Deadline',
-        description: 'Last date to apply (YYYY-MM-DD)'
-      }
+        description: 'Last date to apply (YYYY-MM-DD)',
+      },
     ];
   }
 
   autoMapFields(mappings: FieldMapping[], columns: string[]): FieldMapping[] {
     // Common field name patterns for auto-mapping
     const patterns: Record<string, RegExp[]> = {
-      title: [/^title$/i, /^name$/i, /^opportunity.?name$/i, /^funding.?name$/i],
-      description: [/^description$/i, /^desc$/i, /^details$/i, /^full.?description$/i],
-      shortDescription: [/^short.?desc/i, /^summary$/i, /^brief$/i, /^short.?summary$/i],
-      fundingType: [/^funding.?type$/i, /^type$/i, /^fund.?type$/i, /^investment.?type$/i],
-      offerAmount: [/^offer.?amount$/i, /^amount$/i, /^funding.?amount$/i, /^investment.?amount$/i],
-      minInvestment: [/^min.?investment$/i, /^minimum$/i, /^min.?amount$/i, /^min.?funding$/i],
-      maxInvestment: [/^max.?investment$/i, /^maximum$/i, /^max.?amount$/i, /^max.?funding$/i],
-      totalAvailable: [/^total.?available$/i, /^total$/i, /^available$/i, /^total.?funding$/i],
+      title: [
+        /^title$/i,
+        /^name$/i,
+        /^opportunity.?name$/i,
+        /^funding.?name$/i,
+      ],
+      description: [
+        /^description$/i,
+        /^desc$/i,
+        /^details$/i,
+        /^full.?description$/i,
+      ],
+      shortDescription: [
+        /^short.?desc/i,
+        /^summary$/i,
+        /^brief$/i,
+        /^short.?summary$/i,
+      ],
+      fundingType: [
+        /^funding.?type$/i,
+        /^funding.?types$/i,
+        /^type$/i,
+        /^types$/i,
+        /^fund.?type$/i,
+        /^investment.?type$/i,
+      ],
+      offerAmount: [
+        /^offer.?amount$/i,
+        /^amount$/i,
+        /^funding.?amount$/i,
+        /^investment.?amount$/i,
+      ],
+      minInvestment: [
+        /^min.?investment$/i,
+        /^minimum$/i,
+        /^min.?amount$/i,
+        /^min.?funding$/i,
+      ],
+      maxInvestment: [
+        /^max.?investment$/i,
+        /^maximum$/i,
+        /^max.?amount$/i,
+        /^max.?funding$/i,
+      ],
+      totalAvailable: [
+        /^total.?available$/i,
+        /^total$/i,
+        /^available$/i,
+        /^total.?funding$/i,
+      ],
       currency: [/^currency$/i, /^curr$/i, /^money.?type$/i],
-      decisionTimeframe: [/^decision.?timeframe$/i, /^timeframe$/i, /^days$/i, /^decision.?time$/i],
+      decisionTimeframe: [
+        /^decision.?timeframe$/i,
+        /^timeframe$/i,
+        /^days$/i,
+        /^decision.?time$/i,
+      ],
       interestRate: [/^interest.?rate$/i, /^rate$/i, /^apr$/i, /^interest$/i],
-      equityOffered: [/^equity$/i, /^equity.?offered$/i, /^stake$/i, /^ownership$/i],
-      expectedReturns: [/^expected.?returns$/i, /^returns$/i, /^roi$/i, /^expected.?roi$/i],
-      investmentHorizon: [/^investment.?horizon$/i, /^horizon$/i, /^years$/i, /^duration$/i],
-      applicationDeadline: [/^application.?deadline$/i, /^deadline$/i, /^due.?date$/i, /^closing.?date$/i]
+      equityOffered: [
+        /^equity$/i,
+        /^equity.?offered$/i,
+        /^stake$/i,
+        /^ownership$/i,
+      ],
+      expectedReturns: [
+        /^expected.?returns$/i,
+        /^returns$/i,
+        /^roi$/i,
+        /^expected.?roi$/i,
+      ],
+      investmentHorizon: [
+        /^investment.?horizon$/i,
+        /^horizon$/i,
+        /^years$/i,
+        /^duration$/i,
+      ],
+      applicationDeadline: [
+        /^application.?deadline$/i,
+        /^deadline$/i,
+        /^due.?date$/i,
+        /^closing.?date$/i,
+      ],
     };
 
-    const updatedMappings = mappings.map(mapping => {
+    const updatedMappings = mappings.map((mapping) => {
       const fieldPatterns = patterns[mapping.targetField];
       if (!fieldPatterns) return mapping;
 
-      const matchedColumn = columns.find(col => 
-        fieldPatterns.some(pattern => pattern.test(col))
+      const matchedColumn = columns.find((col) =>
+        fieldPatterns.some((pattern) => pattern.test(col))
       );
 
       return {
         ...mapping,
-        sourceField: matchedColumn || mapping.sourceField
+        sourceField: matchedColumn || mapping.sourceField,
       };
     });
 
@@ -183,22 +250,24 @@ export class FieldMappingService {
     try {
       switch (dataType) {
         case 'number':
-          const numValue = typeof value === 'string' ? 
-            parseFloat(value.replace(/[,\s]/g, '')) : Number(value);
+          const numValue =
+            typeof value === 'string'
+              ? parseFloat(value.replace(/[,\s]/g, ''))
+              : Number(value);
           return isNaN(numValue) ? '' : numValue.toString();
-          
+
         case 'string':
           return String(value).trim();
-          
+
         case 'date':
           const date = new Date(value);
           return isNaN(date.getTime()) ? '' : date.toISOString().split('T')[0];
-          
+
         case 'boolean':
           if (typeof value === 'boolean') return value.toString();
           const str = String(value).toLowerCase();
           return ['true', 'yes', '1', 'y'].includes(str) ? 'true' : 'false';
-          
+
         default:
           return String(value);
       }
@@ -209,14 +278,17 @@ export class FieldMappingService {
 
   transformRowData(row: any, mappings: FieldMapping[]): any {
     const transformed: any = {};
-    
-    mappings.forEach(mapping => {
+
+    mappings.forEach((mapping) => {
       if (!mapping.sourceField) return;
-      
+
       const rawValue = row[mapping.sourceField];
-      transformed[mapping.targetField] = this.transformValueTyped(rawValue, mapping.dataType);
+      transformed[mapping.targetField] = this.transformValueTyped(
+        rawValue,
+        mapping.dataType
+      );
     });
-    
+
     return transformed;
   }
 
@@ -226,14 +298,18 @@ export class FieldMappingService {
     }
 
     switch (dataType) {
+      case 'fundingType':
+        return this.transformFundingType(value);
       case 'number':
-        const numValue = typeof value === 'string' ? 
-          parseFloat(value.replace(/[,\s]/g, '')) : Number(value);
+        const numValue =
+          typeof value === 'string'
+            ? parseFloat(value.replace(/[,\s]/g, ''))
+            : Number(value);
         return isNaN(numValue) ? null : numValue;
-        
+
       case 'string':
         return String(value).trim();
-        
+
       case 'date':
         try {
           const date = new Date(value);
@@ -241,12 +317,12 @@ export class FieldMappingService {
         } catch {
           return null;
         }
-        
+
       case 'boolean':
         if (typeof value === 'boolean') return value;
         const str = String(value).toLowerCase();
         return ['true', 'yes', '1', 'y'].includes(str);
-        
+
       default:
         return value;
     }
@@ -257,16 +333,16 @@ export class FieldMappingService {
 
     // Check for required fields
     const missingRequired = mappings
-      .filter(m => m.required && !m.sourceField)
-      .map(m => `${m.displayName} is required but not mapped`);
-    
+      .filter((m) => m.required && !m.sourceField)
+      .map((m) => `${m.displayName} is required but not mapped`);
+
     errors.push(...missingRequired);
 
     // Check for duplicate source mappings
     const sourceFields = mappings
-      .filter(m => m.sourceField)
-      .map(m => m.sourceField);
-    
+      .filter((m) => m.sourceField)
+      .map((m) => m.sourceField);
+
     const duplicates = new Set<string>();
     sourceFields.forEach((field, index) => {
       if (sourceFields.indexOf(field) !== index) {
@@ -274,7 +350,7 @@ export class FieldMappingService {
       }
     });
 
-    duplicates.forEach(field => {
+    duplicates.forEach((field) => {
       errors.push(`Column "${field}" is mapped to multiple fields`);
     });
 
@@ -282,9 +358,11 @@ export class FieldMappingService {
   }
 
   calculateMappingCompletion(mappings: FieldMapping[]): number {
-    const requiredMappings = mappings.filter(m => m.required);
-    const completedRequired = requiredMappings.filter(m => m.sourceField).length;
-    
+    const requiredMappings = mappings.filter((m) => m.required);
+    const completedRequired = requiredMappings.filter(
+      (m) => m.sourceField
+    ).length;
+
     if (requiredMappings.length === 0) return 100;
     return Math.round((completedRequired / requiredMappings.length) * 100);
   }
@@ -293,10 +371,10 @@ export class FieldMappingService {
     let score = 0;
     let maxScore = 0;
 
-    mappings.forEach(mapping => {
+    mappings.forEach((mapping) => {
       const weight = mapping.required ? 3 : 1; // Required fields worth more
       maxScore += weight;
-      
+
       if (mapping.sourceField) {
         score += weight;
       }
@@ -311,7 +389,7 @@ export class FieldMappingService {
       case 'currency':
         return /^[A-Z]{3}$/; // ISO currency codes
       case 'fundingType':
-        return /^(debt|equity|convertible|mezzanine|grant)$/i;
+        return null;
       default:
         return null;
     }
@@ -320,22 +398,22 @@ export class FieldMappingService {
   suggestBestMatch(targetField: string, columns: string[]): string | null {
     const patterns = this.getFieldPatterns();
     const fieldPatterns = patterns[targetField];
-    
+
     if (!fieldPatterns) return null;
 
     // Find exact matches first
     for (const pattern of fieldPatterns) {
-      const exactMatch = columns.find(col => pattern.test(col));
+      const exactMatch = columns.find((col) => pattern.test(col));
       if (exactMatch) return exactMatch;
     }
 
     // Find partial matches with scoring
     const partialMatches = columns
-      .map(col => ({
+      .map((col) => ({
         column: col,
-        score: this.calculateMatchScore(col, fieldPatterns)
+        score: this.calculateMatchScore(col, fieldPatterns),
       }))
-      .filter(match => match.score > 0)
+      .filter((match) => match.score > 0)
       .sort((a, b) => b.score - a.score);
 
     return partialMatches.length > 0 ? partialMatches[0].column : null;
@@ -343,21 +421,86 @@ export class FieldMappingService {
 
   private getFieldPatterns(): Record<string, RegExp[]> {
     return {
-      title: [/^title$/i, /^name$/i, /^opportunity.?name$/i, /^funding.?name$/i],
-      description: [/^description$/i, /^desc$/i, /^details$/i, /^full.?description$/i],
-      shortDescription: [/^short.?desc/i, /^summary$/i, /^brief$/i, /^short.?summary$/i],
-      fundingType: [/^funding.?type$/i, /^type$/i, /^fund.?type$/i, /^investment.?type$/i],
-      offerAmount: [/^offer.?amount$/i, /^amount$/i, /^funding.?amount$/i, /^investment.?amount$/i],
-      minInvestment: [/^min.?investment$/i, /^minimum$/i, /^min.?amount$/i, /^min.?funding$/i],
-      maxInvestment: [/^max.?investment$/i, /^maximum$/i, /^max.?amount$/i, /^max.?funding$/i],
-      totalAvailable: [/^total.?available$/i, /^total$/i, /^available$/i, /^total.?funding$/i],
+      title: [
+        /^title$/i,
+        /^name$/i,
+        /^opportunity.?name$/i,
+        /^funding.?name$/i,
+      ],
+      description: [
+        /^description$/i,
+        /^desc$/i,
+        /^details$/i,
+        /^full.?description$/i,
+      ],
+      shortDescription: [
+        /^short.?desc/i,
+        /^summary$/i,
+        /^brief$/i,
+        /^short.?summary$/i,
+      ],
+      fundingType: [
+        /^funding.?type$/i,
+        /^type$/i,
+        /^fund.?type$/i,
+        /^investment.?type$/i,
+      ],
+      offerAmount: [
+        /^offer.?amount$/i,
+        /^amount$/i,
+        /^funding.?amount$/i,
+        /^investment.?amount$/i,
+      ],
+      minInvestment: [
+        /^min.?investment$/i,
+        /^minimum$/i,
+        /^min.?amount$/i,
+        /^min.?funding$/i,
+      ],
+      maxInvestment: [
+        /^max.?investment$/i,
+        /^maximum$/i,
+        /^max.?amount$/i,
+        /^max.?funding$/i,
+      ],
+      totalAvailable: [
+        /^total.?available$/i,
+        /^total$/i,
+        /^available$/i,
+        /^total.?funding$/i,
+      ],
       currency: [/^currency$/i, /^curr$/i, /^money.?type$/i],
-      decisionTimeframe: [/^decision.?timeframe$/i, /^timeframe$/i, /^days$/i, /^decision.?time$/i],
+      decisionTimeframe: [
+        /^decision.?timeframe$/i,
+        /^timeframe$/i,
+        /^days$/i,
+        /^decision.?time$/i,
+      ],
       interestRate: [/^interest.?rate$/i, /^rate$/i, /^apr$/i, /^interest$/i],
-      equityOffered: [/^equity$/i, /^equity.?offered$/i, /^stake$/i, /^ownership$/i],
-      expectedReturns: [/^expected.?returns$/i, /^returns$/i, /^roi$/i, /^expected.?roi$/i],
-      investmentHorizon: [/^investment.?horizon$/i, /^horizon$/i, /^years$/i, /^duration$/i],
-      applicationDeadline: [/^application.?deadline$/i, /^deadline$/i, /^due.?date$/i, /^closing.?date$/i]
+      equityOffered: [
+        /^equity$/i,
+        /^equity.?offered$/i,
+        /^stake$/i,
+        /^ownership$/i,
+      ],
+      expectedReturns: [
+        /^expected.?returns$/i,
+        /^returns$/i,
+        /^roi$/i,
+        /^expected.?roi$/i,
+      ],
+      investmentHorizon: [
+        /^investment.?horizon$/i,
+        /^horizon$/i,
+        /^years$/i,
+        /^duration$/i,
+      ],
+      applicationDeadline: [
+        /^application.?deadline$/i,
+        /^deadline$/i,
+        /^due.?date$/i,
+        /^closing.?date$/i,
+      ],
     };
   }
 
@@ -365,7 +508,7 @@ export class FieldMappingService {
     let score = 0;
     const lowerColumn = columnName.toLowerCase();
 
-    patterns.forEach(pattern => {
+    patterns.forEach((pattern) => {
       if (pattern.test(columnName)) {
         score += 10; // Exact pattern match
       } else {
@@ -374,9 +517,9 @@ export class FieldMappingService {
         const words = patternSource
           .replace(/[\^\$\(\)\[\]\{\}\*\+\?\|\\\.\!]/g, '')
           .split(/[\s\.\?]+/)
-          .filter(w => w.length > 2);
+          .filter((w) => w.length > 2);
 
-        words.forEach(word => {
+        words.forEach((word) => {
           if (lowerColumn.includes(word)) {
             score += 2; // Partial word match
           }
@@ -385,5 +528,25 @@ export class FieldMappingService {
     });
 
     return score;
+  }
+
+  private transformFundingType(value: any): string[] {
+    if (!value) return [];
+
+    // Already an array
+    if (Array.isArray(value)) {
+      return value.map((v) => String(v).trim().toLowerCase()).filter((v) => v);
+    }
+
+    // String with comma separators
+    if (typeof value === 'string') {
+      return value
+        .split(',')
+        .map((v) => v.trim().toLowerCase())
+        .filter((v) => v);
+    }
+
+    // Single value
+    return [String(value).trim().toLowerCase()];
   }
 }

@@ -43,7 +43,7 @@ import { PublicProfile } from '../models/public-profile.models';
 import { PublicProfileService } from '../services/public-profile.service';
 import { FunderApplicationsComponent } from '../application-details/funder-applications/funder-applications.component';
 import { DraftManagementService } from '../services/draft-management.service';
-import { SettingsComponent } from 'src/app/dashboard/settings/settings.component';
+
 import { OpportunityActionModalComponent } from 'src/app/shared/components/modal/app-modal.component';
 import { ActionModalService } from 'src/app/shared/components/modal/modal.service';
 
@@ -65,7 +65,7 @@ interface Tab {
     LucideAngularModule,
     FunderDocumentAnalysisComponent,
     OrganizationStatusSidebarComponent,
-    SettingsComponent,
+
     FunderApplicationsComponent,
     OpportunityActionModalComponent,
   ],
@@ -104,12 +104,12 @@ export class FunderDashboardComponent implements OnInit, OnDestroy {
       icon: FileText,
       description: 'Review and manage applications',
     },
-    {
-      id: 'settings',
-      label: 'Settings',
-      icon: Settings,
-      description: 'Organization settings and preferences',
-    },
+    // {
+    //   id: 'settings',
+    //   label: 'Settings',
+    //   icon: Settings,
+    //   description: 'Organization settings and preferences',
+    // },
   ];
 
   // Icons

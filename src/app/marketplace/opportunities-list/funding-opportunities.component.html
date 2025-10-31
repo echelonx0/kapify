@@ -1,96 +1,19 @@
 <!-- Public Layout: Show when NOT authenticated -->
 @if (!isAuthenticated()) {
-  <div class="min-h-screen bg-white">
-    <!-- Landing Header for Public Users -->
-    <landing-header />
-    
-    <!-- Marketplace Content -->
-    <div class="min-h-screen bg-gradient-to-br from-neutral-50 to-primary-50/20 pt-20">
-      
-      <!-- Hero Header -->
-      <app-marketplace-header></app-marketplace-header>
-      
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
-        <app-smart-suggestions></app-smart-suggestions>
-      </div>
-      
-      <!-- Horizontal Advanced Filters -->
-      <div class="bg-white border-b border-neutral-200 shadow-sm">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <app-advanced-filters
-            (fundingTypeChange)="onFundingTypeChange($event)"
-            (industryChange)="onIndustryChange($event)"
-            (currencyChange)="onCurrencyChange($event)"
-            (minAmountChange)="onMinAmountChange($event)"
-            (maxAmountChange)="onMaxAmountChange($event)"
-            (applyFilters)="applyFilters()"
-            (clearFilters)="clearFilters()">
-          </app-advanced-filters>
-        </div>
-      </div>
-      
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
-          
-          <!-- Main Content Area -->
-          <main class="lg:col-span-3 space-y-8 pt-6">
-            
-            <!-- Search and Stats Bar -->
-            <app-search-stats-bar
-              [searchQuery]="searchQuery()"
-              [totalResults]="filteredOpportunities().length"
-              [isLoading]="isLoading()"
-              (searchChanged)="onSearchChange($event)"
-              (refreshData)="refreshData()">
-            </app-search-stats-bar>
-            
-            <!-- Loading State -->
-            <app-loading-state *ngIf="isLoading()"></app-loading-state>
-            
-            <!-- Empty State -->
-            <app-empty-state 
-              *ngIf="!isLoading() && filteredOpportunities().length === 0"
-              (clearFilters)="clearFilters()">
-            </app-empty-state>
-            
-            <!-- Opportunities Grid -->
-            <app-opportunities-grid
-              *ngIf="!isLoading() && filteredOpportunities().length > 0"
-              [opportunities]="filteredOpportunities()"
-              [userType]="getUserTypeLabel()"
-              [canApply]="canApplyToOpportunity()"
-              (apply)="applyToOpportunity($event)"
-              (viewDetails)="viewOpportunityDetails($event)"
-              (manage)="manageApplications($event)"
-              (signInToApply)="redirectToLogin()">
-            </app-opportunities-grid>
-          </main>
-          
-          <!-- Sidebar -->
-          <aside class="lg:col-span-1 space-y-6">
-            <app-insights-widget></app-insights-widget>
-            <app-newsletter-signup></app-newsletter-signup>
-          </aside>
-        </div>
-      </div>
-    </div>
-    
-    <!-- Landing Footer for Public Users -->
-    <landing-footer />
-  </div>
-}
-
-<!-- Authenticated Layout: Show when logged in (accessed from sidenav) -->
-@if (isAuthenticated()) {
-  <div class="min-h-screen bg-gradient-to-br from-neutral-50 to-primary-50/20">
-    
+<div class="min-h-screen bg-white">
+  <!-- Landing Header for Public Users -->
+  <landing-header />
+  <!-- Marketplace Content -->
+  <div
+    class="min-h-screen bg-gradient-to-br from-neutral-50 to-primary-50/20 mt-8"
+  >
     <!-- Hero Header -->
-    <!-- <app-marketplace-header></app-marketplace-header> -->
-    
+    <app-marketplace-header></app-marketplace-header>
+
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
       <app-smart-suggestions></app-smart-suggestions>
     </div>
-    
+
     <!-- Horizontal Advanced Filters -->
     <div class="bg-white border-b border-neutral-200 shadow-sm">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
@@ -101,35 +24,36 @@
           (minAmountChange)="onMinAmountChange($event)"
           (maxAmountChange)="onMaxAmountChange($event)"
           (applyFilters)="applyFilters()"
-          (clearFilters)="clearFilters()">
+          (clearFilters)="clearFilters()"
+        >
         </app-advanced-filters>
       </div>
     </div>
-    
+
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
-        
         <!-- Main Content Area -->
         <main class="lg:col-span-3 space-y-8 pt-6">
-          
           <!-- Search and Stats Bar -->
-          <app-search-stats-bar
+          <!-- <app-search-stats-bar
             [searchQuery]="searchQuery()"
             [totalResults]="filteredOpportunities().length"
             [isLoading]="isLoading()"
             (searchChanged)="onSearchChange($event)"
-            (refreshData)="refreshData()">
-          </app-search-stats-bar>
-          
+            (refreshData)="refreshData()"
+          >
+          </app-search-stats-bar> -->
+
           <!-- Loading State -->
           <app-loading-state *ngIf="isLoading()"></app-loading-state>
-          
+
           <!-- Empty State -->
-          <app-empty-state 
+          <app-empty-state
             *ngIf="!isLoading() && filteredOpportunities().length === 0"
-            (clearFilters)="clearFilters()">
+            (clearFilters)="clearFilters()"
+          >
           </app-empty-state>
-          
+
           <!-- Opportunities Grid -->
           <app-opportunities-grid
             *ngIf="!isLoading() && filteredOpportunities().length > 0"
@@ -139,17 +63,94 @@
             (apply)="applyToOpportunity($event)"
             (viewDetails)="viewOpportunityDetails($event)"
             (manage)="manageApplications($event)"
-            (signInToApply)="redirectToLogin()">
+            (signInToApply)="redirectToLogin()"
+          >
           </app-opportunities-grid>
         </main>
-        
+
         <!-- Sidebar -->
         <aside class="lg:col-span-1 space-y-6">
-           <app-newsletter-signup></app-newsletter-signup>
-          <!-- <app-insights-widget></app-insights-widget> -->
-         
+          <app-newsletter-signup></app-newsletter-signup>
         </aside>
       </div>
     </div>
   </div>
+
+  <!-- Landing Footer for Public Users -->
+  <landing-footer />
+</div>
+}
+
+<!-- Authenticated Layout: Show when logged in (accessed from sidenav) -->
+@if (isAuthenticated()) {
+<div class="min-h-screen bg-gradient-to-br from-neutral-50 to-primary-50/20">
+  <!-- Hero Header -->
+  <!-- <app-marketplace-header></app-marketplace-header> -->
+  <landing-header />
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
+    <app-smart-suggestions></app-smart-suggestions>
+  </div>
+
+  <!-- Horizontal Advanced Filters -->
+  <div class="bg-white border-b border-neutral-200 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <app-advanced-filters
+        (fundingTypeChange)="onFundingTypeChange($event)"
+        (industryChange)="onIndustryChange($event)"
+        (currencyChange)="onCurrencyChange($event)"
+        (minAmountChange)="onMinAmountChange($event)"
+        (maxAmountChange)="onMaxAmountChange($event)"
+        (applyFilters)="applyFilters()"
+        (clearFilters)="clearFilters()"
+      >
+      </app-advanced-filters>
+    </div>
+  </div>
+
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+      <!-- Main Content Area -->
+      <main class="lg:col-span-3 space-y-8 pt-6">
+        <!-- Search and Stats Bar -->
+        <app-search-stats-bar
+          [searchQuery]="searchQuery()"
+          [totalResults]="filteredOpportunities().length"
+          [isLoading]="isLoading()"
+          (searchChanged)="onSearchChange($event)"
+          (refreshData)="refreshData()"
+        >
+        </app-search-stats-bar>
+
+        <!-- Loading State -->
+        <app-loading-state *ngIf="isLoading()"></app-loading-state>
+
+        <!-- Empty State -->
+        <app-empty-state
+          *ngIf="!isLoading() && filteredOpportunities().length === 0"
+          (clearFilters)="clearFilters()"
+        >
+        </app-empty-state>
+
+        <!-- Opportunities Grid -->
+        <app-opportunities-grid
+          *ngIf="!isLoading() && filteredOpportunities().length > 0"
+          [opportunities]="filteredOpportunities()"
+          [userType]="getUserTypeLabel()"
+          [canApply]="canApplyToOpportunity()"
+          (apply)="applyToOpportunity($event)"
+          (viewDetails)="viewOpportunityDetails($event)"
+          (manage)="manageApplications($event)"
+          (signInToApply)="redirectToLogin()"
+        >
+        </app-opportunities-grid>
+      </main>
+
+      <!-- Sidebar -->
+      <aside class="lg:col-span-1 space-y-6">
+        <app-newsletter-signup></app-newsletter-signup>
+        <!-- <app-insights-widget></app-insights-widget> -->
+      </aside>
+    </div>
+  </div>
+</div>
 }

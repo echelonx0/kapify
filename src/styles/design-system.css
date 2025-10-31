@@ -30,8 +30,10 @@
 
   /* Shadows */
   --shadow-card: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
-  --shadow-card-hover: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  --shadow-card-elevated: 0 10px 25px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-card-hover: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-card-elevated: 0 10px 25px -3px rgba(0, 0, 0, 0.1),
+    0 4px 6px -2px rgba(0, 0, 0, 0.05);
 }
 
 /* Base card components */
@@ -46,7 +48,6 @@
 .card:hover {
   box-shadow: var(--shadow-card-hover);
 }
-
 
 .card-gradient {
   /* background: linear-gradient(to right, #22c55e, #22c55e, #14532d); */
@@ -87,12 +88,24 @@
   transition: all 0.3s;
 }
 
-.card-draft .status-border { background-color: var(--color-neutral-400); }
-.card-submitted .status-border { background-color: #3b82f6; }
-.card-under-review .status-border { background-color: #f59e0b; }
-.card-approved .status-border { background-color: var(--color-success); }
-.card-rejected .status-border { background-color: var(--color-error); }
-.card-withdrawn .status-border { background-color: var(--color-neutral-400); }
+.card-draft .status-border {
+  background-color: var(--color-neutral-400);
+}
+.card-submitted .status-border {
+  background-color: #3b82f6;
+}
+.card-under-review .status-border {
+  background-color: #f59e0b;
+}
+.card-approved .status-border {
+  background-color: var(--color-success);
+}
+.card-rejected .status-border {
+  background-color: var(--color-error);
+}
+.card-withdrawn .status-border {
+  background-color: var(--color-neutral-400);
+}
 
 .card-content {
   padding: 1.5rem;
@@ -258,7 +271,11 @@
 
 .progress-fill {
   height: 100%;
-  background: linear-gradient(to right, var(--color-primary-500), var(--color-primary-600));
+  background: linear-gradient(
+    to right,
+    var(--color-primary-500),
+    var(--color-primary-600)
+  );
   transition: all 0.5s ease-out;
 }
 
@@ -279,12 +296,12 @@
     grid-template-columns: repeat(1, minmax(0, 1fr));
     gap: 0.75rem;
   }
-  
+
   .header-row {
     flex-direction: column;
     gap: 0.75rem;
   }
-  
+
   .action-buttons {
     margin-left: 0;
     align-self: stretch;
@@ -520,7 +537,8 @@
 }
 
 .section-card:hover {
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -1px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.08),
+    0 2px 4px -1px rgba(0, 0, 0, 0.04);
   border-color: #e2e8f0;
 }
 
@@ -532,7 +550,7 @@
 }
 
 .section-card .section-header::before {
-  content: '';
+  content: "";
   position: absolute;
   left: 0;
   top: 0;
@@ -688,20 +706,18 @@
   overflow: hidden;
 }
 
-
 /* In your component styles or global CSS */
 @media (max-width: 1024px) {
   .profile-header-layout {
     flex-direction: column;
     gap: 1.5rem;
   }
-  
+
   .optimization-widget {
     width: 100%;
     max-width: 400px;
   }
 }
-
 
 /* ========== INPUTS & TEXTAREAS ========== */
 input[type="text"],
@@ -719,7 +735,7 @@ select {
   font-size: 1rem;
   font-weight: 400;
   line-height: 1.5rem;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.05); /* shadow-sm */
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05); /* shadow-sm */
   transition: all 0.2s ease-in-out;
   outline: none;
 }
@@ -790,14 +806,13 @@ label {
   background-color: #ffffff;
   border-radius: 0.75rem; /* rounded-xl */
   border: 1px solid #e5e5e5; /* neutral-200 */
-  box-shadow: 0 1px 2px rgba(0,0,0,0.05); /* shadow-sm */
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05); /* shadow-sm */
   transition: all 0.2s;
 }
 
 .form-card:hover {
-  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
-
 
 /* Add these checkbox and radio styles to your existing design-system.css */
 
@@ -836,7 +851,7 @@ input[type="checkbox"]:checked {
 }
 
 input[type="checkbox"]:checked::before {
-  content: '';
+  content: "";
   position: absolute;
   left: 50%;
   top: 50%;
@@ -888,7 +903,7 @@ input[type="radio"]:checked {
 }
 
 input[type="radio"]:checked::before {
-  content: '';
+  content: "";
   position: absolute;
   left: 50%;
   top: 50%;

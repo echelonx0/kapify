@@ -1,7 +1,7 @@
 import { Injectable, signal, inject } from '@angular/core';
 import { Observable, from, throwError, BehaviorSubject } from 'rxjs';
 import { tap, catchError, map } from 'rxjs/operators';
-import { AuthService } from '../../auth/production.auth.service'; 
+import { AuthService } from '../../auth/production.auth.service';
 import { SharedSupabaseService } from '../../shared/services/shared-supabase.service';
 import { FundingOpportunity } from 'src/app/funder/create-opportunity/shared/funding.interfaces';
 
@@ -9,7 +9,12 @@ import { FundingOpportunity } from 'src/app/funder/create-opportunity/shared/fun
 interface OpportunitySection {
   id?: string;
   user_id: string;
-  section_type: 'basic-info' | 'investment-terms' | 'eligibility-criteria' | 'application-process' | 'settings';
+  section_type:
+    | 'basic-info'
+    | 'investment-terms'
+    | 'eligibility-criteria'
+    | 'application-process'
+    | 'settings';
   data: Record<string, any>;
   completed: boolean;
   completion_percentage: number;
@@ -52,7 +57,7 @@ interface LoadDraftResponse {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class FundingOpportunityService {
   private supabaseService = inject(SharedSupabaseService);
@@ -72,11 +77,13 @@ export class FundingOpportunityService {
     'investment-terms': 0,
     'eligibility-criteria': 0,
     'application-process': 0,
-    'settings': 0
+    settings: 0,
   });
 
   // Draft auto-save subject
-  private draftDataSubject = new BehaviorSubject<Partial<FundingOpportunity>>({});
+  private draftDataSubject = new BehaviorSubject<Partial<FundingOpportunity>>(
+    {}
+  );
   public draftData$ = this.draftDataSubject.asObservable();
 
   constructor() {}
@@ -89,7 +96,12 @@ export class FundingOpportunityService {
    * Save a specific section of the form
    */
   saveSection(
-    sectionType: 'basic-info' | 'investment-terms' | 'eligibility-criteria' | 'application-process' | 'settings',
+    sectionType:
+      | 'basic-info'
+      | 'investment-terms'
+      | 'eligibility-criteria'
+      | 'application-process'
+      | 'settings',
     sectionData: Record<string, any>,
     autoSave: boolean = false
   ): Observable<SaveSectionResponse> {
@@ -102,23 +114,30 @@ export class FundingOpportunityService {
       return throwError(() => new Error('User not authenticated'));
     }
 
-    return from(this.saveSectionToSupabase(currentAuth.id, sectionType, sectionData, autoSave)).pipe(
-      tap(response => {
+    return from(
+      this.saveSectionToSupabase(
+        currentAuth.id,
+        sectionType,
+        sectionData,
+        autoSave
+      )
+    ).pipe(
+      tap((response) => {
         this.isSaving.set(false);
         this.lastSavedAt.set(response.lastSaved);
-        
+
         // Update section completion tracking
-        this.sectionCompletions.update(completions => ({
+        this.sectionCompletions.update((completions) => ({
           ...completions,
-          [sectionType]: response.sectionCompletion
+          [sectionType]: response.sectionCompletion,
         }));
         this.overallCompletion.set(response.overallCompletion);
-        
+
         if (!autoSave) {
           console.log(`Section ${sectionType} saved successfully`);
         }
       }),
-      catchError(error => {
+      catchError((error) => {
         this.error.set(`Failed to save ${sectionType} section`);
         this.isSaving.set(false);
         console.error(`Save section error (${sectionType}):`, error);
@@ -130,7 +149,10 @@ export class FundingOpportunityService {
   /**
    * Save entire form data (splits into sections automatically)
    */
-  saveDraft(formData: Partial<FundingOpportunity>, autoSave: boolean = false): Observable<SaveDraftResponse> {
+  saveDraft(
+    formData: Partial<FundingOpportunity>,
+    autoSave: boolean = false
+  ): Observable<SaveDraftResponse> {
     this.isSaving.set(true);
     this.error.set(null);
 
@@ -140,18 +162,20 @@ export class FundingOpportunityService {
       return throwError(() => new Error('User not authenticated'));
     }
 
-    return from(this.saveAllSectionsToSupabase(currentAuth.id, formData, autoSave)).pipe(
-      tap(response => {
+    return from(
+      this.saveAllSectionsToSupabase(currentAuth.id, formData, autoSave)
+    ).pipe(
+      tap((response) => {
         this.isSaving.set(false);
         this.lastSavedAt.set(response.lastSaved);
         this.overallCompletion.set(response.overallCompletion);
         this.draftDataSubject.next(formData);
-        
+
         if (!autoSave) {
           console.log('Draft saved successfully');
         }
       }),
-      catchError(error => {
+      catchError((error) => {
         this.error.set('Failed to save draft');
         this.isSaving.set(false);
         console.error('Save draft error:', error);
@@ -174,34 +198,34 @@ export class FundingOpportunityService {
     }
 
     return from(this.loadDraftFromSupabase(currentAuth.id)).pipe(
-      tap(response => {
+      tap((response) => {
         this.isLoading.set(false);
         if (response.lastSaved) {
           this.lastSavedAt.set(response.lastSaved);
         }
         this.overallCompletion.set(response.completionPercentage);
         this.draftDataSubject.next(response.draftData);
-        
+
         // Update section completions
         const completions: Record<string, number> = {
           'basic-info': 0,
           'investment-terms': 0,
           'eligibility-criteria': 0,
           'application-process': 0,
-          'settings': 0
+          settings: 0,
         };
-        
-        Object.keys(response.sectionsData).forEach(sectionType => {
+
+        Object.keys(response.sectionsData).forEach((sectionType) => {
           const section = response.sectionsData[sectionType];
           if (section) {
             completions[sectionType] = section.completion_percentage || 0;
           }
         });
-        
+
         this.sectionCompletions.set(completions);
         console.log('Draft loaded successfully');
       }),
-      catchError(error => {
+      catchError((error) => {
         this.error.set('Failed to load draft');
         this.isLoading.set(false);
         console.error('Load draft error:', error);
@@ -213,7 +237,7 @@ export class FundingOpportunityService {
   /**
    * Delete current draft (all sections)
    */
-  deleteDraft(): Observable<{success: boolean}> {
+  deleteDraft(): Observable<{ success: boolean }> {
     const currentAuth = this.authService.user();
     if (!currentAuth) {
       return throwError(() => new Error('User not authenticated'));
@@ -228,12 +252,12 @@ export class FundingOpportunityService {
           'investment-terms': 0,
           'eligibility-criteria': 0,
           'application-process': 0,
-          'settings': 0
+          settings: 0,
         });
         this.draftDataSubject.next({});
         console.log('Draft deleted successfully');
       }),
-      catchError(error => {
+      catchError((error) => {
         console.error('Delete draft error:', error);
         return throwError(() => error);
       })
@@ -247,16 +271,21 @@ export class FundingOpportunityService {
   /**
    * Publish opportunity from draft or form data
    */
-  publishOpportunity(formData: Partial<FundingOpportunity>): Observable<PublishOpportunityResponse> {
+  publishOpportunity(
+    formData: Partial<FundingOpportunity>
+  ): Observable<PublishOpportunityResponse> {
     console.log('=== PUBLISH OPPORTUNITY SERVICE START ===');
     console.log('Input formData:', JSON.stringify(formData, null, 2));
-    
+
     this.isPublishing.set(true);
     this.error.set(null);
 
     const currentAuth = this.authService.user();
-    console.log('Current auth user:', currentAuth ? { id: currentAuth.id, email: currentAuth.email } : 'null');
-    
+    console.log(
+      'Current auth user:',
+      currentAuth ? { id: currentAuth.id, email: currentAuth.email } : 'null'
+    );
+
     if (!currentAuth) {
       console.error('❌ User not authenticated, aborting publish');
       this.isPublishing.set(false);
@@ -264,12 +293,12 @@ export class FundingOpportunityService {
     }
 
     console.log('🚀 Starting publishToSupabase with userId:', currentAuth.id);
-    
+
     return from(this.publishToSupabase(currentAuth.id, formData)).pipe(
-      tap(response => {
+      tap((response) => {
         console.log('✅ PublishToSupabase successful, response:', response);
         this.isPublishing.set(false);
-        
+
         // Clear draft after successful publish
         console.log('🧹 Starting draft cleanup...');
         this.deleteDraft().subscribe({
@@ -277,25 +306,28 @@ export class FundingOpportunityService {
             console.log('✅ Draft deleted successfully after publish');
           },
           error: (deleteError) => {
-            console.warn('⚠️ Failed to delete draft after publish (non-critical):', deleteError);
-          }
+            console.warn(
+              '⚠️ Failed to delete draft after publish (non-critical):',
+              deleteError
+            );
+          },
         });
-        
+
         console.log('✅ Opportunity published successfully');
       }),
-      catchError(error => {
+      catchError((error) => {
         console.error('❌ Publish opportunity error caught in pipe:', error);
         console.error('Error details:', {
           message: error.message,
           code: error.code,
           details: error.details,
           hint: error.hint,
-          stack: error.stack
+          stack: error.stack,
         });
-        
+
         this.error.set('Failed to publish opportunity');
         this.isPublishing.set(false);
-        
+
         return throwError(() => error);
       })
     );
@@ -311,8 +343,10 @@ export class FundingOpportunityService {
     }
 
     return from(this.loadOpportunitiesFromSupabase(currentAuth.id)).pipe(
-      map(opportunities => opportunities.map(opp => this.transformDbToModel(opp))),
-      catchError(error => {
+      map((opportunities) =>
+        opportunities.map((opp) => this.transformDbToModel(opp))
+      ),
+      catchError((error) => {
         console.error('Load opportunities error:', error);
         return throwError(() => error);
       })
@@ -332,24 +366,26 @@ export class FundingOpportunityService {
       return throwError(() => new Error('User not authenticated'));
     }
 
-    return from(this.loadPublishedOpportunity(opportunityId, currentAuth.id)).pipe(
-      tap(response => {
+    return from(
+      this.loadPublishedOpportunity(opportunityId, currentAuth.id)
+    ).pipe(
+      tap((response) => {
         this.isLoading.set(false);
         if (response.success && response.draftData) {
           this.draftDataSubject.next(response.draftData);
           this.overallCompletion.set(100);
-          
+
           this.sectionCompletions.set({
             'basic-info': 100,
             'investment-terms': 100,
             'eligibility-criteria': 100,
             'application-process': 100,
-            'settings': 100
+            settings: 100,
           });
         }
         console.log('Published opportunity loaded for editing');
       }),
-      catchError(error => {
+      catchError((error) => {
         this.error.set('Failed to load opportunity for editing');
         this.isLoading.set(false);
         console.error('Load opportunity for edit error:', error);
@@ -361,7 +397,10 @@ export class FundingOpportunityService {
   /**
    * Update published opportunity
    */
-  updateOpportunity(opportunityId: string, formData: Partial<FundingOpportunity>): Observable<PublishOpportunityResponse> {
+  updateOpportunity(
+    opportunityId: string,
+    formData: Partial<FundingOpportunity>
+  ): Observable<PublishOpportunityResponse> {
     this.isPublishing.set(true);
     this.error.set(null);
 
@@ -371,12 +410,14 @@ export class FundingOpportunityService {
       return throwError(() => new Error('User not authenticated'));
     }
 
-    return from(this.updatePublishedOpportunity(opportunityId, currentAuth.id, formData)).pipe(
-      tap(response => {
+    return from(
+      this.updatePublishedOpportunity(opportunityId, currentAuth.id, formData)
+    ).pipe(
+      tap((response) => {
         this.isPublishing.set(false);
         console.log('Opportunity updated successfully');
       }),
-      catchError(error => {
+      catchError((error) => {
         this.error.set('Failed to update opportunity');
         this.isPublishing.set(false);
         console.error('Update opportunity error:', error);
@@ -399,17 +440,17 @@ export class FundingOpportunityService {
     }
 
     return from(this.loadAndMergeDrafts(currentAuth.id)).pipe(
-      tap(response => {
+      tap((response) => {
         this.isLoading.set(false);
         if (response.lastSaved) {
           this.lastSavedAt.set(response.lastSaved);
         }
         this.overallCompletion.set(response.completionPercentage);
         this.draftDataSubject.next(response.draftData);
-        
+
         console.log('Draft loaded with merge successfully');
       }),
-      catchError(error => {
+      catchError((error) => {
         this.error.set('Failed to load draft');
         this.isLoading.set(false);
         console.error('Load draft with merge error:', error);
@@ -421,7 +462,7 @@ export class FundingOpportunityService {
   /**
    * Clear all drafts (database + localStorage)
    */
-  clearAllDrafts(): Observable<{success: boolean}> {
+  clearAllDrafts(): Observable<{ success: boolean }> {
     const currentAuth = this.authService.user();
     if (!currentAuth) {
       return throwError(() => new Error('User not authenticated'));
@@ -436,12 +477,12 @@ export class FundingOpportunityService {
           'investment-terms': 0,
           'eligibility-criteria': 0,
           'application-process': 0,
-          'settings': 0
+          settings: 0,
         });
         this.draftDataSubject.next({});
         console.log('All drafts cleared successfully');
       }),
-      catchError(error => {
+      catchError((error) => {
         console.error('Clear drafts error:', error);
         return throwError(() => error);
       })
@@ -471,7 +512,14 @@ export class FundingOpportunityService {
   }> {
     const currentAuth = this.authService.user();
     if (!currentAuth) {
-      return from([{ hasDraft: false, completionPercentage: 0, lastSaved: null, title: null }]);
+      return from([
+        {
+          hasDraft: false,
+          completionPercentage: 0,
+          lastSaved: null,
+          title: null,
+        },
+      ]);
     }
 
     return from(this.fetchDraftSummary(currentAuth.id));
@@ -489,26 +537,26 @@ export class FundingOpportunityService {
   ): Promise<SaveSectionResponse> {
     try {
       const organizationId = await this.getOrCreateTempOrganizationId(userId);
-      const sectionCompletion = this.calculateSectionCompletion(sectionType, sectionData);
-      
+      const sectionCompletion = this.calculateSectionCompletion(
+        sectionType,
+        sectionData
+      );
+
       const sectionRecord: Partial<OpportunitySection> = {
         user_id: userId,
         section_type: sectionType as any,
         data: sectionData,
         completed: sectionCompletion >= 100,
         completion_percentage: sectionCompletion,
-        organization_id: organizationId
+        organization_id: organizationId,
       };
 
       const { data, error } = await this.supabaseService
         .from('opportunity_drafts')
-        .upsert(
-          sectionRecord,
-          { 
-            onConflict: 'user_id,section_type',
-            ignoreDuplicates: false 
-          }
-        )
+        .upsert(sectionRecord, {
+          onConflict: 'user_id,section_type',
+          ignoreDuplicates: false,
+        })
         .select()
         .single();
 
@@ -522,7 +570,7 @@ export class FundingOpportunityService {
         message: autoSave ? 'Auto-saved' : 'Section saved successfully',
         lastSaved: new Date().toISOString(),
         sectionCompletion,
-        overallCompletion
+        overallCompletion,
       };
     } catch (error: any) {
       console.error(`Error saving section ${sectionType}:`, error);
@@ -541,26 +589,26 @@ export class FundingOpportunityService {
       const savedSections: string[] = [];
 
       for (const [sectionType, sectionData] of Object.entries(sections)) {
-        const sectionCompletion = this.calculateSectionCompletion(sectionType, sectionData);
-        
+        const sectionCompletion = this.calculateSectionCompletion(
+          sectionType,
+          sectionData
+        );
+
         const sectionRecord: Partial<OpportunitySection> = {
           user_id: userId,
           section_type: sectionType as any,
           data: sectionData,
           completed: sectionCompletion >= 100,
           completion_percentage: sectionCompletion,
-          organization_id: organizationId
+          organization_id: organizationId,
         };
 
         const { error } = await this.supabaseService
           .from('opportunity_drafts')
-          .upsert(
-            sectionRecord,
-            { 
-              onConflict: 'user_id,section_type',
-              ignoreDuplicates: false 
-            }
-          );
+          .upsert(sectionRecord, {
+            onConflict: 'user_id,section_type',
+            ignoreDuplicates: false,
+          });
 
         if (error) {
           console.error(`Error saving section ${sectionType}:`, error);
@@ -576,7 +624,7 @@ export class FundingOpportunityService {
         savedSections,
         message: autoSave ? 'Auto-saved' : 'Draft saved successfully',
         lastSaved: new Date().toISOString(),
-        overallCompletion
+        overallCompletion,
       };
     } catch (error: any) {
       console.error('Error saving draft sections:', error);
@@ -584,7 +632,9 @@ export class FundingOpportunityService {
     }
   }
 
-  private async loadDraftFromSupabase(userId: string): Promise<LoadDraftResponse> {
+  private async loadDraftFromSupabase(
+    userId: string
+  ): Promise<LoadDraftResponse> {
     try {
       const { data: sections, error } = await this.supabaseService
         .from('opportunity_drafts')
@@ -601,7 +651,7 @@ export class FundingOpportunityService {
           success: true,
           draftData: {},
           completionPercentage: 0,
-          sectionsData: {}
+          sectionsData: {},
         };
       }
 
@@ -609,7 +659,7 @@ export class FundingOpportunityService {
       const sectionsData: Record<string, any> = {};
       let lastSaved: string | undefined;
 
-      sections.forEach(section => {
+      sections.forEach((section) => {
         sectionsData[section.section_type] = section;
         if (!lastSaved || section.updated_at > lastSaved) {
           lastSaved = section.updated_at;
@@ -617,13 +667,13 @@ export class FundingOpportunityService {
       });
 
       const overallCompletion = await this.calculateOverallCompletion(userId);
-      
+
       return {
         success: true,
         draftData,
         lastSaved,
         completionPercentage: overallCompletion,
-        sectionsData
+        sectionsData,
       };
     } catch (error: any) {
       console.error('Error loading draft from Supabase:', error);
@@ -631,7 +681,9 @@ export class FundingOpportunityService {
     }
   }
 
-  private async deleteDraftFromSupabase(userId: string): Promise<{success: boolean}> {
+  private async deleteDraftFromSupabase(
+    userId: string
+  ): Promise<{ success: boolean }> {
     try {
       const { error } = await this.supabaseService
         .from('opportunity_drafts')
@@ -652,7 +704,7 @@ export class FundingOpportunityService {
   // ===============================
 
   private async publishToSupabase(
-    userId: string, 
+    userId: string,
     formData: Partial<FundingOpportunity>
   ): Promise<PublishOpportunityResponse> {
     try {
@@ -662,35 +714,49 @@ export class FundingOpportunityService {
 
       // Validate required fields
       console.log('🔍 Validating required fields...');
-      
+
       if (!formData.title?.trim()) {
         console.error('❌ Validation failed: Title is missing');
         throw new Error('Title is required');
       }
       console.log('✅ Title valid:', formData.title);
-      
+
       if (!formData.description?.trim()) {
         console.error('❌ Validation failed: Description is missing');
         throw new Error('Description is required');
       }
-      console.log('✅ Description valid (length):', formData.description.length);
-      
+      console.log(
+        '✅ Description valid (length):',
+        formData.description.length
+      );
+
       if (!formData.fundingType) {
         console.error('❌ Validation failed: Funding type is missing');
         throw new Error('Funding type is required');
       }
       console.log('✅ Funding type valid:', formData.fundingType);
-      
+
       console.log('✅ Typical investment valid:', formData.typicalInvestment);
 
       // Ensure investment amounts are valid
       const minInvestment = formData.minInvestment || 0;
       const maxInvestment = formData.maxInvestment || 0;
-      console.log('Investment amounts - Min:', minInvestment, 'Max:', maxInvestment);
-      
-      if (minInvestment > 0 && maxInvestment > 0 && maxInvestment < minInvestment) {
+      console.log(
+        'Investment amounts - Min:',
+        minInvestment,
+        'Max:',
+        maxInvestment
+      );
+
+      if (
+        minInvestment > 0 &&
+        maxInvestment > 0 &&
+        maxInvestment < minInvestment
+      ) {
         console.error('❌ Validation failed: Max investment < Min investment');
-        throw new Error('Maximum investment must be greater than or equal to minimum investment');
+        throw new Error(
+          'Maximum investment must be greater than or equal to minimum investment'
+        );
       }
       console.log('✅ Investment amounts valid');
 
@@ -698,7 +764,7 @@ export class FundingOpportunityService {
       console.log('🏢 Getting organization ID...');
       const organizationId = await this.getOrCreateTempOrganizationId(userId);
       console.log('✅ Organization ID obtained:', organizationId);
-      
+
       const opportunityData = {
         id: crypto.randomUUID(),
         organization_id: organizationId,
@@ -711,7 +777,9 @@ export class FundingOpportunityService {
         min_investment: formData.minInvestment || 0,
         max_investment: formData.offerAmount || 0,
         currency: formData.currency || 'ZAR',
-        funding_type: formData.fundingType,
+        funding_type: Array.isArray(formData.fundingType)
+          ? formData.fundingType
+          : [formData.fundingType].filter(Boolean),
         interest_rate: formData.interestRate,
         equity_offered: formData.equityOffered,
         repayment_terms: formData.repaymentTerms,
@@ -726,7 +794,7 @@ export class FundingOpportunityService {
         application_process: formData.applicationProcess || {},
         eligibility_criteria: {
           ...formData.eligibilityCriteria,
-          exclusionCriteria: formData.exclusionCriteria
+          exclusionCriteria: formData.exclusionCriteria,
         },
         status: 'active',
         total_available: formData.maxInvestment || 0,
@@ -748,16 +816,22 @@ export class FundingOpportunityService {
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
         published_at: new Date().toISOString(),
-        typical_investment: formData.maxInvestment || 0
+        typical_investment: formData.maxInvestment || 0,
       };
 
       console.log('📝 Prepared opportunity data for insert');
       console.log('🔍 Key validation checks:');
       console.log('  - min_investment:', opportunityData.min_investment);
       console.log('  - max_investment:', opportunityData.max_investment);
-      console.log('  - offer_amount:', opportunityData.offer_amount); 
-      console.log('  - exclusion_criteria:', opportunityData.exclusion_criteria);
-      console.log('  - Check constraint (max >= min):', opportunityData.max_investment >= opportunityData.min_investment);
+      console.log('  - offer_amount:', opportunityData.offer_amount);
+      console.log(
+        '  - exclusion_criteria:',
+        opportunityData.exclusion_criteria
+      );
+      console.log(
+        '  - Check constraint (max >= min):',
+        opportunityData.max_investment >= opportunityData.min_investment
+      );
 
       console.log('💾 Inserting into Supabase...');
       const { data, error } = await this.supabaseService
@@ -772,7 +846,7 @@ export class FundingOpportunityService {
           message: error.message,
           code: error.code,
           details: error.details,
-          hint: error.hint
+          hint: error.hint,
         });
         throw error;
       }
@@ -784,19 +858,19 @@ export class FundingOpportunityService {
         success: true,
         opportunityId: data.id,
         publishedAt: data.published_at,
-        message: 'Opportunity published successfully'
+        message: 'Opportunity published successfully',
       };
-      
+
       console.log('📤 Returning response:', response);
       console.log('=== PUBLISH TO SUPABASE END ===');
-      
+
       return response;
     } catch (error: any) {
       console.error('=== PUBLISH TO SUPABASE ERROR ===');
       console.error('❌ Error publishing opportunity:', error);
       console.error('Error type:', typeof error);
       console.error('Error message:', error.message);
-      
+
       if (error.code) {
         console.error('Error code:', error.code);
       }
@@ -806,12 +880,15 @@ export class FundingOpportunityService {
       if (error.hint) {
         console.error('Error hint:', error.hint);
       }
-      
+
       throw new Error(`Failed to publish opportunity: ${error.message}`);
     }
   }
 
-  private async loadPublishedOpportunity(opportunityId: string, userId: string): Promise<LoadDraftResponse> {
+  private async loadPublishedOpportunity(
+    opportunityId: string,
+    userId: string
+  ): Promise<LoadDraftResponse> {
     try {
       const { data: opportunity, error } = await this.supabaseService
         .from('funding_opportunities')
@@ -828,13 +905,13 @@ export class FundingOpportunityService {
       }
 
       const opportunityData = this.transformDbToFormData(opportunity);
-      
+
       return {
         success: true,
         draftData: opportunityData,
         lastSaved: opportunity.updated_at,
         completionPercentage: 100,
-        sectionsData: {}
+        sectionsData: {},
       };
     } catch (error: any) {
       console.error('Error loading published opportunity:', error);
@@ -873,7 +950,7 @@ export class FundingOpportunityService {
         application_process: formData.applicationProcess,
         eligibility_criteria: {
           ...formData.eligibilityCriteria,
-          exclusionCriteria: formData.exclusionCriteria
+          exclusionCriteria: formData.exclusionCriteria,
         },
         max_applications: formData.maxApplications,
         auto_match: formData.autoMatch,
@@ -884,10 +961,9 @@ export class FundingOpportunityService {
         funder_organization_logo_url: formData.funderOrganizationLogoUrl,
         exclusion_criteria: formData.exclusionCriteria,
         updated_at: new Date().toISOString(),
-        
       };
 
-      console.log('This is the update data', updateData)
+      console.log('This is the update data', updateData);
       const { data, error } = await this.supabaseService
         .from('funding_opportunities')
         .update(updateData)
@@ -904,7 +980,7 @@ export class FundingOpportunityService {
         success: true,
         opportunityId: data.id,
         publishedAt: data.updated_at,
-        message: 'Opportunity updated successfully'
+        message: 'Opportunity updated successfully',
       };
     } catch (error: any) {
       console.error('Error updating published opportunity:', error);
@@ -947,7 +1023,7 @@ export class FundingOpportunityService {
       }
 
       console.log('Creating temporary organization for user:', userId);
-      
+
       const tempOrgData = {
         id: crypto.randomUUID(),
         user_id: userId,
@@ -966,7 +1042,7 @@ export class FundingOpportunityService {
         verification_documents: {},
         status: 'active',
         created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
       };
 
       const { data: newOrg, error: createError } = await this.supabaseService
@@ -977,14 +1053,16 @@ export class FundingOpportunityService {
 
       if (createError) {
         console.error('Failed to create temporary organization:', createError);
-        throw new Error(`Failed to create organization: ${createError.message}`);
+        throw new Error(
+          `Failed to create organization: ${createError.message}`
+        );
       }
 
       console.log('Created temporary organization:', newOrg.id);
       return newOrg.id;
     } catch (error: any) {
       console.error('Error getting/creating organization ID:', error);
-      
+
       try {
         const { data: fallbackOrg } = await this.supabaseService
           .from('organization_users')
@@ -1000,8 +1078,10 @@ export class FundingOpportunityService {
       } catch (fallbackError) {
         console.error('Fallback organization lookup failed:', fallbackError);
       }
-      
-      throw new Error('Unable to create or find organization for user. Please complete your organization setup first.');
+
+      throw new Error(
+        'Unable to create or find organization for user. Please complete your organization setup first.'
+      );
     }
   }
 
@@ -1018,23 +1098,33 @@ export class FundingOpportunityService {
         .single();
 
       if (error || !org) {
-        return { hasOrganization: false, organizationId: null, isTemporary: false };
+        return {
+          hasOrganization: false,
+          organizationId: null,
+          isTemporary: false,
+        };
       }
 
       const isTemporary = org.name === 'Temporary Organization';
-      
+
       return {
         hasOrganization: true,
         organizationId: org.id,
-        isTemporary
+        isTemporary,
       };
     } catch (error) {
       console.error('Error checking user organization:', error);
-      return { hasOrganization: false, organizationId: null, isTemporary: false };
+      return {
+        hasOrganization: false,
+        organizationId: null,
+        isTemporary: false,
+      };
     }
   }
 
-  private splitFormDataIntoSections(formData: Partial<FundingOpportunity>): Record<string, any> {
+  private splitFormDataIntoSections(
+    formData: Partial<FundingOpportunity>
+  ): Record<string, any> {
     return {
       'basic-info': {
         title: formData.title,
@@ -1062,31 +1152,33 @@ export class FundingOpportunityService {
         investmentHorizon: formData.investmentHorizon,
         exitStrategy: formData.exitStrategy,
         decisionTimeframe: formData.decisionTimeframe,
-        typicalInvestment: formData.typicalInvestment
+        typicalInvestment: formData.typicalInvestment,
       },
       'eligibility-criteria': {
         eligibilityCriteria: formData.eligibilityCriteria,
-        exclusionCriteria: formData.exclusionCriteria
+        exclusionCriteria: formData.exclusionCriteria,
       },
       'application-process': {
         applicationProcess: formData.applicationProcess,
-        applicationDeadline: formData.applicationDeadline
+        applicationDeadline: formData.applicationDeadline,
       },
-      'settings': {
+      settings: {
         totalAvailable: formData.typicalInvestment,
         maxApplications: formData.maxApplications,
         autoMatch: formData.autoMatch,
-        matchCriteria: formData.matchCriteria
-      }
+        matchCriteria: formData.matchCriteria,
+      },
     };
   }
 
-  private mergeSectionsToFormData(sections: OpportunitySection[]): Partial<FundingOpportunity> {
+  private mergeSectionsToFormData(
+    sections: OpportunitySection[]
+  ): Partial<FundingOpportunity> {
     const formData: Partial<FundingOpportunity> = {};
 
-    sections.forEach(section => {
+    sections.forEach((section) => {
       const data = section.data;
-      
+
       switch (section.section_type) {
         case 'basic-info':
           Object.assign(formData, {
@@ -1100,7 +1192,7 @@ export class FundingOpportunityService {
             funderOrganizationLogoUrl: data['funderOrganizationLogoUrl'],
           });
           break;
-          
+
         case 'investment-terms':
           Object.assign(formData, {
             typicalInvestment: data['typicalInvestment'] || data['offerAmount'],
@@ -1118,28 +1210,30 @@ export class FundingOpportunityService {
             expectedReturns: data['expectedReturns'],
             investmentHorizon: data['investmentHorizon'],
             exitStrategy: data['exitStrategy'],
-            decisionTimeframe: data['decisionTimeframe']
+            decisionTimeframe: data['decisionTimeframe'],
           });
           break;
-          
+
         case 'eligibility-criteria':
           formData.eligibilityCriteria = data['eligibilityCriteria'];
           formData.exclusionCriteria = data['exclusionCriteria'];
           break;
-          
+
         case 'application-process':
           Object.assign(formData, {
             applicationProcess: data['applicationProcess'],
-            applicationDeadline: data['applicationDeadline'] ? new Date(data['applicationDeadline']) : undefined
+            applicationDeadline: data['applicationDeadline']
+              ? new Date(data['applicationDeadline'])
+              : undefined,
           });
           break;
-          
+
         case 'settings':
           Object.assign(formData, {
             totalAvailable: data['totalAvailable'] || data['typicalInvestment'],
             maxApplications: data['maxApplications'],
             autoMatch: data['autoMatch'],
-            matchCriteria: data['matchCriteria']
+            matchCriteria: data['matchCriteria'],
           });
           break;
       }
@@ -1148,21 +1242,32 @@ export class FundingOpportunityService {
     return formData;
   }
 
-  private calculateSectionCompletion(sectionType: string, sectionData: Record<string, any>): number {
+  private calculateSectionCompletion(
+    sectionType: string,
+    sectionData: Record<string, any>
+  ): number {
     const requiredFields: Record<string, string[]> = {
       'basic-info': ['title', 'description', 'shortDescription'],
-      'investment-terms': ['fundingType', 'typicalInvestment', 'offerAmount', 'currency', 'decisionTimeframe'],
+      'investment-terms': [
+        'fundingType',
+        'typicalInvestment',
+        'offerAmount',
+        'currency',
+        'decisionTimeframe',
+      ],
       'eligibility-criteria': [],
       'application-process': [],
-      'settings': []
+      settings: [],
     };
 
     const required = requiredFields[sectionType] || [];
     if (required.length === 0) return 100;
 
-    const completedFields = required.filter(field => {
+    const completedFields = required.filter((field) => {
       const value = sectionData[field];
-      return value !== undefined && value !== null && value !== '' && value !== 0;
+      return (
+        value !== undefined && value !== null && value !== '' && value !== 0
+      );
     });
 
     return Math.round((completedFields.length / required.length) * 100);
@@ -1179,8 +1284,9 @@ export class FundingOpportunityService {
         return 0;
       }
 
-      const totalCompletion = sections.reduce((sum, section) => 
-        sum + (section.completion_percentage || 0), 0
+      const totalCompletion = sections.reduce(
+        (sum, section) => sum + (section.completion_percentage || 0),
+        0
       );
 
       return Math.round(totalCompletion / 5);
@@ -1214,11 +1320,16 @@ export class FundingOpportunityService {
       expectedReturns: dbData.expected_returns,
       investmentHorizon: dbData.investment_horizon,
       exitStrategy: dbData.exit_strategy,
-      applicationDeadline: dbData.application_deadline ? new Date(dbData.application_deadline) : undefined,
+      applicationDeadline: dbData.application_deadline
+        ? new Date(dbData.application_deadline)
+        : undefined,
       decisionTimeframe: dbData.decision_timeframe,
       applicationProcess: dbData.application_process,
       eligibilityCriteria: dbData.eligibility_criteria,
-      exclusionCriteria: dbData.exclusion_criteria || (dbData.eligibility_criteria?.exclusionCriteria as string) || '',
+      exclusionCriteria:
+        dbData.exclusion_criteria ||
+        (dbData.eligibility_criteria?.exclusionCriteria as string) ||
+        '',
       status: dbData.status,
       totalAvailable: dbData.total_available || dbData.typical_investment,
       amountCommitted: dbData.amount_committed,
@@ -1234,7 +1345,9 @@ export class FundingOpportunityService {
       matchCriteria: dbData.match_criteria,
       createdAt: new Date(dbData.created_at),
       updatedAt: new Date(dbData.updated_at),
-      publishedAt: dbData.published_at ? new Date(dbData.published_at) : undefined,
+      publishedAt: dbData.published_at
+        ? new Date(dbData.published_at)
+        : undefined,
       closedAt: dbData.closed_at ? new Date(dbData.closed_at) : undefined,
       fundingOpportunityImageUrl: dbData.funding_opportunity_image_url,
       fundingOpportunityVideoUrl: dbData.funding_opportunity_video_url,
@@ -1243,7 +1356,9 @@ export class FundingOpportunityService {
     };
   }
 
-  private transformDbToFormData(dbOpportunity: any): Partial<FundingOpportunity> {
+  private transformDbToFormData(
+    dbOpportunity: any
+  ): Partial<FundingOpportunity> {
     return {
       id: dbOpportunity.id,
       title: dbOpportunity.title,
@@ -1265,12 +1380,18 @@ export class FundingOpportunityService {
       expectedReturns: dbOpportunity.expected_returns,
       investmentHorizon: dbOpportunity.investment_horizon,
       exitStrategy: dbOpportunity.exit_strategy,
-      applicationDeadline: dbOpportunity.application_deadline ? new Date(dbOpportunity.application_deadline) : undefined,
+      applicationDeadline: dbOpportunity.application_deadline
+        ? new Date(dbOpportunity.application_deadline)
+        : undefined,
       decisionTimeframe: dbOpportunity.decision_timeframe,
       applicationProcess: dbOpportunity.application_process,
       eligibilityCriteria: dbOpportunity.eligibility_criteria,
-      exclusionCriteria: dbOpportunity.exclusion_criteria || (dbOpportunity.eligibility_criteria?.exclusionCriteria as string) || '',
-      totalAvailable: dbOpportunity.total_available || dbOpportunity.typical_investment,
+      exclusionCriteria:
+        dbOpportunity.exclusion_criteria ||
+        (dbOpportunity.eligibility_criteria?.exclusionCriteria as string) ||
+        '',
+      totalAvailable:
+        dbOpportunity.total_available || dbOpportunity.typical_investment,
       maxApplications: dbOpportunity.max_applications,
       autoMatch: dbOpportunity.auto_match,
       matchCriteria: dbOpportunity.match_criteria,
@@ -1278,11 +1399,13 @@ export class FundingOpportunityService {
       fundingOpportunityImageUrl: dbOpportunity.funding_opportunity_image_url,
       fundingOpportunityVideoUrl: dbOpportunity.funding_opportunity_video_url,
       funderOrganizationName: dbOpportunity.funder_organization_name,
-      funderOrganizationLogoUrl: dbOpportunity.funder_organization_logo_url
+      funderOrganizationLogoUrl: dbOpportunity.funder_organization_logo_url,
     };
   }
 
-  private transformFormDataToOpportunity(formData: any): Partial<FundingOpportunity> {
+  private transformFormDataToOpportunity(
+    formData: any
+  ): Partial<FundingOpportunity> {
     return {
       title: formData.title,
       description: formData.description,
@@ -1293,37 +1416,65 @@ export class FundingOpportunityService {
       maxInvestment: Number(formData.maxInvestment) || 0,
       currency: formData.currency,
       fundingType: formData.fundingType,
-      interestRate: formData.interestRate ? Number(formData.interestRate) : undefined,
-      equityOffered: formData.equityOffered ? Number(formData.equityOffered) : undefined,
+      interestRate: formData.interestRate
+        ? Number(formData.interestRate)
+        : undefined,
+      equityOffered: formData.equityOffered
+        ? Number(formData.equityOffered)
+        : undefined,
       repaymentTerms: formData.repaymentTerms,
       securityRequired: formData.securityRequired,
       useOfFunds: formData.useOfFunds,
       investmentStructure: formData.investmentStructure,
-      expectedReturns: formData.expectedReturns ? Number(formData.expectedReturns) : undefined,
-      investmentHorizon: formData.investmentHorizon ? Number(formData.investmentHorizon) : undefined,
+      expectedReturns: formData.expectedReturns
+        ? Number(formData.expectedReturns)
+        : undefined,
+      investmentHorizon: formData.investmentHorizon
+        ? Number(formData.investmentHorizon)
+        : undefined,
       exitStrategy: formData.exitStrategy,
-      applicationDeadline: formData.applicationDeadline ? new Date(formData.applicationDeadline) : undefined,
+      applicationDeadline: formData.applicationDeadline
+        ? new Date(formData.applicationDeadline)
+        : undefined,
       decisionTimeframe: Number(formData.decisionTimeframe) || 30,
       totalAvailable: Number(formData.typicalInvestment) || 0,
-      maxApplications: formData.maxApplications ? Number(formData.maxApplications) : undefined,
+      maxApplications: formData.maxApplications
+        ? Number(formData.maxApplications)
+        : undefined,
       autoMatch: formData.autoMatch,
       exclusionCriteria: formData.exclusionCriteria,
       eligibilityCriteria: {
         industries: formData.targetIndustries || [],
         businessStages: formData.businessStages || [],
-        minRevenue: formData.minRevenue ? Number(formData.minRevenue) : undefined,
-        maxRevenue: formData.maxRevenue ? Number(formData.maxRevenue) : undefined,
-        minYearsOperation: formData.minYearsOperation ? Number(formData.minYearsOperation) : undefined,
+        minRevenue: formData.minRevenue
+          ? Number(formData.minRevenue)
+          : undefined,
+        maxRevenue: formData.maxRevenue
+          ? Number(formData.maxRevenue)
+          : undefined,
+        minYearsOperation: formData.minYearsOperation
+          ? Number(formData.minYearsOperation)
+          : undefined,
         geographicRestrictions: formData.geographicRestrictions || [],
-        requiresCollateral: formData.requiresCollateral || false
-      }
+        requiresCollateral: formData.requiresCollateral || false,
+      },
     };
   }
 
   private calculateFormCompletion(formData: any): number {
-    const requiredFields = ['title', 'description', 'shortDescription', 'fundingType', 'typicalInvestment', 'decisionTimeframe'];
-    const completedFields = requiredFields.filter(field => 
-      formData[field] !== undefined && formData[field] !== null && formData[field] !== ''
+    const requiredFields = [
+      'title',
+      'description',
+      'shortDescription',
+      'fundingType',
+      'typicalInvestment',
+      'decisionTimeframe',
+    ];
+    const completedFields = requiredFields.filter(
+      (field) =>
+        formData[field] !== undefined &&
+        formData[field] !== null &&
+        formData[field] !== ''
     );
     return Math.round((completedFields.length / requiredFields.length) * 100);
   }
@@ -1332,18 +1483,28 @@ export class FundingOpportunityService {
     try {
       const [dbDraft, localDraft] = await Promise.all([
         this.loadDraftFromSupabase(userId),
-        this.loadFromLocalStorageAsync()
+        this.loadFromLocalStorageAsync(),
       ]);
 
       let finalDraft: LoadDraftResponse;
-      
+
       if (!dbDraft.draftData || Object.keys(dbDraft.draftData).length === 0) {
-        finalDraft = localDraft || { success: true, draftData: {}, completionPercentage: 0, sectionsData: {} };
-      } else if (!localDraft || Object.keys(localDraft.draftData).length === 0) {
+        finalDraft = localDraft || {
+          success: true,
+          draftData: {},
+          completionPercentage: 0,
+          sectionsData: {},
+        };
+      } else if (
+        !localDraft ||
+        Object.keys(localDraft.draftData).length === 0
+      ) {
         finalDraft = dbDraft;
       } else {
         finalDraft = dbDraft;
-        console.log('Draft conflict resolved: Using database draft over local storage');
+        console.log(
+          'Draft conflict resolved: Using database draft over local storage'
+        );
         this.clearLocalStorageSync();
       }
 
@@ -1365,7 +1526,7 @@ export class FundingOpportunityService {
         draftData: this.transformFormDataToOpportunity(saveData.formData),
         lastSaved: saveData.lastSaved,
         completionPercentage: this.calculateFormCompletion(saveData.formData),
-        sectionsData: {}
+        sectionsData: {},
       };
     } catch (error) {
       console.error('Failed to load from localStorage:', error);
@@ -1381,7 +1542,9 @@ export class FundingOpportunityService {
     }
   }
 
-  private async clearAllDraftData(userId: string): Promise<{success: boolean}> {
+  private async clearAllDraftData(
+    userId: string
+  ): Promise<{ success: boolean }> {
     try {
       await this.deleteDraftFromSupabase(userId);
       this.clearLocalStorageSync();
@@ -1420,20 +1583,33 @@ export class FundingOpportunityService {
   }> {
     try {
       const draftResponse = await this.loadAndMergeDrafts(userId);
-      
-      if (!draftResponse.draftData || Object.keys(draftResponse.draftData).length === 0) {
-        return { hasDraft: false, completionPercentage: 0, lastSaved: null, title: null };
+
+      if (
+        !draftResponse.draftData ||
+        Object.keys(draftResponse.draftData).length === 0
+      ) {
+        return {
+          hasDraft: false,
+          completionPercentage: 0,
+          lastSaved: null,
+          title: null,
+        };
       }
 
       return {
         hasDraft: true,
         completionPercentage: draftResponse.completionPercentage,
         lastSaved: draftResponse.lastSaved || null,
-        title: draftResponse.draftData.title || null
+        title: draftResponse.draftData.title || null,
       };
     } catch (error) {
       console.error('Error fetching draft summary:', error);
-      return { hasDraft: false, completionPercentage: 0, lastSaved: null, title: null };
+      return {
+        hasDraft: false,
+        completionPercentage: 0,
+        lastSaved: null,
+        title: null,
+      };
     }
   }
 
