@@ -14,7 +14,7 @@ import { takeUntil, catchError } from 'rxjs/operators';
 import { AuthService } from 'src/app/auth/production.auth.service';
 import { SMEOpportunitiesService } from '../../funding/services/opportunities.service';
 import { AdvancedFiltersComponent } from '../components/filters.component';
-import { OpportunitiesGridComponent } from './opportunities-grid.component';
+import { OpportunitiesGridComponent } from '../components/opportuniy-grid/opportunities-grid.component';
 import { SearchStatsBarComponent } from './search-stats-bar.component';
 import { EmptyStateComponent } from '../components/empty-state.component';
 

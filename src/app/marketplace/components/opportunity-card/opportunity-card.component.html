@@ -1,0 +1,160 @@
+<div
+  class="application-card group cursor-pointer"
+  [class]="getCardStatusClass()"
+>
+  <!-- Status Border -->
+  <div class="status-border" [class]="getStatusBorderClass()"></div>
+
+  <div class="card-content">
+    <!-- Header Section -->
+    <div class="header-row">
+      <div class="header-info">
+        <div class="title-row">
+          <h3 class="application-title">{{ opportunity.title }}</h3>
+          <div class="flex items-center gap-2">
+            <span class="status-badge" [class]="getFundingTypeClass()">
+              {{ formatFundingType() }}
+            </span>
+            <span
+              *ngIf="isPopular()"
+              class="stage-badge bg-orange-100 text-orange-700"
+            >
+              <lucide-icon [img]="TrendingUpIcon" [size]="12" class="mr-1" />
+              Popular
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Key Details Grid -->
+    <div class="details-grid">
+      <!-- Funding Amount -->
+      <div class="detail-item">
+        <div class="detail-icon amount-icon">
+          <lucide-icon [img]="DollarSignIcon" [size]="16" />
+        </div>
+        <div class="detail-info">
+          <span class="detail-label">Funding Range</span>
+          <span class="detail-value">{{ formatAmountRange() }}</span>
+        </div>
+      </div>
+
+      <!-- Timeline -->
+      <div class="detail-item">
+        <div class="detail-icon date-icon">
+          <lucide-icon [img]="ClockIcon" [size]="16" />
+        </div>
+        <div class="detail-info">
+          <span class="detail-label">Decision Time</span>
+          <span class="detail-value">{{ formatDecisionTime() }}</span>
+        </div>
+      </div>
+
+      <!-- Location -->
+      <div class="detail-item">
+        <div class="detail-icon opportunity-icon">
+          <lucide-icon [img]="MapPinIcon" [size]="16" />
+        </div>
+        <div class="detail-info">
+          <span class="detail-label">Location</span>
+          <span class="detail-value">{{ formatLocations() }}</span>
+        </div>
+      </div>
+
+      <!-- Applications (if space allows) -->
+      <div class="detail-item" *ngIf="showApplicationCount()">
+        <div class="detail-icon applicant-icon">
+          <lucide-icon [img]="UsersIcon" [size]="16" />
+        </div>
+        <div class="detail-info">
+          <span class="detail-label">Interest</span>
+          <span class="detail-value">{{ formatApplicationCount() }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Description -->
+    <div class="flex description mt-8">
+      <p class="line-clamp-2">
+        {{ opportunity.shortDescription || opportunity.description }}
+      </p>
+      <!-- Funder Info -->
+      <div class="flex items-center gap-2 text-sm text-neutral-600 mb-2 ml-8">
+        <div class="icon-container neutral w-6 h-6">
+          <lucide-icon [img]="BuildingIcon" [size]="12" />
+        </div>
+        <span class="font-medium">{{
+          opportunity.funderOrganizationName || "Private Funder"
+        }}</span>
+        <span class="text-neutral-400">•</span>
+        <div class="flex items-center gap-1">
+          <lucide-icon [img]="AwardIcon" [size]="12" class="text-green-500" />
+          <span class="text-green-600 font-medium">Verified</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Industry Tags -->
+
+    <!-- Progress and Actions -->
+    <div class="flex items-center justify-between">
+      <div class="flex flex-wrap gap-2 mb-4">
+        <span
+          *ngFor="
+            let industry of getDisplayIndustries();
+            trackBy: trackByIndustry
+          "
+          class="inline-flex items-center px-2 py-1 bg-neutral-100 text-neutral-700 rounded-md text-xs font-medium"
+        >
+          {{ formatIndustry(industry) }}
+        </span>
+      </div>
+      <!-- Primary Action -->
+      <div class="flex items-center gap-2">
+        <button
+          *ngIf="canApply"
+          (click)="onApply()"
+          class="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-primary-500 to-primary-600 text-white rounded-lg font-semibold hover:from-primary-600 hover:to-primary-700 focus:ring-4 focus:ring-primary-200 transition-all duration-200 transform hover:-translate-y-0.5 hover:shadow-lg group/apply"
+        >
+          <span>Apply Now</span>
+          <lucide-icon
+            [img]="ExternalLinkIcon"
+            [size]="14"
+            class="group-hover/apply:translate-x-0.5 transition-transform"
+          />
+        </button>
+
+        <button
+          *ngIf="canManage"
+          (click)="onManage()"
+          class="inline-flex items-center gap-2 px-4 py-3 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-700 focus:ring-4 focus:ring-indigo-200 transition-all duration-200"
+        >
+          <span>Manage</span>
+        </button>
+
+        <button
+          *ngIf="!canApply && !canManage"
+          (click)="onSignInToApply()"
+          class="inline-flex items-center gap-2 px-6 py-2 bg-orange-600 text-white rounded-lg font-semibold hover:bg-neutral-700 focus:ring-4 focus:ring-neutral-200 transition-all duration-200"
+        >
+          <span>Create account to apply</span>
+        </button>
+
+        <div class="action-buttons flex-shrink-0">
+          <button
+            (click)="onViewDetails()"
+            class="inline-flex items-center gap-2 px-4 py-2 bg-white border-2 border-neutral-200 rounded-lg text-sm font-medium text-neutral-700 hover:border-primary-300 hover:bg-primary-50 hover:text-primary-700 transition-all duration-200 group/btn"
+          >
+            <lucide-icon
+              [img]="EyeIcon"
+              [size]="14"
+              class="group-hover/btn:scale-110 transition-transform"
+            />
+            <span>View</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
