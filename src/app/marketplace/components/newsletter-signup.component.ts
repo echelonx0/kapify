@@ -16,7 +16,7 @@ import { FormsModule } from '@angular/forms';
   standalone: true,
   imports: [CommonModule, LucideAngularModule, FormsModule],
   template: `
-    <div class="card-gradient mt-4">
+    <div class="card-gradient mt-6">
       <div
         class="rounded-lg p-8 bg-gradient-to-br from-primary-500 via-primary-600 to-primary-700 text-white overflow-hidden relative"
       >

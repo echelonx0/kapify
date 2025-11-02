@@ -177,12 +177,15 @@
           [isLoading]="isSaving()"
           (organizationUpdated)="onOrganizationUpdated($event)"
         />
+        } @case ('team') {
+        <app-team-management />
         } @case ('legal') {
         <app-legal-info
           [organization]="organization()"
           [isLoading]="isSaving()"
           (organizationUpdated)="onOrganizationUpdated($event)"
         />
+
         } @default {
         <div
           class="bg-white rounded-2xl border border-slate-200 shadow-sm p-12 text-center"
