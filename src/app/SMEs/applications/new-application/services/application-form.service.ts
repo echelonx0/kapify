@@ -9,6 +9,7 @@ export class ApplicationFormService {
     requestedAmount: '',
     purposeStatement: '',
     useOfFunds: '',
+    fundingType: '',
     coverStatement: undefined,
   });
 
@@ -19,7 +20,7 @@ export class ApplicationFormService {
   completionPercentage = computed(() => {
     const data = this.formDataSignal();
     let completed = 0;
-    const total = 3; // removed timeline & opportunityAlignment
+    const total = 3; // requestedAmount, purposeStatement, useOfFunds
 
     if (data.requestedAmount) completed++;
     if (data.purposeStatement) completed++;
@@ -55,6 +56,13 @@ export class ApplicationFormService {
     }));
   }
 
+  updateFundingType(fundingType: string): void {
+    this.formDataSignal.update((current) => ({
+      ...current,
+      fundingType,
+    }));
+  }
+
   updateCoverStatement(file: File | undefined): void {
     this.formDataSignal.update((current) => ({
       ...current,
@@ -76,6 +84,7 @@ export class ApplicationFormService {
       requestedAmount: '',
       purposeStatement: '',
       useOfFunds: '',
+      fundingType: '',
       coverStatement: undefined,
     });
   }

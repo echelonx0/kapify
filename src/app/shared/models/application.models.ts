@@ -1,86 +1,35 @@
 // src/app/shared/models/application.models.ts
 
-export type ApplicationStatus = 'draft' | 'submitted' | 'under_review' | 'due_diligence' | 'investment_committee' | 'approved' | 'rejected' | 'funded' | 'withdrawn';
-export type StatusColor = 'neutral' | 'blue' | 'yellow' | 'purple' | 'orange' | 'green' | 'red' | 'gray';
-
-// Enhanced Application Model with SWOT integration
-export interface Application {
-  id: string;
-  smeId: string;
-  smeOrganizationId: string;
-  funderId: string;
-  funderOrganizationId: string;
-  fundId?: string;
-  opportunityId?: string;
-  
-  // Application basics
-  applicationNumber: string; // system generated
-  title: string;
-  description: string;
-  
-  // Investment request
-  requestedAmount: number;
-  currency: string;
-  fundingType: 'debt' | 'equity' | 'mezzanine' | 'convertible' | 'grant';
-  
-  // Use of funds
-  useOfFunds: UseOfFundsBreakdown[];
-  purposeStatement: string;
-  
-  // Proposed terms
-  proposedTerms?: ProposedTerms;
-  
-  // Required assessments
-  smeProfileId: string;
-  swotAnalysisId: string; // mandatory SWOT for each application
-  businessPlanId?: string;
-  pitchDeckId?: string;
-  
-  // Application process
-  status: ApplicationStatus;
-  currentStage: ApplicationStage;
-  applicationSteps: ApplicationStep[];
-  
-  // Matching & scoring
-  matchScore?: number; // algorithmic match score (0-100)
-  aiInsights?: AIInsights;
-  
-  // Review process
-  assignedReviewer?: string; // funder user id
-  reviewTeam: string[]; // funder user ids
-  reviewNotes: ReviewNote[];
-  
-  // Due diligence
-  dueDiligenceChecklist?: DueDiligenceChecklist;
-  dueDiligenceDocuments: string[]; // document ids
-  
-  // Decision tracking
-  investmentCommitteeDate?: Date;
-  decisionDate?: Date;
-  decisionReason?: string;
-  decisionDetails?: InvestmentDecision;
-  
-  // Communication
-  messagesThread: string; // message thread id
-  lastCommunication?: Date;
-  
-  // Timeline tracking
-  submittedAt?: Date;
-  reviewStartedAt?: Date;
-  dueDiligenceStartedAt?: Date;
-  termSheetIssuedAt?: Date;
-  fundedAt?: Date;
-  
-  // Compliance & audit
-  complianceChecks: ComplianceCheck[];
-  auditTrail: AuditEntry[];
-  
-  createdAt: Date;
-  updatedAt: Date;
-}
+export type ApplicationStatus =
+  | 'draft'
+  | 'submitted'
+  | 'under_review'
+  | 'due_diligence'
+  | 'investment_committee'
+  | 'approved'
+  | 'rejected'
+  | 'funded'
+  | 'withdrawn';
+export type StatusColor =
+  | 'neutral'
+  | 'blue'
+  | 'yellow'
+  | 'purple'
+  | 'orange'
+  | 'green'
+  | 'red'
+  | 'gray';
 
 export interface UseOfFundsBreakdown {
-  category: 'working_capital' | 'equipment' | 'expansion' | 'acquisition' | 'debt_refinancing' | 'marketing' | 'r_and_d' | 'other';
+  category:
+    | 'working_capital'
+    | 'equipment'
+    | 'expansion'
+    | 'acquisition'
+    | 'debt_refinancing'
+    | 'marketing'
+    | 'r_and_d'
+    | 'other';
   description: string;
   amount: number;
   percentage: number;
@@ -97,20 +46,20 @@ export interface ProposedTerms {
   repaymentStructure?: string;
   securityOffered?: string;
   personalGuarantees?: boolean;
-  
+
   // Equity terms
   equityOffered?: number; // percentage
   valuationExpected?: number;
   boardSeats?: number;
   votingRights?: string;
   liquidationPreference?: number;
-  
+
   // General terms
   milestones?: ProposedMilestone[];
   covenants?: string[];
   useRestrictions?: string[];
   reportingRequirements?: string;
-  
+
   // Exit provisions
   exitTimeline?: number; // years
   exitMechanism?: string;
@@ -126,7 +75,15 @@ export interface ProposedMilestone {
 }
 
 export interface ApplicationStage {
-  stage: 'submission' | 'initial_review' | 'detailed_review' | 'due_diligence' | 'investment_committee' | 'term_sheet' | 'legal_docs' | 'funding';
+  stage:
+    | 'submission'
+    | 'initial_review'
+    | 'detailed_review'
+    | 'due_diligence'
+    | 'investment_committee'
+    | 'term_sheet'
+    | 'legal_docs'
+    | 'funding';
   status: 'pending' | 'in_progress' | 'completed' | 'on_hold' | 'rejected';
   startDate?: Date;
   endDate?: Date;
@@ -159,31 +116,43 @@ export interface AIInsights {
     significantThreats: string[];
     overallSWOTScore: number;
   };
-  
+
   // Investment attractiveness
   investmentScore: number; // 0-100
   riskScore: number; // 0-100
   growthPotential: number; // 0-100
-  
+
   // AI recommendations
-  investmentRecommendation: 'strongly_recommend' | 'recommend' | 'neutral' | 'not_recommend' | 'strongly_not_recommend';
+  investmentRecommendation:
+    | 'strongly_recommend'
+    | 'recommend'
+    | 'neutral'
+    | 'not_recommend'
+    | 'strongly_not_recommend';
   recommendationReasoning: string[];
-  
+
   // Risk flags
   riskFlags: RiskFlag[];
-  
+
   // Due diligence priorities
   dueDiligencePriorities: string[];
-  
+
   // Comparable companies
   comparableCompanies?: ComparableCompany[];
-  
+
   generatedAt: Date;
   aiModelVersion: string;
 }
 
 export interface RiskFlag {
-  category: 'financial' | 'operational' | 'market' | 'regulatory' | 'management' | 'competitive' | 'technology';
+  category:
+    | 'financial'
+    | 'operational'
+    | 'market'
+    | 'regulatory'
+    | 'management'
+    | 'competitive'
+    | 'technology';
   severity: 'low' | 'medium' | 'high' | 'critical';
   description: string;
   evidence: string;
@@ -210,18 +179,25 @@ export interface ReviewNote {
   id: string;
   reviewerId: string;
   reviewerName: string;
-  category: 'general' | 'financial' | 'swot' | 'business_model' | 'team' | 'market' | 'risk';
-  
+  category:
+    | 'general'
+    | 'financial'
+    | 'swot'
+    | 'business_model'
+    | 'team'
+    | 'market'
+    | 'risk';
+
   content: string;
   rating?: number; // 1-5 or 1-10 scale
   sentiment: 'positive' | 'neutral' | 'negative' | 'concern';
-  
+
   isPrivate: boolean; // internal note vs shared with applicant
   tags: string[];
-  
+
   relatedDocuments?: string[]; // document ids
   relatedSWOTItems?: string[]; // SWOT item ids
-  
+
   createdAt: Date;
   updatedAt?: Date;
 }
@@ -230,25 +206,25 @@ export interface ReviewNote {
 export interface DueDiligenceChecklist {
   // Financial due diligence
   financial: DueDiligenceCategory;
-  
+
   // Legal due diligence
   legal: DueDiligenceCategory;
-  
+
   // Commercial due diligence
   commercial: DueDiligenceCategory;
-  
+
   // Management due diligence
   management: DueDiligenceCategory;
-  
+
   // Operational due diligence
   operational: DueDiligenceCategory;
-  
+
   // Technology due diligence (if applicable)
   technology?: DueDiligenceCategory;
-  
+
   // ESG due diligence
   esg?: DueDiligenceCategory;
-  
+
   // Overall completion
   overallCompletion: number; // percentage
   startDate: Date;
@@ -272,53 +248,63 @@ export interface DueDiligenceItem {
   name: string;
   description: string;
   importance: 'critical' | 'high' | 'medium' | 'low';
-  
-  status: 'not_started' | 'in_progress' | 'completed' | 'not_applicable' | 'red_flag';
-  
+
+  status:
+    | 'not_started'
+    | 'in_progress'
+    | 'completed'
+    | 'not_applicable'
+    | 'red_flag';
+
   assignedTo: string; // user id
   dueDate?: Date;
   completedDate?: Date;
-  
+
   findings: string;
   evidence: string[];
   documents: string[]; // document ids
-  
+
   riskLevel: 'low' | 'medium' | 'high' | 'critical';
   mitigationRequired: boolean;
   mitigationPlan?: string;
-  
+
   createdAt: Date;
   updatedAt: Date;
 }
 
 // Investment Decision System
 export interface InvestmentDecision {
-  decision: 'approved' | 'rejected' | 'conditional_approval' | 'request_more_info' | 'counter_offer';
-  
+  decision:
+    | 'approved'
+    | 'rejected'
+    | 'conditional_approval'
+    | 'request_more_info'
+    | 'counter_offer';
+
   // Approved terms (if approved)
   approvedAmount?: number;
   approvedTerms?: ApprovedTerms;
   conditions?: Condition[];
-  
+
   // Decision rationale
   decisionRationale: string;
   keyFactors: string[];
   concerns?: string[];
-  
+
   // Committee details
   committeeMembers: CommitteeMember[];
   votingResults: VotingResult[];
   isUnanimous: boolean;
-  
+
   // Next steps
   nextSteps: string[];
   deadlines: Deadline[];
-  
+
   // Communication
   decisionCommunicated: boolean;
   communicationDate?: Date;
   communicationMethod: 'email' | 'phone' | 'meeting' | 'letter';
-  
+
   decisionDate: Date;
   approvedBy: string; // user id
 }
@@ -328,32 +314,32 @@ export interface ApprovedTerms {
   amount: number;
   currency: string;
   fundingType: string;
-  
+
   // Debt terms
   interestRate?: number;
   repaymentTerm?: number;
   securityRequired?: string;
-  
+
   // Equity terms
   equityPercentage?: number;
   preMoneyValuation?: number;
   liquidationPreference?: number;
-  
+
   // Governance
   boardSeats?: number;
   observerRights?: boolean;
   votingRights?: string;
-  
+
   // Commercial terms
   milestones: ApprovedMilestone[];
   covenants: string[];
   reportingRequirements: string[];
-  
+
   // Legal terms
   warranties: string[];
   indemnities: string[];
   terminationRights: string[];
-  
+
   validityPeriod: number; // days
   expiryDate: Date;
 }
@@ -400,7 +386,14 @@ export interface Deadline {
 
 // Compliance and Audit
 export interface ComplianceCheck {
-  checkType: 'aml' | 'kyc' | 'sanctions' | 'pep' | 'regulatory' | 'tax' | 'environmental';
+  checkType:
+    | 'aml'
+    | 'kyc'
+    | 'sanctions'
+    | 'pep'
+    | 'regulatory'
+    | 'tax'
+    | 'environmental';
   status: 'pending' | 'passed' | 'failed' | 'requires_attention';
   checkedDate: Date;
   checkedBy: string;
@@ -427,7 +420,7 @@ export interface ApplicationTemplate {
   id: string;
   name: string;
   description: string;
-  
+
   // Template configuration
   fundingType: string;
   industryFocus?: string;
@@ -435,25 +428,25 @@ export interface ApplicationTemplate {
     min: number;
     max: number;
   };
-  
+
   // Template sections
   sections: ApplicationTemplateSection[];
-  
+
   // Required documents
   requiredDocuments: string[];
-  
+
   // SWOT template integration
   swotTemplateId?: string;
-  
+
   // Usage tracking
   usageCount: number;
   successRate: number; // percentage of applications using this template that get approved
-  
+
   // Template metadata
   isActive: boolean;
   createdBy: string;
   approvedBy?: string;
-  
+
   createdAt: Date;
   updatedAt: Date;
 }
@@ -463,38 +456,46 @@ export interface ApplicationTemplateSection {
   title: string;
   description: string;
   order: number;
-  
+
   // Section configuration
   isRequired: boolean;
   guidance: string;
   examples: string[];
-  
+
   // Form fields
   fields: TemplateField[];
-  
+
   // Validation rules
   validationRules: ValidationRule[];
 }
 
 export interface TemplateField {
   fieldId: string;
-  fieldType: 'text' | 'textarea' | 'number' | 'select' | 'multiselect' | 'date' | 'file' | 'checkbox';
+  fieldType:
+    | 'text'
+    | 'textarea'
+    | 'number'
+    | 'select'
+    | 'multiselect'
+    | 'date'
+    | 'file'
+    | 'checkbox';
   label: string;
   placeholder?: string;
   helpText?: string;
-  
+
   // Field configuration
   isRequired: boolean;
   defaultValue?: any;
   options?: string[]; // for select/multiselect
-  
+
   // Validation
   minLength?: number;
   maxLength?: number;
   minValue?: number;
   maxValue?: number;
   pattern?: string;
-  
+
   // UI configuration
   displayOrder: number;
   width: 'full' | 'half' | 'third' | 'quarter';
@@ -517,24 +518,24 @@ export interface ApplicationWorkflow {
   id: string;
   name: string;
   description: string;
-  
+
   // Workflow configuration
   fundingTypes: string[];
   amountThresholds: AmountThreshold[];
-  
+
   // Workflow stages
   stages: WorkflowStage[];
-  
+
   // Automation rules
   automationRules: AutomationRule[];
-  
+
   // SLA configuration
   slaSettings: SLASettings;
-  
+
   // Workflow metadata
   isActive: boolean;
   defaultWorkflow: boolean;
-  
+
   createdAt: Date;
   updatedAt: Date;
 }
@@ -550,28 +551,28 @@ export interface WorkflowStage {
   name: string;
   description: string;
   order: number;
-  
+
   // Stage configuration
   isRequired: boolean;
   canSkip: boolean;
   autoAdvance: boolean;
-  
+
   // Timing
   expectedDuration: number; // days
   maxDuration?: number; // days
-  
+
   // Assignee configuration
   defaultAssignee?: string; // role or user id
   requiresSpecialist: boolean;
-  
+
   // Required actions
   requiredActions: string[];
   requiredDocuments: string[];
   requiredApprovals: string[];
-  
+
   // Exit criteria
   exitCriteria: ExitCriterion[];
-  
+
   // Notifications
   notifications: StageNotification[];
 }
@@ -594,26 +595,38 @@ export interface AutomationRule {
   ruleId: string;
   name: string;
   description: string;
-  
+
   // Trigger conditions
   triggers: RuleTrigger[];
-  
+
   // Actions to perform
   actions: RuleAction[];
-  
+
   // Rule configuration
   isActive: boolean;
   priority: number;
 }
 
 export interface RuleTrigger {
-  triggerType: 'status_change' | 'time_elapsed' | 'score_threshold' | 'document_upload' | 'field_update' | 'external_event';
+  triggerType:
+    | 'status_change'
+    | 'time_elapsed'
+    | 'score_threshold'
+    | 'document_upload'
+    | 'field_update'
+    | 'external_event';
   conditions: Record<string, any>;
   operator: 'and' | 'or';
 }
 
 export interface RuleAction {
-  actionType: 'send_notification' | 'update_field' | 'assign_reviewer' | 'advance_stage' | 'create_task' | 'schedule_meeting';
+  actionType:
+    | 'send_notification'
+    | 'update_field'
+    | 'assign_reviewer'
+    | 'advance_stage'
+    | 'create_task'
+    | 'schedule_meeting';
   parameters: Record<string, any>;
   delay?: number; // minutes
 }
@@ -621,21 +634,25 @@ export interface RuleAction {
 export interface SLASettings {
   // Overall application SLA
   overallSLA: number; // days from submission to decision
-  
+
   // Stage-specific SLAs
   stageSLAs: Array<{
     stageId: string;
     sla: number; // days
     escalationThreshold: number; // percentage of SLA before escalation
   }>;
-  
+
   // SLA monitoring
   escalationRules: EscalationRule[];
   reportingFrequency: 'daily' | 'weekly' | 'monthly';
 }
 
 export interface EscalationRule {
-  trigger: 'sla_breach' | 'sla_warning' | 'stuck_application' | 'high_value_delay';
+  trigger:
+    | 'sla_breach'
+    | 'sla_warning'
+    | 'stuck_application'
+    | 'high_value_delay';
   threshold: number;
   escalateTo: string[]; // roles or user ids
   actions: string[];
@@ -649,25 +666,25 @@ export interface ApplicationMetrics {
   reviewedApplications: number;
   approvedApplications: number;
   rejectedApplications: number;
-  
+
   // Performance metrics
   averageProcessingTime: number; // days
   medianProcessingTime: number; // days
   slaComplianceRate: number; // percentage
   approvalRate: number; // percentage
-  
+
   // Value metrics
   totalAmountRequested: number;
   totalAmountApproved: number;
   averageRequestAmount: number;
   averageApprovedAmount: number;
-  
+
   // Quality metrics
   averageMatchScore: number;
   averageInvestorReadinessScore: number;
   dueDiligenceCompletionRate: number;
   documentComplianceRate: number;
-  
+
   // Funnel analysis
   conversionRates: {
     submissionToReview: number;
@@ -676,7 +693,7 @@ export interface ApplicationMetrics {
     committeeToApproval: number;
     approvalToFunding: number;
   };
-  
+
   // Time analysis
   stageTimings: Array<{
     stage: string;
@@ -684,7 +701,7 @@ export interface ApplicationMetrics {
     medianTime: number;
     p95Time: number;
   }>;
-  
+
   // Report metadata
   reportingPeriod: {
     start: Date;
@@ -696,11 +713,16 @@ export interface ApplicationMetrics {
 export interface ApplicationReport {
   id: string;
   applicationId: string;
-  
+
   // Report configuration
-  reportType: 'summary' | 'detailed' | 'investment_committee' | 'board_report' | 'compliance';
+  reportType:
+    | 'summary'
+    | 'detailed'
+    | 'investment_committee'
+    | 'board_report'
+    | 'compliance';
   audience: 'internal' | 'committee' | 'board' | 'external';
-  
+
   // Report sections
   executiveSummary: string;
   investmentHighlights: string[];
@@ -709,32 +731,36 @@ export interface ApplicationReport {
   swotSummary: SWOTSummaryData;
   managementAssessment: string;
   marketAssessment: string;
-  
+
   // Investment recommendation
   recommendation: 'approve' | 'reject' | 'conditional' | 'request_more_info';
   recommendationRationale: string;
   proposedTerms?: string;
   conditions?: string[];
-  
+
   // Due diligence findings
   dueDiligenceFindings: DueDiligenceSummary;
-  
+
   // Risk assessment
   riskAssessment: RiskAssessmentSummary;
-  
+
   // Appendices
   appendices: ReportAppendix[];
-  
+
   // Report metadata
   generatedBy: string;
   reviewedBy?: string[];
   approvedBy?: string;
   version: number;
-  
+
   // Distribution
-  confidentialityLevel: 'public' | 'internal' | 'confidential' | 'highly_confidential';
+  confidentialityLevel:
+    | 'public'
+    | 'internal'
+    | 'confidential'
+    | 'highly_confidential';
   distributionList: string[];
-  
+
   createdAt: Date;
   updatedAt: Date;
 }
@@ -771,7 +797,7 @@ export interface DueDiligenceSummary {
   totalItems: number;
   completedItems: number;
   redFlags: number;
-  
+
   categoryBreakdown: Array<{
     category: string;
     completion: number;
@@ -783,21 +809,26 @@ export interface DueDiligenceSummary {
 export interface RiskAssessmentSummary {
   overallRisk: 'low' | 'medium' | 'high' | 'very_high';
   riskScore: number;
-  
+
   riskCategories: Array<{
     category: string;
     level: string;
     score: number;
     keyRisks: string[];
   }>;
-  
+
   mitigationRecommendations: string[];
   monitoringRequirements: string[];
 }
 
 export interface ReportAppendix {
   title: string;
-  type: 'financial_data' | 'swot_analysis' | 'due_diligence_details' | 'supporting_documents' | 'other';
+  type:
+    | 'financial_data'
+    | 'swot_analysis'
+    | 'due_diligence_details'
+    | 'supporting_documents'
+    | 'other';
   content?: string;
   documentReferences?: string[];
   dataVisualization?: any;
@@ -808,27 +839,27 @@ export interface ReportAppendix {
 export interface MessageThread {
   id: string;
   applicationId: string;
-  
+
   // Participants
   participants: ThreadParticipant[];
-  
+
   // Thread settings
   subject: string;
   isPrivate: boolean;
   allowExternalParticipants: boolean;
-  
+
   // Messages
   messages: Message[];
-  
+
   // Thread metadata
   lastActivity: Date;
   messageCount: number;
   unreadCount: Record<string, number>; // unread count per user
-  
+
   // Thread status
   isActive: boolean;
   isArchived: boolean;
-  
+
   createdAt: Date;
   updatedAt: Date;
 }
@@ -849,30 +880,30 @@ export interface ThreadParticipant {
 export interface Message {
   id: string;
   threadId: string;
-  
+
   // Message content
   senderId: string;
   senderName: string;
   content: string;
   messageType: 'text' | 'file' | 'system' | 'status_update';
-  
+
   // Attachments
   attachments: MessageAttachment[];
-  
+
   // Message metadata
   isSystemMessage: boolean;
   isPrivate: boolean; // visible only to internal team
   replyToMessageId?: string;
-  
+
   // Status tracking
   readBy: Array<{
     userId: string;
     readAt: Date;
   }>;
-  
+
   // Reactions and responses
   reactions: MessageReaction[];
-  
+
   createdAt: Date;
   editedAt?: Date;
 }
@@ -896,33 +927,39 @@ export interface MessageReaction {
 export interface ApplicationNotification {
   id: string;
   applicationId: string;
-  
+
   // Notification details
-  type: 'status_change' | 'document_request' | 'meeting_scheduled' | 'decision_made' | 'deadline_approaching' | 'sla_breach';
+  type:
+    | 'status_change'
+    | 'document_request'
+    | 'meeting_scheduled'
+    | 'decision_made'
+    | 'deadline_approaching'
+    | 'sla_breach';
   title: string;
   message: string;
-  
+
   // Recipients
   recipients: NotificationRecipient[];
-  
+
   // Delivery
   channels: ('email' | 'sms' | 'in_app' | 'push')[];
   priority: 'low' | 'medium' | 'high' | 'urgent';
-  
+
   // Scheduling
   scheduledFor?: Date;
   deliveredAt?: Date;
-  
+
   // Actions
   actionButtons?: NotificationAction[];
-  
+
   // Metadata
   batchId?: string; // for grouped notifications
   templateId?: string;
-  
+
   // Status tracking
   deliveryStatus: Record<string, 'pending' | 'sent' | 'delivered' | 'failed'>;
-  
+
   createdAt: Date;
 }
 
@@ -946,28 +983,35 @@ export interface NotificationAction {
 export interface ApplicationIntegration {
   id: string;
   applicationId: string;
-  
+
   // Integration type
-  integrationType: 'crm' | 'accounting' | 'banking' | 'document_management' | 'calendar' | 'video_conferencing' | 'e_signature';
+  integrationType:
+    | 'crm'
+    | 'accounting'
+    | 'banking'
+    | 'document_management'
+    | 'calendar'
+    | 'video_conferencing'
+    | 'e_signature';
   provider: string;
-  
+
   // Configuration
   configuration: Record<string, any>;
   credentials: Record<string, any>; // encrypted
-  
+
   // Sync settings
   syncEnabled: boolean;
   syncFrequency: 'real_time' | 'hourly' | 'daily' | 'weekly';
   lastSyncAt?: Date;
   nextSyncAt?: Date;
-  
+
   // Data mapping
   fieldMapping: IntegrationFieldMapping[];
-  
+
   // Status
   status: 'active' | 'paused' | 'error' | 'disconnected';
   errorMessage?: string;
-  
+
   // Audit
   createdBy: string;
   createdAt: Date;

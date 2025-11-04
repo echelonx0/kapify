@@ -1,17 +1,34 @@
 <div class="space-y-8">
   <div class="flex items-center space-x-3 mb-6">
-    <div class="w-10 h-10 bg-gradient-to-br from-slate-500 to-slate-600 rounded-lg flex items-center justify-center shadow-lg">
+    <div
+      class="w-10 h-10 bg-gradient-to-br from-slate-500 to-slate-600 rounded-lg flex items-center justify-center shadow-lg"
+    >
       <lucide-icon [img]="FileTextIcon" [size]="20" class="text-white" />
     </div>
     <div>
       <h3 class="text-lg font-semibold text-slate-900">Application Details</h3>
-      <p class="text-sm text-slate-600">Provide information specific to this opportunity</p>
+      <p class="text-sm text-slate-600">
+        Provide information specific to this opportunity
+      </p>
     </div>
   </div>
 
+  <!-- Funding Type Selection -->
+  <ui-select
+    [label]="'Funding Type'"
+    [placeholder]="'Select the type of funding you need'"
+    [required]="true"
+    [options]="fundingTypeOptions()"
+    [(ngModel)]="fundingTypeModel"
+    [error]="getFundingTypeError() || undefined"
+    [hint]="'Choose the funding structure that best fits your needs'"
+    (valueChange)="onFundingTypeChange($event)"
+  ></ui-select>
   <!-- Requested Amount -->
   <div class="group">
-    <label class="block text-sm font-semibold text-slate-900 mb-3 group-hover:text-slate-700 transition-colors">
+    <label
+      class="block text-sm font-semibold text-slate-900 mb-3 group-hover:text-slate-700 transition-colors"
+    >
       Requested Amount <span class="text-red-500">*</span>
     </label>
     <div class="relative">
@@ -26,26 +43,33 @@
       />
     </div>
     @if (getAmountValidationMessage()) {
-      <div class="mt-2.5 flex items-center space-x-1.5 text-sm text-red-600 font-medium">
-        <div class="w-1.5 h-1.5 rounded-full bg-red-600"></div>
-        <span>{{ getAmountValidationMessage() }}</span>
-      </div>
+    <div
+      class="mt-2.5 flex items-center space-x-1.5 text-sm text-red-600 font-medium"
+    >
+      <div class="w-1.5 h-1.5 rounded-full bg-red-600"></div>
+      <span>{{ getAmountValidationMessage() }}</span>
+    </div>
     } @else {
-      <p class="mt-2.5 text-sm text-slate-600">
-        Range: {{ formatCurrency(opportunity().minInvestment) }} – {{ formatCurrency(opportunity().maxInvestment) }}
-      </p>
+    <p class="mt-2.5 text-sm text-slate-600">
+      Range: {{ formatCurrency(opportunity().minInvestment) }} –
+      {{ formatCurrency(opportunity().maxInvestment) }}
+    </p>
     }
   </div>
 
   <!-- Purpose Statement -->
   <ui-textarea
     [label]="'Purpose Statement'"
-    [placeholder]="'Explain why you need this funding. Be clear and compelling.'"
+    [placeholder]="
+      'Explain why you need this funding. Be clear and compelling.'
+    "
     [required]="true"
     [rows]="6"
     [value]="formData().purposeStatement"
     [error]="getPurposeError()"
-    [hint]="'Describe your business objectives and why this funding is critical.'"
+    [hint]="
+      'Describe your business objectives and why this funding is critical.'
+    "
     [showCharCount]="true"
     (ngModelChange)="onPurposeStatementChange($event)"
     ngModel
@@ -54,7 +78,9 @@
   <!-- Use of Funds -->
   <ui-textarea
     [label]="'Use of Funds'"
-    [placeholder]="'Provide a detailed breakdown of how you will use the funding.'"
+    [placeholder]="
+      'Provide a detailed breakdown of how you will use the funding.'
+    "
     [required]="true"
     [rows]="6"
     [value]="formData().useOfFunds"
@@ -68,7 +94,8 @@
   <!-- Cover Statement Upload -->
   <div class="mt-6">
     <app-cover-statement-upload
-      (fileSelected)="onCoverStatementUploaded($event)">
+      (fileSelected)="onCoverStatementUploaded($event)"
+    >
     </app-cover-statement-upload>
   </div>
 
@@ -76,17 +103,19 @@
   <div class="bg-slate-50 border border-slate-200 rounded-lg p-5">
     <div class="flex items-center justify-between text-sm text-slate-700 mb-3">
       <span class="font-semibold">Application Completion</span>
-      <span class="font-semibold text-slate-900">{{ completionPercentage() }}%</span>
+      <span class="font-semibold text-slate-900"
+        >{{ completionPercentage() }}%</span
+      >
     </div>
     <div class="w-full bg-slate-200 rounded-full h-2">
-      <div 
+      <div
         class="bg-gradient-to-r from-emerald-400 to-emerald-600 h-2 rounded-full transition-all duration-500"
         [style.width.%]="completionPercentage()"
       ></div>
     </div>
     <div class="mt-3 flex items-center text-xs text-slate-600 font-medium">
       <div class="w-1.5 h-1.5 rounded-full bg-emerald-600 mr-2"></div>
-      Complete all required fields  
+      Complete all required fields
     </div>
   </div>
 </div>

@@ -13,7 +13,7 @@ import { Location } from '@angular/common';
 import { LucideAngularModule, ArrowLeft, Clock } from 'lucide-angular';
 import { SMEOpportunitiesService } from 'src/app/funding/services/opportunities.service';
 import { UiButtonComponent, UiCardComponent } from 'src/app/shared/components';
-import { Application } from 'src/app/shared/models/application.models';
+
 import { GlobalProfileValidationService } from 'src/app/shared/services/global-profile-validation.service';
 import { DatabaseApplicationService } from 'src/app/SMEs/services/database-application.service';
 import { FundingProfileBackendService } from 'src/app/SMEs/services/funding-profile-backend.service';
@@ -30,6 +30,7 @@ import {
 } from './models/application-form.model';
 import { FundingApplicationProfile } from '../models/funding-application.models';
 import { FundingOpportunity } from 'src/app/funder/create-opportunity/shared/funding.interfaces';
+import { Application } from './models/funding-application.model';
 
 @Component({
   selector: 'app-opportunity-application-form',
@@ -265,18 +266,6 @@ export class OpportunityApplicationFormComponent implements OnInit, OnDestroy {
           console.error('Error checking for draft application:', error);
         },
       });
-  }
-
-  // opportunity-application.component.ts
-  private loadFromDraftApplication(application: Application): void {
-    this.formService.prefillForm({
-      requestedAmount: application.requestedAmount?.toString() || '',
-      purposeStatement: application.purposeStatement || '',
-      useOfFunds:
-        typeof application.useOfFunds === 'string'
-          ? application.useOfFunds
-          : application.useOfFunds?.[0]?.description || '',
-    });
   }
 
   private createDraftApplication(opportunity: FundingOpportunity): void {
@@ -522,5 +511,17 @@ export class OpportunityApplicationFormComponent implements OnInit, OnDestroy {
   getStepTextClasses(stepId: ApplicationStepId): string {
     const isActive = this.currentStep() === stepId;
     return isActive ? 'font-medium text-primary-600' : 'text-gray-600';
+  }
+
+  private loadFromDraftApplication(application: Application): void {
+    this.formService.prefillForm({
+      requestedAmount: application.requestedAmount?.toString() || '',
+      purposeStatement: application.purposeStatement || '',
+      useOfFunds:
+        typeof application.useOfFunds === 'string'
+          ? application.useOfFunds
+          : application.useOfFunds?.[0]?.description || '',
+      fundingType: application.fundingType || '', // Add this
+    });
   }
 }

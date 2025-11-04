@@ -37,9 +37,10 @@ This document tracks key updates, new features, and fixes across Kapify releases
 | Fix the import flow broken by type update                      | 🚧 In Progress | 2.7.7          |
 | Test and integrate the withdraw application feature            | 🚧 In Progress | 2.7.7          |
 | Rearrange the founder management dashboard                     | 🚧 In Progress | 2.8.0          |
-| Integrate the "Invite Teammates" feature                       | 🗓 Planned      | 2.8.0          |
+| Integrate the "Invite Teammates" feature                       | 🚧 In Progress | 2.8.0          |
 | Complete testing of the email infrastructure                   | 🗓 Planned      | 2.8.1          |
 | Enable direct upload of organization media assets (e.g., logo) | 🗓 Planned      | 2.8.1          |
+| Enable Credit system                                           | 🗓 Planned      | 2.8.1          |
 
 ---
 

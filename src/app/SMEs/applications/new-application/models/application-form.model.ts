@@ -5,6 +5,7 @@ export interface ApplicationFormData {
   purposeStatement: string;
   useOfFunds: string;
   coverStatement?: File;
+  fundingType: string;
 }
 
 export interface ApplicationFormValidation {
@@ -17,6 +18,7 @@ export interface ApplicationFormErrors {
   purposeStatement?: string;
   useOfFunds?: string;
   coverStatement?: string;
+  fundingType?: string;
 }
 
 // RENAMED: ApplicationStep → ApplicationFormStep to avoid conflict
@@ -27,8 +29,8 @@ export interface ApplicationFormStep {
   description: string;
 }
 
-export type ApplicationStepId = 
-  | 'select-opportunity' 
-  | 'application-details' 
-  | 'ai-analysis' 
+export type ApplicationStepId =
+  | 'select-opportunity'
+  | 'application-details'
+  | 'ai-analysis'
   | 'review-submit';

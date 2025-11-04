@@ -1,13 +1,16 @@
 // src/app/applications/services/database-application.service.ts
 import { Injectable, inject, signal } from '@angular/core';
 import { Observable, from, throwError, BehaviorSubject } from 'rxjs';
-import { tap, catchError  } from 'rxjs/operators';
+import { tap, catchError } from 'rxjs/operators';
 import { AuthService } from '../../auth/production.auth.service';
-import { Application, ApplicationStatus, ReviewNote } from '../../shared/models/application.models';
+import {
+  ApplicationStatus,
+  ReviewNote,
+} from '../../shared/models/application.models';
 import { SharedSupabaseService } from '../../shared/services/shared-supabase.service';
- 
+import { Application } from '../applications/new-application/models/funding-application.model';
 
-// Database  
+// Database
 interface DatabaseApplication {
   id: string;
   applicant_id: string;
@@ -30,7 +33,7 @@ interface DatabaseApplication {
 
 // Service for managing applications in the database
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class DatabaseApplicationService {
   private supabase = inject(SharedSupabaseService);
@@ -39,14 +42,12 @@ export class DatabaseApplicationService {
   // State management
   isLoading = signal(false);
   error = signal<string | null>(null);
-  
+
   // Reactive data streams
   private applicationsSubject = new BehaviorSubject<Application[]>([]);
   applications$ = this.applicationsSubject.asObservable();
 
-  constructor() {
- 
-  }
+  constructor() {}
 
   // ===============================
   // LOAD APPLICATIONS
@@ -60,11 +61,11 @@ export class DatabaseApplicationService {
     this.error.set(null);
 
     return from(this.fetchUserApplications()).pipe(
-      tap(applications => {
+      tap((applications) => {
         this.applicationsSubject.next(applications);
         this.isLoading.set(false);
       }),
-      catchError(error => {
+      catchError((error) => {
         this.error.set('Failed to load applications');
         this.isLoading.set(false);
         console.error('Load applications error:', error);
@@ -78,7 +79,7 @@ export class DatabaseApplicationService {
    */
   getApplicationById(id: string): Observable<Application | undefined> {
     return from(this.fetchApplicationById(id)).pipe(
-      catchError(error => {
+      catchError((error) => {
         this.error.set('Failed to load application details');
         console.error('Fetch application error:', error);
         return throwError(() => error);
@@ -89,9 +90,11 @@ export class DatabaseApplicationService {
   /**
    * Get applications for a specific opportunity
    */
-  getApplicationsByOpportunity(opportunityId: string): Observable<Application[]> {
+  getApplicationsByOpportunity(
+    opportunityId: string
+  ): Observable<Application[]> {
     return from(this.fetchApplicationsByOpportunity(opportunityId)).pipe(
-      catchError(error => {
+      catchError((error) => {
         this.error.set('Failed to load opportunity applications');
         console.error('Fetch opportunity applications error:', error);
         return throwError(() => error);
@@ -102,105 +105,6 @@ export class DatabaseApplicationService {
   // ===============================
   // DATABASE OPERATIONS
   // ===============================
-
-  private async fetchUserApplications(): Promise<Application[]> {
-    try {
-      const currentUser = this.authService.user();
-      if (!currentUser) {
-        throw new Error('User not authenticated');
-      }
-
-      const { data, error } = await this.supabase
-        .from('applications')
-        .select(`
-          *,
-          funding_opportunities (
-            id,
-            title,
-            funding_type,
-            min_investment,
-            max_investment,
-            currency,
-            organization_id
-          )
-        `)
-        .eq('applicant_id', currentUser.id)
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        throw new Error(`Failed to fetch applications: ${error.message}`);
-      }
-
-      console.log(`Fetched ${data?.length || 0} applications for user`);
-      return data?.map(item => this.transformDatabaseToLocal(item)) || [];
-    } catch (error) {
-      console.error('Error fetching user applications:', error);
-      throw error;
-    }
-  }
-
-  private async fetchApplicationById(id: string): Promise<Application | undefined> {
-    try {
-      const { data, error } = await this.supabase
-        .from('applications')
-        .select(`
-          *,
-          funding_opportunities (
-            id,
-            title,
-            funding_type,
-            min_investment,
-            max_investment,
-            currency,
-            organization_id
-          )
-        `)
-        .eq('id', id)
-        .single();
-
-      if (error) {
-        if (error.code === 'PGRST116') { // No rows returned
-          return undefined;
-        }
-        throw new Error(`Failed to fetch application: ${error.message}`);
-      }
-
-      return this.transformDatabaseToLocal(data);
-    } catch (error) {
-      console.error('Error fetching application by ID:', error);
-      throw error;
-    }
-  }
-
-  private async fetchApplicationsByOpportunity(opportunityId: string): Promise<Application[]> {
-    try {
-      const { data, error } = await this.supabase
-        .from('applications')
-        .select(`
-          *,
-          funding_opportunities (
-            id,
-            title,
-            funding_type,
-            min_investment,
-            max_investment,
-            currency,
-            organization_id
-          )
-        `)
-        .eq('opportunity_id', opportunityId)
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        throw new Error(`Failed to fetch opportunity applications: ${error.message}`);
-      }
-
-      return data?.map(item => this.transformDatabaseToLocal(item)) || [];
-    } catch (error) {
-      console.error('Error fetching applications by opportunity:', error);
-      throw error;
-    }
-  }
 
   // ===============================
   // CREATE & UPDATE OPERATIONS
@@ -217,12 +121,12 @@ export class DatabaseApplicationService {
     documents?: any;
   }): Observable<Application> {
     return from(this.insertApplication(applicationData)).pipe(
-      tap(newApplication => {
+      tap((newApplication) => {
         // Update local cache
         const currentApplications = this.applicationsSubject.value;
         this.applicationsSubject.next([newApplication, ...currentApplications]);
       }),
-      catchError(error => {
+      catchError((error) => {
         this.error.set('Failed to create application');
         console.error('Create application error:', error);
         return throwError(() => error);
@@ -233,27 +137,30 @@ export class DatabaseApplicationService {
   /**
    * Update an existing application
    */
-  updateApplication(id: string, updates: {
-    title?: string;
-    description?: string;
-    status?: ApplicationStatus;
-    stage?: string;
-    formData?: any;
-    documents?: any;
-    terms?: any;
-  }): Observable<Application> {
+  updateApplication(
+    id: string,
+    updates: {
+      title?: string;
+      description?: string;
+      status?: ApplicationStatus;
+      stage?: string;
+      formData?: any;
+      documents?: any;
+      terms?: any;
+    }
+  ): Observable<Application> {
     return from(this.updateApplicationInDatabase(id, updates)).pipe(
-      tap(updatedApplication => {
+      tap((updatedApplication) => {
         // Update local cache
         const currentApplications = this.applicationsSubject.value;
-        const index = currentApplications.findIndex(app => app.id === id);
+        const index = currentApplications.findIndex((app) => app.id === id);
         if (index !== -1) {
           const newApplications = [...currentApplications];
           newApplications[index] = updatedApplication;
           this.applicationsSubject.next(newApplications);
         }
       }),
-      catchError(error => {
+      catchError((error) => {
         this.error.set('Failed to update application');
         console.error('Update application error:', error);
         return throwError(() => error);
@@ -272,17 +179,17 @@ export class DatabaseApplicationService {
     };
 
     return from(this.updateApplicationInDatabase(id, updates, true)).pipe(
-      tap(updatedApplication => {
+      tap((updatedApplication) => {
         // Update local cache
         const currentApplications = this.applicationsSubject.value;
-        const index = currentApplications.findIndex(app => app.id === id);
+        const index = currentApplications.findIndex((app) => app.id === id);
         if (index !== -1) {
           const newApplications = [...currentApplications];
           newApplications[index] = updatedApplication;
           this.applicationsSubject.next(newApplications);
         }
       }),
-      catchError(error => {
+      catchError((error) => {
         this.error.set('Failed to submit application');
         console.error('Submit application error:', error);
         return throwError(() => error);
@@ -297,7 +204,7 @@ export class DatabaseApplicationService {
     const updates = {
       status: 'withdrawn' as ApplicationStatus,
       // Add reason to form_data
-      formData: { withdrawalReason: reason }
+      formData: { withdrawalReason: reason },
     };
 
     return this.updateApplication(id, updates);
@@ -325,91 +232,66 @@ export class DatabaseApplicationService {
         form_data: applicationData.formData || {},
         documents: applicationData.documents || {},
         review_notes: {},
-        opportunity_id: applicationData.opportunityId
+        opportunity_id: applicationData.opportunityId,
       };
 
+      // CRITICAL: Don't select nested relations during insert
       const { data, error } = await this.supabase
         .from('applications')
         .insert(dbApplication)
-        .select(`
-          *,
-          funding_opportunities (
-            id,
-            title,
-            funding_type,
-            min_investment,
-            max_investment,
-            currency,
-            organization_id
-          )
-        `)
-        .single();
+        .select('*'); // Only select from applications, no joins
 
       if (error) {
         throw new Error(`Failed to create application: ${error.message}`);
       }
 
-      return this.transformDatabaseToLocal(data);
+      // Don't transform here, just return minimal data
+      return this.transformDatabaseToLocal(data[0]);
     } catch (error) {
       console.error('Error creating application:', error);
       throw error;
     }
   }
-
   private async updateApplicationInDatabase(
-    id: string, 
-    updates: any, 
+    id: string,
+    updates: any,
     isSubmission: boolean = false
   ): Promise<Application> {
     try {
-      // Prepare database updates
       const dbUpdates: Partial<DatabaseApplication> = {};
-      
+
       if (updates.title) dbUpdates.title = updates.title;
-      if (updates.description !== undefined) dbUpdates.description = updates.description;
+      if (updates.description !== undefined)
+        dbUpdates.description = updates.description;
       if (updates.status) dbUpdates.status = updates.status;
       if (updates.stage) dbUpdates.stage = updates.stage;
       if (updates.formData) dbUpdates.form_data = updates.formData;
       if (updates.documents) dbUpdates.documents = updates.documents;
       if (updates.terms) dbUpdates.terms = updates.terms;
 
-      // Handle submission timestamp
       if (isSubmission && updates.status === 'submitted') {
         dbUpdates.submitted_at = new Date().toISOString();
       }
 
-      // Always update the updated_at timestamp
       dbUpdates.updated_at = new Date().toISOString();
 
+      // CRITICAL: No nested select
       const { data, error } = await this.supabase
         .from('applications')
         .update(dbUpdates)
         .eq('id', id)
-        .select(`
-          *,
-          funding_opportunities (
-            id,
-            title,
-            funding_type,
-            min_investment,
-            max_investment,
-            currency,
-            organization_id
-          )
-        `)
-        .single();
+        .select('*'); // Only select from applications
 
       if (error) {
         throw new Error(`Failed to update application: ${error.message}`);
       }
 
-      return this.transformDatabaseToLocal(data);
+      return this.transformDatabaseToLocal(data[0]);
     } catch (error) {
       console.error('Error updating application:', error);
       throw error;
     }
   }
-
   // ===============================
   // REVIEW NOTES
   // ===============================
@@ -417,13 +299,16 @@ export class DatabaseApplicationService {
   /**
    * Add a review note to an application
    */
-  addReviewNote(applicationId: string, note: {
-    content: string;
-    category: string;
-    isPrivate: boolean;
-  }): Observable<ReviewNote> {
+  addReviewNote(
+    applicationId: string,
+    note: {
+      content: string;
+      category: string;
+      isPrivate: boolean;
+    }
+  ): Observable<ReviewNote> {
     return from(this.insertReviewNote(applicationId, note)).pipe(
-      catchError(error => {
+      catchError((error) => {
         this.error.set('Failed to add review note');
         console.error('Add review note error:', error);
         return throwError(() => error);
@@ -431,11 +316,14 @@ export class DatabaseApplicationService {
     );
   }
 
-  private async insertReviewNote(applicationId: string, note: {
-    content: string;
-    category: string;
-    isPrivate: boolean;
-  }): Promise<ReviewNote> {
+  private async insertReviewNote(
+    applicationId: string,
+    note: {
+      content: string;
+      category: string;
+      isPrivate: boolean;
+    }
+  ): Promise<ReviewNote> {
     try {
       const currentUser = this.authService.user();
       if (!currentUser) {
@@ -463,14 +351,14 @@ export class DatabaseApplicationService {
         sentiment: 'neutral',
         isPrivate: note.isPrivate,
         tags: [],
-        createdAt: new Date()
+        createdAt: new Date(),
       };
 
       // Update review notes in database
       const currentNotes = app.review_notes || {};
       const updatedNotes = {
         ...currentNotes,
-        notes: [...(currentNotes.notes || []), newNote]
+        notes: [...(currentNotes.notes || []), newNote],
       };
 
       const { error: updateError } = await this.supabase
@@ -505,7 +393,7 @@ export class DatabaseApplicationService {
     rejected: number;
   }> {
     return from(this.fetchApplicationsStats()).pipe(
-      catchError(error => {
+      catchError((error) => {
         this.error.set('Failed to load application statistics');
         console.error('Fetch stats error:', error);
         return throwError(() => error);
@@ -542,10 +430,10 @@ export class DatabaseApplicationService {
         submitted: 0,
         underReview: 0,
         approved: 0,
-        rejected: 0
+        rejected: 0,
       };
 
-      data?.forEach(app => {
+      data?.forEach((app) => {
         switch (app.status) {
           case 'draft':
             stats.draft++;
@@ -593,7 +481,9 @@ export class DatabaseApplicationService {
       opportunityId: dbApp.opportunity_id,
 
       // Application basics
-      applicationNumber: `APP-${dbApp.created_at.split('-')[0]}-${dbApp.id.split('-')[0]}`,
+      applicationNumber: `APP-${dbApp.created_at.split('-')[0]}-${
+        dbApp.id.split('-')[0]
+      }`,
       title: dbApp.title,
       description: dbApp.description || '',
 
@@ -603,16 +493,20 @@ export class DatabaseApplicationService {
       fundingType: opportunity?.funding_type || 'debt',
 
       // Use of funds - from form_data
-      useOfFunds: dbApp.form_data?.useOfFunds ? [{
-        category: 'other',
-        description: dbApp.form_data.useOfFunds,
-        amount: dbApp.form_data?.requestedAmount || 0,
-        percentage: 100,
-        timeline:  'Not Specified',
-        priority: 'high',
-        justification: dbApp.form_data?.purposeStatement || '',
-        expectedImpact: 'Business growth and expansion'
-      }] : [],
+      useOfFunds: dbApp.form_data?.useOfFunds
+        ? [
+            {
+              category: 'other',
+              description: dbApp.form_data.useOfFunds,
+              amount: dbApp.form_data?.requestedAmount || 0,
+              percentage: 100,
+              timeline: 'Not Specified',
+              priority: 'high',
+              justification: dbApp.form_data?.purposeStatement || '',
+              expectedImpact: 'Business growth and expansion',
+            },
+          ]
+        : [],
       purposeStatement: dbApp.form_data?.purposeStatement || '',
 
       // Required assessments (placeholders for now)
@@ -631,7 +525,7 @@ export class DatabaseApplicationService {
         assignedTo: dbApp.applicant_id,
         estimatedDuration: 7,
         actualStartDate: new Date(dbApp.created_at),
-        requirements: this.getStageRequirements(dbApp.stage)
+        requirements: this.getStageRequirements(dbApp.stage),
       },
       applicationSteps: [],
 
@@ -643,8 +537,12 @@ export class DatabaseApplicationService {
       messagesThread: `thread-${dbApp.id}`,
 
       // Timeline tracking
-      submittedAt: dbApp.submitted_at ? new Date(dbApp.submitted_at) : undefined,
-      reviewStartedAt: dbApp.review_started_at ? new Date(dbApp.review_started_at) : undefined,
+      submittedAt: dbApp.submitted_at
+        ? new Date(dbApp.submitted_at)
+        : undefined,
+      reviewStartedAt: dbApp.review_started_at
+        ? new Date(dbApp.review_started_at)
+        : undefined,
       decisionDate: dbApp.decided_at ? new Date(dbApp.decided_at) : undefined,
 
       // Compliance & audit (empty for now)
@@ -652,7 +550,7 @@ export class DatabaseApplicationService {
       auditTrail: [],
 
       createdAt: new Date(dbApp.created_at),
-      updatedAt: new Date(dbApp.updated_at)
+      updatedAt: new Date(dbApp.updated_at),
     } as unknown as Application;
   }
 
@@ -673,7 +571,7 @@ export class DatabaseApplicationService {
       sentiment: note.sentiment || 'neutral',
       isPrivate: note.isPrivate || false,
       tags: note.tags || [],
-      createdAt: new Date(note.createdAt)
+      createdAt: new Date(note.createdAt),
     }));
   }
 
@@ -682,44 +580,50 @@ export class DatabaseApplicationService {
    */
   private getStageDisplayName(stage: string): string {
     const stageNames: Record<string, string> = {
-      'initial_review': 'Initial Review',
-      'due_diligence': 'Due Diligence',
-      'investment_committee': 'Investment Committee',
-      'documentation': 'Documentation',
-      'completed': 'Completed'
+      initial_review: 'Initial Review',
+      due_diligence: 'Due Diligence',
+      investment_committee: 'Investment Committee',
+      documentation: 'Documentation',
+      completed: 'Completed',
     };
     return stageNames[stage] || 'Unknown Stage';
   }
 
   private getStageDescription(stage: string): string {
     const descriptions: Record<string, string> = {
-      'initial_review': 'Application being reviewed by the funding team',
-      'due_diligence': 'Detailed assessment of business and financials',
-      'investment_committee': 'Final decision by investment committee',
-      'documentation': 'Finalizing legal documentation',
-      'completed': 'Application process completed'
+      initial_review: 'Application being reviewed by the funding team',
+      due_diligence: 'Detailed assessment of business and financials',
+      investment_committee: 'Final decision by investment committee',
+      documentation: 'Finalizing legal documentation',
+      completed: 'Application process completed',
     };
     return descriptions[stage] || 'Stage in progress';
   }
 
   private getStageOrder(stage: string): number {
     const orders: Record<string, number> = {
-      'initial_review': 1,
-      'due_diligence': 2,
-      'investment_committee': 3,
-      'documentation': 4,
-      'completed': 5
+      initial_review: 1,
+      due_diligence: 2,
+      investment_committee: 3,
+      documentation: 4,
+      completed: 5,
     };
     return orders[stage] || 1;
   }
 
   private getStageRequirements(stage: string): string[] {
     const requirements: Record<string, string[]> = {
-      'initial_review': ['Complete application form', 'Upload required documents'],
-      'due_diligence': ['Provide financial statements', 'Management interviews'],
-      'investment_committee': ['Present to committee', 'Answer additional questions'],
-      'documentation': ['Sign term sheet', 'Complete legal documentation'],
-      'completed': ['Funding disbursed']
+      initial_review: [
+        'Complete application form',
+        'Upload required documents',
+      ],
+      due_diligence: ['Provide financial statements', 'Management interviews'],
+      investment_committee: [
+        'Present to committee',
+        'Answer additional questions',
+      ],
+      documentation: ['Sign term sheet', 'Complete legal documentation'],
+      completed: ['Funding disbursed'],
     };
     return requirements[stage] || [];
   }
@@ -741,5 +645,77 @@ export class DatabaseApplicationService {
    */
   getCurrentApplications(): Application[] {
     return this.applicationsSubject.value;
+  }
+
+  private async fetchApplicationById(
+    id: string
+  ): Promise<Application | undefined> {
+    try {
+      const { data, error } = await this.supabase
+        .from('applications')
+        .select('*') // <-- Just this, no nested funding_opportunities
+        .eq('id', id)
+        .single();
+
+      if (error) {
+        if (error.code === 'PGRST116') {
+          return undefined;
+        }
+        throw new Error(`Failed to fetch application: ${error.message}`);
+      }
+
+      return this.transformDatabaseToLocal(data);
+    } catch (error) {
+      console.error('Error fetching application by ID:', error);
+      throw error;
+    }
+  }
+
+  private async fetchApplicationsByOpportunity(
+    opportunityId: string
+  ): Promise<Application[]> {
+    try {
+      const { data, error } = await this.supabase
+        .from('applications')
+        .select('*') // <-- Just this
+        .eq('opportunity_id', opportunityId)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        throw new Error(
+          `Failed to fetch opportunity applications: ${error.message}`
+        );
+      }
+
+      return data?.map((item) => this.transformDatabaseToLocal(item)) || [];
+    } catch (error) {
+      console.error('Error fetching applications by opportunity:', error);
+      throw error;
+    }
+  }
+
+  private async fetchUserApplications(): Promise<Application[]> {
+    try {
+      const currentUser = this.authService.user();
+      if (!currentUser) {
+        throw new Error('User not authenticated');
+      }
+
+      const { data, error } = await this.supabase
+        .from('applications')
+        .select('*') // <-- Just this
+        .eq('applicant_id', currentUser.id)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        throw new Error(`Failed to fetch applications: ${error.message}`);
+      }
+
+      console.log(`Fetched ${data?.length || 0} applications for user`);
+      return data?.map((item) => this.transformDatabaseToLocal(item)) || [];
+    } catch (error) {
+      console.error('Error fetching user applications:', error);
+      throw error;
+    }
   }
 }

@@ -1,14 +1,17 @@
 // src/app/applications/components/new-application/services/application-validation.service.ts
 
 import { Injectable } from '@angular/core';
-import { ApplicationFormData, ApplicationFormErrors, ApplicationFormValidation } from '../models/application-form.model';
+import {
+  ApplicationFormData,
+  ApplicationFormErrors,
+  ApplicationFormValidation,
+} from '../models/application-form.model';
 import { FundingOpportunity } from 'src/app/funder/create-opportunity/shared/funding.interfaces';
 
 @Injectable()
 export class ApplicationValidationService {
-
   validateForm(
-    formData: ApplicationFormData, 
+    formData: ApplicationFormData,
     opportunity: FundingOpportunity | null
   ): ApplicationFormValidation {
     const errors: ApplicationFormErrors = {};
@@ -21,12 +24,15 @@ export class ApplicationValidationService {
       if (isNaN(amount)) {
         errors.requestedAmount = 'Please enter a valid amount';
       } else if (amount < opportunity.minInvestment) {
-        errors.requestedAmount = `Amount must be at least ${this.formatCurrency(opportunity.minInvestment)}`;
+        errors.requestedAmount = `Amount must be at least ${this.formatCurrency(
+          opportunity.minInvestment
+        )}`;
       } else if (amount > opportunity.maxInvestment) {
-        errors.requestedAmount = `Amount cannot exceed ${this.formatCurrency(opportunity.maxInvestment)}`;
+        errors.requestedAmount = `Amount cannot exceed ${this.formatCurrency(
+          opportunity.maxInvestment
+        )}`;
       }
     }
-
     // Validate purpose statement
     // if (!formData.purposeStatement?.trim()) {
     //   errors.purposeStatement = 'Purpose statement is required';
@@ -40,10 +46,19 @@ export class ApplicationValidationService {
     // } else if (formData.useOfFunds.trim().length < 50) {
     //   errors.useOfFunds = 'Use of funds must be at least 50 characters';
     // }
-
+    // Validate funding type
+    if (!formData.fundingType?.trim()) {
+      errors.fundingType = 'Funding type is required';
+    } else if (
+      opportunity?.fundingType &&
+      !opportunity.fundingType.includes(formData.fundingType)
+    ) {
+      errors.fundingType =
+        'Selected funding type is not available for this opportunity';
+    }
     return {
       isValid: Object.keys(errors).length === 0,
-      errors
+      errors,
     };
   }
 
@@ -61,11 +76,15 @@ export class ApplicationValidationService {
     }
 
     if (amount < opportunity.minInvestment) {
-      return `Amount must be at least ${this.formatCurrency(opportunity.minInvestment)}`;
+      return `Amount must be at least ${this.formatCurrency(
+        opportunity.minInvestment
+      )}`;
     }
 
     if (amount > opportunity.maxInvestment) {
-      return `Amount cannot exceed ${this.formatCurrency(opportunity.maxInvestment)}`;
+      return `Amount cannot exceed ${this.formatCurrency(
+        opportunity.maxInvestment
+      )}`;
     }
 
     return null;
@@ -76,7 +95,7 @@ export class ApplicationValidationService {
       style: 'currency',
       currency: 'ZAR',
       minimumFractionDigits: 0,
-      maximumFractionDigits: 0
+      maximumFractionDigits: 0,
     }).format(amount);
   }
 }
