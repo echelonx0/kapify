@@ -56,10 +56,15 @@
         />
       </button>
     </div>
+
+    <div class="mt-2 mb-2">
+      <span> {{ opportunity.description || "Private Funder" }}</span>
+    </div>
+
     <!-- Funding Amount -->
     <div class="amount-row">
       <lucide-icon [img]="DollarSignIcon" [size]="16" class="text-green-600" />
-      <span class="amount-text">{{ formatAmountRange() }}</span>
+      <span class="amount-text">Funding range: {{ formatAmountRange() }}</span>
     </div>
 
     <!-- Match Reasons (Always Visible) -->

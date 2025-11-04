@@ -1,0 +1,153 @@
+<header
+  class="fixed top-0 w-full bg-white/95 backdrop-blur-sm border-b border-neutral-200 z-50"
+>
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex items-center justify-between h-16">
+      <!-- Left Section -->
+      @if (!isAuthenticated()) {
+      <!-- Logo + Navigation (Only for unauthenticated users) -->
+      <div class="flex items-center space-x-8">
+        <div
+          class="flex items-center space-x-3 cursor-pointer"
+          (click)="goHome()"
+        >
+          <div
+            class="w-8 h-8 bg-primary-500 rounded-lg flex items-center justify-center"
+          >
+            <span class="text-white font-bold text-sm">K</span>
+          </div>
+          <span class="text-xl font-bold text-neutral-900">Kapify</span>
+        </div>
+
+        <nav class="hidden md:flex items-center space-x-8">
+          <a
+            href="#features"
+            class="text-neutral-600 hover:text-neutral-900 transition-colors"
+            >Features</a
+          >
+          <a
+            (click)="goToMarketplace()"
+            class="text-neutral-600 hover:text-neutral-900 transition-colors cursor-pointer"
+            >Explore</a
+          >
+          <a
+            href="#how-it-works"
+            class="text-neutral-600 hover:text-neutral-900 transition-colors"
+            >How It Works</a
+          >
+          <a
+            href="#contact"
+            class="text-neutral-600 hover:text-neutral-900 transition-colors"
+            >Contact</a
+          >
+        </nav>
+      </div>
+      } @else {
+      <!-- Keep an invisible placeholder to maintain layout -->
+      <div class="flex-1"></div>
+      }
+
+      <!-- Right Section: CTA Buttons -->
+      <div class="hidden md:flex items-center space-x-3">
+        @if (!isAuthenticated()) {
+        <!-- Not Logged In -->
+        <ui-button variant="ghost" size="sm" (clicked)="openFunderPortal()">
+          Funder Portal
+        </ui-button>
+        <ui-button variant="outline" size="sm" (clicked)="goToLogin()">
+          Sign In
+        </ui-button>
+        <ui-button variant="primary" size="sm" (clicked)="startApplication()">
+          Join Kapify
+        </ui-button>
+        } @else {
+        <!-- Logged In -->
+        <span class="text-sm text-neutral-700">
+          Welcome, {{ currentUser()?.firstName || "User" }}
+        </span>
+        <ui-button variant="outline" size="sm" (clicked)="goToDashboard()">
+          Dashboard
+        </ui-button>
+        <ui-button variant="ghost" size="sm" (clicked)="logout()">
+          <lucide-icon [img]="LogOutIcon" [size]="16" class="mr-1" /> Log Out
+        </ui-button>
+        }
+      </div>
+
+      <!-- Mobile Menu Button -->
+      <button
+        class="md:hidden p-2 text-neutral-600 hover:text-neutral-900"
+        (click)="toggleMobileMenu()"
+      >
+        <lucide-icon [img]="mobileMenuOpen() ? XIcon : MenuIcon" [size]="24" />
+      </button>
+    </div>
+
+    <!-- Mobile Menu -->
+    @if (mobileMenuOpen()) {
+    <div class="md:hidden border-t border-neutral-200 py-4 space-y-4">
+      @if (!isAuthenticated()) {
+      <a
+        href="#features"
+        class="block text-neutral-600 hover:text-neutral-900 transition-colors"
+        >Features</a
+      >
+      <a
+        (click)="goToMarketplace(); toggleMobileMenu()"
+        class="block text-neutral-600 hover:text-neutral-900 transition-colors cursor-pointer"
+        >Explore</a
+      >
+      <a
+        href="#how-it-works"
+        class="block text-neutral-600 hover:text-neutral-900 transition-colors"
+        >How It Works</a
+      >
+      <a
+        href="#contact"
+        class="block text-neutral-600 hover:text-neutral-900 transition-colors"
+        >Contact</a
+      >
+      }
+
+      <div class="pt-4 border-t border-neutral-200 space-y-3">
+        @if (!isAuthenticated()) {
+        <!-- Not Logged In -->
+        <ui-button
+          variant="ghost"
+          [fullWidth]="true"
+          (clicked)="openFunderPortal()"
+        >
+          Funder Portal
+        </ui-button>
+        <ui-button variant="outline" [fullWidth]="true" (clicked)="goToLogin()">
+          Sign In
+        </ui-button>
+        <ui-button
+          variant="primary"
+          [fullWidth]="true"
+          (clicked)="startApplication()"
+        >
+          Get Funding
+        </ui-button>
+        } @else {
+        <!-- Logged In -->
+        <div class="text-neutral-700 mb-2">
+          Signed in as
+          <strong>{{ currentUser()?.firstName || "User" }}</strong>
+        </div>
+        <ui-button
+          variant="outline"
+          [fullWidth]="true"
+          (clicked)="goToDashboard()"
+        >
+          Dashboard
+        </ui-button>
+        <ui-button variant="ghost" [fullWidth]="true" (clicked)="logout()">
+          <lucide-icon [img]="LogOutIcon" [size]="16" class="mr-1" /> Log Out
+        </ui-button>
+        }
+      </div>
+    </div>
+    }
+  </div>
+</header>

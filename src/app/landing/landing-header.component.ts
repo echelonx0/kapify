@@ -1,89 +1,27 @@
- 
-
-
 // src/app/shared/components/landing-header.component.ts
-import { Component, signal } from '@angular/core';
+import { Component, signal, computed } from '@angular/core';
 import { Router } from '@angular/router';
-import { LucideAngularModule, Menu, X } from 'lucide-angular';
+import { LucideAngularModule, Menu, X, LogOut } from 'lucide-angular';
 import { UiButtonComponent } from '../shared/components/ui-button.component';
+import { AuthService } from 'src/app/auth/production.auth.service';
 
 @Component({
   selector: 'landing-header',
   standalone: true,
   imports: [LucideAngularModule, UiButtonComponent],
-  template: `
-    <header class="fixed top-0 w-full bg-white/95 backdrop-blur-sm border-b border-neutral-200 z-50">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex items-center justify-between h-16">
-          <!-- Logo -->
-          <div class="flex items-center space-x-3 cursor-pointer" (click)="goHome()">
-            <div class="w-8 h-8 bg-primary-500 rounded-lg flex items-center justify-center">
-              <span class="text-white font-bold text-sm">K</span>
-            </div>
-            <span class="text-xl font-bold text-neutral-900">Kapify</span>
-          </div>
-
-          <!-- Desktop Navigation -->
-          <nav class="hidden md:flex items-center space-x-8">
-            <a href="#features" class="text-neutral-600 hover:text-neutral-900 transition-colors">Features</a>
-            <a (click)="goToMarketplace()" class="text-neutral-600 hover:text-neutral-900 transition-colors cursor-pointer">Explore</a>
-            <a href="#how-it-works" class="text-neutral-600 hover:text-neutral-900 transition-colors">How It Works</a> 
-            <a href="#contact" class="text-neutral-600 hover:text-neutral-900 transition-colors">Contact</a>
-          </nav>
-
-          <!-- CTA Buttons -->
-          <div class="hidden md:flex items-center space-x-3">
-            <ui-button variant="ghost" size="sm" (clicked)="openFunderPortal()">
-              Funder Portal
-            </ui-button>
-            <ui-button variant="outline" size="sm" (clicked)="goToLogin()">
-              Sign In
-            </ui-button>
-            <ui-button variant="primary" size="sm" (clicked)="startApplication()">
-              Join Kapify
-            </ui-button>
-          </div>
-
-          <!-- Mobile Menu Button -->
-          <button 
-            class="md:hidden p-2 text-neutral-600 hover:text-neutral-900"
-            (click)="toggleMobileMenu()"
-          >
-            <lucide-icon [img]="mobileMenuOpen() ? XIcon : MenuIcon" [size]="24" />
-          </button>
-        </div>
-
-        <!-- Mobile Menu -->
-        @if (mobileMenuOpen()) {
-          <div class="md:hidden border-t border-neutral-200 py-4 space-y-4">
-            <a href="#features" class="block text-neutral-600 hover:text-neutral-900 transition-colors">Features</a>
-            <a (click)="goToMarketplace(); toggleMobileMenu()" class="block text-neutral-600 hover:text-neutral-900 transition-colors cursor-pointer">Explore</a>
-            <a href="#how-it-works" class="block text-neutral-600 hover:text-neutral-900 transition-colors">How It Works</a>
-           <a href="#contact" class="block text-neutral-600 hover:text-neutral-900 transition-colors">Contact</a>
-            <div class="pt-4 border-t border-neutral-200 space-y-3">
-              <ui-button variant="ghost" [fullWidth]="true" (clicked)="openFunderPortal()">
-                Funder Portal
-              </ui-button>
-              <ui-button variant="outline" [fullWidth]="true" (clicked)="goToLogin()">
-                Sign In
-              </ui-button>
-              <ui-button variant="primary" [fullWidth]="true" (clicked)="startApplication()">
-                Get Funding
-              </ui-button>
-            </div>
-          </div>
-        }
-      </div>
-    </header>
-  `
+  templateUrl: 'landing-header.component.html',
 })
 export class LandingHeaderComponent {
   mobileMenuOpen = signal(false);
-  
   MenuIcon = Menu;
   XIcon = X;
+  LogOutIcon = LogOut;
 
-  constructor(private router: Router) {}
+  constructor(private router: Router, private authService: AuthService) {}
+
+  // Computed auth state
+  isAuthenticated = computed(() => !!this.authService.user());
+  currentUser = computed(() => this.authService.user());
 
   toggleMobileMenu() {
     this.mobileMenuOpen.set(!this.mobileMenuOpen());
@@ -101,13 +39,30 @@ export class LandingHeaderComponent {
     this.router.navigate(['/marketplace']);
   }
 
+  goToDashboard() {
+    const user = this.currentUser();
+    if (!user) return;
+    if (user.userType === 'sme') {
+      this.router.navigate(['/dashboard/sme']);
+    } else if (user.userType === 'funder') {
+      this.router.navigate(['/dashboard/funder']);
+    } else {
+      this.router.navigate(['/dashboard']);
+    }
+  }
+
   openFunderPortal() {
-    // Navigate to funder registration
-    this.router.navigate(['/register'], { queryParams: { userType: 'funder' } });
+    this.router.navigate(['/register'], {
+      queryParams: { userType: 'funder' },
+    });
   }
 
   startApplication() {
-    // Navigate to SME registration  
     this.router.navigate(['/register'], { queryParams: { userType: 'sme' } });
+  }
+
+  logout() {
+    this.authService.signOut();
+    this.router.navigate(['/']);
   }
 }
