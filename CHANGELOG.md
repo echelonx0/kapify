@@ -4,6 +4,28 @@ This document tracks key updates, new features, and fixes across Kapify releases
 
 ---
 
+## [2.7.7] - 2025-11-04
+
+**Environment:** Production  
+**Commit:** `47e3be3`  
+**Build Number:** 2
+
+### ✨ Added
+
+- Introduced new **FundingApplication model** (`src/app/SMEs/applications/new-application/models/funding-application.model.ts`).
+
+### 🐛 Fixed
+
+- **Resolved recursive fetching errors** that prevented progress in the opportunity application process.
+- Improved **stability of the application flow** by cleaning redundant recursive calls.
+
+### 🧰 Internal
+
+- Refactored application logic for clarity and maintainability.
+- Updated related services and components to align with the new data model.
+
+---
+
 ## [2.7.6] - 2025-11-04
 
 **Environment:** Production  
@@ -32,15 +54,16 @@ This document tracks key updates, new features, and fixes across Kapify releases
 
 ## 🧭 Roadmap
 
-| Feature                                                        | Status         | Target Version |
-| -------------------------------------------------------------- | -------------- | -------------- |
-| Fix the import flow broken by type update                      | 🚧 In Progress | 2.7.7          |
-| Test and integrate the withdraw application feature            | 🚧 In Progress | 2.7.7          |
-| Rearrange the founder management dashboard                     | 🚧 In Progress | 2.8.0          |
-| Integrate the "Invite Teammates" feature                       | 🚧 In Progress | 2.8.0          |
-| Complete testing of the email infrastructure                   | 🗓 Planned      | 2.8.1          |
-| Enable direct upload of organization media assets (e.g., logo) | 🗓 Planned      | 2.8.1          |
-| Enable Credit system                                           | 🗓 Planned      | 2.8.1          |
+| Feature                                                                                                                        | Status         | Target Version |
+| ------------------------------------------------------------------------------------------------------------------------------ | -------------- | -------------- |
+| Fix the import flow broken by type update                                                                                      | 🚧 In Progress | 2.7.8          |
+| Test and integrate the withdraw application feature                                                                            | 🚧 In Progress | 2.7.8          |
+| Rearrange the founder management dashboard                                                                                     | 🚧 In Progress | 2.8.0          |
+| Integrate the "Invite Teammates" feature                                                                                       | 🚧 In Progress | 2.8.0          |
+| Complete testing of the email infrastructure                                                                                   | 🗓 Planned      | 2.8.1          |
+| Enable direct upload of organization media assets (e.g., logo)                                                                 | 🗓 Planned      | 2.8.1          |
+| Enable Credit system                                                                                                           | 🗓 Planned      | 2.8.1          |
+| Balance sheet and Cashflow statement are not integrated in financial profile. The import template should have these fields too | 🗓 Planned      | 2.8.1          |
 
 ---
 

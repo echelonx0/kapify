@@ -18,8 +18,8 @@ export class VersionService {
     version: '2.7.6',
     buildDate: '4th November, 2025',
     environment: 'production',
-    buildNumber: '1',
-    commitHash: 'a8a6481', // First 7 chars of git commit
+    buildNumber: '2',
+    commitHash: '9ac7aaf', // First 7 chars of git commit
   });
 
   // Public read-only access
