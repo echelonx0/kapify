@@ -1,25 +1,33 @@
 // src/app/applications/components/new-application/opportunity-application.component.ts
-import { Component, signal, computed, inject, OnInit, OnDestroy } from '@angular/core';
+import {
+  Component,
+  signal,
+  computed,
+  inject,
+  OnInit,
+  OnDestroy,
+} from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { Location } from '@angular/common';
 import { LucideAngularModule, ArrowLeft, Clock } from 'lucide-angular';
 import { SMEOpportunitiesService } from 'src/app/funding/services/opportunities.service';
 import { UiButtonComponent, UiCardComponent } from 'src/app/shared/components';
-import { Application } from 'src/app/shared/models/application.models'; 
+import { Application } from 'src/app/shared/models/application.models';
 import { GlobalProfileValidationService } from 'src/app/shared/services/global-profile-validation.service';
 import { DatabaseApplicationService } from 'src/app/SMEs/services/database-application.service';
 import { FundingProfileBackendService } from 'src/app/SMEs/services/funding-profile-backend.service';
 import { KapifyAIAnalysisComponent } from 'src/app/ai/ai-analysis/kapify-ai-analysis.component';
 import { ApplicationFormService } from './services/application-form.service';
 import { ApplicationValidationService } from './services/application-validation.service';
-
-// Child Components
 import { OpportunitySelectorComponent } from './components/opportunity-selector/opportunity-selector.component';
 import { ApplicationFormComponent } from './components/application-form/application-form.component';
 import { ReviewSummaryComponent } from './components/review-summary/review-summary.component';
 import { OpportunitySidebarComponent } from './components/opportunity-sidebar/opportunity-sidebar.component';
-import { ApplicationFormStep, ApplicationStepId } from './models/application-form.model';
+import {
+  ApplicationFormStep,
+  ApplicationStepId,
+} from './models/application-form.model';
 import { FundingApplicationProfile } from '../models/funding-application.models';
 import { FundingOpportunity } from 'src/app/funder/create-opportunity/shared/funding.interfaces';
 
@@ -36,26 +44,34 @@ import { FundingOpportunity } from 'src/app/funder/create-opportunity/shared/fun
     ApplicationFormComponent,
     ReviewSummaryComponent,
     OpportunitySidebarComponent,
-    
   ],
   templateUrl: './opportunity-application.component.html',
   providers: [ApplicationFormService, ApplicationValidationService],
-  styles: [`
-    @keyframes fade-in {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
+  styles: [
+    `
+      @keyframes fade-in {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
 
-    .animate-fade-in {
-      animation: fade-in 0.5s ease-out;
-    }
+      .animate-fade-in {
+        animation: fade-in 0.5s ease-out;
+      }
 
-    * {
-      transition-property: transform, box-shadow, background-color, border-color;
-      transition-duration: 200ms;
-      transition-timing-function: ease-out;
-    }
-  `]
+      * {
+        transition-property: transform, box-shadow, background-color,
+          border-color;
+        transition-duration: 200ms;
+        transition-timing-function: ease-out;
+      }
+    `,
+  ],
 })
 export class OpportunityApplicationFormComponent implements OnInit, OnDestroy {
   // Services
@@ -91,36 +107,38 @@ export class OpportunityApplicationFormComponent implements OnInit, OnDestroy {
   private autoSaveTimeout: any = null;
 
   // Steps
-steps = signal<ApplicationFormStep[]>([
+  steps = signal<ApplicationFormStep[]>([
     {
       id: 'select-opportunity',
       number: 1,
       title: 'Choose Opportunity',
-      description: 'Select the funding opportunity'
+      description: 'Select the funding opportunity',
     },
     {
       id: 'application-details',
       number: 2,
       title: 'Application Details',
-      description: 'Provide application information'
+      description: 'Provide application information',
     },
     {
       id: 'ai-analysis',
       number: 3,
       title: 'Analysis',
-      description: 'Pre-Qualification insights'
+      description: 'Pre-Qualification insights',
     },
     {
       id: 'review-submit',
       number: 4,
       title: 'Review',
-      description: 'Review and submission'
-    }
+      description: 'Review and submission',
+    },
   ]);
 
   // Computed
   formData = this.formService.formData;
-  profileCompletion = computed(() => this.profileValidationService.completion());
+  profileCompletion = computed(() =>
+    this.profileValidationService.completion()
+  );
 
   canContinue = computed(() => {
     switch (this.currentStep()) {
@@ -136,7 +154,7 @@ steps = signal<ApplicationFormStep[]>([
         return false;
     }
   });
-// Continuation of opportunity-application.component.ts
+  // Continuation of opportunity-application.component.ts
 
   applicationId = computed(() => {
     const draft = this.draftApplication();
@@ -152,21 +170,22 @@ steps = signal<ApplicationFormStep[]>([
 
   ngOnInit(): void {
     this.loadFullFundingProfile();
-    
+
     const opportunityId = this.route.snapshot.paramMap.get('opportunityId');
-    const requestedAmount = this.route.snapshot.queryParamMap.get('requestedAmount');
-    
+    const requestedAmount =
+      this.route.snapshot.queryParamMap.get('requestedAmount');
+
     // Pre-fill requested amount if passed
     if (requestedAmount) {
       this.formService.prefillForm({ requestedAmount });
     }
-    
+
     if (opportunityId) {
       this.loadSpecificOpportunity(opportunityId);
     } else {
       this.loadAvailableOpportunities();
     }
-    
+
     this.checkForDraftApplication();
   }
 
@@ -188,7 +207,7 @@ steps = signal<ApplicationFormStep[]>([
       },
       error: (error) => {
         console.warn('Funding profile not available:', error);
-      }
+      },
     });
   }
 
@@ -203,7 +222,7 @@ steps = signal<ApplicationFormStep[]>([
         this.error.set('Failed to load opportunities');
         this.isLoading.set(false);
         console.error('Load opportunities error:', error);
-      }
+      },
     });
   }
 
@@ -224,7 +243,7 @@ steps = signal<ApplicationFormStep[]>([
         this.error.set('Failed to load opportunity');
         this.isLoading.set(false);
         console.error('Load opportunity error:', error);
-      }
+      },
     });
   }
 
@@ -232,37 +251,40 @@ steps = signal<ApplicationFormStep[]>([
     const opportunityId = this.route.snapshot.paramMap.get('opportunityId');
     if (!opportunityId) return;
 
-    this.applicationService.getApplicationsByOpportunity(opportunityId).subscribe({
-      next: (applications) => {
-        const draftApp = applications.find(app => app.status === 'draft');
-        if (draftApp) {
-          this.draftApplication.set(draftApp);
-          this.loadFromDraftApplication(draftApp);
-        }
-      },
-      error: (error) => {
-        console.error('Error checking for draft application:', error);
-      }
-    });
+    this.applicationService
+      .getApplicationsByOpportunity(opportunityId)
+      .subscribe({
+        next: (applications) => {
+          const draftApp = applications.find((app) => app.status === 'draft');
+          if (draftApp) {
+            this.draftApplication.set(draftApp);
+            this.loadFromDraftApplication(draftApp);
+          }
+        },
+        error: (error) => {
+          console.error('Error checking for draft application:', error);
+        },
+      });
   }
 
-// opportunity-application.component.ts
-private loadFromDraftApplication(application: Application): void {
-  this.formService.prefillForm({
-    requestedAmount: application.requestedAmount?.toString() || '',
-    purposeStatement: application.purposeStatement || '',
-    useOfFunds: typeof application.useOfFunds === 'string' 
-      ? application.useOfFunds 
-      : application.useOfFunds?.[0]?.description || ''
-  });
-}
+  // opportunity-application.component.ts
+  private loadFromDraftApplication(application: Application): void {
+    this.formService.prefillForm({
+      requestedAmount: application.requestedAmount?.toString() || '',
+      purposeStatement: application.purposeStatement || '',
+      useOfFunds:
+        typeof application.useOfFunds === 'string'
+          ? application.useOfFunds
+          : application.useOfFunds?.[0]?.description || '',
+    });
+  }
 
   private createDraftApplication(opportunity: FundingOpportunity): void {
     const applicationData = {
       title: `Application for ${opportunity.title}`,
       description: `Funding application for ${opportunity.fundingType} opportunity`,
       opportunityId: opportunity.id,
-      formData: this.formService.getFormDataForSave()
+      formData: this.formService.getFormDataForSave(),
     };
 
     this.applicationService.createApplication(applicationData).subscribe({
@@ -272,7 +294,7 @@ private loadFromDraftApplication(application: Application): void {
       },
       error: (error) => {
         console.error('Error creating draft application:', error);
-      }
+      },
     });
   }
 
@@ -305,7 +327,7 @@ private loadFromDraftApplication(application: Application): void {
   onAnalysisCompleted(result: any): void {
     console.log('AI Analysis completed:', result);
     this.aiAnalysisResult.set(result);
-    
+
     if (result.matchScore >= 85) {
       setTimeout(() => {
         if (this.currentStep() === 'ai-analysis') {
@@ -331,7 +353,7 @@ private loadFromDraftApplication(application: Application): void {
 
   nextStep(): void {
     const current = this.currentStep();
-    
+
     if (current === 'application-details' && this.isFormValid()) {
       this.currentStep.set('ai-analysis');
       this.saveDraft();
@@ -343,7 +365,7 @@ private loadFromDraftApplication(application: Application): void {
 
   previousStep(): void {
     const current = this.currentStep();
-    
+
     if (current === 'review-submit') {
       this.currentStep.set('ai-analysis');
     } else if (current === 'ai-analysis') {
@@ -354,10 +376,16 @@ private loadFromDraftApplication(application: Application): void {
   }
 
   goToStep(stepId: ApplicationStepId): void {
-    if (stepId === 'select-opportunity' || 
-        (stepId === 'application-details' && this.selectedOpportunity()) ||
-        (stepId === 'ai-analysis' && this.selectedOpportunity() && this.isFormValid()) ||
-        (stepId === 'review-submit' && this.selectedOpportunity() && this.isFormValid())) {
+    if (
+      stepId === 'select-opportunity' ||
+      (stepId === 'application-details' && this.selectedOpportunity()) ||
+      (stepId === 'ai-analysis' &&
+        this.selectedOpportunity() &&
+        this.isFormValid()) ||
+      (stepId === 'review-submit' &&
+        this.selectedOpportunity() &&
+        this.isFormValid())
+    ) {
       this.currentStep.set(stepId);
     }
   }
@@ -374,7 +402,7 @@ private loadFromDraftApplication(application: Application): void {
     if (this.autoSaveTimeout) {
       clearTimeout(this.autoSaveTimeout);
     }
-    
+
     this.autoSaveTimeout = setTimeout(() => {
       this.saveDraft();
     }, 2000);
@@ -392,27 +420,30 @@ private loadFromDraftApplication(application: Application): void {
         formData: {
           requestedAmount: parseFloat(formData.requestedAmount) || 0,
           purposeStatement: formData.purposeStatement,
-          useOfFunds: formData.useOfFunds
-        }
+          useOfFunds: formData.useOfFunds,
+        },
       };
 
       if (this.draftApplication()) {
-        const updatedApplication = await this.applicationService.updateApplication(
-          this.draftApplication()!.id,
-          savePayload
-        ).toPromise();
-        
+        const updatedApplication = await this.applicationService
+          .updateApplication(this.draftApplication()!.id, savePayload)
+          .toPromise();
+
         if (updatedApplication) {
           this.draftApplication.set(updatedApplication);
         }
       } else {
-        const newApplication = await this.applicationService.createApplication({
-          title: `Application for ${this.selectedOpportunity()!.title}`,
-          description: `Funding application for ${this.selectedOpportunity()!.fundingType} opportunity`,
-          opportunityId: this.selectedOpportunity()!.id,
-          formData: savePayload.formData
-        }).toPromise();
-        
+        const newApplication = await this.applicationService
+          .createApplication({
+            title: `Application for ${this.selectedOpportunity()!.title}`,
+            description: `Funding application for ${
+              this.selectedOpportunity()!.fundingType
+            } opportunity`,
+            opportunityId: this.selectedOpportunity()!.id,
+            formData: savePayload.formData,
+          })
+          .toPromise();
+
         if (newApplication) {
           this.draftApplication.set(newApplication);
         }
@@ -428,7 +459,11 @@ private loadFromDraftApplication(application: Application): void {
   }
 
   async submitApplication(): Promise<void> {
-    if (!this.selectedOpportunity() || !this.isFormValid() || !this.draftApplication()) {
+    if (
+      !this.selectedOpportunity() ||
+      !this.isFormValid() ||
+      !this.draftApplication()
+    ) {
       return;
     }
 
@@ -437,18 +472,18 @@ private loadFromDraftApplication(application: Application): void {
 
     try {
       await this.saveDraft();
-      
+
       if (this.draftApplication()) {
         const submittedApplication = await this.applicationService
           .submitApplication(this.draftApplication()!.id)
           .toPromise();
-        
+
         if (submittedApplication) {
           this.router.navigate(['/applications/submitted'], {
-            queryParams: { 
+            queryParams: {
               opportunityId: this.selectedOpportunity()!.id,
-              applicationId: submittedApplication.id
-            }
+              applicationId: submittedApplication.id,
+            },
           });
         }
       }
@@ -466,11 +501,14 @@ private loadFromDraftApplication(application: Application): void {
 
   getStepClasses(stepId: ApplicationStepId): string {
     const isActive = this.currentStep() === stepId;
-    const stepIndex = this.steps().findIndex(s => s.id === stepId);
-    const currentIndex = this.steps().findIndex(s => s.id === this.currentStep());
+    const stepIndex = this.steps().findIndex((s) => s.id === stepId);
+    const currentIndex = this.steps().findIndex(
+      (s) => s.id === this.currentStep()
+    );
     const isCompleted = stepIndex < currentIndex;
 
-    const baseClasses = 'w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium transition-all duration-300';
+    const baseClasses =
+      'w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium transition-all duration-300';
 
     if (isCompleted) {
       return `${baseClasses} bg-green-500 text-white`;

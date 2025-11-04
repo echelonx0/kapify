@@ -73,7 +73,7 @@ export class SmartSuggestionsComponent implements OnInit {
     this.loadSuggestions();
   }
 
-  /** ✅ NEW: Logic for per-suggestion eligibility */
+  /** Logic for per-suggestion eligibility */
   getApplicationEligibility(match: MatchScore) {
     const user = this.authService.user();
 

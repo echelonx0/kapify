@@ -10,6 +10,7 @@ import { RoleGuard } from './guards/role.guard';
 import { FundingOpportunitiesComponent } from './marketplace/opportunities-list/funding-opportunities.component';
 import { NotFoundComponent } from './shared/components/not-found/not-found.component';
 import { SuccessPageComponent } from './shared/components/success-page/success-page.component';
+import { VersionInfoComponent } from './shared/components/version-info.component';
 
 export const routes: Routes = [
   // Public routes
@@ -38,6 +39,13 @@ export const routes: Routes = [
     component: RegisterComponent,
     canActivate: [GuestGuard],
     title: 'Create Account - Kapify',
+  },
+
+  {
+    path: 'version-info',
+    component: VersionInfoComponent,
+
+    title: 'Version Information',
   },
 
   // Admin routes

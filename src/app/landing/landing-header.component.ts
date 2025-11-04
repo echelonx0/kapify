@@ -35,20 +35,16 @@ export class LandingHeaderComponent {
     this.router.navigate(['/login']);
   }
 
+  version() {
+    this.router.navigate(['/version-info']);
+  }
+
   goToMarketplace() {
     this.router.navigate(['/marketplace']);
   }
 
   goToDashboard() {
-    const user = this.currentUser();
-    if (!user) return;
-    if (user.userType === 'sme') {
-      this.router.navigate(['/dashboard/sme']);
-    } else if (user.userType === 'funder') {
-      this.router.navigate(['/dashboard/funder']);
-    } else {
-      this.router.navigate(['/dashboard']);
-    }
+    this.router.navigate(['/dashboard']);
   }
 
   openFunderPortal() {

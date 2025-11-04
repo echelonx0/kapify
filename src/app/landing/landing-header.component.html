@@ -68,6 +68,9 @@
         <ui-button variant="outline" size="sm" (clicked)="goToDashboard()">
           Dashboard
         </ui-button>
+        <ui-button variant="ghost" [fullWidth]="true" (clicked)="version()">
+          Version Info
+        </ui-button>
         <ui-button variant="ghost" size="sm" (clicked)="logout()">
           <lucide-icon [img]="LogOutIcon" [size]="16" class="mr-1" /> Log Out
         </ui-button>
@@ -141,6 +144,9 @@
           (clicked)="goToDashboard()"
         >
           Dashboard
+        </ui-button>
+        <ui-button variant="ghost" [fullWidth]="true" (clicked)="version()">
+          Version
         </ui-button>
         <ui-button variant="ghost" [fullWidth]="true" (clicked)="logout()">
           <lucide-icon [img]="LogOutIcon" [size]="16" class="mr-1" /> Log Out

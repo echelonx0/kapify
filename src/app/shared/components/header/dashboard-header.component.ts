@@ -6,7 +6,6 @@ import { LucideAngularModule, Bell, Settings, Zap } from 'lucide-angular';
 import { filter, map, startWith } from 'rxjs/operators';
 import { ProfileManagementService } from '../../services/profile-management.service';
 import { VersionService } from '../../services/version.service';
- 
 
 interface RouteConfig {
   title: string;
@@ -24,11 +23,11 @@ export class DashboardHeaderComponent {
   private router = inject(Router);
   private profileService = inject(ProfileManagementService);
   public versionService = inject(VersionService);
-  
+
   BellIcon = Bell;
   SettingsIcon = Settings;
   ZapIcon = Zap;
-  
+
   // Navigation state
   isNavigating = false;
 
@@ -36,63 +35,73 @@ export class DashboardHeaderComponent {
   private routeConfigs: Record<string, RouteConfig & { priority?: boolean }> = {
     '/dashboard': {
       title: 'Welcome back, {{name}}!',
-      description: 'Track your applications, explore new opportunities, and manage your business profile.',
-      showVersion: true // Show version on main dashboard
+      description:
+        'Track your applications, explore new opportunities, and manage your business profile.',
+      showVersion: true, // Show version on main dashboard
     },
     '/administrator': {
       title: 'Admin Console',
-      description: 'Manage users, system settings, and monitor platform performance.',
+      description:
+        'Manage users, system settings, and monitor platform performance.',
       priority: true,
-      showVersion: true
+      showVersion: true,
     },
     '/administrator/dashboard': {
       title: 'Admin Dashboard',
-      description: 'Overview of system metrics, user activity, and key performance indicators.',
+      description:
+        'Overview of system metrics, user activity, and key performance indicators.',
       priority: true,
-      showVersion: true
+      showVersion: true,
     },
     '/profile': {
       title: 'Your Profile',
-      description: 'Manage your personal information, business details, and account preferences. Keep your profile updated to improve your funding opportunities.',
-      showVersion: false
+      description:
+        'Manage your personal information, business details, and account preferences. Keep your profile updated to improve your funding opportunities.',
+      showVersion: false,
     },
     '/applications': {
       title: 'Your Applications',
-      description: 'Track the status of your funding applications, view feedback, and submit new applications to grow your business.',
+      description:
+        'Track the status of your funding applications, view feedback, and submit new applications to grow your business.',
       priority: true,
-      showVersion: false
+      showVersion: false,
     },
     '/opportunities': {
       title: 'Funding Opportunities',
-      description: 'Discover funding opportunities tailored to your business. Filter by amount, type, and requirements to find the perfect match.',
+      description:
+        'Discover funding opportunities tailored to your business. Filter by amount, type, and requirements to find the perfect match.',
       priority: true,
-      showVersion: false
+      showVersion: false,
     },
     '/documents': {
       title: 'Document Center',
-      description: 'Upload, organize, and manage all your business documents. Having complete documentation speeds up the application process.',
-      showVersion: false
+      description:
+        'Upload, organize, and manage all your business documents. Having complete documentation speeds up the application process.',
+      showVersion: false,
     },
     '/settings': {
       title: 'Account Settings',
-      description: 'Configure your account preferences, notification settings, and security options.',
-      showVersion: false
+      description:
+        'Configure your account preferences, notification settings, and security options.',
+      showVersion: false,
     },
     '/analytics': {
       title: 'Business Analytics',
-      description: 'View insights about your business performance, funding progress, and market opportunities.',
-      showVersion: false
+      description:
+        'View insights about your business performance, funding progress, and market opportunities.',
+      showVersion: false,
     },
     '/team': {
       title: 'Team Management',
-      description: 'Manage your team members, assign roles, and control access to your business information.',
-      showVersion: false
-    }
+      description:
+        'Manage your team members, assign roles, and control access to your business information.',
+      showVersion: false,
+    },
   };
 
   // Current route URL
   currentRoute = this.router.events.pipe(
-    filter(event => event instanceof NavigationEnd),
+    filter((event) => event instanceof NavigationEnd),
     map((event: NavigationEnd) => event.urlAfterRedirects),
     startWith(this.router.url)
   );
@@ -101,7 +110,7 @@ export class DashboardHeaderComponent {
   currentUser = this.profileService.currentUser;
   currentProfile = this.profileService.currentProfile;
   currentOrganization = this.profileService.currentOrganization;
-  
+
   // Computed user information
   userName = computed(() => {
     const user = this.currentUser();
@@ -112,7 +121,9 @@ export class DashboardHeaderComponent {
   userInitials = computed(() => {
     const user = this.currentUser();
     if (!user) return 'U';
-    return `${user.firstName?.[0] || ''}${user.lastName?.[0] || ''}`.toUpperCase();
+    return `${user.firstName?.[0] || ''}${
+      user.lastName?.[0] || ''
+    }`.toUpperCase();
   });
 
   userAvatar = computed(() => {
@@ -123,30 +134,31 @@ export class DashboardHeaderComponent {
   userType = computed(() => {
     const user = this.currentUser();
     if (!user) return '';
-    
+
     const typeMap: Record<string, string> = {
-      'sme': 'SME Owner',
-      'funder': 'Investor',
-      'admin': 'Administrator',
-      'consultant': 'Consultant'
+      sme: 'SME Owner',
+      funder: 'Investor',
+      admin: 'Administrator',
+      consultant: 'Consultant',
     };
-    
+
     return typeMap[user.userType] || user.userType;
   });
 
   // Enhanced route configuration with version control
   currentRouteConfig = computed(() => {
     const currentPath = this.router.url.split('?')[0];
-    const config = this.routeConfigs[currentPath] || this.routeConfigs['/dashboard'];
-    
+    const config =
+      this.routeConfigs[currentPath] || this.routeConfigs['/dashboard'];
+
     const userName = this.userName();
     const title = config.title.replace('{{name}}', userName);
-    
+
     return {
       title,
       description: config.description,
       priority: config.priority || false,
-      showVersion: config.showVersion || false
+      showVersion: config.showVersion || false,
     };
   });
 
@@ -176,11 +188,11 @@ export class DashboardHeaderComponent {
     // TODO: Replace with actual notification service
     const user = this.currentUser();
     if (!user) return 0;
-    
+
     // Placeholder: Show notifications for incomplete profiles
     const completion = this.profileCompletion();
     if (completion < 100) return 1;
-    
+
     return 0;
   });
 
@@ -189,7 +201,7 @@ export class DashboardHeaderComponent {
       this.profileService.loadProfileData().subscribe({
         error: (error) => {
           console.error('Failed to load user profile for header:', error);
-        }
+        },
       });
     }
   }
@@ -201,9 +213,9 @@ export class DashboardHeaderComponent {
 
   async goToAdmin() {
     if (this.isNavigating) return;
-    
+
     this.isNavigating = true;
-    
+
     try {
       await this.router.navigate(['/administrator/dashboard']);
     } catch (error) {
@@ -211,5 +223,9 @@ export class DashboardHeaderComponent {
     } finally {
       this.isNavigating = false;
     }
+  }
+
+  version() {
+    this.router.navigate(['/version-info']);
   }
 }
