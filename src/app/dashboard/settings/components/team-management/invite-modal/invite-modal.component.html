@@ -58,9 +58,6 @@
           Email Address <span class="text-teal-500">*</span>
         </label>
         <div class="relative">
-          <div class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
-            <lucide-icon [img]="MailIcon" [size]="18" />
-          </div>
           <input
             type="email"
             [(ngModel)]="email"
@@ -90,11 +87,6 @@
             <span class="text-slate-400 font-normal">(Optional)</span>
           </label>
           <div class="relative">
-            <div
-              class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
-            >
-              <lucide-icon [img]="UserIcon" [size]="18" />
-            </div>
             <input
               type="text"
               [(ngModel)]="firstName"
@@ -110,11 +102,6 @@
             Last Name <span class="text-slate-400 font-normal">(Optional)</span>
           </label>
           <div class="relative">
-            <div
-              class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
-            >
-              <lucide-icon [img]="UserIcon" [size]="18" />
-            </div>
             <input
               type="text"
               [(ngModel)]="lastName"
@@ -179,13 +166,13 @@
       </div>
 
       <!-- Info Box -->
-      <div class="bg-blue-50 border border-blue-200/50 rounded-xl p-4">
+      <!-- <div class="bg-blue-50 border border-blue-200/50 rounded-xl p-4">
         <p class="text-sm text-blue-900">
           <span class="font-semibold">Note:</span> The invited member will
           receive an email with a secure link to accept the invitation. The
           invitation will expire in 7 days.
         </p>
-      </div>
+      </div> -->
     </div>
 
     <!-- Footer -->

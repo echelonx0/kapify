@@ -26,7 +26,7 @@ import { OrganizationInvitationService } from './services/organisation-invitatio
   styleUrls: ['./team-management.component.css'],
 })
 export class TeamManagementComponent implements OnInit {
-  // Make service public for template access
+  //  service public for template access
   invitationService = inject(OrganizationInvitationService);
   private authService = inject(AuthService);
 

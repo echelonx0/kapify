@@ -156,6 +156,8 @@ export class SettingsComponent implements OnInit, OnDestroy {
       .subscribe((org) => {
         if (org) {
           console.log('Organization loaded:', org.name);
+        } else {
+          console.log('Did not find organisation data...');
         }
       });
   }

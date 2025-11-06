@@ -4,7 +4,10 @@ import { Observable, from, throwError, of, BehaviorSubject } from 'rxjs';
 import { tap, catchError, switchMap, map } from 'rxjs/operators';
 import { AuthService } from '../../auth/production.auth.service';
 import { SharedSupabaseService } from '../../shared/services/shared-supabase.service';
-import { Organization, OrganizationType } from '../../shared/models/user.models';
+import {
+  Organization,
+  OrganizationType,
+} from '../../shared/models/user.models';
 
 export interface OrganizationSettings extends Organization {
   // Additional settings-specific fields can go here
@@ -30,11 +33,16 @@ export interface UpdateOrganizationRequest {
   country?: string;
   employeeCount?: number;
   assetsUnderManagement?: number;
-  status?: 'active' | 'inactive' | 'pending_verification' | 'suspended' | 'verification_rejected';
+  status?:
+    | 'active'
+    | 'inactive'
+    | 'pending_verification'
+    | 'suspended'
+    | 'verification_rejected';
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class OrganizationSettingsService {
   private supabaseService = inject(SharedSupabaseService);
@@ -47,14 +55,15 @@ export class OrganizationSettingsService {
   lastSaved = signal<Date | null>(null);
 
   // Organization data
-  private organizationSubject = new BehaviorSubject<OrganizationSettings | null>(null);
+  private organizationSubject =
+    new BehaviorSubject<OrganizationSettings | null>(null);
   organization$ = this.organizationSubject.asObservable();
   organization = signal<OrganizationSettings | null>(null);
 
   constructor() {
     // Auto-load organization on service init
     this.loadOrganization().subscribe();
-    
+    this.loadtest();
     // Update components when lastSaved changes using effect
     effect(() => {
       const date = this.lastSaved();
@@ -65,12 +74,15 @@ export class OrganizationSettingsService {
     });
   }
 
+  async loadtest() {
+    await this.authService.testOrgIdLookup();
+  }
   /**
    * Load the current user's organization from database
    */
   loadOrganization(): Observable<OrganizationSettings | null> {
     const orgId = this.authService.getCurrentUserOrganizationId();
-    
+
     if (!orgId) {
       console.warn('No organization ID found for current user');
       this.organization.set(null);
@@ -82,7 +94,8 @@ export class OrganizationSettingsService {
     this.error.set(null);
 
     return from(
-      this.supabaseService.from('organizations')
+      this.supabaseService
+        .from('organizations')
         .select('*')
         .eq('id', orgId)
         .single()
@@ -93,13 +106,13 @@ export class OrganizationSettingsService {
         }
         return this.mapDatabaseToModel(data);
       }),
-      tap(organization => {
+      tap((organization) => {
         this.organization.set(organization);
         this.organizationSubject.next(organization);
         this.isLoading.set(false);
         console.log('Organization loaded:', organization?.name);
       }),
-      catchError(error => {
+      catchError((error) => {
         console.error('Load organization error:', error);
         this.error.set(error.message || 'Failed to load organization');
         this.isLoading.set(false);
@@ -111,9 +124,11 @@ export class OrganizationSettingsService {
   /**
    * Update organization with partial data
    */
-  updateOrganization(updates: UpdateOrganizationRequest): Observable<OrganizationSettings> {
+  updateOrganization(
+    updates: UpdateOrganizationRequest
+  ): Observable<OrganizationSettings> {
     const orgId = this.authService.getCurrentUserOrganizationId();
-    
+
     if (!orgId) {
       return throwError(() => new Error('No organization found'));
     }
@@ -127,12 +142,13 @@ export class OrganizationSettingsService {
 
     // Validate and sanitize the updates
     const sanitizedUpdates = this.sanitizeUpdateData(updates);
-    
+
     return from(
-      this.supabaseService.from('organizations')
+      this.supabaseService
+        .from('organizations')
         .update({
           ...sanitizedUpdates,
-          updated_at: new Date().toISOString()
+          updated_at: new Date().toISOString(),
         })
         .eq('id', orgId)
         .select('*')
@@ -144,14 +160,14 @@ export class OrganizationSettingsService {
         }
         return this.mapDatabaseToModel(data);
       }),
-      tap(updatedOrg => {
+      tap((updatedOrg) => {
         this.organization.set(updatedOrg);
         this.organizationSubject.next(updatedOrg);
         this.lastSaved.set(new Date());
         this.isSaving.set(false);
         console.log('Organization updated:', updatedOrg.name);
       }),
-      catchError(error => {
+      catchError((error) => {
         console.error('Update organization error:', error);
         this.error.set(error.message || 'Failed to update organization');
         this.isSaving.set(false);
@@ -165,13 +181,14 @@ export class OrganizationSettingsService {
    */
   uploadLogo(file: File): Observable<string> {
     const orgId = this.authService.getCurrentUserOrganizationId();
-    
+
     if (!orgId) {
       return throwError(() => new Error('No organization found'));
     }
 
     // Validate file
-    if (file.size > 5 * 1024 * 1024) { // 5MB limit
+    if (file.size > 5 * 1024 * 1024) {
+      // 5MB limit
       return throwError(() => new Error('File size must be less than 5MB'));
     }
 
@@ -182,14 +199,16 @@ export class OrganizationSettingsService {
     this.isSaving.set(true);
     this.error.set(null);
 
-    const fileName = `${orgId}/logo-${Date.now()}.${file.name.split('.').pop()}`;
+    const fileName = `${orgId}/logo-${Date.now()}.${file.name
+      .split('.')
+      .pop()}`;
 
     return from(
       this.supabaseService.storage
         .from('organization-logos')
         .upload(fileName, file, {
           cacheControl: '3600',
-          upsert: true
+          upsert: true,
         })
     ).pipe(
       switchMap(({ data, error }) => {
@@ -207,12 +226,12 @@ export class OrganizationSettingsService {
         // Update organization with new logo URL
         return this.updateOrganization({ logoUrl });
       }),
-      map(updatedOrg => updatedOrg.logoUrl || ''),
+      map((updatedOrg) => updatedOrg.logoUrl || ''),
       tap(() => {
         this.isSaving.set(false);
         console.log('Logo uploaded successfully');
       }),
-      catchError(error => {
+      catchError((error) => {
         console.error('Upload logo error:', error);
         this.error.set(error.message || 'Failed to upload logo');
         this.isSaving.set(false);
@@ -220,7 +239,6 @@ export class OrganizationSettingsService {
       })
     );
   }
-  
 
   /**
    * Get organization statistics for dashboard
@@ -232,13 +250,13 @@ export class OrganizationSettingsService {
     verificationStatus: string;
   }> {
     const orgId = this.authService.getCurrentUserOrganizationId();
-    
+
     if (!orgId) {
       return of({
         totalOpportunities: 0,
         activeApplications: 0,
         totalFunded: 0,
-        verificationStatus: 'unverified'
+        verificationStatus: 'unverified',
       });
     }
 
@@ -248,7 +266,9 @@ export class OrganizationSettingsService {
       totalOpportunities: 12,
       activeApplications: 34,
       totalFunded: 2500000,
-      verificationStatus: this.organization()?.isVerified ? 'verified' : 'pending'
+      verificationStatus: this.organization()?.isVerified
+        ? 'verified'
+        : 'pending',
     });
   }
 
@@ -263,10 +283,10 @@ export class OrganizationSettingsService {
 
     return this.updateOrganization({
       // Set status to pending verification if not already verified
-      ...(current.status !== 'verification_rejected' && { status: 'pending_verification' as any })
-    }).pipe(
-      map(() => void 0)
-    );
+      ...(current.status !== 'verification_rejected' && {
+        status: 'pending_verification' as any,
+      }),
+    }).pipe(map(() => void 0));
   }
 
   // Private helper methods
@@ -286,7 +306,9 @@ export class OrganizationSettingsService {
       employeeCount: dbOrg.employee_count,
       assetsUnderManagement: dbOrg.assets_under_management,
       isVerified: dbOrg.is_verified,
-      verificationDate: dbOrg.verification_date ? new Date(dbOrg.verification_date) : undefined,
+      verificationDate: dbOrg.verification_date
+        ? new Date(dbOrg.verification_date)
+        : undefined,
       email: dbOrg.email,
       phone: dbOrg.phone,
       addressLine1: dbOrg.address_line1,
@@ -297,7 +319,7 @@ export class OrganizationSettingsService {
       country: dbOrg.country || 'South Africa',
       createdAt: new Date(dbOrg.created_at),
       updatedAt: new Date(dbOrg.updated_at),
-      version: dbOrg.version
+      version: dbOrg.version,
     };
   }
 
@@ -313,7 +335,11 @@ export class OrganizationSettingsService {
       { key: 'phone', dbKey: 'phone', maxLength: 20 },
       { key: 'logoUrl', dbKey: 'logo_url', maxLength: null },
       { key: 'legalName', dbKey: 'legal_name', maxLength: 255 },
-      { key: 'registrationNumber', dbKey: 'registration_number', maxLength: 100 },
+      {
+        key: 'registrationNumber',
+        dbKey: 'registration_number',
+        maxLength: 100,
+      },
       { key: 'fspLicenseNumber', dbKey: 'fsp_license_number', maxLength: 100 },
       { key: 'ncrNumber', dbKey: 'ncr_number', maxLength: 50 },
       { key: 'addressLine1', dbKey: 'address_line1', maxLength: 255 },
@@ -321,14 +347,17 @@ export class OrganizationSettingsService {
       { key: 'city', dbKey: 'city', maxLength: 100 },
       { key: 'province', dbKey: 'province', maxLength: 100 },
       { key: 'postalCode', dbKey: 'postal_code', maxLength: 20 },
-      { key: 'country', dbKey: 'country', maxLength: 100 }
+      { key: 'country', dbKey: 'country', maxLength: 100 },
     ];
 
-    stringFields.forEach(field => {
+    stringFields.forEach((field) => {
       const value = updates[field.key as keyof UpdateOrganizationRequest];
       if (value !== undefined) {
         const trimmed = value.toString().trim();
-        if (trimmed && (!field.maxLength || trimmed.length <= field.maxLength)) {
+        if (
+          trimmed &&
+          (!field.maxLength || trimmed.length <= field.maxLength)
+        ) {
           sanitized[field.dbKey] = trimmed;
         }
       }
