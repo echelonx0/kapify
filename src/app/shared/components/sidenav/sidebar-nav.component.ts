@@ -14,6 +14,7 @@ import {
   ChevronDown,
   Bell,
   BookOpen,
+  BookCheck,
 } from 'lucide-angular';
 import { AuthService } from 'src/app/auth/production.auth.service';
 import { ProfileManagementService } from '../../services/profile-management.service';
@@ -52,9 +53,8 @@ export class SidebarNavComponent implements OnInit {
   // State
   showNotifications = signal(false);
   isOnline = signal(true);
-  unreadNotifications = signal(1); // TODO: Get from notifications service
+  unreadNotifications = signal(1);
 
-  // Admin email configuration
   private readonly ADMIN_EMAILS = [
     'charles@bokamosoas.co.za',
     'admin@kapify.com',
@@ -63,18 +63,15 @@ export class SidebarNavComponent implements OnInit {
     'zivaigwe@gmail.com',
   ];
 
-  // Profile data
   currentUser = computed(() => this.profileService.currentUser());
   userDisplayName = computed(() => this.profileService.userDisplayName());
 
   isAdminUser = computed(() => {
     const user = this.currentUser();
     if (!user?.email) return false;
-
     return this.ADMIN_EMAILS.includes(user.email.toLowerCase());
   });
 
-  // Navigation items with potential badges
   private navItems: NavItem[] = [
     {
       label: 'Home',
@@ -92,6 +89,18 @@ export class SidebarNavComponent implements OnInit {
     {
       label: 'Manage',
       icon: Building,
+      route: '/dashboard/funder-dashboard',
+      userTypes: ['funder'],
+    },
+    {
+      label: 'Opportunities',
+      icon: BookCheck,
+      route: '/dashboard/funder-dashboard',
+      userTypes: ['funder'],
+    },
+    {
+      label: 'Applications',
+      icon: BookOpen,
       route: '/dashboard/funder-dashboard',
       userTypes: ['funder'],
     },
@@ -129,33 +138,22 @@ export class SidebarNavComponent implements OnInit {
     const isAdmin = this.isAdminUser();
 
     return this.navItems.filter((item) => {
-      // Show admin route only for admin users
-      if (item.route === '/admin') {
-        return isAdmin;
-      }
-
-      // Show other routes based on user type
+      if (item.route === '/admin') return isAdmin;
       return item.userTypes.includes(mappedUserType);
     });
   });
 
   ngOnInit() {
-    // Load profile data if not already loaded
     if (!this.currentUser()) {
       this.profileService.loadProfileData().subscribe({
-        error: (error) => {
-          console.error('Failed to load profile data:', error);
-        },
+        error: (error) => console.error('Failed to load profile data:', error),
       });
     }
-
-    // Set up online status detection
     this.setupOnlineStatusDetection();
   }
 
   private setupOnlineStatusDetection() {
     this.isOnline.set(navigator.onLine);
-
     window.addEventListener('online', () => this.isOnline.set(true));
     window.addEventListener('offline', () => this.isOnline.set(false));
   }
@@ -165,7 +163,6 @@ export class SidebarNavComponent implements OnInit {
       case 'sme':
         return 'sme';
       case 'funder':
-        return 'funder';
       case 'admin':
       case 'consultant':
         return 'funder';
@@ -174,30 +171,34 @@ export class SidebarNavComponent implements OnInit {
     }
   }
 
-  // Method to check if a specific email is an admin (for external use)
-  isEmailAdmin(email: string): boolean {
-    return this.ADMIN_EMAILS.includes(email.toLowerCase());
-  }
-
-  // Method to get the list of admin emails (for external use)
-  getAdminEmails(): string[] {
-    return [...this.ADMIN_EMAILS];
-  }
-
-  // Method to add admin email dynamically (for future use)
-  addAdminEmail(email: string): void {
-    const normalizedEmail = email.toLowerCase();
-    if (!this.ADMIN_EMAILS.includes(normalizedEmail)) {
-      this.ADMIN_EMAILS.push(normalizedEmail);
-    }
-  }
-
   goToDashboard() {
     this.router.navigate(['/dashboard']);
   }
 
+  // ✅ Dynamically map funder dashboard items to tab IDs
+  goToFunderTabFromLabel(label: string) {
+    const labelMap: Record<
+      string,
+      'overview' | 'opportunities' | 'applications'
+    > = {
+      Manage: 'overview',
+      Opportunities: 'opportunities',
+      Applications: 'applications',
+    };
+
+    const tabId = labelMap[label];
+    if (tabId) {
+      this.router.navigate(['/funder/dashboard'], {
+        queryParams: { tab: tabId },
+      });
+    } else {
+      // Fallback: just navigate normally
+      this.router.navigate(['/funder/dashboard']);
+    }
+  }
+
   toggleNotifications() {
-    this.showNotifications.update((current) => !current);
+    this.showNotifications.update((v) => !v);
   }
 
   logout() {

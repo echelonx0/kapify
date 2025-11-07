@@ -6,7 +6,7 @@ import {
   OnDestroy,
   inject,
 } from '@angular/core';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { Subject, takeUntil } from 'rxjs';
 import {
@@ -84,7 +84,7 @@ export class FunderDashboardComponent implements OnInit, OnDestroy {
   // State
   activeTab = signal<TabId>('overview');
   isDocumentAnalysisExpanded = signal(true);
-
+  private route = inject(ActivatedRoute);
   tabs: Tab[] = [
     {
       id: 'overview',
@@ -148,6 +148,14 @@ export class FunderDashboardComponent implements OnInit, OnDestroy {
     this.setupSubscriptions();
     this.loadPublicProfile();
     this.loadDocumentAnalysisPreference();
+
+    // 🔸 Watch for query param "tab"
+    this.route.queryParams.subscribe((params) => {
+      const tab = params['tab'] as TabId | undefined;
+      if (tab && this.tabs.some((t) => t.id === tab)) {
+        this.activeTab.set(tab);
+      }
+    });
   }
 
   ngOnDestroy() {
