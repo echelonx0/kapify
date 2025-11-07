@@ -1,0 +1,283 @@
+<div
+  class="border-[0.5px] bg-gradient-to-br from-orange-500 via-primary-500 to-cyan-600 p-0.5 rounded-xl sticky top-6"
+>
+  <div class="bg-white rounded-xl p-6">
+    <div class="flex items-center space-x-3 mb-4">
+      <div
+        class="w-8 h-8 bg-gradient-to-r from-slate-500 to-slate-500 rounded-lg flex items-center justify-center"
+      >
+        <lucide-icon
+          [img]="SparklesIcon"
+          [size]="16"
+          class="text-white"
+        ></lucide-icon>
+      </div>
+      <h3 class="font-semibold text-gray-900">Kapify Investment Assistant</h3>
+      @if (isLoadingIntelligence()) {
+      <div
+        class="w-4 h-4 border-2 border-slate-500 border-t-transparent rounded-full animate-spin"
+      ></div>
+      }
+    </div>
+
+    <div class="space-y-4">
+      <!-- Real-Time Market Intelligence -->
+      @if (topInsight()) {
+      <div
+        [class]="getInsightCardClass(topInsight()!.urgency)"
+        class="rounded-lg p-4"
+      >
+        <div class="flex items-start space-x-3">
+          <div
+            class="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5"
+            [class]="getInsightIconBg(topInsight()!.urgency)"
+          >
+            <lucide-icon
+              [img]="getInsightIcon(topInsight()!.type)"
+              [size]="12"
+              [class]="getInsightIconColor(topInsight()!.urgency)"
+            ></lucide-icon>
+          </div>
+          <div class="flex-1">
+            <h4
+              class="text-sm font-medium mb-1"
+              [class]="getInsightTitleColor(topInsight()!.urgency)"
+            >
+              {{ topInsight()!.title }}
+            </h4>
+            <p
+              class="text-xs leading-relaxed"
+              [class]="getInsightTextColor(topInsight()!.urgency)"
+            >
+              {{ topInsight()!.description }}
+            </p>
+            @if (topInsight()!.actionItem) {
+            <button
+              class="text-xs font-medium mt-2 hover:underline"
+              [class]="getInsightActionColor(topInsight()!.urgency)"
+              (click)="handleInsightAction(topInsight()!)"
+            >
+              {{ topInsight()!.actionItem }} →
+            </button>
+            }
+            <div class="flex items-center justify-between mt-2">
+              <span
+                class="text-xs opacity-75"
+                [class]="getInsightTextColor(topInsight()!.urgency)"
+              >
+                Confidence: {{ topInsight()!.confidence }}%
+              </span>
+              @if (topInsight()!.source) {
+              <span
+                class="text-xs opacity-60"
+                [class]="getInsightTextColor(topInsight()!.urgency)"
+              >
+                {{ topInsight()!.source }}
+              </span>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+      }
+
+      <!-- Enhanced Market Insight -->
+      <div class="bg-primary-50 border border-primary-200 rounded-lg p-4">
+        <div class="flex items-start space-x-3">
+          <div
+            class="w-6 h-6 bg-primary-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5"
+          >
+            <lucide-icon
+              [img]="TrendingUpIcon"
+              [size]="12"
+              class="text-primary-600"
+            ></lucide-icon>
+          </div>
+          <div class="flex-1">
+            <h4 class="text-sm font-medium text-primary-900 mb-1">
+              Market Intelligence
+            </h4>
+            <p class="text-xs text-primary-700 leading-relaxed">
+              {{ getEnhancedMarketInsight() }}
+            </p>
+            @if (hasMarketData()) {
+            <div class="mt-2 text-xs text-primary-600">
+              <span class="font-medium">{{ getMarketStats() }}</span>
+            </div>
+            }
+          </div>
+        </div>
+      </div>
+
+      <!-- Smart Suggestion with Intelligence -->
+      <div class="bg-slate-50 border border-slate-200 rounded-lg p-4">
+        <div class="flex items-start space-x-3">
+          <div
+            class="w-6 h-6 bg-slate-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5"
+          >
+            <lucide-icon
+              [img]="LightbulbIcon"
+              [size]="12"
+              class="text-slate-600"
+            ></lucide-icon>
+          </div>
+          <div class="flex-1">
+            <h4 class="text-sm font-medium text-slate-900 mb-1">
+              Smart Suggestion
+            </h4>
+            <p class="text-xs text-slate-700 leading-relaxed">
+              {{ getIntelligentSuggestion() }}
+            </p>
+            <button
+              class="text-xs text-slate-600 hover:text-slate-800 font-medium mt-2"
+              (click)="applySuggestion()"
+            >
+              Apply suggestion →
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Actions -->
+      <div class="space-y-2">
+        <h4 class="text-sm font-semibold text-gray-900">Quick Actions</h4>
+
+        <button
+          class="w-full text-left p-3 border border-gray-200 rounded-lg hover:border-primary-300 hover:bg-primary-50 transition-all group"
+          (click)="analyzeMarketTiming()"
+          [disabled]="isLoadingIntelligence()"
+        >
+          <div class="flex items-center space-x-3">
+            <lucide-icon
+              [img]="ClockIcon"
+              [size]="16"
+              class="text-gray-400 group-hover:text-primary-600"
+            ></lucide-icon>
+            <span class="text-sm text-gray-700 group-hover:text-primary-700"
+              >Analyze Market Timing</span
+            >
+          </div>
+        </button>
+
+        <button
+          class="w-full text-left p-3 border border-gray-200 rounded-lg hover:border-primary-300 hover:bg-primary-50 transition-all group"
+          (click)="researchCompetitors()"
+          [disabled]="isLoadingIntelligence()"
+        >
+          <div class="flex items-center space-x-3">
+            <lucide-icon
+              [img]="TargetIcon"
+              [size]="16"
+              class="text-gray-400 group-hover:text-primary-600"
+            ></lucide-icon>
+            <span class="text-sm text-gray-700 group-hover:text-primary-700"
+              >Research Competitors</span
+            >
+          </div>
+        </button>
+
+        <button
+          class="w-full text-left p-3 border border-gray-200 rounded-lg hover:border-primary-300 hover:bg-primary-50 transition-all group"
+          (click)="calculateReturns()"
+        >
+          <div class="flex items-center space-x-3">
+            <lucide-icon
+              [img]="CalculatorIcon"
+              [size]="16"
+              class="text-gray-400 group-hover:text-primary-600"
+            ></lucide-icon>
+            <span class="text-sm text-gray-700 group-hover:text-primary-700"
+              >Calculate Returns</span
+            >
+          </div>
+        </button>
+
+        <button
+          class="w-full text-left p-3 border border-gray-200 rounded-lg hover:border-primary-300 hover:bg-primary-50 transition-all group"
+          (click)="generateDescription()"
+        >
+          <div class="flex items-center space-x-3">
+            <lucide-icon
+              [img]="FileTextIcon"
+              [size]="16"
+              class="text-gray-400 group-hover:text-primary-600"
+            ></lucide-icon>
+            <span class="text-sm text-gray-700 group-hover:text-primary-700"
+              >Generate Description</span
+            >
+          </div>
+        </button>
+      </div>
+
+      <!-- Intelligence Summary -->
+      @if (allInsights().length > 1) {
+      <div class="border-t border-gray-200 pt-4">
+        <div class="text-xs text-gray-500 mb-2">
+          Additional Insights ({{ allInsights().length - 1 }})
+        </div>
+        <div class="space-y-2">
+          @for (insight of allInsights().slice(1, 4); track insight.title) {
+          <div class="flex items-center space-x-2">
+            <div
+              class="w-2 h-2 rounded-full"
+              [class]="getUrgencyDot(insight.urgency)"
+            ></div>
+            <span class="text-xs text-gray-600 line-clamp-1">{{
+              insight.title
+            }}</span>
+          </div>
+          } @if (allInsights().length > 4) {
+          <button
+            class="text-xs text-primary-600 hover:text-primary-800 font-medium"
+            (click)="showAllInsights()"
+          >
+            +{{ allInsights().length - 4 }} more insights
+          </button>
+          }
+        </div>
+      </div>
+      }
+
+      <!-- Progress Indicator -->
+      <div class="border-t border-gray-200 pt-4">
+        <div class="text-xs text-gray-500 mb-2">Form completion</div>
+        <div class="flex items-center space-x-2">
+          <div class="flex-1 bg-gray-200 rounded-full h-1.5">
+            <div
+              class="bg-gradient-to-r from-primary-500 to-slate-500 h-1.5 rounded-full transition-all duration-300"
+              [style.width.%]="completionPercentage"
+            ></div>
+          </div>
+          <span class="text-xs font-medium text-gray-700"
+            >{{ completionPercentage }}%</span
+          >
+        </div>
+      </div>
+
+      <!-- Contextual Help -->
+      @if (contextualHelp()) {
+      <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+        <div class="flex items-start space-x-3">
+          <div
+            class="w-6 h-6 bg-yellow-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5"
+          >
+            <lucide-icon
+              [img]="HelpCircleIcon"
+              [size]="12"
+              class="text-yellow-600"
+            ></lucide-icon>
+          </div>
+          <div class="flex-1">
+            <h4 class="text-sm font-medium text-yellow-900 mb-1">
+              {{ contextualHelp()!.title }}
+            </h4>
+            <p class="text-xs text-yellow-700 leading-relaxed">
+              {{ contextualHelp()!.message }}
+            </p>
+          </div>
+        </div>
+      </div>
+      }
+    </div>
+  </div>
+</div>

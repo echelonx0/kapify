@@ -1,20 +1,19 @@
 .gradient-border {
-  position: relative;
-  background: linear-gradient(135deg, #f25912, #ffa4a4, #d97d55);
-  background-size: 300% 300%;
-  animation: gradientFlow 6s ease infinite;
-  padding: 0.1px; /* ultra-thin border */
-  border-radius: 12px;
+  border-radius: 8px; /* outer radius */
+  padding: 0.5px; /* <-- THIS IS THE BORDER THICKNESS */
+  background: linear-gradient(90deg, #f59e0b, #3b82f6, #06b6d4);
+  background-size: 200% 200%;
+  animation: gradientFlow 6s linear infinite;
 }
 
 .gradient-content {
   background: white;
-  border-radius: 11.5px; /* match outer curve neatly */
-  padding: 1.5rem;
+  border-radius: 7px; /* slightly smaller than outer radius */
+  padding: 1rem; /* inner spacing for content */
   box-shadow: 0 1px 6px rgba(0, 0, 0, 0.06);
 }
 
-/* Animate the gradient shift */
+/* Animate the gradient */
 @keyframes gradientFlow {
   0% {
     background-position: 0% 50%;

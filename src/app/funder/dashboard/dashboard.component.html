@@ -412,26 +412,16 @@
           <!-- Compact Draft Status for Sidebar -->
           @if (draftService.canContinueDraft()) {
           <div
-            class="bg-gradient-to-br from-slate-500 via-cyan-600 to-stone-600 p-0.5 rounded-xl"
+            class="bg-gradient-to-br from-slate-500 via-cyan-600 to-stone-600 p-0.2 rounded-xl"
           >
             <div class="bg-white rounded-xl p-4">
               <div class="flex items-center space-x-3 mb-3">
-                <div
-                  class="w-6 h-6 bg-gradient-to-r from-slate-500 to-cyan-600 rounded-lg flex items-center justify-center"
-                >
-                  <lucide-icon
-                    [img]="FileTextIcon"
-                    [size]="14"
-                    class="text-white"
-                  ></lucide-icon>
-                </div>
                 <h3 class="font-semibold text-gray-900 text-sm">
-                  Draft Opportunity
+                  Pending {{ draftService.draftTitle() }}
                 </h3>
               </div>
 
               <p class="text-xs text-gray-600 mb-3">
-                {{ draftService.draftTitle() }} -
                 {{ draftService.completionText() }}
               </p>
 

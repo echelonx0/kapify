@@ -1,12 +1,39 @@
 // src/app/shared/components/organization-status-sidebar/organization-status-sidebar.component.ts
-import { Component, inject, OnInit, OnDestroy, signal, computed, output } from '@angular/core';
+import {
+  Component,
+  inject,
+  OnInit,
+  OnDestroy,
+  signal,
+  computed,
+  output,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { LucideAngularModule, Building2, CheckCircle, AlertTriangle, Clock, ChevronDown, ChevronUp, ExternalLink, Shield, FileText } from 'lucide-angular';
+import {
+  LucideAngularModule,
+  Building2,
+  CheckCircle,
+  AlertTriangle,
+  Clock,
+  ChevronDown,
+  ChevronUp,
+  ExternalLink,
+  Shield,
+  FileText,
+} from 'lucide-angular';
 import { Subject, takeUntil } from 'rxjs';
-import { FunderOnboardingService, OnboardingState } from '../../../funder/services/funder-onboarding.service';
- 
- export interface ActionEvent {
-  type: 'complete_setup' | 'get_verified' | 'edit_organization' | 'manage_public_profile' | 'share_profile';
+import {
+  FunderOnboardingService,
+  OnboardingState,
+} from '../../../funder/services/funder-onboarding.service';
+
+export interface ActionEvent {
+  type:
+    | 'complete_setup'
+    | 'get_verified'
+    | 'edit_organization'
+    | 'manage_public_profile'
+    | 'share_profile';
   target?: string;
 }
 
@@ -18,13 +45,12 @@ interface StatusPriority {
   description: string;
   action: string;
 }
- 
 
 @Component({
   selector: 'app-organization-status-sidebar',
   standalone: true,
   imports: [CommonModule, LucideAngularModule],
-  templateUrl: 'status-sidebar.component.html'
+  templateUrl: 'status-sidebar.component.html',
 })
 export class OrganizationStatusSidebarComponent implements OnInit, OnDestroy {
   private onboardingService = inject(FunderOnboardingService);
@@ -57,7 +83,7 @@ export class OrganizationStatusSidebarComponent implements OnInit, OnDestroy {
       revenueImpact: 'high',
       userEffort: 'quick',
       description: 'Required for opportunity creation',
-      action: 'Add organization name'
+      action: 'Add organization name',
     },
     {
       item: 'Contact Email',
@@ -65,7 +91,7 @@ export class OrganizationStatusSidebarComponent implements OnInit, OnDestroy {
       revenueImpact: 'high',
       userEffort: 'quick',
       description: 'SMEs need to contact you',
-      action: 'Add contact email'
+      action: 'Add contact email',
     },
     {
       item: 'Legal Name',
@@ -73,7 +99,7 @@ export class OrganizationStatusSidebarComponent implements OnInit, OnDestroy {
       revenueImpact: 'high',
       userEffort: 'quick',
       description: 'Required for verification',
-      action: 'Add legal name'
+      action: 'Add legal name',
     },
     {
       item: 'Registration Number',
@@ -81,7 +107,7 @@ export class OrganizationStatusSidebarComponent implements OnInit, OnDestroy {
       revenueImpact: 'high',
       userEffort: 'moderate',
       description: 'Builds trust with applicants',
-      action: 'Add registration number'
+      action: 'Add registration number',
     },
     {
       item: 'Business Address',
@@ -89,7 +115,7 @@ export class OrganizationStatusSidebarComponent implements OnInit, OnDestroy {
       revenueImpact: 'medium',
       userEffort: 'moderate',
       description: 'Required for legal compliance',
-      action: 'Add business address'
+      action: 'Add business address',
     },
     {
       item: 'Phone Number',
@@ -97,7 +123,7 @@ export class OrganizationStatusSidebarComponent implements OnInit, OnDestroy {
       revenueImpact: 'medium',
       userEffort: 'quick',
       description: 'Alternative contact method',
-      action: 'Add phone number'
+      action: 'Add phone number',
     },
     {
       item: 'Organization Description',
@@ -105,8 +131,8 @@ export class OrganizationStatusSidebarComponent implements OnInit, OnDestroy {
       revenueImpact: 'medium',
       userEffort: 'moderate',
       description: 'Helps SMEs understand your focus',
-      action: 'Add description'
-    }
+      action: 'Add description',
+    },
   ];
 
   // Computed properties
@@ -139,7 +165,8 @@ export class OrganizationStatusSidebarComponent implements OnInit, OnDestroy {
   // ===============================
 
   private loadOnboardingState() {
-    this.onboardingService.checkOnboardingStatus()
+    this.onboardingService
+      .checkOnboardingStatus()
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (state) => {
@@ -147,14 +174,14 @@ export class OrganizationStatusSidebarComponent implements OnInit, OnDestroy {
         },
         error: (error) => {
           console.error('Failed to load onboarding state:', error);
-        }
+        },
       });
   }
 
   private setupSubscriptions() {
     this.onboardingService.onboardingState$
       .pipe(takeUntil(this.destroy$))
-      .subscribe(state => {
+      .subscribe((state) => {
         this.onboardingState.set(state);
       });
   }
@@ -163,9 +190,10 @@ export class OrganizationStatusSidebarComponent implements OnInit, OnDestroy {
     // Auto-expand for incomplete profiles unless user manually collapsed
     this.onboardingService.onboardingState$
       .pipe(takeUntil(this.destroy$))
-      .subscribe(state => {
+      .subscribe((state) => {
         if (state && state.completionPercentage < 100) {
-          const userCollapsed = localStorage.getItem('org-status-collapsed') === 'true';
+          const userCollapsed =
+            localStorage.getItem('org-status-collapsed') === 'true';
           if (!userCollapsed) {
             this.isCollapsed.set(false);
           }
@@ -174,13 +202,13 @@ export class OrganizationStatusSidebarComponent implements OnInit, OnDestroy {
   }
 
   // Add these methods to the component:
-managePublicProfile() {
-  this.actionClicked.emit({ type: 'manage_public_profile' });
-}
+  managePublicProfile() {
+    this.actionClicked.emit({ type: 'manage_public_profile' });
+  }
 
-shareProfile() {
-  this.actionClicked.emit({ type: 'share_profile' });
-}
+  shareProfile() {
+    this.actionClicked.emit({ type: 'share_profile' });
+  }
   // ===============================
   // STATUS COMPUTATION
   // ===============================
@@ -197,7 +225,7 @@ shareProfile() {
   getStatusText(): string {
     const state = this.onboardingState();
     if (!state) return 'Loading...';
-    
+
     if (state.organization?.isVerified) return 'Verified';
     if (state.isComplete) return 'Complete';
     if (state.completionPercentage >= 50) return 'In Progress';
@@ -207,11 +235,11 @@ shareProfile() {
   getMainStatusTitle(): string {
     const state = this.onboardingState();
     if (!state) return 'Loading Organization Status';
-    
+
     if (state.organization?.isVerified) {
       return 'Organization Verified';
     } else if (state.isComplete) {
-      return 'Ready for Verification';
+      return 'Verification in Progress';
     } else if (state.completionPercentage >= 50) {
       return 'Complete Your Setup';
     } else {
@@ -222,14 +250,16 @@ shareProfile() {
   getMainStatusDescription(): string {
     const state = this.onboardingState();
     if (!state) return 'Loading your organization details...';
-    
+
     if (state.organization?.isVerified) {
       return 'Your organization is verified and ready to create funding opportunities.';
     } else if (state.isComplete) {
       return 'Complete setup achieved! Submit for verification to build trust with SMEs.';
     } else {
       const missing = this.getTotalMissingItems();
-      return `${missing} item${missing === 1 ? '' : 's'} remaining to enable opportunity creation.`;
+      return `${missing} item${
+        missing === 1 ? '' : 's'
+      } remaining to enable opportunity creation.`;
     }
   }
 
@@ -241,10 +271,15 @@ shareProfile() {
     const org = this.onboardingState()?.organization;
     if (!org) return [];
 
-    return this.priorityMatrix.filter(priority => {
+    return this.priorityMatrix.filter((priority) => {
       const fieldValue = this.getFieldValue(org, priority.field);
-      const isMissing = !fieldValue || (typeof fieldValue === 'string' && !fieldValue.trim());
-      return isMissing && priority.revenueImpact === 'high' && priority.userEffort === 'quick';
+      const isMissing =
+        !fieldValue || (typeof fieldValue === 'string' && !fieldValue.trim());
+      return (
+        isMissing &&
+        priority.revenueImpact === 'high' &&
+        priority.userEffort === 'quick'
+      );
     });
   }
 
@@ -252,20 +287,25 @@ shareProfile() {
     const org = this.onboardingState()?.organization;
     if (!org) return [];
 
-    return this.priorityMatrix.filter(priority => {
-      const fieldValue = this.getFieldValue(org, priority.field);
-      const isMissing = !fieldValue || (typeof fieldValue === 'string' && !fieldValue.trim());
-      return isMissing;
-    }).sort((a, b) => {
-      // Sort by revenue impact first, then user effort
-      const impactWeight = { high: 3, medium: 2, low: 1 };
-      const effortWeight = { quick: 3, moderate: 2, complex: 1 };
-      
-      const aScore = impactWeight[a.revenueImpact] * effortWeight[a.userEffort];
-      const bScore = impactWeight[b.revenueImpact] * effortWeight[b.userEffort];
-      
-      return bScore - aScore;
-    });
+    return this.priorityMatrix
+      .filter((priority) => {
+        const fieldValue = this.getFieldValue(org, priority.field);
+        const isMissing =
+          !fieldValue || (typeof fieldValue === 'string' && !fieldValue.trim());
+        return isMissing;
+      })
+      .sort((a, b) => {
+        // Sort by revenue impact first, then user effort
+        const impactWeight = { high: 3, medium: 2, low: 1 };
+        const effortWeight = { quick: 3, moderate: 2, complex: 1 };
+
+        const aScore =
+          impactWeight[a.revenueImpact] * effortWeight[a.userEffort];
+        const bScore =
+          impactWeight[b.revenueImpact] * effortWeight[b.userEffort];
+
+        return bScore - aScore;
+      });
   }
 
   getTotalMissingItems(): number {
@@ -290,15 +330,17 @@ shareProfile() {
     this.showAllMissing.set(true);
   }
 
-shouldShowVerification(): boolean {
-  const state = this.onboardingState();
-  return !!(state?.isComplete && !state.organization?.isVerified);
-}
+  shouldShowVerification(): boolean {
+    const state = this.onboardingState();
+    return !!(state?.isComplete && !state.organization?.isVerified);
+  }
 
-canRequestVerification(): boolean {
-  const state = this.onboardingState();
-  return !!(state?.isComplete && state.organization?.status !== 'pending_verification');
-}
+  canRequestVerification(): boolean {
+    const state = this.onboardingState();
+    return !!(
+      state?.isComplete && state.organization?.status !== 'pending_verification'
+    );
+  }
   getVerificationButtonText(): string {
     const state = this.onboardingState();
     if (state?.organization?.status === 'pending_verification') {
@@ -344,7 +386,7 @@ canRequestVerification(): boolean {
   getStatusIcon(): any {
     const state = this.onboardingState();
     if (!state) return this.ClockIcon;
-    
+
     if (state.organization?.isVerified) return this.CheckCircleIcon;
     if (state.isComplete) return this.ShieldIcon;
     return this.AlertTriangleIcon;
@@ -353,7 +395,7 @@ canRequestVerification(): boolean {
   getStatusBadgeClass(): string {
     const state = this.onboardingState();
     if (!state) return 'bg-gray-100 text-gray-700';
-    
+
     if (state.organization?.isVerified) {
       return 'bg-green-100 text-green-700';
     } else if (state.isComplete) {
@@ -368,7 +410,7 @@ canRequestVerification(): boolean {
   getMainStatusCardClass(): string {
     const state = this.onboardingState();
     if (!state) return 'bg-gray-50 border-gray-200';
-    
+
     if (state.organization?.isVerified) {
       return 'bg-green-50 border border-green-200';
     } else if (state.isComplete) {
@@ -383,7 +425,7 @@ canRequestVerification(): boolean {
   getStatusIconBg(): string {
     const state = this.onboardingState();
     if (!state) return 'bg-gray-100';
-    
+
     if (state.organization?.isVerified) return 'bg-green-100';
     if (state.isComplete) return 'bg-blue-100';
     if (state.completionPercentage >= 50) return 'bg-orange-100';
@@ -393,7 +435,7 @@ canRequestVerification(): boolean {
   getStatusIconColor(): string {
     const state = this.onboardingState();
     if (!state) return 'text-gray-600';
-    
+
     if (state.organization?.isVerified) return 'text-green-600';
     if (state.isComplete) return 'text-blue-600';
     if (state.completionPercentage >= 50) return 'text-orange-600';
@@ -403,7 +445,7 @@ canRequestVerification(): boolean {
   getStatusTitleColor(): string {
     const state = this.onboardingState();
     if (!state) return 'text-gray-900';
-    
+
     if (state.organization?.isVerified) return 'text-green-900';
     if (state.isComplete) return 'text-blue-900';
     if (state.completionPercentage >= 50) return 'text-orange-900';
@@ -413,7 +455,7 @@ canRequestVerification(): boolean {
   getStatusTextColor(): string {
     const state = this.onboardingState();
     if (!state) return 'text-gray-700';
-    
+
     if (state.organization?.isVerified) return 'text-green-700';
     if (state.isComplete) return 'text-blue-700';
     if (state.completionPercentage >= 50) return 'text-orange-700';
@@ -423,17 +465,19 @@ canRequestVerification(): boolean {
   getActionButtonColor(): string {
     const state = this.onboardingState();
     if (!state) return 'text-gray-600 hover:text-gray-800';
-    
-    if (state.organization?.isVerified) return 'text-green-600 hover:text-green-800';
+
+    if (state.organization?.isVerified)
+      return 'text-green-600 hover:text-green-800';
     if (state.isComplete) return 'text-blue-600 hover:text-blue-800';
-    if (state.completionPercentage >= 50) return 'text-orange-600 hover:text-orange-800';
+    if (state.completionPercentage >= 50)
+      return 'text-orange-600 hover:text-orange-800';
     return 'text-red-600 hover:text-red-800';
   }
 
   getProgressBarColor(): string {
     const state = this.onboardingState();
     if (!state) return 'bg-gray-400';
-    
+
     if (state.organization?.isVerified) {
       return 'bg-gradient-to-r from-green-500 to-green-600';
     } else if (state.isComplete) {
@@ -452,7 +496,7 @@ canRequestVerification(): boolean {
       private_equity: 'Private Equity',
       bank: 'Bank',
       government: 'Government Agency',
-      ngo: 'NGO/Non-Profit'
+      ngo: 'NGO/Non-Profit',
     };
     return types[type] || type;
   }

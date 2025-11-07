@@ -45,7 +45,6 @@ interface ApplicationFormData {
     AiExecutiveSummaryComponent,
     ApplicationTabsComponent,
     AiAssistantComponent,
-    // ApplicantProfileComponent,
     StatusManagementModalComponent,
     ApplicationHeaderComponent,
     ApplicationMetricsComponent,

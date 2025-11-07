@@ -403,14 +403,14 @@ export class AiExecutiveSummaryComponent implements OnInit {
   // Style helper methods
   getConfidenceColorClass(): string {
     const confidence = this.overallConfidence();
-    if (confidence >= 80) return 'text-green-600';
+    if (confidence >= 80) return 'text-teal-600';
     if (confidence >= 60) return 'text-yellow-600';
     return 'text-red-600';
   }
 
   getConfidenceBarClass(): string {
     const confidence = this.overallConfidence();
-    if (confidence >= 80) return 'bg-green-500';
+    if (confidence >= 80) return 'bg-teal-500';
     if (confidence >= 60) return 'bg-yellow-500';
     return 'bg-red-500';
   }
@@ -424,7 +424,7 @@ export class AiExecutiveSummaryComponent implements OnInit {
 
   getOverallScoreTextClass(): string {
     const score = this.overallScore();
-    if (score >= 8) return 'text-green-600';
+    if (score >= 8) return 'text-teal-600';
     if (score >= 6) return 'text-yellow-600';
     return 'text-red-600';
   }
@@ -446,7 +446,7 @@ export class AiExecutiveSummaryComponent implements OnInit {
 
   getRiskTextClass(): string {
     const risk = this.riskAssessment();
-    if (risk.level === 'low') return 'text-green-600';
+    if (risk.level === 'low') return 'text-teal-600';
     if (risk.level === 'medium') return 'text-yellow-600';
     return 'text-red-600';
   }
@@ -467,28 +467,28 @@ export class AiExecutiveSummaryComponent implements OnInit {
 
   getMarketFitTextClass(): string {
     const score = this.marketFit().score;
-    if (score >= 80) return 'text-green-600';
+    if (score >= 80) return 'text-teal-600';
     if (score >= 60) return 'text-yellow-600';
     return 'text-red-600';
   }
 
   getInsightBorderClass(): string {
     const insight = this.keyInsight();
-    if (insight.type === 'positive') return 'bg-blue-50 border-blue-400';
+    if (insight.type === 'positive') return 'bg-slate-50 border-slate-400';
     if (insight.type === 'negative') return 'bg-red-50 border-red-400';
     return 'bg-gray-50 border-gray-400';
   }
 
   getInsightTitleClass(): string {
     const insight = this.keyInsight();
-    if (insight.type === 'positive') return 'text-blue-800';
+    if (insight.type === 'positive') return 'text-slate-800';
     if (insight.type === 'negative') return 'text-red-800';
     return 'text-gray-800';
   }
 
   getInsightTextClass(): string {
     const insight = this.keyInsight();
-    if (insight.type === 'positive') return 'text-blue-700';
+    if (insight.type === 'positive') return 'text-slate-700';
     if (insight.type === 'negative') return 'text-red-700';
     return 'text-gray-700';
   }
@@ -507,7 +507,7 @@ export class AiExecutiveSummaryComponent implements OnInit {
   }
 
   getInsightTypeClass(type: string): string {
-    if (type === 'positive') return 'text-green-500 mt-0.5';
+    if (type === 'positive') return 'text-teal-500 mt-0.5';
     if (type === 'negative') return 'text-red-500 mt-0.5';
     return 'text-gray-500 mt-0.5';
   }

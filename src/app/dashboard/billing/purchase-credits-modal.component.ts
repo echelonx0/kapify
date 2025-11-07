@@ -179,7 +179,6 @@ export class PurchaseCreditsModalComponent {
 
   onCreditAmountChange() {
     this.error.set(null);
-    // Round to nearest 1000
     this.creditAmount =
       Math.round(this.creditAmount / this.STEP_SIZE) * this.STEP_SIZE;
     if (this.creditAmount < this.MIN_CREDITS) {
@@ -206,7 +205,7 @@ export class PurchaseCreditsModalComponent {
     this.close.emit();
   }
 
-  handleCheckout() {
+  async handleCheckout() {
     if (!this.isValidAmount()) {
       this.error.set('Credits must be at least 10,000');
       return;
@@ -220,29 +219,27 @@ export class PurchaseCreditsModalComponent {
     this.isProcessing.set(true);
     this.error.set(null);
 
-    // Create checkout session with dummy service
-    this.stripeService
-      .createCheckoutSession({
-        organizationId: this.organizationId,
-        creditAmount: this.creditAmount,
-        amountZAR: this.totalCostZAR,
-      })
-      .then((result) => {
-        if (result.success) {
-          // In real implementation, redirect to Stripe
-          // await stripe.redirectToCheckout({ sessionId: result.sessionId });
-          console.log('✅ Checkout session created:', result.sessionId);
-          this.success.emit();
-        } else {
-          this.error.set(result.error || 'Failed to create checkout session');
-          this.isProcessing.set(false);
-        }
-      })
-      .catch((err) => {
-        console.error('Checkout error:', err);
-        this.error.set('Payment processing failed. Please try again.');
+    const result = await this.stripeService.createCheckoutSession({
+      organizationId: this.organizationId,
+      creditAmount: this.creditAmount,
+      amountZAR: this.totalCostZAR,
+    });
+
+    if (result.success && result.sessionId && result.publicKey) {
+      try {
+        await this.stripeService.redirectToCheckout(
+          result.sessionId,
+          result.publicKey
+        );
+      } catch (err) {
+        console.error('Redirect error:', err);
+        this.error.set('Failed to redirect to payment. Please try again.');
         this.isProcessing.set(false);
-      });
+      }
+    } else {
+      this.error.set(result.error || 'Failed to create checkout session');
+      this.isProcessing.set(false);
+    }
   }
 
   Math = Math;

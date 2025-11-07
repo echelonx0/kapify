@@ -1,11 +1,37 @@
 // src/app/ai/ai-assistant/ai-assistant.component.ts
-import { Component, inject, Input, OnInit, OnDestroy, signal, computed } from '@angular/core';
+import {
+  Component,
+  inject,
+  Input,
+  OnInit,
+  OnDestroy,
+  signal,
+  computed,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { LucideAngularModule, Sparkles, Lightbulb, TrendingUp, Copy, Calculator, FileText, HelpCircle, AlertTriangle, Target, DollarSign, Clock, Zap } from 'lucide-angular';
+import {
+  LucideAngularModule,
+  Sparkles,
+  Lightbulb,
+  TrendingUp,
+  Copy,
+  Calculator,
+  FileText,
+  HelpCircle,
+  AlertTriangle,
+  Target,
+  DollarSign,
+  Clock,
+  Zap,
+} from 'lucide-angular';
 import { Router } from '@angular/router';
-import { Subject, takeUntil} from 'rxjs';
-import { MarketIntelligenceService, MarketIntelligence, CompetitorIntelligence } from '../services/market-intelligence.service';
- 
+import { Subject, takeUntil } from 'rxjs';
+import {
+  MarketIntelligenceService,
+  MarketIntelligence,
+  CompetitorIntelligence,
+} from '../services/market-intelligence.service';
+
 interface FormData {
   fundingType: string;
   offerAmount: string;
@@ -15,7 +41,13 @@ interface FormData {
 }
 
 interface IntelligenceInsight {
-  type: 'market_timing' | 'competitor_activity' | 'risk_alert' | 'opportunity' | 'regulatory' | 'funding_trend';
+  type:
+    | 'market_timing'
+    | 'competitor_activity'
+    | 'risk_alert'
+    | 'opportunity'
+    | 'regulatory'
+    | 'funding_trend';
   urgency: 'low' | 'medium' | 'high';
   title: string;
   description: string;
@@ -29,73 +61,103 @@ interface IntelligenceInsight {
   standalone: true,
   imports: [CommonModule, LucideAngularModule],
   template: `
-    <div class="bg-gradient-to-br from-slate-500 via-primary-500 to-cyan-600 p-0.5 rounded-xl sticky top-6">
+    <div
+      class="border-[0.5px] bg-gradient-to-br from-orange-400 via-primary-400 to-cyan-400 p-0.1 rounded-xl sticky top-6"
+    >
       <div class="bg-white rounded-xl p-6">
         <div class="flex items-center space-x-3 mb-4">
-          <div class="w-8 h-8 bg-gradient-to-r from-slate-500 to-slate-500 rounded-lg flex items-center justify-center">
-            <lucide-icon [img]="SparklesIcon" [size]="16" class="text-white"></lucide-icon>
-          </div>
-          <h3 class="font-semibold text-gray-900">Kapify Investment Assistant</h3>
+          <h3 class="font-semibold text-gray-900">Kapify Assistant</h3>
           @if (isLoadingIntelligence()) {
-            <div class="w-4 h-4 border-2 border-slate-500 border-t-transparent rounded-full animate-spin"></div>
+          <div
+            class="w-4 h-4 border-2 border-slate-500 border-t-transparent rounded-full animate-spin"
+          ></div>
           }
         </div>
 
         <div class="space-y-4">
           <!-- Real-Time Market Intelligence -->
           @if (topInsight()) {
-            <div [class]="getInsightCardClass(topInsight()!.urgency)" class="rounded-lg p-4">
-              <div class="flex items-start space-x-3">
-                <div class="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5"
-                     [class]="getInsightIconBg(topInsight()!.urgency)">
-                  <lucide-icon [img]="getInsightIcon(topInsight()!.type)" [size]="12" 
-                               [class]="getInsightIconColor(topInsight()!.urgency)"></lucide-icon>
-                </div>
-                <div class="flex-1">
-                  <h4 class="text-sm font-medium mb-1" [class]="getInsightTitleColor(topInsight()!.urgency)">
-                    {{ topInsight()!.title }}
-                  </h4>
-                  <p class="text-xs leading-relaxed" [class]="getInsightTextColor(topInsight()!.urgency)">
-                    {{ topInsight()!.description }}
-                  </p>
-                  @if (topInsight()!.actionItem) {
-                    <button 
-                      class="text-xs font-medium mt-2 hover:underline"
-                      [class]="getInsightActionColor(topInsight()!.urgency)"
-                      (click)="handleInsightAction(topInsight()!)">
-                      {{ topInsight()!.actionItem }} →
-                    </button>
+          <div
+            [class]="getInsightCardClass(topInsight()!.urgency)"
+            class="rounded-lg p-4"
+          >
+            <div class="flex items-start space-x-3">
+              <div
+                class="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5"
+                [class]="getInsightIconBg(topInsight()!.urgency)"
+              >
+                <lucide-icon
+                  [img]="getInsightIcon(topInsight()!.type)"
+                  [size]="12"
+                  [class]="getInsightIconColor(topInsight()!.urgency)"
+                ></lucide-icon>
+              </div>
+              <div class="flex-1">
+                <h4
+                  class="text-sm font-medium mb-1"
+                  [class]="getInsightTitleColor(topInsight()!.urgency)"
+                >
+                  {{ topInsight()!.title }}
+                </h4>
+                <p
+                  class="text-xs leading-relaxed"
+                  [class]="getInsightTextColor(topInsight()!.urgency)"
+                >
+                  {{ topInsight()!.description }}
+                </p>
+                @if (topInsight()!.actionItem) {
+                <button
+                  class="text-xs font-medium mt-2 hover:underline"
+                  [class]="getInsightActionColor(topInsight()!.urgency)"
+                  (click)="handleInsightAction(topInsight()!)"
+                >
+                  {{ topInsight()!.actionItem }} →
+                </button>
+                }
+                <div class="flex items-center justify-between mt-2">
+                  <span
+                    class="text-xs opacity-75"
+                    [class]="getInsightTextColor(topInsight()!.urgency)"
+                  >
+                    Confidence: {{ topInsight()!.confidence }}%
+                  </span>
+                  @if (topInsight()!.source) {
+                  <span
+                    class="text-xs opacity-60"
+                    [class]="getInsightTextColor(topInsight()!.urgency)"
+                  >
+                    {{ topInsight()!.source }}
+                  </span>
                   }
-                  <div class="flex items-center justify-between mt-2">
-                    <span class="text-xs opacity-75" [class]="getInsightTextColor(topInsight()!.urgency)">
-                      Confidence: {{ topInsight()!.confidence }}%
-                    </span>
-                    @if (topInsight()!.source) {
-                      <span class="text-xs opacity-60" [class]="getInsightTextColor(topInsight()!.urgency)">
-                        {{ topInsight()!.source }}
-                      </span>
-                    }
-                  </div>
                 </div>
               </div>
             </div>
+          </div>
           }
 
           <!-- Enhanced Market Insight -->
           <div class="bg-primary-50 border border-primary-200 rounded-lg p-4">
             <div class="flex items-start space-x-3">
-              <div class="w-6 h-6 bg-primary-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                <lucide-icon [img]="TrendingUpIcon" [size]="12" class="text-primary-600"></lucide-icon>
+              <div
+                class="w-6 h-6 bg-primary-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5"
+              >
+                <lucide-icon
+                  [img]="TrendingUpIcon"
+                  [size]="12"
+                  class="text-primary-600"
+                ></lucide-icon>
               </div>
               <div class="flex-1">
-                <h4 class="text-sm font-medium text-primary-900 mb-1">Market Intelligence</h4>
+                <h4 class="text-sm font-medium text-primary-900 mb-1">
+                  Market Intelligence
+                </h4>
                 <p class="text-xs text-primary-700 leading-relaxed">
                   {{ getEnhancedMarketInsight() }}
                 </p>
                 @if (hasMarketData()) {
-                  <div class="mt-2 text-xs text-primary-600">
-                    <span class="font-medium">{{ getMarketStats() }}</span>
-                  </div>
+                <div class="mt-2 text-xs text-primary-600">
+                  <span class="font-medium">{{ getMarketStats() }}</span>
+                </div>
                 }
               </div>
             </div>
@@ -104,15 +166,23 @@ interface IntelligenceInsight {
           <!-- Smart Suggestion with Intelligence -->
           <div class="bg-slate-50 border border-slate-200 rounded-lg p-4">
             <div class="flex items-start space-x-3">
-              <div class="w-6 h-6 bg-slate-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                <lucide-icon [img]="LightbulbIcon" [size]="12" class="text-slate-600"></lucide-icon>
+              <div
+                class="w-6 h-6 bg-slate-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5"
+              >
+                <lucide-icon
+                  [img]="LightbulbIcon"
+                  [size]="12"
+                  class="text-slate-600"
+                ></lucide-icon>
               </div>
               <div class="flex-1">
-                <h4 class="text-sm font-medium text-slate-900 mb-1">Smart Suggestion</h4>
+                <h4 class="text-sm font-medium text-slate-900 mb-1">
+                  Smart Suggestion
+                </h4>
                 <p class="text-xs text-slate-700 leading-relaxed">
                   {{ getIntelligentSuggestion() }}
                 </p>
-                <button 
+                <button
                   class="text-xs text-slate-600 hover:text-slate-800 font-medium mt-2"
                   (click)="applySuggestion()"
                 >
@@ -125,69 +195,101 @@ interface IntelligenceInsight {
           <!-- Quick Actions -->
           <div class="space-y-2">
             <h4 class="text-sm font-semibold text-gray-900">Quick Actions</h4>
-            
-            <button 
+
+            <button
               class="w-full text-left p-3 border border-gray-200 rounded-lg hover:border-primary-300 hover:bg-primary-50 transition-all group"
               (click)="analyzeMarketTiming()"
               [disabled]="isLoadingIntelligence()"
             >
               <div class="flex items-center space-x-3">
-                <lucide-icon [img]="ClockIcon" [size]="16" class="text-gray-400 group-hover:text-primary-600"></lucide-icon>
-                <span class="text-sm text-gray-700 group-hover:text-primary-700">Analyze Market Timing</span>
+                <lucide-icon
+                  [img]="ClockIcon"
+                  [size]="16"
+                  class="text-gray-400 group-hover:text-primary-600"
+                ></lucide-icon>
+                <span class="text-sm text-gray-700 group-hover:text-primary-700"
+                  >Analyze Market Timing</span
+                >
               </div>
             </button>
 
-            <button 
+            <button
               class="w-full text-left p-3 border border-gray-200 rounded-lg hover:border-primary-300 hover:bg-primary-50 transition-all group"
               (click)="researchCompetitors()"
               [disabled]="isLoadingIntelligence()"
             >
               <div class="flex items-center space-x-3">
-                <lucide-icon [img]="TargetIcon" [size]="16" class="text-gray-400 group-hover:text-primary-600"></lucide-icon>
-                <span class="text-sm text-gray-700 group-hover:text-primary-700">Research Competitors</span>
+                <lucide-icon
+                  [img]="TargetIcon"
+                  [size]="16"
+                  class="text-gray-400 group-hover:text-primary-600"
+                ></lucide-icon>
+                <span class="text-sm text-gray-700 group-hover:text-primary-700"
+                  >Research Competitors</span
+                >
               </div>
             </button>
 
-            <button 
+            <button
               class="w-full text-left p-3 border border-gray-200 rounded-lg hover:border-primary-300 hover:bg-primary-50 transition-all group"
               (click)="calculateReturns()"
             >
               <div class="flex items-center space-x-3">
-                <lucide-icon [img]="CalculatorIcon" [size]="16" class="text-gray-400 group-hover:text-primary-600"></lucide-icon>
-                <span class="text-sm text-gray-700 group-hover:text-primary-700">Calculate Returns</span>
+                <lucide-icon
+                  [img]="CalculatorIcon"
+                  [size]="16"
+                  class="text-gray-400 group-hover:text-primary-600"
+                ></lucide-icon>
+                <span class="text-sm text-gray-700 group-hover:text-primary-700"
+                  >Calculate Returns</span
+                >
               </div>
             </button>
 
-            <button 
+            <button
               class="w-full text-left p-3 border border-gray-200 rounded-lg hover:border-primary-300 hover:bg-primary-50 transition-all group"
               (click)="generateDescription()"
             >
               <div class="flex items-center space-x-3">
-                <lucide-icon [img]="FileTextIcon" [size]="16" class="text-gray-400 group-hover:text-primary-600"></lucide-icon>
-                <span class="text-sm text-gray-700 group-hover:text-primary-700">Generate Description</span>
+                <lucide-icon
+                  [img]="FileTextIcon"
+                  [size]="16"
+                  class="text-gray-400 group-hover:text-primary-600"
+                ></lucide-icon>
+                <span class="text-sm text-gray-700 group-hover:text-primary-700"
+                  >Generate Description</span
+                >
               </div>
             </button>
           </div>
 
           <!-- Intelligence Summary -->
           @if (allInsights().length > 1) {
-            <div class="border-t border-gray-200 pt-4">
-              <div class="text-xs text-gray-500 mb-2">Additional Insights ({{ allInsights().length - 1 }})</div>
-              <div class="space-y-2">
-                @for (insight of allInsights().slice(1, 4); track insight.title) {
-                  <div class="flex items-center space-x-2">
-                    <div class="w-2 h-2 rounded-full" [class]="getUrgencyDot(insight.urgency)"></div>
-                    <span class="text-xs text-gray-600 line-clamp-1">{{ insight.title }}</span>
-                  </div>
-                }
-                @if (allInsights().length > 4) {
-                  <button class="text-xs text-primary-600 hover:text-primary-800 font-medium" 
-                          (click)="showAllInsights()">
-                    +{{ allInsights().length - 4 }} more insights
-                  </button>
-                }
-              </div>
+          <div class="border-t border-gray-200 pt-4">
+            <div class="text-xs text-gray-500 mb-2">
+              Additional Insights ({{ allInsights().length - 1 }})
             </div>
+            <div class="space-y-2">
+              @for (insight of allInsights().slice(1, 4); track insight.title) {
+              <div class="flex items-center space-x-2">
+                <div
+                  class="w-2 h-2 rounded-full"
+                  [class]="getUrgencyDot(insight.urgency)"
+                ></div>
+                <span class="text-xs text-gray-600 line-clamp-1">{{
+                  insight.title
+                }}</span>
+              </div>
+              } @if (allInsights().length > 4) {
+              <button
+                class="text-xs text-primary-600 hover:text-primary-800 font-medium"
+                (click)="showAllInsights()"
+              >
+                +{{ allInsights().length - 4 }} more insights
+              </button>
+              }
+            </div>
+          </div>
           }
 
           <!-- Progress Indicator -->
@@ -195,35 +297,45 @@ interface IntelligenceInsight {
             <div class="text-xs text-gray-500 mb-2">Form completion</div>
             <div class="flex items-center space-x-2">
               <div class="flex-1 bg-gray-200 rounded-full h-1.5">
-                <div 
-                  class="bg-gradient-to-r from-primary-500 to-slate-500 h-1.5 rounded-full transition-all duration-300" 
+                <div
+                  class="bg-gradient-to-r from-primary-500 to-slate-500 h-1.5 rounded-full transition-all duration-300"
                   [style.width.%]="completionPercentage"
                 ></div>
               </div>
-              <span class="text-xs font-medium text-gray-700">{{ completionPercentage }}%</span>
+              <span class="text-xs font-medium text-gray-700"
+                >{{ completionPercentage }}%</span
+              >
             </div>
           </div>
 
           <!-- Contextual Help -->
           @if (contextualHelp()) {
-            <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-              <div class="flex items-start space-x-3">
-                <div class="w-6 h-6 bg-yellow-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <lucide-icon [img]="HelpCircleIcon" [size]="12" class="text-yellow-600"></lucide-icon>
-                </div>
-                <div class="flex-1">
-                  <h4 class="text-sm font-medium text-yellow-900 mb-1">{{ contextualHelp()!.title }}</h4>
-                  <p class="text-xs text-yellow-700 leading-relaxed">
-                    {{ contextualHelp()!.message }}
-                  </p>
-                </div>
+          <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+            <div class="flex items-start space-x-3">
+              <div
+                class="w-6 h-6 bg-yellow-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5"
+              >
+                <lucide-icon
+                  [img]="HelpCircleIcon"
+                  [size]="12"
+                  class="text-yellow-600"
+                ></lucide-icon>
+              </div>
+              <div class="flex-1">
+                <h4 class="text-sm font-medium text-yellow-900 mb-1">
+                  {{ contextualHelp()!.title }}
+                </h4>
+                <p class="text-xs text-yellow-700 leading-relaxed">
+                  {{ contextualHelp()!.message }}
+                </p>
               </div>
             </div>
+          </div>
           }
         </div>
       </div>
     </div>
-  `
+  `,
 })
 export class AiAssistantComponent implements OnInit, OnDestroy {
   @Input() currentStep: string = 'basic';
@@ -264,15 +376,17 @@ export class AiAssistantComponent implements OnInit, OnDestroy {
 
     // Market timing insights
     if (market?.timingInsights) {
-      insights.push(...market.timingInsights.slice(0, 2).map(insight => ({
-        type: 'market_timing' as const,
-        urgency: this.assessTimingUrgency(insight),
-        title: 'Market Timing Opportunity',
-        description: insight,
-        actionItem: 'Review timing strategy',
-        confidence: market.confidence,
-        source: 'Market Analysis'
-      })));
+      insights.push(
+        ...market.timingInsights.slice(0, 2).map((insight) => ({
+          type: 'market_timing' as const,
+          urgency: this.assessTimingUrgency(insight),
+          title: 'Market Timing Opportunity',
+          description: insight,
+          actionItem: 'Review timing strategy',
+          confidence: market.confidence,
+          source: 'Market Analysis',
+        }))
+      );
     }
 
     // Funding trend insights
@@ -286,14 +400,14 @@ export class AiAssistantComponent implements OnInit, OnDestroy {
           description: `Valuations trending down with ${trend.dealCount} deals last quarter. Better pricing available.`,
           actionItem: 'Consider aggressive positioning',
           confidence: market.confidence,
-          source: 'Funding Data'
+          source: 'Funding Data',
         });
       }
     }
 
     // Regulatory insights
     if (market?.regulatoryChanges?.length) {
-      market.regulatoryChanges.forEach(change => {
+      market.regulatoryChanges.forEach((change) => {
         insights.push({
           type: 'regulatory',
           urgency: 'medium',
@@ -301,14 +415,14 @@ export class AiAssistantComponent implements OnInit, OnDestroy {
           description: change,
           actionItem: 'Review compliance impact',
           confidence: market.confidence,
-          source: 'Regulatory Monitor'
+          source: 'Regulatory Monitor',
         });
       });
     }
 
     // Competitor activity insights
     if (competitor?.recentNews?.length) {
-      competitor.recentNews.slice(0, 1).forEach(news => {
+      competitor.recentNews.slice(0, 1).forEach((news) => {
         insights.push({
           type: 'competitor_activity',
           urgency: 'medium',
@@ -316,13 +430,16 @@ export class AiAssistantComponent implements OnInit, OnDestroy {
           description: news,
           actionItem: 'Assess competitive impact',
           confidence: competitor.confidence,
-          source: 'Competitor Research'
+          source: 'Competitor Research',
         });
       });
     }
 
     // Risk alerts from market data
-    if (market?.fundingTrends?.dealCount && market.fundingTrends.dealCount < 5) {
+    if (
+      market?.fundingTrends?.dealCount &&
+      market.fundingTrends.dealCount < 5
+    ) {
       insights.push({
         type: 'risk_alert',
         urgency: 'high',
@@ -330,7 +447,7 @@ export class AiAssistantComponent implements OnInit, OnDestroy {
         description: `Only ${market.fundingTrends.dealCount} deals last quarter in this sector. Market may be cooling.`,
         actionItem: 'Consider sector diversification',
         confidence: market.confidence,
-        source: 'Deal Flow Analysis'
+        source: 'Deal Flow Analysis',
       });
     }
 
@@ -346,13 +463,15 @@ export class AiAssistantComponent implements OnInit, OnDestroy {
     if (this.currentStep === 'terms' && this.formData.fundingType === 'debt') {
       return {
         title: 'Current Market Rates',
-        message: this.getContextualRateAdvice()
+        message: this.getContextualRateAdvice(),
       };
     }
     if (this.currentStep === 'basic' && this.marketData()?.trends.length) {
       return {
         title: 'Market Trend Alert',
-        message: `${this.marketData()!.trends[0]}. Consider how this affects your positioning.`
+        message: `${
+          this.marketData()!.trends[0]
+        }. Consider how this affects your positioning.`,
       };
     }
     return null;
@@ -373,8 +492,11 @@ export class AiAssistantComponent implements OnInit, OnDestroy {
   // ===============================
 
   private loadMarketIntelligence() {
-    const industry = this.formData.industry || this.currentOpportunity?.industry || this.applicationData?.industry;
-    
+    const industry =
+      this.formData.industry ||
+      this.currentOpportunity?.industry ||
+      this.applicationData?.industry;
+
     if (!industry) {
       console.log('No industry specified for market intelligence');
       return;
@@ -384,7 +506,8 @@ export class AiAssistantComponent implements OnInit, OnDestroy {
     this.intelligenceError.set(null);
 
     // Load market intelligence
-    this.marketIntelligence.getMarketIntelligence(industry, { maxAge: 24 })
+    this.marketIntelligence
+      .getMarketIntelligence(industry, { maxAge: 24 })
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (intelligence) => {
@@ -396,13 +519,15 @@ export class AiAssistantComponent implements OnInit, OnDestroy {
           this.intelligenceError.set(error.message);
           this.isLoadingIntelligence.set(false);
           console.error('Failed to load market intelligence:', error);
-        }
+        },
       });
 
     // Load competitor intelligence if we have a company name
-    const companyName = this.applicationData?.companyName || this.currentOpportunity?.title;
+    const companyName =
+      this.applicationData?.companyName || this.currentOpportunity?.title;
     if (companyName && companyName !== 'Unknown') {
-      this.marketIntelligence.getCompetitorIntelligence(companyName, industry)
+      this.marketIntelligence
+        .getCompetitorIntelligence(companyName, industry)
         .pipe(takeUntil(this.destroy$))
         .subscribe({
           next: (competitor) => {
@@ -411,7 +536,7 @@ export class AiAssistantComponent implements OnInit, OnDestroy {
           },
           error: (error) => {
             console.warn('Competitor intelligence failed:', error);
-          }
+          },
         });
     }
   }
@@ -439,7 +564,7 @@ export class AiAssistantComponent implements OnInit, OnDestroy {
     const insights = this.allInsights();
 
     // Priority: High urgency insights first
-    const highUrgencyInsight = insights.find(i => i.urgency === 'high');
+    const highUrgencyInsight = insights.find((i) => i.urgency === 'high');
     if (highUrgencyInsight) {
       return `URGENT: ${highUrgencyInsight.description}`;
     }
@@ -452,7 +577,11 @@ export class AiAssistantComponent implements OnInit, OnDestroy {
     // Funding trends insight
     if (market?.fundingTrends) {
       const trend = market.fundingTrends;
-      return `Market shows ${trend.dealCount} deals averaging ${this.formatAmount(trend.averageRoundSize)}. Valuations are ${trend.valuationTrend}.`;
+      return `Market shows ${
+        trend.dealCount
+      } deals averaging ${this.formatAmount(
+        trend.averageRoundSize
+      )}. Valuations are ${trend.valuationTrend}.`;
     }
 
     // Fallback to traditional suggestions
@@ -465,19 +594,26 @@ export class AiAssistantComponent implements OnInit, OnDestroy {
 
   getEnhancedMarketInsight(): string {
     const market = this.marketData();
-    
+
     if (!market) {
       return this.getFallbackMarketInsight();
     }
 
     // Prioritize most impactful trends
     if (market.trends?.length > 0) {
-      return `${market.trends[0]}. ${market.competitorActivity?.[0] || 'Monitor competitive landscape closely.'}`;
+      return `${market.trends[0]}. ${
+        market.competitorActivity?.[0] ||
+        'Monitor competitive landscape closely.'
+      }`;
     }
 
     if (market.fundingTrends) {
       const trend = market.fundingTrends;
-      return `${trend.dealCount} deals completed last quarter with average size ${this.formatAmount(trend.averageRoundSize)}. Market sentiment: ${trend.valuationTrend}.`;
+      return `${
+        trend.dealCount
+      } deals completed last quarter with average size ${this.formatAmount(
+        trend.averageRoundSize
+      )}. Market sentiment: ${trend.valuationTrend}.`;
     }
 
     return 'Real-time market analysis in progress...';
@@ -486,23 +622,25 @@ export class AiAssistantComponent implements OnInit, OnDestroy {
   private getFallbackMarketInsight(): string {
     if (this.formData.offerAmount) {
       const amount = Number(this.formData.offerAmount);
-      const lowerRange = Math.round(amount * 0.5 / 1000);
-      const upperRange = Math.round(amount * 1.5 / 1000);
+      const lowerRange = Math.round((amount * 0.5) / 1000);
+      const upperRange = Math.round((amount * 1.5) / 1000);
       return `SMEs typically seek R${lowerRange}K-R${upperRange}K investments. Your structure aligns well with market norms.`;
     }
     return 'Market insights will appear here based on real-time analysis.';
   }
 
   hasMarketData(): boolean {
-    return !!(this.marketData()?.fundingTrends);
+    return !!this.marketData()?.fundingTrends;
   }
 
   getMarketStats(): string {
     const market = this.marketData();
     if (!market?.fundingTrends) return '';
-    
+
     const trend = market.fundingTrends;
-    return `${trend.dealCount} deals • ${this.formatAmount(trend.totalFunding)} total • ${trend.valuationTrend} trend`;
+    return `${trend.dealCount} deals • ${this.formatAmount(
+      trend.totalFunding
+    )} total • ${trend.valuationTrend} trend`;
   }
 
   // ===============================
@@ -511,7 +649,7 @@ export class AiAssistantComponent implements OnInit, OnDestroy {
 
   handleInsightAction(insight: IntelligenceInsight) {
     console.log('Handling insight action:', insight);
-    
+
     switch (insight.type) {
       case 'market_timing':
         this.analyzeMarketTiming();
@@ -531,26 +669,33 @@ export class AiAssistantComponent implements OnInit, OnDestroy {
   }
 
   analyzeMarketTiming() {
-    const industry = this.formData.industry || this.currentOpportunity?.industry;
+    const industry =
+      this.formData.industry || this.currentOpportunity?.industry;
     if (industry) {
       console.log('Refreshing market timing analysis for:', industry);
-      this.marketIntelligence.getMarketIntelligence(industry, { forceRefresh: true })
+      this.marketIntelligence
+        .getMarketIntelligence(industry, { forceRefresh: true })
         .pipe(takeUntil(this.destroy$))
-        .subscribe(intelligence => {
+        .subscribe((intelligence) => {
           this.marketData.set(intelligence);
         });
     }
   }
 
   researchCompetitors() {
-    const companyName = this.applicationData?.companyName || this.formData['companyName'];
-    const industry = this.formData.industry || this.currentOpportunity?.industry;
-    
+    const companyName =
+      this.applicationData?.companyName || this.formData['companyName'];
+    const industry =
+      this.formData.industry || this.currentOpportunity?.industry;
+
     if (companyName && industry) {
       console.log('Refreshing competitor research for:', companyName);
-      this.marketIntelligence.getCompetitorIntelligence(companyName, industry, { forceRefresh: true })
+      this.marketIntelligence
+        .getCompetitorIntelligence(companyName, industry, {
+          forceRefresh: true,
+        })
         .pipe(takeUntil(this.destroy$))
-        .subscribe(competitor => {
+        .subscribe((competitor) => {
           this.competitorData.set(competitor);
         });
     }
@@ -589,13 +734,13 @@ export class AiAssistantComponent implements OnInit, OnDestroy {
   private assessTimingUrgency(insight: string): 'low' | 'medium' | 'high' {
     const urgentKeywords = ['urgent', 'immediate', 'crisis', 'crash', 'boom'];
     const mediumKeywords = ['trend', 'shift', 'change', 'opportunity'];
-    
+
     const lowerInsight = insight.toLowerCase();
-    
-    if (urgentKeywords.some(keyword => lowerInsight.includes(keyword))) {
+
+    if (urgentKeywords.some((keyword) => lowerInsight.includes(keyword))) {
       return 'high';
     }
-    if (mediumKeywords.some(keyword => lowerInsight.includes(keyword))) {
+    if (mediumKeywords.some((keyword) => lowerInsight.includes(keyword))) {
       return 'medium';
     }
     return 'low';
@@ -603,75 +748,75 @@ export class AiAssistantComponent implements OnInit, OnDestroy {
 
   getInsightIcon(type: string): any {
     const icons: Record<string, any> = {
-      'market_timing': this.ClockIcon,
-      'competitor_activity': this.TargetIcon,
-      'risk_alert': this.AlertTriangleIcon,
-      'opportunity': this.ZapIcon,
-      'regulatory': this.FileTextIcon,
-      'funding_trend': this.DollarSignIcon
+      market_timing: this.ClockIcon,
+      competitor_activity: this.TargetIcon,
+      risk_alert: this.AlertTriangleIcon,
+      opportunity: this.ZapIcon,
+      regulatory: this.FileTextIcon,
+      funding_trend: this.DollarSignIcon,
     };
     return icons[type] || this.LightbulbIcon;
   }
 
   getInsightCardClass(urgency: string): string {
     const classes = {
-      'high': 'bg-red-50 border-red-200',
-      'medium': 'bg-orange-50 border-orange-200',
-      'low': 'bg-blue-50 border-blue-200'
+      high: 'bg-red-50 border-red-200',
+      medium: 'bg-orange-50 border-orange-200',
+      low: 'bg-blue-50 border-blue-200',
     };
     return `border ${classes[urgency as keyof typeof classes]}`;
   }
 
   getInsightIconBg(urgency: string): string {
     const classes = {
-      'high': 'bg-red-100',
-      'medium': 'bg-orange-100', 
-      'low': 'bg-blue-100'
+      high: 'bg-red-100',
+      medium: 'bg-orange-100',
+      low: 'bg-blue-100',
     };
     return classes[urgency as keyof typeof classes];
   }
 
   getInsightIconColor(urgency: string): string {
     const classes = {
-      'high': 'text-red-600',
-      'medium': 'text-orange-600',
-      'low': 'text-blue-600'
+      high: 'text-red-600',
+      medium: 'text-orange-600',
+      low: 'text-blue-600',
     };
     return classes[urgency as keyof typeof classes];
   }
 
   getInsightTitleColor(urgency: string): string {
     const classes = {
-      'high': 'text-red-900',
-      'medium': 'text-orange-900',
-      'low': 'text-blue-900'
+      high: 'text-red-900',
+      medium: 'text-orange-900',
+      low: 'text-blue-900',
     };
     return classes[urgency as keyof typeof classes];
   }
 
   getInsightTextColor(urgency: string): string {
     const classes = {
-      'high': 'text-red-700',
-      'medium': 'text-orange-700',
-      'low': 'text-blue-700'
+      high: 'text-red-700',
+      medium: 'text-orange-700',
+      low: 'text-blue-700',
     };
     return classes[urgency as keyof typeof classes];
   }
 
   getInsightActionColor(urgency: string): string {
     const classes = {
-      'high': 'text-red-600 hover:text-red-800',
-      'medium': 'text-orange-600 hover:text-orange-800',
-      'low': 'text-blue-600 hover:text-blue-800'
+      high: 'text-red-600 hover:text-red-800',
+      medium: 'text-orange-600 hover:text-orange-800',
+      low: 'text-blue-600 hover:text-blue-800',
     };
     return classes[urgency as keyof typeof classes];
   }
 
   getUrgencyDot(urgency: string): string {
     const classes = {
-      'high': 'bg-red-500',
-      'medium': 'bg-orange-500',
-      'low': 'bg-blue-500'
+      high: 'bg-red-500',
+      medium: 'bg-orange-500',
+      low: 'bg-blue-500',
     };
     return classes[urgency as keyof typeof classes];
   }

@@ -1,23 +1,16 @@
 <div
-  class="mb-4 bg-gradient-to-br from-slate-500 via-primary-600 to-slate-600 p-0.5 rounded-xl sticky top-6"
+  class="mb-4 bg-gradient-to-br from-slate-500 via-primary-600 to-slate-600 p-0.2 rounded-xl sticky top-6"
 >
   <div class="bg-white rounded-xl p-6">
     <!-- Header -->
     <div class="flex items-center justify-between mb-4">
       <div class="flex items-center space-x-3">
-        <div
-          class="w-8 h-8 bg-gradient-to-r from-slate-500 to-primary-600 rounded-lg flex items-center justify-center"
-        >
-          <lucide-icon
-            [img]="Building2Icon"
-            [size]="16"
-            class="text-white"
-          ></lucide-icon>
-        </div>
         <div class="flex-1">
-          <h3 class="font-semibold text-gray-900">Organization Status</h3>
           @if (onboardingState()) {
-          <p class="text-xs text-gray-600">{{ getOrganizationName() }}</p>
+
+          <h3 class="font-semibold text-gray-900">
+            {{ getOrganizationName() }}
+          </h3>
           }
         </div>
       </div>
@@ -77,16 +70,6 @@
       <!-- Main Status Card -->
       <div [class]="getMainStatusCardClass()" class="rounded-lg p-4">
         <div class="flex items-start space-x-3">
-          <div
-            class="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5"
-            [class]="getStatusIconBg()"
-          >
-            <lucide-icon
-              [img]="getStatusIcon()"
-              [size]="12"
-              [class]="getStatusIconColor()"
-            ></lucide-icon>
-          </div>
           <div class="flex-1">
             <h4
               class="text-sm font-medium mb-1"
@@ -194,13 +177,8 @@
           (click)="editOrganization()"
         >
           <div class="flex items-center space-x-3">
-            <lucide-icon
-              [img]="Building2Icon"
-              [size]="16"
-              class="text-gray-400 group-hover:text-slate-600"
-            ></lucide-icon>
             <span class="text-sm text-gray-700 group-hover:text-slate-700"
-              >Edit Organization Details</span
+              >Edit Org Details</span
             >
             <lucide-icon
               [img]="ExternalLinkIcon"
@@ -234,7 +212,7 @@
       <!-- Organization Type -->
       @if (onboardingState()?.organization) {
       <div class="border-t border-gray-200 pt-4">
-        <div class="text-xs text-gray-500 mb-1">Organization Type</div>
+        <div class="text-xs text-gray-500 mb-1">Classification</div>
         <div class="text-sm font-medium text-gray-900">
           {{
             formatOrganizationType(
