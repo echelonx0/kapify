@@ -1,0 +1,59 @@
+{
+  "versions": [
+    {
+      "version": "2.7.8",
+      "date": "2025-11-07",
+      "highlights": [
+        "Completed invitation system integration on the front end (emails pending and acceptance flow testing required).",
+        "Initial scaffolding of billing/credit system into user settings.",
+        "Integrated credit system with Stripe, tested successfully in test mode.",
+        "Added opportunities and applications navigation to the funder sidenav.",
+        "Comma formatting added to assets under management in user settings."
+      ]
+    },
+    {
+      "version": "2.7.7",
+      "date": "2025-11-04",
+      "highlights": [
+        "Resolved recursive fetching errors blocking opportunity applications.",
+        "Introduced new FundingApplication model for improved data flow.",
+        "Enhanced application stability and reduced redundant fetch operations.",
+        "Refactored application logic for cleaner structure and easier maintenance."
+      ]
+    }
+  ],
+  "roadmap": [
+    {
+      "item": "Fix the import flow broken by type update",
+      "status": "In Progress"
+    },
+    {
+      "item": "Test and integrate the withdraw application feature",
+      "status": "In Progress"
+    },
+    {
+      "item": "Rearrange the founder management dashboard",
+      "status": "Planned"
+    },
+    { "item": "Integrate the 'Invite Teammates' feature", "status": "Planned" },
+    {
+      "item": "Complete testing of the email infrastructure",
+      "status": "Planned"
+    },
+    {
+      "item": "Enable direct upload of organization media assets (e.g., logo)",
+      "status": "In Progress"
+    }
+  ],
+  "issues": [
+    { "issue": "Remove the data room from the founder side", "done": true },
+    {
+      "issue": "Add a description field to marketplace opportunities",
+      "done": true
+    },
+    {
+      "issue": "Fix the issue where the amount requested is not displaying as expected for applications",
+      "done": false
+    }
+  ]
+}

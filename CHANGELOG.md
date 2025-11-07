@@ -4,6 +4,34 @@ This document tracks key updates, new features, and fixes across Kapify releases
 
 ---
 
+## [2.7.8] - 2025-11-07
+
+**Environment:** Production  
+**Commit:** `7c24626`  
+**Build Number:** 1
+
+### ✨ Added
+
+- Completed **invitation system integration** on the front end (emails pending and acceptance flow testing required).
+- Initial scaffolding of **billing/credit system** into user settings.
+- Integrated **credit system with Stripe**, tested successfully in test mode.
+- Added **opportunities and applications navigation** to the funder sidenav.
+- **Comma formatting** added to assets under management in user settings.
+
+### 🐛 Fixed
+
+- Minor UI fixes related to asset display formatting.
+
+### 🧰 Internal
+
+- Created `CREDIT_SYSTEM.md` documentation.
+- Added `credit.service.ts` for handling credit-related logic.
+- Added billing components: `billing-credits.component`, `purchase-credits-modal.component`, and `stripe.service.ts`.
+- Refactored some services and removed `auth.service.ts` due to new credit system integration.
+- Updated AI Assistant component scaffolding (`ai-assistant.component.html`).
+
+---
+
 ## [2.7.7] - 2025-11-04
 
 **Environment:** Production  
@@ -56,8 +84,8 @@ This document tracks key updates, new features, and fixes across Kapify releases
 
 | Feature                                                                                                                        | Status         | Target Version |
 | ------------------------------------------------------------------------------------------------------------------------------ | -------------- | -------------- |
-| Fix the import flow broken by type update                                                                                      | 🚧 In Progress | 2.7.8          |
-| Test and integrate the withdraw application feature                                                                            | 🚧 In Progress | 2.7.8          |
+| Fix the import flow broken by type update                                                                                      | 🚧 In Progress | 2.7.9          |
+| Test and integrate the withdraw application feature                                                                            | 🚧 In Progress | 2.7.9          |
 | Rearrange the founder management dashboard                                                                                     | 🚧 In Progress | 2.8.0          |
 | Integrate the "Invite Teammates" feature                                                                                       | 🚧 In Progress | 2.8.0          |
 | Complete testing of the email infrastructure                                                                                   | 🗓 Planned      | 2.8.1          |
