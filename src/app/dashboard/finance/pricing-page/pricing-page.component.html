@@ -1,0 +1,289 @@
+<landing-header />
+<!-- Hero Section -->
+<div
+  class="bg-gradient-to-b from-slate-50 to-white border-b border-slate-200 mt-2"
+>
+  <div class="max-w-7xl mx-auto px-4 lg:px-4 py-12 lg:py-20">
+    <div class="max-w-3xl mx-auto text-center">
+      <h1 class="text-4xl lg:text-5xl font-bold text-slate-900 mb-4">
+        Manage the funding process with Kapify
+      </h1>
+    </div>
+  </div>
+</div>
+<app-use-cases></app-use-cases>
+<div class="min-h-screen bg-white">
+  <!-- Pricing Tiers & Contact Section -->
+  <div class="max-w-7xl mx-auto px-4 lg:px-8 py-16">
+    <div class="grid lg:grid-cols-3 gap-6 items-start">
+      <!-- Pricing Tiers (Left: 2 cols) -->
+      <div class="lg:col-span-2 space-y-4">
+        @for (tier of tiers(); track tier.id) {
+        <div
+          class="group relative bg-white rounded-xl border transition-all duration-300 hover:shadow-lg"
+          [class.border-teal-300]="tier.popular"
+          [class.border-slate-200]="!tier.popular"
+          [class.ring-2]="tier.popular"
+          [class.ring-teal-500]="tier.popular"
+        >
+          <!-- Gradient bg for popular -->
+          @if (tier.popular) {
+          <div
+            class="absolute inset-0 bg-gradient-to-r from-teal-50 to-transparent opacity-40 rounded-xl"
+          ></div>
+          }
+
+          <!-- Popular badge -->
+          @if (tier.popular) {
+          <div class="absolute top-0 right-0 z-10">
+            <div
+              class="px-3 py-1 bg-gradient-to-r from-teal-500 to-teal-600 text-white text-xs font-bold rounded-bl-xl"
+            >
+              MOST POPULAR
+            </div>
+          </div>
+          }
+
+          <!-- Content -->
+          <div class="relative p-6 flex items-start gap-6">
+            <!-- Left: Pricing -->
+            <div class="flex-shrink-0 min-w-fit">
+              <p
+                class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1"
+              >
+                {{ tier.name }}
+              </p>
+              <div class="mb-2">
+                <span class="text-3xl font-bold text-slate-900">
+                  R{{ tier.price }}
+                </span>
+                <span class="text-xs text-slate-500">/mo</span>
+              </div>
+              <p class="text-xs text-slate-500">
+                {{ formatCredits(tier.credits) }} credits
+              </p>
+
+              @if (tier.savings) {
+              <div class="mt-3">
+                <span
+                  class="inline-block px-2 py-0.5 bg-green-50 text-green-700 text-xs font-bold rounded-full border border-green-200/50"
+                >
+                  {{ tier.savings }}
+                </span>
+              </div>
+              }
+            </div>
+
+            <!-- Right: Features -->
+            <div class="flex-1">
+              <p
+                class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-3"
+              >
+                Includes
+              </p>
+              <ul class="space-y-2">
+                @for (feature of tier.features; track feature) {
+                <li class="flex items-start gap-2">
+                  <div
+                    class="w-4 h-4 rounded-full bg-teal-100 flex items-center justify-center flex-shrink-0 mt-0.5"
+                  >
+                    <lucide-icon
+                      [img]="CheckIcon"
+                      [size]="10"
+                      class="text-teal-600"
+                    />
+                  </div>
+                  <span class="text-xs text-slate-700">{{ feature }}</span>
+                </li>
+                }
+              </ul>
+            </div>
+          </div>
+        </div>
+        }
+      </div>
+
+      <!-- Contact Card (Right: 1 col, double height) -->
+      <div
+        class="bg-gradient-to-br from-teal-600 to-teal-700 rounded-xl p-8 text-white flex flex-col justify-center"
+        style="min-height: 520px"
+      >
+        <div
+          class="w-12 h-12 rounded-lg bg-white/20 flex items-center justify-center mb-4"
+        >
+          <lucide-icon [img]="PhoneIcon" [size]="24" />
+        </div>
+        <h3 class="text-2xl font-bold mb-3">Custom Plans?</h3>
+        <p class="text-sm text-teal-100 mb-6">
+          Need a tailored solution? Let's discuss what works best for you.
+        </p>
+        <button
+          (click)="onContactSales()"
+          class="w-full px-4 py-3 bg-white text-teal-600 font-bold rounded-lg hover:bg-slate-50 transition-colors duration-200 flex items-center justify-center gap-2 text-sm mb-6"
+        >
+          Get in Touch
+          <lucide-icon [img]="ArrowRightIcon" [size]="16" />
+        </button>
+        <p class="text-xs text-teal-200 text-center">
+          Enterprise • SLA • Integrations
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- FAQ Section -->
+  <div class="bg-slate-50 border-t border-slate-200 py-16">
+    <div class="max-w-3xl mx-auto px-4 lg:px-8">
+      <h2 class="text-3xl font-bold text-slate-900 mb-12 text-center">
+        Questions?
+      </h2>
+
+      <div class="space-y-6">
+        @for (faq of faqs(); track faq.id) {
+        <div class="bg-white rounded-xl p-6 border border-slate-200">
+          <h3 class="font-bold text-slate-900 mb-2">{{ faq.q }}</h3>
+          <p class="text-sm text-slate-600">{{ faq.a }}</p>
+        </div>
+        }
+      </div>
+    </div>
+  </div>
+
+  <div
+    class="bg-gradient-to-b from-white to-slate-50 border-t border-slate-200"
+  >
+    <!-- Main CTA Section -->
+    <div class="max-w-7xl mx-auto px-4 lg:px-8 py-16 lg:py-24">
+      <div class="max-w-3xl mx-auto text-center">
+        <h2 class="text-4xl lg:text-5xl font-bold text-slate-900 mb-4">
+          Ready to streamline your fundraising?
+        </h2>
+        <p class="text-xl text-slate-600 mb-8">
+          Join funders and organizations that are managing their complete
+          fundraising lifecycle with Kapify. Get started free, no credit card
+          required.
+        </p>
+
+        <!-- Primary CTA Buttons -->
+        <div class="flex flex-col sm:flex-row gap-4 justify-center mb-12">
+          <button
+            (click)="onSignUp()"
+            class="px-8 py-4 bg-teal-600 text-white font-bold rounded-xl hover:bg-teal-700 active:bg-teal-800 transition-colors duration-200 shadow-lg hover:shadow-xl"
+          >
+            Start Free Trial
+          </button>
+          <button
+            (click)="onScheduleDemo()"
+            class="px-8 py-4 border-2 border-teal-600 text-teal-600 font-bold rounded-xl hover:bg-teal-50 transition-colors duration-200"
+          >
+            Schedule a Demo
+          </button>
+        </div>
+
+        <!-- Trust/Social Proof -->
+        <div class="mb-12">
+          <p class="text-sm text-slate-500 mb-4">
+            Trusted by leading funders and organizations
+          </p>
+          <div class="flex items-center justify-center gap-6 flex-wrap">
+            <span
+              class="text-xs font-bold text-slate-500 uppercase tracking-wider"
+              >Partner 1</span
+            >
+            <span class="w-px h-6 bg-slate-200"></span>
+            <span
+              class="text-xs font-bold text-slate-500 uppercase tracking-wider"
+              >Partner 2</span
+            >
+            <span class="w-px h-6 bg-slate-200"></span>
+            <span
+              class="text-xs font-bold text-slate-500 uppercase tracking-wider"
+              >Partner 3</span
+            >
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Secondary Features Section -->
+    <div class="bg-white border-t border-slate-200">
+      <div class="max-w-7xl mx-auto px-4 lg:px-8 py-12">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <!-- Feature 1 -->
+          <div class="text-center">
+            <div
+              class="inline-flex items-center justify-center w-12 h-12 rounded-lg bg-teal-100 text-teal-600 mb-4"
+            >
+              <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                <path
+                  fill-rule="evenodd"
+                  d="M5 2a1 1 0 011 1v1h1V3a1 1 0 011-1h5a1 1 0 011 1v1h1V3a1 1 0 011 1v2h1.22l.305 1.222a.997.997 0 01-.01.042l-1.358 5.43-.27 1.08a1 1 0 01-.996.755H3.031a1 1 0 01-.996-.755l-1.628-6.51A1 1 0 011 9.75h1.22V4a1 1 0 011-1zm0 5a2 2 0 104 0 2 2 0 00-4 0z"
+                  clip-rule="evenodd"
+                ></path>
+              </svg>
+            </div>
+            <h3 class="font-bold text-slate-900 mb-2">No Setup Fees</h3>
+            <p class="text-sm text-slate-600">
+              Start immediately with transparent, predictable pricing.
+            </p>
+          </div>
+
+          <!-- Feature 2 -->
+          <div class="text-center">
+            <div
+              class="inline-flex items-center justify-center w-12 h-12 rounded-lg bg-teal-100 text-teal-600 mb-4"
+            >
+              <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M13 7H7v6h6V7z"></path>
+                <path
+                  fill-rule="evenodd"
+                  d="M7 2a1 1 0 012 0v1h2V2a1 1 0 112 0v1h2V2a1 1 0 112 0v1h1a2 2 0 012 2v2h1a1 1 0 110 2h-1v2h1a1 1 0 110 2h-1v2h1a1 1 0 110 2h-1v1a2 2 0 01-2 2h-1v1a1 1 0 11-2 0v-1h-2v1a1 1 0 11-2 0v-1H7a2 2 0 01-2-2v-1H4a1 1 0 110-2h1v-2H4a1 1 0 110-2h1V9H4a1 1 0 110-2h1V5a2 2 0 012-2h1V2zM9 5H7v2h2V5z"
+                  clip-rule="evenodd"
+                ></path>
+              </svg>
+            </div>
+            <h3 class="font-bold text-slate-900 mb-2">Instant Onboarding</h3>
+            <p class="text-sm text-slate-600">
+              Get your team up and running in minutes, not weeks.
+            </p>
+          </div>
+
+          <!-- Feature 3 -->
+          <div class="text-center">
+            <div
+              class="inline-flex items-center justify-center w-12 h-12 rounded-lg bg-teal-100 text-teal-600 mb-4"
+            >
+              <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                <path
+                  fill-rule="evenodd"
+                  d="M5 2a1 1 0 011 1v1h1V3a1 1 0 011-1h5a1 1 0 011 1v1h1V3a1 1 0 011 1v2h1.22l.305 1.222a.997.997 0 01-.01.042l-1.358 5.43-.27 1.08a1 1 0 01-.996.755H3.031a1 1 0 01-.996-.755l-1.628-6.51A1 1 0 011 9.75h1.22V4a1 1 0 011-1zm0 5a2 2 0 104 0 2 2 0 00-4 0z"
+                  clip-rule="evenodd"
+                ></path>
+              </svg>
+            </div>
+            <h3 class="font-bold text-slate-900 mb-2">24/7 Support</h3>
+            <p class="text-sm text-slate-600">
+              Our team is always here to help you succeed.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FAQ Quick Links -->
+    <div class="bg-slate-50 border-t border-slate-200 py-8">
+      <div class="max-w-7xl mx-auto px-4 lg:px-8">
+        <p class="text-center text-sm text-slate-600 mb-4">
+          Have questions?
+          <a href="#" class="font-bold text-teal-600 hover:text-teal-700">
+            {{ supportEmail }}
+          </a>
+          or
+          <a href="#" class="font-bold text-teal-600 hover:text-teal-700">
+            contact sales
+          </a>
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
