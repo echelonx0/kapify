@@ -101,10 +101,11 @@
 
           <!-- Compact avatar -->
           <div class="relative">
-            @if (userAvatar(); as avatar) {
+            @if (getOrganizationLogo() && !logoLoadError()) {
             <img
-              [src]="avatar"
-              [alt]="userName()"
+              [src]="getOrganizationLogo()"
+              [alt]="currentOrganization()?.name || 'Organization'"
+              (error)="onLogoLoadError()"
               class="w-9 h-9 rounded-lg object-cover border border-neutral-200 group-hover:border-neutral-300 transition-colors"
             />
             } @else {

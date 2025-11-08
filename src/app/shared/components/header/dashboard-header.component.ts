@@ -1,11 +1,12 @@
 // src/app/shared/components/dashboard-header.component.ts
-import { Component, computed, inject } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, NavigationEnd } from '@angular/router';
 import { LucideAngularModule, Bell, Settings, Zap } from 'lucide-angular';
 import { filter, map, startWith } from 'rxjs/operators';
 import { ProfileManagementService } from '../../services/profile-management.service';
 import { VersionService } from '../../services/version.service';
+import { FunderOnboardingService } from 'src/app/funder/services/funder-onboarding.service';
 
 interface RouteConfig {
   title: string;
@@ -22,8 +23,10 @@ interface RouteConfig {
 export class DashboardHeaderComponent {
   private router = inject(Router);
   private profileService = inject(ProfileManagementService);
+  private onboardingService = inject(FunderOnboardingService);
   public versionService = inject(VersionService);
-
+  onboardingState = signal<any>(null);
+  logoLoadError = signal(false);
   BellIcon = Bell;
   SettingsIcon = Settings;
   ZapIcon = Zap;
@@ -204,6 +207,16 @@ export class DashboardHeaderComponent {
         },
       });
     }
+
+    // Load organization data from onboarding service
+    this.onboardingService.checkOnboardingStatus().subscribe({
+      next: (state) => {
+        this.onboardingState.set(state);
+      },
+      error: (error) => {
+        console.error('Failed to load organization for header:', error);
+      },
+    });
   }
 
   isAdminUser = computed(() => {
@@ -223,6 +236,28 @@ export class DashboardHeaderComponent {
     } finally {
       this.isNavigating = false;
     }
+  }
+
+  // ===============================
+  // LOGO DISPLAY
+  // ===============================
+
+  getOrganizationLogo(): string | null {
+    if (this.logoLoadError()) {
+      return null;
+    }
+    const org = this.onboardingState()?.organization;
+    return org?.logoUrl || null;
+  }
+
+  onLogoLoadError() {
+    console.warn('⚠️ Failed to load organization logo');
+    this.logoLoadError.set(true);
+  }
+
+  isLogoOptional(): boolean {
+    // Logo is optional unless business rules require it
+    return true;
   }
 
   version() {

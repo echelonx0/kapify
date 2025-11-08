@@ -424,7 +424,7 @@ export class OrganizationStatusSidebarComponent implements OnInit, OnDestroy {
     if (state.organization?.isVerified) {
       return 'bg-green-100 text-green-700';
     } else if (state.isComplete) {
-      return 'bg-blue-100 text-blue-700';
+      return 'bg-slate-100 text-slate-700';
     } else if (state.completionPercentage >= 50) {
       return 'bg-amber-100 text-amber-700';
     } else {
@@ -439,7 +439,7 @@ export class OrganizationStatusSidebarComponent implements OnInit, OnDestroy {
     if (state.organization?.isVerified) {
       return 'bg-green-50';
     } else if (state.isComplete) {
-      return 'bg-blue-50';
+      return 'bg-slate-50';
     } else if (state.completionPercentage >= 50) {
       return 'bg-amber-50';
     } else {
@@ -452,7 +452,7 @@ export class OrganizationStatusSidebarComponent implements OnInit, OnDestroy {
     if (!state) return 'bg-slate-100';
 
     if (state.organization?.isVerified) return 'bg-green-100';
-    if (state.isComplete) return 'bg-blue-100';
+    if (state.isComplete) return 'bg-slate-100';
     if (state.completionPercentage >= 50) return 'bg-amber-100';
     return 'bg-red-100';
   }
@@ -462,7 +462,7 @@ export class OrganizationStatusSidebarComponent implements OnInit, OnDestroy {
     if (!state) return 'text-slate-600';
 
     if (state.organization?.isVerified) return 'text-green-600';
-    if (state.isComplete) return 'text-blue-600';
+    if (state.isComplete) return 'text-slate-600';
     if (state.completionPercentage >= 50) return 'text-amber-600';
     return 'text-red-600';
   }
@@ -472,7 +472,7 @@ export class OrganizationStatusSidebarComponent implements OnInit, OnDestroy {
     if (!state) return 'text-slate-900';
 
     if (state.organization?.isVerified) return 'text-green-900';
-    if (state.isComplete) return 'text-blue-900';
+    if (state.isComplete) return 'text-slate-900';
     if (state.completionPercentage >= 50) return 'text-amber-900';
     return 'text-red-900';
   }
@@ -482,7 +482,7 @@ export class OrganizationStatusSidebarComponent implements OnInit, OnDestroy {
     if (!state) return 'text-slate-700';
 
     if (state.organization?.isVerified) return 'text-green-700';
-    if (state.isComplete) return 'text-blue-700';
+    if (state.isComplete) return 'text-slate-700';
     if (state.completionPercentage >= 50) return 'text-amber-700';
     return 'text-red-700';
   }
@@ -493,7 +493,7 @@ export class OrganizationStatusSidebarComponent implements OnInit, OnDestroy {
 
     if (state.organization?.isVerified)
       return 'text-green-600 hover:text-green-800';
-    if (state.isComplete) return 'text-blue-600 hover:text-blue-800';
+    if (state.isComplete) return 'text-slate-600 hover:text-slate-800';
     if (state.completionPercentage >= 50)
       return 'text-amber-600 hover:text-amber-800';
     return 'text-red-600 hover:text-red-800';
@@ -506,7 +506,7 @@ export class OrganizationStatusSidebarComponent implements OnInit, OnDestroy {
     if (state.organization?.isVerified) {
       return 'bg-gradient-to-r from-green-400 to-green-500';
     } else if (state.isComplete) {
-      return 'bg-gradient-to-r from-blue-400 to-blue-500';
+      return 'bg-gradient-to-r from-slate-400 to-slate-500';
     } else if (state.completionPercentage >= 50) {
       return 'bg-gradient-to-r from-amber-400 to-amber-500';
     } else {

@@ -4,30 +4,11 @@
   <div class="bg-white rounded-2xl p-6">
     <!-- Header with Logo -->
     <div class="flex items-center justify-between mb-4">
-      <div class="flex items-center space-x-3 flex-1">
-        <!-- Organization Logo -->
-        @if (getOrganizationLogo()) {
-        <div
-          class="w-14 h-14 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center flex-shrink-0 overflow-hidden shadow-sm hover:shadow-md transition-shadow"
-        >
-          <img
-            [src]="getOrganizationLogo()"
-            alt="Organization logo"
-            class="w-full h-full object-contain p-2"
-            (error)="onLogoLoadError()"
-            title="Organization logo"
-          />
-        </div>
-        } @else {
-        <div
-          class="w-14 h-14 rounded-xl bg-gradient-to-br from-teal-50 to-teal-100 border border-teal-200/50 flex items-center justify-center flex-shrink-0"
-        >
-          <lucide-icon
-            [img]="Building2Icon"
-            [size]="24"
-            class="text-teal-600"
-          />
-        </div>
+      <div class="flex-1 min-w-0">
+        @if (onboardingState()) {
+        <h4 class="text-sm font-semibold text-slate-900">
+          {{ getOrganizationName() }}
+        </h4>
         }
       </div>
 
@@ -151,14 +132,6 @@
 
       <!-- Quick Actions -->
       <div class="space-y-2">
-        <div class="flex-1 min-w-0">
-          @if (onboardingState()) {
-          <h4 class="text-sm font-semibold text-slate-900">
-            {{ getOrganizationName() }}
-          </h4>
-          }
-        </div>
-
         @if (!isComplete()) {
         <button
           class="w-full text-left p-3 border border-slate-200 rounded-xl hover:border-teal-300 hover:bg-teal-50 transition-all group"
