@@ -1,6 +1,12 @@
 // src/app/shared/models/public-profile.models.ts
 export interface SocialLink {
-  platform: 'linkedin' | 'twitter' | 'facebook' | 'instagram' | 'youtube' | 'website';
+  platform:
+    | 'linkedin'
+    | 'twitter'
+    | 'facebook'
+    | 'instagram'
+    | 'youtube'
+    | 'website';
   url: string;
   displayText?: string;
 }
@@ -36,9 +42,9 @@ export interface TeamMember {
 export interface PublicProfile {
   id: string;
   organizationId: string;
-    organizationName: string; // ADD THIS
+  organizationName: string; // ADD THIS
   slug: string; // URL-friendly identifier
-  
+
   // Hero Section
   heroVideo?: {
     url: string;
@@ -47,42 +53,44 @@ export interface PublicProfile {
   };
   tagline: string;
   elevator_pitch?: string; // 2-3 sentence description
-  
+
   // Social Proof & Metrics
-  portfolioHighlights: string[]; // "Funded 50+ companies", "R2.5B+ deployed"
+  portfolioHighlights: string[];
   successMetrics: SuccessMetric[];
+
   logoUrl?: string;
-  featuredPortfolioLogos?: string[]; // Company logos for social proof
-  
+  heroImageUrl?: string;
+  featuredPortfolioLogos?: string[];
+
   // Trust Signals
   certifications: string[];
   awards?: string[];
   socialLinks: SocialLink[];
-  
+
   // Conversion Drivers
   fundingAreas: FundingArea[];
   investmentRange: InvestmentRange;
   applicationProcess: string; // "Apply in 10 minutes"
   responseTimePromise?: string; // "We respond within 48 hours"
-  
+
   // About Section
   foundingStory?: string;
   investmentApproach?: string;
   teamMembers: TeamMember[];
-  
+
   // SEO & Metadata
   metaDescription?: string;
   keywords?: string[];
-  
+
   // Status & Publishing
   isPublished: boolean;
   publishedAt?: Date;
   lastModified: Date;
-  
+
   // Analytics
   viewCount?: number;
   applicationCount?: number; // Applications generated from profile
-  
+
   // Configuration
   theme?: 'default' | 'professional' | 'modern';
   primaryColor?: string;

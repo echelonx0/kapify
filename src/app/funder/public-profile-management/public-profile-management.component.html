@@ -1,6 +1,5 @@
 <div class="min-h-screen bg-gray-50">
-  <div class="mx-auto px-4 sm:px-6 lg:px-8 py-8" style="max-width: 1360px;">
-    
+  <div class="mx-auto px-4 sm:px-6 lg:px-8 py-8" style="max-width: 1360px">
     <!-- Header -->
     <div class="mb-8">
       <div class="flex items-center justify-between">
@@ -8,105 +7,113 @@
           <lucide-icon [img]="ArrowLeftIcon" [size]="16" class="mr-2" />
           Go Back
         </ui-button>
-    
+
         <div class="flex items-center gap-3">
           @if (profileExists()) {
-            <ui-button 
-              variant="outline" 
-              (clicked)="previewProfile()"
-              [disabled]="!profile()?.slug"
-            >
-              <lucide-icon [img]="EyeIcon" [size]="16" class="mr-2" />
-              Preview
-            </ui-button>
-            
-            @if (profile()?.isPublished) {
-              <ui-button 
-                variant="outline" 
-                (clicked)="viewPublicProfile()"
-                [disabled]="!profile()?.slug"
-              >
-                <lucide-icon [img]="ExternalLinkIcon" [size]="16" class="mr-2" />
-                View Live
-              </ui-button>
-            } @else {
-              <ui-button 
-                variant="primary" 
-                (clicked)="publishProfile()"
-                [disabled]="!canPublish()"
-              >
-                <lucide-icon [img]="GlobeIcon" [size]="16" class="mr-2" />
-                {{ isPublishing() ? 'Publishing...' : 'Publish' }}
-              </ui-button>
-            }
+          <ui-button
+            variant="outline"
+            (clicked)="previewProfile()"
+            [disabled]="!profile()?.slug"
+          >
+            <lucide-icon [img]="EyeIcon" [size]="16" class="mr-2" />
+            Preview
+          </ui-button>
+
+          @if (profile()?.isPublished) {
+          <ui-button
+            variant="outline"
+            (clicked)="viewPublicProfile()"
+            [disabled]="!profile()?.slug"
+          >
+            <lucide-icon [img]="ExternalLinkIcon" [size]="16" class="mr-2" />
+            View Live
+          </ui-button>
           } @else {
-            <ui-button 
-              variant="primary" 
-              (clicked)="createProfile()"
-              [disabled]="!isFormValid() || isCreating()"
-            >
-              <lucide-icon [img]="PlusIcon" [size]="16" class="mr-2" />
-              {{ isCreating() ? 'Creating...' : 'Create Profile' }}
-            </ui-button>
+          <ui-button
+            variant="primary"
+            (clicked)="publishProfile()"
+            [disabled]="!canPublish()"
+          >
+            <lucide-icon [img]="GlobeIcon" [size]="16" class="mr-2" />
+            {{ isPublishing() ? "Publishing..." : "Publish" }}
+          </ui-button>
+          } } @else {
+          <ui-button
+            variant="primary"
+            (clicked)="createProfile()"
+            [disabled]="!isFormValid() || isCreating()"
+          >
+            <lucide-icon [img]="PlusIcon" [size]="16" class="mr-2" />
+            {{ isCreating() ? "Creating..." : "Create Profile" }}
+          </ui-button>
           }
         </div>
       </div>
-      
+
       <!-- Profile URL Preview -->
       @if (profile()?.slug || profileForm.get('tagline')?.value) {
-        <div class="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-          <div class="flex items-center gap-2 text-sm">
-            <lucide-icon [img]="GlobeIcon" [size]="14" class="text-blue-600" />
-            <span class="text-blue-600 font-medium">Public URL:</span>
-            <code class="text-blue-800">kapify.africa/funder/{{ getSlugPreview() }}</code>
-          </div>
+      <div class="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+        <div class="flex items-center gap-2 text-sm">
+          <lucide-icon [img]="GlobeIcon" [size]="14" class="text-blue-600" />
+          <span class="text-blue-600 font-medium">Public URL:</span>
+          <code class="text-blue-800"
+            >kapify.africa/funder/{{ getSlugPreview() }}</code
+          >
         </div>
+      </div>
       }
 
       <!-- Validation Summary -->
       @if (!isFormValid() && profileForm.touched) {
-        <div class="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
-          <div class="flex items-start gap-3">
-            <lucide-icon [img]="AlertCircleIcon" [size]="20" class="text-red-600 mt-0.5" />
-            <div>
-              <h4 class="text-red-800 font-medium mb-2">Complete these required fields to publish:</h4>
-              <ul class="text-red-700 text-sm space-y-1">
-                @if (hasFieldError('tagline')) {
-                  <li>• {{ getFieldError('tagline') }}</li>
-                }
-                @if (hasFieldError('investmentMin')) {
-                  <li>• {{ getFieldError('investmentMin') }}</li>
-                }
-                @if (hasFieldError('investmentMax')) {
-                  <li>• {{ getFieldError('investmentMax') }}</li>
-                }
-                @if (hasFieldError('investmentRange')) {
-                  <li>• {{ getFieldError('investmentRange') }}</li>
-                }
-              </ul>
-            </div>
+      <div class="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+        <div class="flex items-start gap-3">
+          <lucide-icon
+            [img]="AlertCircleIcon"
+            [size]="20"
+            class="text-red-600 mt-0.5"
+          />
+          <div>
+            <h4 class="text-red-800 font-medium mb-2">
+              Complete these required fields to publish:
+            </h4>
+            <ul class="text-red-700 text-sm space-y-1">
+              @if (hasFieldError('tagline')) {
+              <li>• {{ getFieldError("tagline") }}</li>
+              } @if (hasFieldError('investmentMin')) {
+              <li>• {{ getFieldError("investmentMin") }}</li>
+              } @if (hasFieldError('investmentMax')) {
+              <li>• {{ getFieldError("investmentMax") }}</li>
+              } @if (hasFieldError('investmentRange')) {
+              <li>• {{ getFieldError("investmentRange") }}</li>
+              }
+            </ul>
           </div>
         </div>
+      </div>
       }
     </div>
 
     <!-- Main Content Grid -->
     <div class="grid grid-cols-1 xl:grid-cols-4 gap-8">
-      
       <!-- Main Form Content (3/4 width) -->
       <div class="xl:col-span-3">
-        <form [formGroup]="profileForm" (ngSubmit)="saveProfile()" class="space-y-8">
-          
+        <form
+          [formGroup]="profileForm"
+          (ngSubmit)="saveProfile()"
+          class="space-y-8"
+        >
           <!-- Hero Section -->
           <div class="section-card">
             <div class="section-header">
               <div>
                 <h1 class="text-2xl font-bold text-gray-900">Public Profile</h1>
-                <p class="text-gray-600 mt-1">Customize your public funder page to attract high-quality applications</p>
+                <p class="text-gray-600 mt-1">
+                  Customize your public funder page to attract high-quality
+                  applications
+                </p>
               </div>
             </div>
             <div class="p-6 space-y-6">
-              
               <!-- Tagline -->
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">
@@ -121,16 +128,51 @@
                   maxlength="120"
                 />
                 @if (hasFieldError('tagline')) {
-                  <div class="form-error">
-                    <lucide-icon [img]="AlertCircleIcon" [size]="14" class="mr-1" />
-                    {{ getFieldError('tagline') }}
-                  </div>
+                <div class="form-error">
+                  <lucide-icon
+                    [img]="AlertCircleIcon"
+                    [size]="14"
+                    class="mr-1"
+                  />
+                  {{ getFieldError("tagline") }}
+                </div>
                 }
                 <p class="text-xs text-gray-500 mt-1">
-                  {{ profileForm.get('tagline')?.value?.length || 0 }}/120 characters
+                  {{ profileForm.get("tagline")?.value?.length || 0 }}/120
+                  characters
                 </p>
               </div>
+              <!-- LOGO UPLOAD -->
+              <div class="border-t border-slate-200 pt-6">
+                <h3 class="text-sm font-semibold text-slate-900 mb-4">
+                  Profile Logo
+                </h3>
 
+                <app-public-profile-logo-upload
+                  imageType="logo"
+                  [currentImageUrl]="profileForm.get('logoUrl')?.value"
+                  (imageUploaded)="onLogoUploaded($event)"
+                  (imageRemoved)="onLogoRemoved()"
+                />
+              </div>
+
+              <!-- HERO IMAGE UPLOAD -->
+              <div class="border-t border-slate-200 pt-6 mt-6">
+                <h3 class="text-sm font-semibold text-slate-900 mb-4">
+                  Hero Image
+                </h3>
+
+                <app-public-profile-logo-upload
+                  imageType="hero"
+                  [currentImageUrl]="profileForm.get('heroImageUrl')?.value"
+                  (imageUploaded)="onHeroImageUploaded($event)"
+                  (imageRemoved)="onHeroImageRemoved()"
+                />
+
+                <p class="text-xs text-slate-600 mt-2">
+                  Recommended: 1200x600px
+                </p>
+              </div>
               <!-- Elevator Pitch -->
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">
@@ -144,7 +186,9 @@
                   maxlength="300"
                 ></textarea>
                 <p class="text-xs text-gray-500 mt-1">
-                  {{ profileForm.get('elevator_pitch')?.value?.length || 0 }}/300 characters
+                  {{
+                    profileForm.get("elevator_pitch")?.value?.length || 0
+                  }}/300 characters
                 </p>
               </div>
 
@@ -160,16 +204,20 @@
                     placeholder="YouTube or Vimeo URL"
                     class="form-input flex-1"
                   />
-                  <ui-button type="button" variant="outline" (clicked)="uploadVideo()">
+                  <ui-button
+                    type="button"
+                    variant="outline"
+                    (clicked)="uploadVideo()"
+                  >
                     <lucide-icon [img]="UploadIcon" [size]="16" class="mr-2" />
                     Upload
                   </ui-button>
                 </div>
                 <p class="text-xs text-gray-500 mt-1">
-                  A 30-60 second introduction video increases applications by 40%
+                  A 30-60 second introduction video increases applications by
+                  40%
                 </p>
               </div>
-              
             </div>
           </div>
 
@@ -177,20 +225,21 @@
           <div class="section-card">
             <div class="section-header">
               <h2 class="section-title">Social Proof & Metrics</h2>
-              <p class="section-description">Showcase your track record and credibility</p>
+              <p class="section-description">
+                Showcase your track record and credibility
+              </p>
             </div>
             <div class="p-6 space-y-6">
-              
               <!-- Portfolio Highlights -->
               <div>
                 <div class="flex items-center justify-between mb-2">
                   <label class="block text-sm font-medium text-gray-700">
                     Portfolio Highlights
                   </label>
-                  <ui-button 
-                    type="button" 
-                    variant="outline" 
-                    size="sm" 
+                  <ui-button
+                    type="button"
+                    variant="outline"
+                    size="sm"
                     (clicked)="addPortfolioHighlight()"
                   >
                     <lucide-icon [img]="PlusIcon" [size]="14" class="mr-1" />
@@ -198,27 +247,33 @@
                   </ui-button>
                 </div>
                 <div class="space-y-2" formArrayName="portfolioHighlights">
-                  @for (control of portfolioHighlightsArray.controls; track $index) {
-                    <div class="flex gap-2 items-center">
-                      <input
-                        type="text"
-                        [formControlName]="$index"
-                        placeholder="e.g., Funded 50+ companies"
-                        class="form-input flex-1"
+                  @for (control of portfolioHighlightsArray.controls; track
+                  $index) {
+                  <div class="flex gap-2 items-center">
+                    <input
+                      type="text"
+                      [formControlName]="$index"
+                      placeholder="e.g., Funded 50+ companies"
+                      class="form-input flex-1"
+                    />
+                    <ui-button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      (clicked)="removePortfolioHighlight($index)"
+                    >
+                      <lucide-icon
+                        [img]="Trash2Icon"
+                        [size]="14"
+                        class="text-red-500"
                       />
-                      <ui-button 
-                        type="button" 
-                        variant="ghost" 
-                        size="sm" 
-                        (clicked)="removePortfolioHighlight($index)"
-                      >
-                        <lucide-icon [img]="Trash2Icon" [size]="14" class="text-red-500" />
-                      </ui-button>
-                    </div>
+                    </ui-button>
+                  </div>
                   }
                 </div>
                 <p class="text-xs text-gray-500 mt-1">
-                  Examples: "Funded 100+ SMEs", "R2.5B+ deployed", "95% portfolio survival rate"
+                  Examples: "Funded 100+ SMEs", "R2.5B+ deployed", "95%
+                  portfolio survival rate"
                 </p>
               </div>
 
@@ -228,10 +283,10 @@
                   <label class="block text-sm font-medium text-gray-700">
                     Key Metrics
                   </label>
-                  <ui-button 
-                    type="button" 
-                    variant="outline" 
-                    size="sm" 
+                  <ui-button
+                    type="button"
+                    variant="outline"
+                    size="sm"
                     (clicked)="addSuccessMetric()"
                   >
                     <lucide-icon [img]="PlusIcon" [size]="14" class="mr-1" />
@@ -239,45 +294,53 @@
                   </ui-button>
                 </div>
                 <div class="space-y-3" formArrayName="successMetrics">
-                  @for (metricGroup of successMetricsArray.controls; track $index) {
-                    <div [formGroupName]="$index" class="metric-card">
-                      <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-                        <div>
+                  @for (metricGroup of successMetricsArray.controls; track
+                  $index) {
+                  <div [formGroupName]="$index" class="metric-card">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                      <div>
+                        <input
+                          type="text"
+                          formControlName="label"
+                          placeholder="Metric label"
+                          class="form-input"
+                        />
+                      </div>
+                      <div>
+                        <input
+                          type="text"
+                          formControlName="value"
+                          placeholder="Value"
+                          class="form-input"
+                        />
+                      </div>
+                      <div class="flex gap-2">
+                        <label class="flex items-center">
                           <input
-                            type="text"
-                            formControlName="label"
-                            placeholder="Metric label"
-                            class="form-input"
+                            type="checkbox"
+                            formControlName="emphasis"
+                            class="form-checkbox mr-2"
                           />
-                        </div>
-                        <div>
-                          <input
-                            type="text"
-                            formControlName="value"
-                            placeholder="Value"
-                            class="form-input"
+                          <span class="text-sm">Highlight</span>
+                        </label>
+                        <ui-button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          (clicked)="removeSuccessMetric($index)"
+                        >
+                          <lucide-icon
+                            [img]="Trash2Icon"
+                            [size]="14"
+                            class="text-red-500"
                           />
-                        </div>
-                        <div class="flex gap-2">
-                          <label class="flex items-center">
-                            <input type="checkbox" formControlName="emphasis" class="form-checkbox mr-2" />
-                            <span class="text-sm">Highlight</span>
-                          </label>
-                          <ui-button 
-                            type="button" 
-                            variant="ghost" 
-                            size="sm" 
-                            (clicked)="removeSuccessMetric($index)"
-                          >
-                            <lucide-icon [img]="Trash2Icon" [size]="14" class="text-red-500" />
-                          </ui-button>
-                        </div>
+                        </ui-button>
                       </div>
                     </div>
+                  </div>
                   }
                 </div>
               </div>
-
             </div>
           </div>
 
@@ -285,18 +348,24 @@
           <div class="section-card">
             <div class="section-header">
               <h2 class="section-title">Investment Details</h2>
-              <p class="section-description">Help SMEs understand if they're a fit</p>
+              <p class="section-description">
+                Help SMEs understand if they're a fit
+              </p>
             </div>
             <div class="p-6 space-y-6">
-              
               <!-- Investment Range -->
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">
                   Investment Range *
                 </label>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-3" formGroupName="investmentRange">
+                <div
+                  class="grid grid-cols-1 md:grid-cols-3 gap-3"
+                  formGroupName="investmentRange"
+                >
                   <div>
-                    <label class="block text-xs text-gray-500 mb-1">Minimum (R)</label>
+                    <label class="block text-xs text-gray-500 mb-1"
+                      >Minimum (R)</label
+                    >
                     <input
                       type="number"
                       formControlName="min"
@@ -305,14 +374,20 @@
                       [class.error]="hasFieldError('investmentMin')"
                     />
                     @if (hasFieldError('investmentMin')) {
-                      <div class="form-error">
-                        <lucide-icon [img]="AlertCircleIcon" [size]="14" class="mr-1" />
-                        {{ getFieldError('investmentMin') }}
-                      </div>
+                    <div class="form-error">
+                      <lucide-icon
+                        [img]="AlertCircleIcon"
+                        [size]="14"
+                        class="mr-1"
+                      />
+                      {{ getFieldError("investmentMin") }}
+                    </div>
                     }
                   </div>
                   <div>
-                    <label class="block text-xs text-gray-500 mb-1">Maximum (R)</label>
+                    <label class="block text-xs text-gray-500 mb-1"
+                      >Maximum (R)</label
+                    >
                     <input
                       type="number"
                       formControlName="max"
@@ -321,14 +396,20 @@
                       [class.error]="hasFieldError('investmentMax')"
                     />
                     @if (hasFieldError('investmentMax')) {
-                      <div class="form-error">
-                        <lucide-icon [img]="AlertCircleIcon" [size]="14" class="mr-1" />
-                        {{ getFieldError('investmentMax') }}
-                      </div>
+                    <div class="form-error">
+                      <lucide-icon
+                        [img]="AlertCircleIcon"
+                        [size]="14"
+                        class="mr-1"
+                      />
+                      {{ getFieldError("investmentMax") }}
+                    </div>
                     }
                   </div>
                   <div>
-                    <label class="block text-xs text-gray-500 mb-1">Typical (R)</label>
+                    <label class="block text-xs text-gray-500 mb-1"
+                      >Typical (R)</label
+                    >
                     <input
                       type="number"
                       formControlName="typical"
@@ -338,10 +419,14 @@
                   </div>
                 </div>
                 @if (hasFieldError('investmentRange')) {
-                  <div class="form-error mt-2">
-                    <lucide-icon [img]="AlertCircleIcon" [size]="14" class="mr-1" />
-                    {{ getFieldError('investmentRange') }}
-                  </div>
+                <div class="form-error mt-2">
+                  <lucide-icon
+                    [img]="AlertCircleIcon"
+                    [size]="14"
+                    class="mr-1"
+                  />
+                  {{ getFieldError("investmentRange") }}
+                </div>
                 }
               </div>
 
@@ -351,10 +436,10 @@
                   <label class="block text-sm font-medium text-gray-700">
                     Funding Areas & Industries
                   </label>
-                  <ui-button 
-                    type="button" 
-                    variant="outline" 
-                    size="sm" 
+                  <ui-button
+                    type="button"
+                    variant="outline"
+                    size="sm"
                     (clicked)="addFundingArea()"
                   >
                     <lucide-icon [img]="PlusIcon" [size]="14" class="mr-1" />
@@ -363,42 +448,46 @@
                 </div>
                 <div class="space-y-3" formArrayName="fundingAreas">
                   @for (areaGroup of fundingAreasArray.controls; track $index) {
-                    <div [formGroupName]="$index" class="funding-area-card">
-                      <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
-                        <div>
-                          <input
-                            type="text"
-                            formControlName="name"
-                            placeholder="e.g., Technology, Healthcare"
-                            class="form-input"
-                          />
-                        </div>
-                        <div class="flex gap-2">
-                          <input
-                            type="text"
-                            formControlName="description"
-                            placeholder="Brief description (optional)"
-                            class="form-input flex-1"
-                          />
-                          <ui-button 
-                            type="button" 
-                            variant="ghost" 
-                            size="sm" 
-                            (clicked)="removeFundingArea($index)"
-                          >
-                            <lucide-icon [img]="Trash2Icon" [size]="14" class="text-red-500" />
-                          </ui-button>
-                        </div>
-                      </div>
+                  <div [formGroupName]="$index" class="funding-area-card">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
                       <div>
                         <input
                           type="text"
-                          formControlName="tagsInput"
-                          placeholder="Tags (comma-separated): fintech, saas, mobile apps"
+                          formControlName="name"
+                          placeholder="e.g., Technology, Healthcare"
                           class="form-input"
                         />
                       </div>
+                      <div class="flex gap-2">
+                        <input
+                          type="text"
+                          formControlName="description"
+                          placeholder="Brief description (optional)"
+                          class="form-input flex-1"
+                        />
+                        <ui-button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          (clicked)="removeFundingArea($index)"
+                        >
+                          <lucide-icon
+                            [img]="Trash2Icon"
+                            [size]="14"
+                            class="text-red-500"
+                          />
+                        </ui-button>
+                      </div>
                     </div>
+                    <div>
+                      <input
+                        type="text"
+                        formControlName="tagsInput"
+                        placeholder="Tags (comma-separated): fintech, saas, mobile apps"
+                        class="form-input"
+                      />
+                    </div>
+                  </div>
                   }
                 </div>
               </div>
@@ -428,7 +517,6 @@
                   />
                 </div>
               </div>
-
             </div>
           </div>
 
@@ -436,44 +524,47 @@
           <div class="section-card">
             <div class="section-header">
               <h2 class="section-title">Social Links</h2>
-              <p class="section-description">Build credibility with your online presence</p>
+              <p class="section-description">
+                Build credibility with your online presence
+              </p>
             </div>
             <div class="p-6">
               <div class="space-y-3" formArrayName="socialLinks">
                 @for (linkGroup of socialLinksArray.controls; track $index) {
-                  <div [formGroupName]="$index" class="flex gap-3 items-center">
-                    <select
-                      formControlName="platform"
-                      class="form-select"
-                    >
-                      <option value="linkedin">LinkedIn</option>
-                      <option value="twitter">Twitter</option>
-                      <option value="facebook">Facebook</option>
-                      <option value="instagram">Instagram</option>
-                      <option value="youtube">YouTube</option>
-                      <option value="website">Website</option>
-                    </select>
-                    <input
-                      type="url"
-                      formControlName="url"
-                      placeholder="https://..."
-                      class="form-input flex-1"
+                <div [formGroupName]="$index" class="flex gap-3 items-center">
+                  <select formControlName="platform" class="form-select">
+                    <option value="linkedin">LinkedIn</option>
+                    <option value="twitter">Twitter</option>
+                    <option value="facebook">Facebook</option>
+                    <option value="instagram">Instagram</option>
+                    <option value="youtube">YouTube</option>
+                    <option value="website">Website</option>
+                  </select>
+                  <input
+                    type="url"
+                    formControlName="url"
+                    placeholder="https://..."
+                    class="form-input flex-1"
+                  />
+                  <ui-button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    (clicked)="removeSocialLink($index)"
+                  >
+                    <lucide-icon
+                      [img]="Trash2Icon"
+                      [size]="14"
+                      class="text-red-500"
                     />
-                    <ui-button 
-                      type="button" 
-                      variant="ghost" 
-                      size="sm" 
-                      (clicked)="removeSocialLink($index)"
-                    >
-                      <lucide-icon [img]="Trash2Icon" [size]="14" class="text-red-500" />
-                    </ui-button>
-                  </div>
+                  </ui-button>
+                </div>
                 }
               </div>
-              <ui-button 
-                type="button" 
-                variant="outline" 
-                (clicked)="addSocialLink()" 
+              <ui-button
+                type="button"
+                variant="outline"
+                (clicked)="addSocialLink()"
                 class="mt-3"
               >
                 <lucide-icon [img]="PlusIcon" [size]="16" class="mr-2" />
@@ -486,10 +577,11 @@
           <div class="section-card">
             <div class="section-header">
               <h2 class="section-title">About</h2>
-              <p class="section-description">Tell your story and investment approach</p>
+              <p class="section-description">
+                Tell your story and investment approach
+              </p>
             </div>
             <div class="p-6 space-y-6">
-              
               <!-- Founding Story -->
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">
@@ -522,10 +614,10 @@
                   <label class="block text-sm font-medium text-gray-700">
                     Team Members
                   </label>
-                  <ui-button 
-                    type="button" 
-                    variant="outline" 
-                    size="sm" 
+                  <ui-button
+                    type="button"
+                    variant="outline"
+                    size="sm"
                     (clicked)="addTeamMember()"
                   >
                     <lucide-icon [img]="UsersIcon" [size]="14" class="mr-1" />
@@ -533,97 +625,104 @@
                   </ui-button>
                 </div>
                 <div class="space-y-4" formArrayName="teamMembers">
-                  @for (memberGroup of teamMembersArray.controls; track $index) {
-                    <div [formGroupName]="$index" class="team-member-card">
-                      <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
-                        <div>
-                          <input
-                            type="text"
-                            formControlName="name"
-                            placeholder="Full name"
-                            class="form-input"
-                          />
-                        </div>
-                        <div>
-                          <input
-                            type="text"
-                            formControlName="title"
-                            placeholder="Title/Role"
-                            class="form-input"
-                          />
-                        </div>
-                      </div>
-                      <div class="mb-3">
-                        <textarea
-                          formControlName="bio"
-                          placeholder="Brief bio (optional)"
-                          class="form-textarea"
-                          rows="2"
-                        ></textarea>
-                      </div>
-                      <div class="flex gap-3">
+                  @for (memberGroup of teamMembersArray.controls; track $index)
+                  {
+                  <div [formGroupName]="$index" class="team-member-card">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+                      <div>
                         <input
-                          type="url"
-                          formControlName="linkedinUrl"
-                          placeholder="LinkedIn URL (optional)"
-                          class="form-input flex-1"
+                          type="text"
+                          formControlName="name"
+                          placeholder="Full name"
+                          class="form-input"
                         />
-                        <ui-button 
-                          type="button" 
-                          variant="ghost" 
-                          size="sm" 
-                          (clicked)="removeTeamMember($index)"
-                        >
-                          <lucide-icon [img]="Trash2Icon" [size]="14" class="text-red-500" />
-                        </ui-button>
+                      </div>
+                      <div>
+                        <input
+                          type="text"
+                          formControlName="title"
+                          placeholder="Title/Role"
+                          class="form-input"
+                        />
                       </div>
                     </div>
+                    <div class="mb-3">
+                      <textarea
+                        formControlName="bio"
+                        placeholder="Brief bio (optional)"
+                        class="form-textarea"
+                        rows="2"
+                      ></textarea>
+                    </div>
+                    <div class="flex gap-3">
+                      <input
+                        type="url"
+                        formControlName="linkedinUrl"
+                        placeholder="LinkedIn URL (optional)"
+                        class="form-input flex-1"
+                      />
+                      <ui-button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        (clicked)="removeTeamMember($index)"
+                      >
+                        <lucide-icon
+                          [img]="Trash2Icon"
+                          [size]="14"
+                          class="text-red-500"
+                        />
+                      </ui-button>
+                    </div>
+                  </div>
                   }
                 </div>
               </div>
-
             </div>
           </div>
 
           <!-- Save Actions -->
-          <div class="sticky bottom-0 bg-white border-t border-gray-200 p-4 -mx-4 rounded-lg shadow-sm">
+          <div
+            class="sticky bottom-0 bg-white border-t border-gray-200 p-4 -mx-4 rounded-lg shadow-sm"
+          >
             <div class="flex items-center justify-between">
               <div class="text-sm text-gray-500">
                 @if (lastSaved()) {
-                  <span class="text-green-600 font-medium">✓ Last saved: {{ formatLastSaved() }}</span>
+                <span class="text-green-600 font-medium"
+                  >✓ Last saved: {{ formatLastSaved() }}</span
+                >
                 } @else if (hasChanges()) {
-                  <span class="text-orange-600">Changes not saved</span>
+                <span class="text-orange-600">Changes not saved</span>
                 } @else {
-                  <span>No changes</span>
+                <span>No changes</span>
                 }
               </div>
-              
+
               <div class="flex gap-3">
-                <ui-button 
+                <ui-button
                   type="button"
-                  variant="outline" 
+                  variant="outline"
                   (clicked)="saveDraft()"
                   [disabled]="!canSave()"
                 >
                   <lucide-icon [img]="SaveIcon" [size]="16" class="mr-2" />
-                  {{ isSaving() ? 'Saving...' : 'Save Draft' }}
+                  {{ isSaving() ? "Saving..." : "Save Draft" }}
                 </ui-button>
-                
+
                 @if (profileExists() && !profile()?.isPublished) {
-                  <ui-button 
-                    type="button"
-                    variant="primary" 
-                    (clicked)="publishProfile()"
-                    [disabled]="!canPublish()"
-                  >
-                    <lucide-icon [img]="GlobeIcon" [size]="16" class="mr-2" />
-                    {{ isPublishing() ? 'Publishing...' : 'Publish Profile' }}
-                  </ui-button>
+                <ui-button
+                  type="button"
+                  variant="primary"
+                  (clicked)="publishProfile()"
+                  [disabled]="!canPublish()"
+                >
+                  <lucide-icon [img]="GlobeIcon" [size]="16" class="mr-2" />
+                  {{ isPublishing() ? "Publishing..." : "Publish Profile" }}
+                </ui-button>
                 }
               </div>
             </div>
           </div>
-
         </form>
       </div>
 
@@ -634,7 +733,6 @@
           <app-profile-optimization-widget />
         </div>
       </div>
-
     </div>
   </div>
 </div>

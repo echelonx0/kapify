@@ -1,17 +1,21 @@
- 
 import { Component, inject, OnInit, OnDestroy, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Meta, Title } from '@angular/platform-browser';
 import { Subject, takeUntil } from 'rxjs';
-import { PublicProfile, SuccessMetric, FundingArea, TeamMember } from '../models/public-profile.models';
+import {
+  PublicProfile,
+  SuccessMetric,
+  FundingArea,
+  TeamMember,
+} from '../models/public-profile.models';
 import { PublicProfileService } from '../services/public-profile.service';
 
 @Component({
   selector: 'app-funder-profile',
   standalone: true,
   imports: [CommonModule],
-  templateUrl: 'public-profile.component.html'
+  templateUrl: 'public-profile.component.html',
 })
 export class FunderProfileComponent implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
@@ -36,27 +40,27 @@ export class FunderProfileComponent implements OnInit, OnDestroy {
   }
 
   private loadProfile() {
-    this.route.params
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(params => {
-        const slug = params['slug'];
-        if (slug) this.fetchProfile(slug);
-      });
+    this.route.params.pipe(takeUntil(this.destroy$)).subscribe((params) => {
+      const slug = params['slug'];
+      if (slug) this.fetchProfile(slug);
+    });
   }
-get typicalInvestment() {
-  return this.profile()?.investmentRange?.typical ?? 0;
-}
+  get typicalInvestment() {
+    return this.profile()?.investmentRange?.typical ?? 0;
+  }
 
   private fetchProfile(slug: string) {
     this.isLoading.set(true);
     this.error.set(null);
 
-    this.profileService.loadPublicProfile(slug)
+    this.profileService
+      .loadPublicProfile(slug)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (profile) => {
           if (profile) {
             this.profile.set(profile);
+            console.log(profile.heroImageUrl);
             this.setupSEO(profile);
           } else {
             this.error.set('Profile not found or not published');
@@ -67,13 +71,14 @@ get typicalInvestment() {
           console.error('Failed to load profile:', error);
           this.error.set('Failed to load funder profile');
           this.isLoading.set(false);
-        }
+        },
       });
   }
 
   private setupSEO(profile: PublicProfile) {
     const pageTitle = `${profile.organizationName} - ${profile.tagline}`;
-    const description = profile.metaDescription || profile.elevator_pitch || profile.tagline;
+    const description =
+      profile.metaDescription || profile.elevator_pitch || profile.tagline;
 
     this.title.setTitle(pageTitle);
     this.meta.updateTag({ name: 'description', content: description });
@@ -93,7 +98,7 @@ get typicalInvestment() {
   startApplication() {
     console.log('Application started:', this.profile()?.slug);
     this.router.navigate(['/apply'], {
-      queryParams: { funder: this.profile()?.slug }
+      queryParams: { funder: this.profile()?.slug },
     });
   }
 
@@ -111,7 +116,11 @@ get typicalInvestment() {
   }
 
   getKeyMetrics(): SuccessMetric[] {
-    return this.profile()?.successMetrics.filter(m => m.emphasis).slice(0, 3) || [];
+    return (
+      this.profile()
+        ?.successMetrics.filter((m) => m.emphasis)
+        .slice(0, 3) || []
+    );
   }
 
   getLeadership(): TeamMember[] {
@@ -120,7 +129,8 @@ get typicalInvestment() {
 
   formatAmount(amount: number): string {
     const currency = this.profile()?.investmentRange?.currency || 'ZAR';
-    if (amount >= 1000000) return `${currency} ${(amount / 1000000).toFixed(1)}M`;
+    if (amount >= 1000000)
+      return `${currency} ${(amount / 1000000).toFixed(1)}M`;
     if (amount >= 1000) return `${currency} ${(amount / 1000).toFixed(0)}K`;
     return `${currency} ${amount.toLocaleString()}`;
   }

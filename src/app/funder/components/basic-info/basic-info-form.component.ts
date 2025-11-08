@@ -1,11 +1,10 @@
-// src/app/funder/components/basic-info-form.component.ts - ANIMATED VERSION
 import { Component, signal, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Subject, takeUntil} from 'rxjs';
-import { 
-  LucideAngularModule, 
-  Building2, 
+import { Subject, takeUntil } from 'rxjs';
+import {
+  LucideAngularModule,
+  Building2,
   Mail,
   Phone,
   Globe,
@@ -14,19 +13,28 @@ import {
   AlertCircleIcon,
   ChevronDown,
   ChevronRight,
-  FileText
+  FileText,
 } from 'lucide-angular';
-import { UiButtonComponent} from '../../../shared/components'; 
+import { UiButtonComponent } from '../../../shared/components';
+import { LogoUploadComponent } from './logo-upload.component';
 import { FunderOnboardingService } from '../../services/funder-onboarding.service';
 import { FunderOrganization } from '../../../shared/models/user.models';
 
 interface BasicInfoFormData {
   name: string;
   description: string;
-  organizationType: 'investment_fund' | 'bank' | 'government' | 'ngo' | 'private_equity' | 'venture_capital' | '';
+  organizationType:
+    | 'investment_fund'
+    | 'bank'
+    | 'government'
+    | 'ngo'
+    | 'private_equity'
+    | 'venture_capital'
+    | '';
   email: string;
   phone: string;
   website: string;
+  logoUrl?: string;
 }
 
 interface SectionState {
@@ -40,15 +48,15 @@ interface SectionState {
   imports: [
     CommonModule,
     FormsModule,
-    UiButtonComponent, 
-    LucideAngularModule
+    UiButtonComponent,
+    LogoUploadComponent,
+    LucideAngularModule,
   ],
-  templateUrl: 'basic-info-form.component.html'
+  templateUrl: 'basic-info-form.component.html',
 })
 export class BasicInfoFormComponent implements OnInit, OnDestroy {
   protected onboardingService = inject(FunderOnboardingService);
   private destroy$ = new Subject<void>();
-   
 
   // Icons
   Building2Icon = Building2;
@@ -65,23 +73,23 @@ export class BasicInfoFormComponent implements OnInit, OnDestroy {
   // Section expansion state
   expandedSections = signal<SectionState>({
     basic: true,
-    contact: false
+    contact: false,
   });
 
-  // Form data - ONLY basic info fields
+  // Form data - includes logoUrl field
   formData = signal<BasicInfoFormData>({
     name: '',
     description: '',
     organizationType: '',
     email: '',
     phone: '',
-    website: ''
+    website: '',
+    logoUrl: undefined,
   });
 
   ngOnInit() {
     this.loadExistingData();
     this.setupSubscriptions();
-   
   }
 
   ngOnDestroy() {
@@ -99,25 +107,23 @@ export class BasicInfoFormComponent implements OnInit, OnDestroy {
   private setupSubscriptions() {
     this.onboardingService.onboardingState$
       .pipe(takeUntil(this.destroy$))
-      .subscribe(state => {
+      .subscribe((state) => {
         if (state.organization) {
           this.populateFormFromOrganization(state.organization);
         }
       });
   }
 
- 
- 
-
   private populateFormFromOrganization(org: Partial<FunderOrganization>) {
-    this.formData.update(data => ({
+    this.formData.update((data) => ({
       ...data,
       name: org.name || '',
       description: org.description || '',
       organizationType: (org.organizationType as any) || '',
       email: org.email || '',
       phone: org.phone || '',
-      website: org.website || ''
+      website: org.website || '',
+      logoUrl: org.logoUrl || undefined,
     }));
   }
 
@@ -126,9 +132,9 @@ export class BasicInfoFormComponent implements OnInit, OnDestroy {
   // ===============================
 
   toggleSection(section: keyof SectionState) {
-    this.expandedSections.update(sections => ({
+    this.expandedSections.update((sections) => ({
       ...sections,
-      [section]: !sections[section]
+      [section]: !sections[section],
     }));
   }
 
@@ -137,19 +143,43 @@ export class BasicInfoFormComponent implements OnInit, OnDestroy {
   // ===============================
 
   updateField(field: keyof BasicInfoFormData, event: Event) {
-    const target = event.target as HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement;
+    const target = event.target as
+      | HTMLInputElement
+      | HTMLTextAreaElement
+      | HTMLSelectElement;
     const value = target.value;
-    
-    this.formData.update(data => ({
-      ...data,
-      [field]: value
-    }));
 
-   
+    this.formData.update((data) => ({
+      ...data,
+      [field]: value,
+    }));
+  }
+
+  // ===============================
+  // LOGO UPLOAD HANDLERS
+  // ===============================
+
+  onLogoUploaded(result: { url: string; fileName: string }) {
+    this.formData.update((data) => ({
+      ...data,
+      logoUrl: result.url,
+    }));
+    this.saveToLocalStorageOnly();
+    console.log('✅ Logo uploaded and saved:', result.fileName);
+  }
+
+  onLogoRemoved() {
+    this.formData.update((data) => ({
+      ...data,
+      logoUrl: undefined,
+    }));
+    this.saveToLocalStorageOnly();
+    console.log('🗑️ Logo removed');
   }
 
   private saveToLocalStorageOnly() {
-    const organizationData: Partial<FunderOrganization> = this.mapFormDataToOrganization();
+    const organizationData: Partial<FunderOrganization> =
+      this.mapFormDataToOrganization();
     this.onboardingService.updateOrganizationData(organizationData);
     console.log('📝 Auto-saved basic info to local storage');
   }
@@ -159,10 +189,11 @@ export class BasicInfoFormComponent implements OnInit, OnDestroy {
     return {
       name: data.name?.trim() || undefined,
       description: data.description?.trim() || undefined,
-      organizationType: data.organizationType as any || undefined,
+      organizationType: (data.organizationType as any) || undefined,
       email: data.email?.trim() || undefined,
       phone: data.phone?.trim() || undefined,
-      website: data.website?.trim() || undefined
+      website: data.website?.trim() || undefined,
+      logoUrl: data.logoUrl || undefined,
     };
   }
 
@@ -181,10 +212,7 @@ export class BasicInfoFormComponent implements OnInit, OnDestroy {
 
   isContactInfoComplete(): boolean {
     const data = this.formData();
-    return !!(
-      data.email?.trim() &&
-      data.phone?.trim()
-    );
+    return !!(data.email?.trim() && data.phone?.trim());
   }
 
   isFormValid(): boolean {
@@ -193,7 +221,9 @@ export class BasicInfoFormComponent implements OnInit, OnDestroy {
 
   hasAnyData(): boolean {
     const data = this.formData();
-    return Object.values(data).some(value => value && value.toString().trim() !== '');
+    return Object.values(data).some(
+      (value) => value && value.toString().trim() !== ''
+    );
   }
 
   // ===============================
@@ -233,7 +263,7 @@ export class BasicInfoFormComponent implements OnInit, OnDestroy {
       },
       error: (error) => {
         console.error('❌ Failed to save basic info to database:', error);
-      }
+      },
     });
   }
 }

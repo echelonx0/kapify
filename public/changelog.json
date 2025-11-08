@@ -35,13 +35,24 @@
       "item": "Rearrange the founder management dashboard",
       "status": "Planned"
     },
-    { "item": "Integrate the 'Invite Teammates' feature", "status": "Planned" },
+    {
+      "item": "Integrate the 'Invite Teammates' feature",
+      "status": "Planned"
+    },
     {
       "item": "Complete testing of the email infrastructure",
       "status": "Planned"
     },
     {
       "item": "Enable direct upload of organization media assets (e.g., logo)",
+      "status": "In Progress"
+    },
+    {
+      "item": "Add funding type selection when applying for opportunities",
+      "status": "In Progress"
+    },
+    {
+      "item": "Include Balance Sheet and Cashflow statement in import template",
       "status": "In Progress"
     }
   ],
@@ -53,6 +64,18 @@
     },
     {
       "issue": "Fix the issue where the amount requested is not displaying as expected for applications",
+      "done": false
+    },
+    {
+      "issue": "Opportunities are failing to save",
+      "done": true
+    },
+    {
+      "issue": "User cannot select funding type when applying",
+      "done": true
+    },
+    {
+      "issue": "Balance Sheet and Cashflow statement missing in import template",
       "done": false
     }
   ]

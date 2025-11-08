@@ -71,6 +71,7 @@ export class OrganizationStatusSidebarComponent implements OnInit, OnDestroy {
   onboardingState = signal<OnboardingState | null>(null);
   isCollapsed = signal(false);
   showAllMissing = signal(false);
+  logoLoadError = signal(false);
 
   // Events
   actionClicked = output<ActionEvent>();
@@ -171,9 +172,10 @@ export class OrganizationStatusSidebarComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (state) => {
           this.onboardingState.set(state);
+          console.log('✅ Organization status loaded:', state);
         },
         error: (error) => {
-          console.error('Failed to load onboarding state:', error);
+          console.error('❌ Failed to load onboarding state:', error);
         },
       });
   }
@@ -201,14 +203,28 @@ export class OrganizationStatusSidebarComponent implements OnInit, OnDestroy {
       });
   }
 
-  // Add these methods to the component:
-  managePublicProfile() {
-    this.actionClicked.emit({ type: 'manage_public_profile' });
+  // ===============================
+  // LOGO DISPLAY
+  // ===============================
+
+  getOrganizationLogo(): string | null {
+    const org = this.onboardingState()?.organization;
+    if (!org?.logoUrl || this.logoLoadError()) {
+      return null;
+    }
+    return org.logoUrl;
   }
 
-  shareProfile() {
-    this.actionClicked.emit({ type: 'share_profile' });
+  onLogoLoadError() {
+    console.warn('⚠️ Failed to load organization logo');
+    this.logoLoadError.set(true);
   }
+
+  isLogoOptional(): boolean {
+    // Logo is optional unless business rules require it
+    return true;
+  }
+
   // ===============================
   // STATUS COMPUTATION
   // ===============================
@@ -237,11 +253,11 @@ export class OrganizationStatusSidebarComponent implements OnInit, OnDestroy {
     if (!state) return 'Loading Organization Status';
 
     if (state.organization?.isVerified) {
-      return 'Organization Verified';
+      return ' Organization Verified';
     } else if (state.isComplete) {
-      return 'Verification in Progress';
+      return ' Setup Complete';
     } else if (state.completionPercentage >= 50) {
-      return 'Complete Your Setup';
+      return ' Almost There!';
     } else {
       return 'Organization Setup Required';
     }
@@ -252,9 +268,9 @@ export class OrganizationStatusSidebarComponent implements OnInit, OnDestroy {
     if (!state) return 'Loading your organization details...';
 
     if (state.organization?.isVerified) {
-      return 'Your organization is verified and ready to create funding opportunities.';
+      return 'Your organization is verified ';
     } else if (state.isComplete) {
-      return 'Complete setup achieved! Submit for verification to build trust with SMEs.';
+      return 'Verification in progress';
     } else {
       const missing = this.getTotalMissingItems();
       return `${missing} item${
@@ -341,6 +357,7 @@ export class OrganizationStatusSidebarComponent implements OnInit, OnDestroy {
       state?.isComplete && state.organization?.status !== 'pending_verification'
     );
   }
+
   getVerificationButtonText(): string {
     const state = this.onboardingState();
     if (state?.organization?.status === 'pending_verification') {
@@ -379,6 +396,14 @@ export class OrganizationStatusSidebarComponent implements OnInit, OnDestroy {
     }
   }
 
+  managePublicProfile() {
+    this.actionClicked.emit({ type: 'manage_public_profile' });
+  }
+
+  shareProfile() {
+    this.actionClicked.emit({ type: 'share_profile' });
+  }
+
   // ===============================
   // STYLING METHODS
   // ===============================
@@ -394,14 +419,14 @@ export class OrganizationStatusSidebarComponent implements OnInit, OnDestroy {
 
   getStatusBadgeClass(): string {
     const state = this.onboardingState();
-    if (!state) return 'bg-gray-100 text-gray-700';
+    if (!state) return 'bg-slate-100 text-slate-700';
 
     if (state.organization?.isVerified) {
       return 'bg-green-100 text-green-700';
     } else if (state.isComplete) {
       return 'bg-blue-100 text-blue-700';
     } else if (state.completionPercentage >= 50) {
-      return 'bg-orange-100 text-orange-700';
+      return 'bg-amber-100 text-amber-700';
     } else {
       return 'bg-red-100 text-red-700';
     }
@@ -409,83 +434,83 @@ export class OrganizationStatusSidebarComponent implements OnInit, OnDestroy {
 
   getMainStatusCardClass(): string {
     const state = this.onboardingState();
-    if (!state) return 'bg-gray-50 border-gray-200';
+    if (!state) return 'bg-slate-50';
 
     if (state.organization?.isVerified) {
-      return 'bg-green-50 border border-green-200';
+      return 'bg-green-50';
     } else if (state.isComplete) {
-      return 'bg-blue-50 border border-blue-200';
+      return 'bg-blue-50';
     } else if (state.completionPercentage >= 50) {
-      return 'bg-orange-50 border border-orange-200';
+      return 'bg-amber-50';
     } else {
-      return 'bg-red-50 border border-red-200';
+      return 'bg-red-50';
     }
   }
 
   getStatusIconBg(): string {
     const state = this.onboardingState();
-    if (!state) return 'bg-gray-100';
+    if (!state) return 'bg-slate-100';
 
     if (state.organization?.isVerified) return 'bg-green-100';
     if (state.isComplete) return 'bg-blue-100';
-    if (state.completionPercentage >= 50) return 'bg-orange-100';
+    if (state.completionPercentage >= 50) return 'bg-amber-100';
     return 'bg-red-100';
   }
 
   getStatusIconColor(): string {
     const state = this.onboardingState();
-    if (!state) return 'text-gray-600';
+    if (!state) return 'text-slate-600';
 
     if (state.organization?.isVerified) return 'text-green-600';
     if (state.isComplete) return 'text-blue-600';
-    if (state.completionPercentage >= 50) return 'text-orange-600';
+    if (state.completionPercentage >= 50) return 'text-amber-600';
     return 'text-red-600';
   }
 
   getStatusTitleColor(): string {
     const state = this.onboardingState();
-    if (!state) return 'text-gray-900';
+    if (!state) return 'text-slate-900';
 
     if (state.organization?.isVerified) return 'text-green-900';
     if (state.isComplete) return 'text-blue-900';
-    if (state.completionPercentage >= 50) return 'text-orange-900';
+    if (state.completionPercentage >= 50) return 'text-amber-900';
     return 'text-red-900';
   }
 
   getStatusTextColor(): string {
     const state = this.onboardingState();
-    if (!state) return 'text-gray-700';
+    if (!state) return 'text-slate-700';
 
     if (state.organization?.isVerified) return 'text-green-700';
     if (state.isComplete) return 'text-blue-700';
-    if (state.completionPercentage >= 50) return 'text-orange-700';
+    if (state.completionPercentage >= 50) return 'text-amber-700';
     return 'text-red-700';
   }
 
   getActionButtonColor(): string {
     const state = this.onboardingState();
-    if (!state) return 'text-gray-600 hover:text-gray-800';
+    if (!state) return 'text-slate-600 hover:text-slate-800';
 
     if (state.organization?.isVerified)
       return 'text-green-600 hover:text-green-800';
     if (state.isComplete) return 'text-blue-600 hover:text-blue-800';
     if (state.completionPercentage >= 50)
-      return 'text-orange-600 hover:text-orange-800';
+      return 'text-amber-600 hover:text-amber-800';
     return 'text-red-600 hover:text-red-800';
   }
 
   getProgressBarColor(): string {
     const state = this.onboardingState();
-    if (!state) return 'bg-gray-400';
+    if (!state) return 'bg-slate-400';
 
     if (state.organization?.isVerified) {
-      return 'bg-gradient-to-r from-green-500 to-green-600';
+      return 'bg-gradient-to-r from-green-400 to-green-500';
     } else if (state.isComplete) {
-      return 'bg-gradient-to-r from-blue-500 to-blue-600';
+      return 'bg-gradient-to-r from-blue-400 to-blue-500';
     } else if (state.completionPercentage >= 50) {
-      return 'bg-gradient-to-r from-orange-500 to-orange-600';
+      return 'bg-gradient-to-r from-amber-400 to-amber-500';
     } else {
-      return 'bg-gradient-to-r from-red-500 to-red-600';
+      return 'bg-gradient-to-r from-red-400 to-red-500';
     }
   }
 
