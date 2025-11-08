@@ -108,7 +108,7 @@ export class BillingCreditsComponent implements OnInit, OnDestroy {
     return sum;
   });
 
-  // Computed: Recent transactions
+  //   Recent transactions
   recentTransactions = computed(() => {
     return this.transactions().slice(0, 5);
   });

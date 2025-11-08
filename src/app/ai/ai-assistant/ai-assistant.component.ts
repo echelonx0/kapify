@@ -344,7 +344,6 @@ export class AiAssistantComponent implements OnInit, OnDestroy {
   @Input() currentOpportunity?: any;
   @Input() applicationData?: any;
 
-  private router = inject(Router);
   private marketIntelligence = inject(MarketIntelligenceService);
   private destroy$ = new Subject<void>();
 
@@ -367,6 +366,11 @@ export class AiAssistantComponent implements OnInit, OnDestroy {
   competitorData = signal<CompetitorIntelligence | null>(null);
   isLoadingIntelligence = signal(false);
   intelligenceError = signal<string | null>(null);
+
+  // Market research state
+  isGeneratingResearch = signal(false);
+  marketResearchGenerated = signal(false);
+  researchError = signal<string | null>(null);
 
   // Computed Intelligence Insights
   allInsights = computed(() => {
@@ -558,6 +562,57 @@ export class AiAssistantComponent implements OnInit, OnDestroy {
   // ===============================
   // ENHANCED INSIGHTS METHODS
   // ===============================
+
+  // ===============================
+  // MARKET RESEARCH FUNCTIONALITY
+  // ===============================
+
+  async generateMarketResearch() {
+    const application = this.applicationData;
+    const opportunity = this.currentOpportunity;
+
+    if (!application || !opportunity) {
+      console.error(
+        'Missing application or opportunity data for market research'
+      );
+      return;
+    }
+
+    this.isGeneratingResearch.set(true);
+    this.researchError.set(null);
+
+    try {
+      console.log('Generating market research...');
+
+      // Simulate API call
+      await new Promise((resolve, reject) => {
+        setTimeout(() => {
+          // Simulate random success/failure for demo
+          if (Math.random() > 0.7) {
+            reject(new Error('Market research generation failed'));
+          } else {
+            resolve(true);
+          }
+        }, 2000);
+      });
+
+      this.marketResearchGenerated.set(true);
+      // this.marketResearchRequested.emit();
+      console.log('Market research generated successfully');
+    } catch (error) {
+      console.error('Error generating market research:', error);
+      this.researchError.set(
+        'Failed to generate market research. Please try again.'
+      );
+    } finally {
+      this.isGeneratingResearch.set(false);
+    }
+  }
+
+  retryMarketResearch() {
+    this.researchError.set(null);
+    this.generateMarketResearch();
+  }
 
   getIntelligentSuggestion(): string {
     const market = this.marketData();

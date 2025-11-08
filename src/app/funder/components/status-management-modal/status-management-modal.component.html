@@ -1,216 +1,250 @@
 <!-- src/app/funder/components/application-detail/components/status-management-modal/status-management-modal.component.html -->
+<!-- FIXED: Uses component methods getActionIcon() and getActionColorClass() -->
 
 @if (isOpen) {
-  <div class="modal-backdrop fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-    <div class="modal-container bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] flex flex-col">
-      
-      <!-- Header -->
-      <div class="modal-header px-6 py-4 border-b border-gray-200 flex items-center justify-between">
-        <div>
-          <h2 class="text-xl font-semibold text-gray-900">Manage Application Status</h2>
-          <p class="text-sm text-gray-600 mt-1">{{ application.title }}</p>
-        </div>
-        <button 
-          (click)="closeModal()"
-          class="text-gray-400 hover:text-gray-600 transition-colors"
+<div
+  class="modal-backdrop fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+>
+  <div
+    class="modal-container bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] flex flex-col"
+  >
+    <!-- Header -->
+    <div
+      class="modal-header px-6 py-4 border-b border-gray-200 flex items-center justify-between"
+    >
+      <div>
+        <h2 class="text-xl font-semibold text-gray-900">
+          Manage Application Status
+        </h2>
+        <p class="text-sm text-gray-600 mt-1">{{ application.title }}</p>
+      </div>
+      <button
+        (click)="closeModal()"
+        class="text-gray-400 hover:text-gray-600 transition-colors"
+      >
+        <lucide-icon [img]="XIcon" [size]="24"></lucide-icon>
+      </button>
+    </div>
+
+    <!-- Category Tabs -->
+    <div class="px-6 pt-4 border-b border-gray-200">
+      <div class="flex space-x-4">
+        <button
+          (click)="setCategory('external')"
+          [class]="
+            activeCategory() === 'external'
+              ? 'px-4 py-2 border-b-2 border-primary-600 text-primary-600 font-medium'
+              : 'px-4 py-2 border-b-2 border-transparent text-gray-600 hover:text-gray-900'
+          "
         >
-          <lucide-icon [img]="XIcon" [size]="24"></lucide-icon>
+          External Actions
+        </button>
+        <button
+          (click)="setCategory('internal')"
+          [class]="
+            activeCategory() === 'internal'
+              ? 'px-4 py-2 border-b-2 border-primary-600 text-primary-600 font-medium'
+              : 'px-4 py-2 border-b-2 border-transparent text-gray-600 hover:text-gray-900'
+          "
+        >
+          Internal Actions
         </button>
       </div>
+    </div>
 
-      <!-- Category Tabs -->
-      <div class="px-6 pt-4 border-b border-gray-200">
-        <div class="flex space-x-4">
-          <button
-            (click)="setCategory('external')"
-            [class]="activeCategory() === 'external' 
-              ? 'px-4 py-2 border-b-2 border-primary-600 text-primary-600 font-medium' 
-              : 'px-4 py-2 border-b-2 border-transparent text-gray-600 hover:text-gray-900'"
-          >
-            External Actions
-          </button>
-          <button
-            (click)="setCategory('internal')"
-            [class]="activeCategory() === 'internal' 
-              ? 'px-4 py-2 border-b-2 border-primary-600 text-primary-600 font-medium' 
-              : 'px-4 py-2 border-b-2 border-transparent text-gray-600 hover:text-gray-900'"
-          >
-            Internal Actions
-          </button>
-        </div>
-      </div>
-
-      <!-- Content -->
-      <div class="modal-body flex-1 overflow-y-auto p-6">
-        @if (!selectedAction()) {
-          <!-- Action Selection Grid -->
-          <div class="grid grid-cols-2 gap-4">
-            @for (action of filteredActions(); track action.id) {
-              <button
-                (click)="selectAction(action)"
-                class="action-card text-left p-4 border-2 border-gray-200 rounded-lg hover:border-primary-500 hover:bg-primary-50 transition-all"
-              >
-                <div class="flex items-start space-x-3">
-                  <div [class]="'icon-container ' + action.colorClass">
-                    <lucide-icon [img]="action.icon" [size]="24"></lucide-icon>
-                  </div>
-                  <div class="flex-1">
-                    <h3 class="font-medium text-gray-900 mb-1">{{ action.label }}</h3>
-                    <p class="text-sm text-gray-600">{{ action.description }}</p>
-                  </div>
-                </div>
-              </button>
-            }
-          </div>
-        } @else {
-          <!-- Action Detail Form -->
-          <div class="space-y-6">
-            <!-- Selected Action Header -->
-            <div class="flex items-start space-x-4 p-4 bg-gray-50 rounded-lg">
-              <div [class]="'icon-container ' + selectedAction()!.colorClass">
-                <lucide-icon [img]="selectedAction()!.icon" [size]="24"></lucide-icon>
-              </div>
-              <div class="flex-1">
-                <h3 class="font-semibold text-gray-900">{{ selectedAction()!.label }}</h3>
-                <p class="text-sm text-gray-600 mt-1">{{ selectedAction()!.description }}</p>
-              </div>
-              <button
-                (click)="selectedAction.set(null)"
-                class="text-gray-400 hover:text-gray-600"
-              >
-                <lucide-icon [img]="XIcon" [size]="20"></lucide-icon>
-              </button>
+    <!-- Content -->
+    <div class="modal-body flex-1 overflow-y-auto p-6">
+      @if (!selectedAction()) {
+      <!-- Action Selection Grid -->
+      <div class="grid grid-cols-2 gap-4">
+        @for (action of filteredActions(); track action.id) {
+        <button
+          (click)="selectAction(action)"
+          class="action-card text-left p-4 border-2 border-gray-200 rounded-lg hover:border-primary-500 hover:bg-primary-50 transition-all"
+        >
+          <div class="flex items-start space-x-3">
+            <div [class]="'icon-container ' + getActionColorClass(action.id)">
+              <lucide-icon
+                [img]="getActionIcon(action.id)"
+                [size]="24"
+              ></lucide-icon>
             </div>
-
-            <!-- Priority Selection (for set_priority action) -->
-            @if (selectedAction()!.id === 'set_priority') {
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">
-                  Priority Level
-                </label>
-                <select
-                  [value]="priorityLevel()"
-                  (change)="onPriorityChange($event)"
-                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
-                >
-                  <option value="low">Low Priority</option>
-                  <option value="medium">Medium Priority</option>
-                  <option value="high">High Priority</option>
-                  <option value="urgent">Urgent</option>
-                </select>
-              </div>
-            }
-
-            <!-- Comment/Message Input -->
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">
-                @if (selectedAction()!.category === 'external') {
-                  Message to Applicant
-                  @if (selectedAction()!.requiresComment) {
-                    <span class="text-red-500">*</span>
-                  }
-                } @else {
-                  Internal Note
-                  @if (selectedAction()!.requiresComment) {
-                    <span class="text-red-500">*</span>
-                  }
-                }
-              </label>
-              <textarea
-                [value]="comment()"
-                (input)="onCommentInput($event)"
-                rows="8"
-                [placeholder]="selectedAction()!.category === 'external' 
-                  ? 'Enter message to send to the applicant...' 
-                  : 'Enter internal note (only visible to your team)...'"
-                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-              ></textarea>
-              @if (selectedAction()!.requiresComment) {
-                <p class="text-xs text-gray-500 mt-1">This field is required</p>
-              }
+            <div class="flex-1">
+              <h3 class="font-medium text-gray-900 mb-1">{{ action.label }}</h3>
+              <p class="text-sm text-gray-600">{{ action.description }}</p>
             </div>
-
-            <!-- Status Change Summary -->
-            @if (selectedAction()!.status || selectedAction()!.internalStatus) {
-              <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <h4 class="text-sm font-medium text-blue-900 mb-2">Status Changes</h4>
-                <div class="space-y-2 text-sm">
-                  @if (selectedAction()!.status) {
-                    <div class="flex items-center justify-between">
-                      <span class="text-blue-700">External Status:</span>
-                      <span class="font-medium text-blue-900">{{ selectedAction()!.status }}</span>
-                    </div>
-                  }
-                  @if (selectedAction()!.internalStatus) {
-                    <div class="flex items-center justify-between">
-                      <span class="text-blue-700">Internal Status:</span>
-                      <span class="font-medium text-blue-900">{{ selectedAction()!.internalStatus }}</span>
-                    </div>
-                  }
-                  @if (selectedAction()!.createsThread) {
-                    <div class="flex items-center space-x-2 text-blue-700">
-                      <lucide-icon [img]="MessageSquareIcon" [size]="14"></lucide-icon>
-                      <span>Message thread will be created</span>
-                    </div>
-                  }
-                </div>
-              </div>
-            }
-
-            <!-- Error Display -->
-            @if (error()) {
-              <div class="bg-red-50 border border-red-200 rounded-lg p-4">
-                <div class="flex items-start space-x-3">
-                  <lucide-icon [img]="AlertCircleIcon" [size]="20" class="text-red-600 mt-0.5"></lucide-icon>
-                  <div>
-                    <h4 class="text-sm font-medium text-red-900">Error</h4>
-                    <p class="text-sm text-red-700 mt-1">{{ error() }}</p>
-                  </div>
-                </div>
-              </div>
-            }
           </div>
+        </button>
         }
       </div>
-
-      <!-- Footer -->
-      <div class="modal-footer px-6 py-4 border-t border-gray-200 flex items-center justify-between bg-gray-50">
-        <div>
-          @if (selectedAction()) {
-            <button
-              (click)="selectedAction.set(null)"
-              class="text-sm text-gray-600 hover:text-gray-900"
-            >
-              ← Back to actions
-            </button>
-          }
-        </div>
-        <div class="flex items-center space-x-3">
-          <button
-            (click)="closeModal()"
-            [disabled]="isProcessing()"
-            class="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 font-medium disabled:opacity-50"
+      } @else {
+      <!-- Action Detail Form -->
+      <div class="space-y-6">
+        <!-- Selected Action Header -->
+        <div class="flex items-start space-x-4 p-4 bg-gray-50 rounded-lg">
+          <div
+            [class]="
+              'icon-container ' + getActionColorClass(selectedAction()!.id)
+            "
           >
-            Cancel
+            <lucide-icon
+              [img]="getActionIcon(selectedAction()!.id)"
+              [size]="24"
+            ></lucide-icon>
+          </div>
+          <div class="flex-1">
+            <h3 class="font-semibold text-gray-900">
+              {{ selectedAction()!.label }}
+            </h3>
+            <p class="text-sm text-gray-600 mt-1">
+              {{ selectedAction()!.description }}
+            </p>
+          </div>
+          <button
+            (click)="selectedAction.set(null)"
+            class="text-gray-400 hover:text-gray-600"
+          >
+            <lucide-icon [img]="XIcon" [size]="20"></lucide-icon>
           </button>
-          @if (selectedAction()) {
-            <button
-              (click)="submitAction()"
-              [disabled]="!canSubmit() || isProcessing()"
-              class="px-6 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
-            >
-              @if (isProcessing()) {
-                <lucide-icon [img]="ClockIcon" [size]="16" class="animate-spin"></lucide-icon>
-                <span>Processing...</span>
-              } @else {
-                <lucide-icon [img]="SendIcon" [size]="16"></lucide-icon>
-                <span>Submit Action</span>
-              }
-            </button>
+        </div>
+
+        <!-- Priority Selection (for set_priority action) -->
+        @if (selectedAction()!.id === 'set_priority') {
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">
+            Priority Level
+          </label>
+          <select
+            [value]="priorityLevel()"
+            (change)="onPriorityChange($event)"
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+          >
+            <option value="low">Low Priority</option>
+            <option value="medium">Medium Priority</option>
+            <option value="high">High Priority</option>
+            <option value="urgent">Urgent</option>
+          </select>
+        </div>
+        }
+
+        <!-- Comment/Message Input -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">
+            @if (selectedAction()!.category === 'external') { Message to
+            Applicant @if (selectedAction()!.requiresComment) {
+            <span class="text-red-500">*</span>
+            } } @else { Internal Note @if (selectedAction()!.requiresComment) {
+            <span class="text-red-500">*</span>
+            } }
+          </label>
+          <textarea
+            [value]="comment()"
+            (input)="onCommentInput($event)"
+            rows="8"
+            [placeholder]="
+              selectedAction()!.category === 'external'
+                ? 'Enter message to send to the applicant...'
+                : 'Enter internal note (only visible to your team)...'
+            "
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+          ></textarea>
+          @if (selectedAction()!.requiresComment) {
+          <p class="text-xs text-gray-500 mt-1">This field is required</p>
           }
         </div>
-      </div>
 
+        <!-- Status Change Summary -->
+        @if (selectedAction()!.status || selectedAction()!.internalStatus) {
+        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <h4 class="text-sm font-medium text-blue-900 mb-2">Status Changes</h4>
+          <div class="space-y-2 text-sm">
+            @if (selectedAction()!.status) {
+            <div class="flex items-center justify-between">
+              <span class="text-blue-700">External Status:</span>
+              <span class="font-medium text-blue-900">{{
+                selectedAction()!.status
+              }}</span>
+            </div>
+            } @if (selectedAction()!.internalStatus) {
+            <div class="flex items-center justify-between">
+              <span class="text-blue-700">Internal Status:</span>
+              <span class="font-medium text-blue-900">{{
+                selectedAction()!.internalStatus
+              }}</span>
+            </div>
+            } @if (selectedAction()!.createsThread) {
+            <div class="flex items-center space-x-2 text-blue-700">
+              <lucide-icon [img]="MessageSquareIcon" [size]="14"></lucide-icon>
+              <span>Message thread will be created</span>
+            </div>
+            }
+          </div>
+        </div>
+        }
+
+        <!-- Error Display -->
+        @if (error()) {
+        <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+          <div class="flex items-start space-x-3">
+            <lucide-icon
+              [img]="AlertCircleIcon"
+              [size]="20"
+              class="text-red-600 mt-0.5"
+            ></lucide-icon>
+            <div>
+              <h4 class="text-sm font-medium text-red-900">Error</h4>
+              <p class="text-sm text-red-700 mt-1">{{ error() }}</p>
+            </div>
+          </div>
+        </div>
+        }
+      </div>
+      }
+    </div>
+
+    <!-- Footer -->
+    <div
+      class="modal-footer px-6 py-4 border-t border-gray-200 flex items-center justify-between bg-gray-50"
+    >
+      <div>
+        @if (selectedAction()) {
+        <button
+          (click)="selectedAction.set(null)"
+          class="text-sm text-gray-600 hover:text-gray-900"
+        >
+          ← Back to actions
+        </button>
+        }
+      </div>
+      <div class="flex items-center space-x-3">
+        <button
+          (click)="closeModal()"
+          [disabled]="isProcessing()"
+          class="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 font-medium disabled:opacity-50"
+        >
+          Cancel
+        </button>
+        @if (selectedAction()) {
+        <button
+          (click)="submitAction()"
+          [disabled]="!canSubmit() || isProcessing()"
+          class="px-6 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
+        >
+          @if (isProcessing()) {
+          <lucide-icon
+            [img]="ClockIcon"
+            [size]="16"
+            class="animate-spin"
+          ></lucide-icon>
+          <span>Processing...</span>
+          } @else {
+          <lucide-icon [img]="SendIcon" [size]="16"></lucide-icon>
+          <span>Submit Action</span>
+          }
+        </button>
+        }
+      </div>
     </div>
   </div>
+</div>
 }

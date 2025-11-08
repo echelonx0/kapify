@@ -1,0 +1,248 @@
+<div class="min-h-screen bg-slate-50">
+  <!-- Header Section -->
+  <div
+    class="bg-gradient-to-r from-teal-600 to-teal-700 text-white py-12 lg:py-16"
+  >
+    <div class="max-w-6xl mx-auto px-4 lg:px-8">
+      <div class="max-w-3xl">
+        <h1 class="text-3xl lg:text-4xl font-bold mb-3">
+          Pay only for what you use.
+        </h1>
+        <p class="text-lg text-teal-100">
+          No subscriptions. No hidden fees. Just simple, transparent pricing.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="max-w-6xl mx-auto px-4 lg:px-8 py-12 lg:py-16">
+    <!-- How It Works Section -->
+    <div class="mb-16">
+      <h2 class="text-3xl font-bold text-slate-900 mb-4">How It Works</h2>
+      <p class="text-slate-600 mb-8">Three simple steps to start investing</p>
+
+      <div class="grid md:grid-cols-3 gap-4 lg:gap-6">
+        <div
+          class="bg-white rounded-2xl border border-slate-200 p-6 hover:shadow-md transition-all duration-200"
+        >
+          <div
+            class="w-12 h-12 rounded-xl bg-teal-100 flex items-center justify-center text-teal-600 mb-4"
+          >
+            <lucide-icon [img]="CreditCardIcon" [size]="24" />
+          </div>
+          <h3 class="text-lg font-bold text-slate-900 mb-2">1. Buy Credits</h3>
+          <p class="text-sm text-slate-600">
+            Purchase a credit package that fits your needs. Larger packages
+            offer better rates.
+          </p>
+        </div>
+
+        <div
+          class="bg-white rounded-2xl border border-slate-200 p-6 hover:shadow-md transition-all duration-200"
+        >
+          <div
+            class="w-12 h-12 rounded-xl bg-teal-100 flex items-center justify-center text-teal-600 mb-4"
+          >
+            <lucide-icon [img]="EyeIcon" [size]="24" />
+          </div>
+          <h3 class="text-lg font-bold text-slate-900 mb-2">2. Use Credits</h3>
+          <p class="text-sm text-slate-600">
+            Spend credits to view applications, download documents, and contact
+            businesses.
+          </p>
+        </div>
+
+        <div
+          class="bg-white rounded-2xl border border-slate-200 p-6 hover:shadow-md transition-all duration-200"
+        >
+          <div
+            class="w-12 h-12 rounded-xl bg-teal-100 flex items-center justify-center text-teal-600 mb-4"
+          >
+            <lucide-icon [img]="TrendingUpIcon" [size]="24" />
+          </div>
+          <h3 class="text-lg font-bold text-slate-900 mb-2">
+            3. Find Opportunities
+          </h3>
+          <p class="text-sm text-slate-600">
+            Connect with vetted businesses that match your investment criteria.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Credit Actions Section -->
+    <div class="mb-16">
+      <h2 class="text-3xl font-bold text-slate-900 mb-3">
+        What Credits Unlock
+      </h2>
+      <p class="text-slate-600 mb-8">
+        Every action on Kapify has a transparent credit cost.
+      </p>
+
+      <div class="grid md:grid-cols-2 gap-4">
+        @for (action of creditActions(); track action.id) {
+        <div
+          class="bg-white rounded-2xl border border-slate-200 p-6 hover:shadow-md transition-all duration-200"
+        >
+          <div class="flex items-start justify-between">
+            <div class="flex gap-4">
+              <div
+                class="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
+                [class]="getActionIconClass(action.color)"
+              >
+                <lucide-icon [img]="action.icon" [size]="24" />
+              </div>
+              <div class="flex-1">
+                <h3 class="font-bold text-slate-900 mb-1">
+                  {{ action.title }}
+                </h3>
+                <p class="text-sm text-slate-600">{{ action.description }}</p>
+              </div>
+            </div>
+            <div class="flex flex-col items-end flex-shrink-0">
+              <span class="text-2xl font-bold text-teal-600">{{
+                action.cost
+              }}</span>
+              <span class="text-xs text-slate-500">credits</span>
+            </div>
+          </div>
+        </div>
+        }
+      </div>
+    </div>
+
+    <!-- Pricing Packages Section -->
+    <div class="mb-16">
+      <app-pricing-packages
+        (packageSelected)="onPackageSelected($event)"
+      ></app-pricing-packages>
+
+      <!-- Purchase Button -->
+      <div class="flex justify-center mt-8">
+        <button
+          (click)="openPurchaseModal()"
+          class="inline-flex items-center justify-center gap-2 px-8 py-3 bg-teal-500 text-white font-bold rounded-xl hover:bg-teal-600 active:bg-teal-700 transition-colors duration-200 shadow-md hover:shadow-lg"
+        >
+          Purchase Credits
+          <lucide-icon [img]="ArrowRightIcon" [size]="20" />
+        </button>
+      </div>
+    </div>
+
+    <!-- Benefits Section -->
+    <div class="mb-16">
+      <h2 class="text-3xl font-bold text-slate-900 mb-8">Why Use Credits?</h2>
+
+      <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
+        @for (benefit of benefits(); track benefit.title) {
+        <div
+          class="bg-white rounded-2xl border border-slate-200 p-6 hover:shadow-md transition-all duration-200"
+        >
+          <div
+            class="w-12 h-12 rounded-xl bg-teal-100 flex items-center justify-center text-teal-600 mb-4"
+          >
+            <lucide-icon [img]="benefit.icon" [size]="24" />
+          </div>
+          <h3 class="font-bold text-slate-900 mb-2">
+            {{ benefit.title }}
+          </h3>
+          <p class="text-sm text-slate-600">{{ benefit.description }}</p>
+        </div>
+        }
+      </div>
+    </div>
+
+    <!-- FAQ Section -->
+    <div class="bg-white rounded-2xl border border-slate-200 p-8 mb-16">
+      <h2 class="text-2xl font-bold text-slate-900 mb-6">
+        Frequently Asked Questions
+      </h2>
+
+      <div class="space-y-6">
+        <div>
+          <h3 class="font-bold text-slate-900 mb-2">Do credits expire?</h3>
+          <p class="text-sm text-slate-600">
+            No. Your credits remain active indefinitely and can be used whenever
+            you need them.
+          </p>
+        </div>
+
+        <div>
+          <h3 class="font-bold text-slate-900 mb-2">
+            Can I refund unused credits?
+          </h3>
+          <p class="text-sm text-slate-600">
+            Credits are non-refundable once purchased. However, they never
+            expire, so you can use them at any time.
+          </p>
+        </div>
+
+        <div>
+          <h3 class="font-bold text-slate-900 mb-2">
+            What happens if I run out of credits?
+          </h3>
+          <p class="text-sm text-slate-600">
+            You can purchase more credits anytime. We'll notify you when your
+            balance is running low.
+          </p>
+        </div>
+
+        <div>
+          <h3 class="font-bold text-slate-900 mb-2">
+            Are there volume discounts?
+          </h3>
+          <p class="text-sm text-slate-600">
+            Yes! Larger credit packages offer better per-credit rates, with
+            savings up to 30%.
+          </p>
+        </div>
+
+        <div>
+          <h3 class="font-bold text-slate-900 mb-2">
+            Can I share credits with my team?
+          </h3>
+          <p class="text-sm text-slate-600">
+            Enterprise plans support team credit pools. Contact us for custom
+            team pricing.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- CTA Section -->
+    <div
+      class="bg-gradient-to-r from-teal-600 to-teal-700 rounded-2xl p-8 lg:p-12 text-center text-white"
+    >
+      <h2 class="text-3xl font-bold mb-3">Ready to Start Investing?</h2>
+      <p class="text-lg text-teal-100 mb-8 max-w-2xl mx-auto">
+        Purchase credits now and get immediate access to vetted business
+        applications.
+      </p>
+      <div class="flex flex-col sm:flex-row gap-4 justify-center">
+        <button
+          (click)="openPurchaseModal()"
+          class="px-6 py-3 bg-white text-teal-600 font-bold rounded-xl hover:bg-slate-50 transition-colors duration-200"
+        >
+          Purchase Credits
+        </button>
+        <button
+          (click)="goToApplications()"
+          class="px-6 py-3 border-2 border-white text-white font-bold rounded-xl hover:bg-white/10 transition-colors duration-200"
+        >
+          Browse Applications
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Purchase Modal -->
+@if (isPurchaseModalOpen()) {
+<app-purchase-credits-modal
+  [isOpen]="isPurchaseModalOpen()"
+  [organizationId]="wallet()?.organization_id || ''"
+  (close)="closePurchaseModal()"
+  (success)="onPurchaseSuccess()"
+/>
+}

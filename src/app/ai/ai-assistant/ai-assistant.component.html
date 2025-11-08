@@ -1,18 +1,9 @@
 <div
-  class="border-[0.5px] bg-gradient-to-br from-orange-500 via-primary-500 to-cyan-600 p-0.5 rounded-xl sticky top-6"
+  class="border-[0.5px] bg-gradient-to-br from-orange-400 via-primary-400 to-cyan-400 p-0.1 rounded-xl sticky top-6"
 >
   <div class="bg-white rounded-xl p-6">
     <div class="flex items-center space-x-3 mb-4">
-      <div
-        class="w-8 h-8 bg-gradient-to-r from-slate-500 to-slate-500 rounded-lg flex items-center justify-center"
-      >
-        <lucide-icon
-          [img]="SparklesIcon"
-          [size]="16"
-          class="text-white"
-        ></lucide-icon>
-      </div>
-      <h3 class="font-semibold text-gray-900">Kapify Investment Assistant</h3>
+      <h3 class="font-semibold text-gray-900">Kapify Assistant</h3>
       @if (isLoadingIntelligence()) {
       <div
         class="w-4 h-4 border-2 border-slate-500 border-t-transparent rounded-full animate-spin"

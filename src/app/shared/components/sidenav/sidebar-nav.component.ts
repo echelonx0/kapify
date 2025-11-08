@@ -1,4 +1,3 @@
-// src/app/shared/components/enhanced-sidebar-nav.component.ts
 import { Component, computed, signal, inject, OnInit } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
@@ -20,6 +19,7 @@ import { AuthService } from 'src/app/auth/production.auth.service';
 import { ProfileManagementService } from '../../services/profile-management.service';
 
 interface NavItem {
+  id: string;
   label: string;
   icon: any;
   route: string;
@@ -49,6 +49,7 @@ export class SidebarNavComponent implements OnInit {
   BellIcon = Bell;
   ChevronDownIcon = ChevronDown;
   BookOpenIcon = BookOpen;
+  BookCheckIcon = BookCheck;
 
   // State
   showNotifications = signal(false);
@@ -72,39 +73,51 @@ export class SidebarNavComponent implements OnInit {
     return this.ADMIN_EMAILS.includes(user.email.toLowerCase());
   });
 
-  private navItems: NavItem[] = [
+  private readonly navItems: NavItem[] = [
     {
+      id: 'home',
       label: 'Home',
       icon: Home,
       route: '/dashboard/home',
       userTypes: ['sme', 'funder'],
     },
-    { label: 'Profile', icon: User, route: '/profile', userTypes: ['sme'] },
     {
+      id: 'profile',
+      label: 'Profile',
+      icon: User,
+      route: '/profile',
+      userTypes: ['sme'],
+    },
+    {
+      id: 'funding',
       label: 'Funding Opportunities',
       icon: DollarSign,
       route: '/funding',
       userTypes: ['sme'],
     },
     {
+      id: 'funder-manage',
       label: 'Manage',
       icon: Building,
       route: '/dashboard/funder-dashboard',
       userTypes: ['funder'],
     },
     {
+      id: 'funder-opportunities',
       label: 'Opportunities',
       icon: BookCheck,
       route: '/dashboard/funder-dashboard',
       userTypes: ['funder'],
     },
     {
+      id: 'funder-applications',
       label: 'Applications',
       icon: BookOpen,
       route: '/dashboard/funder-dashboard',
       userTypes: ['funder'],
     },
     {
+      id: 'sme-applications',
       label: 'Applications',
       icon: FileText,
       route: '/applications',
@@ -112,18 +125,21 @@ export class SidebarNavComponent implements OnInit {
       badge: 2,
     },
     {
+      id: 'data-room',
       label: 'Data Room',
       icon: FileText,
       route: '/profile/data-room',
       userTypes: ['sme'],
     },
     {
+      id: 'academy',
       label: 'Kapify Academy',
       icon: BookOpen,
       route: '/dashboard/kapify-academy',
       userTypes: ['sme'],
     },
     {
+      id: 'admin-console',
       label: 'Admin Console',
       icon: Settings,
       route: '/administrator',
@@ -138,7 +154,7 @@ export class SidebarNavComponent implements OnInit {
     const isAdmin = this.isAdminUser();
 
     return this.navItems.filter((item) => {
-      if (item.route === '/admin') return isAdmin;
+      if (item.route === '/administrator') return isAdmin;
       return item.userTypes.includes(mappedUserType);
     });
   });
@@ -175,7 +191,6 @@ export class SidebarNavComponent implements OnInit {
     this.router.navigate(['/dashboard']);
   }
 
-  // ✅ Dynamically map funder dashboard items to tab IDs
   goToFunderTabFromLabel(label: string) {
     const labelMap: Record<
       string,
@@ -192,7 +207,6 @@ export class SidebarNavComponent implements OnInit {
         queryParams: { tab: tabId },
       });
     } else {
-      // Fallback: just navigate normally
       this.router.navigate(['/funder/dashboard']);
     }
   }
@@ -216,5 +230,9 @@ export class SidebarNavComponent implements OnInit {
     return user
       ? this.profileService.getUserTypeDisplayName(user.userType)
       : '';
+  }
+
+  trackByUnique(index: number, item: NavItem): string {
+    return item.id;
   }
 }

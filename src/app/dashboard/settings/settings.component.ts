@@ -279,7 +279,7 @@ import { LegalInfoComponent } from './components/legal/legal-info.component';
 import { OrganizationSettingsService } from '../services/organization-settings.service';
 import { ContactDetailsComponent } from './components/contact-details/contact-details.component';
 import { TeamManagementComponent } from './components/team-management/team-management.component';
-import { BillingCreditsComponent } from '../billing/billing-credits.component';
+import { BillingCreditsComponent } from '../finance/billing/billing-credits.component';
 
 type SettingsSection =
   | 'general'

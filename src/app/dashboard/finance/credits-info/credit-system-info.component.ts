@@ -1,4 +1,3 @@
-// credits-explanation.component.ts
 import { Component, signal, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
@@ -9,26 +8,22 @@ import {
   Shield,
   TrendingUp,
   CheckCircle,
-  FileText,
   Eye,
   MessageSquare,
   Download,
   Users,
   ArrowRight,
-  Info,
-  DollarSign,
   Clock,
+  DollarSign,
 } from 'lucide-angular';
-import { UiButtonComponent } from '../../shared/components';
+import { AuthService } from 'src/app/auth/production.auth.service';
+import {
+  OrgCreditService,
+  OrgWallet,
+} from 'src/app/shared/services/credit.service';
 
-interface CreditPackage {
-  id: string;
-  credits: number;
-  price: number;
-  pricePerCredit: number;
-  popular?: boolean;
-  savings?: string;
-}
+import { PurchaseCreditsModalComponent } from 'src/app/dashboard/finance/billing/purchase-credits-modal.component';
+import { PricingPackagesComponent } from '../pricing-packages/pricing-packages.component';
 
 interface CreditAction {
   id: string;
@@ -42,7 +37,13 @@ interface CreditAction {
 @Component({
   selector: 'app-credits-explanation',
   standalone: true,
-  imports: [CommonModule, LucideAngularModule, UiButtonComponent],
+  imports: [
+    CommonModule,
+    LucideAngularModule,
+
+    PurchaseCreditsModalComponent,
+    PricingPackagesComponent,
+  ],
   templateUrl: './credit-system-info.component.html',
   styles: [],
 })
@@ -53,52 +54,24 @@ export class CreditsExplanationComponent {
   ShieldIcon = Shield;
   TrendingUpIcon = TrendingUp;
   CheckCircleIcon = CheckCircle;
-  FileTextIcon = FileText;
   EyeIcon = Eye;
   MessageSquareIcon = MessageSquare;
   DownloadIcon = Download;
   UsersIcon = Users;
   ArrowRightIcon = ArrowRight;
-  InfoIcon = Info;
-  DollarSignIcon = DollarSign;
   ClockIcon = Clock;
+  DollarSignIcon = DollarSign;
 
   private router = inject(Router);
+  private creditService = inject(OrgCreditService);
+  private authService = inject(AuthService);
 
   // State
+  isPurchaseModalOpen = signal(false);
   selectedPackageId = signal<string>('medium');
-
-  // Credit packages
-  packages = signal<CreditPackage[]>([
-    {
-      id: 'starter',
-      credits: 50,
-      price: 500,
-      pricePerCredit: 10,
-    },
-    {
-      id: 'medium',
-      credits: 150,
-      price: 1350,
-      pricePerCredit: 9,
-      popular: true,
-      savings: 'Save 10%',
-    },
-    {
-      id: 'pro',
-      credits: 300,
-      price: 2400,
-      pricePerCredit: 8,
-      savings: 'Save 20%',
-    },
-    {
-      id: 'enterprise',
-      credits: 500,
-      price: 3500,
-      pricePerCredit: 7,
-      savings: 'Save 30%',
-    },
-  ]);
+  wallet = signal<OrgWallet | null>(null);
+  isLoading = signal(false);
+  error = signal<string | null>(null);
 
   // What credits do
   creditActions = signal<CreditAction[]>([
@@ -166,31 +139,49 @@ export class CreditsExplanationComponent {
     },
   ]);
 
-  // Actions
-  selectPackage(packageId: string) {
+  ngOnInit() {
+    this.loadWallet();
+  }
+
+  private loadWallet() {
+    const orgId = this.authService.getCurrentUserOrganizationId();
+    if (!orgId) return;
+
+    this.isLoading.set(true);
+    this.creditService
+      .getOrCreateOrgWallet(orgId)
+      .then((wallet) => {
+        this.wallet.set(wallet);
+        this.isLoading.set(false);
+      })
+      .catch((err) => {
+        console.error('Failed to load wallet:', err);
+        this.error.set('Failed to load wallet');
+        this.isLoading.set(false);
+      });
+  }
+
+  onPackageSelected(packageId: string) {
     this.selectedPackageId.set(packageId);
   }
 
-  purchaseCredits() {
-    const selectedPackage = this.packages().find(
-      (p) => p.id === this.selectedPackageId()
-    );
-    if (selectedPackage) {
-      this.router.navigate(['/checkout'], {
-        queryParams: {
-          package: selectedPackage.id,
-          credits: selectedPackage.credits,
-          amount: selectedPackage.price,
-        },
-      });
-    }
+  openPurchaseModal() {
+    this.isPurchaseModalOpen.set(true);
+  }
+
+  closePurchaseModal() {
+    this.isPurchaseModalOpen.set(false);
+  }
+
+  onPurchaseSuccess() {
+    this.closePurchaseModal();
+    this.loadWallet();
   }
 
   goToApplications() {
     this.router.navigate(['/funding/applications']);
   }
 
-  // Utility methods
   formatCurrency(amount: number): string {
     return new Intl.NumberFormat('en-ZA', {
       style: 'currency',
@@ -199,12 +190,16 @@ export class CreditsExplanationComponent {
     }).format(amount);
   }
 
+  formatCredits(amount: number): string {
+    return amount.toLocaleString('en-ZA');
+  }
+
   getActionIconClass(color: string): string {
     const classMap: Record<string, string> = {
       blue: 'bg-blue-100 text-blue-600',
       green: 'bg-green-100 text-green-600',
       purple: 'bg-purple-100 text-purple-600',
-      orange: 'bg-orange-100 text-orange-600',
+      orange: 'bg-amber-100 text-amber-600',
     };
     return classMap[color] || 'bg-slate-100 text-slate-600';
   }

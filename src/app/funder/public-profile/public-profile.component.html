@@ -266,7 +266,7 @@
   </section>
 
   <!-- KEY METRICS -->
-  @if ((getKeyMetrics()?.length ?? 0) > 0) {
+  @if ((getKeyMetrics().length) > 0) {
   <section class="py-24 bg-white">
     <div class="max-w-7xl mx-auto px-6">
       <div class="grid grid-cols-1 md:grid-cols-3 gap-16">
@@ -330,7 +330,7 @@
           <p class="text-sm text-slate-600 leading-relaxed mb-4">
             {{ area.description }}
           </p>
-          } @if ((area.tags?.length ?? 0) > 0) {
+          } @if ((area.tags.length) > 0) {
           <div class="flex flex-wrap gap-2">
             @for (tag of area.tags!.slice(0, 3); track tag) {
             <span
@@ -526,7 +526,7 @@
   </section>
 
   <!-- TEAM -->
-  @if ((getLeadership()?.length ?? 0) > 0) {
+  @if ((getLeadership().length ) > 0) {
   <section id="team" class="py-28 bg-slate-950">
     <div class="max-w-7xl mx-auto px-6">
       <div class="mb-20">

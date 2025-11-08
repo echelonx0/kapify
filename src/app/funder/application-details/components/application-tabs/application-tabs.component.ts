@@ -1,38 +1,37 @@
-// src/app/funder/application-details/application-tabs/application-tabs.component.ts
-import { Component, Input, Output, EventEmitter, signal, computed, inject, OnInit, OnDestroy } from '@angular/core';
+// src/app/funder/application-details/components/application-tabs/application-tabs.component.ts
+// FIXED: Imports correct FundingApplication from models
+
+import {
+  Component,
+  Input,
+  Output,
+  EventEmitter,
+  signal,
+  computed,
+  inject,
+  OnInit,
+  OnDestroy,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { 
-  LucideAngularModule, 
-  MessageSquare, 
-  TrendingUp, 
-  FileText, 
-  AlertCircle, 
-  Search, 
-  Download, 
+import {
+  LucideAngularModule,
+  MessageSquare,
+  TrendingUp,
+  FileText,
+  AlertCircle,
+  Search,
+  Download,
   BarChart3,
   Eye,
-  X // Added X icon for modal close
+  X,
 } from 'lucide-angular';
 import { Subject } from 'rxjs';
-import { UiButtonComponent } from 'src/app/shared/components';
 import { ApplicationMessagingComponent } from 'src/app/messaging/application-messaging/application-messaging.component';
 import { MessagingService } from 'src/app/messaging/services/messaging.service';
- 
-interface FundingApplication {
-  id: string;
-  title?: string;
-  applicantId?: string;
-  applicant?: {
-    industry?: string;
-  };
-  documents?: Record<string, any>;
-}
-
-interface FundingOpportunity {
-  id: string;
-  title?: string;
-}
+import { StatusTrackerComponent } from '../status-tracker/status-tracker.component';
+import { FundingApplication } from 'src/app/SMEs/models/application.models';
+import { FundingOpportunity } from 'src/app/funder/create-opportunity/shared/funding.interfaces';
 
 export type TabId = 'messages' | 'market-research' | 'documents';
 
@@ -50,12 +49,12 @@ interface TabData {
     CommonModule,
     FormsModule,
     LucideAngularModule,
-    UiButtonComponent,
-    ApplicationMessagingComponent,
 
+    ApplicationMessagingComponent,
+    StatusTrackerComponent,
   ],
   templateUrl: './application-tabs.component.html',
-  styleUrls: ['./application-tabs.component.css']
+  styleUrls: ['./application-tabs.component.css'],
 })
 export class ApplicationTabsComponent implements OnInit, OnDestroy {
   @Input() application: FundingApplication | null = null;
@@ -74,17 +73,17 @@ export class ApplicationTabsComponent implements OnInit, OnDestroy {
   DownloadIcon = Download;
   BarChart3Icon = BarChart3;
   EyeIcon = Eye;
-  XIcon = X; // Added X icon
+  XIcon = X;
 
   // State
   activeTab = signal<TabId>('messages');
-  
+
   // Market research state
   isGeneratingResearch = signal(false);
   marketResearchGenerated = signal(false);
   researchError = signal<string | null>(null);
 
-  // Message badge count - computed from messaging service
+  // Message badge count
   messagesBadgeCount = signal(0);
 
   // Document modal state
@@ -95,14 +94,18 @@ export class ApplicationTabsComponent implements OnInit, OnDestroy {
   tabs = computed((): TabData[] => {
     const unreadCount = this.messagesBadgeCount();
     return [
-      { 
-        id: 'messages', 
-        label: 'Team Messages', 
+      {
+        id: 'messages',
+        label: 'Messages',
         icon: this.MessageSquareIcon,
-        badge: unreadCount > 0 ? unreadCount : undefined
+        badge: unreadCount > 0 ? unreadCount : undefined,
       },
-      { id: 'market-research', label: 'Market Research', icon: this.TrendingUpIcon },
-      { id: 'documents', label: 'Documents', icon: this.FileTextIcon }
+      {
+        id: 'market-research',
+        label: 'Internal Management',
+        icon: this.XIcon,
+      },
+      { id: 'documents', label: 'Documents', icon: this.FileTextIcon },
     ];
   });
 
@@ -112,16 +115,18 @@ export class ApplicationTabsComponent implements OnInit, OnDestroy {
       console.log('🔍 [DEBUG] No documents found in application:', app);
       return [];
     }
-    
+
     console.log('📄 [DEBUG] Processing application documents:', app.documents);
-    
-    const documentEntries = Object.entries(app.documents).map(([key, value]) => ({
-      key,
-      value,
-      name: this.formatFieldName(key),
-      type: this.getDocumentType(value),
-      size: this.getDocumentSize(value),
-    }));
+
+    const documentEntries = Object.entries(app.documents).map(
+      ([key, value]) => ({
+        key,
+        value,
+        name: this.formatFieldName(key),
+        type: this.getDocumentType(value),
+        size: this.getDocumentSize(value),
+      })
+    );
 
     console.log('📋 [DEBUG] Processed document entries:', documentEntries);
     return documentEntries;
@@ -130,7 +135,12 @@ export class ApplicationTabsComponent implements OnInit, OnDestroy {
   hasDocuments = computed(() => {
     const docs = this.applicationDocuments();
     const hasAny = docs.length > 0;
-    console.log('📄 [DEBUG] Has documents check:', hasAny, 'Total:', docs.length);
+    console.log(
+      '📄 [DEBUG] Has documents check:',
+      hasAny,
+      'Total:',
+      docs.length
+    );
     return hasAny;
   });
 
@@ -161,10 +171,12 @@ export class ApplicationTabsComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.loadMessageBadgeCount();
-    
-    // Debug application loading
+
     const app = this.application;
-    console.log('🔍 [DEBUG] Application tabs initialized with application:', app?.id);
+    console.log(
+      '🔍 [DEBUG] Application tabs initialized with application:',
+      app?.id
+    );
     console.log('📄 [DEBUG] Application documents:', app?.documents);
   }
 
@@ -189,9 +201,13 @@ export class ApplicationTabsComponent implements OnInit, OnDestroy {
     if (!this.application?.id) return;
 
     try {
-      // Get application threads and count unread messages
-      const threads = await this.messagingService.getApplicationThreads(this.application.id);
-      const unreadCount = threads.reduce((total, thread) => total + thread.unreadCount, 0);
+      const threads = await this.messagingService.getApplicationThreads(
+        this.application.id
+      );
+      const unreadCount = threads.reduce(
+        (total, thread) => total + thread.unreadCount,
+        0
+      );
       this.messagesBadgeCount.set(unreadCount);
     } catch (error) {
       console.error('Error loading message badge count:', error);
@@ -205,9 +221,11 @@ export class ApplicationTabsComponent implements OnInit, OnDestroy {
   async generateMarketResearch() {
     const application = this.application;
     const opportunity = this.opportunity;
-    
+
     if (!application || !opportunity) {
-      console.error('Missing application or opportunity data for market research');
+      console.error(
+        'Missing application or opportunity data for market research'
+      );
       return;
     }
 
@@ -216,11 +234,9 @@ export class ApplicationTabsComponent implements OnInit, OnDestroy {
 
     try {
       console.log('Generating market research...');
-      
-      // Simulate API call
+
       await new Promise((resolve, reject) => {
         setTimeout(() => {
-          // Simulate random success/failure for demo
           if (Math.random() > 0.7) {
             reject(new Error('Market research generation failed'));
           } else {
@@ -232,10 +248,11 @@ export class ApplicationTabsComponent implements OnInit, OnDestroy {
       this.marketResearchGenerated.set(true);
       this.marketResearchRequested.emit();
       console.log('Market research generated successfully');
-      
     } catch (error) {
       console.error('Error generating market research:', error);
-      this.researchError.set('Failed to generate market research. Please try again.');
+      this.researchError.set(
+        'Failed to generate market research. Please try again.'
+      );
     } finally {
       this.isGeneratingResearch.set(false);
     }
@@ -251,15 +268,12 @@ export class ApplicationTabsComponent implements OnInit, OnDestroy {
   }
 
   // ===============================
-  // DOCUMENT MODAL FUNCTIONALITY 
+  // DOCUMENT MODAL FUNCTIONALITY
   // ===============================
 
-  /**
-   * Open document in modal
-   */
   viewDocument(doc: any) {
     console.log('👁️ [DEBUG] Opening document in modal:', doc);
-    
+
     const url = this.getDocumentViewUrl(doc);
     if (url) {
       this.selectedDocument.set(doc);
@@ -270,40 +284,28 @@ export class ApplicationTabsComponent implements OnInit, OnDestroy {
     }
   }
 
-  /**
-   * Open the modal using Preline's HSOverlay
-   */
   private openModal() {
     this.isModalOpen.set(true);
-  
   }
 
-  /**
-   * Close the modal
-   */
   closeModal() {
     this.isModalOpen.set(false);
     this.selectedDocument.set(null);
-    
   }
 
-  /**
-   * Download document - forces file download
-   */
   downloadDocument(doc: any) {
     console.log('📥 [DEBUG] Downloading document:', doc);
-    
+
     const url = this.getDocumentDownloadUrl(doc);
     if (url) {
       console.log('📥 [DEBUG] Downloading from URL:', url);
-      
-      // Create invisible download link and trigger click
+
       const link = document.createElement('a');
       link.href = url;
-      link.download = doc.value?.fileName || doc.value?.name || doc.name || 'document';
+      link.download =
+        doc.value?.fileName || doc.value?.name || doc.name || 'document';
       link.target = '_blank';
-      
-      // Add to DOM temporarily and click
+
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -313,9 +315,6 @@ export class ApplicationTabsComponent implements OnInit, OnDestroy {
     }
   }
 
-  /**
-   * Download document from modal
-   */
   downloadCurrentDocument() {
     const doc = this.selectedDocument();
     if (doc) {
@@ -323,65 +322,47 @@ export class ApplicationTabsComponent implements OnInit, OnDestroy {
     }
   }
 
-  /**
-   * Get URL for viewing document (preview/inline)
-   */
   private getDocumentViewUrl(doc: any): string | null {
-    // Priority order for view URLs
     if (doc.value?.viewUrl) return doc.value.viewUrl;
     if (doc.value?.previewUrl) return doc.value.previewUrl;
     if (doc.value?.url) return doc.value.url;
     if (doc.value?.downloadUrl) return doc.value.downloadUrl;
-    
+
     return null;
   }
 
-  /**
-   * Get URL for downloading document
-   */
   private getDocumentDownloadUrl(doc: any): string | null {
-    // Priority order for download URLs
     if (doc.value?.downloadUrl) return doc.value.downloadUrl;
     if (doc.value?.url) return doc.value.url;
     if (doc.value?.fileUrl) return doc.value.fileUrl;
-    
+
     return null;
   }
 
-  /**
-   * Show document error message
-   */
   private showDocumentError(message: string) {
-    // You can replace this with your preferred notification system
     alert(message);
-    
-    // Or use a toast/notification service if available:
-    // this.notificationService.showError(message);
   }
 
-  /**
-   * Check if document can be previewed inline
-   */
   canPreviewDocument(doc: any): boolean {
     const type = this.getDocumentType(doc).toLowerCase();
     const previewableTypes = ['pdf', 'jpg', 'jpeg', 'png', 'gif', 'svg', 'txt'];
-    return previewableTypes.includes(type) || !!doc.value?.viewUrl || !!doc.value?.previewUrl;
+    return (
+      previewableTypes.includes(type) ||
+      !!doc.value?.viewUrl ||
+      !!doc.value?.previewUrl
+    );
   }
-
-  // ===============================
-  // DOCUMENT UTILITIES (EXISTING)
-  // ===============================
 
   private formatFieldName(fieldName: string): string {
     return fieldName
       .replace(/([A-Z])/g, ' $1')
       .trim()
-      .replace(/^\w/, c => c.toUpperCase());
+      .replace(/^\w/, (c) => c.toUpperCase());
   }
 
   private getDocumentType(doc: any): string {
     console.log('🔍 [DEBUG] Getting document type for:', doc);
-    
+
     if (typeof doc === 'string') return 'text';
     if (doc?.type) return doc.type;
     if (doc?.fileType) return doc.fileType;
@@ -395,7 +376,7 @@ export class ApplicationTabsComponent implements OnInit, OnDestroy {
 
   private getDocumentSize(doc: any): string {
     console.log('🔍 [DEBUG] Getting document size for:', doc);
-    
+
     if (doc?.size) {
       const size = Number(doc.size);
       if (size < 1024) return `${size} B`;
@@ -416,7 +397,7 @@ export class ApplicationTabsComponent implements OnInit, OnDestroy {
     return new Intl.DateTimeFormat('en-ZA', {
       month: 'short',
       day: 'numeric',
-      year: 'numeric'
+      year: 'numeric',
     }).format(date);
   }
 }

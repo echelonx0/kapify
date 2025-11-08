@@ -98,7 +98,7 @@ export const routes: Routes = [
     path: 'finance',
     canActivate: [AuthGuard],
     loadChildren: () =>
-      import('./finance/finance.routes').then((m) => m.financeRoutes),
+      import('./dashboard/finance/finance.routes').then((m) => m.financeRoutes),
   },
   // Funding routes
   {

@@ -1,5 +1,3 @@
-// src/app/funder/components/application-detail/application-detail.component.ts - REFACTORED
-
 import {
   Component,
   signal,

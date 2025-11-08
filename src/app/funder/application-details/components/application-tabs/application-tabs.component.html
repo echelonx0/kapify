@@ -5,313 +5,338 @@
   <div class="border-b border-gray-200">
     <nav class="flex space-x-8 px-6">
       @for (tab of tabs(); track tab.id) {
-        <button 
-          [class]="activeTab() === tab.id ? 'tab-active px-4 py-3 text-sm font-medium rounded-t-lg border-b-2 border-primary-500 text-primary-600' : 'px-4 py-3 text-sm font-medium text-gray-500 hover:text-gray-700'"
-          (click)="setActiveTab(tab.id)">
-          <div class="flex items-center space-x-2">
-            <lucide-icon [img]="tab.icon" [size]="16"></lucide-icon>
-            <span>{{ tab.label }}</span>
-            @if (tab.badge) {
-              <span class="bg-red-500 text-white text-xs rounded-full px-2 py-0.5 min-w-[1.25rem] h-5 flex items-center justify-center">
-                {{ tab.badge }}
-              </span>
-            }
-          </div>
-        </button>
+      <button
+        [class]="
+          activeTab() === tab.id
+            ? 'tab-active px-4 py-3 text-sm font-medium rounded-t-lg border-b-2 border-primary-500 text-primary-600'
+            : 'px-4 py-3 text-sm font-medium text-gray-500 hover:text-gray-700'
+        "
+        (click)="setActiveTab(tab.id)"
+      >
+        <div class="flex items-center space-x-2">
+          <lucide-icon [img]="tab.icon" [size]="16"></lucide-icon>
+          <span>{{ tab.label }}</span>
+          @if (tab.badge) {
+          <span
+            class="bg-red-500 text-white text-xs rounded-full px-2 py-0.5 min-w-[1.25rem] h-5 flex items-center justify-center"
+          >
+            {{ tab.badge }}
+          </span>
+          }
+        </div>
+      </button>
       }
     </nav>
   </div>
 
   <!-- Tab Content -->
   <div class="p-0">
-    
     <!-- Messages Tab -->
     @if (activeTab() === 'messages') {
-      <div class="h-96 overflow-hidden">
-        @if (application && application.id) {
-          <app-application-messaging [applicationId]="application.id"></app-application-messaging>
-        } @else {
-          <div class="flex items-center justify-center h-full text-gray-500">
-            <div class="text-center">
-              <lucide-icon [img]="MessageSquareIcon" [size]="48" class="mx-auto mb-4 text-gray-400"></lucide-icon>
-              <p>No application selected</p>
-            </div>
-          </div>
-        }
+    <div class="h-96 overflow-hidden">
+      @if (application && application.id) {
+      <app-application-messaging
+        [applicationId]="application.id"
+      ></app-application-messaging>
+      } @else {
+      <div class="flex items-center justify-center h-full text-gray-500">
+        <div class="text-center">
+          <lucide-icon
+            [img]="MessageSquareIcon"
+            [size]="48"
+            class="mx-auto mb-4 text-gray-400"
+          ></lucide-icon>
+          <p>No application selected</p>
+        </div>
       </div>
+      }
+    </div>
     }
 
-    <!-- Market Research Tab -->
+    <!-- Status Tracker -->
     @if (activeTab() === 'market-research') {
-      <div class="p-6 space-y-6">
-        @if (!marketResearchGenerated() && !researchError()) {
-          <!-- Generate Research State -->
-          <div class="text-center py-12">
-            <div class="w-16 h-16 bg-gradient-to-br from-purple-100 to-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <lucide-icon [img]="BarChart3Icon" [size]="24" class="text-purple-600"></lucide-icon>
-            </div>
-            <h3 class="text-lg font-semibold text-gray-900 mb-2">Market Research Analysis</h3>
-            <p class="text-gray-600 mb-6 max-w-2xl mx-auto">
-              Generate comprehensive market research for this application including industry trends, 
-              competitive landscape, and investment timing analysis.
-            </p>
-            
-            @if (application?.applicant?.industry) {
-              <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6 max-w-md mx-auto">
-                <div class="flex items-center space-x-2 text-blue-700">
-                  <lucide-icon [img]="TrendingUpIcon" [size]="16"></lucide-icon>
-                  <span class="font-medium">Industry Focus</span>
-                </div>
-                <p class="text-blue-600 text-sm mt-1">{{ application?.applicant?.industry }}</p>
-              </div>
-            }
-
-            <ui-button 
-              variant="primary" 
-              size="lg"
-              (click)="generateMarketResearch()"
-              [disabled]="isGeneratingResearch()">
-              @if (isGeneratingResearch()) {
-                <lucide-icon [img]="SearchIcon" [size]="16" class="mr-2 animate-spin"></lucide-icon>
-                Generating Research...
-              } @else {
-                <lucide-icon [img]="SearchIcon" [size]="16" class="mr-2"></lucide-icon>
-                Generate Market Research
-              }
-            </ui-button>
-            
-            @if (isGeneratingResearch()) {
-              <p class="text-sm text-gray-500 mt-3">This may take a few moments...</p>
-            }
-          </div>
-        } @else if (researchError()) {
-          <!-- Error State -->
-          <div class="text-center py-12">
-            <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <lucide-icon [img]="AlertCircleIcon" [size]="24" class="text-red-600"></lucide-icon>
-            </div>
-            <h3 class="text-lg font-semibold text-gray-900 mb-2">Research Generation Failed</h3>
-            <div class="bg-red-50 border border-red-200 rounded-lg p-4 max-w-lg mx-auto mb-6">
-              <p class="text-red-800">{{ researchError() }}</p>
-            </div>
-            
-            <div class="flex justify-center space-x-4">
-              <ui-button variant="outline" (click)="clearResearchError()">
-                Cancel
-              </ui-button>
-              <ui-button variant="primary" (click)="retryMarketResearch()">
-                <lucide-icon [img]="SearchIcon" [size]="16" class="mr-2"></lucide-icon>
-                Try Again
-              </ui-button>
-            </div>
-          </div>
-        } @else {
-          <!-- Research Generated State -->
-          <div class="text-center py-12">
-            <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <lucide-icon [img]="TrendingUpIcon" [size]="24" class="text-green-600"></lucide-icon>
-            </div>
-            <h3 class="text-lg font-semibold text-gray-900 mb-2">Market Research Generated</h3>
-            <p class="text-gray-600 mb-6">
-              Market research analysis has been completed and is available in the AI Analysis tab.
-            </p>
-            
-            <ui-button variant="primary" (click)="generateMarketResearch()">
-              <lucide-icon [img]="SearchIcon" [size]="16" class="mr-2"></lucide-icon>
-              Regenerate Research
-            </ui-button>
-          </div>
-        }
-      </div>
+    <app-status-tracker [application]="application"> </app-status-tracker>
     }
 
     <!-- Documents Tab -->
     @if (activeTab() === 'documents') {
-      <div class="p-6 space-y-6">
-        @if (hasDocuments()) {
-          <!-- Documents List -->
-          <div>
-            <div class="flex items-center justify-between mb-4">
-              <h4 class="font-semibold text-gray-900">Application Documents</h4>
-              <span class="text-sm text-gray-500">{{ applicationDocuments().length }} document(s)</span>
-            </div>
-            
-            <div class="space-y-3">
-              @for (doc of applicationDocuments(); track doc.key) {
-                <div class="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
-                  <div class="flex items-center space-x-4">
-                    <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                      <lucide-icon [img]="FileTextIcon" [size]="16" class="text-blue-600"></lucide-icon>
-                    </div>
-                    <div>
-                      <h5 class="font-medium text-gray-900">{{ doc.name }}</h5>
-                      <div class="flex items-center space-x-3 text-sm text-gray-500">
-                        <span>{{ doc.type.toUpperCase() }}</span>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div class="flex items-center space-x-2">
-                    <!-- View Button -->
-                    <button 
-                      class="inline-flex items-center px-3 py-1.5 text-sm font-medium text-blue-600 bg-blue-50 border border-blue-200 rounded-md hover:bg-blue-100 hover:text-blue-700 transition-colors"
-                      (click)="viewDocument(doc)"
-                      title="View document">
-                      <lucide-icon [img]="EyeIcon" [size]="14" class="mr-1"></lucide-icon>
-                      <span>View</span>
-                    </button>
-                    
-                    <!-- Download Button -->
-                    <button 
-                      class="inline-flex items-center px-3 py-1.5 text-sm font-medium text-gray-600 bg-gray-50 border border-gray-200 rounded-md hover:bg-gray-100 hover:text-gray-700 transition-colors"
-                      (click)="downloadDocument(doc)"
-                      title="Download document">
-                      <lucide-icon [img]="DownloadIcon" [size]="14" class="mr-1"></lucide-icon>
-                      <span>Download</span>
-                    </button>
-                  </div>
+    <div class="p-6 space-y-6">
+      @if (hasDocuments()) {
+      <!-- Documents List -->
+      <div>
+        <div class="flex items-center justify-between mb-4">
+          <h4 class="font-semibold text-gray-900">Application Documents</h4>
+          <span class="text-sm text-gray-500"
+            >{{ applicationDocuments().length }} document(s)</span
+          >
+        </div>
+
+        <div class="space-y-3">
+          @for (doc of applicationDocuments(); track doc.key) {
+          <div
+            class="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+          >
+            <div class="flex items-center space-x-4">
+              <div
+                class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center"
+              >
+                <lucide-icon
+                  [img]="FileTextIcon"
+                  [size]="16"
+                  class="text-blue-600"
+                ></lucide-icon>
+              </div>
+              <div>
+                <h5 class="font-medium text-gray-900">{{ doc.name }}</h5>
+                <div class="flex items-center space-x-3 text-sm text-gray-500">
+                  <span>{{ doc.type.toUpperCase() }}</span>
                 </div>
-              }
+              </div>
+            </div>
+
+            <div class="flex items-center space-x-2">
+              <!-- View Button -->
+              <button
+                class="inline-flex items-center px-3 py-1.5 text-sm font-medium text-blue-600 bg-blue-50 border border-blue-200 rounded-md hover:bg-blue-100 hover:text-blue-700 transition-colors"
+                (click)="viewDocument(doc)"
+                title="View document"
+              >
+                <lucide-icon
+                  [img]="EyeIcon"
+                  [size]="14"
+                  class="mr-1"
+                ></lucide-icon>
+                <span>View</span>
+              </button>
+
+              <!-- Download Button -->
+              <button
+                class="inline-flex items-center px-3 py-1.5 text-sm font-medium text-gray-600 bg-gray-50 border border-gray-200 rounded-md hover:bg-gray-100 hover:text-gray-700 transition-colors"
+                (click)="downloadDocument(doc)"
+                title="Download document"
+              >
+                <lucide-icon
+                  [img]="DownloadIcon"
+                  [size]="14"
+                  class="mr-1"
+                ></lucide-icon>
+                <span>Download</span>
+              </button>
             </div>
           </div>
-        } @else {
-          <!-- No Documents State -->
-          <div class="text-center py-12">
-            <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <lucide-icon [img]="FileTextIcon" [size]="24" class="text-gray-400"></lucide-icon>
-            </div>
-            <h3 class="text-lg font-semibold text-gray-900 mb-2">No Documents</h3>
-            <p class="text-gray-600">No supporting documents have been uploaded with this application.</p>
-          </div>
-        }
+          }
+        </div>
       </div>
+      } @else {
+      <!-- No Documents State -->
+      <div class="text-center py-12">
+        <div
+          class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4"
+        >
+          <lucide-icon
+            [img]="FileTextIcon"
+            [size]="24"
+            class="text-gray-400"
+          ></lucide-icon>
+        </div>
+        <h3 class="text-lg font-semibold text-gray-900 mb-2">No Documents</h3>
+        <p class="text-gray-600">
+          No supporting documents have been uploaded with this application.
+        </p>
+      </div>
+      }
+    </div>
     }
   </div>
 </div>
 
 <!-- Document Viewer Modal - Custom Implementation -->
 @if (selectedDocument()) {
-  <div class="fixed inset-0 bg-black/50 backdrop-blur-sm overflow-y-auto h-full w-full z-50 flex items-center justify-center p-4">
-    <div class="relative w-full max-w-6xl mx-auto" style="max-height: calc(100vh - 3rem);">
-      <div class="bg-white rounded-xl shadow-2xl overflow-hidden flex flex-col" style="max-height: calc(100vh - 3rem);">
-        
-        <!-- Modal Header -->
-        <div class="flex justify-between items-center py-4 px-6 border-b border-gray-200 bg-white">
-          <div class="flex items-center space-x-3">
-            <div class="w-10 h-10 bg-gradient-to-br from-blue-400 to-blue-600 rounded-xl flex items-center justify-center shadow-sm">
-              <lucide-icon [img]="FileTextIcon" [size]="20" class="text-white"></lucide-icon>
-            </div>
-            <div>
-              <h3 class="text-lg font-bold text-gray-900">{{ selectedDocument()?.name || 'Document Viewer' }}</h3>
-              <p class="text-sm text-gray-500">{{ selectedDocument()?.type?.toUpperCase() }} • {{ selectedDocument()?.size }}</p>
-            </div>
+<div
+  class="fixed inset-0 bg-black/50 backdrop-blur-sm overflow-y-auto h-full w-full z-50 flex items-center justify-center p-4"
+>
+  <div
+    class="relative w-full max-w-6xl mx-auto"
+    style="max-height: calc(100vh - 3rem)"
+  >
+    <div
+      class="bg-white rounded-xl shadow-2xl overflow-hidden flex flex-col"
+      style="max-height: calc(100vh - 3rem)"
+    >
+      <!-- Modal Header -->
+      <div
+        class="flex justify-between items-center py-4 px-6 border-b border-gray-200 bg-white"
+      >
+        <div class="flex items-center space-x-3">
+          <div
+            class="w-10 h-10 bg-gradient-to-br from-blue-400 to-blue-600 rounded-xl flex items-center justify-center shadow-sm"
+          >
+            <lucide-icon
+              [img]="FileTextIcon"
+              [size]="20"
+              class="text-white"
+            ></lucide-icon>
           </div>
-          
-          <div class="flex items-center space-x-2">
-            <!-- Download Button -->
-            <button 
-              type="button"
-              class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-              (click)="downloadCurrentDocument()"
-              title="Download document">
-              <lucide-icon [img]="DownloadIcon" [size]="16" class="mr-2"></lucide-icon>
-              <span>Download</span>
-            </button>
-            
-            <!-- Close Button -->
-            <button 
-              type="button" 
-              (click)="closeModal()"
-              class="w-10 h-10 rounded-xl bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors"
-              aria-label="Close">
-              <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-              </svg>
-            </button>
+          <div>
+            <h3 class="text-lg font-bold text-gray-900">
+              {{ selectedDocument()?.name || "Document Viewer" }}
+            </h3>
+            <p class="text-sm text-gray-500">
+              {{ selectedDocument()?.type?.toUpperCase() }} •
+              {{ selectedDocument()?.size }}
+            </p>
           </div>
         </div>
 
-        <!-- Modal Content -->
-        <div class="flex-1 overflow-y-auto bg-gray-50" style="min-height: 500px; max-height: calc(100vh - 12rem);">
-          @if (documentViewUrl()) {
-            <div class="h-full flex items-center justify-center p-6">
-              
-              <!-- PDF Viewer -->
-              @if (isPdfDocument()) {
-                <iframe 
-                  [src]="documentViewUrl()"
-                  class="w-full h-full min-h-[600px] rounded-lg shadow-lg bg-white"
-                  title="PDF Document Viewer">
-                </iframe>
-              }
-              
-              <!-- Image Viewer -->
-              @else if (isImageDocument()) {
-                <div class="flex items-center justify-center h-full w-full">
-                  <img 
-                    [src]="documentViewUrl()" 
-                    [alt]="selectedDocument()?.name"
-                    class="max-w-full max-h-full object-contain rounded-lg shadow-lg"
-                    style="max-height: calc(100vh - 16rem);">
-                </div>
-              }
-              
-              <!-- Text Document Viewer -->
-              @else if (isTextDocument()) {
-                <div class="w-full h-full">
-                  <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 h-full overflow-auto">
-                    <iframe 
-                      [src]="documentViewUrl()"
-                      class="w-full h-full border-0 min-h-[500px]"
-                      title="Text Document Viewer">
-                    </iframe>
-                  </div>
-                </div>
-              }
-              
-              <!-- Generic/Fallback Viewer -->
-              @else {
-                <div class="w-full h-full">
-                  <div class="bg-white rounded-lg shadow-sm border border-gray-200 h-full overflow-auto">
-                    <iframe 
-                      [src]="documentViewUrl()"
-                      class="w-full h-full border-0 min-h-[500px]"
-                      title="Document Viewer">
-                    </iframe>
-                  </div>
-                </div>
-              }
-            </div>
-          } @else {
-            <!-- Error State -->
-            <div class="flex items-center justify-center h-full text-gray-500">
-              <div class="text-center p-8">
-                <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <lucide-icon [img]="AlertCircleIcon" [size]="32" class="text-red-600"></lucide-icon>
-                </div>
-                <h4 class="text-lg font-semibold text-gray-900 mb-2">Unable to Load Preview</h4>
-                <p class="text-gray-600 mb-6">This document cannot be previewed in the browser.</p>
-                <button 
-                  class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"
-                  (click)="downloadCurrentDocument()">
-                  <lucide-icon [img]="DownloadIcon" [size]="16" class="mr-2"></lucide-icon>
-                  Download Document
-                </button>
-              </div>
-            </div>
-          }
-        </div>
-
-        <!-- Modal Footer -->
-        <div class="flex justify-end items-center gap-3 py-4 px-6 border-t border-gray-200 bg-white">
-          <button 
+        <div class="flex items-center space-x-2">
+          <!-- Download Button -->
+          <button
             type="button"
-            class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-            (click)="closeModal()">
-            Close
+            class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+            (click)="downloadCurrentDocument()"
+            title="Download document"
+          >
+            <lucide-icon
+              [img]="DownloadIcon"
+              [size]="16"
+              class="mr-2"
+            ></lucide-icon>
+            <span>Download</span>
+          </button>
+
+          <!-- Close Button -->
+          <button
+            type="button"
+            (click)="closeModal()"
+            class="w-10 h-10 rounded-xl bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors"
+            aria-label="Close"
+          >
+            <svg
+              class="w-5 h-5 text-gray-600"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M6 18L18 6M6 6l12 12"
+              ></path>
+            </svg>
           </button>
         </div>
       </div>
+
+      <!-- Modal Content -->
+      <div
+        class="flex-1 overflow-y-auto bg-gray-50"
+        style="min-height: 500px; max-height: calc(100vh - 12rem)"
+      >
+        @if (documentViewUrl()) {
+        <div class="h-full flex items-center justify-center p-6">
+          <!-- PDF Viewer -->
+          @if (isPdfDocument()) {
+          <iframe
+            [src]="documentViewUrl()"
+            class="w-full h-full min-h-[600px] rounded-lg shadow-lg bg-white"
+            title="PDF Document Viewer"
+          >
+          </iframe>
+          }
+
+          <!-- Image Viewer -->
+          @else if (isImageDocument()) {
+          <div class="flex items-center justify-center h-full w-full">
+            <img
+              [src]="documentViewUrl()"
+              [alt]="selectedDocument()?.name"
+              class="max-w-full max-h-full object-contain rounded-lg shadow-lg"
+              style="max-height: calc(100vh - 16rem)"
+            />
+          </div>
+          }
+
+          <!-- Text Document Viewer -->
+          @else if (isTextDocument()) {
+          <div class="w-full h-full">
+            <div
+              class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 h-full overflow-auto"
+            >
+              <iframe
+                [src]="documentViewUrl()"
+                class="w-full h-full border-0 min-h-[500px]"
+                title="Text Document Viewer"
+              >
+              </iframe>
+            </div>
+          </div>
+          }
+
+          <!-- Generic/Fallback Viewer -->
+          @else {
+          <div class="w-full h-full">
+            <div
+              class="bg-white rounded-lg shadow-sm border border-gray-200 h-full overflow-auto"
+            >
+              <iframe
+                [src]="documentViewUrl()"
+                class="w-full h-full border-0 min-h-[500px]"
+                title="Document Viewer"
+              >
+              </iframe>
+            </div>
+          </div>
+          }
+        </div>
+        } @else {
+        <!-- Error State -->
+        <div class="flex items-center justify-center h-full text-gray-500">
+          <div class="text-center p-8">
+            <div
+              class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4"
+            >
+              <lucide-icon
+                [img]="AlertCircleIcon"
+                [size]="32"
+                class="text-red-600"
+              ></lucide-icon>
+            </div>
+            <h4 class="text-lg font-semibold text-gray-900 mb-2">
+              Unable to Load Preview
+            </h4>
+            <p class="text-gray-600 mb-6">
+              This document cannot be previewed in the browser.
+            </p>
+            <button
+              class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"
+              (click)="downloadCurrentDocument()"
+            >
+              <lucide-icon
+                [img]="DownloadIcon"
+                [size]="16"
+                class="mr-2"
+              ></lucide-icon>
+              Download Document
+            </button>
+          </div>
+        </div>
+        }
+      </div>
+
+      <!-- Modal Footer -->
+      <div
+        class="flex justify-end items-center gap-3 py-4 px-6 border-t border-gray-200 bg-white"
+      >
+        <button
+          type="button"
+          class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+          (click)="closeModal()"
+        >
+          Close
+        </button>
+      </div>
     </div>
   </div>
+</div>
 }
