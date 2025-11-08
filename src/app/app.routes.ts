@@ -11,6 +11,7 @@ import { FundingOpportunitiesComponent } from './marketplace/opportunities-list/
 import { NotFoundComponent } from './shared/components/not-found/not-found.component';
 import { SuccessPageComponent } from './shared/components/success-page/success-page.component';
 import { VersionInfoComponent } from './shared/components/version-info.component';
+import { PricingPageComponent } from './dashboard/finance/pricing-page/pricing-page.component';
 
 export const routes: Routes = [
   // Public routes
@@ -20,7 +21,12 @@ export const routes: Routes = [
     title: 'Kapify - Smart Funding for South African SMEs',
   },
 
-  // Public marketplace (no authentication required)
+  {
+    path: 'pricing',
+    component: PricingPageComponent,
+    title: 'Pricing - Kapify',
+  },
+
   {
     path: 'marketplace',
     component: FundingOpportunitiesComponent,
