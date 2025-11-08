@@ -3,9 +3,47 @@
     <!-- SME View -->
     @if (userType() === 'sme') {
     <!-- Header -->
-    <div class="mb-2 animate-fade-in-up">
-      <h1 class="text-2xl font-bold text-slate-900 mb-1">Data Room</h1>
-      <p class="text-sm text-slate-600">Secure document repository</p>
+    <!-- Header with Action Buttons -->
+    <div
+      class="mb-6 animate-fade-in-up flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4"
+    >
+      <!-- Title & Subtitle -->
+      <div>
+        <h1 class="text-2xl font-bold text-slate-900 mb-1">Data Room</h1>
+        <p class="text-sm text-slate-600">
+          Secure document repository version 0.0.1
+        </p>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="flex flex-wrap gap-3 mt-4 lg:mt-0">
+        <!-- Share Entire Data Room -->
+        <button
+          (click)="shareDataRoom()"
+          class="px-4 py-2 bg-teal-500 text-white text-sm rounded-xl font-2x hover:bg-orange-600 transition-colors flex items-center"
+        >
+          <lucide-icon [img]="Share2Icon" [size]="16" class="mr-2" />
+          Share Data Room
+        </button>
+
+        <!-- Manage Permissions -->
+        <button
+          (click)="managePermissions()"
+          class="px-4 py-2 bg-slate-50 text-slate-900 rounded-xl font-medium text-sm hover:bg-slate-100 transition-colors flex items-center border border-slate-200"
+        >
+          <lucide-icon [img]="ShieldIcon" [size]="16" class="mr-2" />
+          Manage Permissions
+        </button>
+
+        <!-- Generate Resource -->
+        <button
+          (click)="generateResource()"
+          class="px-4 py-2 bg-white text-teal-600 rounded-xl font-medium hover:bg-orange-50 transition-colors flex items-center border border-teal-200 text-sm"
+        >
+          <lucide-icon [img]="PlusIcon" [size]="16" class="mr-2" />
+          Generate Resource
+        </button>
+      </div>
     </div>
 
     <!-- Bento Grid -->
@@ -13,31 +51,7 @@
       *ngIf="!isLoadingDocuments() && userDocuments().length"
       class="grid grid-cols-12 gap-6"
     >
-      <!-- Stats Card - Top Left (Large) -->
-      <div class="col-span-12 lg:col-span-4 bento-card p-8 animate-fade-in-up">
-        <div class="mb-6">
-          <div class="stat-number text-slate-900">
-            {{ userDocuments().length }}+
-          </div>
-          <div class="text-slate-600 text-lg mt-2">Documents</div>
-        </div>
-        <div class="pt-6 border-t border-slate-100">
-          <div class="flex items-center justify-between text-sm mb-3">
-            <span class="text-slate-600">Shared With</span>
-            <span class="font-semibold text-slate-900"
-              >{{ stats().sharedWith }} funders</span
-            >
-          </div>
-          <div class="flex items-center justify-between text-sm">
-            <span class="text-slate-600">Total Views</span>
-            <span class="font-semibold text-slate-900">{{
-              stats().totalViews
-            }}</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- What is Data Room Card - Top Middle -->
+      <!-- What is Data Room Card - Top Left -->
       <div
         class="col-span-12 lg:col-span-5 bento-card p-8 animate-fade-in-up"
         style="animation-delay: 0.1s"
@@ -92,6 +106,30 @@
           </div>
         </div>
       </div>
+      <!-- Stats Card - Top Middle (Large) -->
+
+      <div class="col-span-12 lg:col-span-4 bento-card p-8 animate-fade-in-up">
+        <div class="mb-6">
+          <div class="stat-number text-slate-900">
+            {{ userDocuments().length }}+
+          </div>
+          <div class="text-slate-600 text-lg mt-2">Documents</div>
+        </div>
+        <div class="pt-6 border-t border-slate-100">
+          <div class="flex items-center justify-between text-sm mb-3">
+            <span class="text-slate-600">Shared With</span>
+            <span class="font-semibold text-slate-900"
+              >{{ stats().sharedWith }} funders</span
+            >
+          </div>
+          <div class="flex items-center justify-between text-sm">
+            <span class="text-slate-600">Total Views</span>
+            <span class="font-semibold text-slate-900">{{
+              stats().totalViews
+            }}</span>
+          </div>
+        </div>
+      </div>
 
       <!-- CTA Card - Top Right -->
       <div
@@ -106,16 +144,16 @@
               <lucide-icon [img]="SparklesIcon" [size]="24" />
             </div>
             <h3 class="text-lg font-bold mb-2">Full Data Room</h3>
-            <p class="text-orange-500 text-sm">
-              View and manage all your documents
+            <p class="text-slate-500 text-sm">
+              Add documents and resources to your data room
             </p>
           </div>
           <button
             (click)="navigateToFullDataRoom()"
-            class="mt-6 w-full px-4 py-2.5 bg-white text-orange-600 rounded-xl font-medium hover:bg-orange-50 transition-colors duration-200 flex items-center justify-center"
+            class="mt-6 w-full px-4 py-2.5 bg-white text-teal-600 rounded-xl font-medium hover:bg-orange-50 transition-colors duration-200 flex items-center justify-center"
           >
-            Open
-            <lucide-icon [img]="ArrowRightIcon" [size]="16" class="ml-2" />
+            Add new resource
+            <lucide-icon [img]="PlusIcon" [size]="16" class="ml-2" />
           </button>
         </div>
       </div>
@@ -128,7 +166,7 @@
         <div class="flex items-center justify-between mb-6">
           <h3 class="text-xl font-bold text-slate-900">Your Documents</h3>
           <button
-            class="text-sm text-orange-600 hover:text-orange-700 font-medium"
+            class="text-sm text-slate-600 hover:text-orange-700 font-medium"
           >
             View All
           </button>
@@ -214,7 +252,7 @@
         style="animation-delay: 0.4s"
       >
         <div class="flex items-center mb-6">
-          <div
+          <!-- <div
             class="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center mr-3"
           >
             <lucide-icon
@@ -222,7 +260,7 @@
               [size]="20"
               class="text-purple-600"
             />
-          </div>
+          </div> -->
           <h3 class="text-xl font-bold text-slate-900">Platform Assistance</h3>
         </div>
 

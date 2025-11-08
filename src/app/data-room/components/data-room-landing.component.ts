@@ -175,7 +175,7 @@ export class DataRoomLandingComponent implements OnInit {
       title: 'Pitch Deck',
       description: 'Generate investor presentations',
       icon: this.FileTextIcon,
-      color: 'blue',
+      color: 'teal',
     },
     {
       id: 'financial-model',
@@ -247,6 +247,9 @@ export class DataRoomLandingComponent implements OnInit {
       // Will implement search
     }
   }
+  shareDataRoom() {}
+  managePermissions() {}
+  generateResource() {}
 
   requestAccess(companyName: string) {
     console.log('Requesting access to:', companyName);
@@ -258,7 +261,7 @@ export class DataRoomLandingComponent implements OnInit {
 
   getDocIconColor(color: string): string {
     const colors: Record<string, string> = {
-      blue: 'bg-blue-100 text-blue-600',
+      teal: 'bg-teal-100 text-teal-600',
       green: 'bg-green-100 text-green-600',
       purple: 'bg-purple-100 text-purple-600',
       orange: 'bg-orange-100 text-orange-600',
@@ -301,7 +304,7 @@ export class DataRoomLandingComponent implements OnInit {
   getDocumentIconColor(mimeType: string): string {
     if (mimeType.includes('pdf')) return 'bg-red-100 text-red-600';
     if (mimeType.includes('word') || mimeType.includes('document'))
-      return 'bg-blue-100 text-blue-600';
+      return 'bg-teal-100 text-teal-600';
     if (mimeType.includes('sheet') || mimeType.includes('excel'))
       return 'bg-green-100 text-green-600';
     if (mimeType.includes('image')) return 'bg-purple-100 text-purple-600';
@@ -310,7 +313,7 @@ export class DataRoomLandingComponent implements OnInit {
 
   getStatusColor(status: string): string {
     const colors: Record<string, string> = {
-      uploaded: 'bg-blue-100 text-blue-700',
+      uploaded: 'bg-teal-100 text-teal-700',
       processing: 'bg-amber-100 text-amber-700',
       approved: 'bg-green-100 text-green-700',
       rejected: 'bg-red-100 text-red-700',
@@ -488,7 +491,7 @@ export class DataRoomLandingComponent implements OnInit {
 //       title: 'Pitch Deck',
 //       description: 'Generate investor presentations',
 //       icon: this.FileTextIcon,
-//       color: 'blue',
+//       color: 'teal',
 //     },
 //     {
 //       id: 'financial-model',
@@ -731,7 +734,7 @@ export class DataRoomLandingComponent implements OnInit {
 //    */
 //   getDocIconColor(color: string): string {
 //     const colors: Record<string, string> = {
-//       blue: 'bg-blue-100 text-blue-600',
+//       teal: 'bg-teal-100 text-teal-600',
 //       green: 'bg-green-100 text-green-600',
 //       purple: 'bg-purple-100 text-purple-600',
 //       orange: 'bg-orange-100 text-orange-600',
@@ -796,7 +799,7 @@ export class DataRoomLandingComponent implements OnInit {
 //     if (!mimeType) return 'bg-slate-100 text-slate-600';
 //     if (mimeType.includes('pdf')) return 'bg-red-100 text-red-600';
 //     if (mimeType.includes('word') || mimeType.includes('document'))
-//       return 'bg-blue-100 text-blue-600';
+//       return 'bg-teal-100 text-teal-600';
 //     if (mimeType.includes('sheet') || mimeType.includes('excel'))
 //       return 'bg-green-100 text-green-600';
 //     if (mimeType.includes('image')) return 'bg-purple-100 text-purple-600';
