@@ -1,8 +1,52 @@
 <div class="min-h-screen bg-slate-50 p-6 ml-2">
+  <!-- Cost Confirmation Modal -->
+  <app-cost-confirmation-modal
+    [isOpen]="costConfirmation().isOpen"
+    [cost]="costConfirmation().cost"
+    [availableCredits]="wallet()?.balance || 0"
+    [actionLabel]="
+      'Use ' +
+      costConfirmation().cost +
+      ' credits for ' +
+      costConfirmation().action
+    "
+    (onClose)="closeCostModal()"
+    (onConfirm)="confirmAndExecute()"
+    (onPurchase)="openPurchaseFromModal()"
+  />
+
+  <!-- Purchase Modal -->
+  <app-purchase-credits-modal
+    [isOpen]="showPurchaseModal()"
+    [organizationId]="orgId()"
+    (close)="closePurchaseModal()"
+    (success)="closePurchaseModal()"
+  />
+
   <div class="max-w-7xl mx-auto">
+    <!-- Credits Header (Always visible) -->
+    <div
+      class="mb-6 flex items-center justify-between p-4 bg-white rounded-xl border border-slate-200"
+    >
+      <div class="flex items-center gap-2">
+        <lucide-icon [img]="ZapIcon" [size]="20" class="text-amber-600" />
+        <span class="text-sm text-slate-600">Available Credits:</span>
+        <span class="font-bold text-lg text-slate-900">{{
+          creditsFormatted()
+        }}</span>
+      </div>
+      @if (!hasEnoughCredits()) {
+      <button
+        (click)="showPurchaseModal.set(true)"
+        class="px-4 py-2 bg-orange-500 text-white rounded-lg text-sm font-medium hover:bg-orange-600 transition-colors"
+      >
+        Buy Credits
+      </button>
+      }
+    </div>
+
     <!-- SME View -->
     @if (userType() === 'sme') {
-    <!-- Header -->
     <!-- Header with Action Buttons -->
     <div
       class="mb-6 animate-fade-in-up flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4"
@@ -20,7 +64,7 @@
         <!-- Share Entire Data Room -->
         <button
           (click)="shareDataRoom()"
-          class="px-4 py-2 bg-teal-500 text-white text-sm rounded-xl font-2x hover:bg-orange-600 transition-colors flex items-center"
+          class="px-4 py-2 bg-teal-500 text-white text-sm rounded-xl font-medium hover:bg-orange-600 transition-colors flex items-center"
         >
           <lucide-icon [img]="Share2Icon" [size]="16" class="mr-2" />
           Share Data Room
@@ -252,15 +296,6 @@
         style="animation-delay: 0.4s"
       >
         <div class="flex items-center mb-6">
-          <!-- <div
-            class="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center mr-3"
-          >
-            <lucide-icon
-              [img]="SparklesIcon"
-              [size]="20"
-              class="text-purple-600"
-            />
-          </div> -->
           <h3 class="text-xl font-bold text-slate-900">Platform Assistance</h3>
         </div>
 
