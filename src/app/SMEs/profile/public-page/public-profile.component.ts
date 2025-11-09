@@ -1,3 +1,6 @@
+// src/app/SMEs/profile/public-page/public-profile.component.ts
+// FIXED: Added documents and dataRoomUrl to PublicProfileData interface
+
 import { Component, signal, computed, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
@@ -16,12 +19,18 @@ import {
   RefreshCw,
   Calendar,
   Share2,
+  File,
+  Image,
 } from 'lucide-angular';
 import { SMEPublicProfileService } from '../services/sme-public-profile.service';
-import { UiCardComponent, UiButtonComponent } from 'src/app/shared/components';
 
+// UPDATED: Added documents and dataRoomUrl properties
 interface PublicProfileData {
   slug: string;
+  organizationId: string;
+  organizationName: string;
+  organizationType: string;
+
   companyName: string;
   industry: string;
   yearsInOperation: number;
@@ -31,7 +40,27 @@ interface PublicProfileData {
   completionPercentage: number;
   readinessScore: number;
   lastUpdated: Date;
+
+  documents: PublicDocument[]; // NEW
+  dataRoomUrl: string; // NEW
+
   sections: PublicSectionView[];
+}
+
+interface PublicDocument {
+  id: string;
+  name: string;
+  type: string;
+  category: string;
+  fileSize: number;
+  uploadedAt: Date;
+  publicUrl: string;
+  verificationStatus:
+    | 'uploaded'
+    | 'processing'
+    | 'approved'
+    | 'rejected'
+    | 'verified';
 }
 
 interface PublicSectionView {
@@ -70,6 +99,8 @@ export class PublicProfileViewComponent implements OnInit {
   RefreshIcon = RefreshCw;
   CalendarIcon = Calendar;
   ShareIcon = Share2;
+  FileIcon = File;
+  ImageIcon = Image;
 
   // State
   isLoading = signal(false);
@@ -175,6 +206,32 @@ export class PublicProfileViewComponent implements OnInit {
     return iconMap[stepId] || AlertCircle;
   }
 
+  // NEW: Get document icon based on file type
+  getDocumentIcon(fileType: string): string {
+    const iconMap: { [key: string]: string } = {
+      pdf: 'FileText',
+      doc: 'FileText',
+      docx: 'FileText',
+      xls: 'BarChart3',
+      xlsx: 'BarChart3',
+      jpg: 'Image',
+      png: 'Image',
+      jpeg: 'Image',
+      csv: 'BarChart3',
+      txt: 'FileText',
+    };
+    return iconMap[fileType.toLowerCase()] || 'File';
+  }
+
+  // NEW: Format file size for display
+  formatFileSize(bytes: number): string {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i];
+  }
+
   getReadinessBadgeClass(level: string): string {
     const classes = {
       excellent: 'bg-green-50 border-green-200 text-green-700',
@@ -185,11 +242,19 @@ export class PublicProfileViewComponent implements OnInit {
     return classes[level as keyof typeof classes] || classes.poor;
   }
 
-  formatCurrency(value: string): string {
-    if (!value || value === 'Not specified' || value === 'Not provided')
-      return value;
-    const numValue = parseFloat(value.replace(/[^\d.-]/g, ''));
-    if (isNaN(numValue)) return value;
+  formatCurrency(value: string | number | undefined): string {
+    if (!value) return 'Not specified';
+
+    // Convert to string if number
+    const valueStr = typeof value === 'number' ? value.toString() : value;
+
+    if (valueStr === 'Not specified' || valueStr === 'Not provided')
+      return valueStr;
+
+    // Parse the number, removing any non-numeric characters
+    const numValue = parseFloat(valueStr.replace(/[^\d.-]/g, ''));
+    if (isNaN(numValue)) return valueStr;
+
     return new Intl.NumberFormat('en-ZA', {
       style: 'currency',
       currency: 'ZAR',

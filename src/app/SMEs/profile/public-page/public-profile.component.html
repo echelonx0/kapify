@@ -1,3 +1,5 @@
+<!-- src/app/SMEs/profile/public-page/public-profile.component.html -->
+
 <div class="min-h-screen bg-slate-50">
   <!-- Loading State -->
   @if (isLoading()) {
@@ -140,6 +142,128 @@
         </div>
       </div>
     </div>
+
+    <!-- Supporting Documents Section -->
+    <div class="space-y-6 mb-12">
+      <h2 class="text-2xl font-bold text-slate-900">Supporting Documents</h2>
+
+      @if (profileData()!.documents && profileData()!.documents.length > 0) {
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        @for (doc of profileData()!.documents; track doc.id) {
+        <div
+          class="bg-white rounded-xl border border-slate-200 p-4 hover:shadow-md hover:border-slate-300 transition-all duration-200"
+        >
+          <div class="flex items-start justify-between mb-3">
+            <div class="flex items-center gap-3 min-w-0">
+              <div class="p-2 bg-slate-100 rounded-lg flex-shrink-0">
+                <lucide-icon
+                  [name]="getDocumentIcon(doc.type)"
+                  [size]="20"
+                  class="text-slate-600"
+                ></lucide-icon>
+              </div>
+              <div class="min-w-0">
+                <h3 class="font-medium text-slate-900 text-sm truncate">
+                  {{ doc.name }}
+                </h3>
+                <p class="text-xs text-slate-500">
+                  {{ formatFileSize(doc.fileSize) }}
+                </p>
+              </div>
+            </div>
+
+            <!-- Verification Badge -->
+            @switch (doc.verificationStatus) { @case ('approved') {
+            <span
+              class="px-2 py-1 bg-green-50 text-green-700 rounded text-xs font-semibold flex items-center gap-1 flex-shrink-0 ml-2"
+            >
+              <lucide-icon [name]="CheckCircleIcon" [size]="14"></lucide-icon>
+              <span class="hidden sm:inline">Verified</span>
+            </span>
+            } @case ('verified') {
+            <span
+              class="px-2 py-1 bg-green-50 text-green-700 rounded text-xs font-semibold flex items-center gap-1 flex-shrink-0 ml-2"
+            >
+              <lucide-icon [name]="CheckCircleIcon" [size]="14"></lucide-icon>
+              <span class="hidden sm:inline">Verified</span>
+            </span>
+            } @case ('rejected') {
+            <span
+              class="px-2 py-1 bg-red-50 text-red-700 rounded text-xs font-semibold flex-shrink-0 ml-2"
+            >
+              Rejected
+            </span>
+            } @case ('processing') {
+            <span
+              class="px-2 py-1 bg-amber-50 text-amber-700 rounded text-xs font-semibold flex-shrink-0 ml-2"
+            >
+              Processing
+            </span>
+            } }
+          </div>
+
+          <div
+            class="flex items-center justify-between pt-3 border-t border-slate-100"
+          >
+            <span class="text-xs text-slate-500 capitalize">{{
+              doc.category
+            }}</span>
+            <a
+              [href]="doc.publicUrl"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="text-teal-600 hover:text-teal-700 text-sm font-medium flex items-center gap-1"
+            >
+              Download
+              <lucide-icon [name]="ExternalLinkIcon" [size]="14"></lucide-icon>
+            </a>
+          </div>
+        </div>
+        }
+      </div>
+      } @else {
+      <div
+        class="bg-slate-50 rounded-xl border border-slate-200 p-8 text-center"
+      >
+        <lucide-icon
+          [name]="FileTextIcon"
+          [size]="32"
+          class="text-slate-400 mx-auto mb-3"
+        ></lucide-icon>
+        <p class="text-slate-600 font-medium">No documents shared yet</p>
+        <p class="text-slate-500 text-sm mt-1">
+          Documents will appear here once they're uploaded and verified
+        </p>
+      </div>
+      }
+    </div>
+
+    <!-- Data Room CTA -->
+    @if (profileData()!.dataRoomUrl) {
+    <div
+      class="bg-gradient-to-r from-teal-50 to-cyan-50 rounded-2xl border border-teal-200 p-8 mb-12"
+    >
+      <div
+        class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6"
+      >
+        <div>
+          <h3 class="text-lg font-semibold text-slate-900 mb-2">
+            Extended Resources
+          </h3>
+          <p class="text-slate-600 max-w-xl">
+            Access our complete data room with additional business
+            documentation, financial records, and strategic planning materials.
+          </p>
+        </div>
+        <a
+          class="px-8 py-3 bg-teal-600 text-white rounded-xl font-medium hover:bg-teal-700 active:bg-teal-800 transition-colors whitespace-nowrap flex items-center gap-2"
+        >
+          Visit Data Room
+          <lucide-icon [name]="ExternalLinkIcon" [size]="16"></lucide-icon>
+        </a>
+      </div>
+    </div>
+    }
 
     <!-- Section Summaries - Clean Cards -->
     <div class="space-y-6 mb-12">

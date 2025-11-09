@@ -1,9 +1,37 @@
+// src/app/SMEs/profile/services/sme-public-profile.service.ts
+// FIXED: Corrected the filter syntax error (.is to .not)
+
 import { Injectable, inject } from '@angular/core';
 import { Observable, from, throwError } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
 import { SharedSupabaseService } from 'src/app/shared/services/shared-supabase.service';
 
+interface Organization {
+  id: string;
+  name: string;
+  organization_type: string;
+  description: string;
+  website: string;
+  email: string;
+  phone: string;
+  is_verified: boolean;
+}
+
+interface DocumentRow {
+  id: string;
+  original_name: string;
+  file_name: string;
+  file_size: number;
+  mime_type: string;
+  public_url: string;
+  category: string;
+  status: 'uploaded' | 'processing' | 'approved' | 'rejected';
+  uploaded_at: string;
+}
+
 interface PublicProfileDTO {
+  organizationId: string;
+  organization: Organization | null;
   slug: string;
   business_info: any;
   personal_info: any;
@@ -15,19 +43,40 @@ interface PublicProfileDTO {
   management_governance: any;
   business_plan: any;
   updated_at: string;
+  documents: DocumentRow[];
+}
+
+interface PublicDocument {
+  id: string;
+  name: string;
+  type: string;
+  category: string;
+  fileSize: number;
+  uploadedAt: Date;
+  publicUrl: string;
+  verificationStatus: 'uploaded' | 'processing' | 'approved' | 'rejected';
 }
 
 interface PublicProfileData {
   slug: string;
+  organizationId: string;
+  organizationName: string;
+  organizationType: string;
+
   companyName: string;
   industry: string;
   yearsInOperation: number;
   employeeCount: string;
   monthlyRevenue: string;
   requestedFunding: string;
+
   completionPercentage: number;
   readinessScore: number;
   lastUpdated: Date;
+
+  documents: PublicDocument[];
+  dataRoomUrl: string;
+
   sections: any[];
 }
 
@@ -39,7 +88,7 @@ export class SMEPublicProfileService {
 
   /**
    * Fetch public profile by slug directly from Supabase
-   * Uses RLS policies to ensure public read access
+   * FIXED: Corrected filter syntax
    */
   getPublicProfile(slug: string): Observable<PublicProfileData> {
     return from(this.fetchProfileBySlug(slug)).pipe(
@@ -55,82 +104,125 @@ export class SMEPublicProfileService {
 
   /**
    * Fetch profile from Supabase by slug
-   * Gets all sections for the user matching the slug
+   * FIXED: Changed .is('slug', 'is not null') to .not('slug', 'is', null)
    */
   private async fetchProfileBySlug(slug: string): Promise<PublicProfileDTO> {
-    // First, find the user_id by slug from any section
-    const { data: sectionWithSlug, error: slugError } = await this.supabase
-      .from('business_plan_sections')
-      .select('user_id')
-      .eq('slug', slug)
-      .single();
+    try {
+      console.log(`🔍 Fetching profile for slug: ${slug}`);
 
-    if (slugError || !sectionWithSlug) {
-      throw new Error(
-        `Profile not found: ${slugError?.message || 'No slug match'}`
-      );
-    }
+      // Step 1: Find organization_id by slug (FIXED: Filter syntax)
+      const { data: sectionWithSlug, error: slugError } = await this.supabase
+        .from('business_plan_sections')
+        .select('organization_id')
+        .eq('slug', slug)
+        .not('slug', 'is', null)
+        .single();
 
-    const userId = sectionWithSlug.user_id;
-
-    // Now fetch all sections for this user
-    const { data: sections, error } = await this.supabase
-      .from('business_plan_sections')
-      .select('*')
-      .eq('user_id', userId)
-      .order('updated_at', { ascending: false });
-
-    if (error) {
-      throw new Error(`Failed to fetch profile: ${error.message}`);
-    }
-
-    if (!sections || sections.length === 0) {
-      throw new Error('Profile sections not found');
-    }
-
-    // Transform sections into profile DTO
-    const dto: PublicProfileDTO = {
-      slug,
-      business_info: {},
-      personal_info: {},
-      financial_info: {},
-      funding_info: {},
-      supporting_documents: {},
-      business_review: {},
-      swot_analysis: {},
-      management_governance: {},
-      business_plan: {},
-      updated_at: sections[0]?.updated_at || new Date().toISOString(),
-    };
-
-    // Map each section to corresponding DTO field
-    sections.forEach((section: any) => {
-      switch (section.section_type) {
-        case 'company-info':
-          dto.business_info = section.data;
-          break;
-        case 'documents':
-          dto.supporting_documents = section.data;
-          break;
-        case 'business-assessment':
-          dto.business_review = section.data;
-          break;
-        case 'swot-analysis':
-          dto.swot_analysis = section.data;
-          break;
-        case 'management':
-          dto.management_governance = section.data;
-          break;
-        case 'business-strategy':
-          dto.business_plan = section.data;
-          break;
-        case 'financial-profile':
-          dto.financial_info = section.data;
-          break;
+      if (slugError || !sectionWithSlug) {
+        throw new Error(
+          `Profile not found: ${slugError?.message || 'No slug match'}`
+        );
       }
-    });
 
-    return dto;
+      const organizationId = sectionWithSlug.organization_id;
+      console.log(`✅ Found organization: ${organizationId}`);
+
+      // Step 2: Parallel fetch org, sections, and documents
+      const [
+        { data: organization, error: orgError },
+        { data: sections, error: sectionsError },
+        { data: documents, error: docsError },
+      ] = await Promise.all([
+        this.supabase
+          .from('organizations')
+          .select('*')
+          .eq('id', organizationId)
+          .single(),
+        this.supabase
+          .from('business_plan_sections')
+          .select('*')
+          .eq('organization_id', organizationId)
+          .order('updated_at', { ascending: false }),
+        this.supabase
+          .from('documents')
+          .select('*')
+          .eq('organization_id', organizationId)
+          .in('status', ['approved', 'verified']),
+      ]);
+
+      if (orgError) {
+        console.warn('Organization not found, continuing with sections only');
+      }
+
+      if (sectionsError) {
+        throw new Error(
+          `Failed to fetch profile sections: ${sectionsError.message}`
+        );
+      }
+
+      if (docsError) {
+        console.warn('Failed to fetch documents:', docsError.message);
+      }
+
+      if (!sections || sections.length === 0) {
+        throw new Error('Profile sections not found');
+      }
+
+      // Step 3: Transform sections into profile DTO
+      const dto: PublicProfileDTO = {
+        organizationId,
+        organization: organization || null,
+        slug,
+        business_info: {},
+        personal_info: {},
+        financial_info: {},
+        funding_info: {},
+        supporting_documents: {},
+        business_review: {},
+        swot_analysis: {},
+        management_governance: {},
+        business_plan: {},
+        updated_at: sections[0]?.updated_at || new Date().toISOString(),
+        documents: documents || [],
+      };
+
+      // Map each section to corresponding DTO field
+      sections.forEach((section: any) => {
+        switch (section.section_type) {
+          case 'company-info':
+            dto.business_info = section.data;
+            break;
+          case 'documents':
+            dto.supporting_documents = section.data;
+            break;
+          case 'business-assessment':
+            dto.business_review = section.data;
+            break;
+          case 'swot-analysis':
+            dto.swot_analysis = section.data;
+            break;
+          case 'management':
+            dto.management_governance = section.data;
+            break;
+          case 'business-strategy':
+            dto.business_plan = section.data;
+            break;
+          case 'financial-profile':
+            dto.financial_info = section.data;
+            break;
+        }
+      });
+
+      console.log(
+        `✅ Profile loaded: ${sections.length} sections, ${
+          documents?.length || 0
+        } documents`
+      );
+      return dto;
+    } catch (error) {
+      console.error('Error in fetchProfileBySlug:', error);
+      throw error;
+    }
   }
 
   /**
@@ -149,17 +241,43 @@ export class SMEPublicProfileService {
     const completionPercentage = this.calculateCompletion(dto);
     const readinessScore = this.calculateReadiness(dto);
 
+    // Transform documents
+    const documents: PublicDocument[] = (dto.documents || []).map(
+      (doc: DocumentRow) => ({
+        id: doc.id,
+        name: doc.original_name,
+        type: doc.mime_type.split('/')[1] || 'file',
+        category: doc.category,
+        fileSize: doc.file_size,
+        uploadedAt: new Date(doc.uploaded_at),
+        publicUrl: doc.public_url,
+        verificationStatus: doc.status,
+      })
+    );
+
+    // Generate data room URL
+    const dataRoomUrl = this.generateDataRoomUrl(dto.organizationId);
+
     return {
       slug: dto.slug,
+      organizationId: dto.organizationId,
+      organizationName: dto.organization?.name || 'Organization',
+      organizationType: dto.organization?.organization_type || 'sme',
+
       companyName: businessInfo.companyName || 'Not specified',
       industry: businessInfo.industry || 'Not specified',
       yearsInOperation: businessInfo.yearsInOperation || 0,
       employeeCount: businessInfo.numberOfEmployees || 'Not specified',
       monthlyRevenue: financialInfo.monthlyRevenue || 'Not specified',
       requestedFunding: fundingInfo.amountRequired || 'Not specified',
+
       completionPercentage,
       readinessScore,
       lastUpdated: new Date(dto.updated_at),
+
+      documents,
+      dataRoomUrl,
+
       sections: [
         this.buildCompanyInfoSection(businessInfo),
         this.buildDocumentsSection(supportingDocuments),
@@ -379,36 +497,29 @@ export class SMEPublicProfileService {
     let score = 0;
     const maxScore = 100;
 
-    // Company info (20 points)
     if (dto.business_info?.companyName) score += 5;
     if (dto.business_info?.registrationNumber) score += 5;
     if (dto.business_info?.industry) score += 5;
     if (dto.business_info?.numberOfEmployees) score += 5;
 
-    // Documents (15 points)
     const docCount = Object.keys(dto.supporting_documents || {}).length;
     if (docCount > 0) score += 15;
 
-    // Business assessment (15 points)
     if (dto.business_review?.businessModel) score += 5;
     if (dto.business_review?.targetMarkets?.length > 0) score += 5;
     if (dto.business_review?.valueProposition) score += 5;
 
-    // SWOT (10 points)
     if (dto.swot_analysis?.strengths?.length >= 2) score += 2.5;
     if (dto.swot_analysis?.weaknesses?.length >= 2) score += 2.5;
     if (dto.swot_analysis?.opportunities?.length >= 2) score += 2.5;
     if (dto.swot_analysis?.threats?.length >= 2) score += 2.5;
 
-    // Management (10 points)
     if (dto.management_governance?.managementTeam?.length > 0) score += 10;
 
-    // Strategy (15 points)
     if (dto.business_plan?.missionStatement) score += 5;
     if (dto.business_plan?.strategicObjectives?.length > 0) score += 5;
     if (dto.business_plan?.expansionPlans) score += 5;
 
-    // Financial (15 points)
     if (dto.financial_info?.monthlyRevenue) score += 7.5;
     if (dto.funding_info?.amountRequired) score += 7.5;
 
@@ -418,13 +529,11 @@ export class SMEPublicProfileService {
   private calculateReadiness(dto: PublicProfileDTO): number {
     let score = 0;
 
-    // Company info (20 points)
     if (dto.business_info?.companyName) score += 5;
     if (dto.business_info?.registrationNumber) score += 5;
     if (dto.business_info?.industry) score += 5;
     if (dto.personal_info?.firstName) score += 5;
 
-    // Documents (15 points)
     const docCount = Object.keys(dto.supporting_documents || {}).length;
     if (docCount > 0) score += 5;
     if (
@@ -434,26 +543,21 @@ export class SMEPublicProfileService {
       score += 5;
     if (dto.supporting_documents?.financialStatements) score += 5;
 
-    // Business assessment (15 points)
     if (dto.business_review?.businessModel) score += 5;
     if (dto.business_review?.targetMarkets?.length > 0) score += 5;
     if (dto.business_review?.valueProposition) score += 5;
 
-    // SWOT (10 points)
     if (dto.swot_analysis?.strengths?.length >= 2) score += 2.5;
     if (dto.swot_analysis?.weaknesses?.length >= 2) score += 2.5;
     if (dto.swot_analysis?.opportunities?.length >= 2) score += 2.5;
     if (dto.swot_analysis?.threats?.length >= 2) score += 2.5;
 
-    // Management (10 points)
     if (dto.management_governance?.managementTeam?.length > 0) score += 10;
 
-    // Strategy (15 points)
     if (dto.business_plan?.missionStatement) score += 5;
     if (dto.business_plan?.strategicObjectives?.length > 0) score += 5;
     if (dto.business_plan?.expansionPlans) score += 5;
 
-    // Financial (15 points)
     if (dto.financial_info?.monthlyRevenue) score += 5;
     if (dto.funding_info?.amountRequired) score += 5;
     if (dto.funding_info?.purposeOfFunding) score += 5;
@@ -476,5 +580,12 @@ export class SMEPublicProfileService {
     if (swot.opportunities?.length >= 2) completed++;
     if (swot.threats?.length >= 2) completed++;
     return (completed / 4) * 100;
+  }
+
+  /**
+   * Generate data room URL
+   */
+  private generateDataRoomUrl(organizationId: string): string {
+    return `/org/${organizationId}/data-room`;
   }
 }
