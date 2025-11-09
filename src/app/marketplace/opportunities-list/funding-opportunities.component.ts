@@ -24,6 +24,7 @@ import { SmartSuggestionsComponent } from '../components/smart-suggestions/smart
 import { LandingHeaderComponent } from '../../landing/landing-header.component';
 import { LandingFooterComponent } from '../../landing/landing-footer.component';
 import { FundingOpportunity } from 'src/app/funder/create-opportunity/shared/funding.interfaces';
+import { ToastContainerComponent } from 'src/app/shared/toast-container.component';
 
 @Component({
   selector: 'app-funding-opportunities',
@@ -40,6 +41,7 @@ import { FundingOpportunity } from 'src/app/funder/create-opportunity/shared/fun
     SmartSuggestionsComponent,
     LandingHeaderComponent,
     LandingFooterComponent,
+    ToastContainerComponent,
   ],
   templateUrl: './funding-opportunities.component.html',
 })

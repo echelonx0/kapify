@@ -18,7 +18,7 @@ import { FormsModule } from '@angular/forms';
   template: `
     <div class="card-gradient mt-6">
       <div
-        class="rounded-lg p-8 bg-gradient-to-br from-primary-500 via-primary-600 to-primary-700 text-white overflow-hidden relative"
+        class="rounded-lg p-8 bg-gradient-to-br from-orange-500 via-orange-600 to-orange-700 text-white overflow-hidden relative"
       >
         <!-- Background Pattern -->
         <div class="absolute inset-0 opacity-10">
@@ -36,7 +36,7 @@ import { FormsModule } from '@angular/forms';
               <lucide-icon [img]="MailIcon" [size]="28" />
             </div>
             <h3 class="text-xl font-bold mb-2">Stay in the loop</h3>
-            <p class="text-primary-100 text-sm leading-relaxed">
+            <p class="text-orange-100 text-sm leading-relaxed">
               Get exclusive funding opportunities and expert insights delivered
               weekly
             </p>
@@ -54,7 +54,7 @@ import { FormsModule } from '@angular/forms';
               />
             </div>
             <h3 class="text-lg font-bold mb-2">Welcome aboard!</h3>
-            <p class="text-primary-100 text-sm">
+            <p class="text-orange-100 text-sm">
               You'll receive your first funding insights email within 24 hours.
             </p>
           </div>
@@ -73,11 +73,11 @@ import { FormsModule } from '@angular/forms';
             <button
               (click)="subscribe()"
               [disabled]="!isValidEmail() || isSubmitting()"
-              class="w-full bg-white text-primary-600 py-4 rounded-xl font-semibold hover:bg-neutral-100 transition-all transform hover:-translate-y-0.5 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2"
+              class="w-full bg-white text-orange-600 py-4 rounded-xl font-semibold hover:bg-neutral-100 transition-all transform hover:-translate-y-0.5 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2"
             >
               <span *ngIf="isSubmitting()">
                 <div
-                  class="animate-spin rounded-full h-4 w-4 border-2 border-primary-600 border-t-transparent"
+                  class="animate-spin rounded-full h-4 w-4 border-2 border-orange-600 border-t-transparent"
                 ></div>
                 Subscribing...
               </span>
@@ -97,7 +97,7 @@ import { FormsModule } from '@angular/forms';
                 />
               </div>
               <div class="text-lg font-bold">5,000+</div>
-              <div class="text-xs text-primary-200">Subscribers</div>
+              <div class="text-xs text-orange-200">Subscribers</div>
             </div>
             <div class="text-center">
               <div class="flex items-center justify-center mb-2">
@@ -108,7 +108,7 @@ import { FormsModule } from '@angular/forms';
                 />
               </div>
               <div class="text-lg font-bold">Weekly</div>
-              <div class="text-xs text-primary-200">Updates</div>
+              <div class="text-xs text-orange-200">Updates</div>
             </div>
             <div class="text-center">
               <div class="flex items-center justify-center mb-2">
@@ -119,7 +119,7 @@ import { FormsModule } from '@angular/forms';
                 />
               </div>
               <div class="text-lg font-bold">Free</div>
-              <div class="text-xs text-primary-200">Forever</div>
+              <div class="text-xs text-orange-200">Forever</div>
             </div>
           </div>
 
@@ -131,7 +131,7 @@ import { FormsModule } from '@angular/forms';
                 [size]="14"
                 class="text-green-300"
               />
-              <span class="text-primary-100"
+              <span class="text-orange-100"
                 >Early access to new opportunities</span
               >
             </div>
@@ -141,7 +141,7 @@ import { FormsModule } from '@angular/forms';
                 [size]="14"
                 class="text-green-300"
               />
-              <span class="text-primary-100"
+              <span class="text-orange-100"
                 >Expert funding strategies & tips</span
               >
             </div>
@@ -151,13 +151,13 @@ import { FormsModule } from '@angular/forms';
                 [size]="14"
                 class="text-green-300"
               />
-              <span class="text-primary-100">Market insights & trends</span>
+              <span class="text-orange-100">Market insights & trends</span>
             </div>
           </div>
 
           <!-- Trust Badge -->
           <div class="text-center pt-4 border-t border-white/20">
-            <p class="text-xs text-primary-200">
+            <p class="text-xs text-orange-200">
               No spam, unsubscribe anytime. Privacy guaranteed.
             </p>
           </div>

@@ -1,5 +1,11 @@
-// src/app/marketplace/opportunities-list/opportunity-card.component.ts
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import {
+  Component,
+  Input,
+  Output,
+  EventEmitter,
+  signal,
+  inject,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   LucideAngularModule,
@@ -13,8 +19,18 @@ import {
   Building,
   TrendingUp,
   Award,
+  Share2,
+  Bookmark,
+  MailIcon,
+  CheckCheckIcon,
+  LinkIcon,
 } from 'lucide-angular';
 import { FundingOpportunity } from 'src/app/funder/create-opportunity/shared/funding.interfaces';
+import { AuthService } from 'src/app/auth/production.auth.service';
+import { finalize } from 'rxjs';
+import { ShareService } from 'src/app/shared/services/share.service';
+import { BookmarkService } from 'src/app/shared/services/bookmark.service';
+import { ToastService } from 'src/app/shared/services/toast.service';
 
 @Component({
   selector: 'app-enhanced-opportunity-card',
@@ -38,6 +54,12 @@ export class KapifyOpportunityCardComponent {
   @Output() manage = new EventEmitter<string>();
   @Output() signInToApply = new EventEmitter<void>();
 
+  // Services
+  private bookmarkService = inject(BookmarkService);
+  private shareService = inject(ShareService);
+  private authService = inject(AuthService);
+  private toastService = inject(ToastService);
+
   // Icons
   DollarSignIcon = DollarSign;
   CalendarIcon = Calendar;
@@ -49,8 +71,100 @@ export class KapifyOpportunityCardComponent {
   BuildingIcon = Building;
   TrendingUpIcon = TrendingUp;
   AwardIcon = Award;
+  ShareIcon = Share2;
+  BookmarkIcon = Bookmark;
+  mail = MailIcon;
+  check = CheckCheckIcon;
+  link = LinkIcon;
+  // State
+  isBookmarked = signal(false);
+  isBookmarkLoading = signal(false);
+  showShareMenu = signal(false);
+  linkCopied = signal(false);
 
-  // --- New helper methods ---
+  ngOnInit() {
+    this.checkBookmarkStatus();
+  }
+
+  private checkBookmarkStatus() {
+    const user = this.authService.user();
+    if (user?.id) {
+      this.bookmarkService
+        .isBookmarked(this.opportunity.id)
+        .subscribe((bookmarked) => this.isBookmarked.set(bookmarked));
+    }
+  }
+
+  // --- Share & Bookmark Methods ---
+
+  onShare() {
+    this.showShareMenu.set(!this.showShareMenu());
+  }
+
+  onCopyLink() {
+    this.shareService
+      .copyLink(this.opportunity.id)
+      .then(() => {
+        this.linkCopied.set(true);
+        this.toastService.success('✓ Link copied to clipboard');
+
+        setTimeout(() => {
+          this.linkCopied.set(false);
+          this.showShareMenu.set(false);
+        }, 2000);
+      })
+      .catch((error) => {
+        console.error('Copy link error:', error);
+        this.toastService.error('Failed to copy link');
+      });
+  }
+
+  onShareLinkedIn() {
+    this.shareService.shareToLinkedIn(this.opportunity);
+    this.showShareMenu.set(false);
+    this.toastService.info('Opening LinkedIn...');
+  }
+
+  onShareTwitter() {
+    this.shareService.shareToTwitter(this.opportunity);
+    this.showShareMenu.set(false);
+    this.toastService.info('Opening X (Twitter)...');
+  }
+
+  onShareEmail() {
+    this.shareService.shareViaEmail(this.opportunity);
+    this.showShareMenu.set(false);
+    this.toastService.info('Opening email client...');
+  }
+
+  onBookmark() {
+    const user = this.authService.user();
+    if (!user) {
+      this.signInToApply.emit();
+      return;
+    }
+
+    this.isBookmarkLoading.set(true);
+    this.bookmarkService
+      .toggleBookmark(this.opportunity.id)
+      .pipe(finalize(() => this.isBookmarkLoading.set(false)))
+      .subscribe({
+        next: (bookmarked) => {
+          this.isBookmarked.set(bookmarked);
+          const message = bookmarked
+            ? '✓ Added to bookmarks'
+            : '✓ Removed from bookmarks';
+          this.toastService.success(message);
+        },
+        error: (error) => {
+          console.error('Bookmark error:', error);
+          this.toastService.error('Failed to update bookmark');
+        },
+      });
+  }
+
+  // --- Existing Methods ---
+
   private getPrimaryFundingType(): string | undefined {
     const ft = this.opportunity.fundingType;
     return Array.isArray(ft) ? ft[0] : ft;
@@ -84,13 +198,13 @@ export class KapifyOpportunityCardComponent {
   getStatusBorderClass(): string {
     switch (this.opportunity.status) {
       case 'active':
-        return 'bg-green-500';
+        return 'bg-green-600';
       case 'closed':
-        return 'bg-red-500';
+        return 'bg-red-600';
       case 'paused':
-        return 'bg-yellow-500';
+        return 'bg-amber-600';
       default:
-        return 'bg-green-500';
+        return 'bg-green-600';
     }
   }
 
@@ -98,21 +212,21 @@ export class KapifyOpportunityCardComponent {
     const primaryType = this.getPrimaryFundingType();
     switch (primaryType) {
       case 'equity':
-        return 'status-badge bg-purple-100 text-purple-700';
+        return 'bg-purple-50 text-purple-700 border border-purple-200/50';
       case 'debt':
-        return 'status-badge bg-blue-100 text-blue-700';
+        return 'bg-blue-50 text-blue-700 border border-blue-200/50';
       case 'grant':
-        return 'status-badge bg-green-100 text-green-700';
+        return 'bg-green-50 text-green-700 border border-green-200/50';
       case 'mezzanine':
-        return 'status-badge bg-cyan-100 text-cyan-700';
+        return 'bg-cyan-50 text-cyan-700 border border-cyan-200/50';
       case 'convertible':
-        return 'status-badge bg-indigo-100 text-indigo-700';
+        return 'bg-indigo-50 text-indigo-700 border border-indigo-200/50';
       case 'purchase_order':
-        return 'status-badge bg-amber-100 text-amber-700';
+        return 'bg-amber-50 text-amber-700 border border-amber-200/50';
       case 'invoice_financing':
-        return 'status-badge bg-teal-100 text-teal-700';
+        return 'bg-teal-50 text-teal-700 border border-teal-200/50';
       default:
-        return 'status-badge bg-neutral-100 text-neutral-700';
+        return 'bg-slate-100 text-slate-700 border border-slate-200/50';
     }
   }
 
@@ -182,7 +296,7 @@ export class KapifyOpportunityCardComponent {
 
   getDisplayIndustries(): string[] {
     const industries = this.opportunity.eligibilityCriteria?.industries || [];
-    return industries.slice(0, 3); // Show max 3 industries
+    return industries.slice(0, 3);
   }
 
   formatIndustry(industry: string): string {
