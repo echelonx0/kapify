@@ -1,6 +1,12 @@
 import { Injectable, inject, signal, OnDestroy } from '@angular/core';
 import { Observable, from, of, throwError, Subject } from 'rxjs';
-import { map, switchMap, catchError, shareReplay, takeUntil } from 'rxjs/operators';
+import {
+  map,
+  switchMap,
+  catchError,
+  shareReplay,
+  takeUntil,
+} from 'rxjs/operators';
 import { SharedSupabaseService } from 'src/app/shared/services/shared-supabase.service';
 import {
   DataRoom,
@@ -10,10 +16,13 @@ import {
   UserPermissions,
   transformDataRoomFromDB,
   transformDataRoomToDB,
-  transformSectionFromDB
+  transformSectionFromDB,
 } from '../models/data-room.models';
 
-export const DEFAULT_SECTIONS: Omit<DataRoomSection, 'id' | 'dataRoomId' | 'createdAt' | 'updatedAt'>[] = [
+export const DEFAULT_SECTIONS: Omit<
+  DataRoomSection,
+  'id' | 'dataRoomId' | 'createdAt' | 'updatedAt'
+>[] = [
   {
     sectionKey: 'executive',
     title: 'Executive Summary',
@@ -21,7 +30,7 @@ export const DEFAULT_SECTIONS: Omit<DataRoomSection, 'id' | 'dataRoomId' | 'crea
     displayOrder: 1,
     isEnabled: true,
     icon: 'Target',
-    metadata: {}
+    metadata: {},
   },
   {
     sectionKey: 'financials',
@@ -30,7 +39,7 @@ export const DEFAULT_SECTIONS: Omit<DataRoomSection, 'id' | 'dataRoomId' | 'crea
     displayOrder: 2,
     isEnabled: true,
     icon: 'BarChart3',
-    metadata: {}
+    metadata: {},
   },
   {
     sectionKey: 'documents',
@@ -39,7 +48,7 @@ export const DEFAULT_SECTIONS: Omit<DataRoomSection, 'id' | 'dataRoomId' | 'crea
     displayOrder: 3,
     isEnabled: true,
     icon: 'FileText',
-    metadata: {}
+    metadata: {},
   },
   {
     sectionKey: 'management',
@@ -48,7 +57,7 @@ export const DEFAULT_SECTIONS: Omit<DataRoomSection, 'id' | 'dataRoomId' | 'crea
     displayOrder: 4,
     isEnabled: true,
     icon: 'Users',
-    metadata: {}
+    metadata: {},
   },
   {
     sectionKey: 'market',
@@ -57,7 +66,7 @@ export const DEFAULT_SECTIONS: Omit<DataRoomSection, 'id' | 'dataRoomId' | 'crea
     displayOrder: 5,
     isEnabled: true,
     icon: 'TrendingUp',
-    metadata: {}
+    metadata: {},
   },
   {
     sectionKey: 'legal',
@@ -66,29 +75,20 @@ export const DEFAULT_SECTIONS: Omit<DataRoomSection, 'id' | 'dataRoomId' | 'crea
     displayOrder: 6,
     isEnabled: true,
     icon: 'Shield',
-    metadata: {}
-  }
+    metadata: {},
+  },
 ];
 
 // Precompute section keys (avoid repeated mapping)
-const DEFAULT_SECTION_KEYS = DEFAULT_SECTIONS.map(s => s.sectionKey);
+const DEFAULT_SECTION_KEYS = DEFAULT_SECTIONS.map((s) => s.sectionKey);
 
 interface CachedDataRoom {
   observable: Observable<DataRoom>;
   subscription: any;
 }
 
-/**
- * DataRoomService
- * - Removes AuthService injection (use supabase.getCurrentUserId())
- * - Eliminates query duplication with shareReplay
- * - Caches computed values
- * - Standardized error handling
- * - Proper cleanup on destroy
- * - Single responsibility per method
- */
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class DataRoomService implements OnDestroy {
   private supabase = inject(SharedSupabaseService);
@@ -117,14 +117,14 @@ export class DataRoomService implements OnDestroy {
     }
 
     return this.getCachedDataRoom(userId).pipe(
-      switchMap(dataRoom => {
+      switchMap((dataRoom) => {
         if (dataRoom) {
           return of(dataRoom);
         }
         // Not found, create new
         return this.createDataRoom(userId);
       }),
-      catchError(error => {
+      catchError((error) => {
         console.error('❌ Error in getOrCreateDataRoom:', error);
         return throwError(() => new Error('Failed to load data room'));
       }),
@@ -136,10 +136,13 @@ export class DataRoomService implements OnDestroy {
    * Get data room (cached)
    * Returns cached observable to avoid duplicate queries
    */
-  private getCachedDataRoom(organizationId: string): Observable<DataRoom | null> {
+  private getCachedDataRoom(
+    organizationId: string
+  ): Observable<DataRoom | null> {
     // Return cached if available
     if (this.dataRoomCache.has(organizationId)) {
-      return this.dataRoomCache.get(organizationId)!.observable as Observable<DataRoom | null>;
+      return this.dataRoomCache.get(organizationId)!
+        .observable as Observable<DataRoom | null>;
     }
 
     // Create new cached observable
@@ -159,7 +162,10 @@ export class DataRoomService implements OnDestroy {
       takeUntil(this.destroy$)
     );
 
-    this.dataRoomCache.set(organizationId, { observable: observable as any, subscription: null });
+    this.dataRoomCache.set(organizationId, {
+      observable: observable as any,
+      subscription: null,
+    });
     return observable;
   }
 
@@ -172,7 +178,7 @@ export class DataRoomService implements OnDestroy {
       title: 'Investment Data Room',
       is_active: true,
       visibility: 'private',
-      metadata: {}
+      metadata: {},
     };
 
     const { data, error } = await this.supabase
@@ -195,7 +201,7 @@ export class DataRoomService implements OnDestroy {
    * Initialize default sections for a data room
    */
   initializeDefaultSections(dataRoomId: string): Observable<DataRoomSection[]> {
-    const sectionsToInsert = DEFAULT_SECTIONS.map(section => ({
+    const sectionsToInsert = DEFAULT_SECTIONS.map((section) => ({
       data_room_id: dataRoomId,
       section_key: section.sectionKey,
       title: section.title,
@@ -203,20 +209,17 @@ export class DataRoomService implements OnDestroy {
       display_order: section.displayOrder,
       is_enabled: section.isEnabled,
       icon: section.icon,
-      metadata: section.metadata
+      metadata: section.metadata,
     }));
 
     return from(
-      this.supabase
-        .from('data_room_sections')
-        .insert(sectionsToInsert)
-        .select()
+      this.supabase.from('data_room_sections').insert(sectionsToInsert).select()
     ).pipe(
       map(({ data, error }) => {
         if (error) throw error;
         return (data || []).map(transformSectionFromDB);
       }),
-      catchError(error => {
+      catchError((error) => {
         console.error('❌ Error initializing sections:', error);
         return throwError(() => error);
       }),
@@ -232,7 +235,10 @@ export class DataRoomService implements OnDestroy {
    * Get data room with viewer context and permissions
    * FIXED: Single query instead of waterfall (no duplicate getDataRoom calls)
    */
-  getDataRoomView(dataRoomId: string, viewerUserId?: string): Observable<DataRoomView> {
+  getDataRoomView(
+    dataRoomId: string,
+    viewerUserId?: string
+  ): Observable<DataRoomView> {
     const userId = viewerUserId || this.supabase.getCurrentUserId();
 
     if (!userId) {
@@ -253,10 +259,10 @@ export class DataRoomService implements OnDestroy {
           sections: accessibleSections,
           documents: [],
           viewerContext,
-          permissions
+          permissions,
         };
       }),
-      catchError(error => {
+      catchError((error) => {
         console.error('❌ Error loading data room view:', error);
         return throwError(() => error);
       }),
@@ -308,7 +314,7 @@ export class DataRoomService implements OnDestroy {
         shareId: undefined,
         permissionLevel: undefined,
         allowedSections: undefined,
-        allowedDocumentIds: undefined
+        allowedDocumentIds: undefined,
       };
     } else {
       // Query share for viewer
@@ -324,7 +330,7 @@ export class DataRoomService implements OnDestroy {
         shareId: share.id,
         permissionLevel: share.permission_level,
         allowedSections: share.allowed_sections,
-        allowedDocumentIds: share.sharedDocumentIds
+        allowedDocumentIds: share.sharedDocumentIds,
       };
     }
 
@@ -340,17 +346,13 @@ export class DataRoomService implements OnDestroy {
    */
   getDataRoom(dataRoomId: string): Observable<DataRoom> {
     return from(
-      this.supabase
-        .from('data_rooms')
-        .select('*')
-        .eq('id', dataRoomId)
-        .single()
+      this.supabase.from('data_rooms').select('*').eq('id', dataRoomId).single()
     ).pipe(
       map(({ data, error }) => {
         if (error) throw error;
         return transformDataRoomFromDB(data);
       }),
-      catchError(error => {
+      catchError((error) => {
         console.error('❌ Error fetching data room:', error);
         return throwError(() => error);
       }),
@@ -373,7 +375,7 @@ export class DataRoomService implements OnDestroy {
         if (error) throw error;
         return (data || []).map(transformSectionFromDB);
       }),
-      catchError(error => {
+      catchError((error) => {
         console.error('❌ Error fetching sections:', error);
         return throwError(() => error);
       }),
@@ -384,7 +386,10 @@ export class DataRoomService implements OnDestroy {
   /**
    * Update data room
    */
-  updateDataRoom(dataRoomId: string, updates: Partial<DataRoom>): Observable<DataRoom> {
+  updateDataRoom(
+    dataRoomId: string,
+    updates: Partial<DataRoom>
+  ): Observable<DataRoom> {
     const dbUpdates = transformDataRoomToDB(updates);
 
     return from(
@@ -399,7 +404,7 @@ export class DataRoomService implements OnDestroy {
         if (error) throw error;
         return transformDataRoomFromDB(data);
       }),
-      catchError(error => {
+      catchError((error) => {
         console.error('❌ Error updating data room:', error);
         return throwError(() => error);
       }),
@@ -420,7 +425,7 @@ export class DataRoomService implements OnDestroy {
       map(({ error }) => {
         if (error) throw error;
       }),
-      catchError(error => {
+      catchError((error) => {
         console.error('❌ Error toggling section:', error);
         return throwError(() => error);
       }),
@@ -431,7 +436,10 @@ export class DataRoomService implements OnDestroy {
   /**
    * Reorder sections (batch update)
    */
-  async reorderSections(dataRoomId: string, sectionOrder: { id: string; order: number }[]): Promise<void> {
+  async reorderSections(
+    dataRoomId: string,
+    sectionOrder: { id: string; order: number }[]
+  ): Promise<void> {
     const updates = sectionOrder.map(({ id, order }) =>
       this.supabase
         .from('data_room_sections')
@@ -442,9 +450,11 @@ export class DataRoomService implements OnDestroy {
     const results = await Promise.all(updates);
 
     // Check for errors
-    const errors = results.filter(r => r.error);
+    const errors = results.filter((r) => r.error);
     if (errors.length > 0) {
-      throw new Error(`Failed to reorder sections: ${errors[0].error?.message}`);
+      throw new Error(
+        `Failed to reorder sections: ${errors[0].error?.message}`
+      );
     }
   }
 
@@ -462,12 +472,14 @@ export class DataRoomService implements OnDestroy {
     try {
       const { data, error } = await this.supabase
         .from('data_room_shares')
-        .select(`
+        .select(
+          `
           id,
           permission_level,
           allowed_sections,
           data_room_share_documents (document_id)
-        `)
+        `
+        )
         .eq('data_room_id', dataRoomId)
         .eq('shared_with_user_id', userId)
         .eq('status', 'active')
@@ -480,13 +492,13 @@ export class DataRoomService implements OnDestroy {
       }
 
       // Extract document IDs from junction table
-      const sharedDocumentIds = data.data_room_share_documents?.map(
-        (doc: any) => doc.document_id
-      ) || [];
+      const sharedDocumentIds =
+        data.data_room_share_documents?.map((doc: any) => doc.document_id) ||
+        [];
 
       return {
         ...data,
-        sharedDocumentIds
+        sharedDocumentIds,
       };
     } catch (error) {
       console.error('❌ Error fetching share data:', error);
@@ -497,7 +509,10 @@ export class DataRoomService implements OnDestroy {
   /**
    * Calculate user permissions (cached computation)
    */
-  private calculatePermissions(context: ViewerContext, dataRoom: DataRoom): UserPermissions {
+  private calculatePermissions(
+    context: ViewerContext,
+    dataRoom: DataRoom
+  ): UserPermissions {
     if (context.userType === 'owner') {
       return {
         canView: true,
@@ -506,12 +521,14 @@ export class DataRoomService implements OnDestroy {
         canShare: true,
         canExport: true,
         accessibleSections: DEFAULT_SECTION_KEYS, // Use precomputed keys
-        accessibleDocumentIds: []
+        accessibleDocumentIds: [],
       };
     }
 
     // Viewer permissions based on share
-    const canDownload = context.permissionLevel === 'download' || context.permissionLevel === 'full';
+    const canDownload =
+      context.permissionLevel === 'download' ||
+      context.permissionLevel === 'full';
     const accessibleSections = context.allowedSections || DEFAULT_SECTION_KEYS;
 
     return {
@@ -521,7 +538,7 @@ export class DataRoomService implements OnDestroy {
       canShare: false,
       canExport: canDownload,
       accessibleSections,
-      accessibleDocumentIds: context.allowedDocumentIds || []
+      accessibleDocumentIds: context.allowedDocumentIds || [],
     };
   }
 

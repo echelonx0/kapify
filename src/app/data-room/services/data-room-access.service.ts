@@ -15,14 +15,6 @@ import {
 // Constants
 const BATCH_SIZE = 100;
 
-/**
- * DataRoomAccessService
- * - Removes AuthService injection (use supabase.getCurrentUserId())
- * - Fixes N+1 access context queries (batch fetch)
- * - Batch operations instead of individual queries
- * - Standardized error handling
- * - Proper cleanup on destroy
- */
 @Injectable({
   providedIn: 'root',
 })

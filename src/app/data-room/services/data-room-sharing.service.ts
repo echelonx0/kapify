@@ -71,63 +71,6 @@ export class DataRoomSharingService implements OnDestroy {
     );
   }
 
-  /**
-   * Get incoming access requests for SME's data room
-   * Uses RPC function to get requester details from auth.users
-   */
-  // getIncomingRequests(
-  //   organizationId?: string
-  // ): Observable<DataRoomAccessRequest[]> {
-  //   const userId = organizationId || this.supabase.getCurrentUserId();
-
-  //   if (!userId) {
-  //     return throwError(() => new Error('User not authenticated'));
-  //   }
-
-  //   return from(
-  //     this.supabase.rpc('get_access_requests_with_requester', {
-  //       org_id: userId,
-  //     })
-  //   ).pipe(
-  //     map(({ data, error }) => {
-  //       if (error) throw error;
-
-  //       return (data || []).map(
-  //         (req: {
-  //           requester_id: any;
-  //           requester_email: any;
-  //           contact_email: any;
-  //           requester_name: any;
-  //           organization_name: any;
-  //           data_room_id: any;
-  //           data_room_title: any;
-  //         }) => {
-  //           const transformed = transformAccessRequestFromDB(req);
-
-  //           // Use data from RPC function
-  //           transformed.requester = {
-  //             id: req.requester_id,
-  //             email: req.requester_email || req.contact_email,
-  //             name: req.requester_name || req.organization_name,
-  //           };
-
-  //           transformed.dataRoom = {
-  //             id: req.data_room_id,
-  //             title: req.data_room_title,
-  //           };
-
-  //           return transformed;
-  //         }
-  //       );
-  //     }),
-  //     catchError((error) => {
-  //       console.error('❌ Failed to load incoming requests:', error);
-  //       return of([]);
-  //     })
-  //   );
-  // }
-
-  // Update createAccessRequest to use correct column:
   createAccessRequest(
     request: CreateAccessRequestRequest
   ): Observable<DataRoomAccessRequest> {

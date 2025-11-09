@@ -132,6 +132,13 @@
       </div>
 
       }
+      <div>
+        <app-logo-upload
+          [currentLogoUrl]="orgLogoUrl()"
+          (logoUploaded)="onLogoUploaded($event)"
+          (logoRemoved)="onLogoRemoved()"
+        />
+      </div>
 
       <!-- Form Footer -->
       <div

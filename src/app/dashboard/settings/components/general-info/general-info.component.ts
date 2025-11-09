@@ -21,11 +21,17 @@ import {
   OrganizationSettings,
   OrganizationSettingsService,
 } from '../../../services/organization-settings.service';
+import { LogoUploadComponent } from 'src/app/funder/components/basic-info/logo-upload.component';
 
 @Component({
   selector: 'app-general-info',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, LucideAngularModule],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    LucideAngularModule,
+    LogoUploadComponent,
+  ],
   templateUrl: './general-info.component.html',
   styles: [
     `
@@ -135,6 +141,19 @@ export class GeneralInfoComponent implements OnInit {
       'bank',
     ].includes(orgType || '');
   }
+
+  orgLogoUrl(): string | undefined {
+    return this.organization?.logoUrl;
+  }
+
+  onLogoUploaded(result: { url: string; fileName: string }) {
+    console.log('✅ Logo uploaded and saved:', result.fileName);
+  }
+
+  onLogoRemoved() {
+    console.log('🗑️ Logo removed');
+  }
+
   formatAUM(event: Event) {
     const input = event.target as HTMLInputElement;
     let value = input.value.replace(/,/g, ''); // remove commas
