@@ -10,11 +10,12 @@ import {
   TeamMember,
 } from '../models/public-profile.models';
 import { PublicProfileService } from '../services/public-profile.service';
+import { FunderOpportunitiesGridComponent } from './components/fund-opportunities-grid.component';
 
 @Component({
   selector: 'app-funder-profile',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FunderOpportunitiesGridComponent],
   templateUrl: 'public-profile.component.html',
 })
 export class FunderProfileComponent implements OnInit, OnDestroy {
@@ -42,6 +43,7 @@ export class FunderProfileComponent implements OnInit, OnDestroy {
   private loadProfile() {
     this.route.params.pipe(takeUntil(this.destroy$)).subscribe((params) => {
       const slug = params['slug'];
+      console.log(`The slug is ...${slug}`);
       if (slug) this.fetchProfile(slug);
     });
   }
@@ -60,7 +62,7 @@ export class FunderProfileComponent implements OnInit, OnDestroy {
         next: (profile) => {
           if (profile) {
             this.profile.set(profile);
-            console.log(profile.heroImageUrl);
+            console.log(profile);
             this.setupSEO(profile);
           } else {
             this.error.set('Profile not found or not published');

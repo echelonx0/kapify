@@ -75,7 +75,7 @@ export class OrganizationSettingsService {
   }
 
   async loadtest() {
-    await this.authService.testOrgIdLookup();
+    // await this.authService.testOrgIdLookup();
   }
   /**
    * Load the current user's organization from database

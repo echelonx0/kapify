@@ -469,6 +469,7 @@ export class CreateOpportunityComponent implements OnInit, OnDestroy {
         this.opportunityService.publishOpportunity(opportunityData).subscribe({
           next: (response) => {
             console.log('✅ PUBLISH SUCCESSFUL:', response);
+            this.clearDraft();
 
             this.opportunityId.set(response.opportunityId);
 

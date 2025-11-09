@@ -104,12 +104,6 @@ export class FunderDashboardComponent implements OnInit, OnDestroy {
       icon: FileText,
       description: 'Review and manage applications',
     },
-    // {
-    //   id: 'settings',
-    //   label: 'Settings',
-    //   icon: Settings,
-    //   description: 'Organization settings and preferences',
-    // },
   ];
 
   // Icons

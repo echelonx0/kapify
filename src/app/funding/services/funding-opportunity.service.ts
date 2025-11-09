@@ -762,7 +762,10 @@ export class FundingOpportunityService {
 
       // Get organization ID
       console.log('🏢 Getting organization ID...');
-      const organizationId = await this.getOrCreateTempOrganizationId(userId);
+
+      const organizationId = await this.authService.getUserOrganizationId(
+        userId
+      );
       console.log('✅ Organization ID obtained:', organizationId);
 
       const opportunityData = {

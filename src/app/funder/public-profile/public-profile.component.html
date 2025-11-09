@@ -439,6 +439,11 @@
   </section>
   }
 
+  <!-- ✅ NEW: ACTIVE OPPORTUNITIES GRID COMPONENT -->
+  <app-funder-opportunities-grid
+    [organizationId]="profile()?.organizationId || ''"
+  ></app-funder-opportunities-grid>
+
   <!-- HOW IT WORKS -->
   <section class="py-28 bg-slate-50">
     <div class="max-w-7xl mx-auto px-6">

@@ -284,10 +284,15 @@ export class KapifyDashboard implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.loadProfileData();
+    this.loadOrgID();
     this.setupSubscriptions();
     this.loadDashboardData();
   }
 
+  loadOrgID() {
+    //  this.authService.getUserOrganizationId()
+    this.authService.getCurrentUserOrganizationId();
+  }
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();

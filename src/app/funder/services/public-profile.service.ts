@@ -1,7 +1,16 @@
-// UPDATED: src/app/funder/services/public-profile.service.ts
+export interface OpportunitySummary {
+  id: string;
+  title: string;
+  description: string;
+  minAmount: number;
+  maxAmount: number;
+  currency: string;
+  status: 'active' | 'paused' | 'closed' | 'draft';
+  sector?: string;
+}
 
 import { Injectable, inject, signal } from '@angular/core';
-import { Observable, from, throwError, BehaviorSubject } from 'rxjs';
+import { Observable, from, throwError, BehaviorSubject, of } from 'rxjs';
 import { tap, catchError, map } from 'rxjs/operators';
 import { SharedSupabaseService } from 'src/app/shared/services/shared-supabase.service';
 import {
@@ -391,5 +400,56 @@ export class PublicProfileService {
       dbData.allow_direct_contact = modelData.allowDirectContact;
 
     return dbData;
+  }
+
+  getOrganizationOpportunities(
+    organizationId: string,
+    limit: number = 6
+  ): Observable<OpportunitySummary[]> {
+    if (!organizationId) {
+      return throwError(() => new Error('Organization ID is required'));
+    }
+    console.info(`The organisational ID is ${organizationId}`);
+    return from(
+      this.supabaseService
+        .from('funding_opportunities')
+        .select(
+          `
+      id,
+      title,
+      description,
+      min_investment,
+      max_investment,
+      currency,
+      status,
+      created_at
+    `
+        )
+        .eq('organization_id', organizationId)
+        .in('status', ['active', 'paused', 'closed'])
+        .order('status', { ascending: false })
+        .order('created_at', { ascending: false })
+        .limit(limit)
+    ).pipe(
+      map(({ data, error }) => {
+        if (error) {
+          console.error('Failed to fetch opportunities:', error);
+          return [];
+        }
+        return (data || []).map((opp: any) => ({
+          id: opp.id,
+          title: opp.title,
+          description: opp.description || '',
+          minAmount: opp.min_investment || 0,
+          maxAmount: opp.max_investment || 0,
+          currency: opp.currency || 'ZAR',
+          status: opp.status as 'active' | 'paused' | 'closed' | 'draft',
+        }));
+      }),
+      catchError((error) => {
+        console.error('Error fetching organization opportunities:', error);
+        return of([]);
+      })
+    );
   }
 }

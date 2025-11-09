@@ -506,17 +506,6 @@ export class AuthService implements OnDestroy {
     };
   }
 
-  async testOrgIdLookup(): Promise<void> {
-    const user = this.userSubject();
-    if (!user) {
-      console.log('❌ No user');
-      return;
-    }
-
-    const orgId = await this.getUserOrganizationId(user.id);
-    console.log('🔍 Org ID lookup result:', orgId);
-    console.log('📊 Current user in signal:', user);
-  }
   /**
    * Get user's organization ID
    */
@@ -524,9 +513,7 @@ export class AuthService implements OnDestroy {
    * Get user's organization ID - bypasses recursive RLS policy
    * Uses maybeSingle() with explicit filtering to avoid policy recursion
    */
-  private async getUserOrganizationId(
-    userId: string
-  ): Promise<string | undefined> {
+  async getUserOrganizationId(userId: string): Promise<string | undefined> {
     try {
       console.log('🔍 Fetching org ID for user:', userId);
 
@@ -568,28 +555,6 @@ export class AuthService implements OnDestroy {
         '❌ Unexpected error in getUserOrganizationId:',
         error?.message
       );
-      return undefined;
-    }
-  }
-
-  // ALTERNATIVE: If single() still fails, use this service-level query
-  // This bypasses RLS entirely by using Supabase Admin API
-  private async getUserOrganizationIdAdmin(
-    userId: string
-  ): Promise<string | undefined> {
-    try {
-      // If you have access to admin client, use it:
-      // const { data } = await this.supabaseService.admin
-      //   .from('organization_users')
-      //   .select('organization_id')
-      //   .eq('user_id', userId)
-      //   .eq('status', 'active')
-      //   .single();
-
-      // For now, return undefined and we'll fix the RLS policy
-      return undefined;
-    } catch (error: any) {
-      console.error('Admin query failed:', error?.message);
       return undefined;
     }
   }
@@ -737,6 +702,11 @@ export class AuthService implements OnDestroy {
   getCurrentUserOrganizationId(): string | null {
     const user = this.userSubject();
     console.info(user);
+    if (user) {
+      const userID = this.getUserOrganizationId(user?.id);
+      console.info(userID);
+    }
+
     return user?.organizationId || null;
   }
 
