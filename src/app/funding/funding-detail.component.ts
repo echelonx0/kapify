@@ -3,7 +3,18 @@ import { Component, signal, OnInit, inject, computed } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { SidebarNavComponent } from '../shared/components/sidenav/sidebar-nav.component';
-import { LucideAngularModule, ArrowLeft, Building2, DollarSign, Calendar, MapPin, CheckCircle, FileText, Users, Eye } from 'lucide-angular';
+import {
+  LucideAngularModule,
+  ArrowLeft,
+  Building2,
+  DollarSign,
+  Calendar,
+  MapPin,
+  CheckCircle,
+  FileText,
+  Users,
+  Eye,
+} from 'lucide-angular';
 import { SMEOpportunitiesService } from './services/opportunities.service';
 import { AuthService } from '../auth/production.auth.service';
 import { FundingOpportunity } from '../funder/create-opportunity/shared/funding.interfaces';
@@ -13,12 +24,8 @@ import { Subject, takeUntil } from 'rxjs';
 @Component({
   selector: 'app-opportunity-details',
   standalone: true,
-  imports: [
-    CommonModule,
-    SidebarNavComponent,
-    LucideAngularModule
-  ],
-  templateUrl: 'funding-detail.component.html'
+  imports: [CommonModule, SidebarNavComponent, LucideAngularModule],
+  templateUrl: 'funding-detail.component.html',
 })
 export class OpportunityDetailsComponent implements OnInit {
   // Services
@@ -67,13 +74,14 @@ export class OpportunityDetailsComponent implements OnInit {
       error: (error) => {
         console.error('Error loading opportunity:', error);
         this.isLoading.set(false);
-      }
+      },
     });
   }
 
   private loadPublicProfile(organizationId: string) {
     this.isLoadingProfile.set(true);
-    this.publicProfileService.loadOrganizationProfile(organizationId)
+    this.publicProfileService
+      .loadOrganizationProfile(organizationId)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (profile) => {
@@ -84,7 +92,7 @@ export class OpportunityDetailsComponent implements OnInit {
           console.log('No public profile found or error loading:', error);
           this.hasPublicProfile.set(false);
           this.isLoadingProfile.set(false);
-        }
+        },
       });
   }
 
@@ -101,7 +109,7 @@ export class OpportunityDetailsComponent implements OnInit {
     const user = this.currentUser();
     const opp = this.opportunity();
     if (!user || !opp || user.userType !== 'funder') return false;
-    
+
     // Simple check - user is the deal lead
     return opp.dealLead === user.id;
   }
@@ -113,19 +121,23 @@ export class OpportunityDetailsComponent implements OnInit {
   getUserTypeLabel(): string {
     const user = this.currentUser();
     if (!user) return 'Guest';
-    return user.userType === 'sme' ? 'SME' : user.userType === 'funder' ? 'Funder' : 'User';
+    return user.userType === 'sme'
+      ? 'SME'
+      : user.userType === 'funder'
+      ? 'Funder'
+      : 'User';
   }
 
   // Navigation methods
   goBack() {
-    // use window location to go back
+    window.history.back();
   }
 
   applyNow() {
     const opp = this.opportunity();
     if (opp) {
-      this.router.navigate(['/applications/new'], { 
-        queryParams: { opportunityId: opp.id } 
+      this.router.navigate(['/applications/new'], {
+        queryParams: { opportunityId: opp.id },
       });
     }
   }
@@ -137,20 +149,13 @@ export class OpportunityDetailsComponent implements OnInit {
   manageApplications() {
     const opp = this.opportunity();
     if (opp?.id) {
-      this.router.navigate([
-        '/funder/opportunities',
-        opp.id,
-        'applications'
-      ]);
+      this.router.navigate(['/funder/opportunities', opp.id, 'applications']);
     }
   }
 
   editOpportunity() {
     const opportunityId = this.route.snapshot.paramMap.get('id');
-    this.router.navigate([
-      '/funder/opportunities/edit',
-      opportunityId
-    ]);
+    this.router.navigate(['/funder/opportunities/edit', opportunityId]);
   }
 
   viewInvestorProfile() {
@@ -162,7 +167,7 @@ export class OpportunityDetailsComponent implements OnInit {
 
   redirectToLogin() {
     this.router.navigate(['/auth/login'], {
-      queryParams: { returnUrl: this.router.url }
+      queryParams: { returnUrl: this.router.url },
     });
   }
 
@@ -170,7 +175,7 @@ export class OpportunityDetailsComponent implements OnInit {
   getInitials(title: string): string {
     return title
       .split(' ')
-      .map(word => word.charAt(0))
+      .map((word) => word.charAt(0))
       .join('')
       .substring(0, 2)
       .toUpperCase();
@@ -183,14 +188,15 @@ export class OpportunityDetailsComponent implements OnInit {
       'opp-002': 'Industrial Development Corporation',
       'opp-003': 'Retail Growth Partners',
       'opp-004': 'AgriTech Innovation Foundation',
-      'opp-005': 'Export Finance Corporation'
+      'opp-005': 'Export Finance Corporation',
     };
     return investors[opportunity.id] || 'Private Investment Fund';
   }
 
   getFundingTypeClasses(type: string): string {
-    const baseClasses = 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium';
-    
+    const baseClasses =
+      'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium';
+
     switch (type) {
       case 'equity':
         return `${baseClasses} bg-purple-100 text-purple-800`;
@@ -213,13 +219,13 @@ export class OpportunityDetailsComponent implements OnInit {
       debt: 'Debt Financing',
       mezzanine: 'Mezzanine Financing',
       grant: 'Grant Funding',
-      convertible: 'Convertible Note'
+      convertible: 'Convertible Note',
     };
     return types[type] || type;
   }
 
   formatIndustry(industry: string): string {
-    return industry.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+    return industry.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
   }
 
   formatIndustryDescription(industry: string): string {
@@ -233,25 +239,27 @@ export class OpportunityDetailsComponent implements OnInit {
       education: 'Education and Skills Development',
       energy: 'Renewable Energy and Environmental Sustainability',
       logistics: 'Logistics and Transportation',
-      professional_services: 'Professional Services'
+      professional_services: 'Professional Services',
     };
     return descriptions[industry] || this.formatIndustry(industry);
   }
 
   formatBusinessStages(stages: string[]): string {
-    const formatted = stages.map(stage => 
-      stage.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
+    const formatted = stages.map((stage) =>
+      stage.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase())
     );
-    
+
     if (formatted.length <= 2) {
       return formatted.join(' and ');
     }
-    
-    return `${formatted.slice(0, -1).join(', ')}, and ${formatted[formatted.length - 1]}`;
+
+    return `${formatted.slice(0, -1).join(', ')}, and ${
+      formatted[formatted.length - 1]
+    }`;
   }
 
   formatLocation(location: string): string {
-    return location.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+    return location.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
   }
 
   formatAmount(amount: number): string {
@@ -266,7 +274,7 @@ export class OpportunityDetailsComponent implements OnInit {
   formatFullAmount(amount: number): string {
     return new Intl.NumberFormat('en-ZA', {
       minimumFractionDigits: 0,
-      maximumFractionDigits: 0
+      maximumFractionDigits: 0,
     }).format(amount);
   }
 
@@ -274,7 +282,7 @@ export class OpportunityDetailsComponent implements OnInit {
     return new Intl.DateTimeFormat('en-ZA', {
       year: 'numeric',
       month: 'long',
-      day: 'numeric'
+      day: 'numeric',
     }).format(date);
   }
 
@@ -287,7 +295,7 @@ export class OpportunityDetailsComponent implements OnInit {
   // Template helper methods to avoid null checking issues in template
   hasGeographicRestrictions(): boolean {
     const opp = this.opportunity();
-    return !!(opp?.eligibilityCriteria.geographicRestrictions?.length);
+    return !!opp?.eligibilityCriteria.geographicRestrictions?.length;
   }
 
   getGeographicRestrictions(): string[] {

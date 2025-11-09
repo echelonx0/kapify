@@ -1,8 +1,16 @@
-// kapify-dashboard.component.ts (Updated with User Type Logic)
-import { Component, signal, computed, OnInit, inject } from '@angular/core';
+import {
+  Component,
+  signal,
+  computed,
+  OnInit,
+  OnDestroy,
+  inject,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Subject, takeUntil } from 'rxjs';
 import {
   LucideAngularModule,
   FileText,
@@ -22,6 +30,10 @@ import {
   Lightbulb,
   Shield,
   Zap,
+  BarChart3,
+  FolderOpen,
+  Home,
+  ChevronDown,
 } from 'lucide-angular';
 import { UiButtonComponent } from '../../shared/components';
 import {
@@ -30,6 +42,8 @@ import {
 } from '../components/right-panel.component';
 import { ProfileManagementService } from 'src/app/shared/services/profile-management.service';
 import { AuthService } from 'src/app/auth/production.auth.service';
+import { FunderOnboardingService } from 'src/app/funder/services/funder-onboarding.service';
+import { OpportunityManagementService } from 'src/app/funder/services/opportunity-management.service';
 
 interface OnboardingCard {
   id: string;
@@ -44,6 +58,15 @@ interface OnboardingCard {
   color: string;
 }
 
+interface AnalyticsStat {
+  id: string;
+  label: string;
+  value: string | number;
+  icon: any;
+  color: 'teal' | 'green' | 'blue' | 'amber';
+  description?: string;
+}
+
 @Component({
   selector: 'app-kapify-dashboard',
   standalone: true,
@@ -55,18 +78,17 @@ interface OnboardingCard {
     RightPanelComponent,
   ],
   templateUrl: './kapify-dashboard.component.html',
-  styles: [
-    `
-      .line-clamp-2 {
-        display: -webkit-box;
-        -webkit-line-clamp: 2;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
-      }
-    `,
-  ],
+  styleUrl: './kapify-dashboard.component.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class KapifyDashboard implements OnInit {
+export class KapifyDashboard implements OnInit, OnDestroy {
+  private router = inject(Router);
+  private profileService = inject(ProfileManagementService);
+  private authService = inject(AuthService);
+  private onboardingService = inject(FunderOnboardingService);
+  private managementService = inject(OpportunityManagementService);
+  private destroy$ = new Subject<void>();
+
   // Icons
   FileTextIcon = FileText;
   ClockIcon = Clock;
@@ -85,15 +107,21 @@ export class KapifyDashboard implements OnInit {
   LightbulbIcon = Lightbulb;
   ShieldIcon = Shield;
   ZapIcon = Zap;
+  BarChart3Icon = BarChart3;
+  FolderOpenIcon = FolderOpen;
+  HomeIcon = Home;
+  ChevronDownIcon = ChevronDown;
 
-  // State
+  // State Signals
   isLoading = signal(false);
   rightPanelContent = signal<RightPanelContent>('activity-inbox');
   currentUser = computed(() => this.profileService.currentUser());
   userType = computed(() => this.authService.user()?.userType || 'sme');
 
-  private profileService = inject(ProfileManagementService);
-  private authService = inject(AuthService);
+  // Analytics state (integrated from funder dashboard)
+  analytics = signal<any>(null);
+  recentOpportunities = signal<any[]>([]);
+  onboardingState = signal<any>(null);
 
   // SME-specific onboarding content
   private smeOnboardingData: OnboardingCard[] = [
@@ -102,7 +130,7 @@ export class KapifyDashboard implements OnInit {
       title: 'How Kapify Works',
       description:
         'Complete your profile, get matched with suitable organisations, and with kapify intelligent assist.',
-      icon: this.BookOpenIcon,
+      icon: BookOpen,
       type: 'info',
       actionText: 'Learn the Process',
       rightPanelContent: 'how-it-works',
@@ -113,7 +141,7 @@ export class KapifyDashboard implements OnInit {
       title: 'Explore Funding Types',
       description:
         'Discover different funding options available depending on your business stage and needs.',
-      icon: this.DollarSignIcon,
+      icon: DollarSign,
       type: 'feature',
       actionText: 'View Funding Options',
       rightPanelContent: 'funding-types',
@@ -128,33 +156,22 @@ export class KapifyDashboard implements OnInit {
       title: 'How Kapify Works for Funders',
       description:
         'Set up your funding criteria, review applications, and connect with vetted businesses seeking funding.',
-      icon: this.BookOpenIcon,
+      icon: BookOpen,
       type: 'info',
       actionText: 'Learn the Process',
       rightPanelContent: 'how-it-works',
       color: 'blue',
     },
-    // {
-    //   id: 'review-applications',
-    //   title: 'Review Applications',
-    //   description:
-    //     'Access a pipeline of pre-screened businesses that match your investment criteria and funding focus.',
-    //   icon: this.FileTextIcon,
-    //   type: 'action',
-    //   actionText: 'View Your Opportunities',
-    //   actionRoute: '/funding/opportunities',
-    //   color: 'purple',
-    // },
     {
       id: 'manage-criteria',
       title: 'Set Funding Criteria',
       description:
         'Define your investment preferences, funding amounts, sectors, and business stages to receive relevant matches.',
-      icon: this.TargetIcon,
+      icon: Target,
       type: 'action',
       actionText: 'Manage Profile',
       actionRoute: '/funder/dashboard',
-      color: 'orange',
+      color: 'amber',
     },
   ];
 
@@ -174,6 +191,7 @@ export class KapifyDashboard implements OnInit {
           'You only pay for what you use. There is no subscription. Just buy credits, and then use them in the platform',
         buttonText: 'How it works',
         route: '/finance/credit-info',
+        icon: Zap,
       };
     }
     return {
@@ -182,52 +200,158 @@ export class KapifyDashboard implements OnInit {
         'You can make yourself available to advice startups and SMEs looking for guidance on funding and growth strategies.',
       buttonText: 'Start a Subscription to explore Kapify Executive',
       route: '/subscriptions/executive',
+      icon: Lightbulb,
     };
   });
 
-  constructor(private router: Router) {}
+  // Computed stats based on user type
+  statsCards = computed(() => {
+    const baseStats: AnalyticsStat[] = [];
 
-  ngOnInit() {
-    // Load profile data if not already loaded
-    if (!this.currentUser()) {
-      const user = this.authService.user();
-      this.profileService.loadProfileData().subscribe({
-        error: (error) => {
-          console.error('Failed to load profile data:', error);
+    if (this.userType() === 'funder') {
+      const analytics = this.analytics();
+      return [
+        {
+          id: 'active-opportunities',
+          label: 'Active Opportunities',
+          value: this.getActiveOpportunitiesCount(),
+          icon: FolderOpen,
+          color: 'blue',
+          description: 'Your active funding opportunities',
         },
+        {
+          id: 'total-applications',
+          label: 'Accepted Applications',
+          value: this.formatNumber(analytics?.totalApplications || 0),
+          icon: Users,
+          color: 'green',
+          description: 'Applications received',
+        },
+        {
+          id: 'conversion-rate',
+          label: 'Rejected Applications',
+          value: `${(analytics?.averageConversionRate || 0).toFixed(1)}%`,
+          icon: TrendingUp,
+          color: 'teal',
+          description: 'Application conversion rate',
+        },
+        {
+          id: 'total-views',
+          label: 'Total Views',
+          value: this.formatNumber(analytics?.totalViews || 0),
+          icon: BarChart3,
+          color: 'amber',
+          description: 'Profile and opportunity views',
+        },
+      ];
+    }
+
+    return [
+      {
+        id: 'applications',
+        label: 'Applications Submitted',
+        value: 0,
+        icon: FileText,
+        color: 'teal',
+        description: 'Your submitted applications',
+      },
+      {
+        id: 'funders',
+        label: 'Active Funders',
+        value: '250+',
+        icon: Users,
+        color: 'green',
+        description: 'Funders on the platform',
+      },
+      {
+        id: 'success-rate',
+        label: 'Success Rate',
+        value: '87%',
+        icon: TrendingUp,
+        color: 'blue',
+        description: 'Platform success rate',
+      },
+      {
+        id: 'total-funded',
+        label: 'Total Funded',
+        value: 'R2.4B',
+        icon: DollarSign,
+        color: 'amber',
+        description: 'Funded through Kapify',
+      },
+    ];
+  });
+
+  ngOnInit(): void {
+    this.loadProfileData();
+    this.setupSubscriptions();
+    this.loadDashboardData();
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  private loadProfileData(): void {
+    if (!this.currentUser()) {
+      this.profileService.loadProfileData().subscribe({
+        error: (error) => console.error('Failed to load profile data:', error),
       });
     }
   }
 
-  // Computed properties for stats (different for SME vs Funder)
-  stats = computed(() => {
+  private setupSubscriptions(): void {
     if (this.userType() === 'funder') {
-      return {
-        total: 0, // Applications reviewed
-        businesses: 1240, // Active businesses seeking funding
-        avgDealSize: 1.2, // Million ZAR
-        successRate: 87, // Match success rate
-      };
+      this.onboardingService.onboardingState$
+        .pipe(takeUntil(this.destroy$))
+        .subscribe((state) => {
+          this.onboardingState.set(state);
+        });
+
+      this.managementService.analytics$
+        .pipe(takeUntil(this.destroy$))
+        .subscribe((analytics) => {
+          this.analytics.set(analytics);
+        });
+
+      this.managementService.opportunities$
+        .pipe(takeUntil(this.destroy$))
+        .subscribe((opportunities) => {
+          this.recentOpportunities.set(opportunities.slice(0, 5));
+        });
     }
-    return {
-      total: 0, // Applications submitted
-      funders: 250, // Active funders on platform
-      successRate: 87, // Platform success rate
-      totalFunded: 2.4, // Billion ZAR funded through platform
-    };
-  });
-
-  // Actions
-  learnMore() {
-    this.router.navigate(['/how-it-works']);
   }
 
-  startApplication() {
-    const route = this.ctaContent().route;
-    this.router.navigate([route]);
+  private loadDashboardData(): void {
+    if (this.userType() === 'funder') {
+      this.onboardingService.checkOnboardingStatus().subscribe();
+      this.managementService.loadAnalytics().subscribe();
+      this.managementService.loadUserOpportunities().subscribe();
+    }
   }
 
-  handleCardAction(card: OnboardingCard) {
+  // Analytics Methods
+  getActiveOpportunitiesCount(): number {
+    return this.recentOpportunities().filter((opp) => opp.status === 'active')
+      .length;
+  }
+
+  formatNumber(num: number): string {
+    return new Intl.NumberFormat('en-ZA').format(num);
+  }
+
+  formatCurrency(amount: number): string {
+    return new Intl.NumberFormat('en-ZA', {
+      style: 'currency',
+      currency: 'ZAR',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(amount);
+  }
+
+  // Navigation Actions
+  handleCardAction(card: OnboardingCard): void {
     if (card.rightPanelContent) {
       this.rightPanelContent.set(card.rightPanelContent);
     } else if (card.actionRoute) {
@@ -235,52 +359,102 @@ export class KapifyDashboard implements OnInit {
     }
   }
 
-  onRightPanelContentChange(content: RightPanelContent) {
+  startApplication(): void {
+    const route = this.ctaContent().route;
+    this.router.navigate([route]);
+  }
+
+  onRightPanelContentChange(content: RightPanelContent): void {
     this.rightPanelContent.set(content);
   }
 
-  // Utility methods for card styling
+  createOpportunity(): void {
+    if (this.userType() === 'funder') {
+      this.router.navigate(['/funding/create-opportunity']);
+    }
+  }
+
+  viewAllOpportunities(): void {
+    if (this.userType() === 'funder') {
+      this.router.navigate(['/funder/opportunities']);
+    }
+  }
+
+  // Card styling utility methods
+  getStatCardBgColor(color: string): string {
+    const colorMap: Record<string, string> = {
+      teal: 'bg-teal-50',
+      green: 'bg-green-50',
+      blue: 'bg-blue-50',
+      amber: 'bg-amber-50',
+    };
+    return colorMap[color] || 'bg-slate-50';
+  }
+
+  getStatCardTextColor(color: string): string {
+    const colorMap: Record<string, string> = {
+      teal: 'text-teal-700',
+      green: 'text-green-700',
+      blue: 'text-blue-700',
+      amber: 'text-amber-700',
+    };
+    return colorMap[color] || 'text-slate-700';
+  }
+
+  getStatCardIconBg(color: string): string {
+    const colorMap: Record<string, string> = {
+      teal: 'bg-teal-100',
+      green: 'bg-green-100',
+      blue: 'bg-blue-100',
+      amber: 'bg-amber-100',
+    };
+    return colorMap[color] || 'bg-slate-100';
+  }
+
+  getStatCardIconColor(color: string): string {
+    const colorMap: Record<string, string> = {
+      teal: 'text-teal-600',
+      green: 'text-green-600',
+      blue: 'text-blue-600',
+      amber: 'text-amber-600',
+    };
+    return colorMap[color] || 'text-slate-600';
+  }
+
   getCardBorderClass(color: string): string {
     const classMap: Record<string, string> = {
-      blue: 'hover:border-blue-200',
-      green: 'hover:border-green-200',
-      purple: 'hover:border-purple-200',
-      orange: 'hover:border-orange-200',
-      yellow: 'hover:border-yellow-200',
+      blue: 'hover:border-blue-300/50',
+      green: 'hover:border-green-300/50',
+      amber: 'hover:border-amber-300/50',
+      teal: 'hover:border-teal-300/50',
     };
-    return classMap[color] || 'hover:border-gray-200';
+    return classMap[color] || 'hover:border-slate-300/50';
   }
-  navigate() {
-    this.router.navigate(['/funder/onboarding/welcome']);
-  }
+
   getCardIconClass(color: string): string {
     const classMap: Record<string, string> = {
       blue: 'bg-blue-100',
       green: 'bg-green-100',
-      purple: 'bg-purple-100',
-      orange: 'bg-orange-100',
-      yellow: 'bg-yellow-100',
+      amber: 'bg-amber-100',
+      teal: 'bg-teal-100',
     };
-    return classMap[color] || 'bg-gray-100';
+    return classMap[color] || 'bg-slate-100';
   }
 
   getCardIconTextClass(color: string): string {
     const classMap: Record<string, string> = {
       blue: 'text-blue-600',
       green: 'text-green-600',
-      purple: 'text-purple-600',
-      orange: 'text-orange-600',
-      yellow: 'text-yellow-600',
+      amber: 'text-amber-600',
+      teal: 'text-teal-600',
     };
-    return classMap[color] || 'text-gray-600';
+    return classMap[color] || 'text-slate-600';
   }
 
-  formatTotalFunded(): string {
-    return new Intl.NumberFormat('en-ZA', {
-      style: 'currency',
-      currency: 'ZAR',
-      notation: 'compact',
-      maximumFractionDigits: 1,
-    }).format(2400000000);
+  getCTAGradient(): string {
+    if (this.userType() === 'funder') {
+      return 'from-amber-500 to-amber-600';
+    }
+    return 'from-teal-500 to-teal-600';
   }
 }

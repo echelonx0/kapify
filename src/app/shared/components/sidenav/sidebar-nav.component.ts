@@ -1,4 +1,11 @@
-import { Component, computed, signal, inject, OnInit } from '@angular/core';
+import {
+  Component,
+  computed,
+  signal,
+  inject,
+  OnInit,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import {
@@ -10,10 +17,11 @@ import {
   Settings,
   LogOut,
   Building,
-  ChevronDown,
   Bell,
   BookOpen,
   BookCheck,
+  Menu,
+  X,
 } from 'lucide-angular';
 import { AuthService } from 'src/app/auth/production.auth.service';
 import { ProfileManagementService } from '../../services/profile-management.service';
@@ -32,6 +40,7 @@ interface NavItem {
   standalone: true,
   imports: [RouterModule, LucideAngularModule, CommonModule],
   templateUrl: 'sidenav.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SidebarNavComponent implements OnInit {
   private authService = inject(AuthService);
@@ -47,11 +56,15 @@ export class SidebarNavComponent implements OnInit {
   SettingsIcon = Settings;
   LogOutIcon = LogOut;
   BellIcon = Bell;
-  ChevronDownIcon = ChevronDown;
   BookOpenIcon = BookOpen;
   BookCheckIcon = BookCheck;
+  MenuIcon = Menu;
+  CloseIcon = X;
 
-  // State
+  // State - Mobile Menu
+  showMobileMenu = signal(false);
+
+  // State - Notifications
   showNotifications = signal(false);
   isOnline = signal(true);
   unreadNotifications = signal(1);
@@ -79,11 +92,11 @@ export class SidebarNavComponent implements OnInit {
       label: 'Home',
       icon: Home,
       route: '/dashboard/home',
-      userTypes: ['sme', 'funder'],
+      userTypes: ['funder'],
     },
     {
       id: 'profile',
-      label: 'Profile',
+      label: 'Home',
       icon: User,
       route: '/profile',
       userTypes: ['sme'],
@@ -159,19 +172,32 @@ export class SidebarNavComponent implements OnInit {
     });
   });
 
-  ngOnInit() {
+  ngOnInit(): void {
+    this.setupProfileData();
+    this.setupOnlineStatusDetection();
+    this.setupMobileMenuCloseOnNavigation();
+  }
+
+  private setupProfileData(): void {
     if (!this.currentUser()) {
       this.profileService.loadProfileData().subscribe({
         error: (error) => console.error('Failed to load profile data:', error),
       });
     }
-    this.setupOnlineStatusDetection();
   }
 
-  private setupOnlineStatusDetection() {
+  private setupOnlineStatusDetection(): void {
     this.isOnline.set(navigator.onLine);
     window.addEventListener('online', () => this.isOnline.set(true));
     window.addEventListener('offline', () => this.isOnline.set(false));
+  }
+
+  private setupMobileMenuCloseOnNavigation(): void {
+    this.router.events.subscribe(() => {
+      if (this.showMobileMenu()) {
+        this.closeMobileMenu();
+      }
+    });
   }
 
   private mapUserTypeForNavigation(userType: string): 'sme' | 'funder' {
@@ -187,11 +213,13 @@ export class SidebarNavComponent implements OnInit {
     }
   }
 
-  goToDashboard() {
+  // Navigation Actions
+  goToDashboard(): void {
     this.router.navigate(['/dashboard']);
+    this.closeMobileMenu();
   }
 
-  goToFunderTabFromLabel(label: string) {
+  goToFunderTabFromLabel(label: string): void {
     const labelMap: Record<
       string,
       'overview' | 'opportunities' | 'applications'
@@ -211,16 +239,28 @@ export class SidebarNavComponent implements OnInit {
     }
   }
 
-  toggleNotifications() {
+  // Mobile Menu Management
+  toggleMobileMenu(): void {
+    this.showMobileMenu.update((v) => !v);
+  }
+
+  closeMobileMenu(): void {
+    this.showMobileMenu.set(false);
+  }
+
+  // Notifications
+  toggleNotifications(): void {
     this.showNotifications.update((v) => !v);
   }
 
-  logout() {
+  // Auth Actions
+  logout(): void {
     this.profileService.clearProfileData();
     this.authService.signOut();
     this.router.navigate(['/login']);
   }
 
+  // User Display Helpers
   getUserInitials(): string {
     return this.profileService.getUserInitials();
   }
@@ -232,6 +272,7 @@ export class SidebarNavComponent implements OnInit {
       : '';
   }
 
+  // Track By Function
   trackByUnique(index: number, item: NavItem): string {
     return item.id;
   }

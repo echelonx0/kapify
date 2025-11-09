@@ -1,47 +1,60 @@
 <!-- src/app/profile/pages/profile-home.component.html -->
-<div class="min-h-screen bg-slate-50 p-8 ml-8">
-  <!-- Main Grid Container (4 columns) -->
-  <div class="grid grid-cols-4 gap-6 max-w-7xl mx-auto">
-    
-    <!-- LEFT COLUMN: Stats Cards (Stacked) -->
-    <div class="space-y-6">
-      
+<div class="min-h-screen bg-slate-50 p-4 md:p-8 md:ml-8">
+  <!-- Main Grid Container (1 col mobile, 4 cols desktop) -->
+  <div class="grid grid-cols-1 md:grid-cols-4 gap-4 md:gap-6 max-w-7xl mx-auto">
+    <!-- LEFT COLUMN: Stats Cards (Stacked) - Hide on mobile, show on desktop -->
+    <div class="hidden md:block space-y-6">
       <!-- Stat Card 1: Profile Completion -->
-      <div class="bg-white rounded-2xl p-8 shadow-sm hover:shadow-md transition-shadow h-fit">
+      <div
+        class="bg-white rounded-2xl p-8 shadow-sm hover:shadow-md transition-shadow h-fit"
+      >
         <div class="text-center">
           <div class="text-5xl font-bold text-slate-900 mb-2">
-            {{ completionPercentage() }}<span class="text-3xl text-teal-500">%</span>
+            {{ completionPercentage()
+            }}<span class="text-3xl text-teal-500">%</span>
           </div>
           <p class="text-sm font-medium text-slate-600">Profile Complete</p>
         </div>
       </div>
 
       <!-- Stat Card 2: Key Metric (Dynamic) -->
-      <div class="bg-white rounded-2xl p-8 shadow-sm hover:shadow-md transition-shadow h-fit">
+      <div
+        class="bg-white rounded-2xl p-8 shadow-sm hover:shadow-md transition-shadow h-fit"
+      >
         <div class="text-center">
           <div class="text-5xl font-bold text-slate-900 mb-2">
             {{ getMetricValue() }}
           </div>
-          <p class="text-sm font-medium text-slate-600">{{ getMetricLabel() }}</p>
+          <p class="text-sm font-medium text-slate-600">
+            {{ getMetricLabel() }}
+          </p>
         </div>
       </div>
 
       <!-- Mini Stats Grid (2x2) -->
       <div class="grid grid-cols-2 gap-4">
         <div class="bg-white rounded-lg p-4 shadow-sm">
-          <div class="text-2xl font-bold text-green-600 mb-1">{{ completedSteps() }}</div>
+          <div class="text-2xl font-bold text-green-600 mb-1">
+            {{ completedSteps() }}
+          </div>
           <p class="text-xs text-slate-600 font-medium">Done</p>
         </div>
         <div class="bg-white rounded-lg p-4 shadow-sm">
-          <div class="text-2xl font-bold text-blue-600 mb-1">{{ inProgressSteps() }}</div>
+          <div class="text-2xl font-bold text-blue-600 mb-1">
+            {{ inProgressSteps() }}
+          </div>
           <p class="text-xs text-slate-600 font-medium">In Progress</p>
         </div>
         <div class="bg-white rounded-lg p-4 shadow-sm">
-          <div class="text-2xl font-bold text-teal-600 mb-1">{{ pendingSteps() }}</div>
+          <div class="text-2xl font-bold text-teal-600 mb-1">
+            {{ pendingSteps() }}
+          </div>
           <p class="text-xs text-slate-600 font-medium">Pending</p>
         </div>
         <div class="bg-white rounded-lg p-4 shadow-sm">
-          <div class="text-2xl font-bold text-slate-600 mb-1">{{ estimatedHours() }}</div>
+          <div class="text-2xl font-bold text-slate-600 mb-1">
+            {{ estimatedHours() }}
+          </div>
           <p class="text-xs text-slate-600 font-medium">Hrs Left</p>
         </div>
       </div>
@@ -49,134 +62,225 @@
       <!-- Help Section - Compact -->
       <div class="bg-slate-800 text-white rounded-2xl p-6 shadow-md">
         <h4 class="font-semibold text-sm mb-3 flex items-center">
-          <lucide-icon [img]="HeadphonesIcon" [size]="16" class="mr-2"></lucide-icon>
+          <lucide-icon
+            [img]="HeadphonesIcon"
+            [size]="16"
+            class="mr-2"
+          ></lucide-icon>
           Need Help?
         </h4>
         <div class="space-y-2 mb-4 text-xs">
           <p class="text-slate-300">{{ email }}</p>
           <p class="text-slate-300">071 749 6762</p>
         </div>
-        <ui-button 
-          variant="outline" 
+        <ui-button
+          variant="outline"
           size="sm"
           class="w-full bg-white text-slate-800 hover:bg-slate-100"
-          (clicked)="scheduleCall()">
+          (clicked)="scheduleCall()"
+        >
           Schedule Call
         </ui-button>
       </div>
-
     </div>
 
-    <!-- MIDDLE COLUMN: Portfolio/Steps Cards -->
-    <div class="col-span-2 space-y-6">
-      
+    <!-- MOBILE: Top Stats Bar (2 columns, hide on desktop) -->
+    <div class="md:hidden col-span-1 grid grid-cols-2 gap-3 mb-4">
+      <div class="bg-white rounded-xl p-4 shadow-sm text-center">
+        <div class="text-3xl font-bold text-slate-900">
+          {{ completionPercentage()
+          }}<span class="text-xl text-teal-500">%</span>
+        </div>
+        <p class="text-xs text-slate-600 font-medium mt-1">Complete</p>
+      </div>
+      <div class="bg-white rounded-xl p-4 shadow-sm text-center">
+        <div class="text-3xl font-bold text-teal-600">
+          {{ completedSteps() }}
+        </div>
+        <p class="text-xs text-slate-600 font-medium mt-1">Done</p>
+      </div>
+    </div>
+
+    <!-- MIDDLE COLUMN: Portfolio/Steps Cards (Full width on mobile, 2 cols on desktop) -->
+    <div class="col-span-1 md:col-span-2 space-y-4 md:space-y-6">
       <!-- Header + Filter -->
       <div class="flex items-center justify-between mb-2">
-        <h2 class="text-2xl font-bold text-slate-900">Profile Sections</h2>
-        <button class="text-sm text-slate-500 hover:text-slate-700"  (click)="viewAllSteps()">Update Profile</button>
+        <h2 class="text-xl md:text-2xl font-bold text-slate-900">
+          Profile Sections
+        </h2>
+        <button
+          class="text-xs md:text-sm text-slate-500 hover:text-slate-700"
+          (click)="viewAllSteps()"
+        >
+          Update
+        </button>
       </div>
 
-      <!-- Step Cards Grid (2 columns, flexible height) -->
-      <div class="grid grid-cols-1 gap-4">
+      <!-- Step Cards Grid (1 column on mobile, flexible on desktop) -->
+      <div class="grid grid-cols-1 gap-3 md:gap-4">
         @for (step of applicationSteps.slice(0, 6); track step.id) {
-          <div 
-            class="bg-white rounded-lg p-5 border border-slate-200 hover:border-teal-300 hover:shadow-md transition-all cursor-pointer group"
-            (click)="goToStep(step.id)">
-            <div class="flex items-start justify-between mb-3">
-              <div class="flex items-start space-x-3 flex-1">
-                <!-- Icon Circle -->
-                <div [class]="getStepIconClasses(step)" class="flex-shrink-0">
-                  @if (step.completed) {
-                    <lucide-icon [img]="CheckCircleIcon" [size]="18" class="text-white"></lucide-icon>
-                  } @else {
-                    <lucide-icon [img]="getStepIcon(step.id)" [size]="18"></lucide-icon>
-                  }
-                </div>
-                <!-- Content -->
-                <div class="flex-1 min-w-0">
-                  <h3 class="font-semibold text-slate-900 text-sm mb-1">{{ step.title }}</h3>
-                  <p class="text-xs text-slate-600">{{ getStepDescription(step.id) }}</p>
-                  @if (step.estimatedTime && !step.completed) {
-                    <p class="text-xs text-teal-600 font-medium mt-2">⏱ {{ step.estimatedTime }}</p>
-                  }
-                </div>
+        <div
+          class="bg-white rounded-lg p-4 md:p-5 border border-slate-200 hover:border-teal-300 hover:shadow-md transition-all cursor-pointer group"
+          (click)="goToStep(step.id)"
+        >
+          <div class="flex items-start justify-between mb-3 gap-2">
+            <div class="flex items-start space-x-2 md:space-x-3 flex-1 min-w-0">
+              <!-- Icon Circle -->
+              <div
+                [class]="getStepIconClasses(step)"
+                class="flex-shrink-0 mt-0.5"
+              >
+                @if (step.completed) {
+                <lucide-icon
+                  [img]="CheckCircleIcon"
+                  [size]="16"
+                  class="text-white md:[size]='18'"
+                ></lucide-icon>
+                } @else {
+                <lucide-icon
+                  [img]="getStepIcon(step.id)"
+                  [size]="16"
+                  class="md:[size]='18'"
+                ></lucide-icon>
+                }
               </div>
-              <!-- Status Badge -->
-              <ui-status-badge 
-                [text]="getStepStatusText(step)" 
-                [color]="getStepStatusColor(step)"
-                class="flex-shrink-0 ml-3">
-              </ui-status-badge>
+              <!-- Content -->
+              <div class="flex-1 min-w-0">
+                <h3
+                  class="font-semibold text-slate-900 text-xs md:text-sm mb-0.5 truncate"
+                >
+                  {{ step.title }}
+                </h3>
+                <p class="text-xs text-slate-600 line-clamp-2">
+                  {{ getStepDescription(step.id) }}
+                </p>
+                @if (step.estimatedTime && !step.completed) {
+                <p class="text-xs text-teal-600 font-medium mt-1.5">
+                  ⏱ {{ step.estimatedTime }}
+                </p>
+                }
+              </div>
             </div>
-            <!-- Progress Bar (for in-progress steps) -->
-            @if (!step.completed && getStepStatusText(step) === 'In Progress') {
-              <div class="h-1 bg-slate-200 rounded-full overflow-hidden">
-                <div class="h-full bg-teal-500" [style.width.%]="65"></div>
-              </div>
-            }
+            <!-- Status Badge - Right side -->
+            <ui-status-badge
+              [text]="getStepStatusText(step)"
+              [color]="getStepStatusColor(step)"
+              class="flex-shrink-0 text-xs"
+            >
+            </ui-status-badge>
           </div>
+          <!-- Progress Bar (for in-progress steps) -->
+          @if (!step.completed && getStepStatusText(step) === 'In Progress') {
+          <div class="h-1 bg-slate-200 rounded-full overflow-hidden">
+            <div class="h-full bg-teal-500" [style.width.%]="65"></div>
+          </div>
+          }
+        </div>
         }
       </div>
 
       <!-- View All CTA -->
       @if (applicationSteps.length > 6) {
-        <button 
-          class="w-full py-3 text-center text-sm font-semibold text-teal-600 hover:text-teal-700 border border-slate-200 rounded-xl hover:border-teal-300 transition-all"
-          (click)="viewAllSteps()">
-          View All {{ applicationSteps.length }} Sections
-        </button>
+      <button
+        class="w-full py-2 md:py-3 text-center text-xs md:text-sm font-semibold text-teal-600 hover:text-teal-700 border border-slate-200 rounded-xl hover:border-teal-300 transition-all"
+        (click)="viewAllSteps()"
+      >
+        View All {{ applicationSteps.length }} Sections
+      </button>
       }
-
     </div>
 
-    <!-- RIGHT COLUMN: About + CTA Section -->
-    <div class="space-y-6">
-      
+    <!-- RIGHT COLUMN: About + CTA Section (Full width on mobile, normal on desktop) -->
+    <div class="col-span-1 space-y-3 md:space-y-6">
       <!-- Hero Image Card -->
-      <div class="relative rounded-2xl overflow-hidden h-48 shadow-md group cursor-pointer">
-        <img 
-          [src]="currentImage" 
-          alt="Profile Banner" 
-          class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
-        <div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
+      <div
+        class="relative rounded-xl md:rounded-2xl overflow-hidden h-32 md:h-48 shadow-md group cursor-pointer"
+      >
+        <img
+          [src]="currentImage"
+          alt="Profile Banner"
+          class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+        />
+        <div
+          class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"
+        ></div>
       </div>
 
- 
-
       <!-- Service/Feature Highlight Card -->
-      <div class="bg-teal-500 text-white rounded-2xl p-6 shadow-md">
+      <div
+        class="bg-teal-500 text-white rounded-xl md:rounded-2xl p-4 md:p-6 shadow-md"
+      >
         <div class="flex items-start justify-between mb-3">
-          <div class="bg-white bg-opacity-20 p-3 rounded-lg">
-            <lucide-icon [img]="BuildingIcon" [size]="24" class="text-white"></lucide-icon>
+          <div class="bg-white bg-opacity-20 p-2 md:p-3 rounded-lg">
+            <lucide-icon
+              [img]="BuildingIcon"
+              [size]="20"
+              class="text-white md:[size]='24'"
+            ></lucide-icon>
           </div>
         </div>
-        <h3 class="font-bold text-base mb-2">{{ getServiceTitle() }}</h3>
-        <p class="text-sm text-white/90 mb-4">{{ getServiceDescription() }}</p>
-        <button class="text-sm font-semibold text-teal-500 bg-white rounded-lg px-3 py-2 hover:bg-slate-100 transition-colors">
+        <h3 class="font-bold text-sm md:text-base mb-2">
+          {{ getServiceTitle() }}
+        </h3>
+        <p class="text-xs md:text-sm text-white/90 mb-3">
+          {{ getServiceDescription() }}
+        </p>
+        <button
+          class="text-xs md:text-sm font-semibold text-teal-500 bg-white rounded-lg px-3 py-1.5 md:py-2 hover:bg-slate-100 transition-colors"
+        >
           Learn More →
         </button>
       </div>
 
-
-
       <!-- Primary CTA -->
-      <div class="bg-white rounded-2xl p-6 shadow-sm border-2 border-dashed border-slate-200 text-center">
-        <h3 class="text-lg font-bold text-slate-900 mb-1">Unlock Premium Features</h3>
-        <p class="text-sm text-slate-600 mb-4">
-          Kapify offers advanced tools to help you build a standout profile and attract more Investors.
+      <div
+        class="bg-white rounded-xl md:rounded-2xl p-4 md:p-6 shadow-sm border-2 border-dashed border-slate-200 text-center"
+      >
+        <h3 class="text-base md:text-lg font-bold text-slate-900 mb-1">
+          Unlock Premium
+        </h3>
+        <p class="text-xs md:text-sm text-slate-600 mb-3 md:mb-4">
+          Advanced tools to build a standout profile.
         </p>
-        <ui-button 
-          variant="primary" 
-          size="lg"
+        <ui-button
+          variant="primary"
+          size="sm"
           class="w-full"
           [disabled]="completionPercentage() < 100"
-          (clicked)="submitProfile()">
-          {{ completionPercentage() >= 100 ? 'Submit Profile' : 'Continue Building' }}
-          <lucide-icon [img]="ArrowRightIcon" [size]="16" class="ml-2"></lucide-icon>
+          (clicked)="submitProfile()"
+        >
+          {{ completionPercentage() >= 100 ? "Submit Profile" : "Continue" }}
+          <lucide-icon
+            [img]="ArrowRightIcon"
+            [size]="14"
+            class="ml-2 md:[size]='16'"
+          ></lucide-icon>
         </ui-button>
       </div>
 
+      <!-- Mobile: Help Section (Show only on mobile) -->
+      <div class="md:hidden bg-slate-800 text-white rounded-xl p-4 shadow-md">
+        <h4 class="font-semibold text-sm mb-2 flex items-center">
+          <lucide-icon
+            [img]="HeadphonesIcon"
+            [size]="16"
+            class="mr-2"
+          ></lucide-icon>
+          Need Help?
+        </h4>
+        <div class="space-y-1 mb-3 text-xs">
+          <p class="text-slate-300">{{ email }}</p>
+          <p class="text-slate-300">071 749 6762</p>
+        </div>
+        <ui-button
+          variant="outline"
+          size="sm"
+          class="w-full bg-white text-slate-800 hover:bg-slate-100 text-xs"
+          (clicked)="scheduleCall()"
+        >
+          Schedule Call
+        </ui-button>
+      </div>
     </div>
-
   </div>
 </div>

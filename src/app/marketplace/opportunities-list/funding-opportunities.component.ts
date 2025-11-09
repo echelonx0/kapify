@@ -36,7 +36,6 @@ import { FundingOpportunity } from 'src/app/funder/create-opportunity/shared/fun
     EmptyStateComponent,
     OpportunitiesGridComponent,
     AdvancedFiltersComponent,
-
     NewsletterSignupComponent,
     SmartSuggestionsComponent,
     LandingHeaderComponent,

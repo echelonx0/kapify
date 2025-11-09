@@ -34,16 +34,6 @@
       <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
         <!-- Main Content Area -->
         <main class="lg:col-span-3 space-y-8 pt-6">
-          <!-- Search and Stats Bar -->
-          <!-- <app-search-stats-bar
-            [searchQuery]="searchQuery()"
-            [totalResults]="filteredOpportunities().length"
-            [isLoading]="isLoading()"
-            (searchChanged)="onSearchChange($event)"
-            (refreshData)="refreshData()"
-          >
-          </app-search-stats-bar> -->
-
           <!-- Loading State -->
           <app-loading-state *ngIf="isLoading()"></app-loading-state>
 

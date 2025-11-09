@@ -40,6 +40,7 @@ import { UserType } from 'src/app/shared/models/user.models';
 import { FundingApplication } from 'src/app/SMEs/models/application.models';
 import { ApplicationManagementService } from 'src/app/SMEs/services/application-management.service';
 import { OpportunityApplication } from 'src/app/SMEs/profile/models/sme-profile.models';
+import { ActionModalComponent } from 'src/app/shared/components/modal/action-modal.component';
 
 interface ApplicationData {
   id: string;
@@ -84,7 +85,7 @@ interface UserOrganization {
     CommonModule,
     FormsModule,
     LucideAngularModule,
-
+    ActionModalComponent,
     ActivityInboxComponent,
     ApplicationListCardComponent,
   ],
