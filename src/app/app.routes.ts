@@ -11,6 +11,7 @@ import { NotFoundComponent } from './shared/components/not-found/not-found.compo
 import { SuccessPageComponent } from './shared/components/success-page/success-page.component';
 import { VersionInfoComponent } from './shared/components/version-info.component';
 import { PricingPageComponent } from './dashboard/finance/pricing-page/pricing-page.component';
+import { PublicProfileViewComponent } from './SMEs/profile/public-page/public-profile.component';
 
 export const routes: Routes = [
   // Public routes
@@ -41,7 +42,10 @@ export const routes: Routes = [
       ),
     title: 'Funding Opportunity - Kapify',
   },
-
+  {
+    path: 'invest/:slug',
+    component: PublicProfileViewComponent,
+  },
   // Auth routes (only accessible when not logged in)
   {
     path: 'login',

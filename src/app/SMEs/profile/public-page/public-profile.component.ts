@@ -1,0 +1,218 @@
+import { Component, signal, computed, inject, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { ActivatedRoute } from '@angular/router';
+import {
+  LucideAngularModule,
+  CheckCircle,
+  AlertCircle,
+  Building,
+  FileText,
+  BarChart3,
+  Target,
+  Users,
+  TrendingUp,
+  DollarSign,
+  ExternalLink,
+  RefreshCw,
+  Calendar,
+  Share2,
+} from 'lucide-angular';
+import { SMEPublicProfileService } from '../services/sme-public-profile.service';
+import { UiCardComponent, UiButtonComponent } from 'src/app/shared/components';
+
+interface PublicProfileData {
+  slug: string;
+  companyName: string;
+  industry: string;
+  yearsInOperation: number;
+  employeeCount: string;
+  monthlyRevenue: string;
+  requestedFunding: string;
+  completionPercentage: number;
+  readinessScore: number;
+  lastUpdated: Date;
+  sections: PublicSectionView[];
+}
+
+interface PublicSectionView {
+  stepId: string;
+  title: string;
+  icon: any;
+  completed: boolean;
+  completionPercentage: number;
+  keyData: {
+    label: string;
+    value: string;
+  }[];
+}
+
+@Component({
+  selector: 'app-public-profile-view',
+  standalone: true,
+  imports: [CommonModule, LucideAngularModule],
+  templateUrl: './public-profile.component.html',
+})
+export class PublicProfileViewComponent implements OnInit {
+  private profileService = inject(SMEPublicProfileService);
+  private route = inject(ActivatedRoute);
+
+  // Icons
+  CheckCircleIcon = CheckCircle;
+  AlertCircleIcon = AlertCircle;
+  BuildingIcon = Building;
+  FileTextIcon = FileText;
+  BarChart3Icon = BarChart3;
+  TargetIcon = Target;
+  UsersIcon = Users;
+  TrendingUpIcon = TrendingUp;
+  DollarSignIcon = DollarSign;
+  ExternalLinkIcon = ExternalLink;
+  RefreshIcon = RefreshCw;
+  CalendarIcon = Calendar;
+  ShareIcon = Share2;
+
+  // State
+  isLoading = signal(false);
+  isRefreshing = signal(false);
+  error = signal<string | null>(null);
+  slug = signal<string>('');
+
+  // Data
+  profileData = signal<PublicProfileData | null>(null);
+
+  // Computed
+  isComplete = computed(() => {
+    const data = this.profileData();
+    return data ? data.completionPercentage === 100 : false;
+  });
+
+  readinessLevel = computed(() => {
+    const score = this.profileData()?.readinessScore || 0;
+    if (score >= 90) return 'excellent';
+    if (score >= 70) return 'good';
+    if (score >= 50) return 'fair';
+    return 'poor';
+  });
+
+  readinessMessage = computed(() => {
+    const level = this.readinessLevel();
+    const messages = {
+      excellent:
+        'Highly investment-ready with comprehensive business foundation',
+      good: 'Well-developed profile ready for serious evaluation',
+      fair: 'Solid foundation with room for strengthening',
+      poor: 'Early-stage profile, actively developing',
+    };
+    return messages[level];
+  });
+
+  ngOnInit() {
+    this.loadProfile();
+  }
+
+  private loadProfile() {
+    this.slug.set(this.route.snapshot.paramMap.get('slug') || '');
+
+    if (!this.slug()) {
+      this.error.set('Invalid profile link');
+      return;
+    }
+
+    this.isLoading.set(true);
+    this.profileService.getPublicProfile(this.slug()).subscribe({
+      next: (data) => {
+        this.profileData.set(data);
+        this.error.set(null);
+        this.isLoading.set(false);
+      },
+      error: (err) => {
+        console.error('Failed to load profile:', err);
+        this.error.set(
+          'Unable to load profile. This link may be invalid or expired.'
+        );
+        this.isLoading.set(false);
+      },
+    });
+  }
+
+  refreshProfile() {
+    this.isRefreshing.set(true);
+    this.profileService.getPublicProfile(this.slug()).subscribe({
+      next: (data) => {
+        this.profileData.set(data);
+        this.isRefreshing.set(false);
+      },
+      error: (err) => {
+        console.error('Failed to refresh:', err);
+        this.isRefreshing.set(false);
+      },
+    });
+  }
+
+  shareProfile() {
+    const url = window.location.href;
+    if (navigator.share) {
+      navigator.share({
+        title: this.profileData()?.companyName || 'Business Profile',
+        url: url,
+      });
+    } else {
+      navigator.clipboard.writeText(url);
+      alert('Profile link copied to clipboard');
+    }
+  }
+
+  getSectionIcon(stepId: string): any {
+    const iconMap: { [key: string]: any } = {
+      'company-info': Building,
+      documents: FileText,
+      'business-assessment': BarChart3,
+      'swot-analysis': Target,
+      management: Users,
+      'business-strategy': TrendingUp,
+      'financial-profile': DollarSign,
+    };
+    return iconMap[stepId] || AlertCircle;
+  }
+
+  getReadinessBadgeClass(level: string): string {
+    const classes = {
+      excellent: 'bg-green-50 border-green-200 text-green-700',
+      good: 'bg-teal-50 border-teal-300 text-teal-700',
+      fair: 'bg-amber-50 border-amber-200 text-amber-700',
+      poor: 'bg-slate-100 border-slate-200 text-slate-700',
+    };
+    return classes[level as keyof typeof classes] || classes.poor;
+  }
+
+  formatCurrency(value: string): string {
+    if (!value || value === 'Not specified' || value === 'Not provided')
+      return value;
+    const numValue = parseFloat(value.replace(/[^\d.-]/g, ''));
+    if (isNaN(numValue)) return value;
+    return new Intl.NumberFormat('en-ZA', {
+      style: 'currency',
+      currency: 'ZAR',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(numValue);
+  }
+
+  formatDate(date: Date): string {
+    return new Date(date).toLocaleDateString('en-ZA', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  }
+
+  getCompletionColor(percentage: number): string {
+    if (percentage === 100)
+      return 'bg-gradient-to-r from-green-400 to-green-500';
+    if (percentage >= 75) return 'bg-gradient-to-r from-teal-400 to-teal-500';
+    if (percentage >= 50) return 'bg-gradient-to-r from-amber-400 to-amber-500';
+    return 'bg-gradient-to-r from-slate-400 to-slate-500';
+  }
+}

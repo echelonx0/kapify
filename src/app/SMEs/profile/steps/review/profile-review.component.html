@@ -1,35 +1,32 @@
 <!-- src/app/profile/steps/review/profile-review.component.html -->
 <div class="max-w-7xl mx-auto space-y-8 ml-8">
- 
-
   <!-- AI Analysis Section -->
-<!-- Profile Evaluation Section -->
-<div class="mt-8">
-  <div class="space-y-6">
-    <!-- Hero Header -->
-    <div class="bg-slate-950 rounded-2xl p-12 text-white">
-      <h2 class="text-4xl font-bold mb-4">Profile Evaluation</h2>
-      <p class="text-slate-300 text-lg mb-10 leading-relaxed max-w-2xl">
-        Get AI-powered insights about your business profile's strengths, areas for improvement, and funding readiness.
-      </p>
-      
-      <!-- Action Button with branded accent -->
-      <div class="flex">
-        <div class="w-1 bg-emerald-500"></div>
-        <button 
-          (click)="toggleAIAnalysis()" 
-          class="flex-1 bg-emerald-500 text-white px-8 py-4 font-semibold text-lg hover:bg-emerald-600 transition-colors">
-          @if (showAIAnalysis()) {
-            Hide Analysis
-          } @else {
-            Analyze My Profile
-          }
-        </button>
-      </div>
-    </div>
+  <!-- Profile Evaluation Section -->
+  <div class="mt-8">
+    <div class="space-y-6">
+      <!-- Hero Header -->
+      <div class="bg-slate-950 rounded-2xl p-12 text-white">
+        <h2 class="text-4xl font-bold mb-4">Profile Evaluation</h2>
+        <p class="text-slate-300 text-lg mb-10 leading-relaxed max-w-2xl">
+          Get insights about your business profile's strengths, areas for
+          improvement, and funding readiness.
+        </p>
 
-    <!-- Analysis Content -->
-    @if (showAIAnalysis()) {
+        <!-- Action Button with branded accent -->
+        <div class="flex">
+          <div class="w-1 bg-emerald-500"></div>
+          <button
+            (click)="toggleAIAnalysis()"
+            class="flex-1 bg-emerald-500 text-white px-8 py-4 font-semibold text-lg hover:bg-emerald-600 transition-colors"
+          >
+            @if (showAIAnalysis()) { Hide Analysis } @else { Analyze My Profile
+            }
+          </button>
+        </div>
+      </div>
+
+      <!-- Analysis Content -->
+      @if (showAIAnalysis()) {
       <div class="bg-white border border-slate-200 rounded-lg p-8">
         <app-enhanced-ai-analysis
           [opportunity]="null"
@@ -37,100 +34,126 @@
           [applicationId]="null"
           [isSubmitted]="false"
           [analysisMode]="'profile'"
-          (analysisCompleted)="onProfileAnalysisCompleted($event)">
+          (analysisCompleted)="onProfileAnalysisCompleted($event)"
+        >
         </app-enhanced-ai-analysis>
       </div>
-    }
+      }
+    </div>
   </div>
-</div>
-
-
-
 
   <!-- Profile Overview Card -->
-<ui-card class="mb-8">
-  <div class="p-6">
-    <!-- Header -->
-    <div class="flex items-center justify-between mb-6 border-b pb-4">
-      <h2 class="text-xl font-semibold text-gray-900 flex items-center">
-        <lucide-icon [name]="BuildingIcon" [size]="20" class="text-primary-600 mr-2" />
-        Business Overview
-      </h2>
-      <div class="text-right">
-        <div class="text-2xl font-bold text-primary-600">
-          {{ formatPercentage(profileOverview().completionPercentage) }}
-        </div>
-        <div class="text-sm text-gray-500">Complete</div>
-      </div>
-    </div>
-    
-    <!-- Key Info -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      <div class="p-4 rounded-lg bg-gray-50">
-        <div class="text-sm font-medium text-gray-500">Company Name</div>
-        <div class="text-lg font-semibold text-gray-900">{{ profileOverview().companyName }}</div>
-      </div>
-      <div class="p-4 rounded-lg bg-gray-50">
-        <div class="text-sm font-medium text-gray-500">Industry</div>
-        <div class="text-lg font-semibold text-gray-900">{{ profileOverview().industry }}</div>
-      </div>
-      <div class="p-4 rounded-lg bg-gray-50">
-        <div class="text-sm font-medium text-gray-500">Years in Operation</div>
-        <div class="text-lg font-semibold text-gray-900">{{ profileOverview().yearsInOperation }}</div>
-      </div>
-      <div class="p-4 rounded-lg bg-gray-50">
-        <div class="text-sm font-medium text-gray-500">Employee Count</div>
-        <div class="text-lg font-semibold text-gray-900">{{ profileOverview().employeeCount }}</div>
-      </div>
-      <div class="p-4 rounded-lg bg-gray-50">
-        <div class="text-sm font-medium text-gray-500">Monthly Revenue</div>
-        <div class="text-lg font-semibold text-green-600">
-          {{ formatCurrency(profileOverview().monthlyRevenue) }}
+  <ui-card class="mb-8">
+    <div class="p-6">
+      <!-- Header -->
+      <div class="flex items-center justify-between mb-6 border-b pb-4">
+        <h2 class="text-xl font-semibold text-gray-900 flex items-center">
+          <lucide-icon
+            [name]="BuildingIcon"
+            [size]="20"
+            class="text-primary-600 mr-2"
+          />
+          Business Overview
+        </h2>
+        <div class="text-right">
+          <div class="text-2xl font-bold text-primary-600">
+            {{ formatPercentage(profileOverview().completionPercentage) }}
+          </div>
+          <div class="text-sm text-gray-500">Complete</div>
         </div>
       </div>
-      <div class="p-4 rounded-lg bg-gray-50">
-        <div class="text-sm font-medium text-gray-500">Funding Required</div>
-        <div class="text-lg font-semibold text-slate-600">
-          {{ formatCurrency(profileOverview().requestedFunding) }}
-        </div>
-      </div>
-    </div>
-  </div>
-</ui-card>
 
-<!-- Section Summaries -->
-<div class="space-y-6">
-  <div class="flex items-center justify-between">
-    <h2 class="text-xl font-semibold text-gray-900">Section Details</h2>
-    @if (hasAnyMissingItems()) {
+      <!-- Key Info -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div class="p-4 rounded-lg bg-gray-50">
+          <div class="text-sm font-medium text-gray-500">Company Name</div>
+          <div class="text-lg font-semibold text-gray-900">
+            {{ profileOverview().companyName }}
+          </div>
+        </div>
+        <div class="p-4 rounded-lg bg-gray-50">
+          <div class="text-sm font-medium text-gray-500">Industry</div>
+          <div class="text-lg font-semibold text-gray-900">
+            {{ profileOverview().industry }}
+          </div>
+        </div>
+        <div class="p-4 rounded-lg bg-gray-50">
+          <div class="text-sm font-medium text-gray-500">
+            Years in Operation
+          </div>
+          <div class="text-lg font-semibold text-gray-900">
+            {{ profileOverview().yearsInOperation }}
+          </div>
+        </div>
+        <div class="p-4 rounded-lg bg-gray-50">
+          <div class="text-sm font-medium text-gray-500">Employee Count</div>
+          <div class="text-lg font-semibold text-gray-900">
+            {{ profileOverview().employeeCount }}
+          </div>
+        </div>
+        <div class="p-4 rounded-lg bg-gray-50">
+          <div class="text-sm font-medium text-gray-500">Monthly Revenue</div>
+          <div class="text-lg font-semibold text-green-600">
+            {{ formatCurrency(profileOverview().monthlyRevenue) }}
+          </div>
+        </div>
+        <div class="p-4 rounded-lg bg-gray-50">
+          <div class="text-sm font-medium text-gray-500">Funding Required</div>
+          <div class="text-lg font-semibold text-slate-600">
+            {{ formatCurrency(profileOverview().requestedFunding) }}
+          </div>
+        </div>
+      </div>
+    </div>
+  </ui-card>
+
+  <!-- Section Summaries -->
+  <div class="space-y-6">
+    <div class="flex items-center justify-between">
+      <h2 class="text-xl font-semibold text-gray-900">Section Details</h2>
+      @if (hasAnyMissingItems()) {
       <div class="text-sm text-orange-600 bg-orange-50 px-3 py-1 rounded-full">
         {{ getTotalMissingItems() }} items need attention
       </div>
-    }
-  </div>
+      }
+    </div>
 
-  <div class="space-y-6 mb-4">
-    @for (section of sectionSummaries(); track section.stepId) {
+    <div class="space-y-6 mb-4">
+      @for (section of sectionSummaries(); track section.stepId) {
       <div class="p-6 border rounded-lg bg-white shadow-sm">
         <!-- Section Header -->
         <div class="flex items-center justify-between mb-4">
           <div class="flex items-center">
-            <div [class]="'w-10 h-10 rounded-lg flex items-center justify-center mr-3 ' + (section.completed ? 'bg-green-100' : 'bg-gray-100')">
-              <lucide-icon 
-                [name]="section.completed ? CheckCircleIcon : section.icon" 
-                [size]="20" 
-                [class]="section.completed ? 'text-green-600' : 'text-gray-400'" 
+            <div
+              [class]="
+                'w-10 h-10 rounded-lg flex items-center justify-center mr-3 ' +
+                (section.completed ? 'bg-green-100' : 'bg-gray-100')
+              "
+            >
+              <lucide-icon
+                [name]="section.completed ? CheckCircleIcon : section.icon"
+                [size]="20"
+                [class]="section.completed ? 'text-green-600' : 'text-gray-400'"
               />
             </div>
             <div>
               <h3 class="font-semibold text-gray-900">{{ section.title }}</h3>
-              <div [class]="'text-sm ' + getCompletionStatusClass(section.completionPercentage)">
+              <div
+                [class]="
+                  'text-sm ' +
+                  getCompletionStatusClass(section.completionPercentage)
+                "
+              >
                 {{ section.completionPercentage }}% complete
               </div>
             </div>
           </div>
-          
-          <ui-button variant="ghost" size="sm" (clicked)="editSection(section.stepId)">
+
+          <ui-button
+            variant="ghost"
+            size="sm"
+            (clicked)="editSection(section.stepId)"
+          >
             <lucide-icon [name]="EditIcon" [size]="16" class="mr-1" />
             Edit
           </ui-button>
@@ -139,54 +162,67 @@
         <!-- Progress Bar -->
         <div class="mb-4">
           <div class="w-full bg-gray-200 rounded-full h-2">
-            <div 
-              [class]="'h-2 rounded-full transition-all duration-300 ' + (section.completed ? 'bg-green-500' : 'bg-slate-500')"
-              [style.width]="getCompletionBarWidth(section.completionPercentage)"
+            <div
+              [class]="
+                'h-2 rounded-full transition-all duration-300 ' +
+                (section.completed ? 'bg-green-500' : 'bg-slate-500')
+              "
+              [style.width]="
+                getCompletionBarWidth(section.completionPercentage)
+              "
             ></div>
           </div>
         </div>
 
         <!-- Key Data -->
         @if (section.keyData.length > 0) {
-          <div class="space-y-2 mb-4">
-            @for (item of section.keyData; track item.label) {
-              <div class="flex items-center justify-between">
-                <span class="text-sm text-gray-600">{{ item.label }}</span>
-                <div class="flex items-center">
-                  <span class="text-sm font-medium text-gray-900 mr-2">{{ item.value }}</span>
-                  @if (item.status) {
-                    <span [class]="'px-2 py-1 rounded-lg text-xs font-medium ' + getStatusBadgeClass(item.status)">
-                      {{ item.status }}
-                    </span>
-                  }
-                </div>
-              </div>
-            }
+        <div class="space-y-2 mb-4">
+          @for (item of section.keyData; track item.label) {
+          <div class="flex items-center justify-between">
+            <span class="text-sm text-gray-600">{{ item.label }}</span>
+            <div class="flex items-center">
+              <span class="text-sm font-medium text-gray-900 mr-2">{{
+                item.value
+              }}</span>
+              @if (item.status) {
+              <span
+                [class]="
+                  'px-2 py-1 rounded-lg text-xs font-medium ' +
+                  getStatusBadgeClass(item.status)
+                "
+              >
+                {{ item.status }}
+              </span>
+              }
+            </div>
           </div>
+          }
+        </div>
         }
 
         <!-- Missing Items -->
         @if (section.missingItems.length > 0) {
-          <div class="bg-orange-50 border border-orange-200 rounded-lg p-3">
-            <div class="flex items-center mb-2">
-              <lucide-icon [name]="AlertCircleIcon" [size]="16" class="text-orange-600 mr-2" />
-              <span class="font-medium text-orange-900">Missing Items</span>
-            </div>
-            <ul class="text-sm text-orange-700 space-y-1">
-              @for (item of section.missingItems; track item) {
-                <li class="flex items-start">
-                  <span class="mr-2">•</span>
-                  <span>{{ item }}</span>
-                </li>
-              }
-            </ul>
+        <div class="bg-orange-50 border border-orange-200 rounded-lg p-3">
+          <div class="flex items-center mb-2">
+            <lucide-icon
+              [name]="AlertCircleIcon"
+              [size]="16"
+              class="text-orange-600 mr-2"
+            />
+            <span class="font-medium text-orange-900">Missing Items</span>
           </div>
+          <ul class="text-sm text-orange-700 space-y-1">
+            @for (item of section.missingItems; track item) {
+            <li class="flex items-start">
+              <span class="mr-2">•</span>
+              <span>{{ item }}</span>
+            </li>
+            }
+          </ul>
+        </div>
         }
       </div>
-    }
+      }
+    </div>
   </div>
-</div>
-
-
- 
 </div>

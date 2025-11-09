@@ -1,0 +1,264 @@
+<div class="min-h-screen bg-slate-50">
+  <!-- Loading State -->
+  @if (isLoading()) {
+  <div class="flex items-center justify-center h-screen">
+    <div class="text-center">
+      <div
+        class="animate-spin w-12 h-12 border-4 border-teal-200 border-t-teal-500 rounded-full mx-auto mb-4"
+      ></div>
+      <p class="text-slate-600 font-medium">Loading business profile...</p>
+    </div>
+  </div>
+  } @else if (error()) {
+  <div class="max-w-4xl mx-auto px-4 py-16 text-center">
+    <div class="bg-red-50 border border-red-200 rounded-2xl p-8">
+      <lucide-icon
+        [name]="AlertCircleIcon"
+        [size]="32"
+        class="text-red-600 mx-auto mb-4"
+      ></lucide-icon>
+      <h1 class="text-2xl font-bold text-slate-900 mb-2">Profile Not Found</h1>
+      <p class="text-slate-600">{{ error() }}</p>
+    </div>
+  </div>
+  } @else { @if (profileData()) {
+  <div class="max-w-5xl mx-auto px-4 py-8">
+    <!-- Header with Company Info & Readiness -->
+    <div class="bg-white rounded-2xl border border-slate-200 p-8 mb-8">
+      <div class="flex items-start justify-between mb-8">
+        <div>
+          <h1 class="text-4xl font-bold text-slate-900 mb-2">
+            {{ profileData()!.companyName }}
+          </h1>
+          <div class="flex items-center gap-4 text-slate-600">
+            <span class="flex items-center gap-2">
+              <lucide-icon [name]="BuildingIcon" [size]="16"></lucide-icon>
+              {{ profileData()!.industry }}
+            </span>
+            <span class="flex items-center gap-2">
+              <lucide-icon [name]="CalendarIcon" [size]="16"></lucide-icon>
+              {{ profileData()!.yearsInOperation }} years in operation
+            </span>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex gap-2">
+          <button
+            (click)="refreshProfile()"
+            [disabled]="isRefreshing()"
+            class="p-2.5 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
+            title="Refresh profile"
+          >
+            <lucide-icon
+              [name]="RefreshIcon"
+              [size]="20"
+              [class.animate-spin]="isRefreshing()"
+            ></lucide-icon>
+          </button>
+          <button
+            (click)="shareProfile()"
+            class="p-2.5 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
+            title="Share profile"
+          >
+            <lucide-icon [name]="ShareIcon" [size]="20"></lucide-icon>
+          </button>
+        </div>
+      </div>
+
+      <!-- Readiness Assessment Banner -->
+      <div
+        [class]="
+          'rounded-xl border p-6 mb-8 ' +
+          getReadinessBadgeClass(readinessLevel())
+        "
+      >
+        <div class="flex items-start justify-between">
+          <div>
+            <h3 class="font-semibold text-lg mb-1 capitalize">
+              {{ readinessLevel() }} Investment Readiness
+            </h3>
+            <p class="text-sm opacity-90">{{ readinessMessage() }}</p>
+          </div>
+          <div class="text-right">
+            <div class="text-3xl font-bold">
+              {{ profileData()!.readinessScore
+              }}<span class="text-lg">/100</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Completion Progress -->
+        <div class="mt-6">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-sm font-medium">Profile Completion</span>
+            <span class="text-sm font-bold"
+              >{{ profileData()!.completionPercentage }}%</span
+            >
+          </div>
+          <div class="w-full h-2 bg-white/30 rounded-full overflow-hidden">
+            <div
+              [class]="getCompletionColor(profileData()!.completionPercentage)"
+              class="h-full rounded-full transition-all duration-700"
+              [style.width]="profileData()!.completionPercentage + '%'"
+            ></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Key Metrics Grid -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div class="p-4 bg-slate-50 rounded-xl">
+          <div class="text-xs font-semibold text-slate-600 mb-1">EMPLOYEES</div>
+          <div class="text-2xl font-bold text-slate-900">
+            {{ profileData()!.employeeCount }}
+          </div>
+        </div>
+        <div class="p-4 bg-slate-50 rounded-xl">
+          <div class="text-xs font-semibold text-slate-600 mb-1">
+            MONTHLY REVENUE
+          </div>
+          <div class="text-2xl font-bold text-green-600">
+            {{ formatCurrency(profileData()!.monthlyRevenue) }}
+          </div>
+        </div>
+        <div class="p-4 bg-slate-50 rounded-xl">
+          <div class="text-xs font-semibold text-slate-600 mb-1">
+            FUNDING REQUESTED
+          </div>
+          <div class="text-2xl font-bold text-teal-600">
+            {{ formatCurrency(profileData()!.requestedFunding) }}
+          </div>
+        </div>
+        <div class="p-4 bg-slate-50 rounded-xl">
+          <div class="text-xs font-semibold text-slate-600 mb-1">
+            LAST UPDATED
+          </div>
+          <div class="text-xs font-mono text-slate-700 leading-tight">
+            {{ formatDate(profileData()!.lastUpdated) }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section Summaries - Clean Cards -->
+    <div class="space-y-6 mb-12">
+      <h2 class="text-2xl font-bold text-slate-900">Business Profile</h2>
+
+      <div class="grid gap-6">
+        @for (section of profileData()!.sections; track section.stepId) {
+        <div
+          class="bg-white rounded-2xl border border-slate-200 overflow-hidden hover:shadow-md hover:border-slate-300 transition-all duration-200"
+        >
+          <!-- Section Header -->
+          <div
+            class="p-6 border-b border-slate-100 flex items-center justify-between"
+          >
+            <div class="flex items-center gap-4">
+              <div
+                [class]="
+                  'w-12 h-12 rounded-xl flex items-center justify-center ' +
+                  (section.completed
+                    ? 'bg-green-100 text-green-600'
+                    : 'bg-slate-100 text-slate-400')
+                "
+              >
+                <lucide-icon
+                  [name]="
+                    section.completed
+                      ? CheckCircleIcon
+                      : getSectionIcon(section.stepId)
+                  "
+                  [size]="20"
+                ></lucide-icon>
+              </div>
+              <div>
+                <h3 class="font-semibold text-slate-900 text-lg">
+                  {{ section.title }}
+                </h3>
+                <p
+                  [class]="
+                    'text-sm ' +
+                    (section.completionPercentage === 100
+                      ? 'text-green-600'
+                      : section.completionPercentage >= 75
+                      ? 'text-teal-600'
+                      : section.completionPercentage >= 50
+                      ? 'text-amber-600'
+                      : 'text-slate-500')
+                  "
+                >
+                  {{ section.completionPercentage }}% complete
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Section Content -->
+          <div class="p-6">
+            @if (section.keyData.length > 0) {
+            <div class="space-y-3">
+              @for (item of section.keyData; track item.label) {
+              <div
+                class="flex items-center justify-between py-3 border-b border-slate-100 last:border-0"
+              >
+                <span class="text-slate-600 text-sm">{{ item.label }}</span>
+                <span class="font-medium text-slate-900 text-sm">{{
+                  item.value
+                }}</span>
+              </div>
+              }
+            </div>
+            } @else {
+            <div class="text-center py-6 text-slate-500">
+              <p class="text-sm">No data available for this section</p>
+            </div>
+            }
+          </div>
+
+          <!-- Progress Bar -->
+          <div class="px-6 pb-4">
+            <div class="h-1.5 bg-slate-100 rounded-full overflow-hidden">
+              <div
+                [class]="getCompletionColor(section.completionPercentage)"
+                class="h-full rounded-full transition-all duration-500"
+                [style.width]="section.completionPercentage + '%'"
+              ></div>
+            </div>
+          </div>
+        </div>
+        }
+      </div>
+    </div>
+
+    <!-- Footer CTA -->
+    <div
+      class="bg-white rounded-2xl border border-slate-200 p-8 text-center mb-12"
+    >
+      <h3 class="text-xl font-bold text-slate-900 mb-2">
+        Ready to learn more?
+      </h3>
+      <p class="text-slate-600 mb-6 max-w-2xl mx-auto">
+        This business profile demonstrates strong fundamentals and investment
+        potential. Contact us to explore partnership and funding opportunities.
+      </p>
+      <button
+        class="bg-teal-500 text-white px-8 py-3 rounded-xl font-medium hover:bg-teal-600 active:bg-teal-700 transition-colors"
+      >
+        Request More Information
+      </button>
+    </div>
+
+    <!-- Footer Info -->
+    <div class="text-center text-slate-500 text-sm pb-8">
+      <p>
+        This profile was last updated
+        {{ formatDate(profileData()!.lastUpdated) }}
+      </p>
+      <p class="mt-1">
+        Data shown here reflects the business's self-reported information
+      </p>
+    </div>
+  </div>
+  } }
+</div>

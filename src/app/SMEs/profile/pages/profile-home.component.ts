@@ -1,4 +1,3 @@
-// src/app/profile/pages/profile-home.component.ts
 import { Component, computed, OnInit, inject, OnDestroy } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
@@ -14,13 +13,15 @@ import {
   Headphones,
   Star,
   Twitter,
-  Instagram
+  Instagram,
+  Share2,
+  Copy,
+  RefreshCw,
 } from 'lucide-angular';
 
- 
-import { UiButtonComponent } from '../../../shared/components/ui-button.component'; 
+import { UiButtonComponent } from '../../../shared/components/ui-button.component';
 import { UiStatusBadgeComponent } from '../../../shared/components/ui-status-badge.component';
- 
+
 import { AuthService } from '../../../auth/production.auth.service';
 import { FundingProfileSetupService } from '../../services/funding-profile-setup.service';
 import { Activity } from '../../../shared/services/database-activity.service';
@@ -31,19 +32,21 @@ import { Activity } from '../../../shared/services/database-activity.service';
   imports: [
     CommonModule,
     LucideAngularModule,
-    UiButtonComponent, 
-    UiStatusBadgeComponent, 
+    UiButtonComponent,
+    UiStatusBadgeComponent,
     RouterModule,
   ],
   templateUrl: 'profile-home.component.html',
-  styles: [`
-    :host ::ng-deep {
-      .compact-mode {
-        max-height: 300px;
-        overflow-y: auto;
+  styles: [
+    `
+      :host ::ng-deep {
+        .compact-mode {
+          max-height: 300px;
+          overflow-y: auto;
+        }
       }
-    }
-  `]
+    `,
+  ],
 })
 export class ProfileHomeComponent implements OnInit, OnDestroy {
   authService = inject(AuthService);
@@ -62,19 +65,26 @@ export class ProfileHomeComponent implements OnInit, OnDestroy {
   Star = Star;
   Twitter = Twitter;
   Instagram = Instagram;
+  Share2Icon = Share2;
+  CopyIcon = Copy;
+  RefreshIcon = RefreshCw;
 
   email = 'info@bokamosoas.co.za';
   currentImage = '/images/workshop.png';
   private imageRotationInterval: any;
 
   // ===== COMPUTED DATA =====
-  completionPercentage = computed(() => this.fundingApplicationService.completion());
-  completedSteps = computed(() => this.fundingApplicationService.completedSteps());
+  completionPercentage = computed(() =>
+    this.fundingApplicationService.completion()
+  );
+  completedSteps = computed(() =>
+    this.fundingApplicationService.completedSteps()
+  );
   totalSteps = computed(() => this.fundingApplicationService.steps.length);
 
   inProgressSteps = computed(() => {
     const currentData = this.fundingApplicationService.data();
-    return this.fundingApplicationService.steps.filter(step => {
+    return this.fundingApplicationService.steps.filter((step) => {
       const hasData = this.hasDataForStep(step.id, currentData);
       return hasData && !step.completed;
     }).length;
@@ -84,8 +94,12 @@ export class ProfileHomeComponent implements OnInit, OnDestroy {
     return this.totalSteps() - this.completedSteps() - this.inProgressSteps();
   });
 
-  currentStepId = computed(() => this.fundingApplicationService.currentStepId());
-  isApplicationComplete = computed(() => this.fundingApplicationService.isApplicationComplete());
+  currentStepId = computed(() =>
+    this.fundingApplicationService.currentStepId()
+  );
+  isApplicationComplete = computed(() =>
+    this.fundingApplicationService.isApplicationComplete()
+  );
   isLoading = computed(() => this.fundingApplicationService.loading());
 
   // ===== DYNAMIC METRICS (Revenue-focused) =====
@@ -108,10 +122,10 @@ export class ProfileHomeComponent implements OnInit, OnDestroy {
   private hasDataForStep(stepId: string, data: any): boolean {
     const stepDataMap: { [key: string]: string } = {
       'company-info': 'companyInfo',
-      'documents': 'supportingDocuments',
+      documents: 'supportingDocuments',
       'business-assessment': 'businessAssessment',
       'swot-analysis': 'swotAnalysis',
-      'management': 'managementStructure',
+      management: 'managementStructure',
       'business-strategy': 'businessStrategy',
       'financial-profile': 'financialProfile',
     };
@@ -123,28 +137,31 @@ export class ProfileHomeComponent implements OnInit, OnDestroy {
 
   private isObjectNotEmpty(obj: any): boolean {
     if (!obj || typeof obj !== 'object') return false;
-    return Object.values(obj).some(value =>
-      value !== null &&
-      value !== undefined &&
-      value !== '' &&
-      (Array.isArray(value) ? value.length > 0 : true)
+    return Object.values(obj).some(
+      (value) =>
+        value !== null &&
+        value !== undefined &&
+        value !== '' &&
+        (Array.isArray(value) ? value.length > 0 : true)
     );
   }
 
   getStepIconClasses(step: any): string {
-    const baseClasses = 'w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0';
+    const baseClasses =
+      'w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0';
     if (step.completed) return `${baseClasses} bg-green-500`;
-    if (this.isCurrentStep(step.id)) return `${baseClasses} bg-orange-500 text-white`;
+    if (this.isCurrentStep(step.id))
+      return `${baseClasses} bg-orange-500 text-white`;
     return `${baseClasses} bg-slate-200 text-slate-600`;
   }
 
   getStepIcon(stepId: string): any {
     const icons: { [key: string]: any } = {
       'company-info': Building,
-      'documents': FileText,
+      documents: FileText,
       'business-assessment': Building,
       'swot-analysis': AlertTriangle,
-      'management': Users,
+      management: Users,
       'business-strategy': FileText,
       'financial-profile': DollarSign,
     };
@@ -154,17 +171,19 @@ export class ProfileHomeComponent implements OnInit, OnDestroy {
   getStepDescription(stepId: string): string {
     const descriptions: { [key: string]: string } = {
       'company-info': 'Company registration & structure',
-      'documents': 'Upload business documents',
+      documents: 'Upload business documents',
       'business-assessment': 'Operations & market analysis',
       'swot-analysis': 'Strategic analysis & planning',
-      'management': 'Leadership team details',
+      management: 'Leadership team details',
       'business-strategy': 'Business plan & projections',
       'financial-profile': 'Financial data & requirements',
     };
     return descriptions[stepId] || 'Complete this section';
   }
 
-  getStepStatusText(step: any): 'Complete' | 'In Progress' | 'Pending' | 'Current' {
+  getStepStatusText(
+    step: any
+  ): 'Complete' | 'In Progress' | 'Pending' | 'Current' {
     if (step.completed) return 'Complete';
     if (this.isCurrentStep(step.id)) return 'Current';
 
@@ -190,7 +209,9 @@ export class ProfileHomeComponent implements OnInit, OnDestroy {
     if (user?.userType === 'funder') {
       return 'Managing a diverse portfolio of South African SMEs with focus on sustainable growth and social impact.';
     }
-    return `${user?.firstName || 'Your company'} is building tomorrow's success story. We're focused on innovation, growth, and delivering value.`;
+    return `${
+      user?.firstName || 'Your company'
+    } is building tomorrow's success story. We're focused on innovation, growth, and delivering value.`;
   }
 
   getServiceTitle(): string {
@@ -293,6 +314,50 @@ export class ProfileHomeComponent implements OnInit, OnDestroy {
     //   this.fundingApplicationService.submitApplication();
     //   this.router.navigate(['/applications']);
     // }
+  }
+
+  // ===== SLUG MANAGEMENT =====
+  private getProfileUrl(slug: string): string {
+    return `${window.location.origin}/invest/${slug}`;
+  }
+
+  copyProfileLink(): void {
+    const slug = this.fundingApplicationService.getCurrentSlug();
+    if (!slug) {
+      alert('Please save your profile first');
+      return;
+    }
+    const url = this.getProfileUrl(slug);
+    navigator.clipboard.writeText(url);
+    alert('Link copied!');
+  }
+
+  sharePublicProfile(): void {
+    const slug = this.fundingApplicationService.getCurrentSlug();
+    if (!slug) {
+      alert('Please save your profile first');
+      return;
+    }
+    const url = this.getProfileUrl(slug);
+    if (navigator.share) {
+      navigator.share({
+        title: 'Check out my business profile',
+        url: url,
+      });
+    } else {
+      navigator.clipboard.writeText(url);
+      alert('Link copied to clipboard');
+    }
+  }
+
+  refreshProfileLink(): void {
+    this.fundingApplicationService.refreshSlug().then((slug) => {
+      if (slug) {
+        alert('Profile link refreshed');
+      } else {
+        alert('Failed to refresh link. Save your profile first.');
+      }
+    });
   }
 
   // ===== GETTER =====

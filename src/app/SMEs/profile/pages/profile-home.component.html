@@ -1,4 +1,3 @@
-<!-- src/app/profile/pages/profile-home.component.html -->
 <div class="min-h-screen bg-slate-50 p-4 md:p-8 md:ml-8">
   <!-- Main Grid Container (1 col mobile, 4 cols desktop) -->
   <div class="grid grid-cols-1 md:grid-cols-4 gap-4 md:gap-6 max-w-7xl mx-auto">
@@ -190,11 +189,41 @@
       }
     </div>
 
-    <!-- RIGHT COLUMN: About + CTA Section (Full width on mobile, normal on desktop) -->
-    <div class="col-span-1 space-y-3 md:space-y-6">
+    <!-- RIGHT COLUMN: Actions + CTA Section (Full width on mobile, normal on desktop) -->
+    <div class="col-span-1 space-y-3 md:space-y-4">
+      <!-- SHARE ACTIONS (Bunched) -->
+      <div class="space-y-2">
+        <!-- Copy Link -->
+        <button
+          (click)="copyProfileLink()"
+          class="w-full flex items-center justify-center gap-2 bg-white border border-slate-200 text-slate-900 rounded-lg p-2.5 text-xs md:text-sm font-medium hover:bg-slate-50 transition-colors"
+        >
+          <lucide-icon [img]="CopyIcon" [size]="16"></lucide-icon>
+          Copy Link
+        </button>
+
+        <!-- Share Profile -->
+        <button
+          (click)="sharePublicProfile()"
+          class="w-full flex items-center justify-center gap-2 bg-white border border-slate-200 text-slate-900 rounded-lg p-2.5 text-xs md:text-sm font-medium hover:bg-slate-50 transition-colors"
+        >
+          <lucide-icon [img]="Share2Icon" [size]="16"></lucide-icon>
+          Share
+        </button>
+
+        <!-- Refresh Link -->
+        <button
+          (click)="refreshProfileLink()"
+          class="w-full flex items-center justify-center gap-2 bg-white border border-slate-200 text-slate-900 rounded-lg p-2.5 text-xs md:text-sm font-medium hover:bg-slate-50 transition-colors"
+        >
+          <lucide-icon [img]="RefreshIcon" [size]="16"></lucide-icon>
+          Refresh Link
+        </button>
+      </div>
+
       <!-- Hero Image Card -->
       <div
-        class="relative rounded-xl md:rounded-2xl overflow-hidden h-32 md:h-48 shadow-md group cursor-pointer"
+        class="relative rounded-xl md:rounded-2xl overflow-hidden h-32 md:h-40 shadow-md group cursor-pointer"
       >
         <img
           [src]="currentImage"
@@ -208,9 +237,9 @@
 
       <!-- Service/Feature Highlight Card -->
       <div
-        class="bg-teal-500 text-white rounded-xl md:rounded-2xl p-4 md:p-6 shadow-md"
+        class="bg-teal-500 text-white rounded-xl md:rounded-2xl p-4 md:p-5 shadow-md"
       >
-        <div class="flex items-start justify-between mb-3">
+        <div class="flex items-start justify-between mb-2">
           <div class="bg-white bg-opacity-20 p-2 md:p-3 rounded-lg">
             <lucide-icon
               [img]="BuildingIcon"
@@ -234,12 +263,12 @@
 
       <!-- Primary CTA -->
       <div
-        class="bg-white rounded-xl md:rounded-2xl p-4 md:p-6 shadow-sm border-2 border-dashed border-slate-200 text-center"
+        class="bg-white rounded-xl md:rounded-2xl p-4 md:p-5 shadow-sm border-2 border-dashed border-slate-200 text-center"
       >
         <h3 class="text-base md:text-lg font-bold text-slate-900 mb-1">
           Unlock Premium
         </h3>
-        <p class="text-xs md:text-sm text-slate-600 mb-3 md:mb-4">
+        <p class="text-xs md:text-sm text-slate-600 mb-3">
           Advanced tools to build a standout profile.
         </p>
         <ui-button
