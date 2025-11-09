@@ -142,7 +142,7 @@ export class ApplicationsHomeComponent implements OnInit, OnDestroy {
   userType = computed(() => this.currentUser()?.userType);
   isFunder = computed(() => this.userType() === 'funder');
   isSME = computed(() => this.userType() === 'sme');
-  // Add this computed property to your ApplicationsHomeComponent class
+
   safeUserType = computed((): UserType => {
     const type = this.userType();
     return type === 'funder' ? 'funder' : 'sme';
@@ -158,7 +158,7 @@ export class ApplicationsHomeComponent implements OnInit, OnDestroy {
   }
 
   // ===============================
-  // DIRECT DATABASE LOADING (BYPASSES ProfileManagementService)
+  // DIRECT DATABASE LOADING
   // ===============================
 
   loadApplications() {
@@ -224,10 +224,10 @@ export class ApplicationsHomeComponent implements OnInit, OnDestroy {
         .pipe(
           takeUntil(this.destroy$),
           tap((applications) =>
-            console.log('✅ Applications loaded:', applications.length)
+            console.log(' Applications loaded:', applications.length)
           ),
           catchError((error) => {
-            console.error('❌ Failed to load applications:', error);
+            console.error('Failed to load applications:', error);
             this.error.set('Failed to load applications');
             return of([]);
           })
@@ -278,7 +278,7 @@ export class ApplicationsHomeComponent implements OnInit, OnDestroy {
           this.applications.set(this.mergeDrafts(applicationData));
           this.isLoading.set(false);
           console.log(
-            '🎉 SME applications successfully loaded:',
+            'SME applications successfully loaded:',
             applicationData.length
           );
         },

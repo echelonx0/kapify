@@ -137,7 +137,7 @@ export class ApplicationListCardComponent {
 
     const classMap: Record<string, string> = {
       'status-draft': `${baseClass} bg-slate-100 text-slate-700 border border-slate-200/50`,
-      'status-submitted': `${baseClass} bg-blue-50 text-blue-700 border border-blue-200/50`,
+      'status-submitted': `${baseClass} bg-teal-50 text-teal-700 border border-teal-200/50`,
       'status-under-review': `${baseClass} bg-amber-50 text-amber-700 border border-amber-200/50`,
       'status-approved': `${baseClass} bg-green-50 text-green-700 border border-green-200/50`,
       'status-rejected': `${baseClass} bg-red-50 text-red-700 border border-red-200/50`,
@@ -228,7 +228,7 @@ export class ApplicationListCardComponent {
 
   getFundingTypeColor(type: string): string {
     const colorMap: Record<string, string> = {
-      Debt: 'bg-blue-100 text-blue-700 border border-blue-200',
+      Debt: 'bg-teal-100 text-teal-700 border border-teal-200',
       Equity: 'bg-purple-100 text-purple-700 border border-purple-200',
       Convertible: 'bg-indigo-100 text-indigo-700 border border-indigo-200',
       Mezzanine: 'bg-amber-100 text-amber-700 border border-amber-200',
@@ -242,11 +242,11 @@ export class ApplicationListCardComponent {
   }
 
   withdrawApplication(): void {
+    console.log('Starting');
     this.modalService.showWithdrawConfirm(
       this.application.title,
       this.application.applicationNumber
     );
-
     const subscription = this.modalService.confirmed$.subscribe(() => {
       this.performWithdrawal();
       subscription.unsubscribe();

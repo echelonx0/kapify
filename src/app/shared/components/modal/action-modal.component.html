@@ -1,0 +1,52 @@
+@if (modalService.isOpen()) {
+<div
+  class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
+>
+  <div
+    class="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 relative mx-4 animate-fadeIn"
+  >
+    <!-- Close Button -->
+    <button
+      (click)="close()"
+      class="absolute top-4 right-4 text-slate-400 hover:text-slate-600"
+    >
+      <lucide-icon [img]="XIcon" [size]="18" />
+    </button>
+
+    <!-- Icon -->
+    <div class="flex justify-center mb-4">
+      @if (modalService.data().actionType === 'withdraw') {
+      <lucide-icon [img]="AlertIcon" [size]="40" class="text-orange-500" />
+      } @else {
+      <lucide-icon [img]="CheckIcon" [size]="40" class="text-green-500" />
+      }
+    </div>
+
+    <!-- Title -->
+    <h2 class="text-xl font-bold text-center text-slate-900 mb-2">
+      {{ modalService.data().title }}
+    </h2>
+
+    <!-- Message -->
+    <p class="text-center text-slate-600 mb-6 leading-relaxed">
+      {{ modalService.data().message }}
+    </p>
+
+    <!-- Action Buttons -->
+    <div class="flex justify-center gap-3">
+      <button
+        (click)="close()"
+        class="px-5 py-2.5 rounded-xl bg-slate-100 text-slate-700 hover:bg-slate-200 transition-colors font-medium"
+      >
+        Cancel
+      </button>
+      <button
+        (click)="confirm()"
+        class="px-5 py-2.5 rounded-xl bg-orange-500 text-white hover:bg-orange-600 transition-colors font-medium"
+      >
+        Confirm
+      </button>
+    </div>
+  </div>
+</div>
+}
