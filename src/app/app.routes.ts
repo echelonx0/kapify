@@ -1,4 +1,3 @@
-// app.routes.ts
 import { Routes } from '@angular/router';
 import { LandingComponent } from './landing/landing.component';
 import { LoginComponent } from './auth/login/login.component';
@@ -33,6 +32,16 @@ export const routes: Routes = [
     title: 'Funding Opportunities - Kapify',
   },
 
+  // PUBLIC: Shareable opportunity link (NO auth required)
+  {
+    path: 'opportunity/:id',
+    loadComponent: () =>
+      import('./funding/public-opportunity/public-opportunity.component').then(
+        (m) => m.PublicOpportunityComponent
+      ),
+    title: 'Funding Opportunity - Kapify',
+  },
+
   // Auth routes (only accessible when not logged in)
   {
     path: 'login',
@@ -50,7 +59,6 @@ export const routes: Routes = [
   {
     path: 'version-info',
     component: VersionInfoComponent,
-
     title: 'Version Information',
   },
 
@@ -106,6 +114,7 @@ export const routes: Routes = [
     loadChildren: () =>
       import('./dashboard/finance/finance.routes').then((m) => m.financeRoutes),
   },
+
   // Funding routes
   {
     path: 'funding',
@@ -122,7 +131,7 @@ export const routes: Routes = [
       import('./funder/funder.routes').then((m) => m.funderRoutes),
   },
 
-  //  Public funder profile (PARAMETERIZED) comes SECOND
+  //  Public funder profile (PARAMETERIZED)
   {
     path: 'funder/:slug',
     loadComponent: () =>
@@ -131,12 +140,14 @@ export const routes: Routes = [
       ),
     title: 'Funder Profile - Kapify',
   },
+
   {
     path: 'test/parser',
     loadComponent: () =>
       import('./test/parser-test.component').then((m) => m.ParserTestComponent),
     title: 'Excel Parser Test',
   },
+
   // 404 Page - MUST come before catch-all
   {
     path: '404',

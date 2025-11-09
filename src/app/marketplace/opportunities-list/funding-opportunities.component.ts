@@ -216,10 +216,30 @@ export class FundingOpportunitiesComponent implements OnInit, OnDestroy {
   }
 
   viewOpportunityDetails(opportunityId: string) {
-    this.router.navigate(['/funding/opportunities', opportunityId]);
+    // currentUser() returns the user object or null
+    if (!this.currentUser()) {
+      // Not authenticated → public shareable view
+      this.router.navigate(['/opportunity', opportunityId]);
+    } else if (this.currentUser()?.userType === 'sme') {
+      // Authenticated SME → authenticated view with sidebar
+      this.router.navigate(['/funding/opportunities', opportunityId]);
+    } else if (this.currentUser()?.userType === 'funder') {
+      // Authenticated Funder → funder view
+      this.router.navigate(['/funder/opportunities', opportunityId]);
+    } else {
+      // Fallback
+      this.router.navigate(['/opportunity', opportunityId]);
+    }
   }
 
   applyToOpportunity(opportunityId: string) {
+    if (!this.currentUser()) {
+      // Not authenticated → redirect to public view first
+      this.router.navigate(['/opportunity', opportunityId]);
+      return;
+    }
+
+    // Authenticated → go directly to application form
     this.router.navigate(['/applications/new'], {
       queryParams: { opportunityId },
     });

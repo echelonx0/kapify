@@ -193,7 +193,7 @@ export class ImportValidationService {
         description:
           'Funding for established SMEs looking to expand operations and market reach',
         shortDescription: 'Growth capital for expanding SMEs',
-        fundingType: ['equity'],
+        fundingType: 'equity',
         offerAmount: 500000,
         minInvestment: 100000,
         maxInvestment: 2000000,
@@ -211,7 +211,7 @@ export class ImportValidationService {
         description:
           'Traditional debt financing for working capital and equipment purchases',
         shortDescription: 'Working capital and equipment financing',
-        fundingType: ['debt'],
+        fundingType: 'debt',
         offerAmount: 250000,
         minInvestment: 50000,
         maxInvestment: 1000000,
@@ -305,20 +305,21 @@ export class ImportValidationService {
           'mezzanine',
           'grant',
         ];
-        if (Array.isArray(value)) {
-          const invalidTypes = value.filter(
-            (type) => !validTypes.includes(String(type).toLowerCase())
-          );
-          if (invalidTypes.length > 0) {
-            return `Invalid funding types: ${invalidTypes.join(
-              ', '
-            )}. Must be one of: ${validTypes.join(', ')}`;
-          }
-        } else {
-          // Handle legacy single string values
-          if (!validTypes.includes(String(value).toLowerCase())) {
-            return `Funding type must be one of: ${validTypes.join(', ')}`;
-          }
+
+        // Convert to array if not already
+        const typesToCheck = Array.isArray(value)
+          ? value.map((t) => String(t).toLowerCase())
+          : [String(value).toLowerCase()];
+
+        // Check for invalid types
+        const invalidTypes = typesToCheck.filter(
+          (type) => !validTypes.includes(type)
+        );
+
+        if (invalidTypes.length > 0) {
+          return `Invalid funding types: ${invalidTypes.join(
+            ', '
+          )}. Must be one of: ${validTypes.join(', ')}`;
         }
         break;
 
