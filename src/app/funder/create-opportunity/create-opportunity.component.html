@@ -1,20 +1,21 @@
-<app-opportunity-action-modal></app-opportunity-action-modal>
-
 <!-- SECTOR VALIDATION MODAL -->
 @if (showSectorModal()) {
 <app-sector-validation-modal
   (confirmed)="onSectorValidationComplete()"
 ></app-sector-validation-modal>
-} @if (organizationLoading() && !canProceed()) {
-<div class="min-h-screen bg-neutral-50 flex items-center justify-center">
+}
+
+<!-- LOADING STATE -->
+@if (organizationLoading() && !canProceed()) {
+<div class="min-h-screen bg-slate-50 flex items-center justify-center">
   <div class="text-center">
     <div
-      class="animate-spin w-12 h-12 border-4 border-primary-200 border-t-primary-600 rounded-full mx-auto mb-4"
+      class="animate-spin w-12 h-12 border-4 border-teal-200 border-t-teal-600 rounded-full mx-auto mb-4"
     ></div>
-    <h2 class="text-xl font-semibold text-neutral-900 mb-2">
+    <h2 class="text-xl font-semibold text-slate-900 mb-2">
       Loading Organization Data
     </h2>
-    <p class="text-neutral-600">
+    <p class="text-slate-600">
       Setting up your opportunity creation workspace...
     </p>
   </div>
@@ -23,7 +24,9 @@
 
 <!-- ORGANIZATION ERROR STATE -->
 @else if (organizationError() && !organizationId()) {
-<div class="min-h-screen bg-neutral-50 flex items-center justify-center px-4">
+<div
+  class="min-h-screen bg-slate-50 flex items-center justify-center px-4 lg:px-8"
+>
   <div class="max-w-md w-full text-center">
     <div
       class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4"
@@ -34,28 +37,25 @@
         class="text-red-600"
       ></lucide-angular>
     </div>
-
-    <h2 class="text-xl font-semibold text-neutral-900 mb-2">
+    <h2 class="text-xl font-semibold text-slate-900 mb-2">
       Organization Setup Required
     </h2>
-    <p class="text-neutral-600 mb-6">{{ organizationError() }}</p>
-
+    <p class="text-slate-600 mb-6">{{ organizationError() }}</p>
     <div class="space-y-3">
       <button
         (click)="goToOrganizationSetup()"
-        class="w-full bg-primary-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-primary-700 transition-colors"
+        class="w-full bg-teal-500 text-white px-6 py-2.5 rounded-xl font-medium hover:bg-teal-600 active:bg-teal-700 transition-colors duration-200"
       >
         Complete Organization Setup
       </button>
-
       <button
         (click)="retryLoadOrganization()"
-        class="w-full border border-neutral-300 text-neutral-700 px-6 py-3 rounded-lg font-medium hover:bg-neutral-50 transition-colors"
+        class="w-full bg-slate-100 text-slate-700 px-6 py-2.5 rounded-xl font-medium hover:bg-slate-200 active:bg-slate-300 transition-colors duration-200 flex items-center justify-center"
       >
         <lucide-angular
           [img]="RefreshCwIcon"
           [size]="16"
-          class="mr-2 inline"
+          class="mr-2"
         ></lucide-angular>
         Retry Loading
       </button>
@@ -64,440 +64,444 @@
 </div>
 }
 
-<!-- MAIN FORM - ALWAYS SHOW (unless loading is true or has error) -->
+<!-- MAIN PAGE -->
 @else if (!showSectorModal()) {
-
-<div class="mx-auto p-4 md:p-6 relative">
-  <!-- Loading Overlay (if org is still loading but we're showing the form) -->
-  @if (organizationLoading()) {
-  <div
-    class="fixed inset-0 bg-white/40 flex items-center justify-center z-50 rounded-lg"
-  >
-    <div class="text-center bg-white px-6 py-4 rounded-lg shadow-lg">
-      <div
-        class="animate-spin w-8 h-8 border-4 border-primary-200 border-t-primary-600 rounded-full mx-auto mb-3"
-      ></div>
-      <p class="text-sm text-gray-600">Loading organization...</p>
-    </div>
-  </div>
-  }
-
-  <!-- Header -->
-  <div class="mb-6 md:mb-8">
+<div class="min-h-screen bg-slate-50">
+  <!-- TOAST NOTIFICATIONS (Top-right, fixed) -->
+  <div class="fixed top-4 right-4 z-50 space-y-2 pointer-events-none">
+    @if (showDatabaseSaveStatus()) {
     <div
-      class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6"
+      class="flex items-center gap-2 px-4 py-3 bg-white rounded-xl border border-slate-200 shadow-sm pointer-events-auto animate-fade-in"
     >
-      <div class="flex items-center space-x-3">
-        <button
-          class="flex items-center text-gray-600 hover:text-gray-900 transition-colors group"
-          (click)="goBack()"
-        >
-          <lucide-angular
-            [img]="ArrowLeftIcon"
-            [size]="16"
-            class="mr-2 group-hover:-translate-x-1 transition-transform"
-          ></lucide-angular>
-          @if (isEditMode()) { Back } @else { Go back }
-        </button>
-      </div>
-
-      <div class="flex flex-wrap items-center gap-3">
-        <!-- Save Status Indicators -->
-        @if (showDatabaseSaveStatus()) {
-        <div class="flex items-center text-sm text-green-600">
-          <lucide-angular
-            [img]="CheckIcon"
-            [size]="14"
-            class="mr-1"
-          ></lucide-angular>
-          {{ getLastSavedText() }}
-        </div>
-        } @if (showLocalSaveStatus()) {
-        <div class="flex items-center text-sm text-blue-600">
-          <lucide-angular
-            [img]="ClockIcon"
-            [size]="14"
-            class="mr-1"
-          ></lucide-angular>
-          {{ getLocalSaveText() }}
-        </div>
-        } @if (showUnsavedIndicator()) {
-        <div class="flex items-center text-sm text-orange-600">
-          <lucide-angular
-            [img]="AlertCircleIcon"
-            [size]="14"
-            class="mr-1"
-          ></lucide-angular>
-          Unsaved changes
-        </div>
-        }
-
-        <button
-          class="hidden sm:flex items-center px-4 py-2 text-sm text-gray-600 hover:text-gray-900 transition-colors"
-        >
-          <lucide-angular
-            [img]="EyeIcon"
-            [size]="16"
-            class="mr-2"
-          ></lucide-angular>
-          Preview
-        </button>
-        <button
-          class="hidden sm:flex items-center px-4 py-2 text-sm text-gray-600 hover:text-gray-900 transition-colors"
-        >
-          <lucide-angular
-            [img]="HelpCircleIcon"
-            [size]="16"
-            class="mr-2"
-          ></lucide-angular>
-          Help
-        </button>
-      </div>
+      <lucide-angular
+        [img]="CheckIcon"
+        [size]="16"
+        class="text-green-600 flex-shrink-0"
+      ></lucide-angular>
+      <span class="text-sm font-medium text-slate-900">{{
+        getLastSavedText()
+      }}</span>
     </div>
+    } @if (showLocalSaveStatus()) {
+    <div
+      class="flex items-center gap-2 px-4 py-3 bg-white rounded-xl border border-slate-200 shadow-sm pointer-events-auto animate-fade-in"
+    >
+      <lucide-angular
+        [img]="ClockIcon"
+        [size]="16"
+        class="text-blue-600 flex-shrink-0"
+      ></lucide-angular>
+      <span class="text-sm font-medium text-slate-900">{{
+        getLocalSaveText()
+      }}</span>
+    </div>
+    } @if (showUnsavedIndicator()) {
+    <div
+      class="flex items-center gap-2 px-4 py-3 bg-white rounded-xl border border-amber-200/50 shadow-sm pointer-events-auto animate-fade-in"
+    >
+      <lucide-angular
+        [img]="AlertCircleIcon"
+        [size]="16"
+        class="text-amber-600 flex-shrink-0"
+      ></lucide-angular>
+      <span class="text-sm font-medium text-slate-900">Unsaved changes</span>
+    </div>
+    }
+  </div>
 
-    <div>
-      <div class="flex flex-wrap items-center gap-3 mb-2">
-        <h1 class="text-2xl md:text-3xl font-bold text-gray-900">
-          {{ getPageTitle() }}
-        </h1>
-        @if (isEditMode()) {
-        <span
-          class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
-        >
-          Editing
-        </span>
-        } @else {
-        <span
-          class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800"
-        >
-          New Draft
-        </span>
-        }
+  <!-- PAGE HEADER -->
+  <div class="border-b border-slate-200 bg-white sticky top-0 z-40">
+    <div class="px-4 lg:px-8 py-4">
+      <!-- Single-line header with navigation, title, badge, and actions -->
+      <div
+        class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4"
+      >
+        <!-- LEFT: Back button + Title + Badge -->
+        <div class="flex items-center gap-3 min-w-0">
+          <button
+            class="flex-shrink-0 text-slate-600 hover:text-slate-900 transition-colors duration-200 group"
+            (click)="goBack()"
+            title="Go back"
+          >
+            <lucide-angular
+              [img]="ArrowLeftIcon"
+              [size]="20"
+              class="group-hover:-translate-x-0.5 transition-transform"
+            ></lucide-angular>
+          </button>
+
+          <div class="min-w-0 flex-1">
+            <div class="flex items-center gap-2 flex-wrap">
+              <h1 class="text-xl lg:text-2xl font-bold text-slate-900 truncate">
+                {{ getPageTitle() }}
+              </h1>
+              @if (isEditMode()) {
+              <span
+                class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200/50 flex-shrink-0"
+              >
+                Editing
+              </span>
+              } @else {
+              <span
+                class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-green-50 text-green-700 border border-green-200/50 flex-shrink-0"
+              >
+                Draft
+              </span>
+              }
+            </div>
+            <p class="text-xs lg:text-sm text-slate-600 mt-1 truncate">
+              {{ getPageSubtitle() }}
+            </p>
+          </div>
+        </div>
+
+        <!-- RIGHT: Preview + Help (hide on mobile) -->
+        <div class="flex items-center gap-2 flex-shrink-0">
+          <button
+            class="hidden sm:inline-flex items-center px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 active:bg-slate-200 rounded-xl transition-colors duration-200"
+            title="Preview opportunity"
+          >
+            <lucide-angular
+              [img]="EyeIcon"
+              [size]="16"
+              class="mr-1.5"
+            ></lucide-angular>
+            Preview
+          </button>
+          <button
+            class="hidden sm:inline-flex items-center px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 active:bg-slate-200 rounded-xl transition-colors duration-200"
+            title="Get help"
+          >
+            <lucide-angular
+              [img]="HelpCircleIcon"
+              [size]="16"
+              class="mr-1.5"
+            ></lucide-angular>
+            Help
+          </button>
+        </div>
       </div>
-      <p class="text-gray-600">{{ getPageSubtitle() }}</p>
     </div>
   </div>
 
-  <!-- ERROR MESSAGES SECTION -->
+  <!-- ERROR MESSAGES -->
   @if (organizationError() || publishError()) {
-  <div class="space-y-4 mb-6">
+  <div class="px-4 lg:px-8 py-4 space-y-3">
     @if (organizationError()) {
-    <div class="bg-red-50 border border-red-200 rounded-lg p-4">
-      <div class="flex">
-        <div class="flex-shrink-0">
-          <lucide-angular
-            [img]="AlertCircleIcon"
-            [size]="20"
-            class="text-red-500"
-          ></lucide-angular>
-        </div>
-        <div class="ml-3">
-          <h3 class="text-sm font-medium text-red-800">
-            Organization Setup Required
-          </h3>
-          <div class="mt-2 text-sm text-red-700">
-            <p>{{ organizationError() }}</p>
-          </div>
-          <div class="mt-4 flex flex-col sm:flex-row gap-3">
-            <button
-              type="button"
-              class="bg-red-100 px-3 py-2 rounded-md text-sm font-medium text-red-800 hover:bg-red-200"
-              (click)="goToOrganizationSetup()"
-            >
-              Complete Setup
-            </button>
-            <button
-              type="button"
-              class="bg-white px-3 py-2 rounded-md text-sm font-medium text-red-800 hover:bg-red-50"
-              (click)="organizationError.set(null)"
-            >
-              Dismiss
-            </button>
-          </div>
+    <div class="bg-red-50 border border-red-200/50 rounded-xl p-4 flex gap-3">
+      <lucide-angular
+        [img]="AlertCircleIcon"
+        [size]="20"
+        class="text-red-600 flex-shrink-0 mt-0.5"
+      ></lucide-angular>
+      <div class="flex-1 min-w-0">
+        <h3 class="text-sm font-semibold text-red-900">
+          Organization Setup Required
+        </h3>
+        <p class="text-sm text-red-700 mt-1">{{ organizationError() }}</p>
+        <div class="flex gap-2 mt-3">
+          <button
+            (click)="goToOrganizationSetup()"
+            class="px-3 py-1.5 bg-red-100 text-red-700 text-xs font-medium rounded-lg hover:bg-red-200 transition-colors duration-200"
+          >
+            Complete Setup
+          </button>
+          <button
+            (click)="organizationError.set(null)"
+            class="px-3 py-1.5 bg-white text-red-700 text-xs font-medium rounded-lg hover:bg-red-50 transition-colors duration-200 border border-red-200/50"
+          >
+            Dismiss
+          </button>
         </div>
       </div>
     </div>
     } @if (publishError()) {
-    <div class="bg-red-50 border border-red-200 rounded-lg p-4">
-      <div class="flex">
-        <div class="flex-shrink-0">
-          <lucide-angular
-            [img]="AlertCircleIcon"
-            [size]="20"
-            class="text-red-500"
-          ></lucide-angular>
-        </div>
-        <div class="ml-3">
-          <h3 class="text-sm font-medium text-red-800">Publishing Failed</h3>
-          <div class="mt-2 text-sm text-red-700">
-            <p>{{ publishError() }}</p>
-          </div>
-          <div class="mt-4">
-            <button
-              type="button"
-              class="bg-red-100 px-3 py-2 rounded-md text-sm font-medium text-red-800 hover:bg-red-200"
-              (click)="publishError.set(null)"
-            >
-              Dismiss
-            </button>
-          </div>
-        </div>
+    <div class="bg-red-50 border border-red-200/50 rounded-xl p-4 flex gap-3">
+      <lucide-angular
+        [img]="AlertCircleIcon"
+        [size]="20"
+        class="text-red-600 flex-shrink-0 mt-0.5"
+      ></lucide-angular>
+      <div class="flex-1 min-w-0">
+        <h3 class="text-sm font-semibold text-red-900">Publishing Failed</h3>
+        <p class="text-sm text-red-700 mt-1">{{ publishError() }}</p>
+        <button
+          (click)="publishError.set(null)"
+          class="mt-3 px-3 py-1.5 bg-red-100 text-red-700 text-xs font-medium rounded-lg hover:bg-red-200 transition-colors duration-200"
+        >
+          Dismiss
+        </button>
       </div>
     </div>
     }
   </div>
   }
 
-  <!-- RESPONSIVE GRID LAYOUT -->
-  <div class="create-opportunity-grid">
-    <!-- Left Sidebar - EXTRACTED COMPONENT -->
-    <div class="sticky-sidebar">
-      <app-opportunity-steps-navigation></app-opportunity-steps-navigation>
-    </div>
+  <!-- MAIN CONTENT -->
+  <div class="px-4 lg:px-8 py-6">
+    <div class="max-w-7xl mx-auto">
+      <!-- RESPONSIVE GRID LAYOUT -->
+      <div class="create-opportunity-grid">
+        <!-- LEFT SIDEBAR -->
+        <div class="sticky-sidebar">
+          <app-opportunity-steps-navigation></app-opportunity-steps-navigation>
+        </div>
 
-    <!-- Main Content Area -->
-    <div class="min-w-0">
-      <div
-        class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden"
-      >
-        <!-- Form Header -->
-        <div
-          class="p-4 md:p-6 border-b border-gray-200 bg-gradient-to-r from-primary-50 to-indigo-50"
-        >
-          <div class="flex items-center space-x-4">
+        <!-- CENTER: FORM CARD -->
+        <div class="min-w-0">
+          <div
+            class="bg-white rounded-2xl border border-slate-200 overflow-hidden"
+          >
+            <!-- FORM HEADER -->
             <div
-              class="w-12 h-12 rounded-xl bg-primary-100 flex items-center justify-center flex-shrink-0"
+              class="px-6 py-4 border-b border-slate-200 bg-slate-50/50 flex items-center gap-4"
+            >
+              <div
+                class="w-10 h-10 rounded-lg bg-teal-100 flex items-center justify-center flex-shrink-0"
+              >
+                <lucide-angular
+                  [img]="getCurrentStepIcon()"
+                  [size]="20"
+                  class="text-teal-600"
+                ></lucide-angular>
+              </div>
+              <div class="min-w-0">
+                <h2 class="text-base font-semibold text-slate-900">
+                  {{ getCurrentStepTitle() }}
+                </h2>
+                <p class="text-xs text-slate-600 mt-0.5">
+                  {{ getCurrentStepSubtitle() }}
+                </p>
+              </div>
+            </div>
+
+            <!-- STEP VALIDATION ERRORS -->
+            @if (hasCurrentStepErrors()) {
+            <div
+              class="px-6 py-4 bg-red-50 border-b border-red-200/50 flex gap-3"
             >
               <lucide-angular
-                [img]="getCurrentStepIcon()"
-                [size]="24"
-                class="text-primary-600"
+                [img]="AlertCircleIcon"
+                [size]="20"
+                class="text-red-600 flex-shrink-0 mt-0.5"
               ></lucide-angular>
-            </div>
-            <div class="min-w-0">
-              <h2 class="text-lg md:text-xl font-semibold text-gray-900">
-                {{ getCurrentStepTitle() }}
-              </h2>
-              <p class="text-xs md:text-sm text-gray-600 mt-1">
-                {{ getCurrentStepSubtitle() }}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <!-- Current Step Validation Errors -->
-        @if (hasCurrentStepErrors()) {
-        <div class="p-4 bg-red-50 border-b border-red-200">
-          <div class="flex">
-            <lucide-angular
-              [img]="AlertCircleIcon"
-              [size]="20"
-              class="text-red-500 mt-0.5 mr-3 flex-shrink-0"
-            ></lucide-angular>
-            <div>
-              <h4 class="text-sm font-medium text-red-800">
-                Please fix the following:
-              </h4>
-              <ul class="mt-2 text-sm text-red-700 space-y-1">
-                @for (error of currentStepErrors(); track error.field) {
-                <li class="flex items-center">
-                  <span
-                    class="w-1.5 h-1.5 bg-red-400 rounded-full mr-2 flex-shrink-0"
-                  ></span>
-                  {{ error.message }}
-                </li>
-                }
-              </ul>
-            </div>
-          </div>
-        </div>
-        }
-
-        <!-- Form Content -->
-        <div class="p-4 md:p-6 space-y-8" [@stepTransition]>
-          @if (currentStep() === 'basic') {
-          <div class="space-y-6">
-            <app-opportunity-basics></app-opportunity-basics>
-            <app-media-branding></app-media-branding>
-          </div>
-          } @if (currentStep() === 'terms') {
-          <app-funding-structure></app-funding-structure>
-          } @if (currentStep() === 'eligibility') {
-          <app-eligibility-filters></app-eligibility-filters>
-          } @if (currentStep() === 'settings') {
-          <app-application-settings></app-application-settings>
-          } @if (currentStep() === 'review') {
-          <div class="space-y-6">
-            @if (validationErrors().length > 0) {
-            <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-              <div class="flex">
-                <lucide-angular
-                  [img]="AlertCircleIcon"
-                  [size]="20"
-                  class="text-yellow-500 mr-3 mt-0.5 flex-shrink-0"
-                ></lucide-angular>
-                <div>
-                  <h4 class="text-sm font-medium text-yellow-800 mb-2">
-                    Review Required
-                  </h4>
-                  <ul class="text-sm text-yellow-700 space-y-1">
-                    @for (error of validationErrors(); track error.field) {
-                    <li class="flex items-center">
-                      <span
-                        class="w-1.5 h-1.5 bg-yellow-400 rounded-full mr-2 flex-shrink-0"
-                      ></span>
-                      {{ error.message }}
-                    </li>
-                    }
-                  </ul>
-                </div>
+              <div class="flex-1 min-w-0">
+                <h4 class="text-sm font-semibold text-red-900">
+                  Please fix the following:
+                </h4>
+                <ul class="mt-2 text-sm text-red-700 space-y-1">
+                  @for (error of currentStepErrors(); track error.field) {
+                  <li class="flex items-center gap-2">
+                    <span
+                      class="w-1.5 h-1.5 bg-red-400 rounded-full flex-shrink-0"
+                    ></span>
+                    {{ error.message }}
+                  </li>
+                  }
+                </ul>
               </div>
             </div>
             }
-            <div class="bg-gray-50 rounded-xl p-4 md:p-6">
-              <h4 class="font-medium text-gray-900 mb-4">
-                Opportunity Summary
-              </h4>
 
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-                <div>
-                  <span class="text-gray-500">Title:</span>
-                  <div class="font-medium">
-                    {{ formData().title || "Not specified" }}
-                  </div>
-                </div>
-                <div>
-                  <span class="text-gray-500">Funding Type:</span>
-                  <div class="font-medium capitalize">
-                    {{ formData().fundingType || "Not specified" }}
-                  </div>
-                </div>
-                <div>
-                  <span class="text-gray-500">Typical Investment:</span>
-                  <div class="font-medium">
-                    {{ formData().currency }}
-                    {{ getFormattedAmount("typicalInvestment") }}
-                  </div>
-                </div>
-                <div>
-                  <span class="text-gray-500">Typical Investment:</span>
-                  <div class="font-medium">
-                    {{ formData().currency }}
-                    {{ getFormattedAmount("offerAmount") }}
-                  </div>
-                </div>
+            <!-- FORM CONTENT -->
+            <div class="px-6 py-6 space-y-8" [@stepTransition]>
+              @if (currentStep() === 'basic') {
+              <div class="space-y-6">
+                <app-opportunity-basics></app-opportunity-basics>
+                <app-media-branding></app-media-branding>
               </div>
-            </div>
-            <div class="bg-green-50 border border-green-200 rounded-lg p-4">
-              <div class="flex">
-                <lucide-angular
-                  [img]="CheckIcon"
-                  [size]="20"
-                  class="text-green-500 mr-3 mt-0.5 flex-shrink-0"
-                ></lucide-angular>
-                <div>
-                  <h4 class="text-sm font-medium text-green-800">
-                    Ready to Publish
-                  </h4>
-                  <p class="mt-1 text-sm text-green-700">
-                    Once published, qualified SMEs can view and apply. You can
-                    edit or pause anytime.
-                  </p>
+              } @if (currentStep() === 'terms') {
+              <app-funding-structure></app-funding-structure>
+              } @if (currentStep() === 'eligibility') {
+              <app-eligibility-filters></app-eligibility-filters>
+              } @if (currentStep() === 'settings') {
+              <app-application-settings></app-application-settings>
+              } @if (currentStep() === 'review') {
+              <div class="space-y-6">
+                @if (validationErrors().length > 0) {
+                <div
+                  class="bg-amber-50 border border-amber-200/50 rounded-xl p-4 flex gap-3"
+                >
+                  <lucide-angular
+                    [img]="AlertCircleIcon"
+                    [size]="20"
+                    class="text-amber-600 flex-shrink-0 mt-0.5"
+                  ></lucide-angular>
+                  <div class="flex-1 min-w-0">
+                    <h4 class="text-sm font-semibold text-amber-900">
+                      Review Required
+                    </h4>
+                    <ul class="mt-2 text-sm text-amber-700 space-y-1">
+                      @for (error of validationErrors(); track error.field) {
+                      <li class="flex items-center gap-2">
+                        <span
+                          class="w-1.5 h-1.5 bg-amber-400 rounded-full flex-shrink-0"
+                        ></span>
+                        {{ error.message }}
+                      </li>
+                      }
+                    </ul>
+                  </div>
                 </div>
-              </div>
-            </div>
-          </div>
-          }
-        </div>
-
-        <!-- Form Actions -->
-        <div class="px-4 md:px-6 py-4 bg-gray-50 border-t border-gray-200">
-          <div
-            class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"
-          >
-            <div
-              class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3"
-            >
-              <button
-                class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-all"
-                [disabled]="currentStep() === 'basic'"
-                (click)="previousStep()"
-              >
-                <lucide-angular
-                  [img]="ArrowLeftIcon"
-                  [size]="16"
-                  class="mr-2 inline"
-                ></lucide-angular>
-                Previous
-              </button>
-
-              <button
-                class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-all"
-                (click)="goBack()"
-              >
-                Cancel
-              </button>
-              @if (isCreateMode()) {
-              <button
-                class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-all"
-                (click)="clearDraft()"
-                title="Clear form and start over"
-              >
-                Clear Form
-              </button>
-              }
-            </div>
-            <div
-              class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3"
-            >
-              <button
-                class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-all"
-                (click)="saveDraft()"
-                [disabled]="isSaving() || organizationError()"
-              >
-                <lucide-angular
-                  [img]="SaveIcon"
-                  [size]="16"
-                  class="mr-2 inline"
-                ></lucide-angular>
-                {{ isSaving() ? "Saving..." : getSaveButtonText() }}
-              </button>
-              @if (currentStep() === 'review') {
-              <button
-                class="px-6 py-2 bg-primary-600 border border-transparent rounded-lg text-sm font-medium text-white hover:bg-primary-700 transition-all flex items-center justify-center"
-                (click)="publishOpportunity()"
-                [disabled]="!canPublish() || isPublishing()"
-              >
-                @if (isPublishing()) {
-                <lucide-angular
-                  [img]="RefreshCwIcon"
-                  [size]="16"
-                  class="mr-2 animate-spin"
-                ></lucide-angular>
-                {{ isEditMode() ? "Saving Changes..." : "Publishing..." }}
-                } @else {
-                <lucide-angular
-                  [img]="CheckIcon"
-                  [size]="16"
-                  class="mr-2"
-                ></lucide-angular>
-                {{ isEditMode() ? "Save Changes" : "Publish Opportunity" }}
                 }
-              </button>
-              } @else {
-              <button
-                class="px-6 py-2 bg-primary-600 border border-transparent rounded-lg text-sm font-medium text-white hover:bg-primary-700 transition-all flex items-center justify-center"
-                (click)="nextStep()"
-                [disabled]="!canContinue()"
-              >
-                Continue
-                <lucide-angular
-                  [img]="ArrowRightIcon"
-                  [size]="16"
-                  class="ml-2"
-                ></lucide-angular>
-              </button>
+
+                <!-- SUMMARY SECTION -->
+                <div
+                  class="bg-slate-50 rounded-xl p-6 border border-slate-200/50"
+                >
+                  <h4 class="font-semibold text-slate-900 mb-4">
+                    Opportunity Summary
+                  </h4>
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <span class="text-slate-600">Title</span>
+                      <div class="font-medium text-slate-900 mt-1">
+                        {{ formData().title || "Not specified" }}
+                      </div>
+                    </div>
+                    <div>
+                      <span class="text-slate-600">Funding Type</span>
+                      <div class="font-medium text-slate-900 mt-1 capitalize">
+                        {{ formData().fundingType || "Not specified" }}
+                      </div>
+                    </div>
+                    <div>
+                      <span class="text-slate-600">Typical Investment</span>
+                      <div class="font-medium text-slate-900 mt-1">
+                        {{ formData().currency }}
+                        {{ getFormattedAmount("typicalInvestment") }}
+                      </div>
+                    </div>
+                    <div>
+                      <span class="text-slate-600">Offer Amount</span>
+                      <div class="font-medium text-slate-900 mt-1">
+                        {{ formData().currency }}
+                        {{ getFormattedAmount("offerAmount") }}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- READY STATE -->
+                <div
+                  class="bg-green-50 border border-green-200/50 rounded-xl p-4 flex gap-3"
+                >
+                  <lucide-angular
+                    [img]="CheckIcon"
+                    [size]="20"
+                    class="text-green-600 flex-shrink-0 mt-0.5"
+                  ></lucide-angular>
+                  <div class="flex-1 min-w-0">
+                    <h4 class="text-sm font-semibold text-green-900">
+                      Ready to Publish
+                    </h4>
+                    <p class="text-sm text-green-700 mt-1">
+                      Once published, qualified SMEs can view and apply. You can
+                      edit or pause anytime.
+                    </p>
+                  </div>
+                </div>
+              </div>
               }
+            </div>
+
+            <!-- FORM ACTIONS -->
+            <div
+              class="px-6 py-4 bg-slate-50 border-t border-slate-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"
+            >
+              <!-- LEFT BUTTONS -->
+              <div class="flex flex-col sm:flex-row gap-2">
+                <button
+                  class="px-6 py-2.5 bg-slate-100 text-slate-700 font-medium rounded-xl hover:bg-slate-200 active:bg-slate-300 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                  [disabled]="currentStep() === 'basic'"
+                  (click)="previousStep()"
+                >
+                  <lucide-angular
+                    [img]="ArrowLeftIcon"
+                    [size]="16"
+                    class="mr-1.5"
+                  ></lucide-angular>
+                  Previous
+                </button>
+
+                <button
+                  class="px-6 py-2.5 bg-slate-100 text-slate-700 font-medium rounded-xl hover:bg-slate-200 active:bg-slate-300 transition-colors duration-200 flex items-center justify-center"
+                  (click)="goBack()"
+                >
+                  Cancel
+                </button>
+
+                @if (isCreateMode()) {
+                <button
+                  class="px-6 py-2.5 bg-slate-100 text-slate-700 font-medium rounded-xl hover:bg-slate-200 active:bg-slate-300 transition-colors duration-200 flex items-center justify-center"
+                  (click)="clearDraft()"
+                  title="Clear form and start over"
+                >
+                  Clear Form
+                </button>
+                }
+              </div>
+
+              <!-- RIGHT BUTTONS -->
+              <div class="flex flex-col sm:flex-row gap-2">
+                <button
+                  class="px-6 py-2.5 bg-slate-100 text-slate-700 font-medium rounded-xl hover:bg-slate-200 active:bg-slate-300 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                  (click)="saveDraft()"
+                  [disabled]="isSaving() || organizationError()"
+                >
+                  @if (isSaving()) {
+                  <lucide-angular
+                    [img]="RefreshCwIcon"
+                    [size]="16"
+                    class="mr-1.5 animate-spin"
+                  ></lucide-angular>
+                  Saving... } @else {
+                  <lucide-angular
+                    [img]="SaveIcon"
+                    [size]="16"
+                    class="mr-1.5"
+                  ></lucide-angular>
+                  {{ getSaveButtonText() }}
+                  }
+                </button>
+
+                @if (currentStep() === 'review') {
+                <button
+                  class="px-6 py-2.5 bg-teal-500 text-white font-medium rounded-xl hover:bg-teal-600 active:bg-teal-700 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                  (click)="publishOpportunity()"
+                  [disabled]="!canPublish() || isPublishing()"
+                >
+                  @if (isPublishing()) {
+                  <lucide-angular
+                    [img]="RefreshCwIcon"
+                    [size]="16"
+                    class="mr-1.5 animate-spin"
+                  ></lucide-angular>
+                  {{ isEditMode() ? "Saving Changes..." : "Publishing..." }}
+                  } @else {
+                  <lucide-angular
+                    [img]="CheckIcon"
+                    [size]="16"
+                    class="mr-1.5"
+                  ></lucide-angular>
+                  {{ isEditMode() ? "Save Changes" : "Publish Opportunity" }}
+                  }
+                </button>
+                } @else {
+                <button
+                  class="px-6 py-2.5 bg-teal-500 text-white font-medium rounded-xl hover:bg-teal-600 active:bg-teal-700 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                  (click)="nextStep()"
+                  [disabled]="!canContinue()"
+                >
+                  Continue
+                  <lucide-angular
+                    [img]="ArrowRightIcon"
+                    [size]="16"
+                    class="ml-1.5"
+                  ></lucide-angular>
+                </button>
+                }
+              </div>
             </div>
           </div>
         </div>
@@ -505,5 +509,4 @@
     </div>
   </div>
 </div>
-
 }

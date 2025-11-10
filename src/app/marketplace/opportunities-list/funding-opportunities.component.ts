@@ -22,7 +22,7 @@ import { LoadingStateComponent } from './loading-state.component';
 import { MarketplaceHeaderComponent } from '../components/marketplace-header.component';
 import { SmartSuggestionsComponent } from '../components/smart-suggestions/smart-suggestions.component';
 import { LandingHeaderComponent } from '../../landing/landing-header.component';
-import { LandingFooterComponent } from '../../landing/landing-footer.component';
+import { LandingFooterComponent } from '../../landing/footer/landing-footer.component';
 import { FundingOpportunity } from 'src/app/funder/create-opportunity/shared/funding.interfaces';
 import { ToastContainerComponent } from 'src/app/shared/toast-container.component';
 

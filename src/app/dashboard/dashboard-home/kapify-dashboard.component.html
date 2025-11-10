@@ -114,87 +114,6 @@
           </div>
           }
 
-          <!-- Onboarding Cards Section -->
-          <div class="space-y-4">
-            <div>
-              <h3 class="text-lg font-bold text-slate-900 mb-2">
-                {{ userType() === "funder" ? "Get Started" : "Next Steps" }}
-              </h3>
-              <p class="text-sm text-slate-600">
-                Essential information to maximize your experience
-              </p>
-            </div>
-
-            <!-- Dynamic Onboarding Cards -->
-            <div class="space-y-3">
-              @for (card of onboardingCards(); track card.id) {
-              <div
-                class="bg-white rounded-2xl border border-slate-200 p-6 hover:shadow-md hover:border-slate-300 transition-all duration-200 cursor-pointer group"
-                [class]="getCardBorderClass(card.color)"
-                (click)="handleCardAction(card)"
-              >
-                <!-- Card Content -->
-                <div class="flex items-start justify-between gap-4">
-                  <div class="flex items-start gap-4 flex-1 min-w-0">
-                    <!-- Icon -->
-                    <div
-                      [class]="
-                        getCardIconClass(card.color) +
-                        ' w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0'
-                      "
-                    >
-                      <lucide-icon
-                        [img]="card.icon"
-                        [size]="24"
-                        [class]="getCardIconTextClass(card.color)"
-                      ></lucide-icon>
-                    </div>
-
-                    <!-- Text Content -->
-                    <div class="flex-1 min-w-0">
-                      <div class="flex items-center gap-2 mb-1">
-                        <h4 class="text-base font-semibold text-slate-900">
-                          {{ card.title }}
-                        </h4>
-                        @if (card.completed) {
-                        <lucide-icon
-                          [img]="CheckCircleIcon"
-                          [size]="16"
-                          class="text-green-600 flex-shrink-0"
-                        />
-                        }
-                      </div>
-                      <p class="text-sm text-slate-600 leading-relaxed">
-                        {{ card.description }}
-                      </p>
-
-                      <!-- Action Text -->
-                      @if (card.actionText && !card.completed) {
-                      <div class="mt-3 pt-3 border-t border-slate-100">
-                        <span
-                          class="text-xs text-slate-500 flex items-center gap-1 group-hover:text-slate-700 transition-colors"
-                        >
-                          <lucide-icon [img]="EyeIcon" [size]="14" />
-                          {{ card.actionText }}
-                          @if (card.rightPanelContent) { in the side panel }
-                        </span>
-                      </div>
-                      }
-                    </div>
-                  </div>
-
-                  <!-- Arrow Indicator -->
-                  <lucide-icon
-                    [img]="ArrowRightIcon"
-                    [size]="20"
-                    class="text-slate-400 group-hover:text-slate-600 transition-colors flex-shrink-0 mt-1"
-                  />
-                </div>
-              </div>
-              }
-            </div>
-          </div>
-
           <!-- Quick Actions for Funder -->
           @if (userType() === 'funder' &&
           onboardingState()?.canCreateOpportunities) {
@@ -226,6 +145,81 @@
             </div>
           </div>
           }
+
+          <!-- Onboarding Cards Section -->
+          <div class="space-y-4">
+            <div>
+              <h3 class="text-lg font-bold text-slate-900 mb-2">
+                {{ userType() === "funder" ? "Get Started" : "Next Steps" }}
+              </h3>
+              <p class="text-sm text-slate-600">
+                Essential information to maximize your experience
+              </p>
+            </div>
+
+            <div class="space-y-3">
+              @for (card of onboardingCards(); track card.id) {
+              <div
+                class="bg-white rounded-2xl border border-slate-200 p-6 hover:shadow-md hover:border-slate-300 transition-all duration-200 cursor-pointer group"
+                [class]="getCardBorderClass(card.color)"
+                (click)="handleCardAction(card)"
+              >
+                <div class="flex items-start justify-between gap-4">
+                  <div class="flex items-start gap-4 flex-1 min-w-0">
+                    <div
+                      [class]="
+                        getCardIconClass(card.color) +
+                        ' w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0'
+                      "
+                    >
+                      <lucide-icon
+                        [img]="card.icon"
+                        [size]="24"
+                        [class]="getCardIconTextClass(card.color)"
+                      ></lucide-icon>
+                    </div>
+
+                    <div class="flex-1 min-w-0">
+                      <div class="flex items-center gap-2 mb-1">
+                        <h4 class="text-base font-semibold text-slate-900">
+                          {{ card.title }}
+                        </h4>
+                        @if (card.completed) {
+                        <lucide-icon
+                          [img]="CheckCircleIcon"
+                          [size]="16"
+                          class="text-green-600 flex-shrink-0"
+                        />
+                        }
+                      </div>
+                      <p class="text-sm text-slate-600 leading-relaxed">
+                        {{ card.description }}
+                      </p>
+
+                      @if (card.actionText && !card.completed) {
+                      <div class="mt-3 pt-3 border-t border-slate-100">
+                        <span
+                          class="text-xs text-slate-500 flex items-center gap-1 group-hover:text-slate-700 transition-colors"
+                        >
+                          <lucide-icon [img]="EyeIcon" [size]="14" />
+                          {{ card.actionText }}
+                          @if (card.rightPanelContent) { in the side panel }
+                        </span>
+                      </div>
+                      }
+                    </div>
+                  </div>
+
+                  <lucide-icon
+                    [img]="ArrowRightIcon"
+                    [size]="20"
+                    class="text-slate-400 group-hover:text-slate-600 transition-colors flex-shrink-0 mt-1"
+                  />
+                </div>
+              </div>
+              }
+            </div>
+          </div>
         </div>
       </div>
     </main>
