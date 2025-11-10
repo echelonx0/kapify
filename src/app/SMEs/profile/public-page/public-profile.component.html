@@ -1,5 +1,3 @@
-<!-- src/app/SMEs/profile/public-page/public-profile.component.html -->
-
 <div class="min-h-screen bg-slate-50">
   <!-- Loading State -->
   @if (isLoading()) {
@@ -46,6 +44,17 @@
 
         <!-- Action Buttons -->
         <div class="flex gap-2">
+          <button
+            (click)="goHome()"
+            class="p-2.5 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
+            title="Back Home"
+          >
+            <lucide-icon
+              [name]="HomeIcon"
+              [size]="20"
+              [class.animate-spin]="isRefreshing()"
+            ></lucide-icon>
+          </button>
           <button
             (click)="refreshProfile()"
             [disabled]="isRefreshing()"
@@ -144,94 +153,94 @@
     </div>
 
     <!-- Supporting Documents Section -->
-    <div class="space-y-6 mb-12">
-      <h2 class="text-2xl font-bold text-slate-900">Supporting Documents</h2>
+    <div class="mb-12">
+      <h2 class="text-2xl font-bold text-slate-900 mb-8">
+        Supporting Documents
+      </h2>
 
       @if (profileData()!.documents && profileData()!.documents.length > 0) {
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         @for (doc of profileData()!.documents; track doc.id) {
-        <div
-          class="bg-white rounded-xl border border-slate-200 p-4 hover:shadow-md hover:border-slate-300 transition-all duration-200"
-        >
-          <div class="flex items-start justify-between mb-3">
-            <div class="flex items-center gap-3 min-w-0">
-              <div class="p-2 bg-slate-100 rounded-lg flex-shrink-0">
-                <lucide-icon
-                  [name]="getDocumentIcon(doc.type)"
-                  [size]="20"
-                  class="text-slate-600"
-                ></lucide-icon>
-              </div>
-              <div class="min-w-0">
-                <h3 class="font-medium text-slate-900 text-sm truncate">
-                  {{ doc.name }}
-                </h3>
-                <p class="text-xs text-slate-500">
-                  {{ formatFileSize(doc.fileSize) }}
-                </p>
-              </div>
-            </div>
-
-            <!-- Verification Badge -->
-            @switch (doc.verificationStatus) { @case ('approved') {
-            <span
-              class="px-2 py-1 bg-green-50 text-green-700 rounded text-xs font-semibold flex items-center gap-1 flex-shrink-0 ml-2"
-            >
-              <lucide-icon [name]="CheckCircleIcon" [size]="14"></lucide-icon>
-              <span class="hidden sm:inline">Verified</span>
-            </span>
-            } @case ('verified') {
-            <span
-              class="px-2 py-1 bg-green-50 text-green-700 rounded text-xs font-semibold flex items-center gap-1 flex-shrink-0 ml-2"
-            >
-              <lucide-icon [name]="CheckCircleIcon" [size]="14"></lucide-icon>
-              <span class="hidden sm:inline">Verified</span>
-            </span>
-            } @case ('rejected') {
-            <span
-              class="px-2 py-1 bg-red-50 text-red-700 rounded text-xs font-semibold flex-shrink-0 ml-2"
-            >
-              Rejected
-            </span>
-            } @case ('processing') {
-            <span
-              class="px-2 py-1 bg-amber-50 text-amber-700 rounded text-xs font-semibold flex-shrink-0 ml-2"
-            >
-              Processing
-            </span>
-            } }
+        <div class="flex gap-4">
+          <!-- Icon Container -->
+          <div
+            class="w-12 h-12 flex-shrink-0 rounded-lg bg-slate-100 flex items-center justify-center"
+          >
+            <lucide-icon
+              [name]="getDocumentIcon(doc.type)"
+              [size]="20"
+              class="text-slate-600"
+            ></lucide-icon>
           </div>
 
-          <div
-            class="flex items-center justify-between pt-3 border-t border-slate-100"
-          >
-            <span class="text-xs text-slate-500 capitalize">{{
-              doc.category
-            }}</span>
-            <a
-              [href]="doc.publicUrl"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="text-teal-600 hover:text-teal-700 text-sm font-medium flex items-center gap-1"
-            >
-              Download
-              <lucide-icon [name]="ExternalLinkIcon" [size]="14"></lucide-icon>
-            </a>
+          <!-- Content -->
+          <div class="flex-1 min-w-0">
+            <h3 class="font-semibold text-slate-900 text-sm mb-1 truncate">
+              {{ doc.name }}
+            </h3>
+            <p class="text-xs text-slate-500 mb-3">
+              {{ formatFileSize(doc.fileSize) }}
+            </p>
+
+            <!-- Footer with Status & Download -->
+            <div class="flex items-center justify-between gap-2">
+              @switch (doc.verificationStatus) { @case ('approved') {
+              <span
+                class="inline-flex items-center gap-1 px-2 py-1 bg-green-50 text-green-700 rounded text-xs font-semibold"
+              >
+                <lucide-icon [name]="CheckCircleIcon" [size]="12"></lucide-icon>
+                <span class="hidden sm:inline">Verified</span>
+              </span>
+              } @case ('verified') {
+              <span
+                class="inline-flex items-center gap-1 px-2 py-1 bg-green-50 text-green-700 rounded text-xs font-semibold"
+              >
+                <lucide-icon [name]="CheckCircleIcon" [size]="12"></lucide-icon>
+                <span class="hidden sm:inline">Verified</span>
+              </span>
+              } @case ('rejected') {
+              <span
+                class="inline-block px-2 py-1 bg-red-50 text-red-700 rounded text-xs font-semibold"
+              >
+                Rejected
+              </span>
+              } @case ('processing') {
+              <span
+                class="inline-block px-2 py-1 bg-amber-50 text-amber-700 rounded text-xs font-semibold"
+              >
+                Processing
+              </span>
+              } }
+              <a
+                [href]="doc.publicUrl"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="text-teal-600 hover:text-teal-700 text-xs font-medium flex items-center gap-0.5"
+              >
+                Download
+                <lucide-icon
+                  [name]="ExternalLinkIcon"
+                  [size]="12"
+                ></lucide-icon>
+              </a>
+            </div>
           </div>
         </div>
         }
       </div>
       } @else {
       <div
-        class="bg-slate-50 rounded-xl border border-slate-200 p-8 text-center"
+        class="rounded-xl border border-slate-200 bg-slate-50 p-8 text-center"
       >
         <lucide-icon
           [name]="FileTextIcon"
           [size]="32"
           class="text-slate-400 mx-auto mb-3"
         ></lucide-icon>
-        <p class="text-slate-600 font-medium">No documents shared yet</p>
-        <p class="text-slate-500 text-sm mt-1">
+        <p class="text-slate-600 font-medium text-sm">
+          No documents shared yet
+        </p>
+        <p class="text-slate-500 text-xs mt-1">
           Documents will appear here once they're uploaded and verified
         </p>
       </div>
@@ -250,9 +259,9 @@
           <h3 class="text-lg font-semibold text-slate-900 mb-2">
             Extended Resources
           </h3>
-          <p class="text-slate-600 max-w-xl">
+          <p class="text-slate-600 max-w-xl text-sm">
             Access our complete data room with additional business
-            documentation, financial records, and strategic planning materials.
+            documentation, financial records, and strategic materials.
           </p>
         </div>
         <a
@@ -265,122 +274,134 @@
     </div>
     }
 
-    <!-- Section Summaries - Clean Cards -->
-    <div class="space-y-6 mb-12">
-      <h2 class="text-2xl font-bold text-slate-900">Business Profile</h2>
+    <!-- Business Profile Sections - Multi-Column Layout -->
+    <div class="mb-12">
+      <h2 class="text-2xl font-bold text-slate-900 mb-8">Business Profile</h2>
 
-      <div class="grid gap-6">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         @for (section of profileData()!.sections; track section.stepId) {
-        <div
-          class="bg-white rounded-2xl border border-slate-200 overflow-hidden hover:shadow-md hover:border-slate-300 transition-all duration-200"
-        >
-          <!-- Section Header -->
+        <div class="flex gap-4">
+          <!-- Icon Container -->
           <div
-            class="p-6 border-b border-slate-100 flex items-center justify-between"
+            [class]="
+              'w-12 h-12 flex-shrink-0 rounded-lg flex items-center justify-center ' +
+              (section.completed
+                ? 'bg-green-100 text-green-600'
+                : 'bg-slate-100 text-slate-400')
+            "
           >
-            <div class="flex items-center gap-4">
-              <div
-                [class]="
-                  'w-12 h-12 rounded-xl flex items-center justify-center ' +
-                  (section.completed
-                    ? 'bg-green-100 text-green-600'
-                    : 'bg-slate-100 text-slate-400')
-                "
-              >
-                <lucide-icon
-                  [name]="
-                    section.completed
-                      ? CheckCircleIcon
-                      : getSectionIcon(section.stepId)
-                  "
-                  [size]="20"
-                ></lucide-icon>
-              </div>
-              <div>
-                <h3 class="font-semibold text-slate-900 text-lg">
-                  {{ section.title }}
-                </h3>
-                <p
-                  [class]="
-                    'text-sm ' +
-                    (section.completionPercentage === 100
-                      ? 'text-green-600'
-                      : section.completionPercentage >= 75
-                      ? 'text-teal-600'
-                      : section.completionPercentage >= 50
-                      ? 'text-amber-600'
-                      : 'text-slate-500')
-                  "
-                >
-                  {{ section.completionPercentage }}% complete
-                </p>
-              </div>
-            </div>
+            <lucide-icon
+              [name]="
+                section.completed
+                  ? CheckCircleIcon
+                  : getSectionIcon(section.stepId)
+              "
+              [size]="20"
+            ></lucide-icon>
           </div>
 
-          <!-- Section Content -->
-          <div class="p-6">
+          <!-- Content -->
+          <div class="flex-1">
+            <h3 class="font-semibold text-slate-900 text-sm mb-1">
+              {{ section.title }}
+            </h3>
+            <p
+              [class]="
+                'text-xs mb-3 ' +
+                (section.completionPercentage === 100
+                  ? 'text-green-600 font-medium'
+                  : section.completionPercentage >= 75
+                  ? 'text-teal-600'
+                  : section.completionPercentage >= 50
+                  ? 'text-amber-600'
+                  : 'text-slate-500')
+              "
+            >
+              {{ section.completionPercentage }}% complete
+            </p>
+
+            <!-- Key Data Items (first 2 only for brevity) -->
             @if (section.keyData.length > 0) {
-            <div class="space-y-3">
-              @for (item of section.keyData; track item.label) {
-              <div
-                class="flex items-center justify-between py-3 border-b border-slate-100 last:border-0"
-              >
-                <span class="text-slate-600 text-sm">{{ item.label }}</span>
-                <span class="font-medium text-slate-900 text-sm">{{
+            <div class="space-y-2">
+              @for (item of section.keyData.slice(0, 2); track item.label) {
+              <div class="flex items-start gap-2">
+                <span class="text-xs text-slate-500 flex-1">{{
+                  item.label
+                }}</span>
+                <span class="text-xs font-medium text-slate-900 text-right">{{
                   item.value
                 }}</span>
               </div>
               }
             </div>
-            } @else {
-            <div class="text-center py-6 text-slate-500">
-              <p class="text-sm">No data available for this section</p>
-            </div>
             }
-          </div>
-
-          <!-- Progress Bar -->
-          <div class="px-6 pb-4">
-            <div class="h-1.5 bg-slate-100 rounded-full overflow-hidden">
-              <div
-                [class]="getCompletionColor(section.completionPercentage)"
-                class="h-full rounded-full transition-all duration-500"
-                [style.width]="section.completionPercentage + '%'"
-              ></div>
-            </div>
           </div>
         </div>
         }
       </div>
     </div>
 
-    <!-- Footer CTA -->
+    <!-- Request Information Section - Improved CTA -->
     <div
-      class="bg-white rounded-2xl border border-slate-200 p-8 text-center mb-12"
+      class="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 rounded-2xl p-8 mb-12 text-white"
     >
-      <h3 class="text-xl font-bold text-slate-900 mb-2">
-        Ready to learn more?
-      </h3>
-      <p class="text-slate-600 mb-6 max-w-2xl mx-auto">
-        This business profile demonstrates strong fundamentals and investment
-        potential. Contact us to explore partnership and funding opportunities.
-      </p>
-      <button
-        class="bg-teal-500 text-white px-8 py-3 rounded-xl font-medium hover:bg-teal-600 active:bg-teal-700 transition-colors"
-      >
-        Request More Information
-      </button>
+      <div class="max-w-2xl">
+        <h3 class="text-2xl font-bold mb-3">Interested in this opportunity?</h3>
+        <p class="text-slate-300 mb-6 text-sm leading-relaxed">
+          Create an account on Kapify to explore partnership, investment, or
+          collaboration opportunities with {{ profileData()!.companyName }} .
+          Our platform will facilitate introductions and support the
+          conversation.
+        </p>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
+          <button
+            class="px-6 py-3 bg-teal-600 text-white rounded-lg font-medium hover:bg-teal-700 active:bg-teal-800 transition-colors text-sm"
+          >
+            Request Introduction
+          </button>
+          <button
+            class="px-6 py-3 border border-slate-400 text-white rounded-lg font-medium hover:bg-slate-700 active:bg-slate-600 transition-colors text-sm"
+          >
+            Save Profile
+          </button>
+        </div>
+
+        <p class="text-xs text-slate-400">
+          We'll notify the business owner of your interest. Response time
+          typically within 2-3 business days.
+        </p>
+      </div>
     </div>
 
-    <!-- Footer Info -->
-    <div class="text-center text-slate-500 text-sm pb-8">
-      <p>
-        This profile was last updated
-        {{ formatDate(profileData()!.lastUpdated) }}
+    <!-- Legal Disclaimer - POPIA & GDPR -->
+    <div
+      class="bg-slate-100 rounded-xl border border-slate-300 p-6 text-center"
+    >
+      <p class="text-xs text-slate-700 leading-relaxed mb-3">
+        <strong>Data Privacy & Compliance Notice:</strong> All information
+        displayed on this profile has been voluntarily provided and shared by
+        the business owner in accordance with our Platform Terms of Service. By
+        accessing this profile, you acknowledge and agree to our data handling
+        practices.
       </p>
-      <p class="mt-1">
-        Data shown here reflects the business's self-reported information
+      <p class="text-xs text-slate-600 leading-relaxed mb-3">
+        This platform complies with <strong>POPIA</strong> (Protection of
+        Personal Information Act, South Africa) and
+        <strong>GDPR</strong> (General Data Protection Regulation, EU). Personal
+        information is processed only as authorized by the data subject and in
+        accordance with applicable privacy laws. For inquiries regarding your
+        data rights or to exercise rights of access, correction, or deletion,
+        please contact our Privacy Officer.
+      </p>
+      <p class="text-xs text-slate-500">
+        <span class="block mb-1"
+          >Last updated: {{ formatDate(profileData()!.lastUpdated) }}</span
+        >
+        <span
+          >Data reflects information voluntarily shared by the business. The
+          platform acts as a neutral intermediary.</span
+        >
       </p>
     </div>
   </div>

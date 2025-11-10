@@ -1,9 +1,8 @@
 // src/app/SMEs/profile/public-page/public-profile.component.ts
-// FIXED: Added documents and dataRoomUrl to PublicProfileData interface
 
 import { Component, signal, computed, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import {
   LucideAngularModule,
   CheckCircle,
@@ -21,16 +20,16 @@ import {
   Share2,
   File,
   Image,
+  Home,
+  HouseIcon,
 } from 'lucide-angular';
 import { SMEPublicProfileService } from '../services/sme-public-profile.service';
 
-// UPDATED: Added documents and dataRoomUrl properties
 interface PublicProfileData {
   slug: string;
   organizationId: string;
   organizationName: string;
   organizationType: string;
-
   companyName: string;
   industry: string;
   yearsInOperation: number;
@@ -40,10 +39,8 @@ interface PublicProfileData {
   completionPercentage: number;
   readinessScore: number;
   lastUpdated: Date;
-
-  documents: PublicDocument[]; // NEW
-  dataRoomUrl: string; // NEW
-
+  documents: PublicDocument[];
+  dataRoomUrl: string;
   sections: PublicSectionView[];
 }
 
@@ -69,10 +66,7 @@ interface PublicSectionView {
   icon: any;
   completed: boolean;
   completionPercentage: number;
-  keyData: {
-    label: string;
-    value: string;
-  }[];
+  keyData: { label: string; value: string }[];
 }
 
 @Component({
@@ -101,6 +95,7 @@ export class PublicProfileViewComponent implements OnInit {
   ShareIcon = Share2;
   FileIcon = File;
   ImageIcon = Image;
+  HomeIcon = HouseIcon;
 
   // State
   isLoading = signal(false);
@@ -136,7 +131,10 @@ export class PublicProfileViewComponent implements OnInit {
     };
     return messages[level];
   });
-
+  constructor(private router: Router) {}
+  goHome() {
+    this.router.navigate(['/']);
+  }
   ngOnInit() {
     this.loadProfile();
   }
@@ -206,7 +204,6 @@ export class PublicProfileViewComponent implements OnInit {
     return iconMap[stepId] || AlertCircle;
   }
 
-  // NEW: Get document icon based on file type
   getDocumentIcon(fileType: string): string {
     const iconMap: { [key: string]: string } = {
       pdf: 'FileText',
@@ -223,7 +220,6 @@ export class PublicProfileViewComponent implements OnInit {
     return iconMap[fileType.toLowerCase()] || 'File';
   }
 
-  // NEW: Format file size for display
   formatFileSize(bytes: number): string {
     if (bytes === 0) return '0 Bytes';
     const k = 1024;
@@ -245,13 +241,10 @@ export class PublicProfileViewComponent implements OnInit {
   formatCurrency(value: string | number | undefined): string {
     if (!value) return 'Not specified';
 
-    // Convert to string if number
     const valueStr = typeof value === 'number' ? value.toString() : value;
-
     if (valueStr === 'Not specified' || valueStr === 'Not provided')
       return valueStr;
 
-    // Parse the number, removing any non-numeric characters
     const numValue = parseFloat(valueStr.replace(/[^\d.-]/g, ''));
     if (isNaN(numValue)) return valueStr;
 
