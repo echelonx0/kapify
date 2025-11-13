@@ -11,8 +11,8 @@ import {
   DollarSign,
   Gift,
 } from 'lucide-angular';
-import { OpportunityFormStateService } from 'src/app/funder/services/opportunity-form-state.service';
-import { OpportunityUIHelperService } from 'src/app/funder/services/ui-helper.service';
+import { OpportunityFormStateService } from 'src/app/funder/create-opportunity/services/opportunity-form-state.service';
+import { OpportunityUIHelperService } from '../../services/ui-helper.service';
 
 type FundingType =
   | 'debt'
