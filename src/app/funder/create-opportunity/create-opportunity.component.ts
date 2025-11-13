@@ -348,7 +348,7 @@ export class CreateOpportunityComponent implements OnInit, OnDestroy {
               : undefined,
           exclusionCriteria:
             data.exclusionCriteria?.length > 0
-              ? JSON.stringify(data.exclusionCriteria)
+              ? data.exclusionCriteria
               : undefined,
           currency: data.currency,
           fundingType: data.fundingType as any,
