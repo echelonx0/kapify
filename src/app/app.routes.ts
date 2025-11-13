@@ -12,6 +12,7 @@ import { SuccessPageComponent } from './shared/components/success-page/success-p
 import { VersionInfoComponent } from './shared/components/version-info.component';
 import { PricingPageComponent } from './dashboard/finance/pricing-page/pricing-page.component';
 import { PublicProfileViewComponent } from './SMEs/profile/public-page/public-profile.component';
+import { AcceptInvitationComponent } from './auth/accept-invitation/accept-invitation.component';
 
 export const routes: Routes = [
   // Public routes
@@ -52,6 +53,12 @@ export const routes: Routes = [
     component: LoginComponent,
     canActivate: [GuestGuard],
     title: 'Sign In - Kapify',
+  },
+
+  // In your auth routes array:
+  {
+    path: 'auth/accept-invitation',
+    component: AcceptInvitationComponent,
   },
   {
     path: 'register',

@@ -1,0 +1,21 @@
+/* 
+  accept-invitation.component.css
+  
+  Most styling is handled by Tailwind classes in the template.
+  Add any component-specific animations or overrides here.
+*/
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-in {
+  animation: fadeIn 200ms ease-out;
+}
