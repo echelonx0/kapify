@@ -447,7 +447,6 @@ export class CreateOpportunityComponent implements OnInit, OnDestroy {
     const data = this.formState.formData();
     return !!(
       data.title.trim() &&
-      data.shortDescription.trim() &&
       data.description.trim() &&
       data.fundingType &&
       data.typicalInvestment &&
