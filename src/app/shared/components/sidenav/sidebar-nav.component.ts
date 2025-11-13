@@ -108,13 +108,13 @@ export class SidebarNavComponent implements OnInit {
       route: '/funding',
       userTypes: ['sme'],
     },
-    {
-      id: 'funder-manage',
-      label: 'Manage',
-      icon: Building,
-      route: '/dashboard/funder-dashboard',
-      userTypes: ['funder'],
-    },
+    // {
+    //   id: 'funder-manage',
+    //   label: 'Manage',
+    //   icon: Building,
+    //   route: '/dashboard/funder-dashboard',
+    //   userTypes: ['funder'],
+    // },
     {
       id: 'funder-opportunities',
       label: 'Opportunities',

@@ -292,7 +292,6 @@
 //     return `${window.location.origin}/auth/accept-invitation?token=${invitation.id}`;
 //   }
 // }
-
 import { Component, OnInit, signal, inject, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
@@ -557,7 +556,8 @@ export class TeamManagementComponent implements OnInit {
     const invitation = this.selectedInvitation();
     if (!invitation) return;
 
-    const inviteUrl = `${window.location.origin}/auth/accept-invitation?token=${invitation.id}`;
+    // ✅ USE THE INVITATION TOKEN, NOT THE ID
+    const inviteUrl = `${window.location.origin}/auth/accept-invitation?token=${invitation.invitationToken}`;
 
     navigator.clipboard
       .writeText(inviteUrl)
@@ -571,9 +571,31 @@ export class TeamManagementComponent implements OnInit {
       });
   }
 
+  // ✅ USE THE INVITATION TOKEN, NOT THE ID
   getInviteLink(): string {
     const invitation = this.selectedInvitation();
     if (!invitation) return '';
-    return `${window.location.origin}/auth/accept-invitation?token=${invitation.id}`;
+    return `${window.location.origin}/auth/accept-invitation?token=${invitation.invitationToken}`;
+  }
+
+  formatExpiryDate(date: Date): string {
+    const now = new Date();
+    const diff = date.getTime() - now.getTime(); // ✅ CORRECT ORDER: future - now
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+
+    if (days < 0) {
+      return 'Expired'; // Past date
+    }
+    if (days === 0 && hours > 0) {
+      return `Expires in ${hours}h`;
+    }
+    if (days === 0) {
+      return 'Expires today';
+    }
+    if (days === 1) {
+      return 'Expires tomorrow';
+    }
+    return `Expires in ${days} days`;
   }
 }

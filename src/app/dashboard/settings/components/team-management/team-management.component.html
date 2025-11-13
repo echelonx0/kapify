@@ -5,9 +5,7 @@
       <div class="flex items-center justify-between">
         <div>
           <h2 class="text-xl font-bold text-slate-900 mb-1">Team Members</h2>
-          <p class="text-sm text-slate-600">
-            Manage your organization's team and invite new members
-          </p>
+          <p class="text-sm text-slate-600">Manage your organization's team</p>
         </div>
 
         @if (canInvite()) {
@@ -334,8 +332,6 @@
         </p>
       </div>
 
-      <!-- Expiry Info -->
-      <!-- Expiry Info -->
       <div
         class="bg-amber-50 rounded-xl p-3 border border-amber-200/50 flex items-start gap-2"
       >
@@ -347,7 +343,7 @@
         <div>
           <p class="text-xs font-semibold text-amber-900">Expires</p>
           <p class="text-xs text-amber-700">
-            {{ formatDate(invitationExpiryDate()) }}
+            {{ formatExpiryDate(invitationExpiryDate()) }}
           </p>
         </div>
       </div>
@@ -365,8 +361,14 @@
         (click)="copyInviteLink()"
         class="flex-1 bg-teal-500 text-white font-medium rounded-xl px-4 py-2.5 hover:bg-teal-600 active:bg-teal-700 transition-colors duration-200 flex items-center justify-center gap-2"
       >
+        @if (copyFeedback()) {
+        <!-- Show only feedback message when copying -->
+        <span class="text-sm font-medium">{{ copyFeedback() }}</span>
+        } @else {
+        <!-- Show icon + text normally -->
         <lucide-icon [name]="'copy'" [size]="16" />
-        {{ copyFeedback() || "Copy Link" }}
+        <span>Copy Link</span>
+        }
       </button>
     </div>
   </div>

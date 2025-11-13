@@ -29,6 +29,7 @@ export interface InvitationRequest {
   lastName?: string;
 }
 
+// FIX: Add invitation_token to expose it
 export interface PendingInvitation {
   id: string;
   email: string;
@@ -38,6 +39,7 @@ export interface PendingInvitation {
   invitedAt: Date;
   expiresAt: Date;
   status: 'invited' | 'expired' | 'cancelled';
+  invitationToken: string; // ✅ ADD THIS
 }
 
 interface InvitationRecord {
@@ -47,6 +49,7 @@ interface InvitationRecord {
   invited_by: string;
   invited_at: string;
   invitation_expires_at: string;
+  invitation_token: string; // ✅ ADD THIS
   status: string;
   users?:
     | {
@@ -173,6 +176,8 @@ export class OrganizationInvitationService {
 
   /**
    * Perform the actual invitation
+   * EMAIL IS NON-BLOCKING: Returns success after record created,
+   * sends email async with errors logged only to console.
    */
   private async performInvitation(
     invitation: InvitationRequest,
@@ -186,7 +191,7 @@ export class OrganizationInvitationService {
         throw new Error('You do not have permission to invite team members');
       }
 
-      // 2. Check if email already invited or active (simplified query)
+      // 2. Check if email already invited or active
       const { data: existingByEmail } = await this.supabase
         .from('organization_users')
         .select('id, status')
@@ -208,7 +213,6 @@ export class OrganizationInvitationService {
       expiresAt.setDate(expiresAt.getDate() + 7); // 7 days expiry
 
       // 4. Create invitation record
-      // NOTE: user_id must be nullable in DB schema for pending invites
       const { data: invitationData, error: inviteError } = await this.supabase
         .from('organization_users')
         .insert({
@@ -221,7 +225,6 @@ export class OrganizationInvitationService {
           invitation_token: invitationToken,
           invitation_expires_at: expiresAt.toISOString(),
           is_active: false,
-          // user_id is NULL for pending invites
         })
         .select('id')
         .single();
@@ -231,42 +234,70 @@ export class OrganizationInvitationService {
         throw new Error('Failed to create invitation record');
       }
 
-      // 5. Get organization and inviter details
-      const [orgDetails, inviterDetails] = await Promise.all([
-        this.getOrganizationName(orgId),
-        this.getUserName(userId),
-      ]);
-
-      // 6. Send invitation email via Edge Function
-      const emailResult = await this.sendInvitationEmail({
-        invitationId: invitationData.id,
-        email: invitation.email,
-        organizationName: orgDetails,
-        inviterName: inviterDetails,
-        role: invitation.role,
-        invitationToken: invitationToken,
-      });
-
-      if (!emailResult.success) {
-        // Rollback: delete invitation if email fails
-        await this.supabase
-          .from('organization_users')
-          .delete()
-          .eq('id', invitationData.id);
-
-        throw new Error('Failed to send invitation email');
-      }
-
-      return {
+      // 5. SUCCESS: Return immediately (email is async/non-blocking)
+      const result = {
         success: true,
         invitationId: invitationData.id,
       };
+
+      // 6. Send email async in background (errors don't break flow)
+      this.sendInvitationEmailAsync(
+        invitationData.id,
+        invitation.email,
+        orgId,
+        userId,
+        invitation.role,
+        invitationToken
+      );
+
+      return result;
     } catch (error: any) {
       console.error('Invitation error:', error);
       return {
         success: false,
         error: error?.message || 'Failed to send invitation',
       };
+    }
+  }
+
+  /**
+   * Send invitation email async (non-blocking)
+   * Errors only logged to console, don't break the flow
+   */
+  private async sendInvitationEmailAsync(
+    invitationId: string,
+    email: string,
+    orgId: string,
+    userId: string,
+    role: string,
+    invitationToken: string
+  ): Promise<void> {
+    try {
+      const [orgName, inviterName] = await Promise.all([
+        this.getOrganizationName(orgId),
+        this.getUserName(userId),
+      ]);
+
+      const result = await this.sendInvitationEmail({
+        invitationId,
+        email,
+        organizationName: orgName,
+        inviterName,
+        role,
+        invitationToken,
+      });
+
+      if (!result.success) {
+        console.warn(
+          `📧 Email delivery failed for invitation ${invitationId}:`,
+          result.error
+        );
+      }
+    } catch (error: any) {
+      console.warn(
+        `📧 Email error for invitation ${invitationId}:`,
+        error?.message
+      );
     }
   }
 
@@ -330,7 +361,6 @@ export class OrganizationInvitationService {
 
   /**
    * Fetch pending invitations from database
-   * FIX: Use explicit FK reference to avoid ambiguity
    */
   private async fetchPendingInvitations(
     orgId: string
@@ -345,6 +375,7 @@ export class OrganizationInvitationService {
       invited_by,
       invited_at,
       invitation_expires_at,
+      invitation_token,
       status,
       users!organization_users_invited_by_fkey (
         first_name,
@@ -366,7 +397,6 @@ export class OrganizationInvitationService {
     }
 
     return (data as unknown as InvitationRecord[]).map((inv) => {
-      // Handle users field - could be object or array
       const inviterRecord = Array.isArray(inv.users) ? inv.users[0] : inv.users;
 
       return {
@@ -382,6 +412,7 @@ export class OrganizationInvitationService {
         invitedAt: new Date(inv.invited_at),
         expiresAt: new Date(inv.invitation_expires_at),
         status: this.getInvitationStatus(inv.invitation_expires_at),
+        invitationToken: inv.invitation_token, // ✅ INCLUDE THIS
       };
     });
   }
@@ -415,7 +446,6 @@ export class OrganizationInvitationService {
 
   /**
    * Fetch team members from database
-   * FIX: Use explicit FK reference to avoid ambiguity
    */
   private async fetchTeamMembers(orgId: string): Promise<TeamMember[]> {
     const { data, error } = await this.supabase
@@ -501,7 +531,6 @@ export class OrganizationInvitationService {
   private async performResendInvitation(
     invitationId: string
   ): Promise<boolean> {
-    // Get invitation details
     const { data: invitation, error } = await this.supabase
       .from('organization_users')
       .select(
@@ -521,13 +550,11 @@ export class OrganizationInvitationService {
       throw new Error('Invitation not found');
     }
 
-    // Get org and inviter details
     const [orgName, inviterName] = await Promise.all([
       this.getOrganizationName(invitation.organization_id),
       this.getUserName(invitation.invited_by),
     ]);
 
-    // Send email
     const result = await this.sendInvitationEmail({
       invitationId: invitation.id,
       email: invitation.invitee_email,
@@ -588,7 +615,6 @@ export class OrganizationInvitationService {
     token: string,
     userId: string
   ): Promise<{ success: boolean; organizationId?: string; role?: string }> {
-    // Find invitation by token
     const { data: invitation, error } = await this.supabase
       .from('organization_users')
       .select('*')
@@ -600,14 +626,12 @@ export class OrganizationInvitationService {
       throw new Error('Invalid or expired invitation');
     }
 
-    // Check expiry
     const now = new Date();
     const expiresAt = new Date(invitation.invitation_expires_at);
     if (now > expiresAt) {
       throw new Error('Invitation has expired');
     }
 
-    // Update invitation to active
     const { error: updateError } = await this.supabase
       .from('organization_users')
       .update({
@@ -615,8 +639,8 @@ export class OrganizationInvitationService {
         status: 'active',
         is_active: true,
         invitation_accepted_at: new Date().toISOString(),
-        invitation_token: null, // Clear token
-        invitee_email: null, // Clear email
+        invitation_token: null,
+        invitee_email: null,
       })
       .eq('id', invitation.id);
 
@@ -651,7 +675,6 @@ export class OrganizationInvitationService {
       return { hasInvitation: false };
     }
 
-    // Check expiry
     const now = new Date();
     const expiresAt = new Date(data.invitation_expires_at);
     if (now > expiresAt) {

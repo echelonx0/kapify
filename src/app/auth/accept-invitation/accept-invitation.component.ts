@@ -13,7 +13,7 @@ import {
   InvitationAuthService,
   InvitationDetails,
   InvitationRegistrationRequest,
-} from '../invitation-auth.service';
+} from '../../dashboard/settings/components/team-management/services/invitation-auth.service';
 
 @Component({
   selector: 'app-accept-invitation',
