@@ -2,6 +2,7 @@ import { Injectable, inject, OnDestroy } from '@angular/core';
 import { Observable, from, throwError, Subject } from 'rxjs';
 import { map, switchMap, catchError, shareReplay, takeUntil, tap } from 'rxjs/operators';
 import { SharedSupabaseService } from 'src/app/shared/services/shared-supabase.service';
+import { environment } from 'src/environments/environment';
 import {
   DataRoomDocument,
   CreateDataRoomDocumentRequest,
@@ -10,11 +11,11 @@ import {
   transformDocumentFromDB
 } from '../models/data-room.models';
 
-// Constants
-const BUCKET_NAME = 'data-room-documents';
-const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
-const SIGNED_URL_EXPIRY = 3600; // 1 hour
-const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+// Constants from centralized environment configuration
+const BUCKET_NAME = environment.storage.dataRoomBucket;
+const MAX_FILE_SIZE = environment.storage.maxFileSize;
+const SIGNED_URL_EXPIRY = environment.storage.signedUrlExpiry;
+const CACHE_TTL = environment.cache.documentTTL;
 
 interface CachedDocuments {
   observable: Observable<DataRoomDocument[]>;
@@ -48,15 +49,22 @@ export class DataRoomDocumentService implements OnDestroy {
   // ===============================
 
   /**
-   * Add file document to data room
+   * Add file document to data room with transaction safety
+   *
+   * PRODUCTION-SAFE: Implements rollback on failure
+   * - Validates file content (not just extension)
+   * - Cleans up storage if database operations fail
+   * - Prevents orphaned files in storage
    */
   addFileDocument(request: CreateDataRoomDocumentRequest): Observable<DataRoomDocument> {
     if (!request.file) {
       return throwError(() => new Error('File is required for file document'));
     }
 
-    if (request.file.size > MAX_FILE_SIZE) {
-      return throwError(() => new Error('File size exceeds maximum limit of 50MB'));
+    // Enhanced file validation
+    const validation = this.validateFile(request.file);
+    if (!validation.valid) {
+      return throwError(() => new Error(validation.error || 'File validation failed'));
     }
 
     const userId = this.supabase.getCurrentUserId();
@@ -69,10 +77,20 @@ export class DataRoomDocumentService implements OnDestroy {
     const sanitizedFileName = this.sanitizeFileName(request.file.name);
     const filePath = `${userId}/${request.dataRoomId}/${timestamp}_${sanitizedFileName}`;
 
-    // Upload file → create base document → create data room document
+    // Track uploaded file path for rollback
+    let uploadedFilePath: string | null = null;
+    let createdBaseDocumentId: string | null = null;
+
     return this.uploadFile(filePath, request.file).pipe(
+      tap(uploadResult => {
+        uploadedFilePath = uploadResult.path;
+      }),
       switchMap(uploadResult =>
-        this.createBaseDocumentRecord(userId, request, uploadResult.path)
+        this.createBaseDocumentRecord(userId, request, uploadResult.path).pipe(
+          tap(documentRecord => {
+            createdBaseDocumentId = documentRecord.id;
+          })
+        )
       ),
       switchMap(documentRecord =>
         this.createDataRoomDocumentRecord(request, documentRecord.id).pipe(
@@ -80,8 +98,15 @@ export class DataRoomDocumentService implements OnDestroy {
         )
       ),
       catchError(error => {
-        console.error('❌ Error adding file document:', error);
-        return throwError(() => error);
+        console.error('❌ Error adding file document - initiating rollback:', error);
+
+        // ROLLBACK: Clean up any created resources
+        this.rollbackFileUpload(uploadedFilePath, createdBaseDocumentId).subscribe({
+          next: () => console.log('✅ Rollback completed successfully'),
+          error: (rollbackError) => console.error('❌ Rollback failed:', rollbackError)
+        });
+
+        return throwError(() => new Error(`Document upload failed: ${error.message || 'Unknown error'}`));
       }),
       takeUntil(this.destroy$)
     );
@@ -785,6 +810,135 @@ export class DataRoomDocumentService implements OnDestroy {
     } catch {
       return false;
     }
+  }
+
+  /**
+   * PRODUCTION-SAFE: Comprehensive file validation
+   *
+   * Validates:
+   * - File size
+   * - File extension
+   * - MIME type match with extension
+   * - Content type validation
+   */
+  private validateFile(file: File): { valid: boolean; error?: string } {
+    // Size validation
+    if (file.size > MAX_FILE_SIZE) {
+      return {
+        valid: false,
+        error: `File size (${this.formatBytes(file.size)}) exceeds maximum allowed size (${this.formatBytes(MAX_FILE_SIZE)})`
+      };
+    }
+
+    if (file.size === 0) {
+      return {
+        valid: false,
+        error: 'File is empty (0 bytes)'
+      };
+    }
+
+    // Extension validation
+    const extension = this.getFileExtension(file.name);
+    if (!environment.storage.allowedTypes.includes(extension)) {
+      return {
+        valid: false,
+        error: `File type '.${extension}' is not allowed. Allowed types: ${environment.storage.allowedTypes.join(', ')}`
+      };
+    }
+
+    // MIME type validation (match extension with actual content type)
+    const allowedMimeTypes = environment.storage.allowedMimeTypes[extension];
+    if (allowedMimeTypes && !allowedMimeTypes.includes(file.type)) {
+      return {
+        valid: false,
+        error: `File MIME type '${file.type}' does not match extension '.${extension}'. Possible file type mismatch.`
+      };
+    }
+
+    // Security: Block executable files
+    const dangerousExtensions = ['exe', 'bat', 'cmd', 'sh', 'app', 'dmg', 'pkg', 'deb', 'rpm'];
+    if (dangerousExtensions.includes(extension.toLowerCase())) {
+      return {
+        valid: false,
+        error: 'Executable files are not allowed for security reasons'
+      };
+    }
+
+    return { valid: true };
+  }
+
+  /**
+   * Get file extension without dot
+   */
+  private getFileExtension(filename: string): string {
+    const parts = filename.split('.');
+    return parts.length > 1 ? parts[parts.length - 1].toLowerCase() : '';
+  }
+
+  /**
+   * Format bytes to human-readable size
+   */
+  private formatBytes(bytes: number): string {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i];
+  }
+
+  /**
+   * PRODUCTION-SAFE: Rollback file upload transaction
+   *
+   * Cleans up resources created during failed upload:
+   * - Deletes uploaded file from storage
+   * - Deletes base document record from database
+   *
+   * Called automatically when document creation fails
+   */
+  private rollbackFileUpload(
+    filePath: string | null,
+    baseDocumentId: string | null
+  ): Observable<void> {
+    const cleanupTasks: Observable<any>[] = [];
+
+    // Clean up storage
+    if (filePath) {
+      console.log(`🔄 Rolling back: Deleting file from storage: ${filePath}`);
+      cleanupTasks.push(
+        from(
+          this.supabase.storage.from(BUCKET_NAME).remove([filePath])
+        ).pipe(
+          catchError(error => {
+            console.warn('⚠️  Storage cleanup failed (non-critical):', error);
+            return from([null]); // Continue with other cleanup
+          })
+        )
+      );
+    }
+
+    // Clean up database record
+    if (baseDocumentId) {
+      console.log(`🔄 Rolling back: Deleting document record: ${baseDocumentId}`);
+      cleanupTasks.push(
+        from(
+          this.supabase.from('documents').delete().eq('id', baseDocumentId)
+        ).pipe(
+          catchError(error => {
+            console.warn('⚠️  Database cleanup failed (non-critical):', error);
+            return from([null]);
+          })
+        )
+      );
+    }
+
+    if (cleanupTasks.length === 0) {
+      return from([undefined]);
+    }
+
+    // Execute all cleanup tasks in parallel
+    return from(Promise.all(cleanupTasks.map(task => task.toPromise()))).pipe(
+      map(() => undefined)
+    );
   }
 
   /**

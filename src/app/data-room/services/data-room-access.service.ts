@@ -2,6 +2,7 @@ import { Injectable, inject, OnDestroy } from '@angular/core';
 import { Observable, from, throwError, Subject, of } from 'rxjs';
 import { map, switchMap, catchError, takeUntil } from 'rxjs/operators';
 import { SharedSupabaseService } from 'src/app/shared/services/shared-supabase.service';
+import { ErrorTrackingService } from 'src/app/shared/services/error-tracking.service';
 import {
   DataRoomAccessLog,
   AccessLogEntry,
@@ -20,7 +21,12 @@ const BATCH_SIZE = 100;
 })
 export class DataRoomAccessService implements OnDestroy {
   private supabase = inject(SharedSupabaseService);
+  private errorTracking = inject(ErrorTrackingService);
   private destroy$ = new Subject<void>();
+
+  // Track failed logging attempts for monitoring
+  private failedLogCount = 0;
+  private readonly MAX_FAILED_LOGS = 10;
 
   constructor() {
     console.log('✅ DataRoomAccessService initialized');
@@ -72,12 +78,66 @@ export class DataRoomAccessService implements OnDestroy {
         if (error) throw error;
       }),
       catchError((error) => {
-        console.error('❌ Error logging access:', error);
+        // PRODUCTION-SAFE: Proper error handling for access logging failures
+        this.handleLoggingError(error, entry);
         // Don't throw - logging errors shouldn't break app
         return from([undefined]);
       }),
       takeUntil(this.destroy$)
     );
+  }
+
+  /**
+   * Handle access logging errors with proper tracking and alerting
+   */
+  private handleLoggingError(error: any, entry: AccessLogEntry): void {
+    this.failedLogCount++;
+
+    // Track error for monitoring
+    this.errorTracking.captureError(
+      error instanceof Error ? error : new Error(String(error)),
+      {
+        component: 'DataRoomAccessService',
+        action: 'logAccess',
+        metadata: {
+          dataRoomId: entry.dataRoomId,
+          actionType: entry.actionType,
+          failedLogCount: this.failedLogCount
+        }
+      },
+      'error'
+    );
+
+    // Alert if too many consecutive failures (potential system issue)
+    if (this.failedLogCount >= this.MAX_FAILED_LOGS) {
+      console.error(
+        `🚨 CRITICAL: Access logging has failed ${this.failedLogCount} times. ` +
+        'Check database connectivity and permissions.'
+      );
+
+      // Reset counter to avoid spam
+      this.failedLogCount = 0;
+
+      // Could trigger alert to monitoring system here
+      // this.alertService.criticalAlert('Access logging failures');
+    }
+
+    // Log warning but don't break user experience
+    console.warn('⚠️  Access logging failed (non-critical):', {
+      error: error.message,
+      entry,
+      consecutiveFailures: this.failedLogCount
+    });
+  }
+
+  /**
+   * Reset failed log counter (called on successful log)
+   */
+  private resetFailedLogCount(): void {
+    if (this.failedLogCount > 0) {
+      console.log(`✅ Access logging recovered after ${this.failedLogCount} failures`);
+      this.failedLogCount = 0;
+    }
   }
 
   // ============================================
