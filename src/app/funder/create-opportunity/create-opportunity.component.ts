@@ -162,6 +162,13 @@ export class CreateOpportunityComponent implements OnInit, OnDestroy {
     console.log('=== CREATE OPPORTUNITY COMPONENT INIT ===');
 
     this.detectMode();
+    console.log(
+      'Form Data Current formState.formData:',
+      this.formState.formData()
+    );
+    console.log('Form Data Individual fields:', {
+      ...this.formState.formData(),
+    });
 
     if (this.mode() === 'create' && !this.modalService.hasSectorValidation()) {
       this.modalService.openSectorValidation();
@@ -822,7 +829,6 @@ export class CreateOpportunityComponent implements OnInit, OnDestroy {
   }
 
   isReviewStep(): boolean {
-    console.log('Draft Data form state', this.formState.formData.toString());
     return this.currentStep() === 'review';
   }
 }
