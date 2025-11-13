@@ -2,9 +2,10 @@ import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { LucideAngularModule } from 'lucide-angular';
-import { OpportunityFormStateService } from 'src/app/funder/services/opportunity-form-state.service';
-import { OpportunityUIHelperService } from 'src/app/funder/services/ui-helper.service';
+import { OpportunityFormStateService } from 'src/app/funder/create-opportunity/services/opportunity-form-state.service';
+
 import { UiTextareaComponent } from 'src/app/shared/components/ui-textarea.component';
+import { OpportunityUIHelperService } from '../services/ui-helper.service';
 
 @Component({
   selector: 'app-opportunity-basics',

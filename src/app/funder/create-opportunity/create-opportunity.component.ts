@@ -41,14 +41,13 @@ import {
 import { trigger, transition, style, animate } from '@angular/animations';
 import { FundingOpportunityService } from '../../funding/services/funding-opportunity.service';
 import { ModalService } from '../../shared/services/modal.service';
-import { OpportunityFormStateService } from '../services/opportunity-form-state.service';
+import { OpportunityFormStateService } from './services/opportunity-form-state.service';
 import {
   FundingOpportunity,
   OpportunityFormData,
 } from './shared/funding.interfaces';
 import { OrganizationStateService } from '../services/organization-state.service';
 import { StepNavigationService } from './step-navigation.service';
-import { OpportunityUIHelperService } from '../services/ui-helper.service';
 import { OpportunityBasicsComponent } from './steps/basic.component';
 import { EligibilityFiltersComponent } from './steps/eligibility-terms/eligibility.component';
 import { MediaBrandingComponent } from './steps/media.component';
@@ -59,6 +58,7 @@ import { OpportunityStepsNavigationComponent } from './components/steps-navigati
 
 import { ActionModalService } from 'src/app/shared/components/modal/modal.service';
 import { OpportunityFormActionsComponent } from './shared/opportunity-form-actions.component';
+import { OpportunityUIHelperService } from './services/ui-helper.service';
 
 @Component({
   selector: 'app-opportunity-form',

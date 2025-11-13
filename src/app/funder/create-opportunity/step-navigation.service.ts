@@ -1,6 +1,6 @@
 // src/app/funder/create-opportunity/step-navigation.service.ts
 import { Injectable, signal, computed, inject } from '@angular/core';
-import { OpportunityFormStateService } from '../services/opportunity-form-state.service';
+import { OpportunityFormStateService } from './services/opportunity-form-state.service';
 import { Target, DollarSign, Users, Settings, FileText } from 'lucide-angular';
 
 export type StepId = 'basic' | 'terms' | 'eligibility' | 'settings' | 'review';
