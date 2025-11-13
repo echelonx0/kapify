@@ -921,6 +921,24 @@ export class OpportunityFormStateService {
       draftData.maxInvestment?.toString() ||
       '';
 
+    // Helper function to parse array fields that might be JSON strings
+    const parseArrayField = (field: any): string[] => {
+      if (Array.isArray(field)) {
+        return field;
+      }
+      if (typeof field === 'string' && field.trim()) {
+        try {
+          // Try to parse as JSON if it's a JSON string
+          const parsed = JSON.parse(field);
+          return Array.isArray(parsed) ? parsed : [field];
+        } catch {
+          // If parsing fails, treat as single item
+          return [field];
+        }
+      }
+      return [];
+    };
+
     this.formData.set({
       title: draftData.title || '',
       description: draftData.description || '',
@@ -946,18 +964,16 @@ export class OpportunityFormStateService {
       investmentHorizon: draftData.investmentHorizon?.toString() || '',
       exitStrategy: draftData.exitStrategy || '',
       applicationDeadline:
-        draftData.applicationDeadline?.toISOString().split('T')[0] || '',
+        draftData.applicationDeadline?.toISOString
+          ? draftData.applicationDeadline.toISOString().split('T')[0]
+          : draftData.applicationDeadline?.split('T')[0] || '',
       decisionTimeframe: draftData.decisionTimeframe?.toString() || '30',
-      investmentCriteria: Array.isArray(draftData.investmentCriteria)
-        ? draftData.investmentCriteria
+      investmentCriteria: draftData.investmentCriteria
+        ? parseArrayField(draftData.investmentCriteria)
         : draftData.funderDefinedCriteria
-        ? [draftData.funderDefinedCriteria]
+        ? parseArrayField(draftData.funderDefinedCriteria)
         : [],
-      exclusionCriteria: Array.isArray(draftData.exclusionCriteria)
-        ? draftData.exclusionCriteria
-        : draftData.exclusionCriteria
-        ? [draftData.exclusionCriteria]
-        : [],
+      exclusionCriteria: parseArrayField(draftData.exclusionCriteria),
       targetIndustries: draftData.eligibilityCriteria?.industries || [],
       businessStages: draftData.eligibilityCriteria?.businessStages || [],
       minRevenue: draftData.eligibilityCriteria?.minRevenue?.toString() || '',
