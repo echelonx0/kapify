@@ -2,7 +2,15 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { LucideAngularModule, TrendingUp, PieChart, RefreshCw, FileText, DollarSign, Gift } from 'lucide-angular';
+import {
+  LucideAngularModule,
+  TrendingUp,
+  PieChart,
+  RefreshCw,
+  FileText,
+  DollarSign,
+  Gift,
+} from 'lucide-angular';
 import { OpportunityFormStateService } from 'src/app/funder/services/opportunity-form-state.service';
 import { OpportunityUIHelperService } from 'src/app/funder/services/ui-helper.service';
 
@@ -25,7 +33,6 @@ export class FundingStructureComponent {
   public formState = inject(OpportunityFormStateService);
   public ui = inject(OpportunityUIHelperService);
 
-  
   // Icons
   TrendingUpIcon = TrendingUp;
   PieChartIcon = PieChart;
@@ -33,25 +40,58 @@ export class FundingStructureComponent {
   FileTextIcon = FileText;
   DollarSignIcon = DollarSign;
   GiftIcon = Gift;
-  
- 
-
-onFundingTypeToggle(value: string, event: Event) {
-  const checked = (event.target as HTMLInputElement).checked;
-  this.ui.onMultiSelectFieldChange('fundingType', value, checked);
-}
-
 
   // Funding Types with Tooltip Definitions
-fundingTypes: { value: FundingType; label: string; desc: string; icon: any; tooltip: string }[] = [
-  { value: 'debt', label: 'Debt', desc: 'Traditional loan', icon: this.TrendingUpIcon, tooltip: 'Funds are lent and repaid with interest, no equity given.' },
-  { value: 'equity', label: 'Equity', desc: 'Ownership stake', icon: this.PieChartIcon, tooltip: 'Investor receives shares in exchange for capital.' },
-  { value: 'convertible', label: 'Convertible', desc: 'Converts to equity', icon: this.RefreshCwIcon, tooltip: 'Starts as a loan and converts into equity later.' },
-  { value: 'purchase_order', label: 'Purchase Order Funding', desc: 'Fulfills confirmed orders', icon: this.FileTextIcon, tooltip: 'Short-term finance to fulfill a customer purchase order.' },
-  { value: 'invoice_financing', label: 'Invoice Financing', desc: 'Advance on invoices', icon: this.DollarSignIcon, tooltip: 'Receive cash flow by financing unpaid invoices.' },
-  { value: 'grant', label: 'Grant Funding', desc: 'Non-repayable capital', icon: this.GiftIcon, tooltip: 'Funds provided with no repayment required.' },
-];
-
+  fundingTypes: {
+    value: FundingType;
+    label: string;
+    desc: string;
+    icon: any;
+    tooltip: string;
+  }[] = [
+    {
+      value: 'debt',
+      label: 'Debt',
+      desc: 'Traditional loan',
+      icon: this.TrendingUpIcon,
+      tooltip: 'Funds are lent and repaid with interest, no equity given.',
+    },
+    {
+      value: 'equity',
+      label: 'Equity',
+      desc: 'Ownership stake',
+      icon: this.PieChartIcon,
+      tooltip: 'Investor receives shares in exchange for capital.',
+    },
+    {
+      value: 'convertible',
+      label: 'Convertible',
+      desc: 'Converts to equity',
+      icon: this.RefreshCwIcon,
+      tooltip: 'Starts as a loan and converts into equity later.',
+    },
+    {
+      value: 'purchase_order',
+      label: 'Purchase Order Funding',
+      desc: 'Fulfills confirmed orders',
+      icon: this.FileTextIcon,
+      tooltip: 'Short-term finance to fulfill a customer purchase order.',
+    },
+    {
+      value: 'invoice_financing',
+      label: 'Invoice Financing',
+      desc: 'Advance on invoices',
+      icon: this.DollarSignIcon,
+      tooltip: 'Receive cash flow by financing unpaid invoices.',
+    },
+    {
+      value: 'grant',
+      label: 'Grant Funding',
+      desc: 'Non-repayable capital',
+      icon: this.GiftIcon,
+      tooltip: 'Funds provided with no repayment required.',
+    },
+  ];
 
   // Startup & Investment Tooltips
   tooltip = {
@@ -63,4 +103,13 @@ fundingTypes: { value: FundingType; label: string; desc: string; icon: any; tool
     expectedReturns: 'Anticipated internal rate of return (IRR).',
     exitStrategy: 'Plan for how investors can exit and realize returns.',
   };
+
+  /**
+   * Handle funding type checkbox toggle
+   * Directly calls formState to update the array
+   */
+  onFundingTypeToggle(value: string, event: Event): void {
+    const checked = (event.target as HTMLInputElement).checked;
+    this.formState.updateMultiSelectField('fundingType', value, checked);
+  }
 }

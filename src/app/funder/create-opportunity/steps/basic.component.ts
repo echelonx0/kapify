@@ -18,7 +18,7 @@ import { UiTextareaComponent } from 'src/app/shared/components/ui-textarea.compo
   template: `
     <div class="space-y-6">
       <!-- Title Field -->
-      <div class="space-y-2">
+      <div class="space-y-2 mb-8">
         <label class="block text-sm font-semibold text-gray-700">
           Opportunity Title <span class="text-red-500">*</span>
         </label>

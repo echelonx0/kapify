@@ -74,7 +74,6 @@ import { OpportunityFormActionsComponent } from './shared/opportunity-form-actio
     ApplicationSettingsComponent,
     OpportunityStepsNavigationComponent,
     SectorValidationModalComponent,
-
     OpportunityFormActionsComponent,
   ],
   animations: [
@@ -234,7 +233,13 @@ export class CreateOpportunityComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (response) => {
           if (response.success && response.draftData) {
+            console.log('Loaded response Draft Data:', response.draftData);
+            console.log(
+              'Draft Data Description in response?',
+              !!response.draftData?.description
+            );
             this.formState.loadFromDraft(response.draftData);
+            console.log('Draft Data', response.draftData);
           }
           this.isLoading.set(false);
         },
@@ -260,6 +265,7 @@ export class CreateOpportunityComponent implements OnInit, OnDestroy {
         next: (response) => {
           if (response.success && response.draftData) {
             this.formState.loadFromDraft(response.draftData);
+            console.log('Draft Data', response.draftData);
           }
           this.isLoading.set(false);
         },
@@ -336,6 +342,14 @@ export class CreateOpportunityComponent implements OnInit, OnDestroy {
           maxInvestment: validatedMaxInv,
           totalAvailable: validatedTypicalInv,
 
+          investmentCriteria:
+            data.investmentCriteria?.length > 0
+              ? data.investmentCriteria
+              : undefined,
+          exclusionCriteria:
+            data.exclusionCriteria?.length > 0
+              ? JSON.stringify(data.exclusionCriteria)
+              : undefined,
           currency: data.currency,
           fundingType: data.fundingType as any,
           interestRate: data.interestRate
@@ -381,8 +395,8 @@ export class CreateOpportunityComponent implements OnInit, OnDestroy {
                 ? data.geographicRestrictions
                 : undefined,
             requiresCollateral: data.requiresCollateral,
-            excludeCriteria: [],
-            funderDefinedCriteria: data.investmentCriteria?.trim() || undefined,
+            // excludeCriteria: [],
+            // funderDefinedCriteria: [data.investmentCriteria || undefined],
           },
 
           autoMatch: data.autoMatch,
@@ -408,7 +422,7 @@ export class CreateOpportunityComponent implements OnInit, OnDestroy {
   }
   private validateRequiredFields(data: OpportunityFormData): string | null {
     if (!data.title.trim()) return 'Opportunity title is required.';
-    if (!data.shortDescription.trim()) return 'Short description is required.';
+
     if (!data.description.trim()) return 'Full description is required.';
     if (!data.fundingType) return 'Funding type must be selected.';
     if (
@@ -809,6 +823,7 @@ export class CreateOpportunityComponent implements OnInit, OnDestroy {
   }
 
   isReviewStep(): boolean {
+    console.log('Draft Data form state', this.formState.formData.toString());
     return this.currentStep() === 'review';
   }
 }
