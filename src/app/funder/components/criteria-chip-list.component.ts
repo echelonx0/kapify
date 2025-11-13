@@ -1,5 +1,4 @@
-// src/app/funder/components/criteria-chip-list.component.ts
-import { Component, Input, signal, inject } from '@angular/core';
+import { Component, Input, signal, inject, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { LucideAngularModule, X, Plus } from 'lucide-angular';
@@ -38,9 +37,9 @@ import { OpportunityFormStateService } from '../services/opportunity-form-state.
       </div>
 
       <!-- Chips list -->
-      @if (items.length > 0) {
+      @if (items().length > 0) {
       <div class="flex flex-wrap gap-2">
-        @for (item of items; track $index) {
+        @for (item of items(); track $index) {
         <div
           class="flex items-center gap-2 px-3 py-1.5 bg-orange-100 text-orange-900 rounded-full text-sm font-medium"
         >
@@ -59,7 +58,7 @@ import { OpportunityFormStateService } from '../services/opportunity-form-state.
 
       <!-- Character count -->
       <p class="text-xs text-slate-500">
-        {{ items.length }} item(s) • Max 200 chars per item
+        {{ items().length }} item(s) • Max 200 chars per item
       </p>
 
       <!-- Hint -->
@@ -77,14 +76,24 @@ export class CriteriaChipListComponent {
   @Input() hint = '';
   @Input() field: 'investmentCriteria' | 'exclusionCriteria' =
     'investmentCriteria';
-  @Input() items: string[] = [];
 
+  // ← FIX #3: Use signal instead of @Input() snapshot
+  items = signal<string[]>([]);
   inputValue = signal('');
 
   XIcon = X;
   PlusIcon = Plus;
 
-  // Handle input change - extract value from event
+  constructor() {
+    // ← Key change: Subscribe to service signal via effect
+    effect(() => {
+      const fieldValue = this.formState.formData()[this.field];
+      if (Array.isArray(fieldValue)) {
+        this.items.set(fieldValue);
+      }
+    });
+  }
+
   onInputChange(event: Event): void {
     const value = (event.target as HTMLInputElement).value;
     this.inputValue.set(value);
@@ -97,10 +106,12 @@ export class CriteriaChipListComponent {
     const success = this.formState.addToList(this.field, value);
     if (success) {
       this.inputValue.set('');
+      // ← items() will auto-update via effect
     }
   }
 
   removeItem(index: number): void {
     this.formState.removeFromList(this.field, index);
+    // ← items() will auto-update via effect
   }
 }

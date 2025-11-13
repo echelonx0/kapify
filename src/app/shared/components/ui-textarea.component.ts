@@ -1,4 +1,11 @@
-import { Component, input, signal, forwardRef, output } from '@angular/core';
+import {
+  Component,
+  input,
+  signal,
+  forwardRef,
+  output,
+  effect,
+} from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 
@@ -77,6 +84,15 @@ export class UiTextareaComponent implements ControlValueAccessor {
 
   private onChange = (value: string) => {};
   private onTouched = () => {};
+
+  constructor() {
+    effect(() => {
+      const inputValue = this.value();
+      if (inputValue !== this.internalValue()) {
+        this.internalValue.set(inputValue);
+      }
+    });
+  }
 
   charCountExceeded = () => {
     const max = this.maxLength();

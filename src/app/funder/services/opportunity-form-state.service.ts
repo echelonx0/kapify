@@ -586,7 +586,6 @@
 //     this.destroy$.complete();
 //   }
 // }
-
 // src/app/funder/services/opportunity-form-state.service.ts
 import { Injectable, signal, computed } from '@angular/core';
 import { Subject, debounceTime, distinctUntilChanged, takeUntil } from 'rxjs';
@@ -647,7 +646,7 @@ export interface ValidationError {
 @Injectable({ providedIn: 'root' })
 export class OpportunityFormStateService {
   private destroy$ = new Subject<void>();
-  private localAutoSaveSubject = new Subject<CreateOpportunityFormData>();
+  private localAutoSaveSubject = new Subject<void>(); // ← Changed: now emits void, captures formData fresh at save time
 
   formData = signal<CreateOpportunityFormData>(this.getInitialState());
   validationErrors = signal<ValidationError[]>([]);
@@ -675,7 +674,7 @@ export class OpportunityFormStateService {
   ): void {
     this.formData.update((data) => ({ ...data, [field]: value }));
     this.hasUnsavedChanges.set(true);
-    this.localAutoSaveSubject.next(this.formData());
+    this.localAutoSaveSubject.next(); // ← Changed: just trigger debounce, no data
   }
 
   updateMultiSelectField(
@@ -691,14 +690,14 @@ export class OpportunityFormStateService {
       return { ...data, [field]: newArray };
     });
     this.hasUnsavedChanges.set(true);
-    this.localAutoSaveSubject.next(this.formData());
+    this.localAutoSaveSubject.next(); // ← Changed: just trigger debounce
   }
 
   onNumberInput(field: keyof CreateOpportunityFormData, value: string): void {
     const cleanValue = value.replace(/[^\d]/g, '');
     this.formData.update((data) => ({ ...data, [field]: cleanValue }));
     this.hasUnsavedChanges.set(true);
-    this.localAutoSaveSubject.next(this.formData());
+    this.localAutoSaveSubject.next(); // ← Changed: just trigger debounce
   }
 
   // ===== LIST MANAGEMENT (Investment & Exclusion Criteria) =====
@@ -714,7 +713,7 @@ export class OpportunityFormStateService {
       [field]: [...(data[field] as string[]), trimmed],
     }));
     this.hasUnsavedChanges.set(true);
-    this.localAutoSaveSubject.next(this.formData());
+    this.localAutoSaveSubject.next(); // ← Changed: just trigger debounce
     return true;
   }
 
@@ -727,7 +726,7 @@ export class OpportunityFormStateService {
       [field]: (data[field] as string[]).filter((_, i) => i !== index),
     }));
     this.hasUnsavedChanges.set(true);
-    this.localAutoSaveSubject.next(this.formData());
+    this.localAutoSaveSubject.next(); // ← Changed: just trigger debounce
   }
 
   // ===== NUMBER FORMATTING =====
@@ -921,18 +920,15 @@ export class OpportunityFormStateService {
       draftData.maxInvestment?.toString() ||
       '';
 
-    // Helper function to parse array fields that might be JSON strings
     const parseArrayField = (field: any): string[] => {
       if (Array.isArray(field)) {
         return field;
       }
       if (typeof field === 'string' && field.trim()) {
         try {
-          // Try to parse as JSON if it's a JSON string
           const parsed = JSON.parse(field);
           return Array.isArray(parsed) ? parsed : [field];
         } catch {
-          // If parsing fails, treat as single item
           return [field];
         }
       }
@@ -963,10 +959,9 @@ export class OpportunityFormStateService {
       expectedReturns: draftData.expectedReturns?.toString() || '',
       investmentHorizon: draftData.investmentHorizon?.toString() || '',
       exitStrategy: draftData.exitStrategy || '',
-      applicationDeadline:
-        draftData.applicationDeadline?.toISOString
-          ? draftData.applicationDeadline.toISOString().split('T')[0]
-          : draftData.applicationDeadline?.split('T')[0] || '',
+      applicationDeadline: draftData.applicationDeadline?.toISOString
+        ? draftData.applicationDeadline.toISOString().split('T')[0]
+        : draftData.applicationDeadline?.split('T')[0] || '',
       decisionTimeframe: draftData.decisionTimeframe?.toString() || '30',
       investmentCriteria: draftData.investmentCriteria
         ? parseArrayField(draftData.investmentCriteria)
@@ -989,6 +984,8 @@ export class OpportunityFormStateService {
       autoMatch: draftData.autoMatch ?? true,
       isPublic: true,
     });
+
+    console.log('This is Opportunity Form State draft Data', this.formData);
   }
 
   clearDraft(): void {
@@ -1053,8 +1050,9 @@ export class OpportunityFormStateService {
         ),
         takeUntil(this.destroy$)
       )
-      .subscribe((formData) => {
-        this.saveToLocalStorage(formData);
+      .subscribe(() => {
+        // ← Key change: capture formData fresh at save time, not in closure
+        this.saveToLocalStorage(this.formData());
       });
   }
 
