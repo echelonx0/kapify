@@ -1,223 +1,269 @@
 <!-- eligibility.component.html -->
 <div class="space-y-6">
- 
-  
-    <div class="space-y-6">
-      <!-- Investment Philosophy -->
-      <div class="space-y-2">
-        <ui-textarea
-          [label]="'Investment Philosophy'"
-          [placeholder]="'Describe your fund\'s investment approach, priorities, and values.'"
-          [value]="formState.formData().investmentCriteria"
-          (valueChange)="ui.onFieldChange('investmentCriteria', $event)"
-          [error]="formState.getFieldError('investmentCriteria')?.message || null"
-          [hint]="'This helps SMEs understand your investment thesis'"
-          [rows]="4"
-          [showCharCount]="true"
-          [maxLength]="1000"
-        ></ui-textarea>
+  <div class="space-y-6">
+    <!-- Investment Philosophy -->
+    <div class="space-y-2">
+      <ui-textarea
+        [label]="'Eligibility Criteria'"
+        [placeholder]="
+          'Describe your fund\'s investment approach, priorities, and values.'
+        "
+        [value]="formState.formData().investmentCriteria"
+        (valueChange)="ui.onFieldChange('investmentCriteria', $event)"
+        [error]="formState.getFieldError('investmentCriteria')?.message || null"
+        [hint]="'This helps SMEs understand your investment thesis'"
+        [rows]="4"
+        [showCharCount]="true"
+        [maxLength]="1000"
+      ></ui-textarea>
+    </div>
+
+    <!-- Exclusion Criteria -->
+    <div class="space-y-2">
+      <ui-textarea
+        [label]="'Automatic Exclusion Criteria'"
+        [placeholder]="
+          'List specific criteria that will automatically disqualify applicants (e.g., companies with debt >50% of revenue, in sanctioned countries, etc.)'
+        "
+        [value]="formState.formData().exclusionCriteria"
+        (valueChange)="ui.onFieldChange('exclusionCriteria', $event)"
+        [error]="formState.getFieldError('exclusionCriteria')?.message || null"
+        [hint]="'Leave blank for no automatic exclusions'"
+        [rows]="3"
+        [showCharCount]="true"
+        [maxLength]="2000"
+      ></ui-textarea>
+    </div>
+    <!-- Dropdown Multiselects Row -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <!-- Target Industries -->
+      <div
+        class="relative"
+        (clickOutside)="ui.closeDropdown('targetIndustriesOpen')"
+      >
+        <label class="block text-sm font-semibold text-slate-900 mb-2"
+          >Target Industries</label
+        >
+        <button
+          type="button"
+          (click)="ui.toggleDropdown('targetIndustriesOpen')"
+          class="w-full flex justify-between items-center px-4 py-2.5 border border-slate-200 rounded-xl bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-orange-500 transition-all duration-200"
+        >
+          <span class="truncate text-left">
+            {{
+              formState.formData().targetIndustries.length
+                ? formState.formData().targetIndustries.join(", ")
+                : "Select industries"
+            }}
+          </span>
+          <!-- <lucide-angular [img]="ui.targetIndustriesOpen ? 'ChevronUp' : 'ChevronDown'" [size]="16"></lucide-angular> -->
+        </button>
+
+        <!-- Dropdown Panel -->
+        @if (ui.targetIndustriesOpen) {
+        <div
+          class="absolute z-20 mt-2 w-full bg-white border border-slate-200 rounded-xl shadow-lg p-3 max-h-60 overflow-y-auto"
+        >
+          @for (industry of ui.targetIndustries; track industry.value) {
+          <label
+            class="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-orange-50 cursor-pointer transition"
+          >
+            <input
+              type="checkbox"
+              [checked]="
+                formState.formData().targetIndustries.includes(industry.value)
+              "
+              (change)="ui.onMultiSelectChange('targetIndustries', $event)"
+              [value]="industry.value"
+              class="text-orange-500 rounded border-gray-300 focus:ring-0"
+            />
+            <span class="text-sm text-slate-900">{{ industry.label }}</span>
+          </label>
+          }
+        </div>
+        }
       </div>
 
-   <!-- Exclusion Criteria -->
-<div class="space-y-2">
-  <ui-textarea
-    [label]="'Automatic Exclusion Criteria'"
-    [placeholder]="'List specific criteria that will automatically disqualify applicants (e.g., companies with debt >50% of revenue, in sanctioned countries, etc.)'"
-    [value]="formState.formData().exclusionCriteria"
-    (valueChange)="ui.onFieldChange('exclusionCriteria', $event)"
-    [error]="formState.getFieldError('exclusionCriteria')?.message || null"
-    [hint]="'Leave blank for no automatic exclusions'"
-    [rows]="3"
-    [showCharCount]="true"
-    [maxLength]="2000"
-  ></ui-textarea>
-</div>
-  <!-- Dropdown Multiselects Row -->
-  <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-    <!-- Target Industries -->
-    <div class="relative" (clickOutside)="ui.closeDropdown('targetIndustriesOpen')">
-      <label class="block text-sm font-semibold text-slate-900 mb-2">Target Industries</label>
-      <button 
-        type="button"
-        (click)="ui.toggleDropdown('targetIndustriesOpen')"
-        class="w-full flex justify-between items-center px-4 py-2.5 border border-slate-200 rounded-xl bg-white text-slate-900
-               focus:outline-none focus:ring-2 focus:ring-orange-500 transition-all duration-200"
+      <!-- Business Stages -->
+      <div
+        class="relative"
+        (clickOutside)="ui.closeDropdown('businessStagesOpen')"
       >
-        <span class="truncate text-left">
-          {{
-            formState.formData().targetIndustries.length
-              ? formState.formData().targetIndustries.join(', ')
-              : 'Select industries'
-          }}
-        </span>
-        <!-- <lucide-angular [img]="ui.targetIndustriesOpen ? 'ChevronUp' : 'ChevronDown'" [size]="16"></lucide-angular> -->
-      </button>
+        <label class="block text-sm font-semibold text-slate-900 mb-2"
+          >Business Stages</label
+        >
+        <button
+          type="button"
+          (click)="ui.toggleDropdown('businessStagesOpen')"
+          class="w-full flex justify-between items-center px-4 py-2.5 border border-slate-200 rounded-xl bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-orange-500 transition-all duration-200"
+        >
+          <span class="truncate text-left">
+            {{
+              formState.formData().businessStages.length
+                ? formState.formData().businessStages.join(", ")
+                : "Select stages"
+            }}
+          </span>
+          <!-- <lucide-angular [img]="ui.businessStagesOpen ? 'ChevronUp' : 'ChevronDown'" [size]="16"></lucide-angular> -->
+        </button>
 
-      <!-- Dropdown Panel -->
-      @if (ui.targetIndustriesOpen) {
-        <div class="absolute z-20 mt-2 w-full bg-white border border-slate-200 rounded-xl shadow-lg p-3 max-h-60 overflow-y-auto">
-          @for (industry of ui.targetIndustries; track industry.value) {
-            <label class="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-orange-50 cursor-pointer transition">
-              <input
-                type="checkbox"
-                [checked]="formState.formData().targetIndustries.includes(industry.value)"
-                (change)="ui.onMultiSelectChange('targetIndustries', $event)"
-                [value]="industry.value"
-                class="text-orange-500 rounded border-gray-300 focus:ring-0"
-              >
-              <span class="text-sm text-slate-900">{{ industry.label }}</span>
-            </label>
-          }
-        </div>
-      }
-    </div>
-
-    <!-- Business Stages -->
-    <div class="relative" (clickOutside)="ui.closeDropdown('businessStagesOpen')">
-      <label class="block text-sm font-semibold text-slate-900 mb-2">Business Stages</label>
-      <button 
-        type="button"
-        (click)="ui.toggleDropdown('businessStagesOpen')"
-        class="w-full flex justify-between items-center px-4 py-2.5 border border-slate-200 rounded-xl bg-white text-slate-900
-               focus:outline-none focus:ring-2 focus:ring-orange-500 transition-all duration-200"
-      >
-        <span class="truncate text-left">
-          {{
-            formState.formData().businessStages.length
-              ? formState.formData().businessStages.join(', ')
-              : 'Select stages'
-          }}
-        </span>
-        <!-- <lucide-angular [img]="ui.businessStagesOpen ? 'ChevronUp' : 'ChevronDown'" [size]="16"></lucide-angular> -->
-      </button>
-
-      @if (ui.businessStagesOpen) {
-        <div class="absolute z-20 mt-2 w-full bg-white border border-slate-200 rounded-xl shadow-lg p-3 max-h-60 overflow-y-auto">
+        @if (ui.businessStagesOpen) {
+        <div
+          class="absolute z-20 mt-2 w-full bg-white border border-slate-200 rounded-xl shadow-lg p-3 max-h-60 overflow-y-auto"
+        >
           @for (stage of ui.businessStages; track stage.value) {
-            <label class="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-orange-50 cursor-pointer transition">
-              <input
-                type="checkbox"
-                [checked]="formState.formData().businessStages.includes(stage.value)"
-                (change)="ui.onMultiSelectChange('businessStages', $event)"
-                [value]="stage.value"
-                class="text-orange-500 rounded border-gray-300 focus:ring-0"
-              >
-              <span class="text-sm text-slate-900">{{ stage.label }}</span>
-            </label>
+          <label
+            class="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-orange-50 cursor-pointer transition"
+          >
+            <input
+              type="checkbox"
+              [checked]="
+                formState.formData().businessStages.includes(stage.value)
+              "
+              (change)="ui.onMultiSelectChange('businessStages', $event)"
+              [value]="stage.value"
+              class="text-orange-500 rounded border-gray-300 focus:ring-0"
+            />
+            <span class="text-sm text-slate-900">{{ stage.label }}</span>
+          </label>
           }
         </div>
-      }
-    </div>
+        }
+      </div>
 
-    <!-- Geographic Focus -->
-    <div class="relative" (clickOutside)="ui.closeDropdown('geoOpen')">
-      <label class="block text-sm font-semibold text-slate-900 mb-2">Geographic Focus</label>
-      <button 
-        type="button"
-        (click)="ui.toggleDropdown('geoOpen')"
-        class="w-full flex justify-between items-center px-4 py-2.5 border border-slate-200 rounded-xl bg-white text-slate-900
-               focus:outline-none focus:ring-2 focus:ring-orange-500 transition-all duration-200"
-      >
-        <span class="truncate text-left">
-          {{
-            formState.formData().geographicRestrictions.length
-              ? formState.formData().geographicRestrictions.join(', ')
-              : 'Select regions'
-          }}
-        </span>
-        <!-- <lucide-angular [img]="ui.geoOpen ? 'ChevronUp' : 'ChevronDown'" [size]="16"></lucide-angular> -->
-      </button>
+      <!-- Geographic Focus -->
+      <div class="relative" (clickOutside)="ui.closeDropdown('geoOpen')">
+        <label class="block text-sm font-semibold text-slate-900 mb-2"
+          >Geographic Focus</label
+        >
+        <button
+          type="button"
+          (click)="ui.toggleDropdown('geoOpen')"
+          class="w-full flex justify-between items-center px-4 py-2.5 border border-slate-200 rounded-xl bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-orange-500 transition-all duration-200"
+        >
+          <span class="truncate text-left">
+            {{
+              formState.formData().geographicRestrictions.length
+                ? formState.formData().geographicRestrictions.join(", ")
+                : "Select regions"
+            }}
+          </span>
+          <!-- <lucide-angular [img]="ui.geoOpen ? 'ChevronUp' : 'ChevronDown'" [size]="16"></lucide-angular> -->
+        </button>
 
-      @if (ui.geoOpen) {
-        <div class="absolute z-20 mt-2 w-full bg-white border border-slate-200 rounded-xl shadow-lg p-3 max-h-60 overflow-y-auto">
+        @if (ui.geoOpen) {
+        <div
+          class="absolute z-20 mt-2 w-full bg-white border border-slate-200 rounded-xl shadow-lg p-3 max-h-60 overflow-y-auto"
+        >
           @for (region of ui.geographicRegions; track region.value) {
-            <label class="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-orange-50 cursor-pointer transition">
-              <input
-                type="checkbox"
-                [checked]="formState.formData().geographicRestrictions.includes(region.value)"
-                (change)="ui.onMultiSelectChange('geographicRestrictions', $event)"
-                [value]="region.value"
-                class="text-orange-500 rounded border-gray-300 focus:ring-0"
-              >
-              <span class="text-sm text-slate-900">{{ region.label }}</span>
-            </label>
+          <label
+            class="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-orange-50 cursor-pointer transition"
+          >
+            <input
+              type="checkbox"
+              [checked]="
+                formState
+                  .formData()
+                  .geographicRestrictions.includes(region.value)
+              "
+              (change)="
+                ui.onMultiSelectChange('geographicRestrictions', $event)
+              "
+              [value]="region.value"
+              class="text-orange-500 rounded border-gray-300 focus:ring-0"
+            />
+            <span class="text-sm text-slate-900">{{ region.label }}</span>
+          </label>
           }
         </div>
-      }
+        }
+      </div>
     </div>
   </div>
-</div>
-
 
   <!-- Revenue Range -->
   <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
     <div class="space-y-2">
-      <label class="block text-sm font-semibold text-gray-700">Average Annual Revenue</label>
+      <label class="block text-sm font-semibold text-gray-700"
+        >Average Annual Revenue</label
+      >
       <input
         type="text"
         placeholder="0"
         [value]="formState.getFormattedAmount('minRevenue')"
         (input)="ui.onNumberInputChange('minRevenue', $event)"
         [class]="ui.getFieldClasses('minRevenue')"
-      >
+      />
       @if (formState.getFieldError('minRevenue'); as error) {
-        <p class="text-sm" [class.text-red-600]="error.type === 'error'" [class.text-yellow-600]="error.type === 'warning'">
-          {{ error.message }}
-        </p>
-      }
-    </div>
-    
-
-
-      <!-- Years in Operation -->
-  <div class="space-y-2">
-    <label class="block text-sm font-semibold text-gray-700">Minimum Years in Operation</label>
-    <select 
-      [value]="formState.formData().minYearsOperation"
-      (change)="ui.onFieldChange('minYearsOperation', $event)"
-      [class]="ui.getFieldClasses('minYearsOperation')"
-    >
-      <option value="">No minimum</option>
-      <option value="1">1 year</option>
-      <option value="2">2 years</option>
-      <option value="3">3 years</option>
-      <option value="5">5 years</option>
-    </select>
-    @if (formState.getFieldError('minYearsOperation'); as error) {
-      <p class="text-sm" [class.text-red-600]="error.type === 'error'" [class.text-yellow-600]="error.type === 'warning'">
+      <p
+        class="text-sm"
+        [class.text-red-600]="error.type === 'error'"
+        [class.text-yellow-600]="error.type === 'warning'"
+      >
         {{ error.message }}
       </p>
-    }
-  </div>
-  </div>
+      }
+    </div>
 
-
+    <!-- Years in Operation -->
+    <div class="space-y-2">
+      <label class="block text-sm font-semibold text-gray-700"
+        >Minimum Years in Operation</label
+      >
+      <select
+        [value]="formState.formData().minYearsOperation"
+        (change)="ui.onFieldChange('minYearsOperation', $event)"
+        [class]="ui.getFieldClasses('minYearsOperation')"
+      >
+        <option value="">No minimum</option>
+        <option value="1">1 year</option>
+        <option value="2">2 years</option>
+        <option value="3">3 years</option>
+        <option value="5">5 years</option>
+      </select>
+      @if (formState.getFieldError('minYearsOperation'); as error) {
+      <p
+        class="text-sm"
+        [class.text-red-600]="error.type === 'error'"
+        [class.text-yellow-600]="error.type === 'warning'"
+      >
+        {{ error.message }}
+      </p>
+      }
+    </div>
+  </div>
 
   <!-- Collateral Requirement -->
   <div class="space-y-3">
     <label class="flex items-center space-x-3 cursor-pointer">
-      <input 
-        type="checkbox" 
+      <input
+        type="checkbox"
         [checked]="formState.formData().requiresCollateral"
         (change)="ui.onCheckboxChange('requiresCollateral', $event)"
         class="w-4 h-4 text-primary-600 rounded border-gray-300"
+      />
+      <span class="text-sm font-semibold text-gray-700"
+        >Requires Collateral</span
       >
-      <span class="text-sm font-semibold text-gray-700">Requires Collateral</span>
     </label>
   </div>
 
- 
   <!-- Info Section -->
-<!-- This info box just explains the concept—remove the excluded sectors list -->
-<div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
-  <div class="flex items-start space-x-3">
-    <lucide-angular [img]="TargetIcon" [size]="20" class="text-blue-600 mt-0.5"></lucide-angular>
-    <div>
-      <h4 class="text-sm font-medium text-blue-900">Eligibility Criteria</h4>
-      <p class="text-sm text-blue-700 mt-1">
-        These criteria help match your opportunity with the right businesses. More specific criteria mean fewer but more qualified applications.
-      </p>
+  <!-- This info box just explains the concept—remove the excluded sectors list -->
+  <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+    <div class="flex items-start space-x-3">
+      <lucide-angular
+        [img]="TargetIcon"
+        [size]="20"
+        class="text-blue-600 mt-0.5"
+      ></lucide-angular>
+      <div>
+        <h4 class="text-sm font-medium text-blue-900">Eligibility Criteria</h4>
+        <p class="text-sm text-blue-700 mt-1">
+          These criteria help match your opportunity with the right businesses.
+          More specific criteria mean fewer but more qualified applications.
+        </p>
+      </div>
     </div>
   </div>
-</div>
 </div>

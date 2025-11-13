@@ -1,9 +1,7 @@
-// src/app/funder/funder.component.ts
 import { Component, computed } from '@angular/core';
 import { RouterOutlet, Router } from '@angular/router';
 import { FunderHeaderComponent } from './header/funder-header.component';
 import { SidebarNavComponent } from '../shared/components';
-import { NgIf } from '@angular/common';
 
 @Component({
   selector: 'app-applications',
@@ -13,8 +11,8 @@ import { NgIf } from '@angular/common';
     <div class="min-h-screen bg-neutral-50">
       <sidebar-nav />
 
-      <!-- Only show header if NOT in onboarding route -->
-      @if (!isOnboardingRoute()) {
+      <!-- Only show header if NOT in onboarding or create-opportunity routes -->
+      @if (!isHiddenHeaderRoute()) {
       <div class="sticky top-0 z-10 bg-neutral-50 border-b border-gray-200">
         <funder-header></funder-header>
       </div>
@@ -30,7 +28,12 @@ import { NgIf } from '@angular/common';
 export class FunderComponent {
   constructor(private router: Router) {}
 
-  isOnboardingRoute = computed(() =>
-    this.router.url.startsWith('/funder/onboarding')
-  );
+  /** Hide header on onboarding + create-opportunity routes */
+  isHiddenHeaderRoute = computed(() => {
+    const url = this.router.url;
+    return (
+      url.startsWith('/funder/onboarding') ||
+      url.startsWith('/funding/create-opportunity')
+    );
+  });
 }

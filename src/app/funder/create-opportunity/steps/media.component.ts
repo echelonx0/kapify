@@ -54,11 +54,6 @@ import { OpportunityUIHelperService } from 'src/app/funder/services/ui-helper.se
           <label
             class="block text-sm font-semibold text-gray-700 flex items-center"
           >
-            <lucide-angular
-              [img]="EyeIcon"
-              [size]="16"
-              class="mr-2"
-            ></lucide-angular>
             Opportunity Image URL
           </label>
           <input
@@ -99,12 +94,7 @@ import { OpportunityUIHelperService } from 'src/app/funder/services/ui-helper.se
           <label
             class="block text-sm font-semibold text-gray-700 flex items-center"
           >
-            <lucide-angular
-              [img]="SparklesIcon"
-              [size]="16"
-              class="mr-2"
-            ></lucide-angular>
-            Opportunity Video URL
+            Video URL
           </label>
           <input
             type="url"

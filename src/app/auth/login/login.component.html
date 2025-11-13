@@ -1,21 +1,28 @@
-<div class="min-h-screen flex">
-  <!-- Left Panel - Form -->
-  <div class="w-3/5 flex items-center justify-center px-8 py-2 bg-white">
+<div class="min-h-screen flex flex-col lg:flex-row bg-slate-50">
+  <!-- Left Panel - Form (Mobile Full Width, Desktop 60%) -->
+  <div
+    class="w-full lg:w-3/5 flex items-center justify-center px-4 py-8 lg:px-8 lg:py-6 lg:bg-white"
+  >
     <div class="w-full max-w-md">
-      <!-- Logo -->
-  <div class="mb-12 flex items-center space-x-4">
-  <div class="w-10 h-10 bg-primary-600 rounded-xl flex items-center justify-center">
-    <span class="text-white font-bold text-lg">K</span>
-  </div>
-  <h1 class="text-3xl font-bold text-neutral-900">Welcome back</h1>
-</div>
-
+      <!-- Logo & Header -->
+      <div class="mb-8 lg:mb-12">
+        <div class="flex items-center gap-3 mb-4">
+          <div
+            class="w-10 h-10 bg-teal-500 rounded-xl flex items-center justify-center flex-shrink-0"
+          >
+            <span class="text-white font-bold text-lg">K</span>
+          </div>
+          <h1 class="text-2xl lg:text-3xl font-bold text-slate-900">
+            Welcome back
+          </h1>
+        </div>
+      </div>
 
       <!-- Form -->
-      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="space-y-6">
-        <!-- Email -->
+      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="space-y-5">
+        <!-- Email Field -->
         <div>
-          <label class="block text-sm font-medium text-neutral-700 mb-2">
+          <label class="block text-sm font-semibold text-slate-900 mb-2">
             Email address
           </label>
           <input
@@ -26,13 +33,15 @@
             [class]="getInputClasses('email')"
           />
           @if (getFieldError('email')) {
-            <p class="mt-1 text-sm text-red-600">{{ getFieldError('email') }}</p>
+          <p class="mt-1.5 text-sm text-red-700">
+            {{ getFieldError("email") }}
+          </p>
           }
         </div>
 
-        <!-- Password -->
+        <!-- Password Field -->
         <div>
-          <label class="block text-sm font-medium text-neutral-700 mb-2">
+          <label class="block text-sm font-semibold text-slate-900 mb-2">
             Password
           </label>
           <div class="relative">
@@ -45,80 +54,113 @@
             />
             <button
               type="button"
-              class="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600 transition-colors"
+              tabindex="-1"
+              class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors duration-200 flex-shrink-0"
               (click)="togglePasswordVisibility()"
+              [attr.aria-label]="
+                showPassword() ? 'Hide password' : 'Show password'
+              "
             >
-              <lucide-icon [img]="showPassword() ? EyeOffIcon : EyeIcon" [size]="20" />
+              <lucide-icon
+                [name]="showPassword() ? 'eye-off' : 'eye'"
+                [size]="20"
+              />
             </button>
           </div>
           @if (getFieldError('password')) {
-            <p class="mt-1 text-sm text-red-600">{{ getFieldError('password') }}</p>
+          <p class="mt-1.5 text-sm text-red-700">
+            {{ getFieldError("password") }}
+          </p>
           }
         </div>
 
-       
         <!-- Error Message -->
         @if (error()) {
-          <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
-            {{ error() }}
-          </div>
+        <div
+          class="bg-red-50 border border-red-200/50 text-red-700 px-4 py-3 rounded-xl text-sm flex items-start gap-3"
+        >
+          <lucide-icon
+            name="alert-circle"
+            [size]="18"
+            class="flex-shrink-0 mt-0.5"
+          />
+          <span>{{ error() }}</span>
+        </div>
         }
 
         <!-- Submit Button -->
         <button
           type="submit"
           [disabled]="loginForm.invalid || isLoading()"
-          class="w-full bg-primary-600 hover:bg-primary-700 disabled:bg-primary-300 text-white font-medium py-3 px-4 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 flex items-center justify-center"
+          class="w-full bg-teal-500 hover:bg-teal-600 active:bg-teal-700 disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed text-white font-medium py-2.5 px-6 rounded-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 flex items-center justify-center"
         >
           @if (isLoading()) {
-            <div class="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-            <span class="ml-2">Signing in...</span>
+          <div
+            class="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"
+          ></div>
+          <span>Signing in...</span>
           } @else {
-            <span>Sign in</span>
-            <lucide-icon [img]="ArrowRightIcon" [size]="20" class="ml-2" />
+          <span>Sign in</span>
+          <lucide-icon name="arrow-right" [size]="20" class="ml-2" />
           }
         </button>
       </form>
 
-      <!-- Register Link -->
-<div class="mt-8 text-center">
-  <!-- Sign up & Forgot -->
-  <div class="flex items-center justify-between text-sm text-slate-700">
-    <p class="text-slate-700">
-      New here?
-      <a 
-        routerLink="/register"
-        class="text-slate-700 font-medium hover:text-slate-900 transition-colors"
-      >
-        Sign up
-      </a>
-    </p>
-    <a 
-      href="/forgot-password" 
-      class="text-slate-700 font-medium hover:text-slate-900 transition-colors"
-    >
-      Forgot password?
-    </a>
-  </div>
-</div>
+      <!-- Links Section -->
+      <div class="mt-8 space-y-4">
+        <!-- Sign Up & Forgot Password -->
+        <div
+          class="flex flex-col sm:flex-row items-center justify-between gap-4 text-sm"
+        >
+          <p class="text-slate-600">
+            New here?
+            <a
+              routerLink="/register"
+              class="text-teal-600 font-medium hover:text-teal-700 transition-colors duration-200"
+            >
+              Sign up
+            </a>
+          </p>
+          <a
+            href="/forgot-password"
+            class="text-teal-600 font-medium hover:text-teal-700 transition-colors duration-200"
+          >
+            Forgot password?
+          </a>
+        </div>
 
-
-      <!-- Footer -->
-    <div class="mt-12 text-justify text-xs text-neutral-500">
-  Please review our <a href="/privacy" class="text-slate-700 font-bold hover:underline">Privacy Policy</a> and <a href="/terms" class="text-slate-700 font-bold hover:underline">Data Protection Policy</a> before using this platform. By logging in and continuing to use our services, you confirm that you have read, understood, and accepted our Privacy Policy. You also consent to the handling, storage, and sharing of your data strictly in accordance with these policies, and understand that your data will only be used within the platform as outlined.
-</div>
-
+        <!-- Footer Legal Text -->
+        <div class="mt-8 text-xs text-slate-600 leading-relaxed">
+          Please review our
+          <a
+            href="/privacy"
+            class="text-slate-900 font-semibold hover:underline"
+            >Privacy Policy</a
+          >
+          and
+          <a href="/terms" class="text-slate-900 font-semibold hover:underline"
+            >Data Protection Policy</a
+          >
+          before using this platform. By logging in and continuing to use our
+          services, you confirm that you have read, understood, and accepted our
+          Privacy Policy. You also consent to the handling, storage, and sharing
+          of your data strictly in accordance with these policies, and
+          understand that your data will only be used within the platform as
+          outlined.
+        </div>
+      </div>
     </div>
   </div>
 
-  <!-- Right Panel - Image -->
-  <div class="hidden lg:block w-2/5 relative overflow-hidden">
-    <img 
-      src="/images/auth-2.png" 
+  <!-- Right Panel - Image (Hidden Mobile, Show Desktop) -->
+  <div class="hidden lg:flex lg:w-2/5 relative overflow-hidden bg-white">
+    <img
+      src="/images/auth-2.png"
       alt="Welcome back illustration"
       class="absolute inset-0 w-full h-full object-cover"
     />
-   
-    <div class="absolute inset-0 bg-gradient-to-br from-primary-600/10 to-primary-500/5"></div>
+    <div
+      class="absolute inset-0 bg-gradient-to-br from-teal-500/10 to-teal-400/5"
+    ></div>
   </div>
 </div>

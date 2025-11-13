@@ -56,8 +56,9 @@ import { ApplicationSettingsComponent } from './steps/fund-terms/fund-terms.comp
 import { FundingStructureComponent } from './steps/fund-structure/fund-structure.component';
 import { SectorValidationModalComponent } from './components/sector-validation-modal.component';
 import { OpportunityStepsNavigationComponent } from './components/steps-navigation-component';
-import { OpportunityActionModalComponent } from 'src/app/shared/components/modal/app-modal.component';
+
 import { ActionModalService } from 'src/app/shared/components/modal/modal.service';
+import { OpportunityFormActionsComponent } from './shared/opportunity-form-actions.component';
 
 @Component({
   selector: 'app-opportunity-form',
@@ -73,7 +74,8 @@ import { ActionModalService } from 'src/app/shared/components/modal/modal.servic
     ApplicationSettingsComponent,
     OpportunityStepsNavigationComponent,
     SectorValidationModalComponent,
-    OpportunityActionModalComponent,
+
+    OpportunityFormActionsComponent,
   ],
   animations: [
     trigger('stepTransition', [
@@ -801,5 +803,12 @@ export class CreateOpportunityComponent implements OnInit, OnDestroy {
   }
   get businessStages() {
     return this.ui.businessStages;
+  }
+  isFirstStep(): boolean {
+    return this.currentStep() === 'basic';
+  }
+
+  isReviewStep(): boolean {
+    return this.currentStep() === 'review';
   }
 }

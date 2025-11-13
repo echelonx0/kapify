@@ -1,273 +1,398 @@
-<div class="min-h-screen flex relative">
-  <!-- Top-right header (moved here from form panel) -->
-  <div class="absolute top-6 right-8 flex items-center space-x-6 z-40">
-    <div class="flex items-center space-x-3">
+<div class="min-h-screen flex flex-col lg:flex-row relative bg-slate-50">
+  <!-- Top Header (Mobile) / Sticky (Desktop) -->
+  <div
+    class="absolute top-4 lg:top-6 right-4 lg:right-8 flex items-center gap-3 lg:gap-6 z-40"
+  >
+    <div class="hidden sm:flex items-center gap-3">
       <div
-        class="w-10 h-10 bg-primary-600 rounded-xl flex items-center justify-center shadow-md"
+        class="w-10 h-10 bg-teal-500 rounded-xl flex items-center justify-center shadow-md flex-shrink-0"
       >
         <span class="text-white font-bold text-lg">K</span>
       </div>
-      <h1 class="text-2xl font-bold text-white drop-shadow-md">Join Kapify</h1>
+      <h1 class="text-lg lg:text-2xl font-bold text-slate-900">Join Kapify</h1>
     </div>
     <a
       routerLink="/login"
-      class="text-sm text-white font-medium border border-white/30 hover:border-white bg-white/10 hover:bg-white/20 transition-all px-4 py-1.5 rounded-full shadow-sm backdrop-blur-sm"
+      class="text-sm text-slate-700 font-medium border border-slate-200 hover:border-slate-300 bg-white hover:bg-slate-50 transition-all duration-200 px-4 py-2 rounded-xl"
     >
       Sign in
     </a>
   </div>
 
   <!-- Left Panel - Form -->
-  <div class="flex-1 flex items-center justify-center px-8 py-12 bg-white">
+  <div
+    class="w-full lg:w-3/5 flex items-center justify-center px-4 py-8 lg:px-8 lg:py-12 bg-white"
+  >
     <div class="w-full max-w-md">
-      <!-- 🧩 Removed the old header section from here -->
+      <!-- Progress Indicator -->
+      <div class="mb-8">
+        <div class="flex items-center gap-2 mb-4">
+          <div class="text-sm font-medium text-slate-600">
+            Step {{ currentStep() }} of 2
+          </div>
+          <div class="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+            <div
+              class="h-full bg-gradient-to-r from-teal-400 to-teal-500 rounded-full transition-all duration-500 ease-out"
+              [style.width.%]="currentStep() === 1 ? 50 : 100"
+            ></div>
+          </div>
+        </div>
+      </div>
 
       <!-- Form -->
       <form
         [formGroup]="registerForm"
         (ngSubmit)="onSubmit()"
-        class="space-y-6"
+        class="space-y-5"
       >
-        <!-- User Type Selection -->
-        <div class="mb-6">
-          <label class="block text-sm font-medium text-neutral-700 mb-3"
-            >Register as</label
-          >
-          <div class="grid grid-cols-2 gap-4">
-            <button
-              type="button"
-              [class]="
-                getUserTypeButtonClasses('sme') +
-                ' bg-white hover:bg-primary-50 border border-slate-200 rounded-lg p-4 flex flex-col items-center justify-center shadow-sm hover:shadow-md transition-all'
-              "
-              (click)="selectUserType('sme')"
-            >
-              <div class="font-medium text-sm text-neutral-900">
-                Business Owner
-              </div>
-              <div class="text-xs text-neutral-500 mt-1 text-center">
-                I need funding
-              </div>
-            </button>
-            <button
-              type="button"
-              [class]="
-                getUserTypeButtonClasses('funder') +
-                ' bg-white hover:bg-primary-50 border border-slate-200 rounded-lg p-4 flex flex-col items-center justify-center shadow-sm hover:shadow-md transition-all'
-              "
-              (click)="selectUserType('funder')"
-            >
-              <div class="font-medium text-sm text-neutral-900">Investor</div>
-              <div class="text-xs text-neutral-500 mt-1 text-center">
-                I provide funding
-              </div>
-            </button>
-          </div>
-        </div>
-
-        <!-- Rest of your form untouched -->
-        <div class="grid grid-cols-2 gap-4">
+        <!-- ============================================
+             STEP 1: Account Type & Identity
+             ============================================ -->
+        @if (currentStep() === 1) {
+        <div class="space-y-5 animate-fade-in">
+          <!-- User Type Selection -->
           <div>
-            <label class="block text-sm font-medium text-neutral-700 mb-2"
-              >First name</label
-            >
+            <label class="block text-sm font-semibold text-slate-900 mb-3">
+              Register as
+            </label>
+            <div class="grid grid-cols-2 gap-3">
+              <button
+                type="button"
+                [class]="getUserTypeButtonClasses('sme')"
+                (click)="selectUserType('sme')"
+                class="transition-all duration-200"
+              >
+                <div class="font-medium text-sm text-slate-900">
+                  Business Owner
+                </div>
+                <div class="text-xs text-slate-600 mt-1 text-center">
+                  I need funding
+                </div>
+              </button>
+              <button
+                type="button"
+                [class]="getUserTypeButtonClasses('funder')"
+                (click)="selectUserType('funder')"
+                class="transition-all duration-200"
+              >
+                <div class="font-medium text-sm text-slate-900">Investor</div>
+                <div class="text-xs text-slate-600 mt-1 text-center">
+                  I provide funding
+                </div>
+              </button>
+            </div>
+          </div>
+
+          <!-- Name Fields -->
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-sm font-semibold text-slate-900 mb-2">
+                First name
+              </label>
+              <input
+                type="text"
+                formControlName="firstName"
+                placeholder="John"
+                [class]="getInputClasses('firstName')"
+              />
+              @if (getFieldError('firstName')) {
+              <p class="mt-1.5 text-sm text-red-700">
+                {{ getFieldError("firstName") }}
+              </p>
+              }
+            </div>
+            <div>
+              <label class="block text-sm font-semibold text-slate-900 mb-2">
+                Last name
+              </label>
+              <input
+                type="text"
+                formControlName="lastName"
+                placeholder="Doe"
+                [class]="getInputClasses('lastName')"
+              />
+              @if (getFieldError('lastName')) {
+              <p class="mt-1.5 text-sm text-red-700">
+                {{ getFieldError("lastName") }}
+              </p>
+              }
+            </div>
+          </div>
+
+          <!-- Email -->
+          <div>
+            <label class="block text-sm font-semibold text-slate-900 mb-2">
+              Email address
+            </label>
             <input
-              type="text"
-              formControlName="firstName"
-              placeholder="John"
-              [class]="getInputClasses('firstName')"
+              type="email"
+              formControlName="email"
+              placeholder="you@company.co.za"
+              [class]="getInputClasses('email')"
             />
-            @if (getFieldError('firstName')) {
-            <p class="mt-1 text-sm text-red-600">
-              {{ getFieldError("firstName") }}
+            @if (getFieldError('email')) {
+            <p class="mt-1.5 text-sm text-red-700">
+              {{ getFieldError("email") }}
             </p>
             }
           </div>
-          <div>
-            <label class="block text-sm font-medium text-neutral-700 mb-2"
-              >Last name</label
-            >
-            <input
-              type="text"
-              formControlName="lastName"
-              placeholder="Doe"
-              [class]="getInputClasses('lastName')"
-            />
-            @if (getFieldError('lastName')) {
-            <p class="mt-1 text-sm text-red-600">
-              {{ getFieldError("lastName") }}
-            </p>
-            }
-          </div>
-        </div>
 
-        <!-- ... rest of form unchanged ... -->
-
-        <!-- Email -->
-        <div>
-          <label class="block text-sm font-medium text-neutral-700 mb-2"
-            >Email address</label
-          >
-          <input
-            type="email"
-            formControlName="email"
-            placeholder="john@company.co.za"
-            [class]="getInputClasses('email')"
-          />
-          @if (getFieldError('email')) {
-          <p class="mt-1 text-sm text-red-600">{{ getFieldError("email") }}</p>
-          }
-        </div>
-
-        <!-- Phone -->
-        <div>
-          <label class="block text-sm font-medium text-neutral-700 mb-2"
-            >Phone number</label
-          >
-          <input
-            type="tel"
-            formControlName="phone"
-            placeholder="+27 81 123 4567"
-            [class]="getInputClasses('phone')"
-          />
-          @if (getFieldError('phone')) {
-          <p class="mt-1 text-sm text-red-600">{{ getFieldError("phone") }}</p>
-          }
-        </div>
-
-        <!-- Company Name (SME only) -->
-        @if (selectedUserType() === 'sme') {
-        <div>
-          <label class="block text-sm font-medium text-neutral-700 mb-2"
-            >Company name</label
-          >
-          <input
-            type="text"
-            formControlName="companyName"
-            placeholder="Your Company (Pty) Ltd"
-            [class]="getInputClasses('companyName')"
-          />
-          @if (getFieldError('companyName')) {
-          <p class="mt-1 text-sm text-red-600">
-            {{ getFieldError("companyName") }}
-          </p>
-          }
-        </div>
-        }
-
-        <!-- Password -->
-        <div>
-          <label class="block text-sm font-medium text-neutral-700 mb-2"
-            >Password</label
-          >
-          <div class="relative">
-            <input
-              [type]="showPassword() ? 'text' : 'password'"
-              formControlName="password"
-              placeholder="Create a strong password"
-              [class]="getInputClasses('password')"
-            />
-            <button
-              type="button"
-              class="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600 transition-colors"
-              (click)="togglePasswordVisibility()"
-            >
-              <lucide-icon
-                [img]="showPassword() ? EyeOffIcon : EyeIcon"
-                [size]="20"
-              />
-            </button>
-          </div>
-          @if (getFieldError('password')) {
-          <p class="mt-1 text-sm text-red-600">
-            {{ getFieldError("password") }}
-          </p>
-          }
-          <p class="mt-1 text-sm text-neutral-500">
-            Must be at least 8 characters
-          </p>
-        </div>
-
-        <!-- Confirm Password -->
-        <div>
-          <label class="block text-sm font-medium text-neutral-700 mb-2"
-            >Confirm password</label
-          >
-          <div class="relative">
-            <input
-              [type]="showConfirmPassword() ? 'text' : 'password'"
-              formControlName="confirmPassword"
-              placeholder="Confirm your password"
-              [class]="getInputClasses('confirmPassword')"
-            />
-            <button
-              type="button"
-              class="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600 transition-colors"
-              (click)="toggleConfirmPasswordVisibility()"
-            >
-              <lucide-icon
-                [img]="showConfirmPassword() ? EyeOffIcon : EyeIcon"
-                [size]="20"
-              />
-            </button>
-          </div>
-          @if (getFieldError('confirmPassword')) {
-          <p class="mt-1 text-sm text-red-600">
-            {{ getFieldError("confirmPassword") }}
-          </p>
-          }
-        </div>
-
-        <!-- Error Message -->
-        @if (error()) {
-        <div
-          class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm"
-        >
-          {{ error() }}
-        </div>
-        }
-
-        <!-- Submit Button -->
-        <button
-          type="submit"
-          [disabled]="registerForm.invalid || isLoading()"
-          class="w-full bg-primary-600 hover:bg-primary-700 disabled:bg-primary-300 text-white font-medium py-3 px-4 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 flex items-center justify-center"
-        >
-          @if (isLoading()) {
+          <!-- Error Message (Step 1) -->
+          @if (error()) {
           <div
-            class="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"
-          ></div>
-          <span class="ml-2">Creating account...</span>
-          } @else {
-          <span>I confirm. Create my account</span>
-          <!-- <lucide-icon [img]="ArrowRightIcon" [size]="20" class="ml-2" /> -->
+            class="bg-red-50 border border-red-200/50 text-red-700 px-4 py-3 rounded-xl text-sm flex items-start gap-3"
+          >
+            <lucide-icon
+              name="alert-circle"
+              [size]="18"
+              class="flex-shrink-0 mt-0.5"
+            />
+            <span>{{ error() }}</span>
+          </div>
           }
-        </button>
-      </form>
 
-      <!-- Terms / Privacy Text -->
-      <div class="mt-2 text-justify text-xs text-slate-700">
-        Please review our
-        <a
-          href="/privacy"
-          class="text-slate-700 font-medium hover:text-slate-900"
-          >Privacy Policy</a
-        >
-        and
-        <a href="/terms" class="text-slate-700 font-medium hover:text-slate-900"
-          >Data Protection Policy</a
-        >
-        before using this platform. By logging in and continuing to use our
-        services, you confirm that you have read, understood, and accepted our
-        Privacy Policy. You also consent to the handling, storage, and sharing
-        of your data strictly in accordance with these policies, and understand
-        that your data will only be used within the platform as outlined.
-      </div>
+          <!-- Continue Button -->
+          <button
+            type="button"
+            (click)="nextStep()"
+            [disabled]="!isStep1Valid()"
+            class="w-full bg-teal-500 hover:bg-teal-600 active:bg-teal-700 disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed text-white font-medium py-2.5 px-6 rounded-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 flex items-center justify-center"
+          >
+            <span>Continue</span>
+            <lucide-icon name="arrow-right" [size]="20" class="ml-2" />
+          </button>
+        </div>
+        }
+
+        <!-- ============================================
+             STEP 2: Contact & Security
+             ============================================ -->
+        @if (currentStep() === 2) {
+        <div class="space-y-5 animate-fade-in">
+          <!-- Step 1 Summary (Read-only) -->
+          <div class="bg-teal-50 border border-teal-300/50 rounded-xl p-4">
+            <div class="grid grid-cols-3 gap-3 text-sm">
+              <div>
+                <p class="text-teal-900 font-semibold">
+                  {{ registerForm.get("firstName")?.value }}
+                  {{ registerForm.get("lastName")?.value }}
+                </p>
+                <p class="text-teal-700 text-xs">Name</p>
+              </div>
+              <div>
+                <p class="text-teal-900 font-semibold">
+                  {{ registerForm.get("email")?.value }}
+                </p>
+                <p class="text-teal-700 text-xs">Email</p>
+              </div>
+              <div>
+                <p class="text-teal-900 font-semibold">
+                  {{
+                    selectedUserType() === "sme" ? "Business Owner" : "Investor"
+                  }}
+                </p>
+                <p class="text-teal-700 text-xs">Type</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Phone -->
+          <div>
+            <label class="block text-sm font-semibold text-slate-900 mb-2">
+              Phone number
+            </label>
+            <input
+              type="tel"
+              formControlName="phone"
+              placeholder="+27 81 123 4567"
+              [class]="getInputClasses('phone')"
+            />
+            @if (getFieldError('phone')) {
+            <p class="mt-1.5 text-sm text-red-700">
+              {{ getFieldError("phone") }}
+            </p>
+            }
+          </div>
+
+          <!-- Company Name (SME only) -->
+          @if (selectedUserType() === 'sme') {
+          <div>
+            <label class="block text-sm font-semibold text-slate-900 mb-2">
+              Company name
+            </label>
+            <input
+              type="text"
+              formControlName="companyName"
+              placeholder="Your Company (Pty) Ltd"
+              [class]="getInputClasses('companyName')"
+            />
+            @if (getFieldError('companyName')) {
+            <p class="mt-1.5 text-sm text-red-700">
+              {{ getFieldError("companyName") }}
+            </p>
+            }
+          </div>
+          }
+
+          <!-- Password -->
+          <div>
+            <label class="block text-sm font-semibold text-slate-900 mb-2">
+              Password
+            </label>
+            <div class="relative">
+              <input
+                [type]="showPassword() ? 'text' : 'password'"
+                formControlName="password"
+                placeholder="Create a strong password"
+                [class]="getInputClasses('password')"
+              />
+              <button
+                type="button"
+                tabindex="-1"
+                class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors duration-200 flex-shrink-0"
+                (click)="togglePasswordVisibility()"
+                [attr.aria-label]="
+                  showPassword() ? 'Hide password' : 'Show password'
+                "
+              >
+                <lucide-icon
+                  [name]="showPassword() ? 'eye-off' : 'eye'"
+                  [size]="20"
+                />
+              </button>
+            </div>
+            @if (getFieldError('password')) {
+            <p class="mt-1.5 text-sm text-red-700">
+              {{ getFieldError("password") }}
+            </p>
+            } @if (registerForm.get('password')?.value &&
+            getPasswordStrengthIndicator().label) {
+            <p
+              class="mt-2 text-xs font-medium"
+              [class]="'text-' + getPasswordStrengthIndicator().color"
+            >
+              Strength: {{ getPasswordStrengthIndicator().label }}
+            </p>
+            }
+          </div>
+
+          <!-- Confirm Password -->
+          <div>
+            <label class="block text-sm font-semibold text-slate-900 mb-2">
+              Confirm password
+            </label>
+            <div class="relative">
+              <input
+                [type]="showConfirmPassword() ? 'text' : 'password'"
+                formControlName="confirmPassword"
+                placeholder="Confirm your password"
+                [class]="getInputClasses('confirmPassword')"
+              />
+              <button
+                type="button"
+                tabindex="-1"
+                class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors duration-200 flex-shrink-0"
+                (click)="toggleConfirmPasswordVisibility()"
+                [attr.aria-label]="
+                  showConfirmPassword() ? 'Hide password' : 'Show password'
+                "
+              >
+                <lucide-icon
+                  [name]="showConfirmPassword() ? 'eye-off' : 'eye'"
+                  [size]="20"
+                />
+              </button>
+            </div>
+            @if (getFieldError('confirmPassword')) {
+            <p class="mt-1.5 text-sm text-red-700">
+              {{ getFieldError("confirmPassword") }}
+            </p>
+            }
+          </div>
+
+          <!-- Terms & Privacy -->
+          <div class="flex items-start gap-3 p-4 bg-slate-50 rounded-xl">
+            <input
+              type="checkbox"
+              id="agreeToTerms"
+              formControlName="agreeToTerms"
+              [class]="getCheckboxClasses()"
+              class="mt-1 flex-shrink-0 cursor-pointer"
+            />
+            <label
+              for="agreeToTerms"
+              class="text-xs text-slate-600 leading-relaxed cursor-pointer"
+            >
+              I agree to the
+              <a
+                href="/privacy"
+                class="text-slate-900 font-semibold hover:underline"
+                >Privacy Policy</a
+              >,
+              <a
+                href="/terms"
+                class="text-slate-900 font-semibold hover:underline"
+                >Terms of Service</a
+              >, and
+              <a
+                href="/data-protection"
+                class="text-slate-900 font-semibold hover:underline"
+                >Data Protection Policy</a
+              >
+            </label>
+          </div>
+          @if (getFieldError('agreeToTerms')) {
+          <p class="text-sm text-red-700">
+            {{ getFieldError("agreeToTerms") }}
+          </p>
+          }
+
+          <!-- Error Message (Step 2) -->
+          @if (error()) {
+          <div
+            class="bg-red-50 border border-red-200/50 text-red-700 px-4 py-3 rounded-xl text-sm flex items-start gap-3"
+          >
+            <lucide-icon
+              name="alert-circle"
+              [size]="18"
+              class="flex-shrink-0 mt-0.5"
+            />
+            <span>{{ error() }}</span>
+          </div>
+          }
+
+          <!-- Button Group -->
+          <div class="flex gap-3">
+            <button
+              type="button"
+              (click)="previousStep()"
+              class="flex-1 bg-slate-100 hover:bg-slate-200 active:bg-slate-300 text-slate-700 font-medium py-2.5 px-6 rounded-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2"
+            >
+              <span>Back</span>
+            </button>
+            <button
+              type="submit"
+              [disabled]="registerForm.invalid || isLoading()"
+              class="flex-1 bg-teal-500 hover:bg-teal-600 active:bg-teal-700 disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed text-white font-medium py-2.5 px-6 rounded-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 flex items-center justify-center"
+            >
+              @if (isLoading()) {
+              <div
+                class="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"
+              ></div>
+              <span>Creating account...</span>
+              } @else {
+              <span>Yes. Create account</span>
+              }
+            </button>
+          </div>
+        </div>
+        }
+      </form>
     </div>
   </div>
 
-  <!-- Right Panel - Slideshow -->
-  <div class="hidden lg:block flex-1 relative overflow-hidden">
+  <!-- Right Panel - Slideshow (Desktop only) -->
+  <div class="hidden lg:flex lg:w-2/5 relative overflow-hidden bg-white">
     <ng-container *ngFor="let slide of slides(); let i = index">
       <img
         [src]="slide.image"
@@ -287,15 +412,15 @@
     ></div>
 
     <div class="absolute left-8 bottom-12 max-w-lg text-white z-30">
-      <h2 class="text-3xl md:text-4xl font-serif leading-tight drop-shadow-md">
+      <h2 class="text-3xl md:text-4xl font-bold leading-tight drop-shadow-md">
         {{ slides()[activeSlideIndex()].title }}
       </h2>
       <p class="mt-3 text-sm md:text-base text-white/90 max-w-md">
         {{ slides()[activeSlideIndex()].subtitle }}
       </p>
 
-      <div class="mt-6 flex items-center space-x-4">
-        <div class="flex items-center space-x-2">
+      <div class="mt-6 flex items-center gap-4">
+        <div class="flex items-center gap-2">
           <button
             *ngFor="let s of slides(); let idx = index"
             (click)="selectSlide(idx); stopAutoplay()"
@@ -308,16 +433,16 @@
           ></button>
         </div>
 
-        <div class="ml-4 flex items-center space-x-2">
+        <div class="ml-4 flex items-center gap-2">
           <button
             (click)="prevSlide(); stopAutoplay()"
-            class="px-3 py-2 rounded-md bg-white/10 hover:bg-white/20 text-white text-sm"
+            class="px-3 py-2 rounded-lg bg-white/10 hover:bg-white/20 text-white text-sm transition-colors"
           >
             ‹
           </button>
           <button
             (click)="nextSlide(); stopAutoplay()"
-            class="px-3 py-2 rounded-md bg-white/10 hover:bg-white/20 text-white text-sm"
+            class="px-3 py-2 rounded-lg bg-white/10 hover:bg-white/20 text-white text-sm transition-colors"
           >
             ›
           </button>
@@ -326,3 +451,20 @@
     </div>
   </div>
 </div>
+
+<style>
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(4px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .animate-fade-in {
+    animation: fadeIn 300ms ease-out;
+  }
+</style>

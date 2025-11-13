@@ -66,7 +66,7 @@
 
 <!-- MAIN PAGE -->
 @else if (!showSectorModal()) {
-<div class="min-h-screen bg-slate-50">
+<div class="min-h-screen bg-slate-50 flex flex-col">
   <!-- TOAST NOTIFICATIONS (Top-right, fixed) -->
   <div class="fixed top-4 right-4 z-50 space-y-2 pointer-events-none">
     @if (showDatabaseSaveStatus()) {
@@ -207,7 +207,7 @@
             Complete Setup
           </button>
           <button
-            (click)="organizationError.set(null)"
+            (click)="clearErrors()"
             class="px-3 py-1.5 bg-white text-red-700 text-xs font-medium rounded-lg hover:bg-red-50 transition-colors duration-200 border border-red-200/50"
           >
             Dismiss
@@ -226,7 +226,7 @@
         <h3 class="text-sm font-semibold text-red-900">Publishing Failed</h3>
         <p class="text-sm text-red-700 mt-1">{{ publishError() }}</p>
         <button
-          (click)="publishError.set(null)"
+          (click)="clearErrors()"
           class="mt-3 px-3 py-1.5 bg-red-100 text-red-700 text-xs font-medium rounded-lg hover:bg-red-200 transition-colors duration-200"
         >
           Dismiss
@@ -237,8 +237,8 @@
   </div>
   }
 
-  <!-- MAIN CONTENT -->
-  <div class="px-4 lg:px-8 py-6">
+  <!-- MAIN CONTENT - Flex 1 to push actions down -->
+  <div class="flex-1 px-4 lg:px-8 py-6 overflow-y-auto">
     <div class="max-w-7xl mx-auto">
       <!-- RESPONSIVE GRID LAYOUT -->
       <div class="create-opportunity-grid">
@@ -308,7 +308,6 @@
               @if (currentStep() === 'basic') {
               <div class="space-y-6">
                 <app-opportunity-basics></app-opportunity-basics>
-                <app-media-branding></app-media-branding>
               </div>
               } @if (currentStep() === 'terms') {
               <app-funding-structure></app-funding-structure>
@@ -316,6 +315,7 @@
               <app-eligibility-filters></app-eligibility-filters>
               } @if (currentStep() === 'settings') {
               <app-application-settings></app-application-settings>
+              <app-media-branding></app-media-branding>
               } @if (currentStep() === 'review') {
               <div class="space-y-6">
                 @if (validationErrors().length > 0) {
@@ -404,109 +404,31 @@
               </div>
               }
             </div>
-
-            <!-- FORM ACTIONS -->
-            <div
-              class="px-6 py-4 bg-slate-50 border-t border-slate-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"
-            >
-              <!-- LEFT BUTTONS -->
-              <div class="flex flex-col sm:flex-row gap-2">
-                <button
-                  class="px-6 py-2.5 bg-slate-100 text-slate-700 font-medium rounded-xl hover:bg-slate-200 active:bg-slate-300 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
-                  [disabled]="currentStep() === 'basic'"
-                  (click)="previousStep()"
-                >
-                  <lucide-angular
-                    [img]="ArrowLeftIcon"
-                    [size]="16"
-                    class="mr-1.5"
-                  ></lucide-angular>
-                  Previous
-                </button>
-
-                <button
-                  class="px-6 py-2.5 bg-slate-100 text-slate-700 font-medium rounded-xl hover:bg-slate-200 active:bg-slate-300 transition-colors duration-200 flex items-center justify-center"
-                  (click)="goBack()"
-                >
-                  Cancel
-                </button>
-
-                @if (isCreateMode()) {
-                <button
-                  class="px-6 py-2.5 bg-slate-100 text-slate-700 font-medium rounded-xl hover:bg-slate-200 active:bg-slate-300 transition-colors duration-200 flex items-center justify-center"
-                  (click)="clearDraft()"
-                  title="Clear form and start over"
-                >
-                  Clear Form
-                </button>
-                }
-              </div>
-
-              <!-- RIGHT BUTTONS -->
-              <div class="flex flex-col sm:flex-row gap-2">
-                <button
-                  class="px-6 py-2.5 bg-slate-100 text-slate-700 font-medium rounded-xl hover:bg-slate-200 active:bg-slate-300 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
-                  (click)="saveDraft()"
-                  [disabled]="isSaving() || organizationError()"
-                >
-                  @if (isSaving()) {
-                  <lucide-angular
-                    [img]="RefreshCwIcon"
-                    [size]="16"
-                    class="mr-1.5 animate-spin"
-                  ></lucide-angular>
-                  Saving... } @else {
-                  <lucide-angular
-                    [img]="SaveIcon"
-                    [size]="16"
-                    class="mr-1.5"
-                  ></lucide-angular>
-                  {{ getSaveButtonText() }}
-                  }
-                </button>
-
-                @if (currentStep() === 'review') {
-                <button
-                  class="px-6 py-2.5 bg-teal-500 text-white font-medium rounded-xl hover:bg-teal-600 active:bg-teal-700 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
-                  (click)="publishOpportunity()"
-                  [disabled]="!canPublish() || isPublishing()"
-                >
-                  @if (isPublishing()) {
-                  <lucide-angular
-                    [img]="RefreshCwIcon"
-                    [size]="16"
-                    class="mr-1.5 animate-spin"
-                  ></lucide-angular>
-                  {{ isEditMode() ? "Saving Changes..." : "Publishing..." }}
-                  } @else {
-                  <lucide-angular
-                    [img]="CheckIcon"
-                    [size]="16"
-                    class="mr-1.5"
-                  ></lucide-angular>
-                  {{ isEditMode() ? "Save Changes" : "Publish Opportunity" }}
-                  }
-                </button>
-                } @else {
-                <button
-                  class="px-6 py-2.5 bg-teal-500 text-white font-medium rounded-xl hover:bg-teal-600 active:bg-teal-700 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
-                  (click)="nextStep()"
-                  [disabled]="!canContinue()"
-                >
-                  Continue
-                  <lucide-angular
-                    [img]="ArrowRightIcon"
-                    [size]="16"
-                    class="ml-1.5"
-                  ></lucide-angular>
-                </button>
-                }
-              </div>
-            </div>
           </div>
         </div>
       </div>
     </div>
   </div>
+
+  <!-- FORM ACTIONS (standalone component) -->
+  <app-opportunity-form-actions
+    [currentStep]="currentStep()"
+    [isFirstStep]="isFirstStep.bind(this)"
+    [isReviewStep]="isReviewStep.bind(this)"
+    [isSaving]="isSaving()"
+    [isPublishing]="isPublishing()"
+    [canContinue]="canContinue()"
+    [canPublish]="canPublish()"
+    [isEditMode]="isEditMode()"
+    [isCreateMode]="isCreateMode()"
+    [organizationError]="!!organizationError()"
+    [saveButtonText]="getSaveButtonText()"
+    (next)="nextStep()"
+    (previous)="previousStep()"
+    (publish)="publishOpportunity()"
+    (save)="saveDraft()"
+    (cancel)="goBack()"
+    (clear)="clearDraft()"
+  ></app-opportunity-form-actions>
 </div>
 }

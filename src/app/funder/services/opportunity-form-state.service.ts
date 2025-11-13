@@ -227,14 +227,6 @@ export class OpportunityFormStateService {
       });
     }
 
-    if (!data.shortDescription.trim()) {
-      errors.push({
-        field: 'shortDescription',
-        message: 'Short description is required',
-        type: 'error',
-      });
-    }
-
     if (!data.description.trim()) {
       errors.push({
         field: 'description',
