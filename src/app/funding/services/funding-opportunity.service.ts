@@ -1302,6 +1302,22 @@ export class FundingOpportunityService {
   }
 
   private transformDbToModel(dbData: any): FundingOpportunity {
+    // Helper function to parse array fields that might be JSON strings
+    const parseArrayField = (field: any): string[] => {
+      if (Array.isArray(field)) {
+        return field;
+      }
+      if (typeof field === 'string' && field.trim()) {
+        try {
+          const parsed = JSON.parse(field);
+          return Array.isArray(parsed) ? parsed : [field];
+        } catch {
+          return [field];
+        }
+      }
+      return [];
+    };
+
     return {
       id: dbData.id,
       fundId: dbData.fund_id,
@@ -1331,10 +1347,16 @@ export class FundingOpportunityService {
       decisionTimeframe: dbData.decision_timeframe,
       applicationProcess: dbData.application_process,
       eligibilityCriteria: dbData.eligibility_criteria,
-      exclusionCriteria:
+      investmentCriteria: parseArrayField(
+        dbData.investment_criteria ||
+          dbData.eligibility_criteria?.investmentCriteria ||
+          ''
+      ),
+      exclusionCriteria: parseArrayField(
         dbData.exclusion_criteria ||
-        (dbData.eligibility_criteria?.exclusionCriteria as string) ||
-        '',
+          dbData.eligibility_criteria?.exclusionCriteria ||
+          ''
+      ),
       status: dbData.status,
       totalAvailable: dbData.total_available || dbData.typical_investment,
       amountCommitted: dbData.amount_committed,
@@ -1471,6 +1493,7 @@ export class FundingOpportunityService {
         ? Number(formData.maxApplications)
         : undefined,
       autoMatch: formData.autoMatch,
+      investmentCriteria: formData.investmentCriteria,
       exclusionCriteria: formData.exclusionCriteria,
       eligibilityCriteria: {
         industries: formData.targetIndustries || [],
