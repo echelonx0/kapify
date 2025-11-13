@@ -815,6 +815,7 @@ export class FundingOpportunityService {
         funding_opportunity_video_url: formData.fundingOpportunityVideoUrl,
         funder_organization_name: formData.funderOrganizationName,
         funder_organization_logo_url: formData.funderOrganizationLogoUrl,
+        investment_criteria: formData.investmentCriteria,
         exclusion_criteria: formData.exclusionCriteria,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
@@ -962,6 +963,7 @@ export class FundingOpportunityService {
         funding_opportunity_video_url: formData.fundingOpportunityVideoUrl,
         funder_organization_name: formData.funderOrganizationName,
         funder_organization_logo_url: formData.funderOrganizationLogoUrl,
+        investment_criteria: formData.investmentCriteria,
         exclusion_criteria: formData.exclusionCriteria,
         updated_at: new Date().toISOString(),
       };
@@ -1362,6 +1364,24 @@ export class FundingOpportunityService {
   private transformDbToFormData(
     dbOpportunity: any
   ): Partial<FundingOpportunity> {
+    // Helper function to parse array fields that might be JSON strings
+    const parseArrayField = (field: any): string[] => {
+      if (Array.isArray(field)) {
+        return field;
+      }
+      if (typeof field === 'string' && field.trim()) {
+        try {
+          // Try to parse as JSON if it's a JSON string
+          const parsed = JSON.parse(field);
+          return Array.isArray(parsed) ? parsed : [field];
+        } catch {
+          // If parsing fails, treat as single item
+          return [field];
+        }
+      }
+      return [];
+    };
+
     return {
       id: dbOpportunity.id,
       title: dbOpportunity.title,
@@ -1389,10 +1409,16 @@ export class FundingOpportunityService {
       decisionTimeframe: dbOpportunity.decision_timeframe,
       applicationProcess: dbOpportunity.application_process,
       eligibilityCriteria: dbOpportunity.eligibility_criteria,
-      exclusionCriteria:
+      exclusionCriteria: parseArrayField(
         dbOpportunity.exclusion_criteria ||
-        (dbOpportunity.eligibility_criteria?.exclusionCriteria as string) ||
-        '',
+          dbOpportunity.eligibility_criteria?.exclusionCriteria ||
+          ''
+      ),
+      investmentCriteria: parseArrayField(
+        dbOpportunity.investment_criteria ||
+          dbOpportunity.eligibility_criteria?.investmentCriteria ||
+          ''
+      ),
       totalAvailable:
         dbOpportunity.total_available || dbOpportunity.typical_investment,
       maxApplications: dbOpportunity.max_applications,
