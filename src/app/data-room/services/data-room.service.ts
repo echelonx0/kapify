@@ -8,6 +8,7 @@ import {
   takeUntil,
 } from 'rxjs/operators';
 import { SharedSupabaseService } from 'src/app/shared/services/shared-supabase.service';
+import { environment } from 'src/environments/environment';
 import {
   DataRoom,
   DataRoomSection,
@@ -82,9 +83,15 @@ export const DEFAULT_SECTIONS: Omit<
 // Precompute section keys (avoid repeated mapping)
 const DEFAULT_SECTION_KEYS = DEFAULT_SECTIONS.map((s) => s.sectionKey);
 
+// Cache configuration from environment
+const CACHE_TTL = environment.cache.dataRoomTTL;
+const MAX_CACHE_SIZE = environment.cache.maxCacheSize;
+
 interface CachedDataRoom {
   observable: Observable<DataRoom>;
   subscription: any;
+  timestamp: number; // Track when cached for TTL
+  accessCount: number; // Track usage for LRU eviction
 }
 
 @Injectable({
@@ -133,16 +140,37 @@ export class DataRoomService implements OnDestroy {
   }
 
   /**
-   * Get data room (cached)
+   * Get data room (cached with TTL and LRU eviction)
    * Returns cached observable to avoid duplicate queries
+   *
+   * PRODUCTION-SAFE: Prevents memory leaks
+   * - TTL-based expiration
+   * - LRU eviction when cache is full
+   * - Automatic cleanup of stale entries
    */
   private getCachedDataRoom(
     organizationId: string
   ): Observable<DataRoom | null> {
-    // Return cached if available
-    if (this.dataRoomCache.has(organizationId)) {
-      return this.dataRoomCache.get(organizationId)!
-        .observable as Observable<DataRoom | null>;
+    // Check if cached and still valid
+    const cached = this.dataRoomCache.get(organizationId);
+    if (cached) {
+      const age = Date.now() - cached.timestamp;
+
+      if (age < CACHE_TTL) {
+        // Cache hit - update access count for LRU
+        cached.accessCount++;
+        console.log(`✅ Cache hit for data room: ${organizationId} (age: ${Math.round(age / 1000)}s)`);
+        return cached.observable as Observable<DataRoom | null>;
+      } else {
+        // Cache expired - remove it
+        console.log(`🧹 Cache expired for data room: ${organizationId}`);
+        this.dataRoomCache.delete(organizationId);
+      }
+    }
+
+    // Cache miss or expired - enforce size limit before adding new entry
+    if (this.dataRoomCache.size >= MAX_CACHE_SIZE) {
+      this.evictLRUEntry();
     }
 
     // Create new cached observable
@@ -165,8 +193,65 @@ export class DataRoomService implements OnDestroy {
     this.dataRoomCache.set(organizationId, {
       observable: observable as any,
       subscription: null,
+      timestamp: Date.now(),
+      accessCount: 1
     });
+
+    console.log(`💾 Cached new data room: ${organizationId} (cache size: ${this.dataRoomCache.size})`);
     return observable;
+  }
+
+  /**
+   * Evict least recently used cache entry when cache is full
+   * Implements LRU eviction policy
+   */
+  private evictLRUEntry(): void {
+    let lruKey: string | null = null;
+    let minAccessCount = Infinity;
+    let oldestTimestamp = Infinity;
+
+    // Find least recently used entry (lowest access count, oldest if tied)
+    for (const [key, value] of this.dataRoomCache.entries()) {
+      if (value.accessCount < minAccessCount ||
+          (value.accessCount === minAccessCount && value.timestamp < oldestTimestamp)) {
+        lruKey = key;
+        minAccessCount = value.accessCount;
+        oldestTimestamp = value.timestamp;
+      }
+    }
+
+    if (lruKey) {
+      console.log(`🗑️  Evicting LRU cache entry: ${lruKey} (access count: ${minAccessCount})`);
+      this.dataRoomCache.delete(lruKey);
+    }
+  }
+
+  /**
+   * Manually invalidate cache for a specific organization
+   */
+  invalidateDataRoomCache(organizationId: string): void {
+    this.dataRoomCache.delete(organizationId);
+    console.log(`🧹 Invalidated cache for: ${organizationId}`);
+  }
+
+  /**
+   * Clear all expired cache entries
+   * Should be called periodically or on specific events
+   */
+  clearExpiredCache(): void {
+    const now = Date.now();
+    let clearedCount = 0;
+
+    for (const [key, value] of this.dataRoomCache.entries()) {
+      if (now - value.timestamp > CACHE_TTL) {
+        this.dataRoomCache.delete(key);
+        clearedCount++;
+      }
+    }
+
+    if (clearedCount > 0) {
+      console.log(`🧹 Cleared ${clearedCount} expired cache entries`);
+    }
   }
 
   /**
