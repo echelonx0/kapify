@@ -10,7 +10,7 @@ import {
   Info,
 } from 'lucide-angular';
 import { OpportunityFormStateService } from 'src/app/funder/create-opportunity/services/opportunity-form-state.service';
-import { OpportunityUIHelperService } from 'src/app/funder/services/ui-helper.service';
+import { OpportunityUIHelperService } from '../../services/ui-helper.service';
 
 @Component({
   selector: 'app-application-settings',
