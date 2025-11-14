@@ -491,17 +491,12 @@ export class CreateOpportunityComponent implements OnInit, OnDestroy {
         this.opportunityService.publishOpportunity(opportunityData).subscribe({
           next: (response) => {
             console.log('✅ PUBLISH SUCCESSFUL:', response);
-            // ✅ CLEAR IMMEDIATELY
-            this.formState.clearDraft();
-            this.publishError.set(null);
-            this.formState.validationErrors.set([]); // Add this line
 
             this.opportunityId.set(response.opportunityId);
+            this.publishError.set(null);
+            this.formState.validationErrors.set([]);
 
-            // Show success modal via service
-            this.actionModalService.showPublishSuccess(title);
-
-            // Set callbacks
+            // Show success modal with callback (single call, not double!)
             this.actionModalService.open(
               {
                 actionType: 'publish-success',
@@ -512,6 +507,8 @@ export class CreateOpportunityComponent implements OnInit, OnDestroy {
                   console.log(
                     'Success callback: navigating to published opportunity'
                   );
+                  // Clear draft AFTER modal is dismissed, not before
+                  this.formState.clearDraft();
                   this.router.navigate([
                     '/funder/opportunities',
                     response.opportunityId,
@@ -627,9 +624,7 @@ export class CreateOpportunityComponent implements OnInit, OnDestroy {
             next: (response) => {
               console.log('✅ Opportunity updated:', response);
 
-              // Show success modal via service
-              this.actionModalService.showPublishSuccess(title);
-
+              // Show success modal with callback (single call)
               this.actionModalService.open(
                 {
                   actionType: 'publish-success',
