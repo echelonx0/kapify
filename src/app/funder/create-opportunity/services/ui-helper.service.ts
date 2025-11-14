@@ -1,7 +1,10 @@
 // src/app/funder/services/ui-helper.service.ts
 import { Injectable, inject, signal } from '@angular/core';
 import { StepNavigationService } from '../step-navigation.service';
-import { OpportunityFormStateService } from './opportunity-form-state.service';
+import {
+  OpportunityFormStateService,
+  CreateOpportunityFormData,
+} from './opportunity-form-state.service';
 
 @Injectable({ providedIn: 'root' })
 export class OpportunityUIHelperService {
@@ -13,7 +16,7 @@ export class OpportunityUIHelperService {
   readonly businessStagesOpen = signal(false);
   readonly geoOpen = signal(false);
 
-  targetIndustries = [
+  readonly targetIndustries = [
     { value: 'agriculture', label: 'Agriculture' },
     { value: 'fintech', label: 'Fintech' },
     { value: 'health', label: 'Health' },
@@ -21,7 +24,7 @@ export class OpportunityUIHelperService {
     { value: 'ecommerce', label: 'E-commerce' },
   ];
 
-  businessStages = [
+  readonly businessStages = [
     { value: 'ideation', label: 'Ideation' },
     { value: 'pre_revenue', label: 'Pre-revenue' },
     { value: 'early_revenue', label: 'Early Revenue' },
@@ -29,14 +32,14 @@ export class OpportunityUIHelperService {
     { value: 'mature', label: 'Mature' },
   ];
 
-  geographicRegions = [
+  readonly geographicRegions = [
     { value: 'southern_africa', label: 'Southern Africa' },
     { value: 'east_africa', label: 'East Africa' },
     { value: 'west_africa', label: 'West Africa' },
     { value: 'north_africa', label: 'North Africa' },
   ];
 
-  timeframes = [
+  readonly timeframes = [
     { value: '7', label: '7 days' },
     { value: '14', label: '14 days' },
     { value: '30', label: '30 days' },
@@ -59,25 +62,31 @@ export class OpportunityUIHelperService {
   }
 
   // ===== FIELD UPDATES (DELEGATE TO FORM STATE) =====
-  onFieldChange(field: string, event: Event): void {
+  onFieldChange(field: keyof CreateOpportunityFormData, event: Event): void {
     const value = (event.target as HTMLInputElement).value;
-    this.formState.updateField(field as any, value);
+    this.formState.updateField(field, value);
   }
 
-  onCheckboxChange(field: string, event: Event): void {
+  onCheckboxChange(field: keyof CreateOpportunityFormData, event: Event): void {
     const checked = (event.target as HTMLInputElement).checked;
-    this.formState.updateField(field as any, checked);
+    this.formState.updateField(field, checked);
   }
 
-  onMultiSelectChange(field: string, event: Event): void {
+  onMultiSelectChange(
+    field: keyof CreateOpportunityFormData,
+    event: Event
+  ): void {
     const value = (event.target as HTMLInputElement).value;
     const checked = (event.target as HTMLInputElement).checked;
-    this.formState.updateMultiSelectField(field as any, value, checked);
+    this.formState.updateMultiSelectField(field, value, checked);
   }
 
-  onNumberInputChange(field: string, event: Event): void {
+  onNumberInputChange(
+    field: keyof CreateOpportunityFormData,
+    event: Event
+  ): void {
     const value = (event.target as HTMLInputElement).value;
-    this.formState.onNumberInput(field as any, value);
+    this.formState.onNumberInput(field, value);
   }
 
   // ===== NUMBER FORMATTING (DELEGATE) =====
@@ -85,8 +94,8 @@ export class OpportunityUIHelperService {
     return this.formState.formatNumberWithCommas(value);
   }
 
-  getFormattedAmount(field: string): string {
-    return this.formState.getFormattedAmount(field as any);
+  getFormattedAmount(field: keyof CreateOpportunityFormData): string {
+    return this.formState.getFormattedAmount(field);
   }
 
   // ===== FIELD STYLING =====
@@ -161,7 +170,7 @@ export class OpportunityUIHelperService {
   }
 
   // ===== IMAGE ERROR HANDLING (DELEGATE) =====
-  onImageError(field: string): void {
-    this.formState.onImageError(field as any);
+  onImageError(field: keyof CreateOpportunityFormData): void {
+    this.formState.onImageError(field);
   }
 }

@@ -190,7 +190,7 @@ export class CreateOpportunityComponent implements OnInit, OnDestroy {
     effect(() => {
       const data = this.formState.formData();
       const orgId = this.organizationState.organizationId();
-      this.formState.validateForm(orgId);
+      // this.formState.validateForm(orgId);
     });
   }
 
@@ -491,7 +491,10 @@ export class CreateOpportunityComponent implements OnInit, OnDestroy {
         this.opportunityService.publishOpportunity(opportunityData).subscribe({
           next: (response) => {
             console.log('✅ PUBLISH SUCCESSFUL:', response);
-            this.clearDraft();
+            // ✅ CLEAR IMMEDIATELY
+            this.formState.clearDraft();
+            this.publishError.set(null);
+            this.formState.validationErrors.set([]); // Add this line
 
             this.opportunityId.set(response.opportunityId);
 
