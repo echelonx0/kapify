@@ -4,7 +4,6 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { LucideAngularModule, Target } from 'lucide-angular';
 import { OpportunityFormStateService } from 'src/app/funder/create-opportunity/services/opportunity-form-state.service';
-
 import { ClickOutsideDirective } from 'src/app/shared/directives/click-outside.directive';
 import { CriteriaChipListComponent } from 'src/app/funder/create-opportunity/shared/criteria-chip-list.component';
 import { OpportunityUIHelperService } from '../../services/ui-helper.service';
