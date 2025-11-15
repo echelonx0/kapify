@@ -241,38 +241,6 @@ export class OrganizationSettingsService {
   }
 
   /**
-   * Get organization statistics for dashboard
-   */
-  getOrganizationStats(): Observable<{
-    totalOpportunities: number;
-    activeApplications: number;
-    totalFunded: number;
-    verificationStatus: string;
-  }> {
-    const orgId = this.authService.getCurrentUserOrganizationId();
-
-    if (!orgId) {
-      return of({
-        totalOpportunities: 0,
-        activeApplications: 0,
-        totalFunded: 0,
-        verificationStatus: 'unverified',
-      });
-    }
-
-    // TODO: Implement when opportunities and applications tables are ready
-    // For now return mock data
-    return of({
-      totalOpportunities: 12,
-      activeApplications: 34,
-      totalFunded: 2500000,
-      verificationStatus: this.organization()?.isVerified
-        ? 'verified'
-        : 'pending',
-    });
-  }
-
-  /**
    * Request verification
    */
   requestVerification(): Observable<void> {

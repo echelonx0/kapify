@@ -1,7 +1,13 @@
 // src/app/shared/financial-table/financial-data-table.component.ts
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { LucideAngularModule, ChevronDown, ChevronRight, Lock, Edit3 } from 'lucide-angular';
+import {
+  LucideAngularModule,
+  ChevronDown,
+  ChevronRight,
+  Lock,
+  PenLine,
+} from 'lucide-angular';
 
 export interface FinancialTableRow {
   label: string;
@@ -22,14 +28,14 @@ export interface FinancialTableSection {
   standalone: true,
   imports: [CommonModule, LucideAngularModule],
   templateUrl: 'financial-data-table.component.html',
-  styleUrl: 'financial-data-table.component.css'
+  styleUrl: 'financial-data-table.component.css',
 })
 export class FinancialDataTableComponent {
   @Input() sections: FinancialTableSection[] = [];
   @Input() columnHeaders: string[] = [];
   @Input() editMode = false;
   @Input() itemLabel = 'Item';
-  
+
   @Output() cellValueChanged = new EventEmitter<{
     sectionIndex: number;
     rowIndex: number;
@@ -40,10 +46,11 @@ export class FinancialDataTableComponent {
   ChevronDownIcon = ChevronDown;
   ChevronRightIcon = ChevronRight;
   LockIcon = Lock;
-  EditIcon = Edit3;
+  EditIcon = PenLine;
 
   toggleSection(sectionIndex: number) {
-    this.sections[sectionIndex].collapsed = !this.sections[sectionIndex].collapsed;
+    this.sections[sectionIndex].collapsed =
+      !this.sections[sectionIndex].collapsed;
   }
 
   onCellFocus(event: Event) {
@@ -53,7 +60,12 @@ export class FinancialDataTableComponent {
     }
   }
 
-  onCellBlur(event: Event, sectionIndex: number, rowIndex: number, colIndex: number) {
+  onCellBlur(
+    event: Event,
+    sectionIndex: number,
+    rowIndex: number,
+    colIndex: number
+  ) {
     const input = event.target as HTMLInputElement;
     if (input && input.value !== '') {
       const value = parseFloat(input.value) || 0;
@@ -61,31 +73,31 @@ export class FinancialDataTableComponent {
         sectionIndex,
         rowIndex,
         colIndex,
-        value
+        value,
       });
     }
   }
 
   formatValue(value: number, type?: string): string {
     if (value === 0 || value === null || value === undefined) return '-';
-    
+
     if (type === 'percentage') {
       return `${value.toFixed(1)}%`;
     }
-    
+
     if (type === 'currency') {
       const formatted = new Intl.NumberFormat('en-ZA', {
         style: 'decimal',
         minimumFractionDigits: 2,
-        maximumFractionDigits: 2
+        maximumFractionDigits: 2,
       }).format(Math.abs(value));
       return value < 0 ? `(${formatted})` : formatted;
     }
-    
+
     if (type === 'ratio') {
       return value.toFixed(2);
     }
-    
+
     return value.toFixed(2);
   }
 

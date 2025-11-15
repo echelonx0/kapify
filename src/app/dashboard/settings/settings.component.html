@@ -48,7 +48,8 @@
         </nav>
 
         <!-- Organization Card -->
-        @if (organization() && !isLoading()) {
+        @if (organization() && !isLoading() && !isSME) {
+
         <div
           class="mt-6 bg-white rounded-2xl p-5 shadow-sm border border-slate-200 hover:shadow-md transition-all duration-200"
         >
@@ -60,16 +61,6 @@
               [alt]="organization()?.name + ' logo'"
               class="w-10 h-10 rounded-lg object-cover flex-shrink-0"
             />
-            } @else {
-            <div
-              class="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center flex-shrink-0"
-            >
-              <lucide-icon
-                [img]="Building2Icon"
-                [size]="20"
-                class="text-slate-600"
-              />
-            </div>
             }
             <div class="flex-1 min-w-0">
               <p class="text-sm font-semibold text-slate-900 truncate">

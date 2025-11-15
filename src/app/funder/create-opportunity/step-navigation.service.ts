@@ -152,17 +152,12 @@ export class StepNavigationService {
 
     switch (stepId) {
       case 'basic':
-        return !!(
-          data.title.trim() &&
-          data.shortDescription.trim() &&
-          data.description.trim()
-        );
+        return !!(data.title.trim() && data.description.trim());
 
       case 'terms':
         return !!(
           data.fundingType &&
           data.typicalInvestment &&
-          data.offerAmount &&
           data.decisionTimeframe
         );
 

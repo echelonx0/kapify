@@ -33,12 +33,12 @@
       <button
         type="button"
         (click)="ui.toggleDropdown('targetIndustriesOpen')"
-        class="w-full flex justify-between items-center px-4 py-2.5 border border-slate-200 rounded-xl bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-orange-500 transition-all duration-200"
+        class="w-full flex justify-between items-center px-4 py-2.5 border border-slate-200 rounded-xl bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all duration-200"
       >
         <span class="truncate text-left">
           {{
             formState.formData().targetIndustries.length
-              ? formState.formData().targetIndustries.join(", ")
+              ? formState.formData().targetIndustries.length + " selected"
               : "Select industries"
           }}
         </span>
@@ -48,9 +48,27 @@
       <div
         class="absolute z-20 mt-2 w-full bg-white border border-slate-200 rounded-xl shadow-lg p-3 max-h-60 overflow-y-auto"
       >
+        <!-- Select All Option -->
+        <label
+          class="flex items-center gap-2 px-2 py-2 rounded-lg hover:bg-slate-100 cursor-pointer transition border-b border-slate-200 mb-2"
+        >
+          <input
+            type="checkbox"
+            [checked]="
+              ui.isAllSelected('targetIndustries', ui.targetIndustries)
+            "
+            (change)="ui.onSelectAll('targetIndustries', ui.targetIndustries)"
+            class="w-4 h-4 text-teal-600 rounded border-slate-300 focus:ring-teal-500"
+          />
+          <span class="text-sm font-medium text-slate-900">{{
+            ui.getSelectAllText("targetIndustries", ui.targetIndustries)
+          }}</span>
+        </label>
+
+        <!-- Individual Options -->
         @for (industry of ui.targetIndustries; track industry.value) {
         <label
-          class="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-orange-50 cursor-pointer transition"
+          class="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-slate-100 cursor-pointer transition"
         >
           <input
             type="checkbox"
@@ -59,7 +77,7 @@
             "
             (change)="ui.onMultiSelectChange('targetIndustries', $event)"
             [value]="industry.value"
-            class="text-orange-500 rounded border-gray-300 focus:ring-0"
+            class="w-4 h-4 text-teal-600 rounded border-slate-300 focus:ring-teal-500"
           />
           <span class="text-sm text-slate-900">{{ industry.label }}</span>
         </label>
@@ -79,12 +97,12 @@
       <button
         type="button"
         (click)="ui.toggleDropdown('businessStagesOpen')"
-        class="w-full flex justify-between items-center px-4 py-2.5 border border-slate-200 rounded-xl bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-orange-500 transition-all duration-200"
+        class="w-full flex justify-between items-center px-4 py-2.5 border border-slate-200 rounded-xl bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all duration-200"
       >
         <span class="truncate text-left">
           {{
             formState.formData().businessStages.length
-              ? formState.formData().businessStages.join(", ")
+              ? formState.formData().businessStages.length + " selected"
               : "Select stages"
           }}
         </span>
@@ -94,9 +112,25 @@
       <div
         class="absolute z-20 mt-2 w-full bg-white border border-slate-200 rounded-xl shadow-lg p-3 max-h-60 overflow-y-auto"
       >
+        <!-- Select All Option -->
+        <label
+          class="flex items-center gap-2 px-2 py-2 rounded-lg hover:bg-slate-100 cursor-pointer transition border-b border-slate-200 mb-2"
+        >
+          <input
+            type="checkbox"
+            [checked]="ui.isAllSelected('businessStages', ui.businessStages)"
+            (change)="ui.onSelectAll('businessStages', ui.businessStages)"
+            class="w-4 h-4 text-teal-600 rounded border-slate-300 focus:ring-teal-500"
+          />
+          <span class="text-sm font-medium text-slate-900">{{
+            ui.getSelectAllText("businessStages", ui.businessStages)
+          }}</span>
+        </label>
+
+        <!-- Individual Options -->
         @for (stage of ui.businessStages; track stage.value) {
         <label
-          class="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-orange-50 cursor-pointer transition"
+          class="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-slate-100 cursor-pointer transition"
         >
           <input
             type="checkbox"
@@ -105,7 +139,7 @@
             "
             (change)="ui.onMultiSelectChange('businessStages', $event)"
             [value]="stage.value"
-            class="text-orange-500 rounded border-gray-300 focus:ring-0"
+            class="w-4 h-4 text-teal-600 rounded border-slate-300 focus:ring-teal-500"
           />
           <span class="text-sm text-slate-900">{{ stage.label }}</span>
         </label>
@@ -122,12 +156,12 @@
       <button
         type="button"
         (click)="ui.toggleDropdown('geoOpen')"
-        class="w-full flex justify-between items-center px-4 py-2.5 border border-slate-200 rounded-xl bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-orange-500 transition-all duration-200"
+        class="w-full flex justify-between items-center px-4 py-2.5 border border-slate-200 rounded-xl bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all duration-200"
       >
         <span class="truncate text-left">
           {{
             formState.formData().geographicRestrictions.length
-              ? formState.formData().geographicRestrictions.join(", ")
+              ? formState.formData().geographicRestrictions.length + " selected"
               : "Select regions"
           }}
         </span>
@@ -137,9 +171,29 @@
       <div
         class="absolute z-20 mt-2 w-full bg-white border border-slate-200 rounded-xl shadow-lg p-3 max-h-60 overflow-y-auto"
       >
+        <!-- Select All Option -->
+        <label
+          class="flex items-center gap-2 px-2 py-2 rounded-lg hover:bg-slate-100 cursor-pointer transition border-b border-slate-200 mb-2"
+        >
+          <input
+            type="checkbox"
+            [checked]="
+              ui.isAllSelected('geographicRestrictions', ui.geographicRegions)
+            "
+            (change)="
+              ui.onSelectAll('geographicRestrictions', ui.geographicRegions)
+            "
+            class="w-4 h-4 text-teal-600 rounded border-slate-300 focus:ring-teal-500"
+          />
+          <span class="text-sm font-medium text-slate-900">{{
+            ui.getSelectAllText("geographicRestrictions", ui.geographicRegions)
+          }}</span>
+        </label>
+
+        <!-- Individual Options -->
         @for (region of ui.geographicRegions; track region.value) {
         <label
-          class="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-orange-50 cursor-pointer transition"
+          class="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-slate-100 cursor-pointer transition"
         >
           <input
             type="checkbox"
@@ -148,7 +202,7 @@
             "
             (change)="ui.onMultiSelectChange('geographicRestrictions', $event)"
             [value]="region.value"
-            class="text-orange-500 rounded border-gray-300 focus:ring-0"
+            class="w-4 h-4 text-teal-600 rounded border-slate-300 focus:ring-teal-500"
           />
           <span class="text-sm text-slate-900">{{ region.label }}</span>
         </label>
@@ -161,7 +215,7 @@
   <!-- Revenue Range -->
   <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
     <div class="space-y-2">
-      <label class="block text-sm font-semibold text-gray-700"
+      <label class="block text-sm font-semibold text-slate-900"
         >Average Annual Revenue</label
       >
       <input
@@ -174,7 +228,7 @@
       @if (formState.getFieldError('minRevenue'); as error) {
       <p
         [class.text-red-600]="error.type === 'error'"
-        [class.text-yellow-600]="error.type === 'warning'"
+        [class.text-amber-600]="error.type === 'warning'"
         class="text-sm"
       >
         {{ error.message }}
@@ -183,7 +237,7 @@
     </div>
 
     <div class="space-y-2">
-      <label class="block text-sm font-semibold text-gray-700"
+      <label class="block text-sm font-semibold text-slate-900"
         >Minimum Years in Operation</label
       >
       <select
@@ -200,7 +254,7 @@
       @if (formState.getFieldError('minYearsOperation'); as error) {
       <p
         [class.text-red-600]="error.type === 'error'"
-        [class.text-yellow-600]="error.type === 'warning'"
+        [class.text-amber-600]="error.type === 'warning'"
         class="text-sm"
       >
         {{ error.message }}
@@ -216,16 +270,16 @@
         type="checkbox"
         [checked]="formState.formData().requiresCollateral"
         (change)="ui.onCheckboxChange('requiresCollateral', $event)"
-        class="w-4 h-4 text-orange-600 rounded border-gray-300"
+        class="w-4 h-4 text-teal-600 rounded border-slate-300"
       />
-      <span class="text-sm font-semibold text-gray-700"
+      <span class="text-sm font-semibold text-slate-900"
         >Requires Collateral</span
       >
     </label>
   </div>
 
   <!-- Info Box -->
-  <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+  <div class="bg-blue-50 border border-blue-200/50 rounded-xl p-4">
     <div class="flex items-start space-x-3">
       <lucide-angular
         [img]="TargetIcon"
@@ -233,7 +287,9 @@
         class="text-blue-600 mt-0.5"
       ></lucide-angular>
       <div>
-        <h4 class="text-sm font-medium text-blue-900">Eligibility Criteria</h4>
+        <h4 class="text-sm font-semibold text-blue-900">
+          Eligibility Criteria
+        </h4>
         <p class="text-sm text-blue-700 mt-1">
           These criteria help match your opportunity with the right businesses.
           More specific criteria mean fewer but more qualified applications.
