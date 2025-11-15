@@ -14,6 +14,7 @@ import {
   FileText,
   Users,
   Eye,
+  CircleOff,
 } from 'lucide-angular';
 import { SMEOpportunitiesService } from './services/opportunities.service';
 import { AuthService } from '../auth/production.auth.service';
@@ -34,6 +35,7 @@ export class OpportunityDetailsComponent implements OnInit {
   private opportunitiesService = inject(SMEOpportunitiesService);
   private authService = inject(AuthService);
   private publicProfileService = inject(PublicProfileService);
+
   // Icons
   ArrowLeftIcon = ArrowLeft;
   Building2Icon = Building2;
@@ -44,6 +46,7 @@ export class OpportunityDetailsComponent implements OnInit {
   FileTextIcon = FileText;
   UsersIcon = Users;
   EyeIcon = Eye;
+  CircleOffIcon = CircleOff;
 
   // State
   opportunity = signal<FundingOpportunity | null>(null);
@@ -51,6 +54,7 @@ export class OpportunityDetailsComponent implements OnInit {
   hasPublicProfile = signal(false);
   isLoadingProfile = signal(false);
   private destroy$ = new Subject<void>();
+
   // Computed user context
   currentUser = computed(() => this.authService.user());
 
@@ -171,7 +175,10 @@ export class OpportunityDetailsComponent implements OnInit {
     });
   }
 
-  // Helper methods
+  // ===============================
+  // HELPER & FORMATTING METHODS
+  // ===============================
+
   getInitials(title: string): string {
     return title
       .split(' ')
@@ -301,5 +308,16 @@ export class OpportunityDetailsComponent implements OnInit {
   getGeographicRestrictions(): string[] {
     const opp = this.opportunity();
     return opp?.eligibilityCriteria.geographicRestrictions || [];
+  }
+
+  getExclusionCriteria(): string[] {
+    const opp = this.opportunity();
+    console.log(opp?.exclusionCriteria);
+    return opp?.exclusionCriteria || [];
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 }

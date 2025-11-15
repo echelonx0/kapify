@@ -59,6 +59,8 @@ import { OpportunityStepsNavigationComponent } from './components/steps-navigati
 import { ActionModalService } from 'src/app/shared/components/modal/modal.service';
 import { OpportunityFormActionsComponent } from './shared/opportunity-form-actions.component';
 import { OpportunityUIHelperService } from './services/ui-helper.service';
+import { ToastrService } from 'ngx-toastr';
+import { OpportunityActionModalComponent } from 'src/app/shared/components/modal/app-modal.component';
 
 @Component({
   selector: 'app-opportunity-form',
@@ -75,6 +77,7 @@ import { OpportunityUIHelperService } from './services/ui-helper.service';
     OpportunityStepsNavigationComponent,
     SectorValidationModalComponent,
     OpportunityFormActionsComponent,
+    OpportunityActionModalComponent,
   ],
   animations: [
     trigger('stepTransition', [
@@ -154,7 +157,7 @@ export class CreateOpportunityComponent implements OnInit, OnDestroy {
   ChevronDownIcon = ChevronDown;
   XCircleIcon = XCircle;
 
-  constructor() {
+  constructor(private toastr: ToastrService) {
     this.initializeEffects();
   }
 

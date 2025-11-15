@@ -1,275 +1,482 @@
 <!-- src/app/opportunities/opportunity-detail.component.html -->
 <div class="min-h-screen bg-slate-50">
   <sidebar-nav />
-  
- 
-    <main class="px-8 py-8 max-w-6xl mx-auto">
-      
-      <!-- Loading State -->
-      @if (isLoading()) {
-        <div class="bg-white rounded-2xl border border-slate-200 p-12 text-center">
-          <div class="animate-spin rounded-full h-10 w-10 border-2 border-slate-300 border-t-orange-500 mx-auto mb-4"></div>
-          <p class="text-slate-600">Loading opportunity details...</p>
+
+  <main class="px-8 py-8 max-w-6xl mx-auto">
+    <!-- Loading State -->
+    @if (isLoading()) {
+    <div class="bg-white rounded-2xl border border-slate-200 p-12 text-center">
+      <div
+        class="animate-spin rounded-full h-10 w-10 border-2 border-slate-300 border-t-orange-500 mx-auto mb-4"
+      ></div>
+      <p class="text-slate-600">Loading opportunity details...</p>
+    </div>
+    } @if (!isLoading() && opportunity()) {
+    <!-- Sticky Header -->
+    <div
+      class="sticky top-0 z-20 bg-white border-b border-slate-200 -mx-8 px-8 py-4 mb-8 rounded-lg shadow-sm"
+    >
+      <div class="flex items-center justify-between max-w-6xl mx-auto">
+        <div class="flex items-center gap-4">
+          <button
+            (click)="goBack()"
+            class="p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors duration-200"
+          >
+            <svg
+              class="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M15 19l-7-7 7-7"
+              ></path>
+            </svg>
+          </button>
+          <div>
+            <h1 class="text-2xl font-bold text-slate-900">
+              {{ opportunity()!.title }}
+            </h1>
+            <p class="text-sm text-slate-600 mt-1">
+              {{ getInvestorName(opportunity()!) }}
+            </p>
+          </div>
         </div>
-      }
-      
-      @if (!isLoading() && opportunity()) {
-        <!-- Sticky Header -->
-        <div class="sticky top-0 z-20 bg-white border-b border-slate-200 -mx-8 px-8 py-4 mb-8 rounded-lg shadow-sm">
-          <div class="flex items-center justify-between max-w-6xl mx-auto">
-            <div class="flex items-center gap-4">
-              <button 
-                (click)="goBack()"
-                class="p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors duration-200"
+
+        @if (canManageOpportunity()) {
+        <button (click)="editOpportunity()">
+          <span
+            class="inline-flex items-center gap-2 px-3 py-1.5 bg-orange-50 border border-orange-200/50 text-orange-700 text-xs font-semibold rounded-full"
+          >
+            <div class="w-2 h-2 bg-orange-600 rounded-full"></div>
+            Edit This Opportunity
+          </span>
+        </button>
+        }
+      </div>
+    </div>
+
+    <!-- Main Content Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <!-- Left Column: Main Details -->
+      <div class="lg:col-span-2 space-y-6">
+        <!-- Hero Card with Logo -->
+        <div
+          class="bg-white rounded-2xl border border-slate-200 p-6 overflow-hidden"
+        >
+          <div class="flex items-start gap-6 mb-6">
+            <div
+              class="w-20 h-20 bg-gradient-to-br from-orange-100 to-orange-50 rounded-xl flex items-center justify-center border border-orange-200 flex-shrink-0"
+            >
+              <span class="text-orange-600 font-bold text-2xl">
+                {{ getInitials(opportunity()!.title) }}
+              </span>
+            </div>
+
+            <div class="flex-1">
+              <div class="flex flex-wrap gap-2 mb-3">
+                @for (type of opportunity()!.fundingType; track type) {
+                <span
+                  class="inline-flex items-center px-3 py-1 bg-orange-50 border border-orange-200/50 text-orange-700 text-xs font-semibold rounded-lg"
+                >
+                  {{ formatFundingType(type) }}
+                </span>
+                }
+              </div>
+              <p class="text-slate-600 text-sm leading-relaxed">
+                {{ opportunity()!.description }}
+              </p>
+            </div>
+          </div>
+
+          <!-- Key Metrics Row -->
+          <div class="grid grid-cols-3 gap-4 pt-6 border-t border-slate-200">
+            <div>
+              <div
+                class="text-xs font-semibold text-slate-600 uppercase tracking-wide"
               >
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
-                </svg>
-              </button>
-              <div>
-                <h1 class="text-2xl font-bold text-slate-900">{{ opportunity()!.title }}</h1>
-                <p class="text-sm text-slate-600 mt-1">{{ getInvestorName(opportunity()!) }}</p>
+                Min Investment
+              </div>
+              <div class="text-lg font-bold text-slate-900 mt-1">
+                {{ opportunity()!.currency }}
+                {{ formatAmount(opportunity()!.minInvestment) }}
               </div>
             </div>
-            
-            @if (canManageOpportunity()) {
-              <button (click)="editOpportunity()">
-                <span class="inline-flex items-center gap-2 px-3 py-1.5 bg-orange-50 border border-orange-200/50 text-orange-700 text-xs font-semibold rounded-full">
-                  <div class="w-2 h-2 bg-orange-600 rounded-full"></div>
-                  Edit This Opportunity
-                </span>
-              </button>
+            <div>
+              <div
+                class="text-xs font-semibold text-slate-600 uppercase tracking-wide"
+              >
+                Typical Amount
+              </div>
+              <div class="text-lg font-bold text-slate-900 mt-1">
+                {{ opportunity()!.currency }}
+                {{ formatFullAmount(opportunity()!.offerAmount) }}
+              </div>
+            </div>
+            <div>
+              <div
+                class="text-xs font-semibold text-slate-600 uppercase tracking-wide"
+              >
+                Decision Time
+              </div>
+              <div class="text-lg font-bold text-slate-900 mt-1">
+                {{ opportunity()!.decisionTimeframe }} days
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Investment Criteria -->
+        <div class="bg-white rounded-2xl border border-slate-200 p-6">
+          <h2 class="text-lg font-bold text-slate-900 mb-4">
+            Investment Criteria
+          </h2>
+          <p class="text-sm text-slate-600 mb-6">
+            Only businesses meeting all criteria below are eligible to apply.
+          </p>
+
+          <div class="space-y-3">
+            @if (opportunity()!.eligibilityCriteria.minYearsOperation) {
+            <div
+              class="flex items-start gap-3 p-4 bg-slate-50 rounded-lg border border-slate-200/50"
+            >
+              <svg
+                class="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path
+                  fill-rule="evenodd"
+                  d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                  clip-rule="evenodd"
+                ></path>
+              </svg>
+              <span class="text-sm text-slate-700">
+                Minimum
+                <strong
+                  >{{
+                    opportunity()!.eligibilityCriteria.minYearsOperation
+                  }}
+                  years</strong
+                >
+                of operational track record or robust feasibility study for
+                startups.
+              </span>
+            </div>
+            } @if (opportunity()!.eligibilityCriteria.businessStages.length > 0)
+            {
+            <div
+              class="flex items-start gap-3 p-4 bg-slate-50 rounded-lg border border-slate-200/50"
+            >
+              <svg
+                class="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path
+                  fill-rule="evenodd"
+                  d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                  clip-rule="evenodd"
+                ></path>
+              </svg>
+              <span class="text-sm text-slate-700">
+                Projects must align with
+                <strong>{{
+                  formatBusinessStages(
+                    opportunity()!.eligibilityCriteria.businessStages
+                  )
+                }}</strong>
+                business stages.
+              </span>
+            </div>
+            } @if (opportunity()!.eligibilityCriteria.minRevenue) {
+            <div
+              class="flex items-start gap-3 p-4 bg-slate-50 rounded-lg border border-slate-200/50"
+            >
+              <svg
+                class="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path
+                  fill-rule="evenodd"
+                  d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                  clip-rule="evenodd"
+                ></path>
+              </svg>
+              <span class="text-sm text-slate-700">
+                Minimum annual revenue of
+                <strong
+                  >{{ opportunity()!.currency }}
+                  {{
+                    formatFullAmount(
+                      opportunity()!.eligibilityCriteria.minRevenue!
+                    )
+                  }}</strong
+                >.
+              </span>
+            </div>
             }
 
+            <div
+              class="flex items-start gap-3 p-4 bg-slate-50 rounded-lg border border-slate-200/50"
+            >
+              <svg
+                class="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path
+                  fill-rule="evenodd"
+                  d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                  clip-rule="evenodd"
+                ></path>
+              </svg>
+              <span class="text-sm text-slate-700">
+                Required submission: recent financial statements, tax compliance
+                certificates, and detailed budget for proposed project.
+              </span>
+            </div>
+
+            @if (opportunity()!.eligibilityCriteria.requiresCollateral) {
+            <div
+              class="flex items-start gap-3 p-4 bg-slate-50 rounded-lg border border-slate-200/50"
+            >
+              <svg
+                class="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path
+                  fill-rule="evenodd"
+                  d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                  clip-rule="evenodd"
+                ></path>
+              </svg>
+              <span class="text-sm text-slate-700">
+                <strong>Collateral or security</strong> requirements must be
+                met.
+              </span>
+            </div>
+            }
           </div>
         </div>
 
-        <!-- Main Content Grid -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          
-          <!-- Left Column: Main Details -->
-          <div class="lg:col-span-2 space-y-6">
-            
-            <!-- Hero Card with Logo -->
-            <div class="bg-white rounded-2xl border border-slate-200 p-6 overflow-hidden">
-              <div class="flex items-start gap-6 mb-6">
-                <div class="w-20 h-20 bg-gradient-to-br from-orange-100 to-orange-50 rounded-xl flex items-center justify-center border border-orange-200 flex-shrink-0">
-                  <span class="text-orange-600 font-bold text-2xl">
-                    {{ getInitials(opportunity()!.title) }}
-                  </span>
-                </div>
-                
-                <div class="flex-1">
-                  <div class="flex flex-wrap gap-2 mb-3">
-                    @for (type of opportunity()!.fundingType; track type) {
-                      <span class="inline-flex items-center px-3 py-1 bg-orange-50 border border-orange-200/50 text-orange-700 text-xs font-semibold rounded-lg">
-                        {{ formatFundingType(type) }}
-                      </span>
-                    }
-                  </div>
-                  <p class="text-slate-600 text-sm leading-relaxed">{{ opportunity()!.description }}</p>
-                </div>
-              </div>
+        <!-- Exclusion Criteria -->
+        @if (getExclusionCriteria().length > 0) {
+        <div class="bg-white rounded-2xl border border-slate-200 p-6">
+          <h2 class="text-lg font-bold text-slate-900 mb-4">
+            Ineligibility Factors
+          </h2>
+          <p class="text-sm text-slate-600 mb-6">
+            Businesses with any of these characteristics are ineligible to
+            apply.
+          </p>
 
-              <!-- Key Metrics Row -->
-              <div class="grid grid-cols-3 gap-4 pt-6 border-t border-slate-200">
-                <div>
-                  <div class="text-xs font-semibold text-slate-600 uppercase tracking-wide">Min Investment</div>
-                  <div class="text-lg font-bold text-slate-900 mt-1">
-                    {{ opportunity()!.currency }} {{ formatAmount(opportunity()!.minInvestment) }}
-                  </div>
-                </div>
-                <div>
-                  <div class="text-xs font-semibold text-slate-600 uppercase tracking-wide">Typical Amount</div>
-                  <div class="text-lg font-bold text-slate-900 mt-1">
-                    {{ opportunity()!.currency }} {{ formatFullAmount(opportunity()!.offerAmount) }}
-                  </div>
-                </div>
-                <div>
-                  <div class="text-xs font-semibold text-slate-600 uppercase tracking-wide">Decision Time</div>
-                  <div class="text-lg font-bold text-slate-900 mt-1">{{ opportunity()!.decisionTimeframe }} days</div>
-                </div>
-              </div>
+          <div class="space-y-3">
+            @for (criteria of getExclusionCriteria(); track criteria) {
+            <div
+              class="flex items-start gap-3 p-4 bg-red-50 rounded-lg border border-red-200/50"
+            >
+              <lucide-icon
+                name="circle-off"
+                [size]="20"
+                class="text-red-600 flex-shrink-0 mt-0.5"
+              />
+              <span class="text-sm text-red-700">{{ criteria }}</span>
             </div>
-
-            <!-- Investment Criteria -->
-            <div class="bg-white rounded-2xl border border-slate-200 p-6">
-              <h2 class="text-lg font-bold text-slate-900 mb-4">Investment Criteria</h2>
-              <p class="text-sm text-slate-600 mb-6">Only businesses meeting all criteria below are eligible to apply.</p>
-              
-              <div class="space-y-3">
-                @if (opportunity()!.eligibilityCriteria.minYearsOperation) {
-                  <div class="flex items-start gap-3 p-4 bg-slate-50 rounded-lg border border-slate-200/50">
-                    <svg class="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                      <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                    </svg>
-                    <span class="text-sm text-slate-700">
-                      Minimum <strong>{{ opportunity()!.eligibilityCriteria.minYearsOperation }} years</strong> of operational track record or robust feasibility study for startups.
-                    </span>
-                  </div>
-                }
-                
-                @if (opportunity()!.eligibilityCriteria.businessStages.length > 0) {
-                  <div class="flex items-start gap-3 p-4 bg-slate-50 rounded-lg border border-slate-200/50">
-                    <svg class="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                      <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                    </svg>
-                    <span class="text-sm text-slate-700">
-                      Projects must align with <strong>{{ formatBusinessStages(opportunity()!.eligibilityCriteria.businessStages) }}</strong> business stages.
-                    </span>
-                  </div>
-                }
-                
-                @if (opportunity()!.eligibilityCriteria.minRevenue) {
-                  <div class="flex items-start gap-3 p-4 bg-slate-50 rounded-lg border border-slate-200/50">
-                    <svg class="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                      <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                    </svg>
-                    <span class="text-sm text-slate-700">
-                      Minimum annual revenue of <strong>{{ opportunity()!.currency }} {{ formatFullAmount(opportunity()!.eligibilityCriteria.minRevenue!) }}</strong>.
-                    </span>
-                  </div>
-                }
-                
-                <div class="flex items-start gap-3 p-4 bg-slate-50 rounded-lg border border-slate-200/50">
-                  <svg class="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                  </svg>
-                  <span class="text-sm text-slate-700">
-                    Required submission: recent financial statements, tax compliance certificates, and detailed budget for proposed project.
-                  </span>
-                </div>
-                
-                @if (opportunity()!.eligibilityCriteria.requiresCollateral) {
-                  <div class="flex items-start gap-3 p-4 bg-slate-50 rounded-lg border border-slate-200/50">
-                    <svg class="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                      <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                    </svg>
-                    <span class="text-sm text-slate-700">
-                      <strong>Collateral or security</strong> requirements must be met.
-                    </span>
-                  </div>
-                }
-              </div>
-            </div>
-
-            <!-- Sectors Funded -->
-            <div class="bg-white rounded-2xl border border-slate-200 p-6">
-              <h2 class="text-lg font-bold text-slate-900 mb-2">Sectors Funded</h2>
-              <p class="text-sm text-slate-600 mb-4">Industries we actively support.</p>
-              
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
-                @for (industry of opportunity()!.eligibilityCriteria.industries; track industry) {
-                  <div class="flex items-center gap-2 p-3 bg-slate-50 rounded-lg border border-slate-200/50">
-                    <div class="w-2 h-2 bg-orange-500 rounded-full"></div>
-                    <span class="text-sm text-slate-700">{{ formatIndustryDescription(industry) }}</span>
-                  </div>
-                }
-              </div>
-            </div>
-          </div>
-
-          <!-- Right Column: Sidebar -->
-          <div class="space-y-6">
-            
-            <!-- Funding Summary Card (Sticky) -->
-            <div class="bg-white rounded-2xl border border-slate-200 p-6 sticky top-20">
-              <h3 class="text-base font-bold text-slate-900 mb-5">Funding Summary</h3>
-              
-              <div class="space-y-4">
-                <div class="pb-4 border-b border-slate-200">
-                  <div class="text-xs font-semibold text-slate-600 uppercase tracking-wide mb-2">Investment Range</div>
-                  <div class="text-sm text-slate-900">
-                    <strong>{{ opportunity()!.currency }} {{ formatAmount(opportunity()!.minInvestment) }}</strong> 
-                    to 
-                    <strong>{{ formatAmount(opportunity()!.maxInvestment) }}</strong>
-                  </div>
-                </div>
-
-                @if (opportunity()!.interestRate) {
-                  <div class="pb-4 border-b border-slate-200">
-                    <div class="text-xs font-semibold text-slate-600 uppercase tracking-wide mb-2">Interest Rate</div>
-                    <div class="text-lg font-bold text-slate-900">{{ opportunity()!.interestRate }}%</div>
-                    <div class="text-xs text-slate-600">per annum</div>
-                  </div>
-                }
-
-                <div class="pb-4 border-b border-slate-200">
-                  <div class="text-xs font-semibold text-slate-600 uppercase tracking-wide mb-2">Decision Timeframe</div>
-                  <div class="text-lg font-bold text-slate-900">{{ opportunity()!.decisionTimeframe }}</div>
-                  <div class="text-xs text-slate-600">business days</div>
-                </div>
-
-                <div>
-                  <div class="text-xs font-semibold text-slate-600 uppercase tracking-wide mb-2">Funding Type</div>
-                  <div class="flex flex-wrap gap-2">
-                    @for (type of opportunity()!.fundingType; track type) {
-                      <span class="inline-flex items-center px-2.5 py-1 bg-orange-50 border border-orange-200/50 text-orange-700 text-xs font-semibold rounded-lg">
-                        {{ formatFundingType(type) }}
-                      </span>
-                    }
-                  </div>
-                </div>
-              </div>
-
-              @if (!canManageOpportunity()) {
-                <button 
-                  (click)="applyNow()"
-                  class="w-full mt-6 px-6 py-2.5 bg-orange-500 text-white text-sm font-medium rounded-xl hover:bg-orange-600 active:bg-orange-700 transition-colors duration-200"
-                >
-                  Apply Now
-                </button>
-              }
-            </div>
-
-            <!-- Quick Links -->
-            <div class="bg-white rounded-2xl border border-slate-200 p-6">
-              <h3 class="text-base font-bold text-slate-900 mb-4">Investor</h3>
-              <p class="text-sm text-slate-700 font-medium">{{ getInvestorName(opportunity()!) }}</p>
-              
-              @if (canViewInvestorProfile()) {
-                <button 
-                  (click)="viewInvestorProfile()"
-                  [disabled]="isLoadingProfile()"
-                  class="w-full mt-4 px-4 py-2 text-orange-600 text-sm font-medium hover:bg-orange-50 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg transition-colors duration-200"
-                >
-                  @if (isLoadingProfile()) {
-                    <span class="inline-flex items-center gap-2">
-                      <svg class="animate-spin w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                      </svg>
-                      Loading...
-                    </span>
-                  } @else {
-                    View Investor Profile →
-                  }
-                </button>
-              }
-            </div>
-
+            }
           </div>
         </div>
-      }
-      
-      <!-- Not Found State -->
-      @if (!isLoading() && !opportunity()) {
-        <div class="bg-white rounded-2xl border border-slate-200 p-12 text-center">
-          <div class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <svg class="w-8 h-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-            </svg>
+        }
+
+        <!-- Sectors Funded -->
+        <div class="bg-white rounded-2xl border border-slate-200 p-6">
+          <h2 class="text-lg font-bold text-slate-900 mb-2">Sectors Funded</h2>
+          <p class="text-sm text-slate-600 mb-4">
+            Industries we actively support.
+          </p>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+            @for (industry of opportunity()!.eligibilityCriteria.industries;
+            track industry) {
+            <div
+              class="flex items-center gap-2 p-3 bg-slate-50 rounded-lg border border-slate-200/50"
+            >
+              <div class="w-2 h-2 bg-orange-500 rounded-full"></div>
+              <span class="text-sm text-slate-700">{{
+                formatIndustryDescription(industry)
+              }}</span>
+            </div>
+            }
           </div>
-          <h3 class="text-lg font-bold text-slate-900 mb-2">Opportunity not found</h3>
-          <p class="text-slate-600 mb-6">The funding opportunity doesn't exist or has been removed.</p>
-          <button 
-            (click)="goBack()"
-            class="px-6 py-2.5 bg-orange-500 text-white text-sm font-medium rounded-xl hover:bg-orange-600 active:bg-orange-700 transition-colors duration-200"
+        </div>
+      </div>
+
+      <!-- Right Column: Sidebar -->
+      <div class="space-y-6">
+        <!-- Funding Summary Card (Sticky) -->
+        <div
+          class="bg-white rounded-2xl border border-slate-200 p-6 sticky top-20"
+        >
+          <h3 class="text-base font-bold text-slate-900 mb-5">
+            Funding Summary
+          </h3>
+
+          <div class="space-y-4">
+            <div class="pb-4 border-b border-slate-200">
+              <div
+                class="text-xs font-semibold text-slate-600 uppercase tracking-wide mb-2"
+              >
+                Investment Range
+              </div>
+              <div class="text-sm text-slate-900">
+                <strong
+                  >{{ opportunity()!.currency }}
+                  {{ formatAmount(opportunity()!.minInvestment) }}</strong
+                >
+                to
+                <strong>{{
+                  formatAmount(opportunity()!.maxInvestment)
+                }}</strong>
+              </div>
+            </div>
+
+            @if (opportunity()!.interestRate) {
+            <div class="pb-4 border-b border-slate-200">
+              <div
+                class="text-xs font-semibold text-slate-600 uppercase tracking-wide mb-2"
+              >
+                Interest Rate
+              </div>
+              <div class="text-lg font-bold text-slate-900">
+                {{ opportunity()!.interestRate }}%
+              </div>
+              <div class="text-xs text-slate-600">per annum</div>
+            </div>
+            }
+
+            <div class="pb-4 border-b border-slate-200">
+              <div
+                class="text-xs font-semibold text-slate-600 uppercase tracking-wide mb-2"
+              >
+                Decision Timeframe
+              </div>
+              <div class="text-lg font-bold text-slate-900">
+                {{ opportunity()!.decisionTimeframe }}
+              </div>
+              <div class="text-xs text-slate-600">business days</div>
+            </div>
+
+            <div>
+              <div
+                class="text-xs font-semibold text-slate-600 uppercase tracking-wide mb-2"
+              >
+                Funding Type
+              </div>
+              <div class="flex flex-wrap gap-2">
+                @for (type of opportunity()!.fundingType; track type) {
+                <span
+                  class="inline-flex items-center px-2.5 py-1 bg-orange-50 border border-orange-200/50 text-orange-700 text-xs font-semibold rounded-lg"
+                >
+                  {{ formatFundingType(type) }}
+                </span>
+                }
+              </div>
+            </div>
+          </div>
+
+          @if (!canManageOpportunity()) {
+          <button
+            (click)="applyNow()"
+            class="w-full mt-6 px-6 py-2.5 bg-orange-500 text-white text-sm font-medium rounded-xl hover:bg-orange-600 active:bg-orange-700 transition-colors duration-200"
           >
-            Back to Opportunities
+            Apply Now
           </button>
+          }
         </div>
-      }
-    </main>
- 
+
+        <!-- Quick Links -->
+        <div class="bg-white rounded-2xl border border-slate-200 p-6">
+          <h3 class="text-base font-bold text-slate-900 mb-4">Investor</h3>
+          <p class="text-sm text-slate-700 font-medium">
+            {{ getInvestorName(opportunity()!) }}
+          </p>
+
+          @if (canViewInvestorProfile()) {
+          <button
+            (click)="viewInvestorProfile()"
+            [disabled]="isLoadingProfile()"
+            class="w-full mt-4 px-4 py-2 text-orange-600 text-sm font-medium hover:bg-orange-50 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg transition-colors duration-200"
+          >
+            @if (isLoadingProfile()) {
+            <span class="inline-flex items-center gap-2">
+              <svg
+                class="animate-spin w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  class="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  stroke-width="4"
+                ></circle>
+                <path
+                  class="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                ></path>
+              </svg>
+              Loading...
+            </span>
+            } @else { View Investor Profile → }
+          </button>
+          }
+        </div>
+      </div>
+    </div>
+    }
+
+    <!-- Not Found State -->
+    @if (!isLoading() && !opportunity()) {
+    <div class="bg-white rounded-2xl border border-slate-200 p-12 text-center">
+      <div
+        class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4"
+      >
+        <svg
+          class="w-8 h-8 text-slate-400"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="1.5"
+            d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+          ></path>
+        </svg>
+      </div>
+      <h3 class="text-lg font-bold text-slate-900 mb-2">
+        Opportunity not found
+      </h3>
+      <p class="text-slate-600 mb-6">
+        The funding opportunity doesn't exist or has been removed.
+      </p>
+      <button
+        (click)="goBack()"
+        class="px-6 py-2.5 bg-orange-500 text-white text-sm font-medium rounded-xl hover:bg-orange-600 active:bg-orange-700 transition-colors duration-200"
+      >
+        Back to Opportunities
+      </button>
+    </div>
+    }
+  </main>
 </div>

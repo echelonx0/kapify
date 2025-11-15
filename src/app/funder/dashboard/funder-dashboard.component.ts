@@ -67,7 +67,6 @@ interface Tab {
     OrganizationStatusSidebarComponent,
 
     FunderApplicationsComponent,
-    OpportunityActionModalComponent,
   ],
   templateUrl: 'dashboard.component.html',
   styleUrl: 'funder-dashboard.component.css',
