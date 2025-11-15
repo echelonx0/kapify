@@ -33,7 +33,8 @@ export class FunderComponent {
     const url = this.router.url;
     return (
       url.startsWith('/funder/onboarding') ||
-      url.startsWith('/funding/create-opportunity')
+      url.startsWith('/funding/create-opportunity') ||
+      url.startsWith('/funder/opportunities/edit')
     );
   });
 }

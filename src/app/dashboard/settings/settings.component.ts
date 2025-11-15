@@ -1,4 +1,11 @@
-import { Component, OnInit, signal, inject, OnDestroy } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  signal,
+  inject,
+  OnDestroy,
+  computed,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Subject, takeUntil } from 'rxjs';
 import {
@@ -18,6 +25,7 @@ import { OrganizationSettingsService } from '../services/organization-settings.s
 import { ContactDetailsComponent } from './components/contact-details/contact-details.component';
 import { TeamManagementComponent } from './components/team-management/team-management.component';
 import { BillingCreditsComponent } from '../finance/billing/billing-credits.component';
+import { AuthService } from 'src/app/auth/production.auth.service';
 
 type SettingsSection =
   | 'general'
@@ -92,7 +100,7 @@ interface SettingsTab {
 export class SettingsComponent implements OnInit, OnDestroy {
   private settingsService = inject(OrganizationSettingsService);
   private destroy$ = new Subject<void>();
-
+  private authService = inject(AuthService);
   // Icons
   SettingsIcon = Settings;
   Building2Icon = Building2;
@@ -103,53 +111,64 @@ export class SettingsComponent implements OnInit, OnDestroy {
   UserIcon = User;
 
   // State
-  activeSection = signal<SettingsSection>('general');
+  activeSection = signal<SettingsSection>('billing');
 
   // Service state
   isLoading = this.settingsService.isLoading;
   isSaving = this.settingsService.isSaving;
   error = this.settingsService.error;
   organization = this.settingsService.organization;
+  userType = computed(() => this.authService.user()?.userType || 'sme');
+  // Settings tabs configuration - computed to filter by organization type
+  get settingsTabs(): SettingsTab[] {
+    const isSME = this.userType() === 'sme';
 
-  // Settings tabs configuration
-  settingsTabs: SettingsTab[] = [
-    {
-      id: 'general',
-      label: 'General Info',
-      icon: this.Building2Icon,
-      enabled: true,
-    },
-    {
-      id: 'contact',
-      label: 'Contact Details',
-      icon: this.GlobeIcon,
-      enabled: true,
-    },
-    {
-      id: 'legal',
-      label: 'Legal Information',
-      icon: this.FileTextIcon,
-      enabled: true,
-    },
-    {
-      id: 'billing',
-      label: 'Billing & Credits',
-      icon: this.CreditCardIcon,
-      enabled: true,
-    },
-    {
-      id: 'team',
-      label: 'Team Members',
-      icon: this.UserIcon,
-      enabled: true,
-    },
-    {
-      id: 'integrations',
-      label: 'Integrations',
-      icon: this.SettingsIcon,
-      enabled: false,
-    },
-  ];
+    const allTabs: SettingsTab[] = [
+      {
+        id: 'general',
+        label: 'General Info',
+        icon: this.Building2Icon,
+        enabled: true,
+      },
+      {
+        id: 'contact',
+        label: 'Contact Details',
+        icon: this.GlobeIcon,
+        enabled: true,
+      },
+      {
+        id: 'legal',
+        label: 'Legal Information',
+        icon: this.FileTextIcon,
+        enabled: true,
+      },
+      {
+        id: 'billing',
+        label: 'Billing & Credits',
+        icon: this.CreditCardIcon,
+        enabled: true,
+      },
+      {
+        id: 'team',
+        label: 'Team Members',
+        icon: this.UserIcon,
+        enabled: true,
+      },
+      {
+        id: 'integrations',
+        label: 'Integrations',
+        icon: this.SettingsIcon,
+        enabled: false,
+      },
+    ];
+
+    // Hide general, contact, legal for SMEs
+    return isSME
+      ? allTabs.filter(
+          (tab) => !['general', 'contact', 'legal'].includes(tab.id)
+        )
+      : allTabs;
+  }
 
   ngOnInit() {
     this.settingsService.organization$
@@ -157,6 +176,10 @@ export class SettingsComponent implements OnInit, OnDestroy {
       .subscribe((org) => {
         if (org) {
           console.log('Organization loaded:', org.name);
+          // Reset to first available tab if current tab is hidden for this user type
+          if (!this.settingsTabs.find((t) => t.id === this.activeSection())) {
+            this.activeSection.set(this.settingsTabs[0]?.id || 'billing');
+          }
         }
       });
   }
@@ -175,6 +198,9 @@ export class SettingsComponent implements OnInit, OnDestroy {
 
   trackByTabId(index: number, tab: SettingsTab) {
     return tab.id;
+  }
+  get isSME() {
+    return this.userType() === 'sme';
   }
 
   getSectionClasses(sectionId: SettingsSection): string {
