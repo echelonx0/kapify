@@ -10,7 +10,6 @@ import { Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import {
   LucideAngularModule,
-  Home,
   User,
   FileText,
   DollarSign,
@@ -22,6 +21,7 @@ import {
   BookCheck,
   Menu,
   X,
+  House,
 } from 'lucide-angular';
 import { AuthService } from 'src/app/auth/production.auth.service';
 import { ProfileManagementService } from '../../services/profile-management.service';
@@ -48,7 +48,7 @@ export class SidebarNavComponent implements OnInit {
   private router = inject(Router);
 
   // Icons
-  HomeIcon = Home;
+  HomeIcon = House;
   UserIcon = User;
   FileTextIcon = FileText;
   DollarSignIcon = DollarSign;
@@ -90,7 +90,7 @@ export class SidebarNavComponent implements OnInit {
     {
       id: 'home',
       label: 'Home',
-      icon: Home,
+      icon: House,
       route: '/dashboard/home',
       userTypes: ['funder'],
     },
@@ -105,7 +105,7 @@ export class SidebarNavComponent implements OnInit {
       id: 'funding',
       label: 'Funding Opportunities',
       icon: DollarSign,
-      route: '/funding',
+      route: '/funding/opportunities',
       userTypes: ['sme'],
     },
     // {
