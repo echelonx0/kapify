@@ -293,9 +293,39 @@ import { LucideAngularModule, TrendingUp, TrendingDown, DollarSign, BarChart3, P
                       <span class="text-xs font-bold text-gray-900">{{ incomeStatementCount() }}</span>
                     </div>
                     <div class="w-full bg-gray-200 rounded-full h-2">
-                      <div 
+                      <div
                         class="bg-gradient-to-r from-blue-400 to-blue-600 h-2 rounded-full transition-all duration-500"
                         [style.width.%]="getIncomeBarWidth()">
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="flex items-center gap-3">
+                  <div class="flex-1">
+                    <div class="flex items-center justify-between mb-1">
+                      <span class="text-xs font-medium text-gray-600">Balance Sheet</span>
+                      <span class="text-xs font-bold text-gray-900">{{ balanceSheetCount() }}</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2">
+                      <div
+                        class="bg-gradient-to-r from-green-400 to-green-600 h-2 rounded-full transition-all duration-500"
+                        [style.width.%]="getBalanceSheetBarWidth()">
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="flex items-center gap-3">
+                  <div class="flex-1">
+                    <div class="flex items-center justify-between mb-1">
+                      <span class="text-xs font-medium text-gray-600">Cash Flow Statement</span>
+                      <span class="text-xs font-bold text-gray-900">{{ cashFlowStatementCount() }}</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2">
+                      <div
+                        class="bg-gradient-to-r from-purple-400 to-purple-600 h-2 rounded-full transition-all duration-500"
+                        [style.width.%]="getCashFlowBarWidth()">
                       </div>
                     </div>
                   </div>
@@ -308,7 +338,7 @@ import { LucideAngularModule, TrendingUp, TrendingDown, DollarSign, BarChart3, P
                       <span class="text-xs font-bold text-gray-900">{{ financialRatiosCount() }}</span>
                     </div>
                     <div class="w-full bg-gray-200 rounded-full h-2">
-                      <div 
+                      <div
                         class="bg-gradient-to-r from-stone-400 to-stone-600 h-2 rounded-full transition-all duration-500"
                         [style.width.%]="getRatiosBarWidth()">
                       </div>
@@ -410,6 +440,8 @@ export class FinancialSummaryComponent {
   // Inputs
   completionPercentage = input<number>(0);
   incomeStatementCount = input<number>(0);
+  balanceSheetCount = input<number>(0);
+  cashFlowStatementCount = input<number>(0);
   financialRatiosCount = input<number>(0);
   isValidTemplate = input<boolean>(true);
 
@@ -423,7 +455,19 @@ export class FinancialSummaryComponent {
   // Computed bar widths (scaled to make visualization meaningful)
   getIncomeBarWidth = computed(() => {
     const count = this.incomeStatementCount();
-    const maxExpected = 15; // Expected max income items
+    const maxExpected = 11; // Expected max income items
+    return Math.min((count / maxExpected) * 100, 100);
+  });
+
+  getBalanceSheetBarWidth = computed(() => {
+    const count = this.balanceSheetCount();
+    const maxExpected = 16; // Expected max balance sheet items
+    return Math.min((count / maxExpected) * 100, 100);
+  });
+
+  getCashFlowBarWidth = computed(() => {
+    const count = this.cashFlowStatementCount();
+    const maxExpected = 14; // Expected max cash flow items
     return Math.min((count / maxExpected) * 100, 100);
   });
 

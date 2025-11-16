@@ -34,6 +34,59 @@ export class FinancialDataTransformer {
   }
 
   /**
+   * Transform balance sheet data to table sections
+   */
+  static transformBalanceSheet(
+    data: FinancialRowData[]
+  ): FinancialTableSection[] {
+    const calculatedFields = [
+      'Total Assets',
+      'Total Liabilities',
+      'Total Liabilities and Equity'
+    ];
+
+    const rows: FinancialTableRow[] = data.map(item => ({
+      label: item.label,
+      values: item.values,
+      editable: item.editable ?? true,
+      type: 'currency',
+      isCalculated: calculatedFields.includes(item.label)
+    }));
+
+    return [{
+      title: 'Balance Sheet',
+      rows,
+      collapsed: false
+    }];
+  }
+
+  /**
+   * Transform cash flow statement data to table sections
+   */
+  static transformCashFlowStatement(
+    data: FinancialRowData[]
+  ): FinancialTableSection[] {
+    const calculatedFields = [
+      'Net Change in Cash',
+      'Ending Cash Balance'
+    ];
+
+    const rows: FinancialTableRow[] = data.map(item => ({
+      label: item.label,
+      values: item.values,
+      editable: item.editable ?? true,
+      type: 'currency',
+      isCalculated: calculatedFields.includes(item.label)
+    }));
+
+    return [{
+      title: 'Cash Flow Statement',
+      rows,
+      collapsed: false
+    }];
+  }
+
+  /**
    * Transform financial ratios data to table sections
    */
   static transformFinancialRatios(
@@ -64,6 +117,38 @@ export class FinancialDataTransformer {
     if (!incomeSection) return [];
 
     return incomeSection.rows.map(row => ({
+      label: row.label,
+      values: row.values,
+      editable: row.editable
+    }));
+  }
+
+  /**
+   * Transform table data back to balance sheet format
+   */
+  static transformTableToBalanceSheet(
+    sections: FinancialTableSection[]
+  ): FinancialRowData[] {
+    const balanceSection = sections.find(s => s.title === 'Balance Sheet');
+    if (!balanceSection) return [];
+
+    return balanceSection.rows.map(row => ({
+      label: row.label,
+      values: row.values,
+      editable: row.editable
+    }));
+  }
+
+  /**
+   * Transform table data back to cash flow statement format
+   */
+  static transformTableToCashFlowStatement(
+    sections: FinancialTableSection[]
+  ): FinancialRowData[] {
+    const cashFlowSection = sections.find(s => s.title === 'Cash Flow Statement');
+    if (!cashFlowSection) return [];
+
+    return cashFlowSection.rows.map(row => ({
       label: row.label,
       values: row.values,
       editable: row.editable
