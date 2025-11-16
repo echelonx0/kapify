@@ -1,5 +1,14 @@
 import { FundingApplicationStep } from '../applications/models/funding-application.models';
-import { Building, FileText, BarChart3, Target, Users, TrendingUp, DollarSign } from 'lucide-angular';
+import {
+  Building,
+  FileText,
+  BarChart3,
+  Target,
+  Users,
+  TrendingUp,
+  DollarSign,
+  ChartColumn,
+} from 'lucide-angular';
 
 export const FUNDING_STEPS: FundingApplicationStep[] = [
   {
@@ -8,7 +17,7 @@ export const FUNDING_STEPS: FundingApplicationStep[] = [
     description: 'Registration & operational details',
     completed: false,
     required: true,
-    estimatedTime: '10 minutes'
+    estimatedTime: '10 minutes',
   },
   {
     id: 'documents',
@@ -17,7 +26,7 @@ export const FUNDING_STEPS: FundingApplicationStep[] = [
     completed: false,
     required: true,
     estimatedTime: '15 minutes',
-    dependencies: ['company-info']
+    dependencies: ['company-info'],
   },
   {
     id: 'business-assessment',
@@ -25,7 +34,7 @@ export const FUNDING_STEPS: FundingApplicationStep[] = [
     description: 'Operations & market position',
     completed: false,
     required: true,
-    estimatedTime: '20 minutes'
+    estimatedTime: '20 minutes',
   },
   {
     id: 'swot-analysis',
@@ -33,7 +42,7 @@ export const FUNDING_STEPS: FundingApplicationStep[] = [
     description: 'Strengths, opportunities & risks',
     completed: false,
     required: true,
-    estimatedTime: '15 minutes'
+    estimatedTime: '15 minutes',
   },
   {
     id: 'management',
@@ -41,7 +50,7 @@ export const FUNDING_STEPS: FundingApplicationStep[] = [
     description: 'Management team & structure',
     completed: false,
     required: true,
-    estimatedTime: '12 minutes'
+    estimatedTime: '12 minutes',
   },
 
   {
@@ -50,17 +59,16 @@ export const FUNDING_STEPS: FundingApplicationStep[] = [
     description: 'Performance & funding requirements',
     completed: false,
     required: true,
-    estimatedTime: '18 minutes'
+    estimatedTime: '18 minutes',
   },
-    {
+  {
     id: 'business-strategy',
     title: 'Business Strategy',
     description: 'Strategic plan & projections',
     completed: false,
     required: true,
-    estimatedTime: '25 minutes'
+    estimatedTime: '25 minutes',
   },
- 
 ];
 
 // Step configuration for UI (icons, priorities, short titles)
@@ -68,38 +76,38 @@ export const STEP_UI_CONFIG = {
   'company-info': {
     shortTitle: 'Company Info',
     icon: Building,
-    priority: 'high' as const
+    priority: 'high' as const,
   },
-  'documents': {
+  documents: {
     shortTitle: 'Documents',
     icon: FileText,
-    priority: 'high' as const
+    priority: 'high' as const,
   },
   'business-assessment': {
     shortTitle: 'Business Review',
-    icon: BarChart3,
-    priority: 'high' as const
+    icon: ChartColumn,
+    priority: 'high' as const,
   },
   'swot-analysis': {
     shortTitle: 'SWOT Analysis',
     icon: Target,
-    priority: 'medium' as const
+    priority: 'medium' as const,
   },
-  'management': {
+  management: {
     shortTitle: 'Management',
     icon: Users,
-    priority: 'high' as const
+    priority: 'high' as const,
   },
   'business-strategy': {
     shortTitle: 'Strategy',
     icon: TrendingUp,
-    priority: 'medium' as const
+    priority: 'medium' as const,
   },
   'financial-profile': {
     shortTitle: 'Financials',
     icon: DollarSign,
-    priority: 'high' as const
-  }
+    priority: 'high' as const,
+  },
 };
 
 // Field labels for missing fields detection
@@ -113,55 +121,55 @@ export const STEP_FIELD_LABELS = {
     bbbeeLevel: 'B-BBEE Level',
     cipcReturns: 'CIPC Returns',
     incomeTaxNumber: 'Income Tax Number',
-    workmansCompensation: 'Workman\'s Compensation'
+    workmansCompensation: "Workman's Compensation",
   },
-  'documents': {
+  documents: {
     businessRegistration: 'Business Registration',
     financialStatements: 'Financial Statements',
     taxClearance: 'Tax Clearance',
-    bankStatements: 'Bank Statements'
+    bankStatements: 'Bank Statements',
   },
   'business-assessment': {
     marketSize: 'Market Size',
     competitivePosition: 'Competitive Position',
-    operations: 'Operations Summary'
+    operations: 'Operations Summary',
   },
   'swot-analysis': {
     strengths: 'Strengths',
     weaknesses: 'Weaknesses',
     opportunities: 'Opportunities',
-    threats: 'Threats'
+    threats: 'Threats',
   },
-  'management': {
+  management: {
     ceoName: 'CEO Name',
     ceoExperience: 'CEO Experience',
-    teamStructure: 'Team Structure'
+    teamStructure: 'Team Structure',
   },
   'business-strategy': {
     executiveSummary: 'Executive Summary',
     missionStatement: 'Mission Statement',
-    fundingRequirements: 'Funding Requirements'
+    fundingRequirements: 'Funding Requirements',
   },
   'financial-profile': {
     monthlyRevenue: 'Monthly Revenue',
     monthlyCosts: 'Monthly Costs',
-    currentAssets: 'Current Assets'
-  }
+    currentAssets: 'Current Assets',
+  },
 };
 
 // Data section mapping
 export const SECTION_DATA_KEYS = {
   'company-info': 'companyInfo',
-  'documents': 'supportingDocuments',
+  documents: 'supportingDocuments',
   'business-assessment': 'businessAssessment',
   'swot-analysis': 'swotAnalysis',
-  'management': 'managementStructure',
+  management: 'managementStructure',
   'business-strategy': 'businessStrategy',
-  'financial-profile': 'financialProfile'
+  'financial-profile': 'financialProfile',
 } as const;
 
 // Auto-save configuration
 export const AUTO_SAVE_CONFIG = {
   debounceMs: 30000, // 30 seconds
-  localStorageKey: 'funding_application_draft'
+  localStorageKey: 'funding_application_draft',
 };
