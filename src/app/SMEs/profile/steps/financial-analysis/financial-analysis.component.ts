@@ -22,9 +22,11 @@ import {
   FinancialRowData,
   FinancialRatioData,
   ParsedFinancialData,
-} from 'src/app/SMEs/profile/services/excel-parser.service';
+  BalanceSheetRowData,
+  CashFlowRowData,
+} from 'src/app/SMEs/profile/steps/financial-analysis/utils/excel-parser.service';
 import { SMEProfileStepsService } from '../../services/sme-profile-steps.service';
-import { FinancialDataTableComponent } from 'src/app/shared/financial-table/financial-data-table.component';
+import { FinancialDataTableComponent } from 'src/app/SMEs/profile/steps/financial-analysis/financial-table/financial-data-table.component';
 import { FinancialUploadComponent } from './components/financial-upload/financial-upload.component';
 import { FinancialSummaryComponent } from './components/financial-summary/financial-summary.component';
 import { FinancialNotesComponent } from './components/financial-notes/financial-notes.component';
@@ -34,6 +36,8 @@ const EXPECTED_COLUMN_COUNT = 9;
 
 type FinancialTab =
   | 'income-statement'
+  | 'balance-sheet' // ADD THIS
+  | 'cash-flow' // ADD THIS
   | 'financial-ratios'
   | 'notes'
   | 'health-score';
@@ -60,7 +64,16 @@ export class FinancialAnalysisComponent implements OnInit, OnDestroy {
 
   // Tab state
   activeTab = signal<FinancialTab>('income-statement');
+  balanceSheetData = signal<BalanceSheetRowData[]>([]);
+  cashFlowData = signal<CashFlowRowData[]>([]);
 
+  balanceSheetSections = computed(() =>
+    FinancialDataTransformer.transformBalanceSheet(this.balanceSheetData())
+  );
+
+  cashFlowSections = computed(() =>
+    FinancialDataTransformer.transformCashFlow(this.cashFlowData())
+  );
   // State signals
   isSaving = signal(false);
   isUploading = signal(false);
@@ -127,7 +140,41 @@ export class FinancialAnalysisComponent implements OnInit, OnDestroy {
   toggleEditMode() {
     this.editingMode.set(!this.editingMode());
   }
+  onBalanceSheetCellChanged(event: {
+    sectionIndex: number;
+    rowIndex: number;
+    colIndex: number;
+    value: number;
+  }) {
+    this.balanceSheetData.update((data) => {
+      const newData = [...data];
+      newData[event.rowIndex] = {
+        ...newData[event.rowIndex],
+        values: [...newData[event.rowIndex].values],
+      };
+      newData[event.rowIndex].values[event.colIndex] = event.value;
+      return newData;
+    });
+    this.triggerDataChange();
+  }
 
+  onCashFlowCellChanged(event: {
+    sectionIndex: number;
+    rowIndex: number;
+    colIndex: number;
+    value: number;
+  }) {
+    this.cashFlowData.update((data) => {
+      const newData = [...data];
+      newData[event.rowIndex] = {
+        ...newData[event.rowIndex],
+        values: [...newData[event.rowIndex].values],
+      };
+      newData[event.rowIndex].values[event.colIndex] = event.value;
+      return newData;
+    });
+    this.triggerDataChange();
+  }
   // ===============================
   // DATA LOADING & INITIALIZATION
   // ===============================
@@ -159,7 +206,8 @@ export class FinancialAnalysisComponent implements OnInit, OnDestroy {
     this.incomeStatementData.set(data.incomeStatement || []);
     this.financialRatiosData.set(data.financialRatios || []);
     this.columnHeaders.set(data.columnHeaders || []);
-    // this.notesText.set(data.notes || '');
+    this.balanceSheetData.set(data.balanceSheet || []);
+    this.cashFlowData.set(data.cashFlow || []);
   }
 
   private initializeEmptyData() {
@@ -281,6 +329,8 @@ export class FinancialAnalysisComponent implements OnInit, OnDestroy {
     this.incomeStatementData.set(parsedData.incomeStatement || []);
     this.financialRatiosData.set(parsedData.financialRatios || []);
     this.columnHeaders.set(parsedData.columnHeaders || []);
+    this.balanceSheetData.set(parsedData.balanceSheet || []);
+    this.cashFlowData.set(parsedData.cashFlow || []);
   }
 
   private checkDataQuality(data: ParsedFinancialData): string | null {
@@ -585,6 +635,8 @@ export class FinancialAnalysisComponent implements OnInit, OnDestroy {
 
     return {
       incomeStatement: this.incomeStatementData(),
+      balanceSheet: this.balanceSheetData(), // ADD THIS
+      cashFlow: this.cashFlowData(), // ADD THIS
       financialRatios: this.financialRatiosData(),
       columnHeaders: this.columnHeaders(),
       // notes: this.notesText(),
@@ -592,7 +644,6 @@ export class FinancialAnalysisComponent implements OnInit, OnDestroy {
       uploadedFile,
     };
   }
-
   // ===============================
   // COMPUTED VALUES
   // ===============================
@@ -602,6 +653,10 @@ export class FinancialAnalysisComponent implements OnInit, OnDestroy {
       this.incomeStatementData().some((row) =>
         row.values.some((val) => val !== 0)
       ) ||
+      this.balanceSheetData().some((row) =>
+        row.values.some((val) => val !== 0)
+      ) ||
+      this.cashFlowData().some((row) => row.values.some((val) => val !== 0)) ||
       this.financialRatiosData().some((row) =>
         row.values.some((val) => val !== 0)
       ) ||
@@ -659,5 +714,82 @@ export class FinancialAnalysisComponent implements OnInit, OnDestroy {
   onNotesSaved(notes: string) {
     this.notesText.set(notes);
     this.triggerDataChange();
+  }
+
+  /**
+   * Check if Balance Sheet is balanced: Assets = Liabilities + Equity
+   */
+  isBalanceSheetBalanced(): boolean {
+    const balanceSheet = this.balanceSheetData();
+    if (balanceSheet.length === 0) return true; // No data = considered balanced
+
+    const totalAssetsRow = balanceSheet.find(
+      (r) =>
+        r.label.toLowerCase().includes('total assets') &&
+        r.category === 'assets'
+    );
+    const totalLiabilitiesRow = balanceSheet.find(
+      (r) =>
+        r.label.toLowerCase().includes('total liabilities') &&
+        r.category === 'liabilities'
+    );
+    const totalEquityRow = balanceSheet.find(
+      (r) =>
+        (r.label.toLowerCase().includes('total equity') ||
+          r.label.toLowerCase().includes('total shareholders')) &&
+        r.category === 'equity'
+    );
+
+    if (!totalAssetsRow || !totalLiabilitiesRow || !totalEquityRow) {
+      return false; // Missing totals = not balanced
+    }
+
+    // Check last year column (most recent)
+    const lastColIndex = this.columnHeaders().length - 1;
+    const assets = totalAssetsRow.values[lastColIndex] || 0;
+    const liabilities = totalLiabilitiesRow.values[lastColIndex] || 0;
+    const equity = totalEquityRow.values[lastColIndex] || 0;
+
+    const diff = Math.abs(assets - (liabilities + equity));
+    return diff <= 100; // Allow rounding errors up to 100
+  }
+
+  /**
+   * Check if Cash Flow closing cash matches Balance Sheet cash
+   */
+  isCashFlowReconciledToBS(): boolean {
+    const cashFlow = this.cashFlowData();
+    const balanceSheet = this.balanceSheetData();
+
+    if (cashFlow.length === 0 || balanceSheet.length === 0) {
+      return true; // No data = considered reconciled
+    }
+
+    const cfClosingCashRow = cashFlow.find(
+      (r) =>
+        r.label.toLowerCase().includes('closing') ||
+        r.label.toLowerCase().includes('ending') ||
+        r.label.toLowerCase().includes('end of period')
+    );
+
+    const bsCashRow = balanceSheet.find(
+      (r) =>
+        (r.subcategory === 'current' &&
+          r.label.toLowerCase().includes('cash') &&
+          !r.label.toLowerCase().includes('equivalents')) ||
+        r.label.toLowerCase() === 'cash and cash equivalents'
+    );
+
+    if (!cfClosingCashRow || !bsCashRow) {
+      return true; // Missing rows = cannot verify, considered OK
+    }
+
+    // Check last year column (most recent)
+    const lastColIndex = this.columnHeaders().length - 1;
+    const cfCash = cfClosingCashRow.values[lastColIndex] || 0;
+    const bsCash = bsCashRow.values[lastColIndex] || 0;
+
+    const diff = Math.abs(cfCash - bsCash);
+    return diff <= 100; // Allow rounding errors up to 100
   }
 }
