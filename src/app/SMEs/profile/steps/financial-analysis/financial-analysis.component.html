@@ -76,6 +76,28 @@
         Income Statement
       </button>
       <button
+        (click)="switchTab('balance-sheet')"
+        [class]="
+          activeTab() === 'balance-sheet'
+            ? 'border-primary-500 text-primary-600'
+            : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+        "
+        class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors duration-200"
+      >
+        Balance Sheet
+      </button>
+      <button
+        (click)="switchTab('cash-flow')"
+        [class]="
+          activeTab() === 'cash-flow'
+            ? 'border-primary-500 text-primary-600'
+            : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+        "
+        class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors duration-200"
+      >
+        Cash Flow
+      </button>
+      <button
         (click)="switchTab('financial-ratios')"
         [class]="
           activeTab() === 'financial-ratios'
@@ -133,6 +155,46 @@
 
     }
 
+    <!-- Balance Sheet Tab -->
+    @if (activeTab() === 'balance-sheet') {
+
+    <div class="flex items-center justify-between mb-6">
+      <ui-button variant="outline" size="sm" (clicked)="toggleEditMode()">
+        <lucide-icon [name]="EditIcon" [size]="16" class="mr-1" />
+        {{ editingMode() ? "Done" : "Edit" }}
+      </ui-button>
+    </div>
+
+    <app-financial-data-table
+      [sections]="balanceSheetSections()"
+      [columnHeaders]="columnHeaders()"
+      [editMode]="editingMode()"
+      itemLabel="Item"
+      (cellValueChanged)="onBalanceSheetCellChanged($event)"
+    />
+
+    }
+
+    <!-- Cash Flow Tab -->
+    @if (activeTab() === 'cash-flow') {
+
+    <div class="flex items-center justify-between mb-6">
+      <ui-button variant="outline" size="sm" (clicked)="toggleEditMode()">
+        <lucide-icon [name]="EditIcon" [size]="16" class="mr-1" />
+        {{ editingMode() ? "Done" : "Edit" }}
+      </ui-button>
+    </div>
+
+    <app-financial-data-table
+      [sections]="cashFlowStatementSections()"
+      [columnHeaders]="columnHeaders()"
+      [editMode]="editingMode()"
+      itemLabel="Item"
+      (cellValueChanged)="onCashFlowCellChanged($event)"
+    />
+
+    }
+
     <!-- Financial Ratios Tab -->
     @if (activeTab() === 'financial-ratios') {
 
@@ -169,6 +231,8 @@
     <app-financial-summary
       [completionPercentage]="getCompletionPercentage()"
       [incomeStatementCount]="incomeStatementData().length"
+      [balanceSheetCount]="balanceSheetData().length"
+      [cashFlowStatementCount]="cashFlowStatementData().length"
       [financialRatiosCount]="financialRatiosData().length"
       [isValidTemplate]="hasValidTemplate()"
     />

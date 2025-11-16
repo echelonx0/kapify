@@ -13,6 +13,8 @@ export interface FinancialRatioData extends FinancialRowData {
 
 export interface ParsedFinancialData {
   incomeStatement: FinancialRowData[];
+  balanceSheet: FinancialRowData[];
+  cashFlowStatement: FinancialRowData[];
   financialRatios: FinancialRatioData[];
   columnHeaders: string[];
   lastUpdated: string;
@@ -52,6 +54,42 @@ const EXPECTED_INCOME_STATEMENT_ROWS = [
   'Finances Cost',
   'Depreciation & Amortisation',
   'Profit before tax'
+];
+
+const EXPECTED_BALANCE_SHEET_ROWS = [
+  'Current Assets',
+  'Cash and Cash Equivalents',
+  'Accounts Receivable',
+  'Inventory',
+  'Non-Current Assets',
+  'Property, Plant & Equipment',
+  'Intangible Assets',
+  'Total Assets',
+  'Current Liabilities',
+  'Accounts Payable',
+  'Short-term Debt',
+  'Non-Current Liabilities',
+  'Long-term Debt',
+  'Total Liabilities',
+  'Shareholders Equity',
+  'Total Liabilities and Equity'
+];
+
+const EXPECTED_CASH_FLOW_ROWS = [
+  'Cash from Operating Activities',
+  'Net Income',
+  'Depreciation & Amortization',
+  'Changes in Working Capital',
+  'Cash from Investing Activities',
+  'Capital Expenditures',
+  'Investments',
+  'Cash from Financing Activities',
+  'Debt Issued/Repaid',
+  'Equity Issued/Repurchased',
+  'Dividends Paid',
+  'Net Change in Cash',
+  'Beginning Cash Balance',
+  'Ending Cash Balance'
 ];
 
 const EXPECTED_RATIO_ROWS = [
@@ -208,10 +246,12 @@ export class ExcelFinancialParserService {
     
     // Extract data rows
     const incomeStatement: FinancialRowData[] = [];
+    const balanceSheet: FinancialRowData[] = [];
+    const cashFlowStatement: FinancialRowData[] = [];
     const financialRatios: FinancialRatioData[] = [];
-    
+
     const dataStartRow = headerRow + 1;
-    let currentSection: 'income' | 'ratios' | 'unknown' = 'unknown';
+    let currentSection: 'income' | 'balance' | 'cashflow' | 'ratios' | 'unknown' = 'unknown';
     
     for (let row = dataStartRow; row <= maxRow; row++) {
       const labelCell = worksheet[XLSX.utils.encode_cell({ r: row, c: 0 })];
@@ -225,6 +265,12 @@ export class ExcelFinancialParserService {
         if (label.toLowerCase().includes('income')) {
           currentSection = 'income';
           this.log('→ Entering Income Statement section at row', row);
+        } else if (label.toLowerCase().includes('balance')) {
+          currentSection = 'balance';
+          this.log('→ Entering Balance Sheet section at row', row);
+        } else if (label.toLowerCase().includes('cash flow') || label.toLowerCase().includes('cashflow')) {
+          currentSection = 'cashflow';
+          this.log('→ Entering Cash Flow Statement section at row', row);
         } else if (label.toLowerCase().includes('ratio')) {
           currentSection = 'ratios';
           this.log('→ Entering Financial Ratios section at row', row);
@@ -258,14 +304,30 @@ export class ExcelFinancialParserService {
       
       // Categorize row
       const isIncomeRow = this.matchesIncomeStatement(label);
+      const isBalanceSheetRow = this.matchesBalanceSheet(label);
+      const isCashFlowRow = this.matchesCashFlow(label);
       const isRatioRow = this.matchesFinancialRatio(label);
-      
+
       if (isIncomeRow || currentSection === 'income') {
         const matchedLabel = this.findMatchingLabel(label, EXPECTED_INCOME_STATEMENT_ROWS) || label;
         incomeStatement.push({
           label: matchedLabel,
           values,
           editable: !this.isCalculatedField(matchedLabel)
+        });
+      } else if (isBalanceSheetRow || currentSection === 'balance') {
+        const matchedLabel = this.findMatchingLabel(label, EXPECTED_BALANCE_SHEET_ROWS) || label;
+        balanceSheet.push({
+          label: matchedLabel,
+          values,
+          editable: !this.isCalculatedBalanceSheetField(matchedLabel)
+        });
+      } else if (isCashFlowRow || currentSection === 'cashflow') {
+        const matchedLabel = this.findMatchingLabel(label, EXPECTED_CASH_FLOW_ROWS) || label;
+        cashFlowStatement.push({
+          label: matchedLabel,
+          values,
+          editable: !this.isCalculatedCashFlowField(matchedLabel)
         });
       } else if (isRatioRow || currentSection === 'ratios') {
         const matchedLabel = this.findMatchingLabel(label, EXPECTED_RATIO_ROWS) || label;
@@ -276,9 +338,11 @@ export class ExcelFinancialParserService {
           editable: !this.isCalculatedRatio(matchedLabel)
         });
       }
-      
+
       // Early exit optimization
-      if (incomeStatement.length >= EXPECTED_INCOME_STATEMENT_ROWS.length && 
+      if (incomeStatement.length >= EXPECTED_INCOME_STATEMENT_ROWS.length &&
+          balanceSheet.length >= EXPECTED_BALANCE_SHEET_ROWS.length &&
+          cashFlowStatement.length >= EXPECTED_CASH_FLOW_ROWS.length &&
           financialRatios.length >= EXPECTED_RATIO_ROWS.length) {
         this.log('✓ All expected rows found, stopping scan at row', row);
         break;
@@ -287,6 +351,8 @@ export class ExcelFinancialParserService {
     
     return {
       incomeStatement,
+      balanceSheet,
+      cashFlowStatement,
       financialRatios,
       columnHeaders: headers.length > 0 ? headers : this.generateDefaultHeaders(),
       lastUpdated: new Date().toISOString()
@@ -296,40 +362,62 @@ export class ExcelFinancialParserService {
   validateParsedData(data: ParsedFinancialData): ParseValidation {
     const errors: string[] = [];
     const warnings: string[] = [];
-    
+
     // Check income statement
     const foundIncomeLabels = data.incomeStatement.map(row => row.label);
-    const missingIncome = EXPECTED_INCOME_STATEMENT_ROWS.filter(expected => 
+    const missingIncome = EXPECTED_INCOME_STATEMENT_ROWS.filter(expected =>
       !foundIncomeLabels.includes(expected)
     );
-    
+
     if (missingIncome.length > 3) { // Allow some flexibility
       warnings.push(`Missing ${missingIncome.length} income statement rows`);
     }
-    
+
+    // Check balance sheet
+    const foundBalanceLabels = data.balanceSheet.map(row => row.label);
+    const missingBalance = EXPECTED_BALANCE_SHEET_ROWS.filter(expected =>
+      !foundBalanceLabels.includes(expected)
+    );
+
+    if (missingBalance.length > 5) { // Allow some flexibility
+      warnings.push(`Missing ${missingBalance.length} balance sheet rows`);
+    }
+
+    // Check cash flow statement
+    const foundCashFlowLabels = data.cashFlowStatement.map(row => row.label);
+    const missingCashFlow = EXPECTED_CASH_FLOW_ROWS.filter(expected =>
+      !foundCashFlowLabels.includes(expected)
+    );
+
+    if (missingCashFlow.length > 5) { // Allow some flexibility
+      warnings.push(`Missing ${missingCashFlow.length} cash flow statement rows`);
+    }
+
     // Check financial ratios
     const foundRatioLabels = data.financialRatios.map(row => row.label);
-    const missingRatios = EXPECTED_RATIO_ROWS.filter(expected => 
+    const missingRatios = EXPECTED_RATIO_ROWS.filter(expected =>
       !foundRatioLabels.includes(expected)
     );
-    
+
     if (missingRatios.length > 3) {
       warnings.push(`Missing ${missingRatios.length} financial ratio rows`);
     }
-    
+
     // Check data presence
     const hasData = data.incomeStatement.some(row => row.values.some(val => val !== 0)) ||
+                    data.balanceSheet.some(row => row.values.some(val => val !== 0)) ||
+                    data.cashFlowStatement.some(row => row.values.some(val => val !== 0)) ||
                     data.financialRatios.some(row => row.values.some(val => val !== 0));
-    
+
     if (!hasData) {
       errors.push('No financial data found in the template');
     }
-    
+
     // Check column count
     if (data.columnHeaders.length !== EXPECTED_COLUMN_COUNT) {
       warnings.push(`Expected ${EXPECTED_COLUMN_COUNT} time periods, found ${data.columnHeaders.length}`);
     }
-    
+
     return {
       isValid: errors.length === 0,
       errors,
@@ -359,19 +447,34 @@ export class ExcelFinancialParserService {
 
   private isSectionHeader(label: string): boolean {
     const lower = label.toLowerCase();
-    return lower.includes('income statement') || 
+    return lower.includes('income statement') ||
+           lower.includes('balance sheet') ||
+           lower.includes('cash flow') ||
+           lower.includes('cashflow') ||
            lower.includes('financial ratio') ||
            lower.includes('amounts in');
   }
 
   private matchesIncomeStatement(label: string): boolean {
-    return EXPECTED_INCOME_STATEMENT_ROWS.some(expected => 
+    return EXPECTED_INCOME_STATEMENT_ROWS.some(expected =>
+      this.fuzzyMatch(label, expected)
+    );
+  }
+
+  private matchesBalanceSheet(label: string): boolean {
+    return EXPECTED_BALANCE_SHEET_ROWS.some(expected =>
+      this.fuzzyMatch(label, expected)
+    );
+  }
+
+  private matchesCashFlow(label: string): boolean {
+    return EXPECTED_CASH_FLOW_ROWS.some(expected =>
       this.fuzzyMatch(label, expected)
     );
   }
 
   private matchesFinancialRatio(label: string): boolean {
-    return EXPECTED_RATIO_ROWS.some(expected => 
+    return EXPECTED_RATIO_ROWS.some(expected =>
       this.fuzzyMatch(label, expected)
     );
   }
@@ -390,10 +493,18 @@ export class ExcelFinancialParserService {
     return ['Gross Profit', 'EBITDA', 'Profit before tax'].includes(label);
   }
 
+  private isCalculatedBalanceSheetField(label: string): boolean {
+    return ['Total Assets', 'Total Liabilities', 'Total Liabilities and Equity'].includes(label);
+  }
+
+  private isCalculatedCashFlowField(label: string): boolean {
+    return ['Net Change in Cash', 'Ending Cash Balance'].includes(label);
+  }
+
   private isCalculatedRatio(label: string): boolean {
     return [
       'Return on Equity (ROE)',
-      'Return on Investment (ROI)', 
+      'Return on Investment (ROI)',
       'Sales Growth',
       'Gross profit margin',
       'Cost to Income ratio',

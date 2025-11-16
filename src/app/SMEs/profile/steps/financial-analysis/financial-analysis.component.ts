@@ -34,6 +34,8 @@ const EXPECTED_COLUMN_COUNT = 9;
 
 type FinancialTab =
   | 'income-statement'
+  | 'balance-sheet'
+  | 'cash-flow'
   | 'financial-ratios'
   | 'notes'
   | 'health-score';
@@ -77,6 +79,8 @@ export class FinancialAnalysisComponent implements OnInit, OnDestroy {
 
   // Data signals
   incomeStatementData = signal<FinancialRowData[]>([]);
+  balanceSheetData = signal<FinancialRowData[]>([]);
+  cashFlowStatementData = signal<FinancialRowData[]>([]);
   financialRatiosData = signal<FinancialRatioData[]>([]);
   columnHeaders = signal<string[]>([]);
 
@@ -84,6 +88,18 @@ export class FinancialAnalysisComponent implements OnInit, OnDestroy {
   incomeStatementSections = computed(() =>
     FinancialDataTransformer.transformIncomeStatement(
       this.incomeStatementData()
+    )
+  );
+
+  balanceSheetSections = computed(() =>
+    FinancialDataTransformer.transformBalanceSheet(
+      this.balanceSheetData()
+    )
+  );
+
+  cashFlowStatementSections = computed(() =>
+    FinancialDataTransformer.transformCashFlowStatement(
+      this.cashFlowStatementData()
     )
   );
 
@@ -150,6 +166,10 @@ export class FinancialAnalysisComponent implements OnInit, OnDestroy {
       data &&
       data.incomeStatement &&
       Array.isArray(data.incomeStatement) &&
+      data.balanceSheet &&
+      Array.isArray(data.balanceSheet) &&
+      data.cashFlowStatement &&
+      Array.isArray(data.cashFlowStatement) &&
       data.financialRatios &&
       Array.isArray(data.financialRatios)
     );
@@ -157,6 +177,8 @@ export class FinancialAnalysisComponent implements OnInit, OnDestroy {
 
   private loadFromExistingData(data: ParsedFinancialData) {
     this.incomeStatementData.set(data.incomeStatement || []);
+    this.balanceSheetData.set(data.balanceSheet || []);
+    this.cashFlowStatementData.set(data.cashFlowStatement || []);
     this.financialRatiosData.set(data.financialRatios || []);
     this.columnHeaders.set(data.columnHeaders || []);
     // this.notesText.set(data.notes || '');
@@ -178,6 +200,8 @@ export class FinancialAnalysisComponent implements OnInit, OnDestroy {
 
     this.columnHeaders.set(headers);
     this.incomeStatementData.set([]);
+    this.balanceSheetData.set([]);
+    this.cashFlowStatementData.set([]);
     this.financialRatiosData.set([]);
   }
 
@@ -279,12 +303,15 @@ export class FinancialAnalysisComponent implements OnInit, OnDestroy {
 
   private applyParsedData(parsedData: ParsedFinancialData) {
     this.incomeStatementData.set(parsedData.incomeStatement || []);
+    this.balanceSheetData.set(parsedData.balanceSheet || []);
+    this.cashFlowStatementData.set(parsedData.cashFlowStatement || []);
     this.financialRatiosData.set(parsedData.financialRatios || []);
     this.columnHeaders.set(parsedData.columnHeaders || []);
   }
 
   private checkDataQuality(data: ParsedFinancialData): string | null {
-    if (!data.incomeStatement?.length || !data.financialRatios?.length) {
+    if (!data.incomeStatement?.length || !data.balanceSheet?.length ||
+        !data.cashFlowStatement?.length || !data.financialRatios?.length) {
       return 'Warning: Some data sections are empty. Ensure your template is complete.';
     }
     return null;
@@ -293,6 +320,8 @@ export class FinancialAnalysisComponent implements OnInit, OnDestroy {
   removeTemplate() {
     this.uploadedTemplate.set(null);
     this.incomeStatementData.set([]);
+    this.balanceSheetData.set([]);
+    this.cashFlowStatementData.set([]);
     this.financialRatiosData.set([]);
     this.parseError.set(null);
     this.parseWarnings.set([]);
@@ -395,6 +424,18 @@ export class FinancialAnalysisComponent implements OnInit, OnDestroy {
     });
 
     data.push(Array(EXPECTED_COLUMN_COUNT + 1).fill(''));
+    data.push(['BALANCE SHEET', ...Array(EXPECTED_COLUMN_COUNT).fill('')]);
+    this.balanceSheetData().forEach((row) => {
+      data.push([row.label, ...row.values]);
+    });
+
+    data.push(Array(EXPECTED_COLUMN_COUNT + 1).fill(''));
+    data.push(['CASH FLOW STATEMENT', ...Array(EXPECTED_COLUMN_COUNT).fill('')]);
+    this.cashFlowStatementData().forEach((row) => {
+      data.push([row.label, ...row.values]);
+    });
+
+    data.push(Array(EXPECTED_COLUMN_COUNT + 1).fill(''));
     data.push(['FINANCIAL RATIOS', ...Array(EXPECTED_COLUMN_COUNT).fill('')]);
     this.financialRatiosData().forEach((row) => {
       data.push([row.label, ...row.values]);
@@ -424,6 +465,46 @@ export class FinancialAnalysisComponent implements OnInit, OnDestroy {
     });
 
     this.recalculateFields();
+    this.triggerDataChange();
+  }
+
+  onBalanceSheetCellChanged(event: {
+    sectionIndex: number;
+    rowIndex: number;
+    colIndex: number;
+    value: number;
+  }) {
+    this.balanceSheetData.update((data) => {
+      const newData = [...data];
+      newData[event.rowIndex] = {
+        ...newData[event.rowIndex],
+        values: [...newData[event.rowIndex].values],
+      };
+      newData[event.rowIndex].values[event.colIndex] = event.value;
+      return newData;
+    });
+
+    this.recalculateBalanceSheetFields();
+    this.triggerDataChange();
+  }
+
+  onCashFlowCellChanged(event: {
+    sectionIndex: number;
+    rowIndex: number;
+    colIndex: number;
+    value: number;
+  }) {
+    this.cashFlowStatementData.update((data) => {
+      const newData = [...data];
+      newData[event.rowIndex] = {
+        ...newData[event.rowIndex],
+        values: [...newData[event.rowIndex].values],
+      };
+      newData[event.rowIndex].values[event.colIndex] = event.value;
+      return newData;
+    });
+
+    this.recalculateCashFlowFields();
     this.triggerDataChange();
   }
 
@@ -514,6 +595,74 @@ export class FinancialAnalysisComponent implements OnInit, OnDestroy {
     this.incomeStatementData.set(incomeData);
   }
 
+  private recalculateBalanceSheetFields() {
+    const balanceData = [...this.balanceSheetData()];
+
+    const currentAssets = balanceData.find((row) => row.label === 'Current Assets');
+    const nonCurrentAssets = balanceData.find((row) => row.label === 'Non-Current Assets');
+    const totalAssets = balanceData.find((row) => row.label === 'Total Assets');
+
+    const currentLiabilities = balanceData.find((row) => row.label === 'Current Liabilities');
+    const nonCurrentLiabilities = balanceData.find((row) => row.label === 'Non-Current Liabilities');
+    const totalLiabilities = balanceData.find((row) => row.label === 'Total Liabilities');
+
+    const shareholdersEquity = balanceData.find((row) => row.label === 'Shareholders Equity');
+    const totalLiabilitiesAndEquity = balanceData.find((row) => row.label === 'Total Liabilities and Equity');
+
+    // Calculate Total Assets
+    if (currentAssets && nonCurrentAssets && totalAssets) {
+      totalAssets.values = currentAssets.values.map(
+        (current, i) => current + (nonCurrentAssets.values[i] || 0)
+      );
+    }
+
+    // Calculate Total Liabilities
+    if (currentLiabilities && nonCurrentLiabilities && totalLiabilities) {
+      totalLiabilities.values = currentLiabilities.values.map(
+        (current, i) => current + (nonCurrentLiabilities.values[i] || 0)
+      );
+    }
+
+    // Calculate Total Liabilities and Equity
+    if (totalLiabilities && shareholdersEquity && totalLiabilitiesAndEquity) {
+      totalLiabilitiesAndEquity.values = totalLiabilities.values.map(
+        (liab, i) => liab + (shareholdersEquity.values[i] || 0)
+      );
+    }
+
+    this.balanceSheetData.set(balanceData);
+  }
+
+  private recalculateCashFlowFields() {
+    const cashFlowData = [...this.cashFlowStatementData()];
+
+    const operatingCash = cashFlowData.find((row) => row.label === 'Cash from Operating Activities');
+    const investingCash = cashFlowData.find((row) => row.label === 'Cash from Investing Activities');
+    const financingCash = cashFlowData.find((row) => row.label === 'Cash from Financing Activities');
+    const netChange = cashFlowData.find((row) => row.label === 'Net Change in Cash');
+    const beginningCash = cashFlowData.find((row) => row.label === 'Beginning Cash Balance');
+    const endingCash = cashFlowData.find((row) => row.label === 'Ending Cash Balance');
+
+    // Calculate Net Change in Cash
+    if (operatingCash && investingCash && financingCash && netChange) {
+      netChange.values = operatingCash.values.map(
+        (operating, i) =>
+          operating +
+          (investingCash.values[i] || 0) +
+          (financingCash.values[i] || 0)
+      );
+    }
+
+    // Calculate Ending Cash Balance
+    if (beginningCash && netChange && endingCash) {
+      endingCash.values = beginningCash.values.map(
+        (beginning, i) => beginning + (netChange.values[i] || 0)
+      );
+    }
+
+    this.cashFlowStatementData.set(cashFlowData);
+  }
+
   // ===============================
   // AUTO-SAVE FUNCTIONALITY
   // ===============================
@@ -585,6 +734,8 @@ export class FinancialAnalysisComponent implements OnInit, OnDestroy {
 
     return {
       incomeStatement: this.incomeStatementData(),
+      balanceSheet: this.balanceSheetData(),
+      cashFlowStatement: this.cashFlowStatementData(),
       financialRatios: this.financialRatiosData(),
       columnHeaders: this.columnHeaders(),
       // notes: this.notesText(),
@@ -602,6 +753,12 @@ export class FinancialAnalysisComponent implements OnInit, OnDestroy {
       this.incomeStatementData().some((row) =>
         row.values.some((val) => val !== 0)
       ) ||
+      this.balanceSheetData().some((row) =>
+        row.values.some((val) => val !== 0)
+      ) ||
+      this.cashFlowStatementData().some((row) =>
+        row.values.some((val) => val !== 0)
+      ) ||
       this.financialRatiosData().some((row) =>
         row.values.some((val) => val !== 0)
       ) ||
@@ -611,18 +768,26 @@ export class FinancialAnalysisComponent implements OnInit, OnDestroy {
 
   hasValidTemplate(): boolean {
     const incomeData = this.incomeStatementData();
+    const balanceData = this.balanceSheetData();
+    const cashFlowData = this.cashFlowStatementData();
     const ratioData = this.financialRatiosData();
-    return incomeData.length > 0 && ratioData.length > 0;
+    return incomeData.length > 0 && balanceData.length > 0 &&
+           cashFlowData.length > 0 && ratioData.length > 0;
   }
 
   getCompletionPercentage(): number {
     if (!this.hasFinancialData()) return 0;
 
     const totalCells =
-      (this.incomeStatementData().length + this.financialRatiosData().length) *
+      (this.incomeStatementData().length +
+       this.balanceSheetData().length +
+       this.cashFlowStatementData().length +
+       this.financialRatiosData().length) *
       EXPECTED_COLUMN_COUNT;
     const filledCells = [
       ...this.incomeStatementData(),
+      ...this.balanceSheetData(),
+      ...this.cashFlowStatementData(),
       ...this.financialRatiosData(),
     ].reduce(
       (count, row) => count + row.values.filter((val) => val !== 0).length,
