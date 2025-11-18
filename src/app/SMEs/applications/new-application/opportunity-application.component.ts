@@ -1,4 +1,3 @@
-// src/app/applications/components/new-application/opportunity-application.component.ts
 import {
   Component,
   signal,
@@ -11,8 +10,9 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { Location } from '@angular/common';
 import { LucideAngularModule, ArrowLeft, Clock } from 'lucide-angular';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 import { SMEOpportunitiesService } from 'src/app/funding/services/opportunities.service';
-import { UiButtonComponent, UiCardComponent } from 'src/app/shared/components';
 
 import { GlobalProfileValidationService } from 'src/app/shared/services/global-profile-validation.service';
 import { DatabaseApplicationService } from 'src/app/SMEs/services/database-application.service';
@@ -38,8 +38,7 @@ import { Application } from './models/funding-application.model';
   imports: [
     CommonModule,
     LucideAngularModule,
-    UiButtonComponent,
-    UiCardComponent,
+
     KapifyAIAnalysisComponent,
     OpportunitySelectorComponent,
     ApplicationFormComponent,
@@ -75,7 +74,10 @@ import { Application } from './models/funding-application.model';
   ],
 })
 export class OpportunityApplicationFormComponent implements OnInit, OnDestroy {
-  // Services
+  // ===============================
+  // SERVICES
+  // ===============================
+
   private router = inject(Router);
   private route = inject(ActivatedRoute);
   private location = inject(Location);
@@ -85,19 +87,25 @@ export class OpportunityApplicationFormComponent implements OnInit, OnDestroy {
   private fundingProfileService = inject(FundingProfileBackendService);
   private formService = inject(ApplicationFormService);
   private validationService = inject(ApplicationValidationService);
+  private destroy$ = new Subject<void>();
 
-  // Icons
+  // ===============================
+  // ICONS
+  // ===============================
+
   ArrowLeftIcon = ArrowLeft;
   ClockIcon = Clock;
 
-  // State
+  // ===============================
+  // STATE SIGNALS
+  // ===============================
+
   currentStep = signal<ApplicationStepId>('select-opportunity');
   isLoading = signal(false);
   isSaving = signal(false);
   isSubmitting = signal(false);
   error = signal<string | null>(null);
 
-  // Data
   availableOpportunities = signal<FundingOpportunity[]>([]);
   selectedOpportunity = signal<FundingOpportunity | null>(null);
   draftApplication = signal<Application | null>(null);
@@ -107,7 +115,10 @@ export class OpportunityApplicationFormComponent implements OnInit, OnDestroy {
   // Auto-save
   private autoSaveTimeout: any = null;
 
-  // Steps
+  // ===============================
+  // STEPS DEFINITION
+  // ===============================
+
   steps = signal<ApplicationFormStep[]>([
     {
       id: 'select-opportunity',
@@ -135,8 +146,20 @@ export class OpportunityApplicationFormComponent implements OnInit, OnDestroy {
     },
   ]);
 
-  // Computed
+  // ===============================
+  // COMPUTED SIGNALS
+  // ===============================
+
+  /**
+   * Check if opportunityId is in route params
+   * If true, skip the selector completely
+   */
+  hasOpportunityIdParam = computed(() => {
+    return !!this.selectedOpportunity()?.id;
+  });
+
   formData = this.formService.formData;
+
   profileCompletion = computed(() =>
     this.profileValidationService.completion()
   );
@@ -155,7 +178,6 @@ export class OpportunityApplicationFormComponent implements OnInit, OnDestroy {
         return false;
     }
   });
-  // Continuation of opportunity-application.component.ts
 
   applicationId = computed(() => {
     const draft = this.draftApplication();
@@ -169,31 +191,45 @@ export class OpportunityApplicationFormComponent implements OnInit, OnDestroy {
     return this.fullFundingProfile();
   });
 
+  // ===============================
+  // LIFECYCLE
+  // ===============================
+
   ngOnInit(): void {
     this.loadFullFundingProfile();
 
-    const opportunityId = this.route.snapshot.paramMap.get('opportunityId');
-    const requestedAmount =
-      this.route.snapshot.queryParamMap.get('requestedAmount');
+    // ✅ KEY FIX: Use paramMap observable, not snapshot
+    // Snapshot is evaluated too early in component lifecycle
+    this.route.paramMap.pipe(takeUntil(this.destroy$)).subscribe((params) => {
+      const opportunityId = params.get('opportunityId');
+      console.log('🚀 opportunityId from route paramMap:', opportunityId);
+      const requestedAmount =
+        this.route.snapshot.queryParamMap.get('requestedAmount');
 
-    // Pre-fill requested amount if passed
-    if (requestedAmount) {
-      this.formService.prefillForm({ requestedAmount });
-    }
+      // Pre-fill requested amount if passed
+      if (requestedAmount) {
+        this.formService.prefillForm({ requestedAmount });
+      }
 
-    if (opportunityId) {
-      this.loadSpecificOpportunity(opportunityId);
-    } else {
-      this.loadAvailableOpportunities();
-    }
-
-    this.checkForDraftApplication();
+      if (opportunityId) {
+        // When opportunityId is in route: load specific opportunity and skip selector
+        console.log('📍 Route has opportunityId:', opportunityId);
+        this.loadSpecificOpportunity(opportunityId);
+      } else {
+        // When no opportunityId: show selector and load available opportunities
+        console.log('📍 No opportunityId in route, showing selector');
+        this.loadAvailableOpportunities();
+        this.checkForDraftApplication();
+      }
+    });
   }
 
   ngOnDestroy(): void {
     if (this.autoSaveTimeout) {
       clearTimeout(this.autoSaveTimeout);
     }
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   // ===============================
@@ -204,7 +240,7 @@ export class OpportunityApplicationFormComponent implements OnInit, OnDestroy {
     this.fundingProfileService.loadSavedProfile().subscribe({
       next: (profile) => {
         this.fullFundingProfile.set(profile);
-        console.log('Funding profile loaded for AI analysis');
+        console.log('✓ Funding profile loaded for AI analysis');
       },
       error: (error) => {
         console.warn('Funding profile not available:', error);
@@ -214,38 +250,58 @@ export class OpportunityApplicationFormComponent implements OnInit, OnDestroy {
 
   private loadAvailableOpportunities(): void {
     this.isLoading.set(true);
-    this.opportunitiesService.loadActiveOpportunities().subscribe({
-      next: (opportunities) => {
-        this.availableOpportunities.set(opportunities);
-        this.isLoading.set(false);
-      },
-      error: (error) => {
-        this.error.set('Failed to load opportunities');
-        this.isLoading.set(false);
-        console.error('Load opportunities error:', error);
-      },
-    });
+    this.opportunitiesService
+      .loadActiveOpportunities()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (opportunities) => {
+          this.availableOpportunities.set(opportunities);
+          this.isLoading.set(false);
+        },
+        error: (error) => {
+          this.error.set('Failed to load opportunities');
+          this.isLoading.set(false);
+          console.error('Load opportunities error:', error);
+        },
+      });
   }
 
+  /**
+   * Load specific opportunity when opportunityId is in route
+   * Skips selector and goes directly to application-details
+   */
   private loadSpecificOpportunity(opportunityId: string): void {
     this.isLoading.set(true);
-    this.opportunitiesService.getOpportunityById(opportunityId).subscribe({
-      next: (opportunity) => {
-        if (opportunity) {
-          this.selectedOpportunity.set(opportunity);
-          this.currentStep.set('application-details');
-          this.createDraftApplication(opportunity);
-        } else {
-          this.error.set('Opportunity not found');
-        }
-        this.isLoading.set(false);
-      },
-      error: (error) => {
-        this.error.set('Failed to load opportunity');
-        this.isLoading.set(false);
-        console.error('Load opportunity error:', error);
-      },
-    });
+    this.opportunitiesService
+      .getOpportunityById(opportunityId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (opportunity) => {
+          if (opportunity) {
+            this.selectedOpportunity.set(opportunity);
+            // ← Skip selector, go straight to application-details
+            this.currentStep.set('application-details');
+            this.createDraftApplication(opportunity);
+
+            // Also check if there's an existing draft to load
+            this.checkForDraftApplication();
+          } else {
+            this.error.set('Opportunity not found');
+            // Fall back to selector
+            this.loadAvailableOpportunities();
+            this.currentStep.set('select-opportunity');
+          }
+          this.isLoading.set(false);
+        },
+        error: (error) => {
+          this.error.set('Failed to load opportunity');
+          this.isLoading.set(false);
+          // Fall back to selector
+          this.loadAvailableOpportunities();
+          this.currentStep.set('select-opportunity');
+          console.error('Load opportunity error:', error);
+        },
+      });
   }
 
   private checkForDraftApplication(): void {
@@ -254,6 +310,7 @@ export class OpportunityApplicationFormComponent implements OnInit, OnDestroy {
 
     this.applicationService
       .getApplicationsByOpportunity(opportunityId)
+      .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (applications) => {
           const draftApp = applications.find((app) => app.status === 'draft');
@@ -276,15 +333,18 @@ export class OpportunityApplicationFormComponent implements OnInit, OnDestroy {
       formData: this.formService.getFormDataForSave(),
     };
 
-    this.applicationService.createApplication(applicationData).subscribe({
-      next: (newApplication) => {
-        this.draftApplication.set(newApplication);
-        console.log('Draft application created:', newApplication.id);
-      },
-      error: (error) => {
-        console.error('Error creating draft application:', error);
-      },
-    });
+    this.applicationService
+      .createApplication(applicationData)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (newApplication) => {
+          this.draftApplication.set(newApplication);
+          console.log('✓ Draft application created:', newApplication.id);
+        },
+        error: (error) => {
+          console.error('Error creating draft application:', error);
+        },
+      });
   }
 
   // ===============================
@@ -314,7 +374,7 @@ export class OpportunityApplicationFormComponent implements OnInit, OnDestroy {
   }
 
   onAnalysisCompleted(result: any): void {
-    console.log('AI Analysis completed:', result);
+    console.log('✓ AI Analysis completed:', result);
     this.aiAnalysisResult.set(result);
 
     if (result.matchScore >= 85) {
@@ -360,7 +420,12 @@ export class OpportunityApplicationFormComponent implements OnInit, OnDestroy {
     } else if (current === 'ai-analysis') {
       this.currentStep.set('application-details');
     } else if (current === 'application-details') {
-      this.currentStep.set('select-opportunity');
+      // Don't go back to selector if opportunity came from route param
+      const opportunityId = this.route.snapshot.paramMap.get('opportunityId');
+      if (!opportunityId) {
+        this.currentStep.set('select-opportunity');
+      }
+      // If opportunityId exists, stay on application details
     }
   }
 
@@ -438,7 +503,7 @@ export class OpportunityApplicationFormComponent implements OnInit, OnDestroy {
         }
       }
 
-      console.log('Draft saved successfully');
+      console.log('✓ Draft saved successfully');
     } catch (error) {
       console.error('Failed to save draft:', error);
       this.error.set('Failed to save draft');
@@ -500,17 +565,17 @@ export class OpportunityApplicationFormComponent implements OnInit, OnDestroy {
       'w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium transition-all duration-300';
 
     if (isCompleted) {
-      return `${baseClasses} bg-green-500 text-white`;
+      return `${baseClasses} bg-green-600 text-white`;
     } else if (isActive) {
-      return `${baseClasses} bg-primary-500 text-white`;
+      return `${baseClasses} bg-teal-500 text-white`;
     } else {
-      return `${baseClasses} bg-gray-200 text-gray-600`;
+      return `${baseClasses} bg-slate-100 text-slate-600`;
     }
   }
 
   getStepTextClasses(stepId: ApplicationStepId): string {
     const isActive = this.currentStep() === stepId;
-    return isActive ? 'font-medium text-primary-600' : 'text-gray-600';
+    return isActive ? 'font-medium text-teal-600' : 'text-slate-600';
   }
 
   private loadFromDraftApplication(application: Application): void {
@@ -521,7 +586,7 @@ export class OpportunityApplicationFormComponent implements OnInit, OnDestroy {
         typeof application.useOfFunds === 'string'
           ? application.useOfFunds
           : application.useOfFunds?.[0]?.description || '',
-      fundingType: application.fundingType || '', // Add this
+      fundingType: application.fundingType || '',
     });
   }
 }

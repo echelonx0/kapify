@@ -142,9 +142,7 @@ export class OpportunityDetailsComponent implements OnInit {
   applyNow() {
     const opp = this.opportunity();
     if (opp) {
-      this.router.navigate(['/applications/new'], {
-        queryParams: { opportunityId: opp.id },
-      });
+      this.router.navigate(['/applications/new', opp.id]); // ← Route param
     }
   }
 
@@ -323,7 +321,7 @@ export class OpportunityDetailsComponent implements OnInit {
     const opp = this.opportunity();
 
     console.log(opp?.eligibilityCriteria);
-    return opp?.eligibilityCriteria.excludeCriteria || [];
+    return opp?.investmentCriteria || [];
   }
 
   ngOnDestroy(): void {
