@@ -105,14 +105,18 @@
       <!-- Header + Filter -->
       <div class="flex items-center justify-between mb-2">
         <h2 class="text-xl md:text-2xl font-bold text-slate-900">
-          Profile Sections
+          Business Profile
         </h2>
+
+        <!-- View All CTA -->
+        @if (applicationSteps.length > 6) {
         <button
-          class="text-xs md:text-sm text-slate-500 hover:text-slate-700"
+          class="w-2xs p-2 md:py-3 text-center text-xs md:text-sm font-semibold text-teal-600 hover:text-teal-700 border border-slate-200 rounded-xl hover:border-teal-300 transition-all"
           (click)="viewAllSteps()"
         >
-          Update
+          View All {{ applicationSteps.length }} Sections
         </button>
+        }
       </div>
 
       <!-- Step Cards Grid (1 column on mobile, flexible on desktop) -->
@@ -177,16 +181,6 @@
         </div>
         }
       </div>
-
-      <!-- View All CTA -->
-      @if (applicationSteps.length > 6) {
-      <button
-        class="w-full py-2 md:py-3 text-center text-xs md:text-sm font-semibold text-teal-600 hover:text-teal-700 border border-slate-200 rounded-xl hover:border-teal-300 transition-all"
-        (click)="viewAllSteps()"
-      >
-        View All {{ applicationSteps.length }} Sections
-      </button>
-      }
     </div>
 
     <!-- RIGHT COLUMN: Actions + CTA Section (Full width on mobile, normal on desktop) -->

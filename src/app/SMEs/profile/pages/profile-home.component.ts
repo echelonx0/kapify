@@ -73,10 +73,19 @@ export class ProfileHomeComponent implements OnInit, OnDestroy {
   currentImage = '/images/workshop.png';
   private imageRotationInterval: any;
 
-  // ===== COMPUTED DATA =====
-  completionPercentage = computed(() =>
-    this.fundingApplicationService.completion()
-  );
+  // // ===== COMPUTED DATA =====
+  // completionPercentage = computed(() =>
+  //   this.fundingApplicationService.completion()
+  // );
+
+  // In profile-home.component.ts - add this computed property:
+  completionPercentage = computed(() => {
+    const completed = this.fundingApplicationService.steps.filter(
+      (step) => step.completed
+    ).length;
+    const total = this.fundingApplicationService.steps.length;
+    return total > 0 ? Math.round((completed / total) * 100) : 0;
+  });
   completedSteps = computed(() =>
     this.fundingApplicationService.completedSteps()
   );
