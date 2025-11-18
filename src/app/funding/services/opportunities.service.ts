@@ -6,7 +6,7 @@ import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { environment } from '../../../environments/environment';
 import { AuthService } from '../../auth/production.auth.service';
 import { FundingOpportunity } from 'src/app/funder/create-opportunity/shared/funding.interfaces';
- 
+
 // SME-specific interfaces
 interface OpportunityFilters {
   fundingTypes?: string[];
@@ -26,7 +26,7 @@ interface SMEProfile {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class SMEOpportunitiesService {
   private supabase: SupabaseClient;
@@ -35,13 +35,16 @@ export class SMEOpportunitiesService {
   // State management
   isLoading = signal(false);
   error = signal<string | null>(null);
-  
+
   // Reactive data streams
   private opportunitiesSubject = new BehaviorSubject<FundingOpportunity[]>([]);
   opportunities$ = this.opportunitiesSubject.asObservable();
 
   constructor() {
-    this.supabase = createClient(environment.supabaseUrl, environment.supabaseAnonKey);
+    this.supabase = createClient(
+      environment.supabaseUrl,
+      environment.supabaseAnonKey
+    );
   }
 
   // ===============================
@@ -53,11 +56,11 @@ export class SMEOpportunitiesService {
     this.error.set(null);
 
     return from(this.fetchActiveOpportunities()).pipe(
-      tap(opportunities => {
+      tap((opportunities) => {
         this.opportunitiesSubject.next(opportunities);
         this.isLoading.set(false);
       }),
-      catchError(error => {
+      catchError((error) => {
         this.error.set('Failed to load funding opportunities');
         this.isLoading.set(false);
         console.error('Load opportunities error:', error);
@@ -67,66 +70,81 @@ export class SMEOpportunitiesService {
   }
 
   private async fetchActiveOpportunities(): Promise<FundingOpportunity[]> {
-  try {
-    console.log('Fetching active opportunities from Supabase...');
-    
-    // ✅ FIXED: No join - all data already in funding_opportunities table
-    const { data, error } = await this.supabase
-      .from('funding_opportunities')
-      .select('*')
-      .eq('status', 'active')
-      .not('published_at', 'is', null)
-      .order('published_at', { ascending: false });
+    try {
+      console.log('Fetching active opportunities from Supabase...');
 
-    if (error) {
-      throw new Error(`Failed to fetch opportunities: ${error.message}`);
+      // ✅ FIXED: No join - all data already in funding_opportunities table
+      const { data, error } = await this.supabase
+        .from('funding_opportunities')
+        .select('*')
+        .eq('status', 'active')
+        .not('published_at', 'is', null)
+        .order('published_at', { ascending: false });
+
+      if (error) {
+        throw new Error(`Failed to fetch opportunities: ${error.message}`);
+      }
+
+      console.log(`Fetched ${data?.length || 0} opportunities`);
+      return (data || []).map((item) => this.transformDatabaseToLocal(item));
+    } catch (error) {
+      console.error('Error fetching active opportunities:', error);
+      throw error;
     }
-    
-    console.log(`Fetched ${data?.length || 0} opportunities`);
-    return (data || []).map(item => this.transformDatabaseToLocal(item));
-    
-  } catch (error) {
-    console.error('Error fetching active opportunities:', error);
-    throw error;
   }
-}
 
   // TODO: Remove this once RLS policies are properly configured
-  private async enrichWithOrganizationData(opportunities: any[]): Promise<any[]> {
+  private async enrichWithOrganizationData(
+    opportunities: any[]
+  ): Promise<any[]> {
     if (!opportunities.length) return opportunities;
 
     try {
       // Get unique organization IDs
-      const orgIds = [...new Set(opportunities.map(opp => opp.organization_id).filter(Boolean))];
-      
+      const orgIds = [
+        ...new Set(
+          opportunities.map((opp) => opp.organization_id).filter(Boolean)
+        ),
+      ];
+
       if (orgIds.length === 0) {
-        return opportunities.map(opp => ({ ...opp, funder_organizations: null }));
+        return opportunities.map((opp) => ({
+          ...opp,
+          funder_organizations: null,
+        }));
       }
 
       const { data: organizations, error: orgError } = await this.supabase
         .from('funder_organizations')
-        .select('id, name, organization_type, website, description, is_verified')
+        .select(
+          'id, name, organization_type, website, description, is_verified'
+        )
         .in('id', orgIds);
 
       if (orgError) {
         console.warn('Could not fetch organization details:', orgError);
         // Return opportunities without organization data rather than failing completely
-        return opportunities.map(opp => ({ ...opp, funder_organizations: null }));
+        return opportunities.map((opp) => ({
+          ...opp,
+          funder_organizations: null,
+        }));
       }
 
       // Match organizations to opportunities
-      return opportunities.map(opp => {
-        const org = organizations?.find(o => o.id === opp.organization_id);
+      return opportunities.map((opp) => {
+        const org = organizations?.find((o) => o.id === opp.organization_id);
         return {
           ...opp,
-          funder_organizations: org || null
+          funder_organizations: org || null,
         };
       });
-
     } catch (error) {
       console.warn('Error enriching with organization data:', error);
       // Return opportunities without organization data rather than failing
-      return opportunities.map(opp => ({ ...opp, funder_organizations: null }));
+      return opportunities.map((opp) => ({
+        ...opp,
+        funder_organizations: null,
+      }));
     }
   }
 
@@ -134,16 +152,18 @@ export class SMEOpportunitiesService {
   // SEARCH AND FILTER OPPORTUNITIES
   // ===============================
 
-  searchOpportunities(filters: OpportunityFilters): Observable<FundingOpportunity[]> {
+  searchOpportunities(
+    filters: OpportunityFilters
+  ): Observable<FundingOpportunity[]> {
     this.isLoading.set(true);
     this.error.set(null);
 
     return from(this.performSearch(filters)).pipe(
-      tap(opportunities => {
+      tap((opportunities) => {
         this.opportunitiesSubject.next(opportunities);
         this.isLoading.set(false);
       }),
-      catchError(error => {
+      catchError((error) => {
         this.error.set('Failed to search opportunities');
         this.isLoading.set(false);
         console.error('Search error:', error);
@@ -152,7 +172,9 @@ export class SMEOpportunitiesService {
     );
   }
 
-  private async performSearch(filters: OpportunityFilters): Promise<FundingOpportunity[]> {
+  private async performSearch(
+    filters: OpportunityFilters
+  ): Promise<FundingOpportunity[]> {
     try {
       // MINIMAL VERSION: Search opportunities without organization join
       // TODO: Restore organization join once RLS is fixed
@@ -183,18 +205,25 @@ export class SMEOpportunitiesService {
 
       // Apply text search filter
       if (filters.searchQuery) {
-        query = query.or(`title.ilike.%${filters.searchQuery}%,description.ilike.%${filters.searchQuery}%,short_description.ilike.%${filters.searchQuery}%`);
+        query = query.or(
+          `title.ilike.%${filters.searchQuery}%,description.ilike.%${filters.searchQuery}%,short_description.ilike.%${filters.searchQuery}%`
+        );
       }
 
       // Apply industry filter (requires JSONB query)
       if (filters.industries?.length) {
-        const industryConditions = filters.industries.map(industry => 
-          `eligibility_criteria->>'industries' LIKE '%${industry}%'`
-        ).join(' OR ');
+        const industryConditions = filters.industries
+          .map(
+            (industry) =>
+              `eligibility_criteria->>'industries' LIKE '%${industry}%'`
+          )
+          .join(' OR ');
         query = query.or(industryConditions);
       }
 
-      const { data, error } = await query.order('published_at', { ascending: false });
+      const { data, error } = await query.order('published_at', {
+        ascending: false,
+      });
 
       if (error) {
         throw new Error(`Search failed: ${error.message}`);
@@ -203,7 +232,7 @@ export class SMEOpportunitiesService {
       // Add organization data separately
       const enrichedData = await this.enrichWithOrganizationData(data || []);
 
-      return enrichedData.map(item => this.transformDatabaseToLocal(item));
+      return enrichedData.map((item) => this.transformDatabaseToLocal(item));
     } catch (error) {
       console.error('Error performing search:', error);
       throw error;
@@ -222,7 +251,7 @@ export class SMEOpportunitiesService {
         // Increment view count
         this.incrementViewCount(id);
       }),
-      catchError(error => {
+      catchError((error) => {
         this.error.set('Failed to load opportunity details');
         console.error('Fetch opportunity error:', error);
         return throwError(() => error);
@@ -230,7 +259,9 @@ export class SMEOpportunitiesService {
     );
   }
 
-  private async fetchOpportunityById(id: string): Promise<FundingOpportunity | null> {
+  private async fetchOpportunityById(
+    id: string
+  ): Promise<FundingOpportunity | null> {
     try {
       // MINIMAL VERSION: Fetch opportunity without organization join
       // TODO: Restore organization join once RLS is fixed
@@ -243,7 +274,8 @@ export class SMEOpportunitiesService {
         .single();
 
       if (error) {
-        if (error.code === 'PGRST116') { // No rows returned
+        if (error.code === 'PGRST116') {
+          // No rows returned
           return null;
         }
         throw new Error(`Failed to fetch opportunity: ${error.message}`);
@@ -251,7 +283,7 @@ export class SMEOpportunitiesService {
 
       // Add organization data separately
       const enrichedData = await this.enrichWithOrganizationData([data]);
-      
+
       return this.transformDatabaseToLocal(enrichedData[0]);
     } catch (error) {
       console.error('Error fetching opportunity by ID:', error);
@@ -263,15 +295,17 @@ export class SMEOpportunitiesService {
   // PERSONALIZED MATCHING
   // ===============================
 
-  getMatchingOpportunities(smeProfile: SMEProfile): Observable<FundingOpportunity[]> {
+  getMatchingOpportunities(
+    smeProfile: SMEProfile
+  ): Observable<FundingOpportunity[]> {
     this.isLoading.set(true);
     this.error.set(null);
 
     return from(this.fetchMatchingOpportunities(smeProfile)).pipe(
-      tap(opportunities => {
+      tap((opportunities) => {
         this.isLoading.set(false);
       }),
-      catchError(error => {
+      catchError((error) => {
         this.error.set('Failed to find matching opportunities');
         this.isLoading.set(false);
         console.error('Matching error:', error);
@@ -280,17 +314,21 @@ export class SMEOpportunitiesService {
     );
   }
 
-  private async fetchMatchingOpportunities(smeProfile: SMEProfile): Promise<FundingOpportunity[]> {
+  private async fetchMatchingOpportunities(
+    smeProfile: SMEProfile
+  ): Promise<FundingOpportunity[]> {
     try {
       // Use the PostgreSQL function for matching
-      const { data, error } = await this.supabase
-        .rpc('get_matching_opportunities', {
+      const { data, error } = await this.supabase.rpc(
+        'get_matching_opportunities',
+        {
           sme_industry: smeProfile.industry,
           sme_stage: smeProfile.businessStage,
           sme_revenue: smeProfile.revenue,
           sme_years_operation: smeProfile.yearsOperation,
-          sme_location: smeProfile.location
-        });
+          sme_location: smeProfile.location,
+        }
+      );
 
       if (error) {
         throw new Error(`Matching failed: ${error.message}`);
@@ -302,7 +340,7 @@ export class SMEOpportunitiesService {
       }
 
       const opportunityIds = data.map((item: any) => item.opportunity_id);
-      
+
       // MINIMAL VERSION: Fetch opportunities without organization join
       // TODO: Restore organization join once RLS is fixed
       const { data: opportunities, error: fetchError } = await this.supabase
@@ -312,18 +350,24 @@ export class SMEOpportunitiesService {
         .eq('status', 'active');
 
       if (fetchError) {
-        throw new Error(`Failed to fetch matched opportunities: ${fetchError.message}`);
+        throw new Error(
+          `Failed to fetch matched opportunities: ${fetchError.message}`
+        );
       }
 
       // Add organization data separately
-      const enrichedOpportunities = await this.enrichWithOrganizationData(opportunities || []);
+      const enrichedOpportunities = await this.enrichWithOrganizationData(
+        opportunities || []
+      );
 
       // Sort by match score (maintain order from matching function)
-      const sortedOpportunities = opportunityIds.map((id: any) => 
-        enrichedOpportunities?.find(opp => opp.id === id)
-      ).filter(Boolean);
+      const sortedOpportunities = opportunityIds
+        .map((id: any) => enrichedOpportunities?.find((opp) => opp.id === id))
+        .filter(Boolean);
 
-      return sortedOpportunities.map((item: any) => this.transformDatabaseToLocal(item));
+      return sortedOpportunities.map((item: any) =>
+        this.transformDatabaseToLocal(item)
+      );
     } catch (error) {
       console.error('Error fetching matching opportunities:', error);
       throw error;
@@ -336,22 +380,29 @@ export class SMEOpportunitiesService {
 
   incrementViewCount(opportunityId: string): void {
     // Fire and forget - don't block the UI
-    this.supabase.rpc('increment_opportunity_views', { 
-      opportunity_id: opportunityId 
-    }).then(({ error }) => {
-      if (error) {
-        console.error('Failed to increment view count:', error);
-      }
-    });
+    this.supabase
+      .rpc('increment_opportunity_views', {
+        opportunity_id: opportunityId,
+      })
+      .then(({ error }) => {
+        if (error) {
+          console.error('Failed to increment view count:', error);
+        }
+      });
   }
 
   // Track user interest (for future recommendations)
-  trackUserInteraction(opportunityId: string, action: 'view' | 'apply' | 'save'): void {
+  trackUserInteraction(
+    opportunityId: string,
+    action: 'view' | 'apply' | 'save'
+  ): void {
     const currentUser = this.authService.user();
     if (!currentUser) return;
 
     // This could be expanded to track user behavior for ML recommendations
-    console.log(`User ${currentUser.id} performed ${action} on opportunity ${opportunityId}`);
+    console.log(
+      `User ${currentUser.id} performed ${action} on opportunity ${opportunityId}`
+    );
   }
 
   // ===============================
@@ -376,10 +427,12 @@ export class SMEOpportunitiesService {
       }
 
       const industries = new Set<string>();
-      data?.forEach(item => {
+      data?.forEach((item) => {
         const criteria = item.eligibility_criteria;
         if (criteria?.industries && Array.isArray(criteria.industries)) {
-          criteria.industries.forEach((industry: string) => industries.add(industry));
+          criteria.industries.forEach((industry: string) =>
+            industries.add(industry)
+          );
         }
       });
 
@@ -413,19 +466,23 @@ export class SMEOpportunitiesService {
       }
 
       const totalOpportunities = data?.length || 0;
-      const totalFunding = data?.reduce((sum, item) => sum + (item.total_available || 0), 0) || 0;
-      const averageTicketSize = data?.reduce((sum, item) => sum + (item.offer_amount || 0), 0) / totalOpportunities || 0;
-      
+      const totalFunding =
+        data?.reduce((sum, item) => sum + (item.total_available || 0), 0) || 0;
+      const averageTicketSize =
+        data?.reduce((sum, item) => sum + (item.offer_amount || 0), 0) /
+          totalOpportunities || 0;
+
       const byFundingType: Record<string, number> = {};
-      data?.forEach(item => {
-        byFundingType[item.funding_type] = (byFundingType[item.funding_type] || 0) + 1;
+      data?.forEach((item) => {
+        byFundingType[item.funding_type] =
+          (byFundingType[item.funding_type] || 0) + 1;
       });
 
       return {
         totalOpportunities,
         totalFunding,
         averageTicketSize,
-        byFundingType
+        byFundingType,
       };
     } catch (error) {
       console.error('Error fetching opportunities stats:', error);
@@ -433,13 +490,12 @@ export class SMEOpportunitiesService {
     }
   }
 
-  // ===============================
-  // DATA TRANSFORMATION - UPDATED WITH NEW FIELDS
-  // ===============================
+  // CORRECTED FIX: src/app/funding/services/sme-opportunities.service.ts
+  // Change only: transformDatabaseToLocal() method
 
   private transformDatabaseToLocal(dbOpportunity: any): FundingOpportunity {
     const org = dbOpportunity.funder_organizations;
-    
+
     return {
       id: dbOpportunity.id,
       fundId: dbOpportunity.fund_id,
@@ -462,7 +518,9 @@ export class SMEOpportunitiesService {
       expectedReturns: dbOpportunity.expected_returns,
       investmentHorizon: dbOpportunity.investment_horizon,
       exitStrategy: dbOpportunity.exit_strategy,
-      applicationDeadline: dbOpportunity.application_deadline ? new Date(dbOpportunity.application_deadline) : undefined,
+      applicationDeadline: dbOpportunity.application_deadline
+        ? new Date(dbOpportunity.application_deadline)
+        : undefined,
       decisionTimeframe: dbOpportunity.decision_timeframe,
       applicationProcess: dbOpportunity.application_process || [],
       eligibilityCriteria: dbOpportunity.eligibility_criteria || {},
@@ -479,22 +537,65 @@ export class SMEOpportunitiesService {
       dealTeam: dbOpportunity.deal_team || [],
       autoMatch: dbOpportunity.auto_match,
       matchCriteria: dbOpportunity.match_criteria,
-      
-      // NEW FIELDS - Transform from snake_case to camelCase
+
+      // ✅ CRITICAL FIX: Map investment & exclusion criteria from DB columns
+      // These fields exist in the database but were never being read
+      investmentCriteria: this.parseArrayField(
+        dbOpportunity.investment_criteria
+      ),
+      exclusionCriteria: this.parseArrayField(dbOpportunity.exclusion_criteria),
+
       fundingOpportunityImageUrl: dbOpportunity.funding_opportunity_image_url,
       fundingOpportunityVideoUrl: dbOpportunity.funding_opportunity_video_url,
       funderOrganizationName: dbOpportunity.funder_organization_name,
       funderOrganizationLogoUrl: dbOpportunity.funder_organization_logo_url,
-      
+
       createdAt: new Date(dbOpportunity.created_at),
       updatedAt: new Date(dbOpportunity.updated_at),
-      publishedAt: dbOpportunity.published_at ? new Date(dbOpportunity.published_at) : undefined,
-      
-      // Add organization info for display (may be null if organization fetch failed)
-      organizationName: org?.name || dbOpportunity.funder_organization_name || 'Unknown Organization',
+      publishedAt: dbOpportunity.published_at
+        ? new Date(dbOpportunity.published_at)
+        : undefined,
+
+      organizationName:
+        org?.name ||
+        dbOpportunity.funder_organization_name ||
+        'Unknown Organization',
       organizationType: org?.organization_type || 'Unknown',
-      organizationVerified: org?.is_verified || false
+      organizationVerified: org?.is_verified || false,
     } as FundingOpportunity;
+  }
+
+  // ✅ NEW: Helper to safely parse array fields from JSONB/TEXT
+  // Handles: null, arrays, JSON strings, text strings
+  private parseArrayField(field: any): string[] {
+    if (!field) return [];
+
+    // Already an array
+    if (Array.isArray(field)) return field;
+
+    // String that needs parsing
+    if (typeof field === 'string') {
+      const trimmed = field.trim();
+      if (!trimmed) return [];
+
+      // Try JSON parse first (for JSON strings from TEXT columns)
+      if (trimmed.startsWith('[')) {
+        try {
+          const parsed = JSON.parse(trimmed);
+          return Array.isArray(parsed) ? parsed : [];
+        } catch {
+          return [];
+        }
+      }
+
+      // Fallback: split by comma
+      return trimmed
+        .split(',')
+        .map((item) => item.trim())
+        .filter((item) => item.length > 0);
+    }
+
+    return [];
   }
 
   // ===============================
