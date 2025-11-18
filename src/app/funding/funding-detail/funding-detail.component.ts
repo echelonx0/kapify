@@ -2,7 +2,7 @@
 import { Component, signal, OnInit, inject, computed } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { SidebarNavComponent } from '../shared/components/sidenav/sidebar-nav.component';
+
 import {
   LucideAngularModule,
   ArrowLeft,
@@ -16,11 +16,13 @@ import {
   Eye,
   CircleOff,
 } from 'lucide-angular';
-import { SMEOpportunitiesService } from './services/opportunities.service';
-import { AuthService } from '../auth/production.auth.service';
-import { FundingOpportunity } from '../funder/create-opportunity/shared/funding.interfaces';
-import { PublicProfileService } from '../funder/services/public-profile.service';
+
 import { Subject, takeUntil } from 'rxjs';
+import { SidebarNavComponent } from 'src/app/shared/components';
+import { SMEOpportunitiesService } from '../services/opportunities.service';
+import { AuthService } from 'src/app/auth/production.auth.service';
+import { PublicProfileService } from 'src/app/funder/services/public-profile.service';
+import { FundingOpportunity } from 'src/app/funder/create-opportunity/shared/funding.interfaces';
 
 @Component({
   selector: 'app-opportunity-details',
@@ -313,7 +315,15 @@ export class OpportunityDetailsComponent implements OnInit {
   getExclusionCriteria(): string[] {
     const opp = this.opportunity();
     console.log(opp?.exclusionCriteria);
+
     return opp?.exclusionCriteria || [];
+  }
+
+  getEligibilityCriteria(): string[] {
+    const opp = this.opportunity();
+
+    console.log(opp?.eligibilityCriteria);
+    return opp?.eligibilityCriteria.excludeCriteria || [];
   }
 
   ngOnDestroy(): void {

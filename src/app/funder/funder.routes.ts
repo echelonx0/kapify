@@ -94,13 +94,6 @@ export const funderRoutes: Routes = [
       },
 
       {
-        path: 'opportunities/:id',
-        loadComponent: () =>
-          import('../funding/funding-detail.component').then(
-            (m) => m.OpportunityDetailsComponent
-          ),
-      },
-      {
         path: 'opportunities/:opportunityId/applications',
         loadComponent: () =>
           import(
