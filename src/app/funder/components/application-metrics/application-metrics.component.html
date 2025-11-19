@@ -430,19 +430,19 @@
         <div>
           <p class="text-xs text-slate-500 mb-1">Primary Bank</p>
           <p class="text-sm font-medium text-slate-900">
-            {{ financialInfo()!.bankingDetails.bankName }}
+            {{ financialInfo()!.bankingDetails?.bankName || 'N/A' }}
           </p>
         </div>
         <div>
           <p class="text-xs text-slate-500 mb-1">Account Type</p>
           <p class="text-sm font-medium text-slate-900">
-            {{ financialInfo()!.bankingDetails.accountType }}
+            {{ financialInfo()!.bankingDetails?.accountType || 'N/A' }}
           </p>
         </div>
         <div class="col-span-2">
           <p class="text-xs text-slate-500 mb-1">Years with Bank</p>
           <p class="text-sm font-medium text-slate-900">
-            {{ financialInfo()!.bankingDetails.yearsWithBank }} years
+            {{ financialInfo()!.bankingDetails?.yearsWithBank || 0 }} years
           </p>
         </div>
       </div>
@@ -655,7 +655,7 @@
         </div>
         <h4 class="text-sm font-semibold text-green-900">Strengths</h4>
         <span class="text-xs font-medium text-green-700 ml-auto">
-          {{ swotAnalysis()!.strengths.length }}
+          {{ swotAnalysis()!.strengths?.length || 0 }}
         </span>
       </div>
       <ul class="space-y-2">
@@ -683,7 +683,7 @@
         </div>
         <h4 class="text-sm font-semibold text-blue-900">Opportunities</h4>
         <span class="text-xs font-medium text-blue-700 ml-auto">
-          {{ swotAnalysis()!.opportunities.length }}
+          {{ swotAnalysis()!.opportunities?.length || 0 }}
         </span>
       </div>
       <ul class="space-y-2">
@@ -711,7 +711,7 @@
         </div>
         <h4 class="text-sm font-semibold text-amber-900">Weaknesses</h4>
         <span class="text-xs font-medium text-amber-700 ml-auto">
-          {{ swotAnalysis()!.weaknesses.length }}
+          {{ swotAnalysis()!.weaknesses?.length || 0 }}
         </span>
       </div>
       <ul class="space-y-2">
@@ -739,7 +739,7 @@
         </div>
         <h4 class="text-sm font-semibold text-red-900">Threats</h4>
         <span class="text-xs font-medium text-red-700 ml-auto">
-          {{ swotAnalysis()!.threats.length }}
+          {{ swotAnalysis()!.threats?.length || 0 }}
         </span>
       </div>
       <ul class="space-y-2">

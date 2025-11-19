@@ -4,10 +4,19 @@ import { ProfileData } from '../profile/models/funding.models';
 import { FundingApplicationProfile } from '../applications/models/funding-application.models';
 
 /**
+ * Step validation rule type
+ */
+interface StepValidationRule {
+  requiredFields: readonly string[];
+  displayName: string;
+  customValidation?: string;
+}
+
+/**
  * Step validation configuration
  * Defines required fields and minimum data requirements for each step
  */
-export const STEP_VALIDATION_RULES = {
+export const STEP_VALIDATION_RULES: Record<string, StepValidationRule> = {
   'company-info': {
     requiredFields: [
       'businessInfo.companyName',
@@ -54,7 +63,7 @@ export const STEP_VALIDATION_RULES = {
     requiredFields: ['financialInfo.monthlyRevenue'],
     displayName: 'Financial Profile',
   },
-} as const;
+};
 
 export interface ValidationResult {
   isValid: boolean;
@@ -103,9 +112,13 @@ export class ProfileValidationService {
         stepId,
         data
       );
-      errors.push(...customResult.errors);
-      warnings.push(...customResult.warnings);
-      if (!customResult.isValid) {
+      if (customResult.errors) {
+        errors.push(...customResult.errors);
+      }
+      if (customResult.warnings) {
+        warnings.push(...customResult.warnings);
+      }
+      if (!customResult.isValid && customResult.missingFields) {
         missingFields.push(...customResult.missingFields);
       }
     }
@@ -236,7 +249,7 @@ export class ProfileValidationService {
   private validateDocuments(data: Partial<ProfileData>): Partial<ValidationResult> {
     const docs = data.supportingDocuments || data.documents || {};
     const docCount = Object.keys(docs).filter(
-      (key) => docs[key] !== null && docs[key] !== undefined
+      (key) => (docs as any)[key] !== null && (docs as any)[key] !== undefined
     ).length;
 
     if (docCount === 0) {

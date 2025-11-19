@@ -443,7 +443,8 @@ export class SMEProfileStepsService {
     if (!data || typeof data !== 'object') return true;
 
     return Object.values(data).every((value) => {
-      if (value === null || value === undefined || value === '') return true;
+      if (value === null || value === undefined) return true;
+      if (typeof value === 'string' && value === '') return true;
       if (Array.isArray(value) && value.length === 0) return true;
       if (typeof value === 'object' && Object.keys(value).length === 0)
         return true;
