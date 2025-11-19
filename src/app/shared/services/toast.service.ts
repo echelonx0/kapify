@@ -1,66 +1,110 @@
-import { Injectable, inject } from '@angular/core';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { Injectable, signal } from '@angular/core';
+
+export type ToastType = 'success' | 'error' | 'warning' | 'info';
 
 export interface Toast {
   id: string;
   message: string;
-  type: 'success' | 'error' | 'info';
-  duration?: number;
+  type: ToastType;
+  autoDismiss: boolean;
+  duration: number;
 }
 
-@Injectable({ providedIn: 'root' })
+@Injectable({
+  providedIn: 'root',
+})
 export class ToastService {
-  private toastsSubject = new BehaviorSubject<Toast[]>([]);
-  public toasts$ = this.toastsSubject.asObservable();
+  private toastIdCounter = 0;
+  private readonly MAX_TOASTS = 3;
+  private dismissTimers = new Map<string, ReturnType<typeof setTimeout>>();
 
-  /**
-   * Show a success toast
-   */
-  success(message: string, duration: number = 2000): void {
-    this.show(message, 'success', duration);
-  }
+  toasts = signal<Toast[]>([]);
 
-  /**
-   * Show an error toast
-   */
-  error(message: string, duration: number = 3000): void {
-    this.show(message, 'error', duration);
-  }
+  show(options: {
+    message: string;
+    type?: ToastType;
+    autoDismiss?: boolean;
+    duration?: number;
+  }): string {
+    const {
+      message,
+      type = 'info',
+      autoDismiss = true,
+      duration = 4000,
+    } = options;
 
-  /**
-   * Show an info toast
-   */
-  info(message: string, duration: number = 2000): void {
-    this.show(message, 'info', duration);
-  }
+    const id = `toast-${++this.toastIdCounter}`;
 
-  /**
-   * Show a toast with custom type and duration
-   */
-  private show(message: string, type: Toast['type'], duration: number): void {
-    const id = `toast-${Date.now()}`;
-    const toast: Toast = { id, message, type, duration };
+    const toast: Toast = {
+      id,
+      message,
+      type,
+      autoDismiss,
+      duration,
+    };
 
-    const current = this.toastsSubject.value;
-    this.toastsSubject.next([...current, toast]);
+    // Add toast to queue
+    const currentToasts = this.toasts();
+    this.toasts.set([...currentToasts, toast]);
 
-    if (duration > 0) {
-      setTimeout(() => this.remove(id), duration);
+    // Remove oldest toast if exceeding max
+    if (currentToasts.length + 1 > this.MAX_TOASTS) {
+      const oldestId = currentToasts[0].id;
+      this.dismiss(oldestId);
     }
+
+    // Auto-dismiss if enabled
+    if (autoDismiss) {
+      const timer = setTimeout(() => {
+        this.dismiss(id);
+      }, duration);
+
+      this.dismissTimers.set(id, timer);
+    }
+
+    return id;
   }
 
-  /**
-   * Remove a toast by ID
-   */
-  remove(id: string): void {
-    const current = this.toastsSubject.value;
-    this.toastsSubject.next(current.filter((t) => t.id !== id));
+  dismiss(id: string): void {
+    // Cancel timer if exists
+    const timer = this.dismissTimers.get(id);
+    if (timer) {
+      clearTimeout(timer);
+      this.dismissTimers.delete(id);
+    }
+
+    // Remove from queue
+    this.toasts.update((toasts) => toasts.filter((t) => t.id !== id));
   }
 
-  /**
-   * Clear all toasts
-   */
-  clear(): void {
-    this.toastsSubject.next([]);
+  dismissAll(): void {
+    // Clear all timers
+    this.dismissTimers.forEach((timer) => clearTimeout(timer));
+    this.dismissTimers.clear();
+
+    // Clear toasts
+    this.toasts.set([]);
+  }
+
+  // Convenience methods
+  success(message: string, duration?: number): string {
+    return this.show({ message, type: 'success', autoDismiss: true, duration });
+  }
+
+  error(message: string, duration?: number): string {
+    return this.show({
+      message,
+      type: 'error',
+      autoDismiss: false,
+      duration,
+    });
+  }
+
+  warning(message: string, duration?: number): string {
+    return this.show({ message, type: 'warning', autoDismiss: true, duration });
+  }
+
+  info(message: string, duration?: number): string {
+    return this.show({ message, type: 'info', autoDismiss: true, duration });
   }
 }

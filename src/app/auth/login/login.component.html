@@ -55,16 +55,49 @@
             <button
               type="button"
               tabindex="-1"
-              class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors duration-200 flex-shrink-0"
+              class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors duration-200 flex-shrink-0 p-1"
               (click)="togglePasswordVisibility()"
               [attr.aria-label]="
                 showPassword() ? 'Hide password' : 'Show password'
               "
             >
-              <lucide-icon
-                [name]="showPassword() ? 'eye-off' : 'eye'"
-                [size]="20"
-              />
+              @if (showPassword()) {
+              <!-- Eye Off Icon (Hide) -->
+              <svg
+                class="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-4.803m5.596-3.856a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0M15 12a3 3 0 11-6 0 3 3 0 016 0zm6 0a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+              } @else {
+              <!-- Eye Icon (Show) -->
+              <svg
+                class="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                />
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                />
+              </svg>
+              }
             </button>
           </div>
           @if (getFieldError('password')) {
@@ -79,11 +112,19 @@
         <div
           class="bg-red-50 border border-red-200/50 text-red-700 px-4 py-3 rounded-xl text-sm flex items-start gap-3"
         >
-          <lucide-icon
-            name="alert-circle"
-            [size]="18"
-            class="flex-shrink-0 mt-0.5"
-          />
+          <svg
+            class="w-5 h-5 flex-shrink-0 mt-0.5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 8v4m0 4v.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+            />
+          </svg>
           <span>{{ error() }}</span>
         </div>
         }
@@ -101,7 +142,19 @@
           <span>Signing in...</span>
           } @else {
           <span>Sign in</span>
-          <lucide-icon name="arrow-right" [size]="20" class="ml-2" />
+          <svg
+            class="w-5 h-5 ml-2"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M13 7l5 5m0 0l-5 5m5-5H6"
+            />
+          </svg>
           }
         </button>
       </form>
