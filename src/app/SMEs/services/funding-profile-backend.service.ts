@@ -80,8 +80,7 @@ export class FundingProfileBackendService {
         console.error('Load application error:', error);
 
         this.toastService.error(
-          'Failed to load your saved application. Please refresh the page.',
-          'Load Error'
+          `Failed to load your saved application. Please refresh the page. ${error.message}'`
         );
 
         this.activityService.trackProfileActivity(
@@ -269,8 +268,7 @@ export class FundingProfileBackendService {
         console.log('Complete application saved successfully:', response);
 
         this.toastService.success(
-          `Application saved successfully (${response.overallCompletion}% complete)`,
-          'Saved'
+          `Application saved successfully (${response.overallCompletion}% complete)`
         );
 
         this.activityService.trackProfileActivity(
