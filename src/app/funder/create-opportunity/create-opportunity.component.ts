@@ -70,7 +70,7 @@ import { OpportunityActionModalComponent } from 'src/app/shared/components/modal
     CommonModule,
     LucideAngularModule,
     OpportunityBasicsComponent,
-    MediaBrandingComponent,
+
     FundingStructureComponent,
     EligibilityFiltersComponent,
     ApplicationSettingsComponent,
