@@ -8,6 +8,11 @@ export interface Toast {
   type: ToastType;
   autoDismiss: boolean;
   duration: number;
+  title?: string;
+  action?: {
+    label: string;
+    handler: () => void;
+  };
 }
 
 @Injectable({
@@ -25,12 +30,19 @@ export class ToastService {
     type?: ToastType;
     autoDismiss?: boolean;
     duration?: number;
+    title?: string;
+    action?: {
+      label: string;
+      handler: () => void;
+    };
   }): string {
     const {
       message,
       type = 'info',
       autoDismiss = true,
       duration = 4000,
+      title,
+      action,
     } = options;
 
     const id = `toast-${++this.toastIdCounter}`;
@@ -41,6 +53,8 @@ export class ToastService {
       type,
       autoDismiss,
       duration,
+      title,
+      action,
     };
 
     // Add toast to queue
@@ -106,5 +120,25 @@ export class ToastService {
 
   info(message: string, duration?: number): string {
     return this.show({ message, type: 'info', autoDismiss: true, duration });
+  }
+
+  /**
+   * Show an error toast with retry action
+   */
+  errorWithRetry(
+    message: string,
+    retryHandler: () => void,
+    title = 'Error'
+  ): string {
+    return this.show({
+      message,
+      type: 'error',
+      autoDismiss: false,
+      title,
+      action: {
+        label: 'Retry',
+        handler: retryHandler,
+      },
+    });
   }
 }

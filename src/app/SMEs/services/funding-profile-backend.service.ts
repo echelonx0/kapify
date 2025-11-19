@@ -6,6 +6,7 @@ import { tap, catchError, switchMap } from 'rxjs/operators';
 import { AuthService } from '../../auth/production.auth.service';
 import { SharedSupabaseService } from '../../shared/services/shared-supabase.service';
 import { ActivityService } from '../../shared/services/activity.service';
+import { ToastService } from '../../shared/services/toast.service';
 import { FundingApplicationProfile } from '../applications/models/funding-application.models';
 
 @Injectable({
@@ -15,6 +16,7 @@ export class FundingProfileBackendService {
   private authService = inject(AuthService);
   private supabase = inject(SharedSupabaseService);
   private activityService = inject(ActivityService);
+  private toastService = inject(ToastService);
 
   isLoading = signal<boolean>(false);
   isSaving = signal<boolean>(false);
@@ -76,6 +78,11 @@ export class FundingProfileBackendService {
         this.error.set('Failed to load saved application data');
         this.isLoading.set(false);
         console.error('Load application error:', error);
+
+        this.toastService.error(
+          'Failed to load your saved application. Please refresh the page.',
+          'Load Error'
+        );
 
         this.activityService.trackProfileActivity(
           'updated',
@@ -261,6 +268,11 @@ export class FundingProfileBackendService {
         this.lastSavedAt.set(new Date());
         console.log('Complete application saved successfully:', response);
 
+        this.toastService.success(
+          `Application saved successfully (${response.overallCompletion}% complete)`,
+          'Saved'
+        );
+
         this.activityService.trackProfileActivity(
           'completed',
           `Complete funding application saved with ${response.overallCompletion}% completion`,
@@ -281,6 +293,12 @@ export class FundingProfileBackendService {
         this.error.set('Failed to save complete application');
         this.isSaving.set(false);
         console.error('Save error:', error);
+
+        this.toastService.errorWithRetry(
+          'Failed to save your application. Please try again.',
+          () => this.saveCompleteProfile(applicationData).subscribe(),
+          'Save Error'
+        );
 
         this.activityService.trackProfileActivity(
           'updated',
@@ -468,6 +486,9 @@ export class FundingProfileBackendService {
       }),
       catchError((error) => {
         console.error('Auto-save failed:', error);
+
+        // Don't show toast for auto-save failures (to avoid spam)
+        // Just log and track
 
         this.activityService.trackProfileActivity(
           'updated',
