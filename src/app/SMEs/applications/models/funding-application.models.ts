@@ -46,6 +46,9 @@ export interface CompanyInformation {
   registeredAddress: Address;
   operationalAddress: Address;
   contactPerson: ContactPerson;
+  businessPhone?: string;
+  businessEmail?: string;
+  websiteUrl?: string;
 
   // Compliance Status
   taxComplianceStatus: 'compliant' | 'outstanding' | 'under_review';

@@ -1,55 +1,89 @@
-// src/app/profile/services/profile-data-transformer.service.ts - 
-import { Injectable } from '@angular/core';  
-import { FundingApplicationProfile, SWOTAnalysis, BusinessAssessment, ManagementStructure } from '../applications/models/funding-application.models';
+// src/app/profile/services/profile-data-transformer.service.ts -
+import { Injectable } from '@angular/core';
+import {
+  FundingApplicationProfile,
+  SWOTAnalysis,
+  BusinessAssessment,
+  ManagementStructure,
+} from '../applications/models/funding-application.models';
 import { ProfileData } from '../profile/models/funding.models';
- 
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class ProfileDataTransformerService {
+  // Transform ProfileData to FundingApplicationProfile for backend persistence
+  transformToFundingProfile(
+    profileData: Partial<ProfileData>
+  ): FundingApplicationProfile {
+    return {
+      companyInfo: this.transformCompanyInfo(
+        profileData.businessInfo,
+        profileData.personalInfo
+      ),
+      supportingDocuments:
+        profileData.supportingDocuments || profileData.documents
+          ? this.transformDocuments(
+              profileData.supportingDocuments,
+              profileData.documents
+            )
+          : undefined,
+      businessAssessment: this.transformBusinessAssessment(
+        profileData.businessReview
+      ),
+      swotAnalysis: this.transformSwotAnalysis(profileData.swotAnalysis),
+      managementStructure: this.transformManagementStructure(
+        profileData.managementGovernance
+      ),
+      businessStrategy: this.transformBusinessStrategy(
+        profileData.businessPlan
+      ),
+      financialProfile: this.transformFinancialProfile(
+        profileData.financialInfo,
+        profileData.financialAnalysis,
+        profileData.fundingInfo
+      ),
+    };
+  }
 
-// Transform ProfileData to FundingApplicationProfile for backend persistence
-transformToFundingProfile(profileData: Partial<ProfileData>): FundingApplicationProfile {
- return {
-   companyInfo: this.transformCompanyInfo(profileData.businessInfo, profileData.personalInfo),
-   supportingDocuments: profileData.supportingDocuments || profileData.documents ? 
-     this.transformDocuments(profileData.supportingDocuments, profileData.documents) : undefined,
-   businessAssessment: this.transformBusinessAssessment(profileData.businessReview),
-   swotAnalysis: this.transformSwotAnalysis(profileData.swotAnalysis),
-   managementStructure: this.transformManagementStructure(profileData.managementGovernance),
-   businessStrategy: this.transformBusinessStrategy(profileData.businessPlan),
-   financialProfile: this.transformFinancialProfile(profileData.financialInfo, profileData.financialAnalysis, profileData.fundingInfo)
- };
-}
+  private transformSwotAnalysis(swotAnalysis: any): SWOTAnalysis | undefined {
+    if (!swotAnalysis) return undefined;
 
-private transformSwotAnalysis(swotAnalysis: any): SWOTAnalysis | undefined {
- if (!swotAnalysis) return undefined;
-
- return {
-   strengths: swotAnalysis.strengths || [],
-   weaknesses: swotAnalysis.weaknesses || [],
-   opportunities: swotAnalysis.opportunities || [],
-   threats: swotAnalysis.threats || [],
-   strategicPriorities: swotAnalysis.strategicPriorities || [],
-   riskMitigation: swotAnalysis.riskMitigation || [],
-   competitiveAdvantages: swotAnalysis.competitiveAdvantages || []
- };
-}
+    return {
+      strengths: swotAnalysis.strengths || [],
+      weaknesses: swotAnalysis.weaknesses || [],
+      opportunities: swotAnalysis.opportunities || [],
+      threats: swotAnalysis.threats || [],
+      strategicPriorities: swotAnalysis.strategicPriorities || [],
+      riskMitigation: swotAnalysis.riskMitigation || [],
+      competitiveAdvantages: swotAnalysis.competitiveAdvantages || [],
+    };
+  }
 
   // Transform FundingApplicationProfile back to ProfileData for UI consumption
-  transformFromFundingProfile(fundingProfile: FundingApplicationProfile): Partial<ProfileData> {
+  transformFromFundingProfile(
+    fundingProfile: FundingApplicationProfile
+  ): Partial<ProfileData> {
     return {
       businessInfo: this.extractBusinessInfo(fundingProfile.companyInfo),
       personalInfo: this.extractPersonalInfo(fundingProfile.companyInfo),
       supportingDocuments: fundingProfile.supportingDocuments,
-      businessReview: this.extractBusinessReview(fundingProfile.businessAssessment),
+      businessReview: this.extractBusinessReview(
+        fundingProfile.businessAssessment
+      ),
       swotAnalysis: fundingProfile.swotAnalysis,
-      managementGovernance: this.extractManagementGovernance(fundingProfile.managementStructure),
+      managementGovernance: this.extractManagementGovernance(
+        fundingProfile.managementStructure
+      ),
       businessPlan: this.extractBusinessPlan(fundingProfile.businessStrategy),
       financialInfo: this.extractFinancialInfo(fundingProfile.financialProfile),
-      financialAnalysis: this.extractFinancialAnalysis(fundingProfile.financialProfile),
-      fundingInfo: this.extractFundingInfo(fundingProfile.financialProfile, fundingProfile.businessStrategy)
+      financialAnalysis: this.extractFinancialAnalysis(
+        fundingProfile.financialProfile
+      ),
+      fundingInfo: this.extractFundingInfo(
+        fundingProfile.financialProfile,
+        fundingProfile.businessStrategy
+      ),
     };
   }
 
@@ -57,7 +91,9 @@ private transformSwotAnalysis(swotAnalysis: any): SWOTAnalysis | undefined {
   // TRANSFORM TO BACKEND METHODS
   // ===============================
 
-  private transformBusinessAssessment(businessReview: any): BusinessAssessment | undefined {
+  private transformBusinessAssessment(
+    businessReview: any
+  ): BusinessAssessment | undefined {
     if (!businessReview) return undefined;
 
     return {
@@ -75,30 +111,33 @@ private transformSwotAnalysis(swotAnalysis: any): SWOTAnalysis | undefined {
       qualityStandards: businessReview.qualityStandards || '',
       keyPerformanceIndicators: businessReview.keyPerformanceIndicators || [],
       salesChannels: businessReview.salesChannels || [],
-      customerRetention: businessReview.customerRetention || undefined
+      customerRetention: businessReview.customerRetention || undefined,
     };
   }
 
-  private transformManagementStructure(managementGovernance: any): ManagementStructure | undefined {
+  private transformManagementStructure(
+    managementGovernance: any
+  ): ManagementStructure | undefined {
     if (!managementGovernance) return undefined;
 
     return {
-      executiveTeam: managementGovernance.managementTeam?.map((member: any) => ({
-        id: member.id || '',
-        fullName: member.fullName || '',
-        position: member.role || '',
-        qualifications: member.qualification || '',
-        experience: member.yearsOfExperience || 0,
-        previousRoles: member.previousRoles || '',
-        equity: member.equity || undefined
-      })) || [],
+      executiveTeam:
+        managementGovernance.managementTeam?.map((member: any) => ({
+          id: member.id || '',
+          fullName: member.fullName || '',
+          position: member.role || '',
+          qualifications: member.qualification || '',
+          experience: member.yearsOfExperience || 0,
+          previousRoles: member.previousRoles || '',
+          equity: member.equity || undefined,
+        })) || [],
       managementTeam: managementGovernance.managementTeam || [],
       boardOfDirectors: managementGovernance.boardOfDirectors || [],
       governanceStructure: managementGovernance.governanceStructure || '',
       decisionMakingProcess: managementGovernance.decisionMakingProcess || '',
       reportingStructure: managementGovernance.reportingStructure || '',
       advisors: managementGovernance.advisors || undefined,
-      consultants: managementGovernance.consultants || undefined
+      consultants: managementGovernance.consultants || undefined,
     };
   }
 
@@ -125,11 +164,14 @@ private transformSwotAnalysis(swotAnalysis: any): SWOTAnalysis | undefined {
       fundingRequirements: businessPlan.fundingRequirements || undefined,
       useOfFunds: businessPlan.useOfFunds || '',
       repaymentStrategy: businessPlan.repaymentStrategy || undefined,
-      exitStrategy: businessPlan.exitStrategy || undefined
+      exitStrategy: businessPlan.exitStrategy || undefined,
     };
   }
 
-  private transformCompanyInfo(businessInfo?: ProfileData['businessInfo'], personalInfo?: ProfileData['personalInfo']) {
+  private transformCompanyInfo(
+    businessInfo?: ProfileData['businessInfo'],
+    personalInfo?: ProfileData['personalInfo']
+  ) {
     if (!businessInfo) return undefined;
 
     return {
@@ -138,45 +180,70 @@ private transformSwotAnalysis(swotAnalysis: any): SWOTAnalysis | undefined {
       vatNumber: businessInfo.vatNumber,
       industryType: businessInfo.industry || '',
       businessActivity: businessInfo.industry || '',
-      foundingYear: new Date().getFullYear() - (businessInfo.yearsInOperation || 0),
+      foundingYear:
+        new Date().getFullYear() - (businessInfo.yearsInOperation || 0),
       operationalYears: businessInfo.yearsInOperation || 0,
       companyType: 'pty_ltd' as const,
       ownership: [],
       employeeCount: businessInfo.numberOfEmployees || '',
-      registeredAddress: businessInfo.physicalAddress ? {
-        street: businessInfo.physicalAddress.street || '',
-        city: businessInfo.physicalAddress.city || '',
-        province: businessInfo.physicalAddress.province || '',
-        postalCode: businessInfo.physicalAddress.postalCode || '',
-        country: 'South Africa'
-      } : {
-        street: '', city: '', province: '', postalCode: '', country: 'South Africa'
-      },
-      operationalAddress: businessInfo.physicalAddress ? {
-        street: businessInfo.physicalAddress.street || '',
-        city: businessInfo.physicalAddress.city || '',
-        province: businessInfo.physicalAddress.province || '',
-        postalCode: businessInfo.physicalAddress.postalCode || '',
-        country: 'South Africa'
-      } : {
-        street: '', city: '', province: '', postalCode: '', country: 'South Africa'
-      },
-      contactPerson: personalInfo ? {
-        fullName: `${personalInfo.firstName || ''} ${personalInfo.lastName || ''}`.trim(),
-        position: personalInfo.position || '',
-        email: personalInfo.email || '',
-        phone: personalInfo.phone || '',
-        idNumber: personalInfo.idNumber
-      } : {
-        fullName: '', position: '', email: '', phone: ''
-      },
+      businessPhone: businessInfo.businessPhone || '', // ← ADD THIS LINE
+      registeredAddress: businessInfo.physicalAddress
+        ? {
+            street: businessInfo.physicalAddress.street || '',
+            city: businessInfo.physicalAddress.city || '',
+            province: businessInfo.physicalAddress.province || '',
+            postalCode: businessInfo.physicalAddress.postalCode || '',
+            country: 'South Africa',
+          }
+        : {
+            street: '',
+            city: '',
+            province: '',
+            postalCode: '',
+            country: 'South Africa',
+          },
+      operationalAddress: businessInfo.physicalAddress
+        ? {
+            street: businessInfo.physicalAddress.street || '',
+            city: businessInfo.physicalAddress.city || '',
+            province: businessInfo.physicalAddress.province || '',
+            postalCode: businessInfo.physicalAddress.postalCode || '',
+            country: 'South Africa',
+          }
+        : {
+            street: '',
+            city: '',
+            province: '',
+            postalCode: '',
+            country: 'South Africa',
+          },
+      contactPerson: personalInfo
+        ? {
+            fullName: `${personalInfo.firstName || ''} ${
+              personalInfo.lastName || ''
+            }`.trim(),
+            position: personalInfo.position || '',
+            email: personalInfo.email || '',
+            phone: personalInfo.phone || '',
+            idNumber: personalInfo.idNumber,
+          }
+        : {
+            fullName: '',
+            position: '',
+            email: '',
+            phone: '',
+          },
       taxComplianceStatus: 'compliant' as const,
       bbbeeLevel: undefined,
-      regulatoryLicenses: []
+
+      regulatoryLicenses: [],
     };
   }
 
-  private transformDocuments(supportingDocs?: Record<string, any>, legacyDocs?: ProfileData['documents']) {
+  private transformDocuments(
+    supportingDocs?: Record<string, any>,
+    legacyDocs?: ProfileData['documents']
+  ) {
     const result: any = {};
 
     if (supportingDocs) {
@@ -184,11 +251,16 @@ private transformSwotAnalysis(swotAnalysis: any): SWOTAnalysis | undefined {
     }
 
     if (legacyDocs) {
-      if (legacyDocs.cipDocument) result.companyProfile = legacyDocs.cipDocument;
-      if (legacyDocs.financialStatements) result.currentYearFinancials = legacyDocs.financialStatements;
-      if (legacyDocs.bankStatements) result.priorYearFinancialYear1 = legacyDocs.bankStatements;
-      if (legacyDocs.managementAccounts) result.assetRegister = legacyDocs.managementAccounts;
-      if (legacyDocs.businessPlan) result.businessPlan = legacyDocs.businessPlan;
+      if (legacyDocs.cipDocument)
+        result.companyProfile = legacyDocs.cipDocument;
+      if (legacyDocs.financialStatements)
+        result.currentYearFinancials = legacyDocs.financialStatements;
+      if (legacyDocs.bankStatements)
+        result.priorYearFinancialYear1 = legacyDocs.bankStatements;
+      if (legacyDocs.managementAccounts)
+        result.assetRegister = legacyDocs.managementAccounts;
+      if (legacyDocs.businessPlan)
+        result.businessPlan = legacyDocs.businessPlan;
       if (legacyDocs.taxClearance) result.taxPin = legacyDocs.taxClearance;
     }
 
@@ -196,7 +268,7 @@ private transformSwotAnalysis(swotAnalysis: any): SWOTAnalysis | undefined {
   }
 
   private transformFinancialProfile(
-    financialInfo?: ProfileData['financialInfo'], 
+    financialInfo?: ProfileData['financialInfo'],
     financialAnalysis?: ProfileData['financialAnalysis'],
     fundingInfo?: ProfileData['fundingInfo']
   ) {
@@ -205,36 +277,55 @@ private transformSwotAnalysis(swotAnalysis: any): SWOTAnalysis | undefined {
     const currentYear = new Date().getFullYear();
 
     return {
-      historicalFinancials: this.buildHistoricalFinancials(financialInfo, financialAnalysis),
-      currentAssets: this.parseNumberFromString(financialInfo?.monthlyRevenue) * 12 || 0,
+      historicalFinancials: this.buildHistoricalFinancials(
+        financialInfo,
+        financialAnalysis
+      ),
+      currentAssets:
+        this.parseNumberFromString(financialInfo?.monthlyRevenue) * 12 || 0,
       currentLiabilities: 0,
-      netWorth: this.parseNumberFromString(financialInfo?.monthlyRevenue) * 12 - this.parseNumberFromString(financialInfo?.existingDebt) || 0,
-      monthlyRevenue: this.parseNumberFromString(financialInfo?.monthlyRevenue) || 0,
+      netWorth:
+        this.parseNumberFromString(financialInfo?.monthlyRevenue) * 12 -
+          this.parseNumberFromString(financialInfo?.existingDebt) || 0,
+      monthlyRevenue:
+        this.parseNumberFromString(financialInfo?.monthlyRevenue) || 0,
       monthlyCosts: 0,
       cashFlow: this.parseNumberFromString(financialInfo?.monthlyRevenue) || 0,
-      projectedRevenue: [{
-        year: currentYear + 1,
-        optimistic: (this.parseNumberFromString(financialInfo?.annualRevenue) || 0) * 1.2,
-        realistic: this.parseNumberFromString(financialInfo?.annualRevenue) || 0,
-        pessimistic: (this.parseNumberFromString(financialInfo?.annualRevenue) || 0) * 0.8,
-        assumptions: 'Based on current performance trends'
-      }],
-      projectedProfitability: [{
-        year: currentYear + 1,
-        optimistic: 0.15,
-        realistic: this.parseNumberFromString(financialInfo?.profitMargin) / 100 || 0.1,
-        pessimistic: 0.05,
-        assumptions: 'Conservative profit margin estimates'
-      }],
+      projectedRevenue: [
+        {
+          year: currentYear + 1,
+          optimistic:
+            (this.parseNumberFromString(financialInfo?.annualRevenue) || 0) *
+            1.2,
+          realistic:
+            this.parseNumberFromString(financialInfo?.annualRevenue) || 0,
+          pessimistic:
+            (this.parseNumberFromString(financialInfo?.annualRevenue) || 0) *
+            0.8,
+          assumptions: 'Based on current performance trends',
+        },
+      ],
+      projectedProfitability: [
+        {
+          year: currentYear + 1,
+          optimistic: 0.15,
+          realistic:
+            this.parseNumberFromString(financialInfo?.profitMargin) / 100 ||
+            0.1,
+          pessimistic: 0.05,
+          assumptions: 'Conservative profit margin estimates',
+        },
+      ],
       cashFlowProjections: [],
-      profitMargin: this.parseNumberFromString(financialInfo?.profitMargin) || 0,
+      profitMargin:
+        this.parseNumberFromString(financialInfo?.profitMargin) || 0,
       debtToEquity: this.calculateDebtToEquity(financialInfo),
       currentRatio: 1.0,
       returnOnAssets: 0.1,
       primaryBank: financialInfo?.bankingDetails?.bankName || '',
       bankingHistory: financialInfo?.bankingDetails?.yearsWithBank || 0,
       creditFacilities: [],
-      creditRating: financialInfo?.creditRating
+      creditRating: financialInfo?.creditRating,
     };
   }
 
@@ -253,8 +344,11 @@ private transformSwotAnalysis(swotAnalysis: any): SWOTAnalysis | undefined {
       yearsInOperation: companyInfo.operationalYears || 0,
       numberOfEmployees: companyInfo.employeeCount || '',
       physicalAddress: companyInfo.registeredAddress || {
-        street: '', city: '', province: '', postalCode: ''
-      }
+        street: '',
+        city: '',
+        province: '',
+        postalCode: '',
+      },
     };
   }
 
@@ -268,11 +362,13 @@ private transformSwotAnalysis(swotAnalysis: any): SWOTAnalysis | undefined {
       email: companyInfo.contactPerson.email || '',
       phone: companyInfo.contactPerson.phone || '',
       idNumber: companyInfo.contactPerson.idNumber || '',
-      position: companyInfo.contactPerson.position || ''
+      position: companyInfo.contactPerson.position || '',
     };
   }
 
-  private extractBusinessReview(businessAssessment: BusinessAssessment | undefined): Record<string, any> | undefined {
+  private extractBusinessReview(
+    businessAssessment: BusinessAssessment | undefined
+  ): Record<string, any> | undefined {
     if (!businessAssessment) return undefined;
 
     return {
@@ -290,21 +386,25 @@ private transformSwotAnalysis(swotAnalysis: any): SWOTAnalysis | undefined {
       qualityStandards: businessAssessment.qualityStandards,
       keyPerformanceIndicators: businessAssessment.keyPerformanceIndicators,
       salesChannels: businessAssessment.salesChannels,
-      customerRetention: businessAssessment.customerRetention
+      customerRetention: businessAssessment.customerRetention,
     };
   }
 
-  private extractManagementGovernance(managementStructure: ManagementStructure | undefined) {
+  private extractManagementGovernance(
+    managementStructure: ManagementStructure | undefined
+  ) {
     if (!managementStructure) return undefined;
 
     return {
       managementTeam: managementStructure.managementTeam || [],
       boardOfDirectors: managementStructure.boardOfDirectors || [],
-      managementCommittee: [] // Add default empty array to satisfy interface
+      managementCommittee: [], // Add default empty array to satisfy interface
     };
   }
 
-  private extractBusinessPlan(businessStrategy: any): Record<string, any> | undefined {
+  private extractBusinessPlan(
+    businessStrategy: any
+  ): Record<string, any> | undefined {
     if (!businessStrategy) return undefined;
 
     return {
@@ -327,7 +427,7 @@ private transformSwotAnalysis(swotAnalysis: any): SWOTAnalysis | undefined {
       fundingRequirements: businessStrategy.fundingRequirements,
       useOfFunds: businessStrategy.useOfFunds,
       repaymentStrategy: businessStrategy.repaymentStrategy,
-      exitStrategy: businessStrategy.exitStrategy
+      exitStrategy: businessStrategy.exitStrategy,
     };
   }
 
@@ -343,8 +443,8 @@ private transformSwotAnalysis(swotAnalysis: any): SWOTAnalysis | undefined {
       bankingDetails: {
         bankName: financialProfile.primaryBank || '',
         accountType: 'business',
-        yearsWithBank: financialProfile.bankingHistory || 0
-      }
+        yearsWithBank: financialProfile.bankingHistory || 0,
+      },
     };
   }
 
@@ -356,20 +456,20 @@ private transformSwotAnalysis(swotAnalysis: any): SWOTAnalysis | undefined {
       notes: '',
       incomeStatement: [],
       financialRatios: [],
-      lastUpdated: new Date().toISOString()
+      lastUpdated: new Date().toISOString(),
     };
   }
 
   private extractFundingInfo(financialProfile: any, businessStrategy: any) {
     const fundingReq = businessStrategy?.fundingRequirements;
-    
+
     return {
       amountRequired: fundingReq?.totalAmountRequired?.toString() || '',
       purposeOfFunding: fundingReq?.fundingPurpose || '',
       timelineRequired: fundingReq?.timeline || '',
       repaymentPeriod: fundingReq?.repaymentTerms || '',
       collateralAvailable: !!fundingReq?.collateral,
-      collateralDescription: fundingReq?.collateral || undefined
+      collateralDescription: fundingReq?.collateral || undefined,
     };
   }
 
@@ -384,13 +484,19 @@ private transformSwotAnalysis(swotAnalysis: any): SWOTAnalysis | undefined {
     return isNaN(parsed) ? 0 : parsed;
   }
 
-  private buildHistoricalFinancials(financialInfo?: ProfileData['financialInfo'], financialAnalysis?: ProfileData['financialAnalysis']) {
+  private buildHistoricalFinancials(
+    financialInfo?: ProfileData['financialInfo'],
+    financialAnalysis?: ProfileData['financialAnalysis']
+  ) {
     if (!financialInfo) return [];
 
     const currentYear = new Date().getFullYear();
-    const monthlyRevenue = this.parseNumberFromString(financialInfo.monthlyRevenue);
+    const monthlyRevenue = this.parseNumberFromString(
+      financialInfo.monthlyRevenue
+    );
     const annualRevenue = monthlyRevenue * 12;
-    const profitMargin = this.parseNumberFromString(financialInfo.profitMargin) / 100;
+    const profitMargin =
+      this.parseNumberFromString(financialInfo.profitMargin) / 100;
 
     return [
       {
@@ -400,7 +506,7 @@ private transformSwotAnalysis(swotAnalysis: any): SWOTAnalysis | undefined {
         netProfit: annualRevenue * 0.8 * profitMargin,
         assets: annualRevenue * 0.8 * 1.2,
         liabilities: annualRevenue * 0.8 * 0.3,
-        cashFlow: annualRevenue * 0.8 * profitMargin * 1.2
+        cashFlow: annualRevenue * 0.8 * profitMargin * 1.2,
       },
       {
         year: currentYear - 1,
@@ -409,7 +515,7 @@ private transformSwotAnalysis(swotAnalysis: any): SWOTAnalysis | undefined {
         netProfit: annualRevenue * 0.9 * profitMargin,
         assets: annualRevenue * 0.9 * 1.2,
         liabilities: annualRevenue * 0.9 * 0.3,
-        cashFlow: annualRevenue * 0.9 * profitMargin * 1.2
+        cashFlow: annualRevenue * 0.9 * profitMargin * 1.2,
       },
       {
         year: currentYear,
@@ -418,18 +524,20 @@ private transformSwotAnalysis(swotAnalysis: any): SWOTAnalysis | undefined {
         netProfit: annualRevenue * profitMargin,
         assets: annualRevenue * 1.2,
         liabilities: annualRevenue * 0.3,
-        cashFlow: annualRevenue * profitMargin * 1.2
-      }
+        cashFlow: annualRevenue * profitMargin * 1.2,
+      },
     ];
   }
 
-  private calculateDebtToEquity(financialInfo?: ProfileData['financialInfo']): number {
+  private calculateDebtToEquity(
+    financialInfo?: ProfileData['financialInfo']
+  ): number {
     if (!financialInfo) return 0;
-    
+
     const debt = this.parseNumberFromString(financialInfo.existingDebt);
     const revenue = this.parseNumberFromString(financialInfo.annualRevenue);
     const equity = revenue * 0.3;
-    
+
     return equity > 0 ? debt / equity : 0;
   }
 }

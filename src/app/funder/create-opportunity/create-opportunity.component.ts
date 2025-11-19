@@ -516,7 +516,7 @@ export class CreateOpportunityComponent implements OnInit, OnDestroy {
                     'Success callback: navigating to published opportunity'
                   );
                   this.router.navigate([
-                    '/funder/opportunities',
+                    '/funding/opportunities',
                     response.opportunityId,
                   ]);
                 },
@@ -641,7 +641,7 @@ export class CreateOpportunityComponent implements OnInit, OnDestroy {
                 {
                   onSuccess: () => {
                     this.router.navigate([
-                      '/funder/opportunities',
+                      '/funding/opportunities',
                       opportunityId,
                     ]);
                   },
