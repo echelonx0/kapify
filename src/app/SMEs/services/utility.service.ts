@@ -1,9 +1,12 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { FundingApplicationProfile } from '../applications/models/funding-application.models';
+import { ProfileData } from '../profile/models/funding.models';
 import { SECTION_DATA_KEYS, STEP_FIELD_LABELS } from './funding-steps.constants';
- 
+import { ProfileValidationService } from './profile-validation.service';
+
 @Injectable({ providedIn: 'root' })
 export class FundingApplicationUtilityService {
+  private validationService = inject(ProfileValidationService);
   
   // ===== DATA OPERATIONS =====
   
@@ -19,49 +22,30 @@ export class FundingApplicationUtilityService {
   
   // ===== VALIDATION & EMPTY CHECKS =====
   
+  /**
+   * Check if data is empty
+   * Delegates to ProfileValidationService for consistent validation
+   */
   isDataEmpty(data: any): boolean {
-    if (!data || typeof data !== 'object') return true;
-    return Object.values(data).every(value => 
-      value === null || 
-      value === undefined || 
-      value === '' ||
-      (Array.isArray(value) && value.length === 0) ||
-      (typeof value === 'object' && !this.isObjectNotEmpty(value))
-    );
+    return this.validationService.isDataEmpty(data);
   }
-  
+
+  /**
+   * Check if object has meaningful data
+   * Delegates to ProfileValidationService for consistent validation
+   */
   isObjectNotEmpty(obj: any): boolean {
-    if (!obj || typeof obj !== 'object') return false;
-    return Object.values(obj).some(value => 
-      value !== null && 
-      value !== undefined && 
-      value !== '' &&
-      (Array.isArray(value) ? value.length > 0 : true)
-    );
+    return this.validationService.isObjectNotEmpty(obj);
   }
   
   // ===== STEP COMPLETION CHECK =====
-  
-  hasDataForStep(stepId: string, data: Partial<FundingApplicationProfile>): boolean {
-    const sectionData = this.getSectionData(stepId, data);
-    
-    if (!sectionData || this.isObjectNotEmpty(sectionData) === false) {
-      return false;
-    }
-    
-    // Special case: SWOT requires minimum entries
-    if (stepId === 'swot-analysis') {
-      return this.hasMinimumSwotData(sectionData);
-    }
-    
-    return true;
-  }
-  
-  private hasMinimumSwotData(swot: any): boolean {
-    return swot.strengths?.length >= 2 && 
-           swot.weaknesses?.length >= 2 && 
-           swot.opportunities?.length >= 2 && 
-           swot.threats?.length >= 2;
+
+  /**
+   * Check if step has minimum required data
+   * Delegates to ProfileValidationService for consistent validation
+   */
+  hasDataForStep(stepId: string, data: Partial<FundingApplicationProfile> | Partial<ProfileData>): boolean {
+    return this.validationService.hasDataForStep(stepId, data as Partial<ProfileData>);
   }
   
   // ===== COMPLETION CALCULATIONS =====
@@ -70,13 +54,12 @@ export class FundingApplicationUtilityService {
     return totalSteps > 0 ? Math.round((completedSteps / totalSteps) * 100) : 0;
   }
   
-  getMissingFieldsForStep(stepId: string, data: Partial<FundingApplicationProfile>): string[] {
-    const fieldLabels = STEP_FIELD_LABELS[stepId as keyof typeof STEP_FIELD_LABELS] || {};
-    const sectionData = this.getSectionData(stepId, data);
-    
-    return Object.entries(fieldLabels)
-      .filter(([key]) => !sectionData || !sectionData[key] || sectionData[key] === '' || sectionData[key] === null)
-      .map(([_, label]) => label);
+  /**
+   * Get missing fields for a step
+   * Delegates to ProfileValidationService for consistent validation
+   */
+  getMissingFieldsForStep(stepId: string, data: Partial<FundingApplicationProfile> | Partial<ProfileData>): string[] {
+    return this.validationService.getMissingFields(stepId, data as Partial<ProfileData>);
   }
   
   // ===== TIME CALCULATIONS =====

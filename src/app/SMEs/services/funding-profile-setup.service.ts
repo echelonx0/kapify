@@ -26,6 +26,7 @@ export class FundingProfileSetupService implements OnDestroy {
   // ===== ORGANIZATION CONTEXT =====
   currentOrganization = signal<string | null>(null);
   currentSlug = signal<string | null>(null);
+  organizationError = signal<string | null>(null);
 
   // Core application data
   private applicationData = signal<Partial<FundingApplicationProfile>>({});
@@ -88,21 +89,38 @@ export class FundingProfileSetupService implements OnDestroy {
   // ===============================
 
   /**
-   * Get user's active organization
+   * Get user's active organization (cached)
+   * Throws error if organization not found - fail fast approach
    */
-  private async getUserOrganization(userId: string): Promise<string | null> {
+  private async getUserOrganization(userId: string): Promise<string> {
+    // Return cached organization if available
+    const cached = this.currentOrganization();
+    if (cached) {
+      return cached;
+    }
+
     try {
-      const { data } = await this.supabase
+      const { data, error } = await this.supabase
         .from('organization_users')
         .select('organization_id')
         .eq('user_id', userId)
         .eq('status', 'active')
         .single();
 
-      return data?.organization_id || null;
-    } catch (error) {
+      if (error || !data?.organization_id) {
+        const errorMsg = 'No active organization found for user';
+        this.organizationError.set(errorMsg);
+        throw new Error(errorMsg);
+      }
+
+      // Cache the organization ID
+      this.setOrganizationContext(data.organization_id);
+      return data.organization_id;
+    } catch (error: any) {
+      const errorMsg = error.message || 'Failed to get user organization';
+      this.organizationError.set(errorMsg);
       console.error('Failed to get user organization:', error);
-      return null;
+      throw new Error(errorMsg);
     }
   }
 
@@ -111,7 +129,28 @@ export class FundingProfileSetupService implements OnDestroy {
    */
   private setOrganizationContext(organizationId: string): void {
     this.currentOrganization.set(organizationId);
+    this.organizationError.set(null); // Clear any previous errors
     console.log('📦 Organization context set:', organizationId);
+  }
+
+  /**
+   * Clear organization context (useful for logout/switch scenarios)
+   */
+  clearOrganizationContext(): void {
+    this.currentOrganization.set(null);
+    this.organizationError.set(null);
+    console.log('📦 Organization context cleared');
+  }
+
+  /**
+   * Get organization ID or throw if not available
+   */
+  getOrganizationId(): string {
+    const orgId = this.currentOrganization();
+    if (!orgId) {
+      throw new Error('Organization context not initialized');
+    }
+    return orgId;
   }
 
   // ===============================
@@ -373,8 +412,11 @@ export class FundingProfileSetupService implements OnDestroy {
   }
 
   // ===============================
-  // LOCAL STORAGE
+  // LOCAL STORAGE WITH VERSIONING
   // ===============================
+
+  private readonly STORAGE_VERSION = 2; // Increment when schema changes
+  private readonly STORAGE_KEY = AUTO_SAVE_CONFIG.localStorageKey;
 
   private saveToLocalStorage() {
     try {
@@ -382,20 +424,24 @@ export class FundingProfileSetupService implements OnDestroy {
       if (!user) return;
 
       const dataToSave = {
+        version: this.STORAGE_VERSION,
         data: this.applicationData(),
         lastSaved: new Date().toISOString(),
         userId: user.id,
         organizationId: this.currentOrganization(),
+        timestamp: Date.now(),
       };
 
-      localStorage.setItem(
-        AUTO_SAVE_CONFIG.localStorageKey,
-        JSON.stringify(dataToSave)
-      );
+      localStorage.setItem(this.STORAGE_KEY, JSON.stringify(dataToSave));
       this.lastSavedLocally.set(new Date());
-      console.log('✅ Saved to localStorage');
+      console.log(`✅ Saved to localStorage (v${this.STORAGE_VERSION})`);
     } catch (error) {
       console.error('Failed to save to localStorage:', error);
+      // Clear corrupted data if quota exceeded
+      if (error instanceof DOMException && error.name === 'QuotaExceededError') {
+        this.clearLocalStorage();
+        console.warn('Cleared localStorage due to quota exceeded');
+      }
     }
   }
 
@@ -404,22 +450,68 @@ export class FundingProfileSetupService implements OnDestroy {
       const user = this.authService.user();
       if (!user) return;
 
-      const saved = localStorage.getItem(AUTO_SAVE_CONFIG.localStorageKey);
-      if (saved) {
-        const parsedData = JSON.parse(saved);
+      const saved = localStorage.getItem(this.STORAGE_KEY);
+      if (!saved) return;
 
-        if (parsedData.userId === user.id) {
-          this.applicationData.set(parsedData.data || {});
-          if (parsedData.organizationId) {
-            this.currentOrganization.set(parsedData.organizationId);
-          }
-          this.updateStepCompletionStatus();
-          this.lastSavedLocally.set(new Date(parsedData.lastSaved));
-          console.log('✅ Loaded from localStorage');
-        }
+      const parsedData = JSON.parse(saved);
+
+      // Validate schema version
+      if (!parsedData.version || parsedData.version !== this.STORAGE_VERSION) {
+        console.warn(
+          `localStorage schema version mismatch (found: ${parsedData.version}, expected: ${this.STORAGE_VERSION})`
+        );
+        this.clearLocalStorage();
+        return;
       }
+
+      // Validate user
+      if (parsedData.userId !== user.id) {
+        console.warn('localStorage data belongs to different user');
+        return;
+      }
+
+      // Validate data structure
+      if (!this.validateLocalStorageData(parsedData.data)) {
+        console.warn('Invalid localStorage data structure');
+        this.clearLocalStorage();
+        return;
+      }
+
+      // Load validated data
+      this.applicationData.set(parsedData.data || {});
+      if (parsedData.organizationId) {
+        this.currentOrganization.set(parsedData.organizationId);
+      }
+      this.updateStepCompletionStatus();
+      this.lastSavedLocally.set(new Date(parsedData.lastSaved));
+      console.log(`✅ Loaded from localStorage (v${this.STORAGE_VERSION})`);
     } catch (error) {
       console.error('Failed to load from localStorage:', error);
+      // Clear corrupted data
+      this.clearLocalStorage();
+    }
+  }
+
+  /**
+   * Validate localStorage data structure
+   */
+  private validateLocalStorageData(data: any): boolean {
+    if (!data || typeof data !== 'object') return false;
+
+    // Basic structure validation - data should be an object
+    // Can be empty for new profiles
+    return true;
+  }
+
+  /**
+   * Clear localStorage data
+   */
+  private clearLocalStorage(): void {
+    try {
+      localStorage.removeItem(this.STORAGE_KEY);
+      console.log('🗑️ Cleared localStorage');
+    } catch (error) {
+      console.error('Failed to clear localStorage:', error);
     }
   }
 
