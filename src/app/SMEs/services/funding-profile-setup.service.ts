@@ -195,30 +195,20 @@ export class FundingProfileSetupService implements OnDestroy {
   async loadSavedApplication(): Promise<void> {
     try {
       this.isLoading.set(true);
-
       const user = this.authService.user();
-      if (!user) {
-        console.warn('No authenticated user');
-        return;
-      }
+      if (!user) return;
 
-      // Get user's organization first
+      // Set org context FIRST
       const orgId = await this.getUserOrganization(user.id);
-      if (!orgId) {
-        console.warn('User has no active organization');
-        return;
-      }
+      if (orgId) this.setOrganizationContext(orgId);
 
-      this.setOrganizationContext(orgId);
-
-      // Load from localStorage first (fast)
+      // Then load localStorage (now has org context)
       this.loadFromLocalStorage();
 
-      // Then load from backend (authoritative)
+      // Then sync from backend
       const savedData = await firstValueFrom(
         this.backendService.loadSavedProfile()
       );
-
       if (savedData) {
         const mergedData = this.utilityService.mergeApplicationData(
           this.applicationData(),
@@ -229,7 +219,6 @@ export class FundingProfileSetupService implements OnDestroy {
         this.lastSaved.set(new Date());
       }
 
-      // Finally, fetch the slug
       await this.refreshSlug();
     } catch (error) {
       console.error('Failed to load saved application:', error);
