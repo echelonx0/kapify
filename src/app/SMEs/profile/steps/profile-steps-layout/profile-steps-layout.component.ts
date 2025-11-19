@@ -551,6 +551,9 @@ export class ProfileStepsLayoutComponent implements OnInit {
   async saveAndContinue() {
     this.isSaving.set(true);
     try {
+      // Give time for any pending admin form saves to flush
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
       await this.profileService.saveCurrentProgress();
       this.lastSaved.set(new Date());
 

@@ -12,55 +12,66 @@
         <!-- Auto-save status -->
         <div class="flex items-center space-x-2 text-sm">
           @if (isSaving()) {
-            <lucide-icon [img]="ClockIcon" [size]="16" class="text-orange-500 animate-spin" />
-            <span class="text-orange-600">Saving...</span>
+          <lucide-icon
+            [img]="ClockIcon"
+            [size]="16"
+            class="text-orange-500 animate-spin"
+          />
+          <span class="text-orange-600">Saving...</span>
           } @else if (lastSaved()) {
-            <lucide-icon [img]="SaveIcon" [size]="16" class="text-green-500" />
-            <span class="text-green-600">Saved {{ getLastSavedText() }}</span>
+          <lucide-icon [img]="SaveIcon" [size]="16" class="text-green-500" />
+          <span class="text-green-600">Saved {{ getLastSavedText() }}</span>
           } @else {
-            <span class="text-neutral-500">Not saved</span>
+          <span class="text-neutral-500">Not saved</span>
           }
         </div>
         <!-- FIX: Removed [loading] property and added [disabled] instead -->
-        <ui-button 
-          variant="outline" 
-          size="sm" 
+        <ui-button
+          variant="outline"
+          size="sm"
           (clicked)="saveManually()"
           [disabled]="isSaving()"
         >
           @if (isSaving()) {
-            <lucide-icon [img]="ClockIcon" [size]="16" class="mr-2 animate-spin" />
-            Saving...
-          } @else {
-            Save Now
-          }
+          <lucide-icon
+            [img]="ClockIcon"
+            [size]="16"
+            class="mr-2 animate-spin"
+          />
+          Saving... } @else { Save Now }
         </ui-button>
       </div>
     </div>
   </div>
 
- 
-
   <!-- Warning Message -->
   @if (showValidationWarning()) {
-    <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-      <div class="flex items-start space-x-3">
-        <lucide-icon [img]="AlertTriangleIcon" [size]="20" class="text-yellow-600 mt-0.5 flex-shrink-0" />
-        <div>
-          <h4 class="text-sm font-medium text-yellow-800 mb-1">Warning: Some fields are empty</h4>
-          <p class="text-sm text-yellow-700">
-            Some required fields in some sections haven't been filled out completely. You can proceed to the next section, 
-            but please note you cannot submit without completely filling out all the required sections.
-          </p>
-        </div>
-        <button 
-          (click)="dismissWarning()"
-          class="text-yellow-400 hover:text-yellow-600 ml-auto"
-        >
-          ×
-        </button>
+  <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+    <div class="flex items-start space-x-3">
+      <lucide-icon
+        [img]="AlertTriangleIcon"
+        [size]="20"
+        class="text-yellow-600 mt-0.5 flex-shrink-0"
+      />
+      <div>
+        <h4 class="text-sm font-medium text-yellow-800 mb-1">
+          Warning: Some fields are empty
+        </h4>
+        <p class="text-sm text-yellow-700">
+          Some required fields in some sections haven't been filled out
+          completely. You can proceed to the next section, but please note you
+          cannot submit without completely filling out all the required
+          sections.
+        </p>
       </div>
+      <button
+        (click)="dismissWarning()"
+        class="text-yellow-400 hover:text-yellow-600 ml-auto"
+      >
+        ×
+      </button>
     </div>
+  </div>
   }
 
   <form [formGroup]="adminForm" class="space-y-6">
@@ -72,70 +83,81 @@
         class="w-full px-6 py-4 text-left flex items-center justify-between hover:bg-neutral-50 transition-colors"
       >
         <div>
-          <h3 class="text-lg font-semibold text-neutral-900">Contact Details</h3>
+          <h3 class="text-lg font-semibold text-neutral-900">
+            Contact Details
+          </h3>
           <p class="text-sm text-neutral-600 mt-1">
-            Please provide details of the person to communicate with regarding your company's investor readiness and funding application.
+            Please provide details of the person to communicate with regarding
+            your company's investor readiness and funding application.
           </p>
         </div>
-        <lucide-icon 
-          [img]="getSectionExpanded('contact') ? ChevronUpIcon : ChevronDownIcon" 
-          [size]="20" 
+        <lucide-icon
+          [img]="
+            getSectionExpanded('contact') ? ChevronUpIcon : ChevronDownIcon
+          "
+          [size]="20"
           class="text-neutral-400"
         />
       </button>
 
       @if (getSectionExpanded('contact')) {
-        <div class="px-6 pb-6 border-t border-neutral-200">
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
-            <ui-input
-              label="First name"
-              placeholder="Bash"
-              [error]="getFieldError('firstName')"
-              formControlName="firstName"
-              [required]="true"
-            />
-            <ui-input
-              label="Last name"
-              placeholder="Cele"
-              [error]="getFieldError('lastName')"
-              formControlName="lastName"
-              [required]="true"
-            />
-            <ui-input
-              label="Email"
-              type="email"
-              placeholder="bashcele@gmail.com"
-              [error]="getFieldError('email')"
-              formControlName="email"
-              [required]="true"
-            />
-            <div>
-              <label class="block text-sm font-medium text-neutral-700 mb-2">Phone number</label>
-              <div class="flex">
-                <div class="flex items-center px-3 py-2 border border-r-0 border-neutral-300 rounded-l-md bg-neutral-50">
-                  <img src="/flags/za.svg" alt="ZA" class="w-4 h-4 mr-2" />
-                  <span class="text-sm text-neutral-600">+27</span>
-                </div>
-                <input
-                  type="tel"
-                  placeholder="717496762"
-                  formControlName="phone"
-                  class="flex-1 px-3 py-2 border border-neutral-300 rounded-r-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
-                />
+      <div class="px-6 pb-6 border-t border-neutral-200">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+          <ui-input
+            label="First name"
+            placeholder="Bash"
+            [error]="getFieldError('firstName')"
+            formControlName="firstName"
+            [required]="true"
+          />
+          <ui-input
+            label="Last name"
+            placeholder="Cele"
+            [error]="getFieldError('lastName')"
+            formControlName="lastName"
+            [required]="true"
+          />
+          <ui-input
+            label="Email"
+            type="email"
+            placeholder="bashcele@gmail.com"
+            [error]="getFieldError('email')"
+            formControlName="email"
+            [required]="true"
+          />
+          <div>
+            <label class="block text-sm font-medium text-neutral-700 mb-2"
+              >Phone number</label
+            >
+            <div class="flex">
+              <div
+                class="flex items-center px-3 py-2 border border-r-0 border-neutral-300 rounded-l-md bg-neutral-50"
+              >
+                <img src="/flags/za.svg" alt="ZA" class="w-4 h-4 mr-2" />
+                <span class="text-sm text-neutral-600">+27</span>
               </div>
-              @if (getFieldError('phone')) {
-                <p class="text-sm text-red-600 mt-1">{{ getFieldError('phone') }}</p>
-              }
+              <input
+                type="tel"
+                placeholder="717496762"
+                formControlName="phone"
+                class="flex-1 px-3 py-2 border border-neutral-300 rounded-r-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+              />
             </div>
-            <ui-input
-              label="Role"
-              placeholder="FD"
-              [error]="getFieldError('role')"
-              formControlName="role"
-              [required]="true"
-            />
+            @if (getFieldError('phone')) {
+            <p class="text-sm text-red-600 mt-1">
+              {{ getFieldError("phone") }}
+            </p>
+            }
           </div>
+          <ui-input
+            label="Role"
+            placeholder="FD"
+            [error]="getFieldError('role')"
+            formControlName="role"
+            [required]="true"
+          />
         </div>
+      </div>
       }
     </div>
 
@@ -147,197 +169,221 @@
         class="w-full px-6 py-4 text-left flex items-center justify-between hover:bg-neutral-50 transition-colors"
       >
         <div>
-          <h3 class="text-lg font-semibold text-neutral-900">Business Details</h3>
-          <p class="text-sm text-neutral-600 mt-1">Please provide the requested company details.</p>
+          <h3 class="text-lg font-semibold text-neutral-900">
+            Business Details
+          </h3>
+          <p class="text-sm text-neutral-600 mt-1">
+            Please provide the requested company details.
+          </p>
         </div>
-        <lucide-icon 
-          [img]="getSectionExpanded('business') ? ChevronUpIcon : ChevronDownIcon" 
-          [size]="20" 
+        <lucide-icon
+          [img]="
+            getSectionExpanded('business') ? ChevronUpIcon : ChevronDownIcon
+          "
+          [size]="20"
           class="text-neutral-400"
         />
       </button>
 
       @if (getSectionExpanded('business')) {
-        <div class="px-6 pb-6 border-t border-neutral-200">
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
-            <ui-input
-              label="Name of business"
-              placeholder="Senkosi Inc"
-              [error]="getFieldError('companyName')"
-              formControlName="companyName"
-              [required]="true"
-            />
-            <ui-input
-              label="Company Registration Number"
-              placeholder="2013/900800/07"
-              [error]="getFieldError('registrationNumber')"
-              formControlName="registrationNumber"
-              [required]="true"
-            />
-            <div>
-              <label class="block text-sm font-medium text-neutral-700 mb-2">Telephone Number</label>
-              <div class="flex">
-                <div class="flex items-center px-3 py-2 border border-r-0 border-neutral-300 rounded-l-md bg-neutral-50">
-                  <img src="/flags/za.svg" alt="ZA" class="w-4 h-4 mr-2" />
-                  <span class="text-sm text-neutral-600">+27</span>
-                </div>
-                <input
-                  type="tel"
-                  placeholder="717496762"
-                  formControlName="businessPhone"
-                  class="flex-1 px-3 py-2 border border-neutral-300 rounded-r-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
-                />
-              </div>
-            </div>
-            <ui-input
-              label="Years in Operation"
-              type="number"
-              placeholder="10"
-              [error]="getFieldError('yearsInOperation')"
-              formControlName="yearsInOperation"
-              [required]="true"
-            />
-          </div>
-
-          <!-- Physical Address -->
-          <div class="mt-6 space-y-4">
-            <div>
-              <label class="block text-sm font-medium text-neutral-700 mb-2">Physical address</label>
-              <div class="flex items-center px-3 py-2 border border-neutral-300 rounded-md bg-neutral-50">
+      <div class="px-6 pb-6 border-t border-neutral-200">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+          <ui-input
+            label="Name of business"
+            placeholder="Senkosi Inc"
+            [error]="getFieldError('companyName')"
+            formControlName="companyName"
+            [required]="true"
+          />
+          <ui-input
+            label="Company Registration Number"
+            placeholder="2013/900800/07"
+            [error]="getFieldError('registrationNumber')"
+            formControlName="registrationNumber"
+            [required]="true"
+          />
+          <div>
+            <label class="block text-sm font-medium text-neutral-700 mb-2"
+              >Telephone Number</label
+            >
+            <div class="flex">
+              <div
+                class="flex items-center px-3 py-2 border border-r-0 border-neutral-300 rounded-l-md bg-neutral-50"
+              >
                 <img src="/flags/za.svg" alt="ZA" class="w-4 h-4 mr-2" />
-                <span class="text-sm text-neutral-600">South Africa</span>
+                <span class="text-sm text-neutral-600">+27</span>
               </div>
-            </div>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <ui-input
-                label="Address line 1"
-                placeholder="290 Action Drive"
-                [error]="getFieldError('addressLine1')"
-                formControlName="addressLine1"
-                [required]="true"
-              />
-              <ui-input
-                label="Address line 2"
-                placeholder="Crystal Office Park"
-                formControlName="addressLine2"
-              />
-              <ui-input
-                label="Suburb"
-                placeholder="Charlestown"
-                [error]="getFieldError('suburb')"
-                formControlName="suburb"
-                [required]="true"
-              />
-              <ui-input
-                label="Province"
-                placeholder="Gauteng"
-                [error]="getFieldError('province')"
-                formControlName="province"
-                [required]="true"
-              />
-              <ui-input
-                label="City"
-                placeholder="Centurion"
-                [error]="getFieldError('city')"
-                formControlName="city"
-                [required]="true"
-              />
-              <ui-input
-                label="Postal code"
-                placeholder="0157"
-                [error]="getFieldError('postalCode')"
-                formControlName="postalCode"
-                [required]="true"
+              <input
+                type="tel"
+                placeholder="717496762"
+                formControlName="businessPhone"
+                class="flex-1 px-3 py-2 border border-neutral-300 rounded-r-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
               />
             </div>
           </div>
+          <ui-input
+            label="Years in Operation"
+            type="number"
+            placeholder="10"
+            [error]="getFieldError('yearsInOperation')"
+            formControlName="yearsInOperation"
+            [required]="true"
+          />
+        </div>
 
-          <!-- Business Classification -->
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-            <div>
-              <label class="block text-sm font-medium text-neutral-700 mb-2">Industry</label>
-              <select 
-                formControlName="industry"
-                class="block w-full px-3 py-2 border border-neutral-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
-              >
-                <option value="">Select industry</option>
-                <option value="energy">Energy</option>
-                <option value="agriculture">Agriculture</option>
-                <option value="construction">Construction</option>
-                <option value="manufacturing">Manufacturing</option>
-                <option value="retail">Retail</option>
-                <option value="services">Professional Services</option>
-                <option value="technology">Technology</option>
-                <option value="tourism">Tourism & Hospitality</option>
-                <option value="transport">Transport & Logistics</option>
-                <option value="other">Other</option>
-              </select>
+        <!-- Physical Address -->
+        <div class="mt-6 space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-neutral-700 mb-2"
+              >Physical address</label
+            >
+            <div
+              class="flex items-center px-3 py-2 border border-neutral-300 rounded-md bg-neutral-50"
+            >
+              <img src="/flags/za.svg" alt="ZA" class="w-4 h-4 mr-2" />
+              <span class="text-sm text-neutral-600">South Africa</span>
             </div>
-            <div>
-              <label class="block text-sm font-medium text-neutral-700 mb-2">Business stage</label>
-              <select 
-                formControlName="businessStage"
-                class="block w-full px-3 py-2 border border-neutral-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
-              >
-                <option value="">Select stage</option>
-                <option value="startup">Startup</option>
-                <option value="growth">Growth Phase</option>
-                <option value="established">Established</option>
-                <option value="mature">Mature</option>
-                <option value="expansion">Expansion</option>
-              </select>
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-neutral-700 mb-2">BBBEE</label>
-              <select 
-                formControlName="bbbeeLevel"
-                class="block w-full px-3 py-2 border border-neutral-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
-              >
-                <option value="">Select level</option>
-                <option value="level1">Level 1</option>
-                <option value="level2">Level 2</option>
-                <option value="level3">Level 3</option>
-                <option value="level4">Level 4</option>
-                <option value="level5">Level 5</option>
-                <option value="level6">Level 6</option>
-                <option value="level7">Level 7</option>
-                <option value="level8">Level 8</option>
-                <option value="non-compliant">Non-compliant</option>
-              </select>
-            </div>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <ui-input
-              label="Current staff compliment"
-              type="number"
-              placeholder="10"
-              [error]="getFieldError('staffCount')"
-              formControlName="staffCount"
+              label="Address line 1"
+              placeholder="290 Action Drive"
+              [error]="getFieldError('addressLine1')"
+              formControlName="addressLine1"
               [required]="true"
             />
-          </div>
-
-          <!-- Business Description -->
-          <div class="mt-6">
-            <label class="block text-sm font-medium text-neutral-700 mb-2">
-              Brief Description of the business and activities
-            </label>
-            <textarea
-              formControlName="businessDescription"
-              rows="4"
-              placeholder="Describe your business activities, services, and market focus..."
-              class="block w-full px-3 py-2 border border-neutral-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
-            ></textarea>
-            <div class="flex justify-between items-center mt-1">
-              @if (getFieldError('businessDescription')) {
-                <p class="text-sm text-red-600">{{ getFieldError('businessDescription') }}</p>
-              } @else {
-                <span></span>
-              }
-              <span class="text-xs text-neutral-500">
-                {{ (adminForm.get('businessDescription')?.value || '').length }}/500
-              </span>
-            </div>
+            <ui-input
+              label="Address line 2"
+              placeholder="Crystal Office Park"
+              formControlName="addressLine2"
+            />
+            <ui-input
+              label="Suburb"
+              placeholder="Charlestown"
+              [error]="getFieldError('suburb')"
+              formControlName="suburb"
+              [required]="true"
+            />
+            <ui-input
+              label="Province"
+              placeholder="Gauteng"
+              [error]="getFieldError('province')"
+              formControlName="province"
+              [required]="true"
+            />
+            <ui-input
+              label="City"
+              placeholder="Centurion"
+              [error]="getFieldError('city')"
+              formControlName="city"
+              [required]="true"
+            />
+            <ui-input
+              label="Postal code"
+              placeholder="0157"
+              [error]="getFieldError('postalCode')"
+              formControlName="postalCode"
+              [required]="true"
+            />
           </div>
         </div>
+
+        <!-- Business Classification -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+          <div>
+            <label class="block text-sm font-medium text-neutral-700 mb-2"
+              >Industry</label
+            >
+            <select
+              formControlName="industry"
+              class="block w-full px-3 py-2 border border-neutral-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+            >
+              <option value="">Select industry</option>
+              <option value="energy">Energy</option>
+              <option value="agriculture">Agriculture</option>
+              <option value="construction">Construction</option>
+              <option value="manufacturing">Manufacturing</option>
+              <option value="retail">Retail</option>
+              <option value="services">Professional Services</option>
+              <option value="technology">Technology</option>
+              <option value="tourism">Tourism & Hospitality</option>
+              <option value="transport">Transport & Logistics</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-neutral-700 mb-2"
+              >Business stage</label
+            >
+            <select
+              formControlName="businessStage"
+              class="block w-full px-3 py-2 border border-neutral-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+            >
+              <option value="">Select stage</option>
+              <option value="startup">Startup</option>
+              <option value="growth">Growth Phase</option>
+              <option value="established">Established</option>
+              <option value="mature">Mature</option>
+              <option value="expansion">Expansion</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-neutral-700 mb-2"
+              >BBBEE</label
+            >
+            <select
+              formControlName="bbbeeLevel"
+              class="block w-full px-3 py-2 border border-neutral-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+            >
+              <option value="">Select level</option>
+              <option value="level1">Level 1</option>
+              <option value="level2">Level 2</option>
+              <option value="level3">Level 3</option>
+              <option value="level4">Level 4</option>
+              <option value="level5">Level 5</option>
+              <option value="level6">Level 6</option>
+              <option value="level7">Level 7</option>
+              <option value="level8">Level 8</option>
+              <option value="non-compliant">Non-compliant</option>
+            </select>
+          </div>
+          <ui-input
+            label="Current staff compliment"
+            type="number"
+            placeholder="10"
+            [error]="getFieldError('staffCount')"
+            formControlName="staffCount"
+            [required]="true"
+          />
+        </div>
+
+        <!-- Business Description -->
+        <div class="mt-6">
+          <label class="block text-sm font-medium text-neutral-700 mb-2">
+            Brief Description of the business and activities
+          </label>
+          <textarea
+            formControlName="businessDescription"
+            rows="4"
+            placeholder="Describe your business activities, services, and market focus..."
+            class="block w-full px-3 py-2 border border-neutral-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+          ></textarea>
+          <div class="flex justify-between items-center mt-1">
+            @if (getFieldError('businessDescription')) {
+            <p class="text-sm text-red-600">
+              {{ getFieldError("businessDescription") }}
+            </p>
+            } @else {
+            <span></span>
+            }
+            <span class="text-xs text-neutral-500">
+              {{
+                (adminForm.get("businessDescription")?.value || "").length
+              }}/500
+            </span>
+          </div>
+        </div>
+      </div>
       }
     </div>
 
@@ -349,90 +395,100 @@
         class="w-full px-6 py-4 text-left flex items-center justify-between hover:bg-neutral-50 transition-colors"
       >
         <div>
-          <h3 class="text-lg font-semibold text-neutral-900">Legal and Compliance</h3>
-          <p class="text-sm text-neutral-600 mt-1">Please provide the requested legal and compliance company details.</p>
+          <h3 class="text-lg font-semibold text-neutral-900">
+            Legal and Compliance
+          </h3>
+          <p class="text-sm text-neutral-600 mt-1">
+            Please provide the requested legal and compliance company details.
+          </p>
         </div>
-        <lucide-icon 
-          [img]="getSectionExpanded('legal') ? ChevronUpIcon : ChevronDownIcon" 
-          [size]="20" 
+        <lucide-icon
+          [img]="getSectionExpanded('legal') ? ChevronUpIcon : ChevronDownIcon"
+          [size]="20"
           class="text-neutral-400"
         />
       </button>
 
       @if (getSectionExpanded('legal')) {
-        <div class="px-6 pb-6 border-t border-neutral-200">
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
-            <div>
-              <label class="block text-sm font-medium text-neutral-700 mb-2">Cipc annual returns</label>
-              <select 
-                formControlName="cipcReturns"
-                class="block w-full px-3 py-2 border border-neutral-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
-              >
-                <option value="">Select status</option>
-                <option value="compliant">Compliant</option>
-                <option value="outstanding">Outstanding</option>
-                <option value="in-progress">In Progress</option>
-              </select>
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-neutral-700 mb-2">
-                Is the Company VAT registered?  
-              </label>
-              <select 
-                formControlName="vatRegistered"
-                class="block w-full px-3 py-2 border border-neutral-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
-              >
-                <option value="">Select option</option>
-                <option value="yes">Yes</option>
-                <option value="no">No</option>
-              </select>
-            </div>
+      <div class="px-6 pb-6 border-t border-neutral-200">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+          <div>
+            <label class="block text-sm font-medium text-neutral-700 mb-2"
+              >Cipc annual returns</label
+            >
+            <select
+              formControlName="cipcReturns"
+              class="block w-full px-3 py-2 border border-neutral-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+            >
+              <option value="">Select status</option>
+              <option value="compliant">Compliant</option>
+              <option value="outstanding">Outstanding</option>
+              <option value="in-progress">In Progress</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-neutral-700 mb-2">
+              Is the Company VAT registered?
+            </label>
+            <select
+              formControlName="vatRegistered"
+              class="block w-full px-3 py-2 border border-neutral-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+            >
+              <option value="">Select option</option>
+              <option value="yes">Yes</option>
+              <option value="no">No</option>
+            </select>
+          </div>
 
-            @if (adminForm.get('vatRegistered')?.value === 'yes') {
-              <ui-input
-                label="VAT Number"
-                placeholder="4589098765"
-                [error]="getFieldError('vatNumber')"
-                formControlName="vatNumber"
-                [required]="true"
-              />
-            }
+          @if (adminForm.get('vatRegistered')?.value === 'yes') {
+          <ui-input
+            label="VAT Number"
+            placeholder="4589098765"
+            [error]="getFieldError('vatNumber')"
+            formControlName="vatNumber"
+            [required]="true"
+          />
+          }
 
-            <div>
-              <label class="block text-sm font-medium text-neutral-700 mb-2">Tax compliance status</label>
-              <select 
-                formControlName="taxCompliance"
-                class="block w-full px-3 py-2 border border-neutral-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
-              >
-                <option value="">Select status</option>
-                <option value="compliant">Compliant</option>
-                <option value="outstanding">Outstanding</option>
-                <option value="in-progress">In Progress</option>
-              </select>
-            </div>
+          <div>
+            <label class="block text-sm font-medium text-neutral-700 mb-2"
+              >Tax compliance status</label
+            >
+            <select
+              formControlName="taxCompliance"
+              class="block w-full px-3 py-2 border border-neutral-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+            >
+              <option value="">Select status</option>
+              <option value="compliant">Compliant</option>
+              <option value="outstanding">Outstanding</option>
+              <option value="in-progress">In Progress</option>
+            </select>
+          </div>
 
-            <ui-input
-              label="Income TAX Number"
-              placeholder="9087890954"
-              [error]="getFieldError('incomeTaxNumber')"
-              formControlName="incomeTaxNumber"
-              [required]="true"
-            />
+          <ui-input
+            label="Income TAX Number"
+            placeholder="9087890954"
+            [error]="getFieldError('incomeTaxNumber')"
+            formControlName="incomeTaxNumber"
+            [required]="true"
+          />
 
-            <div>
-              <label class="block text-sm font-medium text-neutral-700 mb-2">Workman's compensation</label>
-              <select 
-                formControlName="workmansComp"
-                class="block w-full px-3 py-2 border border-neutral-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
-              >
-                <option value="">Select status</option>
-                <option value="compliant">Compliant</option>
-                <option value="outstanding">Outstanding</option>
-                <option value="not-applicable">Not Applicable</option>
-              </select>
-            </div>
+          <div>
+            <label class="block text-sm font-medium text-neutral-700 mb-2"
+              >Workman's compensation</label
+            >
+            <select
+              formControlName="workmansComp"
+              class="block w-full px-3 py-2 border border-neutral-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+            >
+              <option value="">Select status</option>
+              <option value="compliant">Compliant</option>
+              <option value="outstanding">Outstanding</option>
+              <option value="not-applicable">Not Applicable</option>
+            </select>
           </div>
         </div>
+      </div>
       }
     </div>
 
@@ -444,76 +500,97 @@
         class="w-full px-6 py-4 text-left flex items-center justify-between hover:bg-neutral-50 transition-colors"
       >
         <div>
-          <h3 class="text-lg font-semibold text-neutral-900">Shareholder's Details</h3>
-          <p class="text-sm text-neutral-600 mt-1">Please provide shareholders details as per the current shareholders register.</p>
+          <h3 class="text-lg font-semibold text-neutral-900">
+            Shareholder's Details
+          </h3>
+          <p class="text-sm text-neutral-600 mt-1">
+            Please provide shareholders details as per the current shareholders
+            register.
+          </p>
         </div>
-        <lucide-icon 
-          [img]="getSectionExpanded('shareholders') ? ChevronUpIcon : ChevronDownIcon" 
-          [size]="20" 
+        <lucide-icon
+          [img]="
+            getSectionExpanded('shareholders') ? ChevronUpIcon : ChevronDownIcon
+          "
+          [size]="20"
           class="text-neutral-400"
         />
       </button>
 
       @if (getSectionExpanded('shareholders')) {
-        <div class="px-6 pb-6 border-t border-neutral-200">
-          <div class="mt-4">
-            <ui-button
-              variant="primary"
-              size="sm"
-              (clicked)="addShareholder()"
-              class="mb-6"
-            >
-              <lucide-icon [img]="PlusIcon" [size]="16" class="mr-2" />
-              Add a Shareholder
-            </ui-button>
+      <div class="px-6 pb-6 border-t border-neutral-200">
+        <div class="mt-4">
+          <ui-button
+            variant="primary"
+            size="sm"
+            (clicked)="addShareholder()"
+            class="mb-6"
+          >
+            <lucide-icon [img]="PlusIcon" [size]="16" class="mr-2" />
+            Add a Shareholder
+          </ui-button>
 
-            @for (shareholder of shareholders(); track shareholder.id; let i = $index) {
-              <div class="border border-neutral-200 rounded-lg p-4 mt-4 mb-4">
-                <div class="flex justify-between items-center mb-4">
-                  <h4 class="font-medium text-neutral-900">Shareholder ({{ i + 1 }})</h4>
-                  <div class="flex space-x-2">
-                    <button
-                      type="button"
-                      (click)="editShareholder(i)"
-                      class="text-primary-600 hover:text-primary-700 text-sm flex items-center space-x-1"
-                    >
-                      <lucide-icon [img]="EditIcon" [size]="14" />
-                      <span>Edit</span>
-                    </button>
-                    <button
-                      type="button"
-                      (click)="deleteShareholder(i)"
-                      class="text-red-600 hover:text-red-700 text-sm flex items-center space-x-1"
-                    >
-                      <lucide-icon [img]="Trash2Icon" [size]="14" />
-                      <span>Delete</span>
-                    </button>
-                  </div>
+          @for (shareholder of shareholders(); track shareholder.id; let i =
+          $index) {
+          <div class="border border-neutral-200 rounded-lg p-4 mt-4 mb-4">
+            <div class="flex justify-between items-center mb-4">
+              <h4 class="font-medium text-neutral-900">
+                Shareholder ({{ i + 1 }})
+              </h4>
+              <div class="flex space-x-2">
+                <button
+                  type="button"
+                  (click)="editShareholder(i)"
+                  class="text-primary-600 hover:text-primary-700 text-sm flex items-center space-x-1"
+                >
+                  <lucide-icon [img]="EditIcon" [size]="14" />
+                  <span>Edit</span>
+                </button>
+                <button
+                  type="button"
+                  (click)="deleteShareholder(i)"
+                  class="text-red-600 hover:text-red-700 text-sm flex items-center space-x-1"
+                >
+                  <lucide-icon [img]="Trash2Icon" [size]="14" />
+                  <span>Delete</span>
+                </button>
+              </div>
+            </div>
+            <div class="grid grid-cols-3 gap-4 text-sm">
+              <div>
+                <div class="font-medium text-neutral-700 mb-1">
+                  Full Name of Shareholder
                 </div>
-                <div class="grid grid-cols-3 gap-4 text-sm">
-                  <div>
-                    <div class="font-medium text-neutral-700 mb-1">Full Name of Shareholder</div>
-                    <div class="text-neutral-900">{{ shareholder.fullName }}</div>
-                  </div>
-                  <div>
-                    <div class="font-medium text-neutral-700 mb-1">Current Shareholding</div>
-                    <div class="text-neutral-900">{{ shareholder.currentShareholding }}%</div>
-                  </div>
-                  <div>
-                    <div class="font-medium text-neutral-700 mb-1">Post Investment Shareholding</div>
-                    <div class="text-neutral-900">{{ shareholder.postInvestmentShareholding }}%</div>
-                  </div>
+                <div class="text-neutral-900">{{ shareholder.fullName }}</div>
+              </div>
+              <div>
+                <div class="font-medium text-neutral-700 mb-1">
+                  Current Shareholding
+                </div>
+                <div class="text-neutral-900">
+                  {{ shareholder.currentShareholding }}%
                 </div>
               </div>
-            }
-
-            @if (shareholders().length === 0) {
-              <div class="text-center py-8 text-neutral-500">
-                <p class="text-sm">No shareholders added yet. Click "Add a Shareholder" to get started.</p>
+              <div>
+                <div class="font-medium text-neutral-700 mb-1">
+                  Post Investment Shareholding
+                </div>
+                <div class="text-neutral-900">
+                  {{ shareholder.postInvestmentShareholding }}%
+                </div>
               </div>
-            }
+            </div>
           </div>
+          } @if (shareholders().length === 0) {
+          <div class="text-center py-8 text-neutral-500">
+            <p class="text-sm">
+              No shareholders added yet. Click "Add a Shareholder" to get
+              started.
+            </p>
+          </div>
+          }
         </div>
+      </div>
       }
     </div>
   </form>
@@ -522,22 +599,26 @@
   <div class="bg-white rounded-lg border border-neutral-200 p-4">
     <div class="flex items-center justify-between">
       <div>
-        <h3 class="font-semibold text-neutral-900">Company Information Progress</h3>
+        <h3 class="font-semibold text-neutral-900">
+          Company Information Progress
+        </h3>
         <p class="text-sm text-neutral-600">
           Data auto-saves every 30 seconds. Manual save available anytime.
         </p>
       </div>
-      
+
       <div class="flex items-center space-x-4">
         @if (adminForm.valid) {
-          <div class="flex items-center space-x-2 text-green-600">
-            <div class="w-2 h-2 bg-green-500 rounded-full"></div>
-            <span class="font-medium text-sm">Complete</span>
-          </div>
+        <div class="flex items-center space-x-2 text-green-600">
+          <div class="w-2 h-2 bg-green-500 rounded-full"></div>
+          <span class="font-medium text-sm">Complete</span>
+        </div>
         } @else {
-          <div class="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-sm font-medium">
-            Incomplete
-          </div>
+        <div
+          class="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-sm font-medium"
+        >
+          Incomplete
+        </div>
         }
       </div>
     </div>
@@ -545,63 +626,68 @@
 
   <!-- Final auto-save indicator -->
   @if (isSaving()) {
-    <div class="text-sm text-neutral-500 flex items-center justify-center">
-      <div class="w-2 h-2 bg-primary-500 rounded-full animate-pulse mr-2"></div>
-      Saving changes...
-    </div>
+  <div class="text-sm text-neutral-500 flex items-center justify-center">
+    <div class="w-2 h-2 bg-primary-500 rounded-full animate-pulse mr-2"></div>
+    Saving changes...
+  </div>
   } @else if (lastSaved()) {
-    <div class="text-sm text-neutral-500 text-center">
-      ✓ Changes saved automatically
-    </div>
+  <div class="text-sm text-neutral-500 text-center">
+    ✓ Changes saved automatically
+  </div>
   }
 </div>
 
 <!-- Shareholder Modal -->
 @if (showShareholderModal()) {
-  <div class="fixed inset-0 z-50 overflow-y-auto">
-    <div class="flex items-center justify-center min-h-screen px-4">
-      <div class="fixed inset-0 bg-black bg-opacity-25" (click)="closeShareholderModal()"></div>
-      <div class="bg-white rounded-lg shadow-xl z-50 w-full max-w-md">
-        <div class="px-6 py-4 border-b border-neutral-200">
-          <h3 class="text-lg font-semibold text-neutral-900">
-            {{ editingShareholderIndex() !== -1 ? 'Edit' : 'Add' }} Shareholder
-          </h3>
-        </div>
-        <form [formGroup]="shareholderForm" class="p-6 space-y-4">
-          <ui-input
-            label="Full Name of Shareholder"
-            placeholder="Elizabeth Swan"
-            formControlName="fullName"
-            [required]="true"
-          />
-          <ui-input
-            label="Current Shareholding (%)"
-            type="number"
-            placeholder="51"
-            formControlName="currentShareholding"
-            [required]="true"
-          />
-          <ui-input
-            label="Post Investment Shareholding (%)"
-            type="number"
-            placeholder="51"
-            formControlName="postInvestmentShareholding"
-            [required]="true"
-          />
-        </form>
-        <div class="px-6 py-4 border-t border-neutral-200 flex justify-end space-x-3">
-          <ui-button variant="outline" (clicked)="closeShareholderModal()">
-            Cancel
-          </ui-button>
-          <ui-button 
-            variant="primary" 
-            (clicked)="saveShareholder()"
-            [disabled]="shareholderForm.invalid"
-          >
-            {{ editingShareholderIndex() !== -1 ? 'Update' : 'Add' }} Shareholder
-          </ui-button>
-        </div>
+<div class="fixed inset-0 z-50 overflow-y-auto">
+  <div class="flex items-center justify-center min-h-screen px-4">
+    <div
+      class="fixed inset-0 bg-black bg-opacity-25"
+      (click)="closeShareholderModal()"
+    ></div>
+    <div class="bg-white rounded-lg shadow-xl z-50 w-full max-w-md">
+      <div class="px-6 py-4 border-b border-neutral-200">
+        <h3 class="text-lg font-semibold text-neutral-900">
+          {{ editingShareholderIndex() !== -1 ? "Edit" : "Add" }} Shareholder
+        </h3>
+      </div>
+      <form [formGroup]="shareholderForm" class="p-6 space-y-4">
+        <ui-input
+          label="Full Name of Shareholder"
+          placeholder="Elizabeth Swan"
+          formControlName="fullName"
+          [required]="true"
+        />
+        <ui-input
+          label="Current Shareholding (%)"
+          type="number"
+          placeholder="51"
+          formControlName="currentShareholding"
+          [required]="true"
+        />
+        <ui-input
+          label="Post Investment Shareholding (%)"
+          type="number"
+          placeholder="51"
+          formControlName="postInvestmentShareholding"
+          [required]="true"
+        />
+      </form>
+      <div
+        class="px-6 py-4 border-t border-neutral-200 flex justify-end space-x-3"
+      >
+        <ui-button variant="outline" (clicked)="closeShareholderModal()">
+          Cancel
+        </ui-button>
+        <ui-button
+          variant="primary"
+          (clicked)="saveShareholder()"
+          [disabled]="shareholderForm.invalid"
+        >
+          {{ editingShareholderIndex() !== -1 ? "Update" : "Add" }} Shareholder
+        </ui-button>
       </div>
     </div>
   </div>
+</div>
 }

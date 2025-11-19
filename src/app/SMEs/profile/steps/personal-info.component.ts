@@ -1,10 +1,18 @@
-
 // src/app/profile/steps/personal-info.component.ts
 import { Component, signal, OnInit } from '@angular/core';
-import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { UiInputComponent, UiCardComponent, UiButtonComponent } from '../../../shared/components';
+import {
+  ReactiveFormsModule,
+  FormBuilder,
+  FormGroup,
+  Validators,
+} from '@angular/forms';
+import {
+  UiInputComponent,
+  UiCardComponent,
+  UiButtonComponent,
+} from '../../../shared/components';
 import { SMEProfileStepsService } from '../services/sme-profile-steps.service';
- 
+
 @Component({
   selector: 'app-personal-info',
   standalone: true,
@@ -12,12 +20,20 @@ import { SMEProfileStepsService } from '../services/sme-profile-steps.service';
   template: `
     <div class="space-y-8">
       <div class="text-center">
-        <h2 class="text-2xl font-bold text-neutral-900">Personal Information</h2>
-        <p class="text-neutral-600 mt-2">Tell us about yourself to get started with your funding application</p>
+        <h2 class="text-2xl font-bold text-neutral-900">
+          Personal Information
+        </h2>
+        <p class="text-neutral-600 mt-2">
+          Tell us about yourself to get started with your funding application
+        </p>
       </div>
 
       <ui-card>
-        <form [formGroup]="personalForm" (ngSubmit)="onSubmit()" class="space-y-6">
+        <form
+          [formGroup]="personalForm"
+          (ngSubmit)="onSubmit()"
+          class="space-y-6"
+        >
           <!-- Name Fields -->
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <ui-input
@@ -77,19 +93,21 @@ import { SMEProfileStepsService } from '../services/sme-profile-steps.service';
 
           <!-- Auto-save indicator -->
           @if (isSaving()) {
-            <div class="text-sm text-neutral-500 flex items-center">
-              <div class="w-2 h-2 bg-primary-500 rounded-full animate-pulse mr-2"></div>
-              Saving changes...
-            </div>
+          <div class="text-sm text-neutral-500 flex items-center">
+            <div
+              class="w-2 h-2 bg-primary-500 rounded-full animate-pulse mr-2"
+            ></div>
+            Saving changes...
+          </div>
           } @else if (lastSaved()) {
-            <div class="text-sm text-neutral-500">
-              ✓ Changes saved automatically
-            </div>
+          <div class="text-sm text-neutral-500">
+            ✓ Changes saved automatically
+          </div>
           }
         </form>
       </ui-card>
     </div>
-  `
+  `,
 })
 export class PersonalInfoComponent implements OnInit {
   personalForm: FormGroup;
@@ -106,7 +124,7 @@ export class PersonalInfoComponent implements OnInit {
       email: ['', [Validators.required, Validators.email]],
       phone: ['', [Validators.required]],
       idNumber: ['', [Validators.required, Validators.pattern(/^\d{13}$/)]],
-      position: ['', [Validators.required]]
+      position: ['', [Validators.required]],
     });
 
     // Auto-save on form changes
@@ -128,9 +146,11 @@ export class PersonalInfoComponent implements OnInit {
   getFieldError(fieldName: string): string | undefined {
     const field = this.personalForm.get(fieldName);
     if (field?.errors && field?.touched) {
-      if (field.errors['required']) return `${this.getFieldDisplayName(fieldName)} is required`;
+      if (field.errors['required'])
+        return `${this.getFieldDisplayName(fieldName)} is required`;
       if (field.errors['email']) return 'Please enter a valid email address';
-      if (field.errors['pattern']) return 'Please enter a valid 13-digit ID number';
+      if (field.errors['pattern'])
+        return 'Please enter a valid 13-digit ID number';
     }
     return undefined;
   }
@@ -142,7 +162,7 @@ export class PersonalInfoComponent implements OnInit {
       email: 'Email address',
       phone: 'Phone number',
       idNumber: 'ID number',
-      position: 'Position'
+      position: 'Position',
     };
     return displayNames[fieldName] || fieldName;
   }
@@ -150,19 +170,15 @@ export class PersonalInfoComponent implements OnInit {
   async autoSave() {
     if (this.personalForm.valid) {
       this.isSaving.set(true);
-      
-      // Simulate save delay
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      this.profileService.updatePersonalInfo(this.personalForm.value);
-      this.isSaving.set(false);
-      this.lastSaved.set(true);
-      
-      // Hide saved indicator after 3 seconds
-      setTimeout(() => this.lastSaved.set(false), 3000);
+      try {
+        this.profileService.updatePersonalInfo(this.personalForm.value);
+        this.lastSaved.set(true);
+        setTimeout(() => this.lastSaved.set(false), 3000);
+      } finally {
+        this.isSaving.set(false);
+      }
     }
   }
-
   onSubmit() {
     if (this.personalForm.valid) {
       this.profileService.updatePersonalInfo(this.personalForm.value);
