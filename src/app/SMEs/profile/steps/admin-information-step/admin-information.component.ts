@@ -16,9 +16,6 @@ import {
 import {
   LucideAngularModule,
   AlertTriangle,
-  Plus,
-  Edit,
-  Trash2,
   ChevronDown,
   ChevronUp,
   Save,
@@ -28,15 +25,13 @@ import {
   UiInputComponent,
   UiButtonComponent,
 } from '../../../../shared/components';
+
 import { FundingProfileSetupService } from '../../../services/funding-profile-setup.service';
 import { CompanyInformation } from 'src/app/SMEs/applications/models/funding-application.models';
-
-interface Shareholder {
-  id: string;
-  fullName: string;
-  currentShareholding: number;
-  postInvestmentShareholding: number;
-}
+import {
+  ShareholderManagerComponent,
+  Shareholder,
+} from './components/shareholder-manager.component';
 
 @Component({
   selector: 'app-admin-information',
@@ -46,6 +41,7 @@ interface Shareholder {
     LucideAngularModule,
     UiInputComponent,
     UiButtonComponent,
+    ShareholderManagerComponent,
   ],
   templateUrl: 'admin-information.component.html',
 })
@@ -55,14 +51,12 @@ export class AdminInformationComponent implements OnInit, OnDestroy {
 
   // Forms
   adminForm: FormGroup;
-  shareholderForm: FormGroup;
+  shareholderForm: FormGroup | undefined;
 
   // UI State
   isSaving = signal(false);
   lastSaved = signal<Date | null>(null);
   showValidationWarning = signal(false);
-  showShareholderModal = signal(false);
-  editingShareholderIndex = signal(-1);
 
   // Data
   shareholders = signal<Shareholder[]>([]);
@@ -79,9 +73,6 @@ export class AdminInformationComponent implements OnInit, OnDestroy {
   AlertTriangleIcon = AlertTriangle;
   ChevronDownIcon = ChevronDown;
   ChevronUpIcon = ChevronUp;
-  PlusIcon = Plus;
-  EditIcon = Edit;
-  Trash2Icon = Trash2;
   SaveIcon = Save;
   ClockIcon = Clock;
 
@@ -119,7 +110,6 @@ export class AdminInformationComponent implements OnInit, OnDestroy {
 
   constructor() {
     this.adminForm = this.createAdminForm();
-    this.shareholderForm = this.createShareholderForm();
 
     // Setup effects in constructor (proper injection context)
     effect(() => {
@@ -194,22 +184,11 @@ export class AdminInformationComponent implements OnInit, OnDestroy {
       vatRegistered: ['', [Validators.required]],
       vatNumber: [''],
       taxCompliance: ['', [Validators.required]],
-      incomeTaxNumber: ['', [Validators.required]],
+      incomeTaxNumber: [
+        '',
+        [Validators.required, Validators.pattern(/^\d{10}$/)],
+      ],
       workmansComp: ['', [Validators.required]],
-    });
-  }
-
-  private createShareholderForm(): FormGroup {
-    return this.fb.group({
-      fullName: ['', [Validators.required]],
-      currentShareholding: [
-        '',
-        [Validators.required, Validators.min(0), Validators.max(100)],
-      ],
-      postInvestmentShareholding: [
-        '',
-        [Validators.required, Validators.min(0), Validators.max(100)],
-      ],
     });
   }
 
@@ -396,81 +375,6 @@ export class AdminInformationComponent implements OnInit, OnDestroy {
   }
 
   // ===============================
-  // SHAREHOLDER MANAGEMENT
-  // ===============================
-
-  addShareholder() {
-    this.shareholderForm.reset();
-    this.editingShareholderIndex.set(-1);
-    this.showShareholderModal.set(true);
-  }
-
-  editShareholder(index: number) {
-    const shareholder = this.shareholders()[index];
-    this.shareholderForm.patchValue(shareholder);
-    this.editingShareholderIndex.set(index);
-    this.showShareholderModal.set(true);
-  }
-
-  saveShareholder() {
-    if (!this.shareholderForm.valid) return;
-
-    const formValue = this.shareholderForm.value;
-    const shareholderData: Shareholder = {
-      id:
-        this.editingShareholderIndex() !== -1
-          ? this.shareholders()[this.editingShareholderIndex()].id
-          : Date.now().toString(),
-      fullName: formValue.fullName,
-      currentShareholding: formValue.currentShareholding,
-      postInvestmentShareholding: formValue.postInvestmentShareholding,
-    };
-
-    if (this.editingShareholderIndex() !== -1) {
-      // Update existing
-      this.shareholders.update((current) =>
-        current.map((s, i) =>
-          i === this.editingShareholderIndex() ? shareholderData : s
-        )
-      );
-    } else {
-      // Add new
-      this.shareholders.update((current) => [...current, shareholderData]);
-    }
-
-    this.syncShareholdersToService();
-    this.closeShareholderModal();
-  }
-
-  deleteShareholder(index: number) {
-    if (!confirm('Delete this shareholder?')) return;
-
-    this.shareholders.update((current) =>
-      current.filter((_, i) => i !== index)
-    );
-    this.syncShareholdersToService();
-  }
-
-  closeShareholderModal() {
-    this.showShareholderModal.set(false);
-    this.editingShareholderIndex.set(-1);
-    this.shareholderForm.reset();
-  }
-
-  private syncShareholdersToService() {
-    const existingData =
-      this.fundingApplicationService.data().companyInfo || {};
-    this.fundingApplicationService.updateCompanyInfo({
-      ...existingData,
-      ownership: this.shareholders().map((s) => ({
-        ownerName: s.fullName,
-        ownershipPercentage: s.currentShareholding,
-        role: 'Shareholder',
-      })),
-    });
-  }
-
-  // ===============================
   // UI HELPERS
   // ===============================
 
@@ -493,13 +397,36 @@ export class AdminInformationComponent implements OnInit, OnDestroy {
     return this.lastSavedText();
   }
 
+  onShareholdersChange(updatedShareholders: Shareholder[]) {
+    this.shareholders.set(updatedShareholders);
+    this.syncShareholdersToService(updatedShareholders);
+  }
+
+  private syncShareholdersToService(updatedShareholders: Shareholder[]) {
+    const existingData =
+      this.fundingApplicationService.data().companyInfo || {};
+    this.fundingApplicationService.updateCompanyInfo({
+      ...existingData,
+      ownership: updatedShareholders.map((s) => ({
+        ownerName: s.fullName,
+        ownershipPercentage: s.currentShareholding,
+        role: 'Shareholder',
+      })),
+    });
+  }
+
   getFieldError(fieldName: string): string | undefined {
     const field = this.adminForm.get(fieldName);
     if (!field?.errors || !field.touched) return undefined;
 
     const displayName = this.getFieldDisplayName(fieldName);
+
     if (field.errors['required']) return `${displayName} is required`;
     if (field.errors['email']) return 'Enter a valid email address';
+    if (field.errors['pattern'] && fieldName === 'incomeTaxNumber') {
+      return 'Income tax number must be exactly 10 digits';
+    }
+    if (field.errors['pattern']) return 'Invalid format';
     if (field.errors['min']) return 'Value must be greater than 0';
     if (field.errors['max']) return 'Value cannot exceed 100';
     if (field.errors['maxlength']) return 'Cannot exceed 500 characters';

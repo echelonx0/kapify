@@ -27,9 +27,9 @@ export interface CollectionValidation {
 }
 
 @Directive()
-export abstract class BaseCollectionStepComponent<T extends CollectionItem = CollectionItem> 
-  extends BaseFormStepComponent {
-
+export abstract class BaseCollectionStepComponent<
+  T extends CollectionItem = CollectionItem
+> extends BaseFormStepComponent {
   // Collection state
   protected collections = signal<CollectionSection[]>([]);
   protected activeForm = signal<string | null>(null);
@@ -37,12 +37,17 @@ export abstract class BaseCollectionStepComponent<T extends CollectionItem = Col
   protected showModal = signal(false);
 
   // Computed values
-  totalItems = computed(() => 
-    this.collections().reduce((total, section) => total + section.items.length, 0)
+  totalItems = computed(() =>
+    this.collections().reduce(
+      (total, section) => total + section.items.length,
+      0
+    )
   );
 
-  completedSections = computed(() =>
-    this.collections().filter(section => this.isSectionComplete(section)).length
+  completedSections = computed(
+    () =>
+      this.collections().filter((section) => this.isSectionComplete(section))
+        .length
   );
 
   overallProgress = computed(() => {
@@ -98,8 +103,8 @@ export abstract class BaseCollectionStepComponent<T extends CollectionItem = Col
     }
 
     const newItem = this.createItemFromForm(form.value);
-    this.collections.update(sections =>
-      sections.map(section =>
+    this.collections.update((sections) =>
+      sections.map((section) =>
         section.id === sectionId
           ? { ...section, items: [...section.items, newItem] }
           : section
@@ -121,14 +126,14 @@ export abstract class BaseCollectionStepComponent<T extends CollectionItem = Col
     }
 
     const updatedItem = { ...this.createItemFromForm(form.value), id: itemId };
-    this.collections.update(sections =>
-      sections.map(section =>
+    this.collections.update((sections) =>
+      sections.map((section) =>
         section.id === sectionId
           ? {
               ...section,
-              items: section.items.map(item =>
+              items: section.items.map((item) =>
                 item.id === itemId ? updatedItem : item
-              )
+              ),
             }
           : section
       )
@@ -144,10 +149,13 @@ export abstract class BaseCollectionStepComponent<T extends CollectionItem = Col
   removeItem(sectionId: string, itemId: string): void {
     if (!confirm('Are you sure you want to delete this item?')) return;
 
-    this.collections.update(sections =>
-      sections.map(section =>
+    this.collections.update((sections) =>
+      sections.map((section) =>
         section.id === sectionId
-          ? { ...section, items: section.items.filter(item => item.id !== itemId) }
+          ? {
+              ...section,
+              items: section.items.filter((item) => item.id !== itemId),
+            }
           : section
       )
     );
@@ -159,14 +167,14 @@ export abstract class BaseCollectionStepComponent<T extends CollectionItem = Col
    * Move item to different position
    */
   moveItem(sectionId: string, fromIndex: number, toIndex: number): void {
-    this.collections.update(sections =>
-      sections.map(section => {
+    this.collections.update((sections) =>
+      sections.map((section) => {
         if (section.id !== sectionId) return section;
-        
+
         const items = [...section.items];
         const [movedItem] = items.splice(fromIndex, 1);
         items.splice(toIndex, 0, movedItem);
-        
+
         return { ...section, items };
       })
     );
@@ -192,9 +200,9 @@ export abstract class BaseCollectionStepComponent<T extends CollectionItem = Col
    * Open modal to edit existing item
    */
   openEditModal(sectionId: string, itemId: string): void {
-    const section = this.collections().find(s => s.id === sectionId);
-    const item = section?.items.find(i => i.id === itemId);
-    
+    const section = this.collections().find((s) => s.id === sectionId);
+    const item = section?.items.find((i) => i.id === itemId);
+
     if (!item) return;
 
     this.activeForm.set(sectionId);
@@ -219,7 +227,7 @@ export abstract class BaseCollectionStepComponent<T extends CollectionItem = Col
   saveItem(): void {
     const sectionId = this.activeForm();
     const itemId = this.editingItemId();
-    
+
     if (!sectionId) return;
 
     if (itemId) {
@@ -237,8 +245,8 @@ export abstract class BaseCollectionStepComponent<T extends CollectionItem = Col
    * Toggle section expansion
    */
   toggleSection(sectionId: string): void {
-    this.collections.update(sections =>
-      sections.map(section =>
+    this.collections.update((sections) =>
+      sections.map((section) =>
         section.id === sectionId
           ? { ...section, expanded: !section.expanded }
           : section
@@ -250,7 +258,9 @@ export abstract class BaseCollectionStepComponent<T extends CollectionItem = Col
    * Check if section is expanded
    */
   isSectionExpanded(sectionId: string): boolean {
-    return this.collections().find(s => s.id === sectionId)?.expanded ?? false;
+    return (
+      this.collections().find((s) => s.id === sectionId)?.expanded ?? false
+    );
   }
 
   /**
@@ -265,7 +275,7 @@ export abstract class BaseCollectionStepComponent<T extends CollectionItem = Col
    * Get section by ID
    */
   getSection(sectionId: string): CollectionSection | undefined {
-    return this.collections().find(s => s.id === sectionId);
+    return this.collections().find((s) => s.id === sectionId);
   }
 
   // ===============================
@@ -276,11 +286,11 @@ export abstract class BaseCollectionStepComponent<T extends CollectionItem = Col
    * Validate all collections
    */
   validateCollections(): CollectionValidation[] {
-    return this.collections().map(section => ({
+    return this.collections().map((section) => ({
       sectionId: section.id,
       isValid: this.isSectionComplete(section),
       errors: this.getSectionErrors(section),
-      missingCount: Math.max(0, (section.minItems || 0) - section.items.length)
+      missingCount: Math.max(0, (section.minItems || 0) - section.items.length),
     }));
   }
 
@@ -290,15 +300,19 @@ export abstract class BaseCollectionStepComponent<T extends CollectionItem = Col
   private getSectionErrors(section: CollectionSection): string[] {
     const errors: string[] = [];
     const minItems = section.minItems || (section.required ? 1 : 0);
-    
+
     if (section.items.length < minItems) {
       const needed = minItems - section.items.length;
-      errors.push(`${section.title} needs ${needed} more item${needed > 1 ? 's' : ''}`);
+      errors.push(
+        `${section.title} needs ${needed} more item${needed > 1 ? 's' : ''}`
+      );
     }
 
     if (section.maxItems && section.items.length > section.maxItems) {
       const excess = section.items.length - section.maxItems;
-      errors.push(`${section.title} has ${excess} too many items (max: ${section.maxItems})`);
+      errors.push(
+        `${section.title} has ${excess} too many items (max: ${section.maxItems})`
+      );
     }
 
     return errors;
@@ -309,8 +323,8 @@ export abstract class BaseCollectionStepComponent<T extends CollectionItem = Col
    */
   areAllRequiredSectionsComplete(): boolean {
     return this.collections()
-      .filter(section => section.required)
-      .every(section => this.isSectionComplete(section));
+      .filter((section) => section.required)
+      .every((section) => this.isSectionComplete(section));
   }
 
   // ===============================
@@ -330,16 +344,16 @@ export abstract class BaseCollectionStepComponent<T extends CollectionItem = Col
   protected override customValidation() {
     const baseValidation = super.customValidation();
     const collectionValidations = this.validateCollections();
-    
+
     const collectionErrors = collectionValidations
-      .filter(v => !v.isValid)
-      .flatMap(v => v.errors);
+      .filter((v) => !v.isValid)
+      .flatMap((v) => v.errors);
 
     return {
       isValid: baseValidation.isValid && collectionErrors.length === 0,
       errors: [...baseValidation.errors, ...collectionErrors],
       warnings: baseValidation.warnings,
-      missingFields: baseValidation.missingFields
+      missingFields: baseValidation.missingFields,
     };
   }
 
@@ -367,7 +381,7 @@ export abstract class BaseCollectionStepComponent<T extends CollectionItem = Col
   hasMinimumItems(sectionId: string): boolean {
     const section = this.getSection(sectionId);
     if (!section) return false;
-    
+
     const minItems = section.minItems || (section.required ? 1 : 0);
     return section.items.length >= minItems;
   }
@@ -378,7 +392,7 @@ export abstract class BaseCollectionStepComponent<T extends CollectionItem = Col
   getMissingItemsCount(sectionId: string): number {
     const section = this.getSection(sectionId);
     if (!section) return 0;
-    
+
     const minItems = section.minItems || (section.required ? 1 : 0);
     return Math.max(0, minItems - section.items.length);
   }
@@ -413,8 +427,8 @@ export abstract class BaseCollectionStepComponent<T extends CollectionItem = Col
     if (!section || !searchTerm.trim()) return section?.items || [];
 
     const term = searchTerm.toLowerCase();
-    return section.items.filter(item =>
-      Object.values(item).some(value =>
+    return section.items.filter((item) =>
+      Object.values(item).some((value) =>
         value?.toString().toLowerCase().includes(term)
       )
     );
@@ -423,14 +437,18 @@ export abstract class BaseCollectionStepComponent<T extends CollectionItem = Col
   /**
    * Get items sorted by a specific field
    */
-  getSortedItems(sectionId: string, sortBy: string, ascending = true): CollectionItem[] {
+  getSortedItems(
+    sectionId: string,
+    sortBy: string,
+    ascending = true
+  ): CollectionItem[] {
     const section = this.getSection(sectionId);
     if (!section) return [];
 
     return [...section.items].sort((a, b) => {
       const aVal = a[sortBy];
       const bVal = b[sortBy];
-      
+
       if (aVal < bVal) return ascending ? -1 : 1;
       if (aVal > bVal) return ascending ? 1 : -1;
       return 0;

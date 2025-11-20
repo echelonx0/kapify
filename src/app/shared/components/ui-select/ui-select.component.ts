@@ -1,4 +1,11 @@
-import { Component, input, signal, computed, forwardRef, output } from '@angular/core';
+import {
+  Component,
+  input,
+  signal,
+  computed,
+  forwardRef,
+  output,
+} from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 
@@ -14,12 +21,12 @@ export interface SelectOption {
   template: `
     <div class="space-y-2">
       @if (label()) {
-        <label class="block text-sm font-semibold text-slate-900">
-          {{ label() }}
-          @if (required()) {
-            <span class="text-red-600">*</span>
-          }
-        </label>
+      <label class="block text-sm font-semibold text-slate-900">
+        {{ label() }}
+        @if (required()) {
+        <span class="text-red-600 ml-0.5">*</span>
+        }
+      </label>
       }
       <select
         [disabled]="disabled()"
@@ -28,15 +35,17 @@ export interface SelectOption {
         (change)="onChange($event)"
         (blur)="onTouched()"
       >
-        <option value="" disabled>{{ placeholder() || 'Select an option' }}</option>
+        <option value="" disabled>
+          {{ placeholder() || 'Select an option' }}
+        </option>
         @for (option of options(); track option.value) {
-          <option [value]="option.value">{{ option.label }}</option>
+        <option [value]="option.value">{{ option.label }}</option>
         }
       </select>
       @if (error()) {
-        <p class="text-sm text-red-700">{{ error() }}</p>
+      <p class="text-xs font-medium text-red-700">{{ error() }}</p>
       } @else if (hint()) {
-        <p class="text-xs text-slate-600">{{ hint() }}</p>
+      <p class="text-xs text-slate-500">{{ hint() }}</p>
       }
     </div>
   `,
@@ -44,9 +53,9 @@ export interface SelectOption {
     {
       provide: NG_VALUE_ACCESSOR,
       useExisting: forwardRef(() => UiSelectComponent),
-      multi: true
-    }
-  ]
+      multi: true,
+    },
+  ],
 })
 export class UiSelectComponent implements ControlValueAccessor {
   label = input<string>();
@@ -57,20 +66,27 @@ export class UiSelectComponent implements ControlValueAccessor {
   hint = input<string>();
   options = input<SelectOption[]>([]);
   value = signal<string | number | boolean>('');
-  
-  // Emit value changes for non-form-control usage
+
   valueChange = output<string | number | boolean>();
 
   private changeCallback = (value: string | number | boolean) => {};
   private touchedCallback = () => {};
 
   selectClasses = computed(() => {
-  const baseClasses = 'block w-full px-4 py-2.5 border rounded-md shadow-sm placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-offset-0 sm:text-sm transition-colors';
-   const stateClasses = this.error()
-      ? 'border-red-300 focus:border-red-500 focus:ring-red-500'
-      : 'border-slate-200 focus:border-primary-500 focus:ring-primary-500';
-    const disabledClasses = this.disabled() ? 'bg-slate-50 cursor-not-allowed opacity-60' : 'hover:border-slate-300';
-    return [baseClasses, stateClasses, disabledClasses].join(' ');
+    const base =
+      'block w-full px-4 py-2.5 border text-sm font-normal transition-all duration-200 focus:outline-none';
+
+    const errorClasses = this.error()
+      ? 'border-red-300 bg-red-50/50 focus:border-red-500 focus:ring-2 focus:ring-red-500/10'
+      : 'border-slate-200 bg-white hover:border-slate-300 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/10';
+
+    const disabledClasses = this.disabled()
+      ? 'bg-slate-50 border-slate-100 text-slate-400 cursor-not-allowed opacity-60'
+      : '';
+
+    const rounded = 'rounded-xl';
+
+    return `${base} ${errorClasses} ${disabledClasses} ${rounded}`;
   });
 
   onChange(event: Event): void {
