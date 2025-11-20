@@ -1,8 +1,18 @@
-// src/app/ai/ai-analysis/components/comprehensive-analysis-results.component.ts
-
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { LucideAngularModule, Bot, CheckCircle, TrendingUp, AlertTriangle, RefreshCw, DollarSign, Target, Users, FileText, Shield } from 'lucide-angular';
+import {
+  LucideAngularModule,
+  Bot,
+  CheckCircle,
+  TrendingUp,
+  AlertTriangle,
+  RefreshCw,
+  DollarSign,
+  Target,
+  Users,
+  FileText,
+  Shield,
+} from 'lucide-angular';
 import { UiButtonComponent } from 'src/app/shared/components';
 import { ComprehensiveAnalysis } from '../../services/modular-ai-analysis.service';
 
@@ -11,219 +21,290 @@ import { ComprehensiveAnalysis } from '../../services/modular-ai-analysis.servic
   standalone: true,
   imports: [CommonModule, LucideAngularModule, UiButtonComponent],
   template: `
-    <div class="divide-y divide-gray-100">
-      
-      <!-- Comprehensive Header -->
-      <div class="px-8 py-6 bg-gradient-to-r from-slate-50 to-cyan-50">
-        <div class="flex items-center justify-between">
-          <div class="flex items-center space-x-4">
-            <div class="w-12 h-12 bg-gradient-to-br from-slate-600 to-cyan-600 rounded-xl flex items-center justify-center">
-              <lucide-icon [img]="BotIcon" [size]="20" class="text-white" />
-            </div>
-            <div>
-              <h3 class="text-xl font-semibold text-gray-900">
-                {{ analysisPerspective === 'sme' ? 'Application Readiness Report' : 'Investment Analysis Report' }}
-              </h3>
-              <p class="text-gray-600 mt-1">
-                Generated {{ formatTime(analysis.analysisDate) }} • 
-                {{ analysis.confidence }}% confidence
-              </p>
-            </div>
+    <div class="divide-y divide-slate-200">
+      <!-- Header -->
+      <div
+        class="px-6 lg:px-8 py-4 lg:py-6 bg-slate-50/50 border-b border-slate-200 flex items-center justify-between"
+      >
+        <div class="flex items-center gap-4">
+          <div
+            class="w-10 h-10 bg-teal-100 text-teal-600 rounded-lg flex items-center justify-center flex-shrink-0"
+          >
+            <lucide-icon [img]="BotIcon" [size]="18" />
           </div>
-          <ui-button variant="ghost" size="sm" (click)="handleRefresh()">
-            <lucide-icon [img]="RefreshCwIcon" [size]="16" class="mr-2" />
-            Refresh
-          </ui-button>
+          <div class="min-w-0">
+            <h2 class="text-lg font-semibold text-slate-900">
+              {{
+                analysisPerspective === 'sme'
+                  ? 'Application Analysis'
+                  : 'Investment Analysis'
+              }}
+            </h2>
+            <p class="text-xs text-slate-500 mt-0.5">
+              {{ formatTime(analysis.analysisDate) }} •
+              {{ analysis.confidence }}% confidence
+            </p>
+          </div>
         </div>
+        <ui-button variant="ghost" size="sm" (click)="handleRefresh()">
+          <lucide-icon [img]="RefreshCwIcon" [size]="16" class="mr-2" />
+          Refresh
+        </ui-button>
       </div>
 
-      <!-- Analysis Warnings (if any) -->
+      <!-- Warnings (if any) -->
       @if (analysisWarnings.length > 0) {
-        <div class="px-8 py-4 bg-amber-50 border-l-4 border-amber-400">
-          <div class="flex items-start">
-            <lucide-icon [img]="AlertTriangleIcon" [size]="20" class="text-amber-600 mt-0.5 mr-3" />
-            <div class="flex-1">
-              <h4 class="font-semibold text-amber-900 mb-2">Analysis Completed with Limitations</h4>
-              <div class="space-y-1">
-                @for (warning of analysisWarnings; track $index) {
-                  <p class="text-amber-800 text-sm">{{ warning }}</p>
-                }
-              </div>
-              <div class="mt-3">
-                <ui-button variant="outline" size="sm" (click)="handleRetry()" 
-                          class="text-amber-700 border-amber-300 hover:bg-amber-100">
-                  <lucide-icon [img]="RefreshCwIcon" [size]="14" class="mr-1" />
-                  Retry for Better Accuracy
-                </ui-button>
-              </div>
+      <div class="px-6 lg:px-8 py-4 bg-amber-50 border-l-4 border-amber-600">
+        <div class="flex items-start gap-4">
+          <lucide-icon
+            [img]="AlertTriangleIcon"
+            [size]="18"
+            class="text-amber-600 flex-shrink-0 mt-0.5"
+          />
+          <div class="flex-1 min-w-0">
+            <h4 class="font-semibold text-amber-900 mb-2">Analysis Note</h4>
+            <div class="space-y-1 mb-3">
+              @for (warning of analysisWarnings; track $index) {
+              <p class="text-amber-700 text-sm">{{ warning }}</p>
+              }
             </div>
+            <ui-button variant="secondary" size="sm" (click)="handleRetry()">
+              <lucide-icon [img]="RefreshCwIcon" [size]="14" class="mr-1" />
+              Retry
+            </ui-button>
           </div>
         </div>
+      </div>
       }
 
-      <!-- Overall Assessment -->
-      <div class="px-8 py-6">
-        <div class="flex items-center justify-between mb-6">
-          <div class="flex items-center space-x-6">
-            <div class="text-5xl font-bold text-gray-900">
+      <!-- Overall Score Section -->
+      <div class="px-6 lg:px-8 py-6 space-y-6">
+        <div class="flex flex-col sm:flex-row sm:items-end gap-4">
+          <div class="flex items-baseline gap-3">
+            <div class="text-4xl font-bold text-slate-900">
               {{ analysis.overallScore }}%
             </div>
-            <div>
-              <div class="px-4 py-2 rounded-full text-sm font-semibold mb-2"
-                   [class]="'bg-' + getReadinessColor() + '-100 text-' + getReadinessColor() + '-800'">
-                {{ getReadinessLevel() | titlecase }}
-              </div>
-              <p class="text-sm text-gray-600 font-medium">
-                {{ analysisPerspective === 'sme' ? 'Application Readiness' : 'Investment Recommendation' }}
-              </p>
+            <div
+              [class]="getReadinessBadgeClass()"
+              class="px-3 py-1 rounded-full text-sm font-semibold"
+            >
+              {{ getReadinessLevel() | titlecase }}
             </div>
           </div>
+          <p class="text-sm text-slate-600">
+            {{
+              analysisPerspective === 'sme'
+                ? 'Application Readiness'
+                : 'Investment Recommendation'
+            }}
+          </p>
         </div>
 
         <!-- Progress Bar -->
-        <div class="w-full bg-gray-200 rounded-full h-4 mb-8">
-          <div [class]="getScoreBarClass(analysis.overallScore)" 
-               class="h-4 rounded-full transition-all duration-1000 ease-out" 
-               [style.width.%]="analysis.overallScore"></div>
+        <div>
+          <div class="h-2 bg-slate-100 rounded-full overflow-hidden">
+            <div
+              [class]="getScoreBarGradient(analysis.overallScore)"
+              class="h-full rounded-full transition-all duration-1000 ease-out"
+              [style.width.%]="analysis.overallScore"
+            ></div>
+          </div>
         </div>
 
         <!-- Module Scores Grid -->
-        <div class="grid grid-cols-2 lg:grid-cols-5 gap-6">
-          <div class="bg-gray-50 rounded-xl p-4 text-center">
-            <lucide-icon [img]="DollarSignIcon" [size]="24" class="text-green-600 mx-auto mb-2" />
-            <div class="text-2xl font-bold text-gray-900">
+        <div class="grid grid-cols-2 lg:grid-cols-5 gap-4">
+          <div
+            class="bg-white border border-slate-200 rounded-xl p-4 text-center"
+          >
+            <lucide-icon
+              [img]="DollarSignIcon"
+              [size]="18"
+              class="text-green-600 mx-auto mb-2"
+            />
+            <div class="text-2xl font-bold text-slate-900">
               {{ analysis.financial.overallScore }}%
             </div>
-            <p class="text-sm text-gray-600 font-medium">Financial</p>
+            <p class="text-xs text-slate-600 font-semibold mt-1">Financial</p>
           </div>
-          
-          <div class="bg-gray-50 rounded-xl p-4 text-center">
-            <lucide-icon [img]="TargetIcon" [size]="24" class="text-blue-600 mx-auto mb-2" />
-            <div class="text-2xl font-bold text-gray-900">
+
+          <div
+            class="bg-white border border-slate-200 rounded-xl p-4 text-center"
+          >
+            <lucide-icon
+              [img]="TargetIcon"
+              [size]="18"
+              class="text-teal-600 mx-auto mb-2"
+            />
+            <div class="text-2xl font-bold text-slate-900">
               {{ getMarketScore() }}%
             </div>
-            <p class="text-sm text-gray-600 font-medium">Market</p>
+            <p class="text-xs text-slate-600 font-semibold mt-1">Market</p>
           </div>
-          
-          <div class="bg-gray-50 rounded-xl p-4 text-center">
-            <lucide-icon [img]="UsersIcon" [size]="24" class="text-slate-600 mx-auto mb-2" />
-            <div class="text-2xl font-bold text-gray-900">
+
+          <div
+            class="bg-white border border-slate-200 rounded-xl p-4 text-center"
+          >
+            <lucide-icon
+              [img]="UsersIcon"
+              [size]="18"
+              class="text-slate-600 mx-auto mb-2"
+            />
+            <div class="text-2xl font-bold text-slate-900">
               {{ getManagementScore() }}%
             </div>
-            <p class="text-sm text-gray-600 font-medium">Management</p>
+            <p class="text-xs text-slate-600 font-semibold mt-1">Team</p>
           </div>
-          
-          <div class="bg-gray-50 rounded-xl p-4 text-center">
-            <lucide-icon [img]="FileTextIcon" [size]="24" class="text-orange-600 mx-auto mb-2" />
-            <div class="text-2xl font-bold text-gray-900">
+
+          <div
+            class="bg-white border border-slate-200 rounded-xl p-4 text-center"
+          >
+            <lucide-icon
+              [img]="FileTextIcon"
+              [size]="18"
+              class="text-amber-600 mx-auto mb-2"
+            />
+            <div class="text-2xl font-bold text-slate-900">
               {{ analysis.compliance.completenessScore }}%
             </div>
-            <p class="text-sm text-gray-600 font-medium">Compliance</p>
+            <p class="text-xs text-slate-600 font-semibold mt-1">Compliance</p>
           </div>
-          
-          <div class="bg-gray-50 rounded-xl p-4 text-center">
-            <lucide-icon [img]="ShieldIcon" [size]="24" class="text-red-600 mx-auto mb-2" />
-            <div class="text-2xl font-bold text-gray-900">
+
+          <div
+            class="bg-white border border-slate-200 rounded-xl p-4 text-center"
+          >
+            <lucide-icon
+              [img]="ShieldIcon"
+              [size]="18"
+              class="text-red-600 mx-auto mb-2"
+            />
+            <div class="text-2xl font-bold text-slate-900">
               {{ getRiskScore() }}%
             </div>
-            <p class="text-sm text-gray-600 font-medium">{{ analysisPerspective === 'sme' ? 'Readiness' : 'Risk Adj.' }}</p>
+            <p class="text-xs text-slate-600 font-semibold mt-1">
+              {{ analysisPerspective === 'sme' ? 'Ready' : 'Risk' }}
+            </p>
           </div>
         </div>
       </div>
 
       <!-- Key Insights -->
-      <div class="px-8 py-6 space-y-6">
-        
+      <div class="px-6 lg:px-8 py-6 space-y-6">
         <!-- Rationale -->
-        <div class="bg-blue-50 border-l-4 border-blue-400 p-6 rounded-r-lg">
-          <div class="flex items-center space-x-3 mb-4">
-            <lucide-icon [img]="FileTextIcon" [size]="20" class="text-blue-600" />
-            <h4 class="font-semibold text-blue-900 text-lg">Assessment Summary</h4>
+        <div class="bg-blue-50 border border-blue-200/50 rounded-xl p-4">
+          <div class="flex items-start gap-3">
+            <lucide-icon
+              [img]="FileTextIcon"
+              [size]="18"
+              class="text-blue-600 flex-shrink-0 mt-0.5"
+            />
+            <div class="flex-1 min-w-0">
+              <h4 class="font-semibold text-blue-900 mb-2">Summary</h4>
+              <p class="text-blue-700 text-sm leading-relaxed">
+                {{ getRationale() }}
+              </p>
+            </div>
           </div>
-          <p class="text-blue-800 leading-relaxed">
-            {{ getRationale() }}
-          </p>
         </div>
 
         <!-- Key Insights -->
         @if (getKeyInsights().length > 0) {
-          <div class="bg-green-50 border-l-4 border-green-400 p-6 rounded-r-lg">
-            <div class="flex items-center space-x-3 mb-4">
-              <lucide-icon [img]="CheckCircleIcon" [size]="20" class="text-green-600" />
-              <h4 class="font-semibold text-green-900 text-lg">
-                {{ analysisPerspective === 'sme' ? 'Competitive Advantages' : 'Key Strengths' }}
-              </h4>
-            </div>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-              @for (insight of getKeyInsights(); track $index) {
-                <div class="flex items-start space-x-3">
-                  <div class="w-2 h-2 bg-green-500 rounded-full mt-2 flex-shrink-0"></div>
-                  <span class="text-green-800 font-medium">{{ insight }}</span>
-                </div>
-              }
-            </div>
+        <div class="bg-green-50 border border-green-200/50 rounded-xl p-4">
+          <div class="flex items-start gap-3 mb-4">
+            <lucide-icon
+              [img]="CheckCircleIcon"
+              [size]="18"
+              class="text-green-600 flex-shrink-0 mt-0.5"
+            />
+            <h4 class="font-semibold text-green-900">
+              {{ analysisPerspective === 'sme' ? 'Strengths' : 'Strengths' }}
+            </h4>
           </div>
+          <div class="space-y-2">
+            @for (insight of getKeyInsights(); track $index) {
+            <div class="flex items-start gap-2 text-sm">
+              <div
+                class="w-1.5 h-1.5 bg-green-600 rounded-full mt-1.5 flex-shrink-0"
+              ></div>
+              <span class="text-green-700">{{ insight }}</span>
+            </div>
+            }
+          </div>
+        </div>
         }
 
         <!-- Action Items -->
         @if (getActionItems().length > 0) {
-          <div class="bg-orange-50 border-l-4 border-orange-400 p-6 rounded-r-lg">
-            <div class="flex items-center space-x-3 mb-4">
-              <lucide-icon [img]="TrendingUpIcon" [size]="20" class="text-orange-600" />
-              <h4 class="font-semibold text-orange-900 text-lg">
-                {{ analysisPerspective === 'sme' ? 'Action Plan' : 'Conditions' }}
-              </h4>
-            </div>
-            <div class="space-y-3">
-              @for (action of getActionItems(); track $index) {
-                <div class="flex items-start space-x-3 bg-white rounded-lg p-4 border border-orange-200">
-                  <div class="w-6 h-6 bg-orange-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <span class="text-xs font-bold text-orange-600">{{ $index + 1 }}</span>
-                  </div>
-                  <span class="text-orange-800 font-medium">{{ action }}</span>
-                </div>
-              }
-            </div>
+        <div class="bg-amber-50 border border-amber-200/50 rounded-xl p-4">
+          <div class="flex items-start gap-3 mb-4">
+            <lucide-icon
+              [img]="TrendingUpIcon"
+              [size]="18"
+              class="text-amber-600 flex-shrink-0 mt-0.5"
+            />
+            <h4 class="font-semibold text-amber-900">
+              {{
+                analysisPerspective === 'sme' ? 'Action Items' : 'Conditions'
+              }}
+            </h4>
           </div>
+          <div class="space-y-3">
+            @for (action of getActionItems(); track $index) {
+            <div class="flex gap-3 text-sm">
+              <div
+                class="w-5 h-5 bg-amber-100 text-amber-700 rounded-full flex items-center justify-center flex-shrink-0 text-xs font-semibold"
+              >
+                {{ $index + 1 }}
+              </div>
+              <span class="text-amber-700 pt-0.5">{{ action }}</span>
+            </div>
+            }
+          </div>
+        </div>
         }
       </div>
 
-      <!-- Final Actions -->
-      <div class="px-8 py-6 bg-gray-50 flex items-center justify-between">
-        <div class="text-sm text-gray-600">
-          <span class="font-medium">Analysis completed:</span> {{ formatTime(analysis.analysisDate) }} • 
-          <span class="font-medium">Processing time:</span> {{ analysis.processingTimeMs / 1000 | number:'1.1-1' }}s
-        </div>
-        
-        <div class="flex space-x-4">
+      <!-- Footer Actions -->
+      <div
+        class="px-6 lg:px-8 py-4 bg-slate-50/50 border-t border-slate-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
+      >
+        <p class="text-xs text-slate-500">
+          <span class="font-medium">Completed:</span>
+          {{ formatTime(analysis.analysisDate) }} •
+          <span class="font-medium">Time:</span>
+          {{ analysis.processingTimeMs / 1000 | number : '1.1-1' }}s
+        </p>
+
+        <div class="flex flex-col sm:flex-row gap-3">
           @if (analysisPerspective === 'sme') {
-            <ui-button variant="outline" (click)="handleImprove()">
-              <lucide-icon [img]="TrendingUpIcon" [size]="16" class="mr-2" />
-              Improve Profile
-            </ui-button>
-            @if (analysis.overallScore >= 70) {
-              <ui-button variant="primary" (click)="handleProceed()" 
-                        class="bg-green-600 hover:bg-green-700">
-                <lucide-icon [img]="CheckCircleIcon" [size]="16" class="mr-2" />
-                Ready to Apply
-              </ui-button>
-            }
-          } @else {
-            <ui-button variant="outline" (click)="handleRefresh()">
-              <lucide-icon [img]="RefreshCwIcon" [size]="16" class="mr-2" />
-              Re-analyze
-            </ui-button>
+          <ui-button variant="secondary" (click)="handleImprove()">
+            <lucide-icon [img]="TrendingUpIcon" [size]="16" class="mr-2" />
+            Improve
+          </ui-button>
+          @if (analysis.overallScore >= 70) {
+          <ui-button
+            variant="primary"
+            (click)="handleProceed()"
+            class="bg-green-600 hover:bg-green-700 active:bg-green-800"
+          >
+            <lucide-icon [img]="CheckCircleIcon" [size]="16" class="mr-2" />
+            Proceed
+          </ui-button>
+          } } @else {
+          <ui-button variant="secondary" (click)="handleRefresh()">
+            <lucide-icon [img]="RefreshCwIcon" [size]="16" class="mr-2" />
+            Re-analyze
+          </ui-button>
           }
         </div>
       </div>
     </div>
-  `
+  `,
 })
 export class ComprehensiveAnalysisResultsComponent {
   @Input() analysis!: ComprehensiveAnalysis;
   @Input() analysisPerspective: 'sme' | 'investor' = 'sme';
   @Input() analysisWarnings: string[] = [];
-  
+
   @Output() improveApplication = new EventEmitter<void>();
   @Output() proceedWithApplication = new EventEmitter<void>();
   @Output() refreshAnalysis = new EventEmitter<void>();
@@ -249,68 +330,99 @@ export class ComprehensiveAnalysisResultsComponent {
     }
   }
 
-  getReadinessColor(): string {
+  getReadinessBadgeClass(): string {
     const level = this.getReadinessLevel();
-    
+
     if (this.analysisPerspective === 'sme') {
       switch (level) {
-        case 'ready_to_submit': return 'green';
-        case 'needs_minor_improvements': return 'orange';
-        case 'requires_major_work': return 'red';
-        default: return 'gray';
+        case 'ready_to_submit':
+          return 'bg-green-50 text-green-700 border border-green-200/50';
+        case 'needs_minor_improvements':
+          return 'bg-amber-50 text-amber-700 border border-amber-200/50';
+        case 'requires_major_work':
+          return 'bg-red-50 text-red-700 border border-red-200/50';
+        default:
+          return 'bg-slate-100 text-slate-700 border border-slate-200';
       }
     } else {
       switch (level) {
-        case 'approve': return 'green';
-        case 'conditional_approve': return 'orange';
-        case 'reject': return 'red';
-        case 'request_more_info': return 'blue';
-        default: return 'gray';
+        case 'approve':
+          return 'bg-green-50 text-green-700 border border-green-200/50';
+        case 'conditional_approve':
+          return 'bg-amber-50 text-amber-700 border border-amber-200/50';
+        case 'reject':
+          return 'bg-red-50 text-red-700 border border-red-200/50';
+        case 'request_more_info':
+          return 'bg-blue-50 text-blue-700 border border-blue-200/50';
+        default:
+          return 'bg-slate-100 text-slate-700 border border-slate-200';
       }
     }
   }
 
-  getScoreBarClass(score: number): string {
+  getScoreBarGradient(score: number): string {
     if (score >= 70) return 'bg-gradient-to-r from-green-500 to-green-600';
-    if (score >= 40) return 'bg-gradient-to-r from-orange-500 to-orange-600';
+    if (score >= 40) return 'bg-gradient-to-r from-amber-500 to-amber-600';
     return 'bg-gradient-to-r from-red-500 to-red-600';
   }
 
   getMarketScore(): number {
-    if (this.analysisPerspective === 'sme' && this.analysis.market.marketAppealScore !== undefined) {
+    if (
+      this.analysisPerspective === 'sme' &&
+      this.analysis.market.marketAppealScore !== undefined
+    ) {
       return this.analysis.market.marketAppealScore;
     }
-    if (this.analysisPerspective === 'investor' && this.analysis.market.differentiationScore !== undefined) {
+    if (
+      this.analysisPerspective === 'investor' &&
+      this.analysis.market.differentiationScore !== undefined
+    ) {
       return this.analysis.market.differentiationScore;
     }
-    return 50; // Default
+    return 50;
   }
 
   getManagementScore(): number {
-    if (this.analysisPerspective === 'sme' && this.analysis.management.leadershipReadinessScore !== undefined) {
+    if (
+      this.analysisPerspective === 'sme' &&
+      this.analysis.management.leadershipReadinessScore !== undefined
+    ) {
       return this.analysis.management.leadershipReadinessScore;
     }
-    if (this.analysisPerspective === 'investor' && this.analysis.management.leadershipScore !== undefined) {
+    if (
+      this.analysisPerspective === 'investor' &&
+      this.analysis.management.leadershipScore !== undefined
+    ) {
       return this.analysis.management.leadershipScore;
     }
-    return 50; // Default
+    return 50;
   }
 
   getRiskScore(): number {
-    if (this.analysisPerspective === 'sme' && this.analysis.risk.applicationReadinessScore !== undefined) {
+    if (
+      this.analysisPerspective === 'sme' &&
+      this.analysis.risk.applicationReadinessScore !== undefined
+    ) {
       return this.analysis.risk.applicationReadinessScore;
     }
-    if (this.analysisPerspective === 'investor' && this.analysis.risk.overallRiskScore !== undefined) {
-      return 100 - this.analysis.risk.overallRiskScore; // Invert risk to positive score
+    if (
+      this.analysisPerspective === 'investor' &&
+      this.analysis.risk.overallRiskScore !== undefined
+    ) {
+      return 100 - this.analysis.risk.overallRiskScore;
     }
-    return 50; // Default
+    return 50;
   }
 
   getRationale(): string {
     if (this.analysisPerspective === 'sme') {
-      return this.analysis.readinessRationale || 'Analysis completed successfully.';
+      return (
+        this.analysis.readinessRationale || 'Analysis completed successfully.'
+      );
     } else {
-      return this.analysis.investmentRationale || 'Investment evaluation completed.';
+      return (
+        this.analysis.investmentRationale || 'Investment evaluation completed.'
+      );
     }
   }
 
@@ -334,15 +446,15 @@ export class ComprehensiveAnalysisResultsComponent {
     const now = new Date();
     const diffMs = now.getTime() - date.getTime();
     const diffMins = Math.floor(diffMs / 60000);
-    
+
     if (diffMins < 1) return 'just now';
-    if (diffMins < 60) return `${diffMins} minutes ago`;
-    
+    if (diffMins < 60) return `${diffMins}m ago`;
+
     const diffHours = Math.floor(diffMins / 60);
-    if (diffHours < 24) return `${diffHours} hours ago`;
-    
+    if (diffHours < 24) return `${diffHours}h ago`;
+
     const diffDays = Math.floor(diffHours / 24);
-    return `${diffDays} days ago`;
+    return `${diffDays}d ago`;
   }
 
   handleImprove() {
