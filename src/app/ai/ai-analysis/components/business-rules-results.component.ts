@@ -1,8 +1,15 @@
-// src/app/ai/ai-analysis/components/business-rules-results.component.ts
-
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { LucideAngularModule, CheckCircle, TrendingUp, AlertTriangle, Target, FileText, RefreshCw, Bot } from 'lucide-angular';
+import {
+  LucideAngularModule,
+  CheckCircle,
+  TrendingUp,
+  AlertTriangle,
+  Target,
+  FileText,
+  RefreshCw,
+  Bot,
+} from 'lucide-angular';
 import { UiButtonComponent } from 'src/app/shared/components';
 import { BusinessRulesResult } from '../../services/business-rules.service';
 
@@ -11,269 +18,339 @@ import { BusinessRulesResult } from '../../services/business-rules.service';
   standalone: true,
   imports: [CommonModule, LucideAngularModule, UiButtonComponent],
   template: `
-    <div class="divide-y divide-gray-100">
-      
-      <!-- Header Section -->
-      <div class="px-8 py-6 bg-gradient-to-r from-gray-50 to-gray-100">
-        <div class="flex items-center justify-between">
-          <div>
-            <h3 class="text-xl font-semibold text-gray-900">Initial Assessment</h3>
-            <p class="text-gray-600 mt-1">Generated {{ formatTime(result.generatedAt) }}</p>
-          </div>
-          <ui-button variant="ghost" size="sm" (click)="handleRefresh()">
-            <lucide-icon [img]="RefreshCwIcon" [size]="16" class="mr-2" />
-            Refresh
-          </ui-button>
+    <div class="divide-y divide-slate-200">
+      <!-- Header -->
+      <div
+        class="px-6 lg:px-8 py-4 lg:py-6 bg-slate-50/50 border-b border-slate-200 flex items-center justify-between"
+      >
+        <div>
+          <h3 class="text-lg font-semibold text-slate-900">
+            Assessment Results
+          </h3>
+          <p class="text-xs text-slate-500 mt-1">
+            {{ formatTime(result.generatedAt) }}
+          </p>
         </div>
+        <ui-button variant="ghost" size="sm" (click)="handleRefresh()">
+          <lucide-icon [img]="RefreshCwIcon" [size]="16" class="mr-2" />
+          Refresh
+        </ui-button>
       </div>
 
-      <!-- Overall Score Section -->
-      <div class="px-8 py-6">
-        <div class="flex items-center justify-between mb-6">
-          <div class="flex items-center space-x-4">
-            <div class="text-4xl font-bold text-gray-900">
+      <!-- Score Section -->
+      <div class="px-6 lg:px-8 py-6 space-y-6">
+        <div class="flex items-center justify-between gap-4">
+          <div class="flex items-baseline gap-3">
+            <div class="text-4xl font-bold text-slate-900">
               {{ result.compatibilityScore }}%
             </div>
-            <div>
-              <div [class]="getCompatibilityBadgeClass(result.eligibilityStatus)" 
-                   class="capitalize mb-2">
-                {{ result.eligibilityStatus }}
-              </div>
-              <p class="text-sm text-gray-600">
-                {{ analysisPerspective === 'sme' ? 'Application Readiness' : 'Investment Compatibility' }}
-              </p>
+            <div
+              [class]="getEligibilityBadgeClass(result.eligibilityStatus)"
+              class="px-3 py-1 rounded-full text-sm font-semibold"
+            >
+              {{ result.eligibilityStatus | titlecase }}
             </div>
           </div>
-        </div>
-        
-        <div class="w-full bg-gray-200 rounded-full h-3 mb-6">
-          <div [class]="getScoreBarClass(result.compatibilityScore)" 
-               class="h-3 rounded-full transition-all duration-700 ease-out" 
-               [style.width.%]="result.compatibilityScore"></div>
+          <p class="text-sm text-slate-600">
+            {{
+              analysisPerspective === 'sme'
+                ? 'Readiness Score'
+                : 'Compatibility'
+            }}
+          </p>
         </div>
 
-        <!-- Score Breakdown -->
-        <div class="grid grid-cols-2 lg:grid-cols-4 gap-6">
-          <div class="bg-gray-50 rounded-lg p-4">
-            <div class="flex items-center space-x-3 mb-2">
-              <lucide-icon [img]="getMatchQualityIcon(result.industryAlignment.match)" 
-                           [size]="18" 
-                           [class]="getMatchQualityClass(result.industryAlignment.match)" />
-              <span class="font-semibold text-gray-900">Industry Match</span>
+        <!-- Progress Bar -->
+        <div class="h-2 bg-slate-100 rounded-full overflow-hidden">
+          <div
+            [class]="getScoreBarGradient(result.compatibilityScore)"
+            class="h-full rounded-full transition-all duration-700 ease-out"
+            [style.width.%]="result.compatibilityScore"
+          ></div>
+        </div>
+
+        <!-- Score Breakdown Grid -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <div class="bg-white border border-slate-200 rounded-xl p-4">
+            <div class="flex items-center gap-2 mb-2">
+              <lucide-icon
+                [img]="getMatchIcon(result.industryAlignment.match)"
+                [size]="16"
+                [class]="getMatchColor(result.industryAlignment.match)"
+              />
+              <span class="text-xs font-semibold text-slate-700">Industry</span>
             </div>
-            <div class="text-2xl font-bold text-gray-900 mb-1">
+            <div class="text-2xl font-bold text-slate-900">
               {{ result.industryAlignment.score }}/30
             </div>
-            <p class="text-sm text-gray-600 capitalize">{{ result.industryAlignment.match }}</p>
+            <p class="text-xs text-slate-500 mt-1 capitalize">
+              {{ result.industryAlignment.match }}
+            </p>
           </div>
-          
-          <div class="bg-gray-50 rounded-lg p-4">
-            <div class="flex items-center space-x-3 mb-2">
-              <lucide-icon [img]="getMatchQualityIcon(result.stageCompatibility.match)" 
-                           [size]="18" 
-                           [class]="getMatchQualityClass(result.stageCompatibility.match)" />
-              <span class="font-semibold text-gray-900">Stage Match</span>
+
+          <div class="bg-white border border-slate-200 rounded-xl p-4">
+            <div class="flex items-center gap-2 mb-2">
+              <lucide-icon
+                [img]="getMatchIcon(result.stageCompatibility.match)"
+                [size]="16"
+                [class]="getMatchColor(result.stageCompatibility.match)"
+              />
+              <span class="text-xs font-semibold text-slate-700">Stage</span>
             </div>
-            <div class="text-2xl font-bold text-gray-900 mb-1">
+            <div class="text-2xl font-bold text-slate-900">
               {{ result.stageCompatibility.score }}/25
             </div>
-            <p class="text-sm text-gray-600 capitalize">{{ result.stageCompatibility.match }}</p>
+            <p class="text-xs text-slate-500 mt-1 capitalize">
+              {{ result.stageCompatibility.match }}
+            </p>
           </div>
-          
-          <div class="bg-gray-50 rounded-lg p-4">
-            <div class="flex items-center space-x-3 mb-2">
-              <lucide-icon [img]="result.financialReadiness.level === 'strong' ? CheckCircleIcon : 
-                                   result.financialReadiness.level === 'moderate' ? TargetIcon : AlertTriangleIcon" 
-                           [size]="18" 
-                           [class]="result.financialReadiness.level === 'strong' ? 'text-green-600' : 
-                                    result.financialReadiness.level === 'moderate' ? 'text-orange-600' : 'text-red-600'" />
-              <span class="font-semibold text-gray-900">Financial</span>
+
+          <div class="bg-white border border-slate-200 rounded-xl p-4">
+            <div class="flex items-center gap-2 mb-2">
+              <lucide-icon
+                [img]="getFinancialIcon(result.financialReadiness.level)"
+                [size]="16"
+                [class]="getFinancialColor(result.financialReadiness.level)"
+              />
+              <span class="text-xs font-semibold text-slate-700"
+                >Financial</span
+              >
             </div>
-            <div class="text-2xl font-bold text-gray-900 mb-1">
+            <div class="text-2xl font-bold text-slate-900">
               {{ result.financialReadiness.score }}/25
             </div>
-            <p class="text-sm text-gray-600 capitalize">{{ result.financialReadiness.level }}</p>
+            <p class="text-xs text-slate-500 mt-1 capitalize">
+              {{ result.financialReadiness.level }}
+            </p>
           </div>
-          
-          <div class="bg-gray-50 rounded-lg p-4">
-            <div class="flex items-center space-x-3 mb-2">
-              <lucide-icon [img]="FileTextIcon" 
-                           [size]="18" 
-                           [class]="result.profileCompleteness.score >= 15 ? 'text-green-600' : 
-                                    result.profileCompleteness.score >= 10 ? 'text-orange-600' : 'text-red-600'" />
-              <span class="font-semibold text-gray-900">Completeness</span>
+
+          <div class="bg-white border border-slate-200 rounded-xl p-4">
+            <div class="flex items-center gap-2 mb-2">
+              <lucide-icon
+                [img]="FileTextIcon"
+                [size]="16"
+                class="text-slate-600"
+              />
+              <span class="text-xs font-semibold text-slate-700">Profile</span>
             </div>
-            <div class="text-2xl font-bold text-gray-900 mb-1">
+            <div class="text-2xl font-bold text-slate-900">
               {{ result.profileCompleteness.percentage }}%
             </div>
-            <p class="text-sm text-gray-600">Profile Complete</p>
+            <p class="text-xs text-slate-500 mt-1">Complete</p>
           </div>
         </div>
       </div>
 
-      <!-- Insights Section -->
-      <div class="px-8 py-6 space-y-6">
-        
+      <!-- Insights Sections -->
+      <div class="px-6 lg:px-8 py-6 space-y-6">
         <!-- Strengths -->
         @if (result.strengths.length > 0) {
-          <div class="bg-green-50 border-l-4 border-green-400 p-6 rounded-r-lg">
-            <div class="flex items-center space-x-3 mb-4">
-              <lucide-icon [img]="CheckCircleIcon" [size]="20" class="text-green-600" />
-              <h4 class="font-semibold text-green-900 text-lg">
-                {{ analysisPerspective === 'sme' ? 'Key Strengths to Highlight' : 'Investment Strengths' }}
-              </h4>
-            </div>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-              @for (strength of result.strengths; track $index) {
-                <div class="flex items-start space-x-3">
-                  <div class="w-2 h-2 bg-green-500 rounded-full mt-2 flex-shrink-0"></div>
-                  <span class="text-green-800 font-medium">{{ strength }}</span>
-                </div>
-              }
-            </div>
+        <div class="border border-green-200/50 rounded-xl p-4 bg-green-50">
+          <div class="flex items-center gap-2 mb-3">
+            <lucide-icon
+              [img]="CheckCircleIcon"
+              [size]="18"
+              class="text-green-600"
+            />
+            <h4 class="font-semibold text-green-900">
+              {{
+                analysisPerspective === 'sme'
+                  ? 'Key Strengths'
+                  : 'Investment Strengths'
+              }}
+            </h4>
           </div>
+          <div class="space-y-2">
+            @for (strength of result.strengths; track $index) {
+            <div class="flex items-start gap-2 text-sm">
+              <div
+                class="w-1.5 h-1.5 bg-green-600 rounded-full mt-1.5 flex-shrink-0"
+              ></div>
+              <span class="text-green-700">{{ strength }}</span>
+            </div>
+            }
+          </div>
+        </div>
         }
 
         <!-- Improvement Areas -->
         @if (result.improvementAreas.length > 0) {
-          <div class="bg-amber-50 border-l-4 border-amber-400 p-6 rounded-r-lg">
-            <div class="flex items-center space-x-3 mb-4">
-              <lucide-icon [img]="TrendingUpIcon" [size]="20" class="text-amber-600" />
-              <h4 class="font-semibold text-amber-900 text-lg">
-                {{ analysisPerspective === 'sme' ? 'Areas to Strengthen' : 'Investment Concerns' }}
-              </h4>
-            </div>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-              @for (area of result.improvementAreas; track $index) {
-                <div class="flex items-start space-x-3">
-                  <div class="w-2 h-2 bg-amber-500 rounded-full mt-2 flex-shrink-0"></div>
-                  <span class="text-amber-800 font-medium">{{ area }}</span>
-                </div>
-              }
-            </div>
+        <div class="border border-amber-200/50 rounded-xl p-4 bg-amber-50">
+          <div class="flex items-center gap-2 mb-3">
+            <lucide-icon
+              [img]="TrendingUpIcon"
+              [size]="18"
+              class="text-amber-600"
+            />
+            <h4 class="font-semibold text-amber-900">
+              {{
+                analysisPerspective === 'sme'
+                  ? 'Areas to Strengthen'
+                  : 'Concerns'
+              }}
+            </h4>
           </div>
+          <div class="space-y-2">
+            @for (area of result.improvementAreas; track $index) {
+            <div class="flex items-start gap-2 text-sm">
+              <div
+                class="w-1.5 h-1.5 bg-amber-600 rounded-full mt-1.5 flex-shrink-0"
+              ></div>
+              <span class="text-amber-700">{{ area }}</span>
+            </div>
+            }
+          </div>
+        </div>
         }
 
         <!-- Risk Factors -->
         @if (result.riskFlags.length > 0) {
-          <div class="bg-red-50 border-l-4 border-red-400 p-6 rounded-r-lg">
-            <div class="flex items-center space-x-3 mb-4">
-              <lucide-icon [img]="AlertTriangleIcon" [size]="20" class="text-red-600" />
-              <h4 class="font-semibold text-red-900 text-lg">
-                {{ analysisPerspective === 'sme' ? 'Critical Issues to Address' : 'Risk Factors' }}
-              </h4>
-            </div>
-            <div class="space-y-4">
-              @for (risk of result.riskFlags; track $index) {
-                <div class="flex items-start space-x-4 bg-white rounded-lg p-4 border border-red-200">
-                  <div [class]="getRiskSeverityClass(risk.severity)" class="flex-shrink-0">
-                    {{ risk.severity.toUpperCase() }}
-                  </div>
-                  <div class="flex-1 min-w-0">
-                    <p class="font-semibold text-red-900 mb-1">{{ risk.issue }}</p>
-                    <p class="text-red-700 text-sm">{{ risk.impact }}</p>
-                  </div>
-                </div>
-              }
-            </div>
+        <div class="border border-red-200/50 rounded-xl p-4 bg-red-50">
+          <div class="flex items-center gap-2 mb-4">
+            <lucide-icon
+              [img]="AlertTriangleIcon"
+              [size]="18"
+              class="text-red-600"
+            />
+            <h4 class="font-semibold text-red-900">
+              {{
+                analysisPerspective === 'sme'
+                  ? 'Critical Issues'
+                  : 'Risk Factors'
+              }}
+            </h4>
           </div>
+          <div class="space-y-3">
+            @for (risk of result.riskFlags; track $index) {
+            <div class="flex gap-3 text-sm">
+              <span
+                class="inline-block px-2 py-0.5 bg-red-100 text-red-700 text-xs font-semibold rounded whitespace-nowrap"
+              >
+                {{ risk.severity | uppercase }}
+              </span>
+              <div class="flex-1 min-w-0">
+                <p class="font-medium text-red-900">{{ risk.issue }}</p>
+                <p class="text-red-700 text-xs mt-0.5">{{ risk.impact }}</p>
+              </div>
+            </div>
+            }
+          </div>
+        </div>
         }
 
         <!-- Recommendations -->
         @if (result.recommendations.length > 0) {
-          <div class="bg-blue-50 border-l-4 border-blue-400 p-6 rounded-r-lg">
-            <div class="flex items-center space-x-3 mb-4">
-              <lucide-icon [img]="TargetIcon" [size]="20" class="text-blue-600" />
-              <h4 class="font-semibold text-blue-900 text-lg">
-                {{ analysisPerspective === 'sme' ? 'Action Plan' : 'Strategic Recommendations' }}
-              </h4>
-            </div>
-            <div class="space-y-3">
-              @for (recommendation of result.recommendations; track $index) {
-                <div class="flex items-start space-x-3 bg-white rounded-lg p-4 border border-blue-200">
-                  <div class="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <span class="text-xs font-bold text-blue-600">{{ $index + 1 }}</span>
-                  </div>
-                  <span class="text-blue-800 font-medium">{{ recommendation }}</span>
-                </div>
-              }
-            </div>
+        <div class="border border-teal-300/50 rounded-xl p-4 bg-teal-50">
+          <div class="flex items-center gap-2 mb-4">
+            <lucide-icon [img]="TargetIcon" [size]="18" class="text-teal-600" />
+            <h4 class="font-semibold text-teal-900">
+              {{
+                analysisPerspective === 'sme' ? 'Next Steps' : 'Recommendations'
+              }}
+            </h4>
           </div>
-        }
-      </div>
-
-      <!-- Comprehensive Analysis CTA Section -->
-      <div class="px-8 py-6 bg-gradient-to-r from-blue-600 to-indigo-600 text-white">
-        <div class="flex items-center justify-between">
-          <div class="flex items-start space-x-4">
-            <div class="w-12 h-12 bg-gradient-to-br from-slate-600 to-cyan-600 rounded-xl flex items-center justify-center flex-shrink-0">
-              <lucide-icon [img]="BotIcon" [size]="20" class="text-white" />
+          <div class="space-y-3">
+            @for (recommendation of result.recommendations; track $index) {
+            <div class="flex gap-3 text-sm">
+              <div
+                class="w-6 h-6 bg-teal-100 text-teal-600 rounded-full flex items-center justify-center flex-shrink-0 text-xs font-semibold"
+              >
+                {{ $index + 1 }}
+              </div>
+              <span class="text-teal-700 pt-0.5">{{ recommendation }}</span>
             </div>
-            <div class="flex-1 min-w-0">
-              <h4 class="text-xl font-semibold mb-2">
-                {{ analysisPerspective === 'sme' ? 'Ready for Detailed Analysis?' : 'Run Full Due Diligence?' }}
-              </h4>
-              <p class="text-blue-100 mb-4 leading-relaxed">
-                @if (analysisPerspective === 'sme') {
-                  Get comprehensive insights and actionable recommendations in 2-3 minutes
-                } @else {
-                  Perform complete investment evaluation with detailed risk assessment
-                }
-              </p>
-              <ui-button size="lg" variant="ghost" (click)="handleStartComprehensive()">
-                <lucide-icon [img]="BotIcon" [size]="18" class="mr-2" />
-                {{ getComprehensiveActionText() }}
-              </ui-button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Action Footer -->
-      @if (analysisMode === 'opportunity') {
-        <div class="px-8 py-6 bg-gray-50 flex items-center justify-between">
-          <div class="text-sm text-gray-600">
-            <span class="font-medium">Last updated:</span> {{ formatTime(result.generatedAt) }}
-          </div>
-          
-          <div class="flex space-x-4">
-            @if (result.compatibilityScore >= 60) {
-              <ui-button variant="outline" (click)="handleImprove()">
-                <lucide-icon [img]="TrendingUpIcon" [size]="16" class="mr-2" />
-                {{ analysisPerspective === 'sme' ? 'Optimize Profile' : 'Request Improvements' }}
-              </ui-button>
-              <ui-button variant="primary" (click)="handleProceed()" 
-                        class="bg-green-600 hover:bg-green-700">
-                <lucide-icon [img]="CheckCircleIcon" [size]="16" class="mr-2" />
-                {{ analysisPerspective === 'sme' ? 'Continue Application' : 'Proceed with Evaluation' }}
-              </ui-button>
-            } @else {
-              <ui-button (click)="handleImprove()">
-                <lucide-icon [img]="TrendingUpIcon" [size]="16" class="mr-2" />
-                {{ analysisPerspective === 'sme' ? 'Improve Profile First' : 'Request Improvements' }}
-              </ui-button>
             }
           </div>
         </div>
-      } @else {
-        <div class="px-8 py-6 bg-gray-50 flex items-center justify-between">
-          <div class="text-sm text-gray-600">
-            <span class="font-medium">Last updated:</span> {{ formatTime(result.generatedAt) }}
+        }
+      </div>
+
+      <!-- Comprehensive Analysis CTA -->
+      <div class="px-6 lg:px-8 py-6 bg-white border-t border-slate-200">
+        <div
+          class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4"
+        >
+          <div class="flex gap-4">
+            <div
+              class="w-10 h-10 bg-teal-100 text-teal-600 rounded-lg flex items-center justify-center flex-shrink-0"
+            >
+              <lucide-icon [img]="BotIcon" [size]="20" />
+            </div>
+            <div class="flex-1 min-w-0">
+              <h4 class="font-semibold text-slate-900">
+                {{
+                  analysisPerspective === 'sme'
+                    ? 'Run Full Analysis?'
+                    : 'Run Due Diligence?'
+                }}
+              </h4>
+              <p class="text-sm text-slate-600 mt-1">
+                @if (analysisPerspective === 'sme') { Get comprehensive insights
+                and action items in 2-3 minutes } @else { Complete investment
+                evaluation with detailed risk assessment }
+              </p>
+            </div>
           </div>
-          <ui-button variant="outline" (click)="handleRefresh()">
-            <lucide-icon [img]="RefreshCwIcon" [size]="16" class="mr-2" />
-            Refresh Analysis
+          <ui-button
+            variant="primary"
+            (click)="handleStartComprehensive()"
+            class="lg:whitespace-nowrap"
+          >
+            <lucide-icon [img]="BotIcon" [size]="16" class="mr-2" />
+            {{
+              analysisPerspective === 'sme'
+                ? 'Run Analysis'
+                : 'Run Due Diligence'
+            }}
           </ui-button>
         </div>
-      }
+      </div>
+
+      <!-- Actions Footer -->
+      <div
+        class="px-6 lg:px-8 py-4 bg-slate-50/50 border-t border-slate-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
+      >
+        <p class="text-xs text-slate-500">
+          <span class="font-medium">Updated:</span>
+          {{ formatTime(result.generatedAt) }}
+        </p>
+
+        @if (analysisMode === 'opportunity') {
+        <div class="flex flex-col sm:flex-row gap-3">
+          @if (result.compatibilityScore >= 60) {
+          <ui-button variant="secondary" (click)="handleImprove()">
+            <lucide-icon [img]="TrendingUpIcon" [size]="16" class="mr-2" />
+            {{ analysisPerspective === 'sme' ? 'Optimize' : 'Improve' }}
+          </ui-button>
+          <ui-button
+            variant="primary"
+            (click)="handleProceed()"
+            class="bg-green-600 hover:bg-green-700 active:bg-green-800"
+          >
+            <lucide-icon [img]="CheckCircleIcon" [size]="16" class="mr-2" />
+            {{ analysisPerspective === 'sme' ? 'Continue' : 'Proceed' }}
+          </ui-button>
+          } @else {
+          <ui-button variant="secondary" (click)="handleImprove()">
+            <lucide-icon [img]="TrendingUpIcon" [size]="16" class="mr-2" />
+            {{
+              analysisPerspective === 'sme'
+                ? 'Improve First'
+                : 'Request Changes'
+            }}
+          </ui-button>
+          }
+        </div>
+        }
+      </div>
     </div>
-  `
+  `,
 })
 export class BusinessRulesResultsComponent {
   @Input() result!: BusinessRulesResult;
   @Input() analysisMode: 'profile' | 'opportunity' = 'opportunity';
   @Input() analysisPerspective: 'sme' | 'investor' = 'sme';
-  
+
   @Output() startComprehensiveAnalysis = new EventEmitter<void>();
   @Output() improveApplication = new EventEmitter<void>();
   @Output() proceedWithApplication = new EventEmitter<void>();
@@ -288,67 +365,90 @@ export class BusinessRulesResultsComponent {
   RefreshCwIcon = RefreshCw;
   BotIcon = Bot;
 
-  getCompatibilityBadgeClass(eligibility: string): string {
-    const baseClass = 'px-3 py-1 rounded-full text-sm font-medium';
+  getEligibilityBadgeClass(eligibility: string): string {
     switch (eligibility) {
-      case 'eligible': return `${baseClass} bg-green-100 text-green-800`;
-      case 'conditional': return `${baseClass} bg-orange-100 text-orange-800`;
-      case 'ineligible': return `${baseClass} bg-red-100 text-red-800`;
-      default: return `${baseClass} bg-gray-100 text-gray-800`;
+      case 'eligible':
+        return 'bg-green-50 text-green-700 border border-green-200/50';
+      case 'conditional':
+        return 'bg-amber-50 text-amber-700 border border-amber-200/50';
+      case 'ineligible':
+        return 'bg-red-50 text-red-700 border border-red-200/50';
+      default:
+        return 'bg-slate-100 text-slate-700 border border-slate-200';
     }
   }
 
-  getScoreBarClass(score: number): string {
+  getScoreBarGradient(score: number): string {
     if (score >= 70) return 'bg-gradient-to-r from-green-500 to-green-600';
-    if (score >= 40) return 'bg-gradient-to-r from-orange-500 to-orange-600';
+    if (score >= 40) return 'bg-gradient-to-r from-amber-500 to-amber-600';
     return 'bg-gradient-to-r from-red-500 to-red-600';
   }
 
-  getRiskSeverityClass(severity: string): string {
-    const baseClass = 'px-2 py-1 rounded text-xs font-medium';
-    switch (severity) {
-      case 'high': return `${baseClass} bg-red-100 text-red-800`;
-      case 'medium': return `${baseClass} bg-orange-100 text-orange-800`;
-      case 'low': return `${baseClass} bg-yellow-100 text-yellow-800`;
-      default: return `${baseClass} bg-gray-100 text-gray-800`;
-    }
-  }
-
-  getMatchQualityIcon(match: string): any {
+  getMatchIcon(match: string): any {
     switch (match) {
-      case 'strong': return this.CheckCircleIcon;
-      case 'moderate': return this.TargetIcon;
-      case 'weak': return this.AlertTriangleIcon;
-      default: return this.AlertTriangleIcon;
+      case 'strong':
+        return this.CheckCircleIcon;
+      case 'moderate':
+        return this.TargetIcon;
+      case 'weak':
+        return this.AlertTriangleIcon;
+      default:
+        return this.AlertTriangleIcon;
     }
   }
 
-  getMatchQualityClass(match: string): string {
+  getMatchColor(match: string): string {
     switch (match) {
-      case 'strong': return 'text-green-600';
-      case 'moderate': return 'text-orange-600';
-      case 'weak': return 'text-red-600';
-      default: return 'text-gray-600';
+      case 'strong':
+        return 'text-green-600';
+      case 'moderate':
+        return 'text-amber-600';
+      case 'weak':
+        return 'text-red-600';
+      default:
+        return 'text-slate-600';
     }
   }
 
-  getComprehensiveActionText(): string {
-    return this.analysisPerspective === 'sme' ? 'Run AI Analysis' : 'Run Due Diligence';
+  getFinancialIcon(level: string): any {
+    switch (level) {
+      case 'strong':
+        return this.CheckCircleIcon;
+      case 'moderate':
+        return this.TargetIcon;
+      case 'weak':
+        return this.AlertTriangleIcon;
+      default:
+        return this.AlertTriangleIcon;
+    }
+  }
+
+  getFinancialColor(level: string): string {
+    switch (level) {
+      case 'strong':
+        return 'text-green-600';
+      case 'moderate':
+        return 'text-amber-600';
+      case 'weak':
+        return 'text-red-600';
+      default:
+        return 'text-slate-600';
+    }
   }
 
   formatTime(date: Date): string {
     const now = new Date();
     const diffMs = now.getTime() - date.getTime();
     const diffMins = Math.floor(diffMs / 60000);
-    
+
     if (diffMins < 1) return 'just now';
-    if (diffMins < 60) return `${diffMins} minutes ago`;
-    
+    if (diffMins < 60) return `${diffMins}m ago`;
+
     const diffHours = Math.floor(diffMins / 60);
-    if (diffHours < 24) return `${diffHours} hours ago`;
-    
+    if (diffHours < 24) return `${diffHours}h ago`;
+
     const diffDays = Math.floor(diffHours / 24);
-    return `${diffDays} days ago`;
+    return `${diffDays}d ago`;
   }
 
   handleStartComprehensive() {
