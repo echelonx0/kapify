@@ -20,7 +20,6 @@ import { Subject, takeUntil, debounceTime, distinctUntilChanged } from 'rxjs';
 import {
   LucideAngularModule,
   Eye,
-  Edit3,
   Save,
   Globe,
   ExternalLink,
@@ -35,7 +34,8 @@ import {
   Clock,
   Building2,
   ArrowLeft,
-  AlertCircle,
+  PenLine,
+  CircleAlert,
 } from 'lucide-angular';
 import { UiButtonComponent } from 'src/app/shared/components';
 import {
@@ -75,7 +75,7 @@ export class PublicProfileManagementComponent implements OnInit, OnDestroy {
 
   // Icons
   EyeIcon = Eye;
-  Edit3Icon = Edit3;
+  Edit3Icon = PenLine;
   SaveIcon = Save;
   GlobeIcon = Globe;
   ExternalLinkIcon = ExternalLink;
@@ -90,7 +90,7 @@ export class PublicProfileManagementComponent implements OnInit, OnDestroy {
   ClockIcon = Clock;
   Building2Icon = Building2;
   ArrowLeftIcon = ArrowLeft;
-  AlertCircleIcon = AlertCircle;
+  AlertCircleIcon = CircleAlert;
 
   // State
   profile = signal<PublicProfile | null>(null);
