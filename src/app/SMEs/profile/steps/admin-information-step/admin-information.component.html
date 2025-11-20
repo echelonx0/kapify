@@ -1,11 +1,9 @@
 <!-- src/app/profile/steps/admin-information-step/admin-information.component.html -->
-<div class="space-y-6 ml-8">
-  <!-- Header -->
-
+<div class="space-y-6 px-4 lg:px-8">
   <!-- Auto-save Status Header -->
-  <div class="bg-white rounded-lg border border-neutral-200 p-4">
+  <div class="bg-white rounded-2xl border border-slate-200 p-4">
     <div class="flex items-center justify-between">
-      <div class="text-sm text-neutral-600">
+      <div class="text-sm text-slate-600">
         Complete company information for funding assessment
       </div>
       <div class="flex items-center space-x-4">
@@ -15,17 +13,17 @@
           <lucide-icon
             [img]="ClockIcon"
             [size]="16"
-            class="text-orange-500 animate-spin"
+            class="text-amber-500 animate-spin"
           />
-          <span class="text-orange-600">Saving...</span>
+          <span class="text-amber-600">Saving...</span>
           } @else if (lastSaved()) {
-          <lucide-icon [img]="SaveIcon" [size]="16" class="text-green-500" />
-          <span class="text-green-600">Saved {{ getLastSavedText() }}</span>
+          <lucide-icon [img]="SaveIcon" [size]="16" class="text-green-600" />
+          <span class="text-green-700">Saved {{ getLastSavedText() }}</span>
           } @else {
-          <span class="text-neutral-500">Not saved</span>
+          <span class="text-slate-500">Not saved</span>
           }
         </div>
-        <!-- FIX: Removed [loading] property and added [disabled] instead -->
+        <!-- Save Button -->
         <ui-button
           variant="outline"
           size="sm"
@@ -46,27 +44,26 @@
 
   <!-- Warning Message -->
   @if (showValidationWarning()) {
-  <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+  <div class="bg-amber-50 border border-amber-200/50 rounded-xl p-4">
     <div class="flex items-start space-x-3">
       <lucide-icon
         [img]="AlertTriangleIcon"
         [size]="20"
-        class="text-yellow-600 mt-0.5 flex-shrink-0"
+        class="text-amber-600 mt-0.5 flex-shrink-0"
       />
       <div>
-        <h4 class="text-sm font-medium text-yellow-800 mb-1">
-          Warning: Some fields are empty
+        <h4 class="text-sm font-semibold text-amber-900 mb-1">
+          Incomplete sections
         </h4>
-        <p class="text-sm text-yellow-700">
-          Some required fields in some sections haven't been filled out
-          completely. You can proceed to the next section, but please note you
-          cannot submit without completely filling out all the required
-          sections.
+        <p class="text-sm text-amber-800">
+          Some required fields haven't been filled out completely. You can
+          proceed to the next section, but you cannot submit without completing
+          all required sections.
         </p>
       </div>
       <button
         (click)="dismissWarning()"
-        class="text-yellow-400 hover:text-yellow-600 ml-auto"
+        class="text-amber-400 hover:text-amber-600 ml-auto flex-shrink-0"
       >
         ×
       </button>
@@ -76,17 +73,15 @@
 
   <form [formGroup]="adminForm" class="space-y-6">
     <!-- Contact Details Section -->
-    <div class="bg-white rounded-lg border border-neutral-200">
+    <div class="bg-white rounded-2xl border border-slate-200">
       <button
         type="button"
         (click)="toggleSection('contact')"
-        class="w-full px-6 py-4 text-left flex items-center justify-between hover:bg-neutral-50 transition-colors"
+        class="w-full px-6 py-4 text-left flex items-center justify-between hover:bg-slate-50 transition-colors"
       >
         <div>
-          <h3 class="text-lg font-semibold text-neutral-900">
-            Contact Details
-          </h3>
-          <p class="text-sm text-neutral-600 mt-1">
+          <h3 class="text-lg font-semibold text-slate-900">Contact Details</h3>
+          <p class="text-sm text-slate-600 mt-1">
             Please provide details of the person to communicate with regarding
             your company's investor readiness and funding application.
           </p>
@@ -96,12 +91,12 @@
             getSectionExpanded('contact') ? ChevronUpIcon : ChevronDownIcon
           "
           [size]="20"
-          class="text-neutral-400"
+          class="text-slate-400 flex-shrink-0"
         />
       </button>
 
       @if (getSectionExpanded('contact')) {
-      <div class="px-6 pb-6 border-t border-neutral-200">
+      <div class="px-6 pb-6 border-t border-slate-200">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
           <ui-input
             label="First name"
@@ -126,32 +121,33 @@
             [required]="true"
           />
           <div>
-            <label class="block text-sm font-medium text-neutral-700 mb-2"
-              >Phone number</label
-            >
+            <label class="block text-sm font-semibold text-slate-900 mb-2">
+              Phone number
+              <span class="text-red-600 ml-0.5">*</span>
+            </label>
             <div class="flex">
               <div
-                class="flex items-center px-3 py-2 border border-r-0 border-neutral-300 rounded-l-md bg-neutral-50"
+                class="flex items-center px-4 py-2.5 border border-r-0 border-slate-200 rounded-l-xl bg-slate-50"
               >
                 <img src="/flags/za.svg" alt="ZA" class="w-4 h-4 mr-2" />
-                <span class="text-sm text-neutral-600">+27</span>
+                <span class="text-sm text-slate-600">+27</span>
               </div>
               <input
                 type="tel"
                 placeholder="717496762"
                 formControlName="phone"
-                class="flex-1 px-3 py-2 border border-neutral-300 rounded-r-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+                class="flex-1 px-4 py-2.5 border border-slate-200 rounded-r-xl text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all duration-200"
               />
             </div>
             @if (getFieldError('phone')) {
-            <p class="text-sm text-red-600 mt-1">
+            <p class="text-xs font-medium text-red-700 mt-2">
               {{ getFieldError("phone") }}
             </p>
             }
           </div>
           <ui-input
             label="Role"
-            placeholder="FD"
+            placeholder="Finance Director"
             [error]="getFieldError('role')"
             formControlName="role"
             [required]="true"
@@ -162,17 +158,15 @@
     </div>
 
     <!-- Business Details Section -->
-    <div class="bg-white rounded-lg border border-neutral-200">
+    <div class="bg-white rounded-2xl border border-slate-200">
       <button
         type="button"
         (click)="toggleSection('business')"
-        class="w-full px-6 py-4 text-left flex items-center justify-between hover:bg-neutral-50 transition-colors"
+        class="w-full px-6 py-4 text-left flex items-center justify-between hover:bg-slate-50 transition-colors"
       >
         <div>
-          <h3 class="text-lg font-semibold text-neutral-900">
-            Business Details
-          </h3>
-          <p class="text-sm text-neutral-600 mt-1">
+          <h3 class="text-lg font-semibold text-slate-900">Business Details</h3>
+          <p class="text-sm text-slate-600 mt-1">
             Please provide the requested company details.
           </p>
         </div>
@@ -181,12 +175,12 @@
             getSectionExpanded('business') ? ChevronUpIcon : ChevronDownIcon
           "
           [size]="20"
-          class="text-neutral-400"
+          class="text-slate-400 flex-shrink-0"
         />
       </button>
 
       @if (getSectionExpanded('business')) {
-      <div class="px-6 pb-6 border-t border-neutral-200">
+      <div class="px-6 pb-6 border-t border-slate-200">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
           <ui-input
             label="Name of business"
@@ -203,21 +197,21 @@
             [required]="true"
           />
           <div>
-            <label class="block text-sm font-medium text-neutral-700 mb-2"
-              >Telephone Number</label
-            >
+            <label class="block text-sm font-semibold text-slate-900 mb-2">
+              Telephone Number
+            </label>
             <div class="flex">
               <div
-                class="flex items-center px-3 py-2 border border-r-0 border-neutral-300 rounded-l-md bg-neutral-50"
+                class="flex items-center px-4 py-2.5 border border-r-0 border-slate-200 rounded-l-xl bg-slate-50"
               >
                 <img src="/flags/za.svg" alt="ZA" class="w-4 h-4 mr-2" />
-                <span class="text-sm text-neutral-600">+27</span>
+                <span class="text-sm text-slate-600">+27</span>
               </div>
               <input
                 type="tel"
                 placeholder="717496762"
                 formControlName="businessPhone"
-                class="flex-1 px-3 py-2 border border-neutral-300 rounded-r-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+                class="flex-1 px-4 py-2.5 border border-slate-200 rounded-r-xl text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all duration-200"
               />
             </div>
           </div>
@@ -234,14 +228,14 @@
         <!-- Physical Address -->
         <div class="mt-6 space-y-4">
           <div>
-            <label class="block text-sm font-medium text-neutral-700 mb-2"
-              >Physical address</label
-            >
+            <label class="block text-sm font-semibold text-slate-900 mb-2">
+              Physical address
+            </label>
             <div
-              class="flex items-center px-3 py-2 border border-neutral-300 rounded-md bg-neutral-50"
+              class="flex items-center px-4 py-2.5 border border-slate-200 rounded-xl bg-slate-50"
             >
               <img src="/flags/za.svg" alt="ZA" class="w-4 h-4 mr-2" />
-              <span class="text-sm text-neutral-600">South Africa</span>
+              <span class="text-sm text-slate-600">South Africa</span>
             </div>
           </div>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -291,12 +285,13 @@
         <!-- Business Classification -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
           <div>
-            <label class="block text-sm font-medium text-neutral-700 mb-2"
-              >Industry</label
-            >
+            <label class="block text-sm font-semibold text-slate-900 mb-2">
+              Industry
+              <span class="text-red-600 ml-0.5">*</span>
+            </label>
             <select
               formControlName="industry"
-              class="block w-full px-3 py-2 border border-neutral-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+              class="block w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all duration-200"
             >
               <option value="">Select industry</option>
               <option value="energy">Energy</option>
@@ -312,12 +307,13 @@
             </select>
           </div>
           <div>
-            <label class="block text-sm font-medium text-neutral-700 mb-2"
-              >Business stage</label
-            >
+            <label class="block text-sm font-semibold text-slate-900 mb-2">
+              Business stage
+              <span class="text-red-600 ml-0.5">*</span>
+            </label>
             <select
               formControlName="businessStage"
-              class="block w-full px-3 py-2 border border-neutral-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+              class="block w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all duration-200"
             >
               <option value="">Select stage</option>
               <option value="startup">Startup</option>
@@ -328,12 +324,12 @@
             </select>
           </div>
           <div>
-            <label class="block text-sm font-medium text-neutral-700 mb-2"
-              >BBBEE</label
-            >
+            <label class="block text-sm font-semibold text-slate-900 mb-2">
+              BBBEE Level
+            </label>
             <select
               formControlName="bbbeeLevel"
-              class="block w-full px-3 py-2 border border-neutral-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+              class="block w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all duration-200"
             >
               <option value="">Select level</option>
               <option value="level1">Level 1</option>
@@ -359,24 +355,25 @@
 
         <!-- Business Description -->
         <div class="mt-6">
-          <label class="block text-sm font-medium text-neutral-700 mb-2">
+          <label class="block text-sm font-semibold text-slate-900 mb-2">
             Brief Description of the business and activities
+            <span class="text-red-600 ml-0.5">*</span>
           </label>
           <textarea
             formControlName="businessDescription"
             rows="4"
             placeholder="Describe your business activities, services, and market focus..."
-            class="block w-full px-3 py-2 border border-neutral-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+            class="block w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all duration-200 resize-none"
           ></textarea>
-          <div class="flex justify-between items-center mt-1">
+          <div class="flex justify-between items-center mt-2">
             @if (getFieldError('businessDescription')) {
-            <p class="text-sm text-red-600">
+            <p class="text-xs font-medium text-red-700">
               {{ getFieldError("businessDescription") }}
             </p>
             } @else {
             <span></span>
             }
-            <span class="text-xs text-neutral-500">
+            <span class="text-xs text-slate-500">
               {{
                 (adminForm.get("businessDescription")?.value || "").length
               }}/500
@@ -388,37 +385,38 @@
     </div>
 
     <!-- Legal and Compliance Section -->
-    <div class="bg-white rounded-lg border border-neutral-200">
+    <div class="bg-white rounded-2xl border border-slate-200">
       <button
         type="button"
         (click)="toggleSection('legal')"
-        class="w-full px-6 py-4 text-left flex items-center justify-between hover:bg-neutral-50 transition-colors"
+        class="w-full px-6 py-4 text-left flex items-center justify-between hover:bg-slate-50 transition-colors"
       >
         <div>
-          <h3 class="text-lg font-semibold text-neutral-900">
+          <h3 class="text-lg font-semibold text-slate-900">
             Legal and Compliance
           </h3>
-          <p class="text-sm text-neutral-600 mt-1">
+          <p class="text-sm text-slate-600 mt-1">
             Please provide the requested legal and compliance company details.
           </p>
         </div>
         <lucide-icon
           [img]="getSectionExpanded('legal') ? ChevronUpIcon : ChevronDownIcon"
           [size]="20"
-          class="text-neutral-400"
+          class="text-slate-400 flex-shrink-0"
         />
       </button>
 
       @if (getSectionExpanded('legal')) {
-      <div class="px-6 pb-6 border-t border-neutral-200">
+      <div class="px-6 pb-6 border-t border-slate-200">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
           <div>
-            <label class="block text-sm font-medium text-neutral-700 mb-2"
-              >Cipc annual returns</label
-            >
+            <label class="block text-sm font-semibold text-slate-900 mb-2">
+              CIPC annual returns
+              <span class="text-red-600 ml-0.5">*</span>
+            </label>
             <select
               formControlName="cipcReturns"
-              class="block w-full px-3 py-2 border border-neutral-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+              class="block w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all duration-200"
             >
               <option value="">Select status</option>
               <option value="compliant">Compliant</option>
@@ -427,12 +425,13 @@
             </select>
           </div>
           <div>
-            <label class="block text-sm font-medium text-neutral-700 mb-2">
+            <label class="block text-sm font-semibold text-slate-900 mb-2">
               Is the Company VAT registered?
+              <span class="text-red-600 ml-0.5">*</span>
             </label>
             <select
               formControlName="vatRegistered"
-              class="block w-full px-3 py-2 border border-neutral-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+              class="block w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all duration-200"
             >
               <option value="">Select option</option>
               <option value="yes">Yes</option>
@@ -451,12 +450,13 @@
           }
 
           <div>
-            <label class="block text-sm font-medium text-neutral-700 mb-2"
-              >Tax compliance status</label
-            >
+            <label class="block text-sm font-semibold text-slate-900 mb-2">
+              Tax compliance status
+              <span class="text-red-600 ml-0.5">*</span>
+            </label>
             <select
               formControlName="taxCompliance"
-              class="block w-full px-3 py-2 border border-neutral-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+              class="block w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all duration-200"
             >
               <option value="">Select status</option>
               <option value="compliant">Compliant</option>
@@ -467,19 +467,23 @@
 
           <ui-input
             label="Income TAX Number"
-            placeholder="9087890954"
+            type="number"
+            placeholder="1234567890"
             [error]="getFieldError('incomeTaxNumber')"
             formControlName="incomeTaxNumber"
+            [maxLength]="10"
             [required]="true"
+            hint="Exactly 10 digits"
           />
 
           <div>
-            <label class="block text-sm font-medium text-neutral-700 mb-2"
-              >Workman's compensation</label
-            >
+            <label class="block text-sm font-semibold text-slate-900 mb-2">
+              Workman's compensation
+              <span class="text-red-600 ml-0.5">*</span>
+            </label>
             <select
               formControlName="workmansComp"
-              class="block w-full px-3 py-2 border border-neutral-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+              class="block w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all duration-200"
             >
               <option value="">Select status</option>
               <option value="compliant">Compliant</option>
@@ -493,17 +497,17 @@
     </div>
 
     <!-- Shareholder's Details Section -->
-    <div class="bg-white rounded-lg border border-neutral-200">
+    <div class="bg-white rounded-2xl border border-slate-200">
       <button
         type="button"
         (click)="toggleSection('shareholders')"
-        class="w-full px-6 py-4 text-left flex items-center justify-between hover:bg-neutral-50 transition-colors"
+        class="w-full px-6 py-4 text-left flex items-center justify-between hover:bg-slate-50 transition-colors"
       >
         <div>
-          <h3 class="text-lg font-semibold text-neutral-900">
+          <h3 class="text-lg font-semibold text-slate-900">
             Shareholder's Details
           </h3>
-          <p class="text-sm text-neutral-600 mt-1">
+          <p class="text-sm text-slate-600 mt-1">
             Please provide shareholders details as per the current shareholders
             register.
           </p>
@@ -513,82 +517,17 @@
             getSectionExpanded('shareholders') ? ChevronUpIcon : ChevronDownIcon
           "
           [size]="20"
-          class="text-neutral-400"
+          class="text-slate-400 flex-shrink-0"
         />
       </button>
 
       @if (getSectionExpanded('shareholders')) {
-      <div class="px-6 pb-6 border-t border-neutral-200">
+      <div class="px-6 pb-6 border-t border-slate-200">
         <div class="mt-4">
-          <ui-button
-            variant="primary"
-            size="sm"
-            (clicked)="addShareholder()"
-            class="mb-6"
-          >
-            <lucide-icon [img]="PlusIcon" [size]="16" class="mr-2" />
-            Add a Shareholder
-          </ui-button>
-
-          @for (shareholder of shareholders(); track shareholder.id; let i =
-          $index) {
-          <div class="border border-neutral-200 rounded-lg p-4 mt-4 mb-4">
-            <div class="flex justify-between items-center mb-4">
-              <h4 class="font-medium text-neutral-900">
-                Shareholder ({{ i + 1 }})
-              </h4>
-              <div class="flex space-x-2">
-                <button
-                  type="button"
-                  (click)="editShareholder(i)"
-                  class="text-primary-600 hover:text-primary-700 text-sm flex items-center space-x-1"
-                >
-                  <lucide-icon [img]="EditIcon" [size]="14" />
-                  <span>Edit</span>
-                </button>
-                <button
-                  type="button"
-                  (click)="deleteShareholder(i)"
-                  class="text-red-600 hover:text-red-700 text-sm flex items-center space-x-1"
-                >
-                  <lucide-icon [img]="Trash2Icon" [size]="14" />
-                  <span>Delete</span>
-                </button>
-              </div>
-            </div>
-            <div class="grid grid-cols-3 gap-4 text-sm">
-              <div>
-                <div class="font-medium text-neutral-700 mb-1">
-                  Full Name of Shareholder
-                </div>
-                <div class="text-neutral-900">{{ shareholder.fullName }}</div>
-              </div>
-              <div>
-                <div class="font-medium text-neutral-700 mb-1">
-                  Current Shareholding
-                </div>
-                <div class="text-neutral-900">
-                  {{ shareholder.currentShareholding }}%
-                </div>
-              </div>
-              <div>
-                <div class="font-medium text-neutral-700 mb-1">
-                  Post Investment Shareholding
-                </div>
-                <div class="text-neutral-900">
-                  {{ shareholder.postInvestmentShareholding }}%
-                </div>
-              </div>
-            </div>
-          </div>
-          } @if (shareholders().length === 0) {
-          <div class="text-center py-8 text-neutral-500">
-            <p class="text-sm">
-              No shareholders added yet. Click "Add a Shareholder" to get
-              started.
-            </p>
-          </div>
-          }
+          <app-shareholder-manager
+            [shareholders]="shareholders()"
+            (shareholdersChange)="onShareholdersChange($event)"
+          />
         </div>
       </div>
       }
@@ -596,26 +535,26 @@
   </form>
 
   <!-- Progress Summary -->
-  <div class="bg-white rounded-lg border border-neutral-200 p-4">
+  <div class="bg-white rounded-2xl border border-slate-200 p-4">
     <div class="flex items-center justify-between">
       <div>
-        <h3 class="font-semibold text-neutral-900">
+        <h3 class="font-semibold text-slate-900">
           Company Information Progress
         </h3>
-        <p class="text-sm text-neutral-600">
+        <p class="text-sm text-slate-600">
           Data auto-saves every 30 seconds. Manual save available anytime.
         </p>
       </div>
 
       <div class="flex items-center space-x-4">
         @if (adminForm.valid) {
-        <div class="flex items-center space-x-2 text-green-600">
-          <div class="w-2 h-2 bg-green-500 rounded-full"></div>
-          <span class="font-medium text-sm">Complete</span>
+        <div class="flex items-center space-x-2 text-green-700">
+          <div class="w-2 h-2 bg-green-600 rounded-full"></div>
+          <span class="font-semibold text-sm">Complete</span>
         </div>
         } @else {
         <div
-          class="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-sm font-medium"
+          class="bg-amber-100 text-amber-800 px-3 py-1 rounded-full text-sm font-semibold"
         >
           Incomplete
         </div>
@@ -626,68 +565,13 @@
 
   <!-- Final auto-save indicator -->
   @if (isSaving()) {
-  <div class="text-sm text-neutral-500 flex items-center justify-center">
-    <div class="w-2 h-2 bg-primary-500 rounded-full animate-pulse mr-2"></div>
+  <div class="text-sm text-slate-500 flex items-center justify-center">
+    <div class="w-2 h-2 bg-teal-500 rounded-full animate-pulse mr-2"></div>
     Saving changes...
   </div>
   } @else if (lastSaved()) {
-  <div class="text-sm text-neutral-500 text-center">
+  <div class="text-sm text-slate-500 text-center">
     ✓ Changes saved automatically
   </div>
   }
 </div>
-
-<!-- Shareholder Modal -->
-@if (showShareholderModal()) {
-<div class="fixed inset-0 z-50 overflow-y-auto">
-  <div class="flex items-center justify-center min-h-screen px-4">
-    <div
-      class="fixed inset-0 bg-black bg-opacity-25"
-      (click)="closeShareholderModal()"
-    ></div>
-    <div class="bg-white rounded-lg shadow-xl z-50 w-full max-w-md">
-      <div class="px-6 py-4 border-b border-neutral-200">
-        <h3 class="text-lg font-semibold text-neutral-900">
-          {{ editingShareholderIndex() !== -1 ? "Edit" : "Add" }} Shareholder
-        </h3>
-      </div>
-      <form [formGroup]="shareholderForm" class="p-6 space-y-4">
-        <ui-input
-          label="Full Name of Shareholder"
-          placeholder="Elizabeth Swan"
-          formControlName="fullName"
-          [required]="true"
-        />
-        <ui-input
-          label="Current Shareholding (%)"
-          type="number"
-          placeholder="51"
-          formControlName="currentShareholding"
-          [required]="true"
-        />
-        <ui-input
-          label="Post Investment Shareholding (%)"
-          type="number"
-          placeholder="51"
-          formControlName="postInvestmentShareholding"
-          [required]="true"
-        />
-      </form>
-      <div
-        class="px-6 py-4 border-t border-neutral-200 flex justify-end space-x-3"
-      >
-        <ui-button variant="outline" (clicked)="closeShareholderModal()">
-          Cancel
-        </ui-button>
-        <ui-button
-          variant="primary"
-          (clicked)="saveShareholder()"
-          [disabled]="shareholderForm.invalid"
-        >
-          {{ editingShareholderIndex() !== -1 ? "Update" : "Add" }} Shareholder
-        </ui-button>
-      </div>
-    </div>
-  </div>
-</div>
-}

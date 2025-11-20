@@ -35,7 +35,8 @@ export class FundingProfileBackendService {
         .select('organization_id')
         .eq('user_id', userId)
         .eq('status', 'active')
-        .single();
+        .limit(1)
+        .maybeSingle();
 
       if (error || !data) {
         throw new Error('User has no active organization');
