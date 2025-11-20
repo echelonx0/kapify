@@ -17,6 +17,7 @@ import {
   CreditCard,
   Shield,
   User,
+  Sticker,
 } from 'lucide-angular';
 
 import { GeneralInfoComponent } from './components/general-info/general-info.component';
@@ -26,6 +27,8 @@ import { ContactDetailsComponent } from './components/contact-details/contact-de
 import { TeamManagementComponent } from './components/team-management/team-management.component';
 import { BillingCreditsComponent } from '../finance/billing/billing-credits.component';
 import { AuthService } from 'src/app/auth/production.auth.service';
+import { Router } from '@angular/router';
+import { FundingProfileSetupService } from 'src/app/SMEs/services/funding-profile-setup.service';
 
 type SettingsSection =
   | 'general'
@@ -33,6 +36,7 @@ type SettingsSection =
   | 'legal'
   | 'integrations'
   | 'billing'
+  | 'profile'
   | 'team';
 
 interface SettingsTab {
@@ -101,6 +105,9 @@ export class SettingsComponent implements OnInit, OnDestroy {
   private settingsService = inject(OrganizationSettingsService);
   private destroy$ = new Subject<void>();
   private authService = inject(AuthService);
+  private router = inject(Router);
+  private profileService = inject(FundingProfileSetupService);
+
   // Icons
   SettingsIcon = Settings;
   Building2Icon = Building2;
@@ -109,6 +116,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
   CreditCardIcon = CreditCard;
   ShieldIcon = Shield;
   UserIcon = User;
+  ProfileIcon = Sticker;
 
   // State
   activeSection = signal<SettingsSection>('billing');
@@ -148,10 +156,17 @@ export class SettingsComponent implements OnInit, OnDestroy {
         icon: this.CreditCardIcon,
         enabled: true,
       },
+
       {
         id: 'team',
         label: 'Team Members',
         icon: this.UserIcon,
+        enabled: true,
+      },
+      {
+        id: 'profile',
+        label: 'Public Profile',
+        icon: this.ProfileIcon,
         enabled: true,
       },
       {
@@ -191,8 +206,34 @@ export class SettingsComponent implements OnInit, OnDestroy {
 
   setActiveSection(section: SettingsSection) {
     const tab = this.settingsTabs.find((t) => t.id === section);
+
     if (tab?.enabled) {
+      if (section === 'profile') {
+        this.navigateToProfile();
+        return;
+      }
       this.activeSection.set(section);
+    }
+  }
+  private navigateToProfile() {
+    const orgType = this.organization()?.organizationType;
+    const userType = this.authService.user()?.userType;
+
+    if (userType === 'sme' || orgType === 'sme') {
+      // Get public profile slug and open in new tab
+      const slug = this.profileService.getCurrentSlug();
+      if (slug) {
+        const profileUrl = `${window.location.origin}/invest/${slug}`;
+        window.open(profileUrl, '_blank');
+      } else {
+        alert('Please save your profile first');
+      }
+    } else if (userType === 'funder' || orgType === 'investment_fund') {
+      // Navigate to funder profile creation
+      this.router.navigate(['/funder/create-profile']);
+    } else {
+      // Generic profile route
+      this.router.navigate(['/profile']);
     }
   }
 
