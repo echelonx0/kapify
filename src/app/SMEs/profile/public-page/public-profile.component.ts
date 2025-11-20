@@ -5,11 +5,8 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import {
   LucideAngularModule,
-  CheckCircle,
-  AlertCircle,
   Building,
   FileText,
-  BarChart3,
   Target,
   Users,
   TrendingUp,
@@ -20,8 +17,10 @@ import {
   Share2,
   File,
   Image,
-  Home,
   HouseIcon,
+  CircleCheckBig,
+  CircleAlert,
+  ChartColumn,
 } from 'lucide-angular';
 import { SMEPublicProfileService } from '../services/sme-public-profile.service';
 
@@ -80,11 +79,11 @@ export class PublicProfileViewComponent implements OnInit {
   private route = inject(ActivatedRoute);
 
   // Icons
-  CheckCircleIcon = CheckCircle;
-  AlertCircleIcon = AlertCircle;
+  CheckCircleIcon = CircleCheckBig;
+  AlertCircleIcon = CircleAlert;
   BuildingIcon = Building;
   FileTextIcon = FileText;
-  BarChart3Icon = BarChart3;
+  BarChart3Icon = ChartColumn;
   TargetIcon = Target;
   UsersIcon = Users;
   TrendingUpIcon = TrendingUp;
@@ -195,13 +194,13 @@ export class PublicProfileViewComponent implements OnInit {
     const iconMap: { [key: string]: any } = {
       'company-info': Building,
       documents: FileText,
-      'business-assessment': BarChart3,
+      'business-assessment': ChartColumn,
       'swot-analysis': Target,
       management: Users,
       'business-strategy': TrendingUp,
       'financial-profile': DollarSign,
     };
-    return iconMap[stepId] || AlertCircle;
+    return iconMap[stepId] || CircleAlert;
   }
 
   getDocumentIcon(fileType: string): string {

@@ -1,5 +1,6 @@
 // 3. Fixed dashboard.routes.ts
 import { Routes } from '@angular/router';
+import { ReportsComponent } from '../reports/reports.component';
 
 export const dashboardRoutes: Routes = [
   {
@@ -15,7 +16,10 @@ export const dashboardRoutes: Routes = [
         redirectTo: 'home',
         pathMatch: 'full',
       },
-
+      {
+        path: 'reports',
+        component: ReportsComponent,
+      },
       // Dashboard routes
       {
         path: 'home',

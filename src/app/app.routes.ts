@@ -79,7 +79,12 @@ export const routes: Routes = [
     loadChildren: () =>
       import('./admin/admin.routes').then((m) => m.adminRoutes),
   },
-
+  {
+    path: 'reports',
+    canActivate: [AuthGuard],
+    loadComponent: () =>
+      import('./reports/reports.component').then((m) => m.ReportsComponent),
+  },
   // Protected routes (require authentication)
   {
     path: 'dashboard',

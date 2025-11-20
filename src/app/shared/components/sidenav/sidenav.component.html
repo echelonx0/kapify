@@ -113,6 +113,27 @@
 
       <!-- Settings Link -->
       <a
+        routerLink="/dashboard/reports"
+        routerLinkActive="bg-teal-50 text-teal-700"
+        class="flex items-center gap-2 px-3 py-2.5 text-sm font-medium rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2"
+        title="Reports"
+      >
+        <div class="flex items-center justify-center w-6 h-6 flex-shrink-0">
+          <lucide-icon
+            [img]="BookOpenIcon"
+            [size]="20"
+            class="text-slate-600"
+          ></lucide-icon>
+        </div>
+        <span
+          class="opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap"
+        >
+          Reports
+        </span>
+      </a>
+
+      <!-- Settings Link -->
+      <a
         routerLink="/dashboard/settings"
         routerLinkActive="bg-teal-50 text-teal-700"
         class="flex items-center gap-2 px-3 py-2.5 text-sm font-medium rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2"
