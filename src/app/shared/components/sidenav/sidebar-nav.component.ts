@@ -106,7 +106,7 @@ export class SidebarNavComponent implements OnInit {
       label: 'Funding Opportunities',
       icon: DollarSign,
       route: '/funding/opportunities',
-      userTypes: ['sme'],
+      userTypes: ['sme', 'funder'],
     },
 
     {
