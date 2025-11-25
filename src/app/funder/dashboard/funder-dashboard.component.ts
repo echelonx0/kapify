@@ -43,8 +43,6 @@ import { PublicProfile } from '../models/public-profile.models';
 import { PublicProfileService } from '../services/public-profile.service';
 import { FunderApplicationsComponent } from '../application-details/funder-applications/funder-applications.component';
 import { DraftManagementService } from '../services/draft-management.service';
-
-import { OpportunityActionModalComponent } from 'src/app/shared/components/modal/app-modal.component';
 import { ActionModalService } from 'src/app/shared/components/modal/modal.service';
 
 type TabId = 'overview' | 'opportunities' | 'applications' | 'settings';
@@ -65,7 +63,6 @@ interface Tab {
     LucideAngularModule,
     FunderDocumentAnalysisComponent,
     OrganizationStatusSidebarComponent,
-
     FunderApplicationsComponent,
   ],
   templateUrl: 'dashboard.component.html',
@@ -369,7 +366,7 @@ export class FunderDashboardComponent implements OnInit, OnDestroy {
   }
 
   viewOpportunity(opportunityId: string) {
-    this.router.navigate(['/funder/opportunities', opportunityId]);
+    this.router.navigate(['/funding/opportunities', opportunityId]);
   }
 
   manageApplications(opportunityId: string) {

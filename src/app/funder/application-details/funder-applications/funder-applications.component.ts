@@ -1,21 +1,36 @@
-import { Component, signal, computed, OnInit, OnDestroy, inject } from '@angular/core';
+import {
+  Component,
+  signal,
+  computed,
+  OnInit,
+  OnDestroy,
+  inject,
+} from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { Subject } from 'rxjs';
-import { 
-  LucideAngularModule, 
+import {
+  LucideAngularModule,
   AlertCircle,
   FileText,
   Eye,
-  ArrowRight
+  ArrowRight,
 } from 'lucide-angular';
 import { ApplicationManagementService } from 'src/app/SMEs/services/application-management.service';
-import { ApplicationListCardComponent, BaseApplicationCard } from 'src/app/shared/components/application-list-card/application-list-card.component';
-import { FunderOnboardingService } from '../../services/funder-onboarding.service';
-import { FundingApplication, ApplicationStats } from 'src/app/SMEs/models/application.models';
+import {
+  ApplicationListCardComponent,
+  BaseApplicationCard,
+} from 'src/app/shared/components/application-list-card/application-list-card.component';
+import {
+  FundingApplication,
+  ApplicationStats,
+} from 'src/app/SMEs/models/application.models';
 import { FormsModule } from '@angular/forms';
 import { SMEOpportunitiesService } from 'src/app/funding/services/opportunities.service';
-import { UiSelectComponent, SelectOption } from 'src/app/shared/components/ui-select/ui-select.component';
+import {
+  UiSelectComponent,
+  SelectOption,
+} from 'src/app/shared/components/ui-select/ui-select.component';
 
 @Component({
   selector: 'app-funder-applications',
@@ -25,15 +40,14 @@ import { UiSelectComponent, SelectOption } from 'src/app/shared/components/ui-se
     LucideAngularModule,
     ApplicationListCardComponent,
     FormsModule,
-    UiSelectComponent
+    UiSelectComponent,
   ],
-  templateUrl: './funder-applications.component.html'
+  templateUrl: './funder-applications.component.html',
 })
 export class FunderApplicationsComponent implements OnInit, OnDestroy {
   private router = inject(Router);
   private applicationService = inject(ApplicationManagementService);
   private opportunitiesService = inject(SMEOpportunitiesService);
-  private onboardingService = inject(FunderOnboardingService);
   private destroy$ = new Subject<void>();
 
   // Icons
@@ -56,7 +70,9 @@ export class FunderApplicationsComponent implements OnInit, OnDestroy {
   filteredApplications = computed(() => {
     const apps = this.allApplications();
     const opportunityFilter = this.selectedOpportunityFilter();
-    return !opportunityFilter ? apps : apps.filter(app => app.opportunityId === opportunityFilter);
+    return !opportunityFilter
+      ? apps
+      : apps.filter((app) => app.opportunityId === opportunityFilter);
   });
 
   recentApplicationsComputed = computed(() =>
@@ -69,15 +85,15 @@ export class FunderApplicationsComponent implements OnInit, OnDestroy {
   uniqueOpportunities = computed(() => this.opportunities());
 
   applicationsInReview = computed(() =>
-    this.allApplications().filter(app => 
-      app.status === 'submitted' || app.status === 'under_review'
+    this.allApplications().filter(
+      (app) => app.status === 'submitted' || app.status === 'under_review'
     )
   );
 
   async ngOnInit() {
     await Promise.all([
       this.loadApplicationsData(),
-      this.loadOpportunitiesData()
+      this.loadOpportunitiesData(),
     ]);
   }
 
@@ -110,9 +126,11 @@ export class FunderApplicationsComponent implements OnInit, OnDestroy {
       this.opportunitiesLoading.set(true);
 
       // Load opportunities from SMEOpportunitiesService
-      const opps = await this.opportunitiesService.loadActiveOpportunities().toPromise();
+      const opps = await this.opportunitiesService
+        .loadActiveOpportunities()
+        .toPromise();
       this.opportunities.set(opps || []);
-      
+
       console.log('✅ Opportunities loaded:', opps?.length);
     } catch (error) {
       console.error('Failed to load opportunities:', error);
@@ -137,9 +155,9 @@ export class FunderApplicationsComponent implements OnInit, OnDestroy {
    * Convert opportunities to SelectOption format for ui-select component
    */
   getOpportunityOptions(): SelectOption[] {
-    return this.opportunities().map(opp => ({
+    return this.opportunities().map((opp) => ({
       label: opp.title,
-      value: opp.id
+      value: opp.id,
     }));
   }
 
@@ -167,22 +185,26 @@ export class FunderApplicationsComponent implements OnInit, OnDestroy {
       createdAt: app.createdAt,
       updatedAt: app.updatedAt,
       submittedAt: app.submittedAt,
-      applicantName: `${app.applicant?.firstName || ''} ${app.applicant?.lastName || ''}`.trim(),
+      applicantName: `${app.applicant?.firstName || ''} ${
+        app.applicant?.lastName || ''
+      }`.trim(),
       applicantCompany: app.applicant?.companyName,
       opportunityTitle: app.opportunity?.title,
-      opportunityId: app.opportunityId
+      opportunityId: app.opportunityId,
     };
   }
 
   private extractRequestedAmount(formData: Record<string, any>): number {
-    return formData?.['coverInformation']?.requestedAmount ??
-           formData?.['requestedAmount'] ??
-           formData?.['fundingInformation']?.requestedAmount ??
-           0;
+    return (
+      formData?.['coverInformation']?.requestedAmount ??
+      formData?.['requestedAmount'] ??
+      formData?.['fundingInformation']?.requestedAmount ??
+      0
+    );
   }
 
   private formatStage(stage: string): string {
-    return stage.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+    return stage.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
   }
 
   viewApplication(applicationId: string) {
@@ -191,7 +213,9 @@ export class FunderApplicationsComponent implements OnInit, OnDestroy {
 
   async updateApplicationStatus(applicationId: string, status: string) {
     try {
-      await this.applicationService.updateApplicationStatus(applicationId, status as any).toPromise();
+      await this.applicationService
+        .updateApplicationStatus(applicationId, status as any)
+        .toPromise();
       this.refreshApplicationsData();
     } catch (error) {
       console.error('Error updating application status:', error);
