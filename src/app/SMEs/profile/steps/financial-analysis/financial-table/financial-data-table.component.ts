@@ -17,7 +17,6 @@ export interface FinancialTableRow {
   isBold?: boolean;
   isTotal?: boolean;
   type?: 'currency' | 'percentage' | 'ratio';
-  // Legacy support - transformer uses 'editable' (required by excel-parser)
   editable: boolean;
 }
 
@@ -26,7 +25,6 @@ export interface FinancialTableSection {
   rows: FinancialTableRow[];
   isCollapsible?: boolean;
   defaultExpanded?: boolean;
-  // Legacy support - transformer uses 'collapsed'
   collapsed?: boolean;
 }
 
