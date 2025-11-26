@@ -1,66 +1,11 @@
 <div class="min-h-screen bg-white">
   <landing-header />
- 
-  <!-- Hero Section - Problem/Solution Focus -->
-  <section class="bg-slate-900 text-white py-24">
-    <div class="max-w-7xl mx-auto px-6 lg:px-8 grid lg:grid-cols-2 gap-16 items-center">
-      
-      <!-- Left Text -->
-      <div>
-        <h1 class="text-5xl lg:text-6xl font-extrabold leading-tight">
-          Turn funding chaos<br />
-          <span class="text-primary-400">into clarity.</span>
-        </h1>
 
-        <p class="mt-6 text-lg text-gray-300 max-w-md">
-          Kapify connects high-potential businesses with investors ready to close deals — faster, smarter, and transparently.
-        </p>
+  <app-kapify-hero></app-kapify-hero>
 
-        <div class="mt-10 flex flex-wrap gap-4">
-          <button
-            class="inline-flex items-center justify-center px-8 py-3 bg-primary-500 hover:bg-primary-600 text-white font-semibold rounded-xl shadow-lg transition"
-          >
-            Start the funding process →
-          </button>
-          <button
-            class="inline-flex items-center justify-center px-8 py-3 border border-gray-600 text-white hover:bg-gray-800 rounded-xl font-semibold transition"
-          >
-            The Kapify process
-          </button>
-        </div>
-
-        <div class="mt-6 flex items-center gap-2 text-sm text-gray-400">
-          <lucide-icon [img]="ShieldCheckIcon" [size]="16" />
-          <span>The smarter deal flow platform for founders and funders.</span>
-        </div>
-      </div>
-
-      <!-- Right Video -->
-      <div
-        class="bg-gradient-to-b from-primary-200 to-primary-50 rounded-2xl shadow-2xl p-6 transition hover:scale-[1.02] duration-300"
-      >
-        <h3 class="text-2xl font-bold text-gray-900 mb-4 text-center">
-          Watch How Kapify Works
-        </h3>
-        <div class="rounded-xl overflow-hidden shadow-lg">
-          <iframe
-            class="w-full aspect-video rounded-xl"
-            src="https://www.youtube.com/embed/ybkhNejL3eQ?rel=0&modestbranding=1&showinfo=0&autohide=1&color=white"
-            title="Kapify Welcome Video"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowfullscreen
-          ></iframe>
-        </div>
-      </div>
-
-    </div>
-  </section>
-
- 
   <!-- NEW: Why Choose Kapify - Toggle Hero Section with Split Image Layout -->
   <section class="py-8 mb-8 bg-white relative overflow-hidden">
     <div class="max-w-7xl mx-auto px-4 lg:px-8">
-      
       <!-- Toggle Controls -->
       <div class="flex items-center justify-center mb-16">
         <div class="inline-flex gap-1 p-1 bg-slate-100 rounded-xl">
@@ -91,7 +36,6 @@
 
       <!-- Content Grid -->
       <div class="grid lg:grid-cols-2 gap-12 items-center">
-        
         <!-- Left: Text & Image -->
         <div class="space-y-8">
           <!-- Header -->
@@ -106,16 +50,16 @@
 
           <!-- Image (Mobile/Tablet) -->
           <div class="lg:hidden">
-            <div 
-              [class.bg-blue-100]="isBusinessView()"
+            <div
+              [class.bg-stone-100]="isBusinessView()"
               [class.bg-primary-100]="isFunderView()"
               class="h-48 rounded-2xl flex items-center justify-center transition-all duration-500"
             >
               <div class="text-center">
-                <lucide-icon 
-                  [img]="isBusinessView() ? BuildingIcon : TrendingUpIcon" 
-                  [size]="80" 
-                  [class.text-blue-600]="isBusinessView()"
+                <lucide-icon
+                  [img]="isBusinessView() ? BuildingIcon : TrendingUpIcon"
+                  [size]="80"
+                  [class.text-stone-600]="isBusinessView()"
                   [class.text-primary-600]="isFunderView()"
                   class="mx-auto mb-2 opacity-50"
                 />
@@ -126,101 +70,99 @@
           <!-- Benefits List -->
           <div class="space-y-4">
             @for (benefit of currentView().benefits; track benefit.title) {
-              <div class="flex items-start gap-4">
-                <div 
-                  [class.bg-blue-100]="isBusinessView()"
-                  [class.text-blue-600]="isBusinessView()"
-                  [class.bg-primary-100]="isFunderView()"
-                  [class.text-primary-600]="isFunderView()"
-                  class="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 transition-all duration-500"
-                >
-                  <lucide-icon [img]="benefit.icon" [size]="24" />
-                </div>
-                <div>
-                  <h3 class="font-bold text-slate-900 mb-1">{{ benefit.title }}</h3>
-                  <p class="text-slate-600 text-sm">{{ benefit.description }}</p>
-                </div>
+            <div class="flex items-start gap-4">
+              <div
+                [class.bg-stone-100]="isBusinessView()"
+                [class.text-stone-600]="isBusinessView()"
+                [class.bg-primary-100]="isFunderView()"
+                [class.text-primary-600]="isFunderView()"
+                class="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 transition-all duration-500"
+              >
+                <lucide-icon [img]="benefit.icon" [size]="24" />
               </div>
+              <div>
+                <h3 class="font-bold text-slate-900 mb-1">
+                  {{ benefit.title }}
+                </h3>
+                <p class="text-slate-600 text-sm">{{ benefit.description }}</p>
+              </div>
+            </div>
             }
           </div>
         </div>
 
-        <!-- Right: Image (Desktop) -->
-        <div class="hidden lg:flex items-center justify-center">
-          <div 
-            [class.bg-blue-100]="isBusinessView()"
-            [class.bg-primary-100]="isFunderView()"
-            class="w-full h-96 rounded-2xl flex items-center justify-center transition-all duration-500 relative overflow-hidden"
-          >
-            <!-- Decorative gradient overlay -->
-            <div 
-              [class.from-blue-200]="isBusinessView()"
-              [class.from-primary-200]="isFunderView()"
-              class="absolute inset-0 bg-gradient-to-br from-blue-200 to-transparent opacity-30"
-            ></div>
-
-            <div class="relative z-10 text-center">
-              <lucide-icon 
-                [img]="isBusinessView() ? BuildingIcon : TrendingUpIcon" 
-                [size]="120" 
-                [class.text-blue-600]="isBusinessView()"
-                [class.text-primary-600]="isFunderView()"
-                class="mx-auto mb-4 opacity-60 transition-all duration-500"
-              />
-              <p 
-                [class.text-slate-700]="isBusinessView()"
-                [class.text-slate-700]="isFunderView()"
-                class="font-medium text-lg"
-              >
-                {{ isBusinessView() ? 'Ready to scale your business?' : 'Ready to deploy capital?' }}
-              </p>
-            </div>
-
-            <!-- Corner accent -->
-            <div class="absolute top-4 right-4 w-24 h-24 rounded-full opacity-10 bg-white"></div>
+        <!-- Right Video -->
+        <div
+          class="bg-gradient-to-b from-slate-200 to-stone-50 rounded-2xl shadow-2xl p-6 transition hover:scale-[1.02] duration-300"
+        >
+          <h3 class="text-2xl font-bold text-gray-900 mb-4 text-center">
+            How Kapify Works
+          </h3>
+          <div class="rounded-xl overflow-hidden shadow-lg">
+            <iframe
+              class="w-full aspect-video rounded-xl"
+              src="https://www.youtube.com/embed/ybkhNejL3eQ?rel=0&modestbranding=1&showinfo=0&autohide=1&color=white"
+              title="Kapify Welcome Video"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowfullscreen
+            ></iframe>
           </div>
         </div>
-
       </div>
     </div>
   </section>
 
- 
   <footer class="footer-wrapper">
     <div class="footer-top">
       <div class="footer-top-content">
         <h3>Need capital?</h3>
         <h1>We are here to help</h1>
-        <p>Our support team is ready to assist you 24/7 with any account concerns.</p>
+        <p>
+          Our support team is ready to assist you 24/7 with any account
+          concerns.
+        </p>
         <button>Contact Us</button>
       </div>
     </div>
-
-    
   </footer>
 
   <!-- Dealflow / Disclaimer Section -->
   <section class="py-24 bg-slate-50">
     <div class="max-w-5xl mx-auto px-6 lg:px-12">
       <div class="border-t border-slate-300 pt-12">
-        <p class="text-slate-700 text-justify leading-relaxed text-lg font-medium">
-          <strong>Kapify</strong> provides smarter deal flow for startups, SMEs, venture funds, and corporate investors. 
-          Our platform enables founders to connect with capital partners through structured, transparent, and data-driven 
-          funding processes. We do not guarantee funding outcomes; all investment decisions are made independently by verified 
-          funders on the platform. Kapify facilitates introductions, provides due diligence infrastructure, and enhances visibility 
-          for both sides of the market.  
+        <p
+          class="text-slate-700 text-justify leading-relaxed text-lg font-medium"
+        >
+          <strong>Kapify</strong> provides smarter deal flow for startups, SMEs,
+          venture funds, and corporate investors. Our platform enables founders
+          to connect with capital partners through structured, transparent, and
+          data-driven funding processes. We do not guarantee funding outcomes;
+          all investment decisions are made independently by verified funders on
+          the platform. Kapify facilitates introductions, provides due diligence
+          infrastructure, and enhances visibility for both sides of the market.
         </p>
 
         <p class="mt-8 text-slate-600 text-justify leading-relaxed text-base">
-          Participation on the Kapify platform is subject to eligibility and compliance checks. Kapify does not provide 
-          investment advice, solicit investment, or act as a broker-dealer. While all information is verified to the extent possible, 
-          users are encouraged to conduct independent assessments before making any financial commitments.  
+          Participation on the Kapify platform is subject to eligibility and
+          compliance checks. Kapify does not provide investment advice, solicit
+          investment, or act as a broker-dealer. While all information is
+          verified to the extent possible, users are encouraged to conduct
+          independent assessments before making any financial commitments.
         </p>
 
-        <p class="mt-8 text-slate-500 text-justify leading-relaxed text-sm italic">
-          © {{ currentYear }} Kapify. All rights reserved. Kapify is the smarter deal flow platform for startups, SMEs, and investors. 
-          By using this platform, you agree to our <a href="#" class="underline hover:text-slate-800 transition-colors">Terms of Service</a> 
-          and <a href="#" class="underline hover:text-slate-800 transition-colors">Privacy Policy</a>.
+        <p
+          class="mt-8 text-slate-500 text-justify leading-relaxed text-sm italic"
+        >
+          © {{ currentYear }} Kapify. All rights reserved. Kapify is the smarter
+          deal flow platform for startups, SMEs, and investors. By using this
+          platform, you agree to our
+          <a href="#" class="underline hover:text-slate-800 transition-colors"
+            >Terms of Service</a
+          >
+          and
+          <a href="#" class="underline hover:text-slate-800 transition-colors"
+            >Privacy Policy</a
+          >.
         </p>
       </div>
     </div>

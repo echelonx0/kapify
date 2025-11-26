@@ -298,31 +298,18 @@ export class ProfileStepsLayoutComponent implements OnInit {
     if (!this.isMobile()) this.showMobileNav.set(false);
   }
 
-  // =====================================================
-  // FULLSCREEN MODE
-  // =====================================================
-
   toggleFullscreen() {
+    const isCurrentlyFullscreen = this.isFullscreen();
+
+    if (!isCurrentlyFullscreen) {
+      this.darkMode.activateDarkMode('advanced');
+    } else if (isCurrentlyFullscreen) {
+      this.darkMode.deactivateDarkMode();
+    }
+
     this.isFullscreen.update((v) => !v);
     this.showMobileNav.set(false);
-    this.darkMode.activateDarkMode('dark');
   }
-
-  // toggleFullscreen() {
-  //   const isCurrentlyFullscreen = this.isFullscreen();
-  //   const currentStepId = this.profileService.currentStepId();
-  //   const isFinancialStep = currentStepId === 'financial-profile';
-  //   console.log('Toggling fullscreen. Current step:', currentStepId);
-
-  //   if (!isCurrentlyFullscreen && isFinancialStep) {
-  //     this.darkMode.activateDarkMode('advanced');
-  //   } else if (isCurrentlyFullscreen && isFinancialStep) {
-  //     this.darkMode.deactivateDarkMode();
-  //   }
-
-  //   this.isFullscreen.update((v) => !v);
-  //   this.showMobileNav.set(false);
-  // }
 
   // Nav Helpers
   toggleMobileNav() {
