@@ -1,0 +1,287 @@
+<!-- src/app/funder/create-opportunity/steps/review/opportunity-review.component.html -->
+<div class="space-y-6">
+  <!-- Validation Errors -->
+  <div
+    *ngIf="validationErrors.length > 0"
+    class="bg-amber-50 border border-amber-200/50 rounded-xl p-4 flex gap-3"
+  >
+    <lucide-angular
+      [img]="AlertCircleIcon"
+      [size]="20"
+      class="text-amber-600 flex-shrink-0 mt-0.5"
+    ></lucide-angular>
+    <div class="flex-1 min-w-0">
+      <h4 class="text-sm font-semibold text-amber-900">Review Required</h4>
+      <ul class="mt-2 text-sm text-amber-700 space-y-1">
+        <li
+          *ngFor="let error of validationErrors"
+          class="flex items-center gap-2"
+        >
+          <span
+            class="w-1.5 h-1.5 bg-amber-400 rounded-full flex-shrink-0"
+          ></span>
+          {{ error.message }}
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Basic Information Summary -->
+  <div class="bg-white rounded-2xl p-6 border border-slate-200">
+    <div class="flex items-center gap-3 mb-4">
+      <div
+        class="w-10 h-10 rounded-lg bg-teal-100 flex items-center justify-center flex-shrink-0"
+      >
+        <lucide-angular
+          [img]="DollarSignIcon"
+          [size]="20"
+          class="text-teal-600"
+        ></lucide-angular>
+      </div>
+      <h4 class="text-lg font-bold text-slate-900">Opportunity Summary</h4>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+      <div>
+        <span class="text-slate-600">Title</span>
+        <div class="font-semibold text-slate-900 mt-1">
+          {{ formData?.title || "Not specified" }}
+        </div>
+      </div>
+      <div>
+        <span class="text-slate-600">Funding Type</span>
+        <div class="font-semibold text-slate-900 mt-1 capitalize">
+          {{ formData?.fundingType || "Not specified" }}
+        </div>
+      </div>
+      <div>
+        <span class="text-slate-600">Typical Investment</span>
+        <div class="font-semibold text-slate-900 mt-1">
+          {{ formData?.currency }}
+          {{ formatAmount(formData?.typicalInvestment) }}
+        </div>
+      </div>
+      <div>
+        <span class="text-slate-600">Max Available</span>
+        <div class="font-semibold text-slate-900 mt-1">
+          {{ formData?.currency }} {{ formatAmount(formData?.offerAmount) }}
+        </div>
+      </div>
+      <div class="md:col-span-2" *ngIf="formData?.description">
+        <span class="text-slate-600">Description</span>
+        <div class="text-slate-900 mt-1">
+          {{ formData?.description }}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Eligibility Criteria Section -->
+  <div
+    *ngIf="hasEligibilityData()"
+    class="bg-white rounded-2xl p-6 border border-slate-200"
+  >
+    <!-- <div class="flex items-center gap-3 mb-6">
+      <h4 class="text-lg font-bold text-slate-900">Eligibility Criteria</h4>
+    </div> -->
+
+    <div class="space-y-6">
+      <!-- Investment Philosophy -->
+      <div
+        *ngIf="
+          formData?.investmentCriteria && formData.investmentCriteria.length > 0
+        "
+      >
+        <div class="flex items-center gap-2 mb-3">
+          <span class="text-sm font-semibold text-slate-900"
+            >Investment Preferences</span
+          >
+        </div>
+        <div class="flex flex-wrap gap-2">
+          <span
+            *ngFor="let criterion of formData.investmentCriteria"
+            class="px-3 py-1.5 bg-teal-50 text-teal-700 rounded-lg text-xs font-medium border border-teal-200/50"
+          >
+            {{ criterion }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Exclusion Criteria -->
+      <div
+        *ngIf="
+          formData?.exclusionCriteria && formData.exclusionCriteria.length > 0
+        "
+      >
+        <div class="flex items-center gap-2 mb-3">
+          <span class="text-sm font-semibold text-slate-900"
+            >Automatic Exclusions</span
+          >
+        </div>
+        <div class="flex flex-wrap gap-2">
+          <span
+            *ngFor="let criterion of formData.exclusionCriteria"
+            class="px-3 py-1.5 bg-red-50 text-red-700 rounded-lg text-xs font-medium border border-red-200/50"
+          >
+            {{ criterion }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Target Industries, Stages, and Geography Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <!-- Target Industries -->
+        <div
+          *ngIf="
+            formData?.targetIndustries && formData.targetIndustries.length > 0
+          "
+        >
+          <div class="flex items-center gap-2 mb-3">
+            <lucide-angular
+              [img]="Building2Icon"
+              [size]="16"
+              class="text-slate-600"
+            ></lucide-angular>
+            <span class="text-sm font-semibold text-slate-900">Industries</span>
+          </div>
+          <div class="flex flex-wrap gap-2">
+            <span
+              *ngFor="let industry of formData.targetIndustries"
+              class="px-2.5 py-1 bg-slate-100 text-slate-700 rounded-lg text-xs font-medium"
+            >
+              {{ getIndustryLabel(industry) }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Business Stages -->
+        <div
+          *ngIf="formData?.businessStages && formData.businessStages.length > 0"
+        >
+          <div class="flex items-center gap-2 mb-3">
+            <lucide-angular
+              [img]="TrendingUpIcon"
+              [size]="16"
+              class="text-slate-600"
+            ></lucide-angular>
+            <span class="text-sm font-semibold text-slate-900">Stages</span>
+          </div>
+          <div class="flex flex-wrap gap-2">
+            <span
+              *ngFor="let stage of formData.businessStages"
+              class="px-2.5 py-1 bg-slate-100 text-slate-700 rounded-lg text-xs font-medium"
+            >
+              {{ getStageLabel(stage) }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Geographic Focus -->
+        <div
+          *ngIf="
+            formData?.geographicRestrictions &&
+            formData.geographicRestrictions.length > 0
+          "
+        >
+          <div class="flex items-center gap-2 mb-3">
+            <lucide-angular
+              [img]="MapPinIcon"
+              [size]="16"
+              class="text-slate-600"
+            ></lucide-angular>
+            <span class="text-sm font-semibold text-slate-900">Regions</span>
+          </div>
+          <div class="flex flex-wrap gap-2">
+            <span
+              *ngFor="let region of formData.geographicRestrictions"
+              class="px-2.5 py-1 bg-slate-100 text-slate-700 rounded-lg text-xs font-medium"
+            >
+              {{ getRegionLabel(region) }}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Financial Requirements -->
+      <div class="bg-slate-50 rounded-xl p-4 border border-slate-200/50">
+        <h5 class="text-sm font-semibold text-slate-900 mb-3">
+          Financial Requirements
+        </h5>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+          <div>
+            <span class="text-slate-600">Minimum Revenue</span>
+            <div class="font-semibold text-slate-900 mt-1">
+              {{
+                formData?.minRevenue
+                  ? formData.currency + " " + formatAmount(formData.minRevenue)
+                  : "No minimum"
+              }}
+            </div>
+          </div>
+          <div>
+            <span class="text-slate-600">Years in Operation</span>
+            <div class="font-semibold text-slate-900 mt-1">
+              {{ getYearsOperationText(formData?.minYearsOperation) }}
+            </div>
+          </div>
+          <div>
+            <span class="text-slate-600">Collateral</span>
+            <div class="mt-1">
+              <span
+                *ngIf="formData?.requiresCollateral"
+                class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-amber-50 text-amber-700 rounded-full text-xs font-semibold border border-amber-200/50"
+              >
+                <lucide-angular [img]="ShieldIcon" [size]="12"></lucide-angular>
+                Required
+              </span>
+              <span
+                *ngIf="!formData?.requiresCollateral"
+                class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-green-50 text-green-700 rounded-full text-xs font-semibold border border-green-200/50"
+              >
+                <lucide-angular [img]="CheckIcon" [size]="12"></lucide-angular>
+                Not Required
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- No Eligibility Criteria Message -->
+  <div
+    *ngIf="!hasEligibilityData()"
+    class="bg-blue-50 border border-blue-200/50 rounded-xl p-4 flex gap-3"
+  >
+    <lucide-angular
+      [img]="TargetIcon"
+      [size]="20"
+      class="text-blue-600 flex-shrink-0 mt-0.5"
+    ></lucide-angular>
+    <div class="flex-1 min-w-0">
+      <h4 class="text-sm font-semibold text-blue-900">
+        No Eligibility Restrictions
+      </h4>
+      <p class="text-sm text-blue-700 mt-1">
+        This opportunity is open to all businesses without specific eligibility
+        criteria.
+      </p>
+    </div>
+  </div>
+
+  <!-- Ready to Publish -->
+  <div class="bg-teal-50 border border-teal-200/50 rounded-xl p-4 flex gap-3">
+    <lucide-angular
+      [img]="CheckIcon"
+      [size]="20"
+      class="text-teal-600 flex-shrink-0 mt-0.5"
+    ></lucide-angular>
+    <div class="flex-1 min-w-0">
+      <h4 class="text-sm font-semibold text-teal-900">Ready to Publish</h4>
+      <p class="text-sm text-teal-700 mt-1">
+        Once published, qualified SMEs can view and apply to this opportunity.
+        You can edit or pause it anytime from your dashboard.
+      </p>
+    </div>
+  </div>
+</div>
