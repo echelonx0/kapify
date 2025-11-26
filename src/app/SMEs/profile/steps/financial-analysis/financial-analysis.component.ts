@@ -40,6 +40,7 @@ import { FinancialNotesComponent } from './components/financial-notes/financial-
 import { FinancialDataTransformer } from './utils/financial-data.transformer';
 import { FinancialRatioCalculatorService } from './services/financial-ratio-calculator.service';
 import { FinancialTableSkeletonComponent } from './components/financial-table-skeleton.component';
+import { FullscreenDarkModeService } from './services/fullscreen-dark-mode.service';
 
 const EXPECTED_COLUMN_COUNT = 9;
 const AUTO_SAVE_DEBOUNCE = 2000;
@@ -73,7 +74,7 @@ export class FinancialAnalysisComponent implements OnInit, OnDestroy {
   private documentService = inject(SupabaseDocumentService);
   private excelParser = inject(ExcelFinancialParserService);
   private ratioCalculator = inject(FinancialRatioCalculatorService);
-
+  private darkMode = inject(FullscreenDarkModeService); // Add this
   // Tab state
   activeTab = signal<FinancialTab>('income-statement');
 
