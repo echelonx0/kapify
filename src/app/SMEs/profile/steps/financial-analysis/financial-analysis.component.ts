@@ -16,6 +16,7 @@ import {
   PenLine,
   RefreshCw,
   Download,
+  AlertCircle,
 } from 'lucide-angular';
 import { interval, Subscription, Subject } from 'rxjs';
 import { debounceTime, takeWhile, takeUntil } from 'rxjs/operators';
@@ -39,8 +40,10 @@ import { FinancialSummaryComponent } from './components/financial-summary/financ
 import { FinancialNotesComponent } from './components/financial-notes/financial-notes.component';
 import { FinancialDataTransformer } from './utils/financial-data.transformer';
 import { FinancialRatioCalculatorService } from './services/financial-ratio-calculator.service';
+import { FinancialTableSkeletonComponent } from './components/financial-table-skeleton.component';
 
 const EXPECTED_COLUMN_COUNT = 9;
+const VALIDATION_DEBOUNCE_TIME = 2000; // 2 seconds after last edit
 
 type FinancialTab =
   | 'income-statement'
@@ -55,12 +58,12 @@ type FinancialTab =
   standalone: true,
   imports: [
     CommonModule,
-
     LucideAngularModule,
     FinancialDataTableComponent,
     FinancialUploadComponent,
     FinancialSummaryComponent,
     FinancialNotesComponent,
+    FinancialTableSkeletonComponent,
   ],
   templateUrl: 'financial-analysis.component.html',
 })
@@ -80,6 +83,11 @@ export class FinancialAnalysisComponent implements OnInit, OnDestroy {
   financialRatiosData = signal<FinancialRatioData[]>([]);
   columnHeaders = signal<string[]>([]);
 
+  // Loading states - NEW
+  isInitializing = signal(true);
+  isLoadingData = signal(false);
+  loadingMessage = signal('Loading financial data...');
+
   // State signals
   isSaving = signal(false);
   isUploading = signal(false);
@@ -93,6 +101,14 @@ export class FinancialAnalysisComponent implements OnInit, OnDestroy {
   parseError = signal<string | null>(null);
   parseWarnings = signal<string[]>([]);
   parseProgress = signal<ParseProgress | null>(null);
+
+  // Validation state - NEW
+  validationEnabled = signal(false);
+  isValidating = signal(false);
+  validationResults = signal<{
+    balanceSheetBalanced: boolean;
+    cashFlowReconciled: boolean;
+  } | null>(null);
 
   // Computed table sections
   incomeStatementSections = computed(() =>
@@ -121,22 +137,302 @@ export class FinancialAnalysisComponent implements OnInit, OnDestroy {
   EditIcon = PenLine;
   RefreshIcon = RefreshCw;
   DownloadIcon = Download;
+  AlertIcon = AlertCircle;
 
   // Auto-save management
   private autoSaveSubscription?: Subscription;
   private destroy$ = new Subject<void>();
   private dataChangeSubject = new Subject<void>();
+  private validationSubject = new Subject<void>();
 
-  ngOnInit() {
+  async ngOnInit() {
     this.excelParser.setDebugMode(true);
-    this.loadExistingData();
+
+    // CRITICAL: Ensure validation is disabled during initialization
+    this.validationEnabled.set(false);
+    this.validationResults.set(null);
+    this.isInitializing.set(true);
+
+    console.log('🔄 Financial Analysis Init - Validation DISABLED');
+
+    // Load data with proper loading state
+    await this.loadExistingDataWithDelay();
+
     this.setupAutoSave();
+    this.setupDeferredValidation();
   }
 
   ngOnDestroy() {
     this.destroy$.next();
     this.destroy$.complete();
     this.autoSaveSubscription?.unsubscribe();
+  }
+
+  // ===============================
+  // LOADING STATE MANAGEMENT - NEW
+  // ===============================
+
+  /**
+   * Load existing data with artificial delay to ensure proper skeleton display
+   * This ensures users see the skeleton loader rather than a flash of content
+   */
+  private async loadExistingDataWithDelay() {
+    this.isInitializing.set(true);
+    this.isLoadingData.set(true);
+    this.loadingMessage.set('Loading financial data...');
+
+    console.log('📊 Loading financial data...');
+
+    try {
+      // Minimum display time for skeleton loader (500ms)
+      const minDisplayTime = 500;
+      const startTime = Date.now();
+
+      // Load the actual data
+      await this.loadExistingData();
+
+      // Ensure skeleton shows for at least minimum time
+      const elapsed = Date.now() - startTime;
+      if (elapsed < minDisplayTime) {
+        console.log(
+          `⏱️ Waiting ${
+            minDisplayTime - elapsed
+          }ms to meet minimum skeleton display time`
+        );
+        await new Promise((resolve) =>
+          setTimeout(resolve, minDisplayTime - elapsed)
+        );
+      }
+
+      console.log('✅ Data loaded, hiding skeleton');
+
+      // Enable validation after data is loaded and stable
+      // Increased delay to 2 seconds to ensure data is fully rendered
+      setTimeout(() => {
+        console.log('🔓 Enabling validation system');
+        this.validationEnabled.set(true);
+        this.triggerValidation();
+      }, 2000); // Changed from 1000ms to 2000ms
+    } catch (error) {
+      console.error('❌ Failed to load financial data:', error);
+      this.parseError.set('Failed to load financial data');
+    } finally {
+      this.isInitializing.set(false);
+      this.isLoadingData.set(false);
+    }
+  }
+
+  /**
+   * Load existing data from profile service
+   */
+  private async loadExistingData(): Promise<void> {
+    return new Promise((resolve) => {
+      const profileData = this.profileService.data();
+      const financialAnalysis = profileData.financialAnalysis;
+
+      if (financialAnalysis && this.isValidFinancialData(financialAnalysis)) {
+        this.loadFromExistingData(financialAnalysis as ParsedFinancialData);
+        console.log('✅ Loaded existing financial data');
+      } else {
+        this.initializeEmptyData();
+        console.log(
+          'ℹ️ No existing financial data, initialized empty structure'
+        );
+      }
+
+      resolve();
+    });
+  }
+
+  // ===============================
+  // DEFERRED VALIDATION - NEW
+  // ===============================
+
+  /**
+   * Setup validation that only runs after data changes have settled
+   */
+  private setupDeferredValidation() {
+    this.validationSubject
+      .pipe(debounceTime(VALIDATION_DEBOUNCE_TIME), takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.performValidation();
+      });
+  }
+
+  /**
+   * Trigger validation check (debounced)
+   */
+  private triggerValidation() {
+    if (this.validationEnabled()) {
+      console.log('🔍 Validation triggered (will run after 2-second debounce)');
+      this.validationSubject.next();
+    } else {
+      console.log('⛔ Validation trigger ignored - validation disabled');
+    }
+  }
+
+  /**
+   * Actually perform the validation checks
+   */
+  private performValidation() {
+    if (!this.hasFinancialData()) {
+      console.log('⏭️ Skipping validation - no financial data');
+      this.validationResults.set(null);
+      return;
+    }
+
+    console.log('▶️ Running validation checks...');
+    this.isValidating.set(true);
+
+    // Small delay to show validating state
+    setTimeout(() => {
+      const results = {
+        balanceSheetBalanced: this.checkBalanceSheetBalanced(),
+        cashFlowReconciled: this.checkCashFlowReconciled(),
+      };
+
+      this.validationResults.set(results);
+      this.isValidating.set(false);
+
+      console.log('✅ Validation completed:', {
+        balanceSheet: results.balanceSheetBalanced
+          ? 'Balanced ✓'
+          : 'Out of Balance ✗',
+        cashFlow: results.cashFlowReconciled ? 'Reconciled ✓' : 'Mismatch ✗',
+      });
+    }, 300);
+  }
+
+  /**
+   * Manual validation trigger (for user-initiated validation)
+   */
+  validateNow() {
+    this.validationEnabled.set(true);
+    this.isValidating.set(true);
+    this.performValidation();
+  }
+
+  /**
+   * Check if Balance Sheet is balanced
+   * Only called when validation is enabled
+   */
+  private checkBalanceSheetBalanced(): boolean {
+    const balanceSheet = this.balanceSheetData();
+    if (balanceSheet.length === 0) return true;
+
+    const totalAssetsRow = balanceSheet.find(
+      (r) =>
+        r.label.toLowerCase().includes('total assets') &&
+        r.category === 'assets'
+    );
+    const totalLiabilitiesRow = balanceSheet.find(
+      (r) =>
+        r.label.toLowerCase().includes('total liabilities') &&
+        r.category === 'liabilities'
+    );
+    const totalEquityRow = balanceSheet.find(
+      (r) =>
+        (r.label.toLowerCase().includes('total equity') ||
+          r.label.toLowerCase().includes('total shareholders')) &&
+        r.category === 'equity'
+    );
+
+    if (!totalAssetsRow || !totalLiabilitiesRow || !totalEquityRow) {
+      return true; // Can't validate without proper rows
+    }
+
+    const lastColIndex = this.columnHeaders().length - 1;
+    if (lastColIndex < 0) return true;
+
+    const assets = totalAssetsRow.values[lastColIndex] || 0;
+    const liabilities = totalLiabilitiesRow.values[lastColIndex] || 0;
+    const equity = totalEquityRow.values[lastColIndex] || 0;
+
+    const diff = Math.abs(assets - (liabilities + equity));
+    return diff <= 100;
+  }
+
+  /**
+   * Check if Cash Flow reconciles to Balance Sheet
+   * Only called when validation is enabled
+   */
+  private checkCashFlowReconciled(): boolean {
+    const cashFlow = this.cashFlowData();
+    const balanceSheet = this.balanceSheetData();
+
+    if (cashFlow.length === 0 || balanceSheet.length === 0) {
+      return true; // Can't validate without data
+    }
+
+    const cfClosingCashRow = cashFlow.find(
+      (r) =>
+        r.label.toLowerCase().includes('closing') ||
+        r.label.toLowerCase().includes('ending') ||
+        r.label.toLowerCase().includes('end of period')
+    );
+
+    const bsCashRow = balanceSheet.find(
+      (r) =>
+        (r.subcategory === 'current' &&
+          r.label.toLowerCase().includes('cash') &&
+          !r.label.toLowerCase().includes('equivalents')) ||
+        r.label.toLowerCase() === 'cash and cash equivalents'
+    );
+
+    if (!cfClosingCashRow || !bsCashRow) {
+      return true; // Can't validate without proper rows
+    }
+
+    const lastColIndex = this.columnHeaders().length - 1;
+    if (lastColIndex < 0) return true;
+
+    const cfCash = cfClosingCashRow.values[lastColIndex] || 0;
+    const bsCash = bsCashRow.values[lastColIndex] || 0;
+
+    const diff = Math.abs(cfCash - bsCash);
+    return diff <= 100;
+  }
+
+  /**
+   * Get validation status for display - PUBLIC methods called by template
+   * These now check if validation is enabled before returning results
+   */
+  isBalanceSheetBalanced(): boolean {
+    if (!this.shouldShowValidation()) return true; // Don't show as invalid if validation disabled
+    return this.validationResults()?.balanceSheetBalanced ?? true;
+  }
+
+  isCashFlowReconciledToBS(): boolean {
+    if (!this.shouldShowValidation()) return true; // Don't show as invalid if validation disabled
+    return this.validationResults()?.cashFlowReconciled ?? true;
+  }
+
+  /**
+   * Check if validation indicators should be shown
+   * Returns false during loading or if validation hasn't run yet
+   */
+  shouldShowValidation(): boolean {
+    // Never show during loading states
+    if (this.isLoadingData() || this.isInitializing()) {
+      return false;
+    }
+
+    // Never show if validation is not enabled
+    if (!this.validationEnabled()) {
+      return false;
+    }
+
+    // Never show if validation hasn't completed yet
+    if (this.validationResults() === null) {
+      return false;
+    }
+
+    // Only show if we have actual financial data
+    if (!this.hasFinancialData()) {
+      return false;
+    }
+
+    return true;
   }
 
   // ===============================
@@ -155,19 +451,6 @@ export class FinancialAnalysisComponent implements OnInit, OnDestroy {
   // ===============================
   // DATA LOADING & INITIALIZATION
   // ===============================
-
-  private loadExistingData() {
-    const profileData = this.profileService.data();
-    const financialAnalysis = profileData.financialAnalysis;
-
-    if (financialAnalysis && this.isValidFinancialData(financialAnalysis)) {
-      this.loadFromExistingData(financialAnalysis as ParsedFinancialData);
-      console.log('✅ Loaded existing financial data');
-    } else {
-      this.initializeEmptyData();
-      console.log('ℹ️ No existing financial data, initialized empty structure');
-    }
-  }
 
   private isValidFinancialData(data: any): boolean {
     return (
@@ -227,9 +510,12 @@ export class FinancialAnalysisComponent implements OnInit, OnDestroy {
     }
 
     this.isParsingFile.set(true);
+    this.isLoadingData.set(true);
+    this.loadingMessage.set('Processing Excel file...');
     this.parseError.set(null);
     this.parseWarnings.set([]);
     this.parseProgress.set(null);
+    this.validationEnabled.set(false); // Disable validation during upload
 
     try {
       console.log('🔄 Starting file processing:', file.name);
@@ -238,6 +524,7 @@ export class FinancialAnalysisComponent implements OnInit, OnDestroy {
         file,
         (progress) => {
           this.parseProgress.set(progress);
+          this.loadingMessage.set(progress.message);
         }
       );
 
@@ -261,6 +548,7 @@ export class FinancialAnalysisComponent implements OnInit, OnDestroy {
 
       this.isParsingFile.set(false);
       this.isUploading.set(true);
+      this.loadingMessage.set('Uploading file...');
 
       const uploadResult = await this.uploadFileToStorage(file);
 
@@ -278,6 +566,12 @@ export class FinancialAnalysisComponent implements OnInit, OnDestroy {
 
       this.triggerDataChange();
 
+      // Enable validation after data settles
+      setTimeout(() => {
+        this.validationEnabled.set(true);
+        this.triggerValidation();
+      }, 1500);
+
       console.log('✅ Financial data processed successfully');
     } catch (error) {
       console.error('❌ Error processing financial file:', error);
@@ -287,6 +581,7 @@ export class FinancialAnalysisComponent implements OnInit, OnDestroy {
     } finally {
       this.isParsingFile.set(false);
       this.isUploading.set(false);
+      this.isLoadingData.set(false);
       this.parseProgress.set(null);
     }
   }
@@ -327,10 +622,6 @@ export class FinancialAnalysisComponent implements OnInit, OnDestroy {
   // REPLACE DATA FUNCTIONALITY
   // ===============================
 
-  /**
-   * Replace all financial data - triggered by user action
-   * Shows confirmation dialog before wiping data
-   */
   replaceData() {
     const hasData = this.hasFinancialData();
 
@@ -350,14 +641,10 @@ export class FinancialAnalysisComponent implements OnInit, OnDestroy {
       }
     }
 
-    // Clear all data
     this.clearAllData();
     console.log('🗑️ Financial data cleared for replacement');
   }
 
-  /**
-   * Clear all financial data and reset to upload state
-   */
   private clearAllData() {
     this.uploadedTemplate.set(null);
     this.incomeStatementData.set([]);
@@ -368,14 +655,12 @@ export class FinancialAnalysisComponent implements OnInit, OnDestroy {
     this.parseWarnings.set([]);
     this.editingMode.set(false);
     this.activeTab.set('income-statement');
+    this.validationEnabled.set(false);
+    this.validationResults.set(null);
 
-    // Reinitialize with empty headers
     this.initializeEmptyData();
   }
 
-  /**
-   * Remove template - legacy method, now calls clearAllData
-   */
   removeTemplate() {
     this.clearAllData();
   }
@@ -504,13 +789,9 @@ export class FinancialAnalysisComponent implements OnInit, OnDestroy {
   }
 
   // ===============================
-  // TABLE DATA HANDLING - FIXED INDEXING
+  // TABLE DATA HANDLING
   // ===============================
 
-  /**
-   * Handle Income Statement cell changes
-   * Uses section-aware indexing to find correct row
-   */
   onIncomeStatementCellChanged(event: {
     sectionIndex: number;
     rowIndex: number;
@@ -536,18 +817,12 @@ export class FinancialAnalysisComponent implements OnInit, OnDestroy {
       return newData;
     });
 
-    // Recalculate Income Statement calculated fields
     this.recalculateIncomeStatementFields();
-
-    // Recalculate all ratios since Income Statement affects them
     this.recalculateAllRatios();
-
     this.triggerDataChange();
+    this.triggerValidation();
   }
 
-  /**
-   * Handle Balance Sheet cell changes
-   */
   onBalanceSheetCellChanged(event: {
     sectionIndex: number;
     rowIndex: number;
@@ -573,15 +848,11 @@ export class FinancialAnalysisComponent implements OnInit, OnDestroy {
       return newData;
     });
 
-    // Recalculate ratios since Balance Sheet affects them
     this.recalculateAllRatios();
-
     this.triggerDataChange();
+    this.triggerValidation();
   }
 
-  /**
-   * Handle Cash Flow cell changes
-   */
   onCashFlowCellChanged(event: {
     sectionIndex: number;
     rowIndex: number;
@@ -608,11 +879,9 @@ export class FinancialAnalysisComponent implements OnInit, OnDestroy {
     });
 
     this.triggerDataChange();
+    this.triggerValidation();
   }
 
-  /**
-   * Handle Financial Ratios cell changes (for manual overrides if allowed)
-   */
   onFinancialRatiosCellChanged(event: {
     sectionIndex: number;
     rowIndex: number;
@@ -645,9 +914,6 @@ export class FinancialAnalysisComponent implements OnInit, OnDestroy {
   // INDEX MAPPING HELPERS
   // ===============================
 
-  /**
-   * Convert section/row indices to flat array index for Income Statement
-   */
   private getFlatIndex(
     sections: FinancialTableSection[],
     sectionIndex: number,
@@ -660,10 +926,6 @@ export class FinancialAnalysisComponent implements OnInit, OnDestroy {
     return flatIndex + rowIndex;
   }
 
-  /**
-   * Convert section/row indices to flat array index for Balance Sheet
-   * Balance Sheet sections map to categories (assets, liabilities, equity)
-   */
   private getFlatIndexForBalanceSheet(
     sections: FinancialTableSection[],
     sectionIndex: number,
@@ -674,18 +936,12 @@ export class FinancialAnalysisComponent implements OnInit, OnDestroy {
 
     if (!section) return -1;
 
-    // Find the row label from the section
     const rowLabel = section.rows[rowIndex]?.label;
     if (!rowLabel) return -1;
 
-    // Find this row in the flat balance sheet data
     return balanceData.findIndex((row) => row.label === rowLabel);
   }
 
-  /**
-   * Convert section/row indices to flat array index for Cash Flow
-   * Cash Flow sections map to categories (operating, investing, financing)
-   */
   private getFlatIndexForCashFlow(
     sections: FinancialTableSection[],
     sectionIndex: number,
@@ -696,11 +952,9 @@ export class FinancialAnalysisComponent implements OnInit, OnDestroy {
 
     if (!section) return -1;
 
-    // Find the row label from the section
     const rowLabel = section.rows[rowIndex]?.label;
     if (!rowLabel) return -1;
 
-    // Find this row in the flat cash flow data
     return cashFlowData.findIndex((row) => row.label === rowLabel);
   }
 
@@ -708,9 +962,6 @@ export class FinancialAnalysisComponent implements OnInit, OnDestroy {
   // RECALCULATION METHODS
   // ===============================
 
-  /**
-   * Recalculate Income Statement calculated fields (Gross Profit, EBITDA, etc.)
-   */
   private recalculateIncomeStatementFields() {
     const currentData = this.incomeStatementData();
     const recalculated =
@@ -718,16 +969,12 @@ export class FinancialAnalysisComponent implements OnInit, OnDestroy {
     this.incomeStatementData.set(recalculated);
   }
 
-  /**
-   * Recalculate all financial ratios based on current data
-   */
   private recalculateAllRatios() {
     const income = this.incomeStatementData();
     const balance = this.balanceSheetData();
     const cashFlow = this.cashFlowData();
     const existingRatios = this.financialRatiosData();
 
-    // Only recalculate if we have data
     if (income.length === 0 && balance.length === 0) {
       return;
     }
@@ -740,7 +987,6 @@ export class FinancialAnalysisComponent implements OnInit, OnDestroy {
     );
 
     this.financialRatiosData.set(recalculatedRatios);
-    console.log('✅ Financial ratios recalculated');
   }
 
   // ===============================
@@ -899,84 +1145,5 @@ export class FinancialAnalysisComponent implements OnInit, OnDestroy {
   onNotesSaved(notes: string) {
     this.notesText.set(notes);
     this.triggerDataChange();
-  }
-
-  // ===============================
-  // VALIDATION CHECKS
-  // ===============================
-
-  /**
-   * Check if Balance Sheet is balanced: Assets = Liabilities + Equity
-   */
-  isBalanceSheetBalanced(): boolean {
-    const balanceSheet = this.balanceSheetData();
-    if (balanceSheet.length === 0) return true;
-
-    const totalAssetsRow = balanceSheet.find(
-      (r) =>
-        r.label.toLowerCase().includes('total assets') &&
-        r.category === 'assets'
-    );
-    const totalLiabilitiesRow = balanceSheet.find(
-      (r) =>
-        r.label.toLowerCase().includes('total liabilities') &&
-        r.category === 'liabilities'
-    );
-    const totalEquityRow = balanceSheet.find(
-      (r) =>
-        (r.label.toLowerCase().includes('total equity') ||
-          r.label.toLowerCase().includes('total shareholders')) &&
-        r.category === 'equity'
-    );
-
-    if (!totalAssetsRow || !totalLiabilitiesRow || !totalEquityRow) {
-      return false;
-    }
-
-    const lastColIndex = this.columnHeaders().length - 1;
-    const assets = totalAssetsRow.values[lastColIndex] || 0;
-    const liabilities = totalLiabilitiesRow.values[lastColIndex] || 0;
-    const equity = totalEquityRow.values[lastColIndex] || 0;
-
-    const diff = Math.abs(assets - (liabilities + equity));
-    return diff <= 100;
-  }
-
-  /**
-   * Check if Cash Flow closing cash matches Balance Sheet cash
-   */
-  isCashFlowReconciledToBS(): boolean {
-    const cashFlow = this.cashFlowData();
-    const balanceSheet = this.balanceSheetData();
-
-    if (cashFlow.length === 0 || balanceSheet.length === 0) {
-      return true;
-    }
-
-    const cfClosingCashRow = cashFlow.find(
-      (r) =>
-        r.label.toLowerCase().includes('closing') ||
-        r.label.toLowerCase().includes('ending') ||
-        r.label.toLowerCase().includes('end of period')
-    );
-
-    const bsCashRow = balanceSheet.find(
-      (r) =>
-        (r.subcategory === 'current' &&
-          r.label.toLowerCase().includes('cash') &&
-          !r.label.toLowerCase().includes('equivalents')) ||
-        r.label.toLowerCase() === 'cash and cash equivalents'
-    );
-
-    if (!cfClosingCashRow || !bsCashRow) {
-      return true;
-    }
-
-    const lastColIndex = this.columnHeaders().length - 1;
-    const cfCash = cfClosingCashRow.values[lastColIndex] || 0;
-    const bsCash = bsCashRow.values[lastColIndex] || 0;
-
-    const diff = Math.abs(cfCash - bsCash);
-    return diff <= 100;
   }
 }
