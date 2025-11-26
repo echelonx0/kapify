@@ -20,7 +20,11 @@ import {
       <div class="mb-6">
         <h3 class="text-lg font-bold text-slate-900">Financial Summary</h3>
         <p class="text-sm text-slate-600 mt-1">
-          Profile completion & key metrics
+          The financial health score summarizes the completeness of your
+          financial data. It is based on the number of income statement items
+          and financial ratios you have provided. A higher score indicates a
+          more comprehensive financial profile. It is not a professional
+          assessment of financial performance.
         </p>
       </div>
 

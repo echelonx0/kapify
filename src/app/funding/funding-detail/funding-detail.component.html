@@ -7,7 +7,7 @@
     @if (isLoading()) {
     <div class="bg-white rounded-2xl border border-slate-200 p-12 text-center">
       <div
-        class="animate-spin rounded-full h-10 w-10 border-2 border-slate-300 border-t-orange-500 mx-auto mb-4"
+        class="animate-spin rounded-full h-10 w-10 border-2 border-slate-300 border-t-teal-500 mx-auto mb-4"
       ></div>
       <p class="text-slate-600">Loading opportunity details...</p>
     </div>
@@ -49,9 +49,9 @@
         @if (canManageOpportunity()) {
         <button (click)="editOpportunity()">
           <span
-            class="inline-flex items-center gap-2 px-3 py-1.5 bg-orange-50 border border-orange-200/50 text-orange-700 text-xs font-semibold rounded-full"
+            class="inline-flex items-center gap-2 px-3 py-1.5 bg-teal-50 border border-teal-200/50 text-teal-700 text-xs font-semibold rounded-full"
           >
-            <div class="w-2 h-2 bg-orange-600 rounded-full"></div>
+            <div class="w-2 h-2 bg-teal-600 rounded-full"></div>
             Edit This Opportunity
           </span>
         </button>
@@ -69,9 +69,9 @@
         >
           <div class="flex items-start gap-6 mb-6">
             <div
-              class="w-20 h-20 bg-gradient-to-br from-orange-100 to-orange-50 rounded-xl flex items-center justify-center border border-orange-200 flex-shrink-0"
+              class="w-20 h-20 bg-gradient-to-br from-teal-100 to-teal-50 rounded-xl flex items-center justify-center border border-teal-200 flex-shrink-0"
             >
-              <span class="text-orange-600 font-bold text-2xl">
+              <span class="text-teal-600 font-bold text-2xl">
                 {{ getInitials(opportunity()!.title) }}
               </span>
             </div>
@@ -80,7 +80,7 @@
               <div class="flex flex-wrap gap-2 mb-3">
                 @for (type of opportunity()!.fundingType; track type) {
                 <span
-                  class="inline-flex items-center px-3 py-1 bg-orange-50 border border-orange-200/50 text-orange-700 text-xs font-semibold rounded-lg"
+                  class="inline-flex items-center px-3 py-1 bg-teal-50 border border-teal-200/50 text-teal-700 text-xs font-semibold rounded-lg"
                 >
                   {{ formatFundingType(type) }}
                 </span>
@@ -139,16 +139,16 @@
           </p>
 
           <div class="space-y-3">
-            @for (criteria of getExclusionCriteria(); track criteria) {
+            @for (criteria of getEligibilityCriteria(); track criteria) {
             <div
-              class="flex items-start gap-3 p-4 bg-red-50 rounded-lg border border-red-200/50"
+              class="flex items-start gap-3 p-4 bg-teal-50 rounded-lg border border-teal-200/50"
             >
               <lucide-icon
                 name="circle-off"
                 [size]="20"
-                class="text-red-600 flex-shrink-0 mt-0.5"
+                class="text-teal-600 flex-shrink-0 mt-0.5"
               />
-              <span class="text-sm text-red-700">{{ criteria }}</span>
+              <span class="text-sm text-teal-700">{{ criteria }}</span>
             </div>
             }
           </div>
@@ -331,7 +331,7 @@
             <div
               class="flex items-center gap-2 p-3 bg-slate-50 rounded-lg border border-slate-200/50"
             >
-              <div class="w-2 h-2 bg-orange-500 rounded-full"></div>
+              <div class="w-2 h-2 bg-teal-500 rounded-full"></div>
               <span class="text-sm text-slate-700">{{
                 formatIndustryDescription(industry)
               }}</span>
@@ -405,7 +405,7 @@
               <div class="flex flex-wrap gap-2">
                 @for (type of opportunity()!.fundingType; track type) {
                 <span
-                  class="inline-flex items-center px-2.5 py-1 bg-orange-50 border border-orange-200/50 text-orange-700 text-xs font-semibold rounded-lg"
+                  class="inline-flex items-center px-2.5 py-1 bg-teal-50 border border-teal-200/50 text-teal-700 text-xs font-semibold rounded-lg"
                 >
                   {{ formatFundingType(type) }}
                 </span>
@@ -417,7 +417,7 @@
           @if (!canManageOpportunity()) {
           <button
             (click)="applyNow()"
-            class="w-full mt-6 px-6 py-2.5 bg-orange-500 text-white text-sm font-medium rounded-xl hover:bg-orange-600 active:bg-orange-700 transition-colors duration-200"
+            class="w-full mt-6 px-6 py-2.5 bg-teal-500 text-white text-sm font-medium rounded-xl hover:bg-teal-600 active:bg-teal-700 transition-colors duration-200"
           >
             Apply Now
           </button>
@@ -435,7 +435,7 @@
           <button
             (click)="viewInvestorProfile()"
             [disabled]="isLoadingProfile()"
-            class="w-full mt-4 px-4 py-2 text-orange-600 text-sm font-medium hover:bg-orange-50 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg transition-colors duration-200"
+            class="w-full mt-4 px-4 py-2 text-teal-600 text-sm font-medium hover:bg-teal-50 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg transition-colors duration-200"
           >
             @if (isLoadingProfile()) {
             <span class="inline-flex items-center gap-2">
@@ -497,7 +497,7 @@
       </p>
       <button
         (click)="goBack()"
-        class="px-6 py-2.5 bg-orange-500 text-white text-sm font-medium rounded-xl hover:bg-orange-600 active:bg-orange-700 transition-colors duration-200"
+        class="px-6 py-2.5 bg-teal-500 text-white text-sm font-medium rounded-xl hover:bg-teal-600 active:bg-teal-700 transition-colors duration-200"
       >
         Back to Opportunities
       </button>

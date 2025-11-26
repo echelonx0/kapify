@@ -61,6 +61,7 @@ import { OpportunityFormActionsComponent } from './shared/opportunity-form-actio
 import { OpportunityUIHelperService } from './services/ui-helper.service';
 import { ToastrService } from 'ngx-toastr';
 import { OpportunityActionModalComponent } from 'src/app/shared/components/modal/app-modal.component';
+import { OpportunityReviewComponent } from './steps/review/opportunity-review.component';
 
 @Component({
   selector: 'app-opportunity-form',
@@ -70,7 +71,7 @@ import { OpportunityActionModalComponent } from 'src/app/shared/components/modal
     CommonModule,
     LucideAngularModule,
     OpportunityBasicsComponent,
-
+    OpportunityReviewComponent,
     FundingStructureComponent,
     EligibilityFiltersComponent,
     ApplicationSettingsComponent,

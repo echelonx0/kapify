@@ -1,10 +1,13 @@
-
 // src/app/profile/steps/financial-info.component.ts
 import { Component, signal, OnInit } from '@angular/core';
-import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import {
+  ReactiveFormsModule,
+  FormBuilder,
+  FormGroup,
+  Validators,
+} from '@angular/forms';
 import { UiInputComponent, UiCardComponent } from '../../../shared/components';
-import { SMEProfileStepsService } from '../../services/sme-profile-steps.service';
- 
+import { SMEProfileStepsService } from '../services/sme-profile-steps.service';
 
 @Component({
   selector: 'app-financial-info',
@@ -14,19 +17,26 @@ import { SMEProfileStepsService } from '../../services/sme-profile-steps.service
     <div class="space-y-8">
       <div class="text-center">
         <h2 class="text-2xl font-bold text-neutral-900">Financial Overview</h2>
-        <p class="text-neutral-600 mt-2">Share your financial information to help us match you with suitable funders</p>
+        <p class="text-neutral-600 mt-2">
+          Share your financial information to help us match you with suitable
+          funders
+        </p>
       </div>
 
       <ui-card>
         <form [formGroup]="financialForm" class="space-y-8">
           <!-- Revenue Information -->
           <div class="space-y-4">
-            <h3 class="text-lg font-semibold text-neutral-900">Revenue & Profitability</h3>
-            
+            <h3 class="text-lg font-semibold text-neutral-900">
+              Revenue & Profitability
+            </h3>
+
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label class="block text-sm font-medium text-neutral-700 mb-2">Monthly Revenue</label>
-                <select 
+                <label class="block text-sm font-medium text-neutral-700 mb-2"
+                  >Monthly Revenue</label
+                >
+                <select
                   formControlName="monthlyRevenue"
                   class="block w-full px-3 py-2 border border-neutral-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
                 >
@@ -39,10 +49,12 @@ import { SMEProfileStepsService } from '../../services/sme-profile-steps.service
                   <option value="1m+">R1,000,000+</option>
                 </select>
               </div>
-              
+
               <div>
-                <label class="block text-sm font-medium text-neutral-700 mb-2">Annual Revenue</label>
-                <select 
+                <label class="block text-sm font-medium text-neutral-700 mb-2"
+                  >Annual Revenue</label
+                >
+                <select
                   formControlName="annualRevenue"
                   class="block w-full px-3 py-2 border border-neutral-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
                 >
@@ -59,8 +71,10 @@ import { SMEProfileStepsService } from '../../services/sme-profile-steps.service
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label class="block text-sm font-medium text-neutral-700 mb-2">Profit Margin</label>
-                <select 
+                <label class="block text-sm font-medium text-neutral-700 mb-2"
+                  >Profit Margin</label
+                >
+                <select
                   formControlName="profitMargin"
                   class="block w-full px-3 py-2 border border-neutral-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
                 >
@@ -73,10 +87,12 @@ import { SMEProfileStepsService } from '../../services/sme-profile-steps.service
                   <option value="30+">30%+</option>
                 </select>
               </div>
-              
+
               <div>
-                <label class="block text-sm font-medium text-neutral-700 mb-2">Existing Debt</label>
-                <select 
+                <label class="block text-sm font-medium text-neutral-700 mb-2"
+                  >Existing Debt</label
+                >
+                <select
                   formControlName="existingDebt"
                   class="block w-full px-3 py-2 border border-neutral-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
                 >
@@ -94,12 +110,16 @@ import { SMEProfileStepsService } from '../../services/sme-profile-steps.service
 
           <!-- Credit & Banking -->
           <div class="space-y-4">
-            <h3 class="text-lg font-semibold text-neutral-900">Credit & Banking</h3>
-            
+            <h3 class="text-lg font-semibold text-neutral-900">
+              Credit & Banking
+            </h3>
+
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label class="block text-sm font-medium text-neutral-700 mb-2">Credit Rating</label>
-                <select 
+                <label class="block text-sm font-medium text-neutral-700 mb-2"
+                  >Credit Rating</label
+                >
+                <select
                   formControlName="creditRating"
                   class="block w-full px-3 py-2 border border-neutral-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
                 >
@@ -111,7 +131,7 @@ import { SMEProfileStepsService } from '../../services/sme-profile-steps.service
                   <option value="unknown">Don't know</option>
                 </select>
               </div>
-              
+
               <ui-input
                 label="Bank Name"
                 placeholder="Standard Bank, FNB, ABSA, etc."
@@ -123,19 +143,27 @@ import { SMEProfileStepsService } from '../../services/sme-profile-steps.service
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label class="block text-sm font-medium text-neutral-700 mb-2">Account Type</label>
-                <select 
+                <label class="block text-sm font-medium text-neutral-700 mb-2"
+                  >Account Type</label
+                >
+                <select
                   formControlName="accountType"
                   class="block w-full px-3 py-2 border border-neutral-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
                 >
                   <option value="">Select account type</option>
-                  <option value="business-cheque">Business Cheque Account</option>
-                  <option value="business-current">Business Current Account</option>
-                  <option value="business-savings">Business Savings Account</option>
+                  <option value="business-cheque">
+                    Business Cheque Account
+                  </option>
+                  <option value="business-current">
+                    Business Current Account
+                  </option>
+                  <option value="business-savings">
+                    Business Savings Account
+                  </option>
                   <option value="other">Other</option>
                 </select>
               </div>
-              
+
               <ui-input
                 label="Years with Bank"
                 type="number"
@@ -149,15 +177,17 @@ import { SMEProfileStepsService } from '../../services/sme-profile-steps.service
           </div>
 
           @if (isSaving()) {
-            <div class="text-sm text-neutral-500 flex items-center">
-              <div class="w-2 h-2 bg-primary-500 rounded-full animate-pulse mr-2"></div>
-              Saving changes...
-            </div>
+          <div class="text-sm text-neutral-500 flex items-center">
+            <div
+              class="w-2 h-2 bg-primary-500 rounded-full animate-pulse mr-2"
+            ></div>
+            Saving changes...
+          </div>
           }
         </form>
       </ui-card>
     </div>
-  `
+  `,
 })
 export class FinancialInfoComponent implements OnInit {
   financialForm: FormGroup;
@@ -175,7 +205,7 @@ export class FinancialInfoComponent implements OnInit {
       creditRating: ['', [Validators.required]],
       bankName: ['', [Validators.required]],
       accountType: ['', [Validators.required]],
-      yearsWithBank: ['', [Validators.required, Validators.min(0)]]
+      yearsWithBank: ['', [Validators.required, Validators.min(0)]],
     });
 
     this.financialForm.valueChanges.subscribe(() => {
@@ -190,7 +220,7 @@ export class FinancialInfoComponent implements OnInit {
     if (existingData) {
       this.financialForm.patchValue({
         ...existingData,
-        ...existingData.bankingDetails
+        ...existingData.bankingDetails,
       });
     }
   }
@@ -198,7 +228,8 @@ export class FinancialInfoComponent implements OnInit {
   getFieldError(fieldName: string): string | undefined {
     const field = this.financialForm.get(fieldName);
     if (field?.errors && field?.touched) {
-      if (field.errors['required']) return `${this.getFieldDisplayName(fieldName)} is required`;
+      if (field.errors['required'])
+        return `${this.getFieldDisplayName(fieldName)} is required`;
       if (field.errors['min']) return 'Must be 0 or greater';
     }
     return undefined;
@@ -207,7 +238,7 @@ export class FinancialInfoComponent implements OnInit {
   private getFieldDisplayName(fieldName: string): string {
     const displayNames: { [key: string]: string } = {
       bankName: 'Bank name',
-      yearsWithBank: 'Years with bank'
+      yearsWithBank: 'Years with bank',
     };
     return displayNames[fieldName] || fieldName;
   }
@@ -215,9 +246,9 @@ export class FinancialInfoComponent implements OnInit {
   async autoSave() {
     if (this.financialForm.valid) {
       this.isSaving.set(true);
-      
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
+
+      await new Promise((resolve) => setTimeout(resolve, 500));
+
       const formValue = this.financialForm.value;
       const financialData = {
         monthlyRevenue: formValue.monthlyRevenue,
@@ -228,10 +259,10 @@ export class FinancialInfoComponent implements OnInit {
         bankingDetails: {
           bankName: formValue.bankName,
           accountType: formValue.accountType,
-          yearsWithBank: formValue.yearsWithBank
-        }
+          yearsWithBank: formValue.yearsWithBank,
+        },
       };
-      
+
       this.profileService.updateFinancialInfo(financialData);
       this.isSaving.set(false);
     }
