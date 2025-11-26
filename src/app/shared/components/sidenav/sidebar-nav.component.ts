@@ -116,6 +116,14 @@ export class SidebarNavComponent implements OnInit {
       route: '/dashboard/funder-dashboard',
       userTypes: ['funder'],
     },
+
+    {
+      id: 'funder-applications',
+      label: 'Opportunities',
+      icon: BookOpen,
+      route: '/dashboard/funder-dashboard',
+      userTypes: ['funder'],
+    },
     {
       id: 'sme-applications',
       label: 'Applications',

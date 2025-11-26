@@ -183,6 +183,7 @@
       </button>
     </div>
 
+    @if (incomeStatementSections().length > 0) {
     <app-financial-data-table
       [sections]="incomeStatementSections()"
       [columnHeaders]="columnHeaders()"
@@ -190,8 +191,11 @@
       itemLabel="Item"
       (cellValueChanged)="onIncomeStatementCellChanged($event)"
     />
-
-    }
+    } @else {
+    <div class="bg-white rounded-2xl border border-slate-200 p-12 text-center">
+      <p class="text-slate-500">No income statement data available</p>
+    </div>
+    } }
 
     <!-- Balance Sheet Tab -->
     @if (activeTab() === 'balance-sheet') {
@@ -205,8 +209,8 @@
         {{ editingMode() ? "Done" : "Edit" }}
       </button>
 
-      <!-- Validation Indicator -->
-      @if (balanceSheetData().length > 0) {
+      <!-- Validation Indicator - Only show when we have actual balance sheet data with totals -->
+      @if (balanceSheetData().length > 5) {
       <div class="flex items-center text-sm">
         @if (isBalanceSheetBalanced()) {
         <span class="flex items-center gap-1.5 text-green-700">
@@ -223,6 +227,7 @@
       }
     </div>
 
+    @if (balanceSheetSections().length > 0) {
     <app-financial-data-table
       [sections]="balanceSheetSections()"
       [columnHeaders]="columnHeaders()"
@@ -230,8 +235,11 @@
       itemLabel="Account"
       (cellValueChanged)="onBalanceSheetCellChanged($event)"
     />
-
-    }
+    } @else {
+    <div class="bg-white rounded-2xl border border-slate-200 p-12 text-center">
+      <p class="text-slate-500">No balance sheet data available</p>
+    </div>
+    } }
 
     <!-- Cash Flow Tab -->
     @if (activeTab() === 'cash-flow') {
@@ -245,8 +253,8 @@
         {{ editingMode() ? "Done" : "Edit" }}
       </button>
 
-      <!-- Cash Reconciliation Indicator -->
-      @if (cashFlowData().length > 0) {
+      <!-- Cash Reconciliation Indicator - Only show when we have actual data -->
+      @if (cashFlowData().length > 5) {
       <div class="flex items-center text-sm">
         @if (isCashFlowReconciledToBS()) {
         <span class="flex items-center gap-1.5 text-green-700">
@@ -263,6 +271,7 @@
       }
     </div>
 
+    @if (cashFlowSections().length > 0) {
     <app-financial-data-table
       [sections]="cashFlowSections()"
       [columnHeaders]="columnHeaders()"
@@ -270,8 +279,11 @@
       itemLabel="Activity"
       (cellValueChanged)="onCashFlowCellChanged($event)"
     />
-
-    }
+    } @else {
+    <div class="bg-white rounded-2xl border border-slate-200 p-12 text-center">
+      <p class="text-slate-500">No cash flow data available</p>
+    </div>
+    } }
 
     <!-- Financial Ratios Tab -->
     @if (activeTab() === 'financial-ratios') {
@@ -284,16 +296,19 @@
       </div>
     </div>
 
+    @if (financialRatiosSections().length > 0) {
     <app-financial-data-table
-      class="text-xs [&_*]:text-xs [&_*]:leading-tight"
       [sections]="financialRatiosSections()"
       [columnHeaders]="columnHeaders()"
       [editMode]="false"
       itemLabel="Ratio"
       (cellValueChanged)="onFinancialRatiosCellChanged($event)"
     />
-
-    }
+    } @else {
+    <div class="bg-white rounded-2xl border border-slate-200 p-12 text-center">
+      <p class="text-slate-500">No financial ratios available</p>
+    </div>
+    } }
 
     <!-- Notes Tab -->
     @if (activeTab() === 'notes') {

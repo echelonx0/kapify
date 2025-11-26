@@ -1,0 +1,135 @@
+<!-- src/app/SMEs/profile/steps/financial-analysis/financial-table/financial-data-table.component.html -->
+<div class="overflow-x-auto">
+  <table class="w-full border-collapse">
+    <!-- Table Header -->
+    <thead>
+      <tr class="border-b border-slate-200 bg-slate-50/50">
+        <!-- Item Column Header -->
+        <th class="sticky left-0 z-20 bg-slate-50/50 px-4 py-3 text-left">
+          <span class="text-sm font-semibold text-slate-900">{{
+            itemLabel
+          }}</span>
+        </th>
+
+        <!-- Year Column Headers -->
+        @for (header of columnHeaders; track trackByColumn($index, header)) {
+        <th class="px-4 py-3 text-right min-w-[140px]">
+          <span class="text-sm font-semibold text-slate-900">{{ header }}</span>
+        </th>
+        }
+      </tr>
+    </thead>
+
+    <!-- Table Body -->
+    <tbody>
+      @for (section of sections; track trackBySection($index, section)) {
+      <!-- Section Header Row (Collapsible) -->
+      @if (section.isCollapsible) {
+      <tr
+        class="border-b border-slate-200 bg-teal-50/50 cursor-pointer hover:bg-teal-50 transition-colors duration-200"
+        (click)="toggleSection($index)"
+      >
+        <td
+          class="sticky left-0 z-10 bg-teal-50/50 px-4 py-3"
+          [attr.colspan]="columnHeaders.length + 1"
+        >
+          <div class="flex items-center gap-2">
+            <lucide-icon
+              [name]="
+                isSectionCollapsed($index) ? ChevronRightIcon : ChevronDownIcon
+              "
+              [size]="16"
+              class="text-teal-600"
+            />
+            <span
+              class="text-sm font-bold text-slate-900 uppercase tracking-wide"
+            >
+              {{ section.title }}
+            </span>
+          </div>
+        </td>
+      </tr>
+      } @else {
+      <!-- Non-collapsible Section Header -->
+      <tr class="border-b border-slate-200 bg-teal-50/50">
+        <td
+          class="sticky left-0 z-10 bg-teal-50/50 px-4 py-3"
+          [attr.colspan]="columnHeaders.length + 1"
+        >
+          <span
+            class="text-sm font-bold text-slate-900 uppercase tracking-wide"
+          >
+            {{ section.title }}
+          </span>
+        </td>
+      </tr>
+      }
+
+      <!-- Section Rows (Show if not collapsed) -->
+      @if (!section.isCollapsible || !isSectionCollapsed($index)) { @for (row of
+      section.rows; track trackByRow($index, row)) {
+      <tr
+        class="border-b border-slate-200 hover:bg-slate-50/50 transition-colors duration-200"
+        [class]="getRowClasses(row)"
+      >
+        <!-- Row Label Cell -->
+        <td
+          class="sticky left-0 z-10 bg-white px-4 py-3 text-sm text-slate-900"
+        >
+          <div class="flex items-center gap-2">
+            <span [class.font-semibold]="row.isBold || row.isTotal">
+              {{ row.label }}
+            </span>
+
+            @if (row.isCalculated) {
+            <lucide-icon
+              [name]="LockIcon"
+              [size]="14"
+              class="text-slate-400"
+              title="Auto-calculated field"
+            />
+            }
+          </div>
+        </td>
+
+        <!-- Data Cells -->
+        @for (value of row.values; track trackByColumn($index,
+        columnHeaders[$index])) {
+        <td class="px-4 py-3 min-w-[140px]">
+          @if (isRowEditable(row)) {
+          <!-- Editable Cell (Edit Mode) -->
+          <input
+            type="text"
+            [value]="formatNumber(value)"
+            (blur)="onCellChange($index, $index, $index, $event)"
+            (focus)="onInputFocus($event)"
+            (keydown.enter)="onEnterKey($event)"
+            class="w-full px-3 py-2 text-right bg-white border border-slate-200 rounded-lg text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200 text-sm"
+            style="font-size: 14px !important"
+          />
+          } @else {
+          <!-- Read-only Cell -->
+          <div
+            [class]="getCellClasses(row, value)"
+            class="px-3 py-2 text-sm"
+            style="font-size: 14px !important"
+          >
+            @if (value < 0) { ({{ formatNumber(Math.abs(value)) }}) } @else {
+            {{ formatNumber(value) }}
+            }
+          </div>
+          }
+        </td>
+        }
+      </tr>
+      } } }
+    </tbody>
+  </table>
+
+  <!-- Empty State -->
+  @if (sections.length === 0) {
+  <div class="text-center py-12">
+    <p class="text-sm text-slate-500">No data available</p>
+  </div>
+  }
+</div>

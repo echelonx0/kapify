@@ -1,5 +1,4 @@
 // src/app/funder/application-details/components/application-tabs/application-tabs.component.ts
-// FIXED: Imports correct FundingApplication from models
 
 import {
   Component,

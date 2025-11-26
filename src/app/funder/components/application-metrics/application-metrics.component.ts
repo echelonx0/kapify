@@ -152,11 +152,17 @@ export class ApplicationMetricsComponent {
     this.activeTab.set(tabId);
   }
 
+  /**
+   * Format currency with zero decimal places
+   */
   formatCurrency(amount: number, currency: string = 'ZAR'): string {
+    const roundedAmount = Math.round(amount);
     return new Intl.NumberFormat('en-ZA', {
       style: 'currency',
       currency: currency,
-    }).format(amount);
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(roundedAmount);
   }
 
   formatDate(date: Date): string {
