@@ -30,7 +30,7 @@
       }
 
       <!-- Replace Data Button (only when data exists) -->
-      @if (hasFinancialData()) {
+      @if (hasFinancialData() && !isLoadingData()) {
       <button
         (click)="replaceData()"
         class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-100 text-slate-700 text-sm font-medium hover:bg-slate-200 active:bg-slate-300 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2"
@@ -41,7 +41,7 @@
       }
 
       <!-- Download Current Data -->
-      @if (hasFinancialData()) {
+      @if (hasFinancialData() && !isLoadingData()) {
       <button
         (click)="downloadCurrentData()"
         class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-100 text-slate-700 text-sm font-medium hover:bg-slate-200 active:bg-slate-300 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2"
@@ -55,7 +55,7 @@
       <!-- Save Now Button -->
       <button
         (click)="saveManually()"
-        [disabled]="isSaving() || !hasFinancialData()"
+        [disabled]="isSaving() || !hasFinancialData() || isLoadingData()"
         class="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-teal-500 text-white text-sm font-medium hover:bg-teal-600 active:bg-teal-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
       >
         <lucide-icon [name]="SaveIcon" [size]="16" />
@@ -64,8 +64,13 @@
     </div>
   </div>
 
-  @if (!hasFinancialData()) {
-  <!-- Upload Component -->
+  <!-- Skeleton Loader - Shows during any loading state -->
+  @if (isLoadingData() || isInitializing()) {
+  <app-financial-table-skeleton [rowCount]="10" [columnCount]="9" />
+  }
+
+  <!-- Upload Component - Only when no data and not loading -->
+  @if (!hasFinancialData() && !isLoadingData() && !isInitializing()) {
   <app-financial-upload
     [hasData]="hasFinancialData()"
     [uploadedFile]="uploadedTemplate()"
@@ -83,8 +88,9 @@
   />
   }
 
-  <!-- Financial Data Display -->
-  @if (hasFinancialData()) {
+  <!-- Financial Data Display - Only when data exists and not loading -->
+  @if (hasFinancialData() && !isLoadingData() && !isInitializing()) {
+
   <!-- Tab Navigation -->
   <div class="border-b border-slate-200">
     <nav class="-mb-px flex gap-6 overflow-x-auto">
@@ -209,19 +215,37 @@
         {{ editingMode() ? "Done" : "Edit" }}
       </button>
 
-      <!-- Validation Indicator - Only show when we have actual balance sheet data with totals -->
-      @if (balanceSheetData().length > 5) {
-      <div class="flex items-center text-sm">
-        @if (isBalanceSheetBalanced()) {
-        <span class="flex items-center gap-1.5 text-green-700">
-          <lucide-icon name="check-circle-2" [size]="16" />
-          Balance Sheet Balanced
-        </span>
+      <!-- Validation Indicator - Only show when validation is enabled and complete -->
+      @if (shouldShowValidation() && balanceSheetData().length > 5) {
+      <div class="flex items-center gap-3">
+        <!-- Validate Now Button (when validating) -->
+        @if (isValidating()) {
+        <button
+          disabled
+          class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-100 text-slate-600 text-sm font-medium cursor-not-allowed opacity-60"
+        >
+          <lucide-icon [name]="AlertIcon" [size]="16" class="animate-pulse" />
+          Validating...
+        </button>
         } @else {
-        <span class="flex items-center gap-1.5 text-amber-700">
-          <lucide-icon name="alert-circle" [size]="16" />
-          Balance Sheet Out of Balance
-        </span>
+        <!-- Validation Status -->
+        <div class="flex items-center text-sm">
+          @if (isBalanceSheetBalanced()) {
+          <span
+            class="flex items-center gap-1.5 text-green-700 bg-green-50 px-3 py-1.5 rounded-lg border border-green-200/50"
+          >
+            <lucide-icon name="check-circle-2" [size]="16" />
+            Balance Sheet Balanced
+          </span>
+          } @else {
+          <span
+            class="flex items-center gap-1.5 text-amber-700 bg-amber-50 px-3 py-1.5 rounded-lg border border-amber-200/50"
+          >
+            <lucide-icon name="alert-circle" [size]="16" />
+            Balance Sheet Out of Balance
+          </span>
+          }
+        </div>
         }
       </div>
       }
@@ -253,19 +277,35 @@
         {{ editingMode() ? "Done" : "Edit" }}
       </button>
 
-      <!-- Cash Reconciliation Indicator - Only show when we have actual data -->
-      @if (cashFlowData().length > 5) {
-      <div class="flex items-center text-sm">
-        @if (isCashFlowReconciledToBS()) {
-        <span class="flex items-center gap-1.5 text-green-700">
-          <lucide-icon name="check-circle-2" [size]="16" />
-          Cash Reconciled to Balance Sheet
-        </span>
+      <!-- Cash Reconciliation Indicator - Only show when validation is enabled -->
+      @if (shouldShowValidation() && cashFlowData().length > 5) {
+      <div class="flex items-center gap-3">
+        @if (isValidating()) {
+        <button
+          disabled
+          class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-100 text-slate-600 text-sm font-medium cursor-not-allowed opacity-60"
+        >
+          <lucide-icon [name]="AlertIcon" [size]="16" class="animate-pulse" />
+          Validating...
+        </button>
         } @else {
-        <span class="flex items-center gap-1.5 text-amber-700">
-          <lucide-icon name="alert-circle" [size]="16" />
-          Cash Mismatch with Balance Sheet
-        </span>
+        <div class="flex items-center text-sm">
+          @if (isCashFlowReconciledToBS()) {
+          <span
+            class="flex items-center gap-1.5 text-green-700 bg-green-50 px-3 py-1.5 rounded-lg border border-green-200/50"
+          >
+            <lucide-icon name="check-circle-2" [size]="16" />
+            Cash Reconciled to Balance Sheet
+          </span>
+          } @else {
+          <span
+            class="flex items-center gap-1.5 text-amber-700 bg-amber-50 px-3 py-1.5 rounded-lg border border-amber-200/50"
+          >
+            <lucide-icon name="alert-circle" [size]="16" />
+            Cash Mismatch with Balance Sheet
+          </span>
+          }
+        </div>
         }
       </div>
       }
@@ -334,8 +374,9 @@
   </div>
   }
 
-  <!-- Empty State -->
-  @if (!hasFinancialData() && !uploadedTemplate()) {
+  <!-- Empty State - Only when truly no data and not loading -->
+  @if (!hasFinancialData() && !uploadedTemplate() && !isLoadingData() &&
+  !isInitializing()) {
   <div class="bg-white rounded-2xl border border-slate-200 p-6">
     <div class="text-center py-12">
       <lucide-icon
