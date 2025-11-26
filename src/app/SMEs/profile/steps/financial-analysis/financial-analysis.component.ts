@@ -8,7 +8,6 @@ import {
   computed,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-
 import {
   LucideAngularModule,
   Save,
@@ -43,7 +42,7 @@ import { FinancialRatioCalculatorService } from './services/financial-ratio-calc
 import { FinancialTableSkeletonComponent } from './components/financial-table-skeleton.component';
 
 const EXPECTED_COLUMN_COUNT = 9;
-const VALIDATION_DEBOUNCE_TIME = 2000; // 2 seconds after last edit
+const AUTO_SAVE_DEBOUNCE = 2000;
 
 type FinancialTab =
   | 'income-statement'
@@ -52,6 +51,8 @@ type FinancialTab =
   | 'financial-ratios'
   | 'notes'
   | 'health-score';
+
+type LoadingState = 'idle' | 'initializing' | 'parsing' | 'uploading' | 'ready';
 
 @Component({
   selector: 'app-financial-analysis',
@@ -83,32 +84,21 @@ export class FinancialAnalysisComponent implements OnInit, OnDestroy {
   financialRatiosData = signal<FinancialRatioData[]>([]);
   columnHeaders = signal<string[]>([]);
 
-  // Loading states - NEW
-  isInitializing = signal(true);
-  isLoadingData = signal(false);
-  loadingMessage = signal('Loading financial data...');
+  // Single loading state
+  loadingState = signal<LoadingState>('idle');
+  loadingMessage = signal('');
 
   // State signals
   isSaving = signal(false);
-  isUploading = signal(false);
   lastSaved = signal<Date | null>(null);
   uploadedTemplate = signal<File | null>(null);
   editingMode = signal(false);
   notesText = signal('');
 
   // Parsing state
-  isParsingFile = signal(false);
   parseError = signal<string | null>(null);
   parseWarnings = signal<string[]>([]);
   parseProgress = signal<ParseProgress | null>(null);
-
-  // Validation state - NEW
-  validationEnabled = signal(false);
-  isValidating = signal(false);
-  validationResults = signal<{
-    balanceSheetBalanced: boolean;
-    cashFlowReconciled: boolean;
-  } | null>(null);
 
   // Computed table sections
   incomeStatementSections = computed(() =>
@@ -131,6 +121,24 @@ export class FinancialAnalysisComponent implements OnInit, OnDestroy {
     )
   );
 
+  // VALIDATION - Now computed, always accurate
+  validationResults = computed(() => {
+    // Don't validate during loading
+    if (this.isLoading()) {
+      return { balanceSheetBalanced: true, cashFlowReconciled: true };
+    }
+
+    // Don't validate without data
+    if (!this.hasFinancialData()) {
+      return { balanceSheetBalanced: true, cashFlowReconciled: true };
+    }
+
+    return {
+      balanceSheetBalanced: this.checkBalanceSheetBalanced(),
+      cashFlowReconciled: this.checkCashFlowReconciled(),
+    };
+  });
+
   // Icons
   SaveIcon = Save;
   ClockIcon = Clock;
@@ -143,23 +151,11 @@ export class FinancialAnalysisComponent implements OnInit, OnDestroy {
   private autoSaveSubscription?: Subscription;
   private destroy$ = new Subject<void>();
   private dataChangeSubject = new Subject<void>();
-  private validationSubject = new Subject<void>();
 
   async ngOnInit() {
     this.excelParser.setDebugMode(true);
-
-    // CRITICAL: Ensure validation is disabled during initialization
-    this.validationEnabled.set(false);
-    this.validationResults.set(null);
-    this.isInitializing.set(true);
-
-    console.log('🔄 Financial Analysis Init - Validation DISABLED');
-
-    // Load data with proper loading state
-    await this.loadExistingDataWithDelay();
-
+    await this.loadExistingData();
     this.setupAutoSave();
-    this.setupDeferredValidation();
   }
 
   ngOnDestroy() {
@@ -169,153 +165,42 @@ export class FinancialAnalysisComponent implements OnInit, OnDestroy {
   }
 
   // ===============================
-  // LOADING STATE MANAGEMENT - NEW
+  // LOADING STATE - SIMPLIFIED
   // ===============================
 
-  /**
-   * Load existing data with artificial delay to ensure proper skeleton display
-   * This ensures users see the skeleton loader rather than a flash of content
-   */
-  private async loadExistingDataWithDelay() {
-    this.isInitializing.set(true);
-    this.isLoadingData.set(true);
-    this.loadingMessage.set('Loading financial data...');
-
-    console.log('📊 Loading financial data...');
-
-    try {
-      // Minimum display time for skeleton loader (500ms)
-      const minDisplayTime = 500;
-      const startTime = Date.now();
-
-      // Load the actual data
-      await this.loadExistingData();
-
-      // Ensure skeleton shows for at least minimum time
-      const elapsed = Date.now() - startTime;
-      if (elapsed < minDisplayTime) {
-        console.log(
-          `⏱️ Waiting ${
-            minDisplayTime - elapsed
-          }ms to meet minimum skeleton display time`
-        );
-        await new Promise((resolve) =>
-          setTimeout(resolve, minDisplayTime - elapsed)
-        );
-      }
-
-      console.log('✅ Data loaded, hiding skeleton');
-
-      // Enable validation after data is loaded and stable
-      // Increased delay to 2 seconds to ensure data is fully rendered
-      setTimeout(() => {
-        console.log('🔓 Enabling validation system');
-        this.validationEnabled.set(true);
-        this.triggerValidation();
-      }, 2000); // Changed from 1000ms to 2000ms
-    } catch (error) {
-      console.error('❌ Failed to load financial data:', error);
-      this.parseError.set('Failed to load financial data');
-    } finally {
-      this.isInitializing.set(false);
-      this.isLoadingData.set(false);
-    }
+  isLoading(): boolean {
+    const state = this.loadingState();
+    return state !== 'idle' && state !== 'ready';
   }
 
-  /**
-   * Load existing data from profile service
-   */
-  private async loadExistingData(): Promise<void> {
-    return new Promise((resolve) => {
-      const profileData = this.profileService.data();
-      const financialAnalysis = profileData.financialAnalysis;
+  // private async loadExistingData(): Promise<void> {
+  //   this.loadingState.set('initializing');
+  //   this.loadingMessage.set('Loading financial data...');
 
-      if (financialAnalysis && this.isValidFinancialData(financialAnalysis)) {
-        this.loadFromExistingData(financialAnalysis as ParsedFinancialData);
-        console.log('✅ Loaded existing financial data');
-      } else {
-        this.initializeEmptyData();
-        console.log(
-          'ℹ️ No existing financial data, initialized empty structure'
-        );
-      }
+  //   try {
+  //     const profileData = this.profileService.data();
+  //     const financialAnalysis = profileData.financialAnalysis;
 
-      resolve();
-    });
-  }
+  //     if (financialAnalysis && this.isValidFinancialData(financialAnalysis)) {
+  //       this.loadFromExistingData(financialAnalysis as ParsedFinancialData);
+  //     } else {
+  //       this.initializeEmptyData();
+  //     }
+
+  //     // Small delay for smooth skeleton transition
+  //     await new Promise((resolve) => setTimeout(resolve, 300));
+  //   } catch (error) {
+  //     console.error('Failed to load financial data:', error);
+  //     this.parseError.set('Failed to load financial data');
+  //   } finally {
+  //     this.loadingState.set('ready');
+  //   }
+  // }
 
   // ===============================
-  // DEFERRED VALIDATION - NEW
+  // VALIDATION - PURE COMPUTATION
   // ===============================
 
-  /**
-   * Setup validation that only runs after data changes have settled
-   */
-  private setupDeferredValidation() {
-    this.validationSubject
-      .pipe(debounceTime(VALIDATION_DEBOUNCE_TIME), takeUntil(this.destroy$))
-      .subscribe(() => {
-        this.performValidation();
-      });
-  }
-
-  /**
-   * Trigger validation check (debounced)
-   */
-  private triggerValidation() {
-    if (this.validationEnabled()) {
-      console.log('🔍 Validation triggered (will run after 2-second debounce)');
-      this.validationSubject.next();
-    } else {
-      console.log('⛔ Validation trigger ignored - validation disabled');
-    }
-  }
-
-  /**
-   * Actually perform the validation checks
-   */
-  private performValidation() {
-    if (!this.hasFinancialData()) {
-      console.log('⏭️ Skipping validation - no financial data');
-      this.validationResults.set(null);
-      return;
-    }
-
-    console.log('▶️ Running validation checks...');
-    this.isValidating.set(true);
-
-    // Small delay to show validating state
-    setTimeout(() => {
-      const results = {
-        balanceSheetBalanced: this.checkBalanceSheetBalanced(),
-        cashFlowReconciled: this.checkCashFlowReconciled(),
-      };
-
-      this.validationResults.set(results);
-      this.isValidating.set(false);
-
-      console.log('✅ Validation completed:', {
-        balanceSheet: results.balanceSheetBalanced
-          ? 'Balanced ✓'
-          : 'Out of Balance ✗',
-        cashFlow: results.cashFlowReconciled ? 'Reconciled ✓' : 'Mismatch ✗',
-      });
-    }, 300);
-  }
-
-  /**
-   * Manual validation trigger (for user-initiated validation)
-   */
-  validateNow() {
-    this.validationEnabled.set(true);
-    this.isValidating.set(true);
-    this.performValidation();
-  }
-
-  /**
-   * Check if Balance Sheet is balanced
-   * Only called when validation is enabled
-   */
   private checkBalanceSheetBalanced(): boolean {
     const balanceSheet = this.balanceSheetData();
     if (balanceSheet.length === 0) return true;
@@ -338,7 +223,7 @@ export class FinancialAnalysisComponent implements OnInit, OnDestroy {
     );
 
     if (!totalAssetsRow || !totalLiabilitiesRow || !totalEquityRow) {
-      return true; // Can't validate without proper rows
+      return true;
     }
 
     const lastColIndex = this.columnHeaders().length - 1;
@@ -352,16 +237,12 @@ export class FinancialAnalysisComponent implements OnInit, OnDestroy {
     return diff <= 100;
   }
 
-  /**
-   * Check if Cash Flow reconciles to Balance Sheet
-   * Only called when validation is enabled
-   */
   private checkCashFlowReconciled(): boolean {
     const cashFlow = this.cashFlowData();
     const balanceSheet = this.balanceSheetData();
 
     if (cashFlow.length === 0 || balanceSheet.length === 0) {
-      return true; // Can't validate without data
+      return true;
     }
 
     const cfClosingCashRow = cashFlow.find(
@@ -380,7 +261,7 @@ export class FinancialAnalysisComponent implements OnInit, OnDestroy {
     );
 
     if (!cfClosingCashRow || !bsCashRow) {
-      return true; // Can't validate without proper rows
+      return true;
     }
 
     const lastColIndex = this.columnHeaders().length - 1;
@@ -393,46 +274,13 @@ export class FinancialAnalysisComponent implements OnInit, OnDestroy {
     return diff <= 100;
   }
 
-  /**
-   * Get validation status for display - PUBLIC methods called by template
-   * These now check if validation is enabled before returning results
-   */
+  // Public validation accessors for template
   isBalanceSheetBalanced(): boolean {
-    if (!this.shouldShowValidation()) return true; // Don't show as invalid if validation disabled
-    return this.validationResults()?.balanceSheetBalanced ?? true;
+    return this.validationResults().balanceSheetBalanced;
   }
 
   isCashFlowReconciledToBS(): boolean {
-    if (!this.shouldShowValidation()) return true; // Don't show as invalid if validation disabled
-    return this.validationResults()?.cashFlowReconciled ?? true;
-  }
-
-  /**
-   * Check if validation indicators should be shown
-   * Returns false during loading or if validation hasn't run yet
-   */
-  shouldShowValidation(): boolean {
-    // Never show during loading states
-    if (this.isLoadingData() || this.isInitializing()) {
-      return false;
-    }
-
-    // Never show if validation is not enabled
-    if (!this.validationEnabled()) {
-      return false;
-    }
-
-    // Never show if validation hasn't completed yet
-    if (this.validationResults() === null) {
-      return false;
-    }
-
-    // Only show if we have actual financial data
-    if (!this.hasFinancialData()) {
-      return false;
-    }
-
-    return true;
+    return this.validationResults().cashFlowReconciled;
   }
 
   // ===============================
@@ -509,17 +357,12 @@ export class FinancialAnalysisComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this.isParsingFile.set(true);
-    this.isLoadingData.set(true);
-    this.loadingMessage.set('Processing Excel file...');
+    this.loadingState.set('parsing');
     this.parseError.set(null);
     this.parseWarnings.set([]);
     this.parseProgress.set(null);
-    this.validationEnabled.set(false); // Disable validation during upload
 
     try {
-      console.log('🔄 Starting file processing:', file.name);
-
       const parsedData = await this.excelParser.parseFinancialExcel(
         file,
         (progress) => {
@@ -534,6 +377,7 @@ export class FinancialAnalysisComponent implements OnInit, OnDestroy {
         this.parseError.set(
           `Template validation failed: ${validation.errors.join(', ')}`
         );
+        this.loadingState.set('ready');
         return;
       }
 
@@ -546,8 +390,7 @@ export class FinancialAnalysisComponent implements OnInit, OnDestroy {
         this.parseWarnings.update((warnings) => [...warnings, qualityWarning]);
       }
 
-      this.isParsingFile.set(false);
-      this.isUploading.set(true);
+      this.loadingState.set('uploading');
       this.loadingMessage.set('Uploading file...');
 
       const uploadResult = await this.uploadFileToStorage(file);
@@ -560,28 +403,17 @@ export class FinancialAnalysisComponent implements OnInit, OnDestroy {
 
       this.applyParsedData(parsedData);
       this.uploadedTemplate.set(file);
-
-      // Recalculate ratios after loading new data
       this.recalculateAllRatios();
-
       this.triggerDataChange();
 
-      // Enable validation after data settles
-      setTimeout(() => {
-        this.validationEnabled.set(true);
-        this.triggerValidation();
-      }, 1500);
-
-      console.log('✅ Financial data processed successfully');
+      this.loadingState.set('ready');
     } catch (error) {
-      console.error('❌ Error processing financial file:', error);
+      console.error('Error processing financial file:', error);
       this.parseError.set(
         error instanceof Error ? error.message : 'Failed to process file'
       );
+      this.loadingState.set('ready');
     } finally {
-      this.isParsingFile.set(false);
-      this.isUploading.set(false);
-      this.isLoadingData.set(false);
       this.parseProgress.set(null);
     }
   }
@@ -591,14 +423,8 @@ export class FinancialAnalysisComponent implements OnInit, OnDestroy {
       this.documentService
         .uploadDocument(file, 'financial-template', undefined, 'financial')
         .subscribe({
-          next: (result) => {
-            console.log('✅ File uploaded successfully');
-            resolve(result);
-          },
-          error: (error) => {
-            console.error('❌ Upload failed:', error);
-            reject(error);
-          },
+          next: (result) => resolve(result),
+          error: (error) => reject(error),
         });
     });
   }
@@ -636,13 +462,10 @@ export class FinancialAnalysisComponent implements OnInit, OnDestroy {
           'This action cannot be undone. Consider downloading your current data first.'
       );
 
-      if (!confirmed) {
-        return;
-      }
+      if (!confirmed) return;
     }
 
     this.clearAllData();
-    console.log('🗑️ Financial data cleared for replacement');
   }
 
   private clearAllData() {
@@ -655,9 +478,6 @@ export class FinancialAnalysisComponent implements OnInit, OnDestroy {
     this.parseWarnings.set([]);
     this.editingMode.set(false);
     this.activeTab.set('income-statement');
-    this.validationEnabled.set(false);
-    this.validationResults.set(null);
-
     this.initializeEmptyData();
   }
 
@@ -714,10 +534,7 @@ export class FinancialAnalysisComponent implements OnInit, OnDestroy {
   }
 
   async downloadCurrentData() {
-    if (!this.hasFinancialData()) {
-      console.warn('No financial data to download');
-      return;
-    }
+    if (!this.hasFinancialData()) return;
 
     try {
       const XLSX = await import('xlsx');
@@ -820,7 +637,6 @@ export class FinancialAnalysisComponent implements OnInit, OnDestroy {
     this.recalculateIncomeStatementFields();
     this.recalculateAllRatios();
     this.triggerDataChange();
-    this.triggerValidation();
   }
 
   onBalanceSheetCellChanged(event: {
@@ -850,7 +666,6 @@ export class FinancialAnalysisComponent implements OnInit, OnDestroy {
 
     this.recalculateAllRatios();
     this.triggerDataChange();
-    this.triggerValidation();
   }
 
   onCashFlowCellChanged(event: {
@@ -879,7 +694,6 @@ export class FinancialAnalysisComponent implements OnInit, OnDestroy {
     });
 
     this.triggerDataChange();
-    this.triggerValidation();
   }
 
   onFinancialRatiosCellChanged(event: {
@@ -1006,7 +820,7 @@ export class FinancialAnalysisComponent implements OnInit, OnDestroy {
       });
 
     this.dataChangeSubject
-      .pipe(debounceTime(2000), takeUntil(this.destroy$))
+      .pipe(debounceTime(AUTO_SAVE_DEBOUNCE), takeUntil(this.destroy$))
       .subscribe(() => {
         if (this.hasFinancialData() && !this.isSaving()) {
           this.saveData(false);
@@ -1036,11 +850,8 @@ export class FinancialAnalysisComponent implements OnInit, OnDestroy {
       }
 
       this.lastSaved.set(new Date());
-      console.log(
-        `✅ Financial data ${isManual ? 'manually' : 'auto'} saved successfully`
-      );
     } catch (error) {
-      console.error('❌ Failed to save financial analysis:', error);
+      console.error('Failed to save financial analysis:', error);
       if (isManual) {
         this.parseError.set('Failed to save data. Please try again.');
       }
@@ -1145,5 +956,92 @@ export class FinancialAnalysisComponent implements OnInit, OnDestroy {
   onNotesSaved(notes: string) {
     this.notesText.set(notes);
     this.triggerDataChange();
+  }
+
+  // shouldShowValidation(): boolean {
+  //   // Don't show during loading
+  //   if (this.isLoading()) {
+  //     return false;
+  //   }
+
+  //   // Don't show if no data
+  //   if (!this.hasFinancialData()) {
+  //     return false;
+  //   }
+
+  //   // CRITICAL: Don't show while editing
+  //   if (this.editingMode()) {
+  //     return false;
+  //   }
+
+  //   // Only show when data is stable
+  //   return this.loadingState() === 'ready';
+  // }
+
+  // src/app/SMEs/profile/steps/financial-analysis/financial-analysis.component.ts
+
+  // Add this method to force a render cycle delay
+  private async loadExistingData(): Promise<void> {
+    return new Promise(async (resolve) => {
+      // CRITICAL: Ensure skeleton shows by delaying data load
+      await new Promise((r) => setTimeout(r, 100));
+
+      const profileData = this.profileService.data();
+      const financialAnalysis = profileData.financialAnalysis;
+
+      if (financialAnalysis && this.isValidFinancialData(financialAnalysis)) {
+        this.loadFromExistingData(financialAnalysis as ParsedFinancialData);
+      } else {
+        this.initializeEmptyData();
+      }
+
+      // Small delay to ensure data is rendered before hiding skeleton
+      await new Promise((r) => setTimeout(r, 200));
+      resolve();
+    });
+  }
+
+  // Update shouldShowValidation to be more defensive
+  shouldShowValidation(): boolean {
+    // Don't show during loading
+    if (this.isLoading()) {
+      return false;
+    }
+
+    // Don't show if no data
+    if (!this.hasFinancialData()) {
+      return false;
+    }
+
+    // CRITICAL: Check edit mode AND active tab
+    if (this.editingMode()) {
+      return false;
+    }
+
+    // Don't show on notes or health score tabs
+    const tab = this.activeTab();
+    if (tab === 'notes' || tab === 'health-score') {
+      return false;
+    }
+
+    // Only show when data is stable and user is viewing (not editing)
+    return this.loadingState() === 'ready';
+  }
+
+  // Add method to check if validation should show for specific tab
+  shouldShowBalanceSheetValidation(): boolean {
+    return (
+      this.shouldShowValidation() &&
+      this.activeTab() === 'balance-sheet' &&
+      this.balanceSheetData().length > 5
+    );
+  }
+
+  shouldShowCashFlowValidation(): boolean {
+    return (
+      this.shouldShowValidation() &&
+      this.activeTab() === 'cash-flow' &&
+      this.cashFlowData().length > 5
+    );
   }
 }
