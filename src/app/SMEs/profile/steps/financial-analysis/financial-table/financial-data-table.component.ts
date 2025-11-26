@@ -1,3 +1,4 @@
+// src/app/SMEs/profile/steps/financial-analysis/financial-table/financial-data-table.component.ts
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
@@ -33,10 +34,10 @@ export interface FinancialTableSection {
         <table class="w-full border-collapse text-sm">
           <!-- Header -->
           <thead
-            class="sticky top-0 z-20 bg-slate-100 border-b border-slate-200"
+            class="sticky top-0 z-20 bg-slate-50 border-b border-slate-200"
           >
             <tr>
-              <th class="sticky left-0 z-30 bg-slate-100 px-6 py-3 text-left">
+              <th class="sticky left-0 z-30 bg-slate-50 px-6 py-3 text-left">
                 <span
                   class="text-xs font-semibold text-slate-900 uppercase tracking-wide"
                 >
@@ -44,7 +45,7 @@ export interface FinancialTableSection {
                 </span>
               </th>
               @for (header of columnHeaders; track header) {
-              <th class="px-4 py-3 text-center">
+              <th class="px-4 py-3 text-center min-w-[100px] whitespace-nowrap">
                 <span
                   class="text-xs font-semibold text-slate-900 uppercase tracking-wide whitespace-nowrap"
                 >
@@ -65,7 +66,7 @@ export interface FinancialTableSection {
               class="bg-teal-50 border-b border-teal-300/50 cursor-pointer transition-all duration-200 hover:bg-teal-100"
             >
               <td
-                class="sticky left-0 z-10 bg-teal-50 px-6 py-3 col-span-full"
+                class="sticky left-0 z-10 bg-teal-50 hover:bg-teal-100 px-6 py-3"
                 [attr.colspan]="columnHeaders.length + 1"
               >
                 <div class="flex items-center justify-between gap-3">
@@ -81,12 +82,14 @@ export interface FinancialTableSection {
                         class="text-teal-600"
                       ></lucide-icon>
                     </div>
+
                     <span
                       class="text-sm font-bold text-teal-900 uppercase tracking-wide"
                     >
                       {{ section.title }}
                     </span>
                   </div>
+
                   <span
                     class="px-2.5 py-1 rounded-full bg-white border border-teal-200/50 text-xs font-semibold text-teal-700 flex-shrink-0"
                   >
@@ -128,15 +131,18 @@ export interface FinancialTableSection {
                   >
                     {{ row.label }}
                   </span>
+
                   @if (row.isCalculated) {
                   <div
                     class="w-5 h-5 rounded-lg bg-slate-200 text-slate-600 flex items-center justify-center flex-shrink-0"
+                    title="Calculated field - not editable"
                   >
                     <lucide-icon [name]="LockIcon" [size]="12"></lucide-icon>
                   </div>
                   } @if (editMode && row.editable && !row.isCalculated) {
                   <div
                     class="w-5 h-5 rounded-lg bg-green-100 text-green-600 flex items-center justify-center flex-shrink-0"
+                    title="Editable"
                   >
                     <lucide-icon [name]="EditIcon" [size]="12"></lucide-icon>
                   </div>
@@ -148,28 +154,28 @@ export interface FinancialTableSection {
               @for (value of row.values; track colIndex; let colIndex = $index)
               {
               <td
-                class="px-4 py-3 text-center"
+                class="px-4 py-3 text-center whitespace-nowrap"
                 [class.bg-green-50]="
                   editMode && row.editable && !row.isCalculated
                 "
                 [class.bg-slate-50]="row.isCalculated"
               >
                 @if (editMode && row.editable && !row.isCalculated) {
-                <!-- Editable Input -->
                 <div class="flex justify-center">
                   <input
-                    type="number"
-                    [value]="value"
+                    type="text"
+                    [value]="formatInputWithCommas(value)"
                     (blur)="
                       onCellBlur($event, sectionIndex, rowIndex, colIndex)
                     "
+                    (keydown.enter)="onEnterKey($event)"
                     (focus)="onCellFocus($event)"
-                    [step]="getInputStep(row.type)"
-                    class="w-20 px-3 py-2 text-center text-sm font-semibold border border-green-300 rounded-lg
-                           bg-white text-slate-900
-                           focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 focus:border-transparent
-                           transition-all duration-200
-                           hover:border-green-400"
+                    class="px-2 py-1 text-center text-[10px] font-semibold
+         border border-green-300 rounded-xl
+         bg-white text-slate-900
+         focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent
+         transition-all duration-200 hover:border-green-400
+         min-w-[90px] w-fit"
                   />
                 </div>
                 } @else {
@@ -181,9 +187,7 @@ export interface FinancialTableSection {
                   "
                   [class.font-bold]="row.isCalculated"
                   [class.font-semibold]="!row.isCalculated"
-                  [class.text-slate-600]="
-                    value === 0 || value === null || value === undefined
-                  "
+                  [class.text-slate-500]="value === 0 || value == null"
                   class="text-slate-900 tabular-nums"
                 >
                   {{ formatValue(value, row.type) }}
@@ -196,6 +200,18 @@ export interface FinancialTableSection {
           </tbody>
         </table>
       </div>
+
+      <!-- Empty State -->
+      @if (sections.length === 0) {
+      <div class="p-12 text-center">
+        <div
+          class="w-12 h-12 mx-auto mb-4 rounded-xl bg-slate-100 flex items-center justify-center"
+        >
+          <lucide-icon name="table" [size]="24" class="text-slate-400" />
+        </div>
+        <p class="text-slate-600">No data available</p>
+      </div>
+      }
     </div>
   `,
 })
@@ -218,13 +234,95 @@ export class FinancialDataTableComponent {
   EditIcon = PenLine;
 
   toggleSection(sectionIndex: number) {
-    this.sections[sectionIndex].collapsed =
-      !this.sections[sectionIndex].collapsed;
+    if (this.sections[sectionIndex]) {
+      this.sections[sectionIndex].collapsed =
+        !this.sections[sectionIndex].collapsed;
+    }
+  }
+
+  // onCellFocus(event: Event) {
+  //   const input = event.target as HTMLInputElement;
+  //   if (input) {
+  //     input.select();
+  //   }
+  // }
+
+  onEnterKey(event: Event) {
+    const input = event.target as HTMLInputElement;
+    if (input) {
+      input.blur();
+    }
+  }
+
+  // onCellBlur(
+  //   event: Event,
+  //   sectionIndex: number,
+  //   rowIndex: number,
+  //   colIndex: number
+  // ) {
+  //   const input = event.target as HTMLInputElement;
+  //   if (input && input.value !== '') {
+  //     const value = parseFloat(input.value) || 0;
+  //     this.cellValueChanged.emit({
+  //       sectionIndex,
+  //       rowIndex,
+  //       colIndex,
+  //       value,
+  //     });
+  //   }
+  // }
+
+  formatValue(value: number, type?: string): string {
+    if (value === 0 || value === null || value === undefined) return '-';
+
+    if (type === 'percentage') {
+      return `${value.toFixed(1)}%`;
+    }
+
+    if (type === 'currency') {
+      const formatted = new Intl.NumberFormat('en-ZA', {
+        style: 'decimal',
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0,
+      }).format(Math.abs(value));
+      return value < 0 ? `(${formatted})` : formatted;
+    }
+
+    if (type === 'ratio') {
+      return value.toFixed(2);
+    }
+
+    // Default: format as number with thousands separator
+    const formatted = new Intl.NumberFormat('en-ZA', {
+      style: 'decimal',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 2,
+    }).format(Math.abs(value));
+    return value < 0 ? `(${formatted})` : formatted;
+  }
+
+  getInputStep(type?: string): string {
+    if (type === 'percentage' || type === 'ratio') {
+      return '0.01';
+    }
+    return '1';
+  }
+
+  formatInputWithCommas(value: number): string {
+    if (value === null || value === undefined) return '';
+    return value.toLocaleString('en-ZA');
+  }
+
+  parseCommaNumber(str: string): number {
+    if (!str) return 0;
+    return parseFloat(str.replace(/,/g, '')) || 0;
   }
 
   onCellFocus(event: Event) {
     const input = event.target as HTMLInputElement;
     if (input) {
+      // remove commas for editing
+      input.value = input.value.replace(/,/g, '');
       input.select();
     }
   }
@@ -237,43 +335,18 @@ export class FinancialDataTableComponent {
   ) {
     const input = event.target as HTMLInputElement;
     if (input && input.value !== '') {
-      const value = parseFloat(input.value) || 0;
+      const numericValue = this.parseCommaNumber(input.value);
+
+      // Emit clean numeric value
       this.cellValueChanged.emit({
         sectionIndex,
         rowIndex,
         colIndex,
-        value,
+        value: numericValue,
       });
+
+      // Re-format with commas after editing
+      input.value = this.formatInputWithCommas(numericValue);
     }
-  }
-
-  formatValue(value: number, type?: string): string {
-    if (value === 0 || value === null || value === undefined) return '-';
-
-    if (type === 'percentage') {
-      return `${value.toFixed(1)}%`;
-    }
-
-    if (type === 'currency') {
-      const formatted = new Intl.NumberFormat('en-ZA', {
-        style: 'decimal',
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-      }).format(Math.abs(value));
-      return value < 0 ? `(${formatted})` : formatted;
-    }
-
-    if (type === 'ratio') {
-      return value.toFixed(2);
-    }
-
-    return value.toFixed(2);
-  }
-
-  getInputStep(type?: string): string {
-    if (type === 'percentage' || type === 'ratio') {
-      return '0.01';
-    }
-    return '1';
   }
 }
