@@ -176,7 +176,7 @@
     </label>
 
     <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-      @for (timeframe of ui.timeframes; track timeframe.value) {
+      @for (timeframe of ui.timeframes(); track timeframe.value) {
       <label class="relative cursor-pointer">
         <input
           type="radio"
