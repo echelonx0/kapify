@@ -7,7 +7,7 @@ export const adminRoutes: Routes = [
     path: '',
     loadComponent: () => {
       console.log('Loading AdminLayoutComponent...');
-      return import('./admin-layout/admin-layout.component').then(m => {
+      return import('./admin-layout/admin-layout.component').then((m) => {
         console.log('AdminLayoutComponent loaded:', m.AdminLayoutComponent);
         return m.AdminLayoutComponent;
       });
@@ -19,24 +19,48 @@ export const adminRoutes: Routes = [
         path: 'dashboard',
         loadComponent: () => {
           console.log('Loading AdminDashboardComponent...');
-          return import('./dashboard/admin-dashboard.component').then(m => {
-            console.log('AdminDashboardComponent loaded:', m.AdminDashboardComponent);
+          return import('./dashboard/admin-dashboard.component').then((m) => {
+            console.log(
+              'AdminDashboardComponent loaded:',
+              m.AdminDashboardComponent
+            );
             return m.AdminDashboardComponent;
           });
         },
-        title: 'Admin Dashboard - Kapify'
+        title: 'Admin Dashboard - Kapify',
       },
       {
         path: 'verification',
         loadComponent: () => {
           console.log('Loading OrganizationVerificationComponent...');
-          return import('./organization-verification/organization-verification.component').then(m => {
-            console.log('OrganizationVerificationComponent loaded:', m.OrganizationVerificationComponent);
+          return import(
+            './organization-verification/organization-verification.component'
+          ).then((m) => {
+            console.log(
+              'OrganizationVerificationComponent loaded:',
+              m.OrganizationVerificationComponent
+            );
             return m.OrganizationVerificationComponent;
           });
         },
-        title: 'Organization Verification - Kapify Admin'
-      }
-    ]
-  }
+        title: 'Organization Verification - Kapify Admin',
+      },
+      {
+        path: 'constants',
+        loadComponent: () => {
+          console.log('Loading ConstantsManagementComponent...');
+          return import(
+            './dashboard/components/management-component/constants-management.component'
+          ).then((m) => {
+            console.log(
+              'ConstantsManagementComponent loaded:',
+              m.ConstantsManagementComponent
+            );
+            return m.ConstantsManagementComponent;
+          });
+        },
+        title: 'Constants Management - Kapify Admin',
+      },
+    ],
+  },
 ];

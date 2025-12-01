@@ -55,18 +55,18 @@
           <input
             type="checkbox"
             [checked]="
-              ui.isAllSelected('targetIndustries', ui.targetIndustries)
+              ui.isAllSelected('targetIndustries', ui.targetIndustries())
             "
-            (change)="ui.onSelectAll('targetIndustries', ui.targetIndustries)"
+            (change)="ui.onSelectAll('targetIndustries', ui.targetIndustries())"
             class="w-4 h-4 text-teal-600 rounded border-slate-300 focus:ring-teal-500"
           />
           <span class="text-sm font-medium text-slate-900">{{
-            ui.getSelectAllText("targetIndustries", ui.targetIndustries)
+            ui.getSelectAllText("targetIndustries", ui.targetIndustries())
           }}</span>
         </label>
 
         <!-- Individual Options -->
-        @for (industry of ui.targetIndustries; track industry.value) {
+        @for (industry of ui.targetIndustries(); track industry.value) {
         <label
           class="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-slate-100 cursor-pointer transition"
         >
@@ -118,17 +118,17 @@
         >
           <input
             type="checkbox"
-            [checked]="ui.isAllSelected('businessStages', ui.businessStages)"
-            (change)="ui.onSelectAll('businessStages', ui.businessStages)"
+            [checked]="ui.isAllSelected('businessStages', ui.businessStages())"
+            (change)="ui.onSelectAll('businessStages', ui.businessStages())"
             class="w-4 h-4 text-teal-600 rounded border-slate-300 focus:ring-teal-500"
           />
           <span class="text-sm font-medium text-slate-900">{{
-            ui.getSelectAllText("businessStages", ui.businessStages)
+            ui.getSelectAllText("businessStages", ui.businessStages())
           }}</span>
         </label>
 
         <!-- Individual Options -->
-        @for (stage of ui.businessStages; track stage.value) {
+        @for (stage of ui.businessStages(); track stage.value) {
         <label
           class="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-slate-100 cursor-pointer transition"
         >
@@ -178,20 +178,23 @@
           <input
             type="checkbox"
             [checked]="
-              ui.isAllSelected('geographicRestrictions', ui.geographicRegions)
+              ui.isAllSelected('geographicRestrictions', ui.geographicRegions())
             "
             (change)="
-              ui.onSelectAll('geographicRestrictions', ui.geographicRegions)
+              ui.onSelectAll('geographicRestrictions', ui.geographicRegions())
             "
             class="w-4 h-4 text-teal-600 rounded border-slate-300 focus:ring-teal-500"
           />
           <span class="text-sm font-medium text-slate-900">{{
-            ui.getSelectAllText("geographicRestrictions", ui.geographicRegions)
+            ui.getSelectAllText(
+              "geographicRestrictions",
+              ui.geographicRegions()
+            )
           }}</span>
         </label>
 
         <!-- Individual Options -->
-        @for (region of ui.geographicRegions; track region.value) {
+        @for (region of ui.geographicRegions(); track region.value) {
         <label
           class="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-slate-100 cursor-pointer transition"
         >

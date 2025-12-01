@@ -22,7 +22,7 @@ interface MainAppRoute {
   standalone: true,
   imports: [CommonModule, RouterModule],
   templateUrl: 'admin-layout.component.html',
-  styles: []
+  styles: [],
 })
 export class AdminLayoutComponent {
   private authService = inject(AuthService);
@@ -35,13 +35,18 @@ export class AdminLayoutComponent {
     {
       path: 'dashboard',
       label: 'Dashboard',
-      icon: 'fas fa-tachometer-alt'
+      icon: 'fas fa-tachometer-alt',
     },
     {
       path: 'verification',
       label: 'Organization Verification',
-      icon: 'fas fa-check-circle'
-    }
+      icon: 'fas fa-check-circle',
+    },
+    {
+      path: 'constants',
+      label: 'Manage Settings',
+      icon: 'fas fa-check-circle',
+    },
   ];
 
   // Main app routes for quick navigation
@@ -49,34 +54,34 @@ export class AdminLayoutComponent {
     {
       path: '/dashboard',
       label: 'Dashboard',
-      description: 'Go to main dashboard'
+      description: 'Go to main dashboard',
     },
     {
       path: '/profile',
       label: 'Profile',
-      description: 'Manage your profile'
+      description: 'Manage your profile',
     },
     {
       path: '/applications',
       label: 'Applications',
-      description: 'View your applications'
+      description: 'View your applications',
     },
     {
       path: '/opportunities',
       label: 'Opportunities',
-      description: 'Browse funding opportunities'
+      description: 'Browse funding opportunities',
     },
     {
       path: '/funder/dashboard',
       label: 'Funder',
-      description: 'Switch to funder dashboard'
-    }
+      description: 'Switch to funder dashboard',
+    },
   ];
 
   constructor() {
     // Track current page for title
     this.router.events
-      .pipe(filter(event => event instanceof NavigationEnd))
+      .pipe(filter((event) => event instanceof NavigationEnd))
       .subscribe((event: NavigationEnd) => {
         this.updatePageTitle(event.urlAfterRedirects);
       });
@@ -89,7 +94,10 @@ export class AdminLayoutComponent {
   getUserInitials(): string {
     const user = this.getCurrentUser();
     if (!user) return 'A';
-    return `${user.firstName?.[0] || ''}${user.lastName?.[0] || ''}`.toUpperCase() || 'A';
+    return (
+      `${user.firstName?.[0] || ''}${user.lastName?.[0] || ''}`.toUpperCase() ||
+      'A'
+    );
   }
 
   getCurrentDate(): string {
@@ -97,7 +105,7 @@ export class AdminLayoutComponent {
       weekday: 'long',
       year: 'numeric',
       month: 'long',
-      day: 'numeric'
+      day: 'numeric',
     });
   }
 
@@ -112,7 +120,7 @@ export class AdminLayoutComponent {
   private updatePageTitle(url: string) {
     const titleMap: Record<string, string> = {
       '/admin/dashboard': 'Dashboard',
-      '/admin/verification': 'Organization Verification'
+      '/admin/verification': 'Organization Verification',
     };
 
     // Find matching title
