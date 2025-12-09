@@ -47,6 +47,11 @@ export class AdminLayoutComponent {
       label: 'Manage Settings',
       icon: 'fas fa-check-circle',
     },
+    {
+      path: 'credit-costs',
+      label: 'Manage Costs',
+      icon: 'fas fa-check-circle',
+    },
   ];
 
   // Main app routes for quick navigation
