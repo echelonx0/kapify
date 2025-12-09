@@ -173,30 +173,6 @@ export class FinancialAnalysisComponent implements OnInit, OnDestroy {
     return state !== 'idle' && state !== 'ready';
   }
 
-  // private async loadExistingData(): Promise<void> {
-  //   this.loadingState.set('initializing');
-  //   this.loadingMessage.set('Loading financial data...');
-
-  //   try {
-  //     const profileData = this.profileService.data();
-  //     const financialAnalysis = profileData.financialAnalysis;
-
-  //     if (financialAnalysis && this.isValidFinancialData(financialAnalysis)) {
-  //       this.loadFromExistingData(financialAnalysis as ParsedFinancialData);
-  //     } else {
-  //       this.initializeEmptyData();
-  //     }
-
-  //     // Small delay for smooth skeleton transition
-  //     await new Promise((resolve) => setTimeout(resolve, 300));
-  //   } catch (error) {
-  //     console.error('Failed to load financial data:', error);
-  //     this.parseError.set('Failed to load financial data');
-  //   } finally {
-  //     this.loadingState.set('ready');
-  //   }
-  // }
-
   // ===============================
   // VALIDATION - PURE COMPUTATION
   // ===============================
