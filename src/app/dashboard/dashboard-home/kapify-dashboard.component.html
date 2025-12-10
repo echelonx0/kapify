@@ -1,110 +1,240 @@
-<!-- Main Container - Full Height Layout -->
+<!-- Kapify Dashboard - Card-First Redesign -->
 <div class="min-h-screen bg-slate-50">
-  <!-- Header Offset for Mobile Navigation -->
-  <div class="lg:hidden h-16"></div>
-
-  <!-- Main Content - Two Column Layout -->
-  <div class="flex h-screen gap-0 lg:gap-0">
-    <!-- Left Side - Main Content (100% on mobile, ~60% on desktop) -->
+  <!-- Main Content Wrapper -->
+  <div class="flex h-screen">
+    <!-- Left Side - Main Content Area -->
     <main class="flex-1 flex flex-col overflow-hidden">
-      <!-- Scrollable Content Area -->
+      <!-- Scrollable Content -->
       <div class="flex-1 overflow-y-auto">
-        <div class="px-4 lg:px-8 py-6 lg:py-8 space-y-6">
-          <!-- Dynamic Call to Action Card -->
-          <div
-            [class]="
-              'bg-gradient-to-r ' +
-              getCTAGradient() +
-              ' rounded-2xl p-8 text-white'
-            "
-          >
+        <div class="max-w-6xl mx-auto px-4 lg:px-8 py-6 lg:py-8">
+          <!-- Welcome Hero Card -->
+          <div class="mb-6">
             <div
-              class="flex flex-col md:flex-row items-start md:items-center justify-between gap-6"
+              class="bg-white rounded-2xl border border-slate-200 p-6 lg:p-8"
             >
-              <div class="flex-1">
-                <h2 class="text-2xl lg:text-3xl font-bold mb-3">
-                  {{ ctaContent().title }}
-                </h2>
-                <p
-                  class="text-sm lg:text-base opacity-90 mb-6 max-w-md leading-relaxed"
+              <div class="flex items-start justify-between gap-6">
+                <div class="flex-1">
+                  <div class="flex items-center gap-3 mb-3">
+                    <div
+                      class="w-12 h-12 rounded-xl bg-gradient-to-br from-teal-400 to-teal-500 flex items-center justify-center"
+                    >
+                      <lucide-icon
+                        [img]="HomeIcon"
+                        [size]="24"
+                        class="text-white"
+                      />
+                    </div>
+                    <div>
+                      <h1 class="text-2xl lg:text-3xl font-bold text-slate-900">
+                        Welcome back{{
+                          currentUser()?.firstName
+                            ? ", " + currentUser()?.firstName
+                            : ""
+                        }}
+                      </h1>
+                      <p class="text-sm text-slate-600 mt-0.5">
+                        {{ getGreetingMessage() }}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Quick Action Button -->
+                @if (userType() === 'funder' &&
+                onboardingState()?.canCreateOpportunities) {
+                <button
+                  class="hidden lg:flex items-center gap-2 bg-teal-500 text-white font-medium rounded-xl px-6 py-3 text-sm hover:bg-teal-600 active:bg-teal-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2"
+                  (click)="createOpportunity()"
                 >
-                  {{ ctaContent().description }}
-                </p>
-                <ui-button
-                  variant="outline"
-                  (clicked)="startApplication()"
-                  class="bg-white hover:bg-slate-50 text-slate-900 border-white transition-colors duration-200"
-                >
-                  {{ ctaContent().buttonText }}
-                  <lucide-icon
-                    [img]="ArrowRightIcon"
-                    [size]="16"
-                    class="ml-2"
-                  />
-                </ui-button>
-              </div>
-              <!-- Icon for larger screens -->
-              <div class="hidden lg:block flex-shrink-0">
-                <lucide-icon
-                  [img]="ctaContent().icon"
-                  [size]="80"
-                  class="opacity-20"
-                />
+                  <lucide-icon [img]="PlusIcon" [size]="16" />
+                  <span>New Opportunity</span>
+                </button>
+                }
               </div>
             </div>
           </div>
 
-          <!-- Analytics Cards Section (for Funder users) -->
+          <!-- Analytics Dashboard Section (Funder Only) -->
           @if (userType() === 'funder' && analytics()) {
-          <div class="space-y-4">
-            <div>
-              <h3 class="text-lg font-bold text-slate-900 mb-2">
-                Your Overview
-              </h3>
-              <p class="text-sm text-slate-600">
-                Key metrics and insights from your dashboard
-              </p>
+          <div class="mb-6">
+            <div class="flex items-center justify-between mb-4">
+              <div>
+                <h2 class="text-xl font-bold text-slate-900">Your Overview</h2>
+                <p class="text-sm text-slate-600 mt-0.5">
+                  Key metrics from your funding activities
+                </p>
+              </div>
             </div>
 
-            <!-- Stats Grid -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <!-- Stats Grid - 2x2 on desktop, stacked on mobile -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               @for (stat of statsCards(); track stat.id) {
               <div
-                class="bg-white rounded-2xl border border-slate-200 p-6 hover:shadow-md hover:border-slate-300 transition-all duration-200"
+                class="bg-white rounded-2xl border border-slate-200 p-6 hover:shadow-md hover:border-slate-300 transition-all duration-200 group cursor-pointer"
+                (click)="handleStatClick(stat.id)"
               >
-                <div class="flex items-start justify-between gap-4">
+                <!-- Icon Container -->
+                <div class="flex items-start justify-between mb-4">
+                  <div
+                    [class]="getStatCardIconBg(stat.color)"
+                    class="w-12 h-12 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-200"
+                  >
+                    <lucide-icon
+                      [img]="stat.icon"
+                      [size]="24"
+                      [class]="getStatCardIconColor(stat.color)"
+                    />
+                  </div>
+                </div>
+
+                <!-- Value -->
+                <div class="mb-2">
+                  <p class="text-3xl font-bold text-slate-900 mb-1">
+                    {{ stat.value }}
+                  </p>
+                  <p class="text-sm font-semibold text-slate-600">
+                    {{ stat.label }}
+                  </p>
+                </div>
+
+                <!-- Description -->
+                @if (stat.description) {
+                <p class="text-xs text-slate-500 line-clamp-2">
+                  {{ stat.description }}
+                </p>
+                }
+              </div>
+              }
+            </div>
+          </div>
+          }
+
+          <!-- Primary CTA Card -->
+          <div class="mb-6">
+            <div
+              [class]="
+                'bg-gradient-to-r ' +
+                getCTAGradient() +
+                ' rounded-2xl p-6 lg:p-8 text-white shadow-lg'
+              "
+            >
+              <div
+                class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6"
+              >
+                <div class="flex-1">
+                  <!-- Icon Badge -->
+                  <div
+                    class="inline-flex items-center justify-center w-14 h-14 rounded-xl bg-white/20 backdrop-blur-sm mb-4"
+                  >
+                    <lucide-icon
+                      [img]="ctaContent().icon"
+                      [size]="28"
+                      class="text-white"
+                    />
+                  </div>
+
+                  <h2 class="text-2xl lg:text-3xl font-bold mb-3">
+                    {{ ctaContent().title }}
+                  </h2>
+                  <p
+                    class="text-sm lg:text-base opacity-90 mb-6 max-w-2xl leading-relaxed"
+                  >
+                    {{ ctaContent().description }}
+                  </p>
+
+                  <button
+                    class="inline-flex items-center gap-2 bg-white text-slate-900 font-semibold rounded-xl px-6 py-3 text-sm hover:bg-slate-50 active:bg-slate-100 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2"
+                    (click)="startApplication()"
+                  >
+                    <span>{{ ctaContent().buttonText }}</span>
+                    <lucide-icon [img]="ArrowRightIcon" [size]="16" />
+                  </button>
+                </div>
+
+                <!-- Decorative Icon (Desktop Only) -->
+                <div class="hidden xl:block flex-shrink-0">
+                  <div
+                    class="w-32 h-32 rounded-2xl bg-white/10 backdrop-blur-sm flex items-center justify-center"
+                  >
+                    <lucide-icon
+                      [img]="ctaContent().icon"
+                      [size]="64"
+                      class="text-white opacity-40"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Getting Started Section -->
+          <div class="mb-6">
+            <div class="flex items-center justify-between mb-4">
+              <div>
+                <h2 class="text-xl font-bold text-slate-900">
+                  {{
+                    userType() === "funder" ? "Getting Started" : "Next Steps"
+                  }}
+                </h2>
+                <p class="text-sm text-slate-600 mt-0.5">
+                  Complete these steps to unlock the full platform potential
+                </p>
+              </div>
+            </div>
+
+            <!-- Onboarding Cards Grid -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              @for (card of onboardingCards(); track card.id) {
+              <div
+                class="bg-white rounded-2xl border border-slate-200 p-6 hover:shadow-md transition-all duration-200 cursor-pointer group"
+                [class]="getCardBorderClass(card.color)"
+                (click)="handleCardAction(card)"
+              >
+                <div class="flex items-start gap-4">
+                  <!-- Icon -->
+                  <div
+                    [class]="getCardIconClass(card.color)"
+                    class="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform duration-200"
+                  >
+                    <lucide-icon
+                      [img]="card.icon"
+                      [size]="24"
+                      [class]="getCardIconTextClass(card.color)"
+                    />
+                  </div>
+
+                  <!-- Content -->
                   <div class="flex-1 min-w-0">
-                    <!-- Icon -->
-                    <div
-                      [class]="
-                        getStatCardIconBg(stat.color) +
-                        ' w-12 h-12 rounded-lg flex items-center justify-center mb-4'
-                      "
-                    >
-                      <lucide-icon
-                        [img]="stat.icon"
-                        [size]="24"
-                        [class]="getStatCardIconColor(stat.color)"
-                      ></lucide-icon>
+                    <div class="flex items-center gap-2 mb-2">
+                      <h3 class="text-base font-bold text-slate-900">
+                        {{ card.title }}
+                      </h3>
+                      @if (card.completed) {
+                      <div
+                        class="w-5 h-5 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0"
+                      >
+                        <lucide-icon
+                          [img]="CheckCircleIcon"
+                          [size]="14"
+                          class="text-green-600"
+                        />
+                      </div>
+                      }
                     </div>
 
-                    <!-- Value -->
-                    <p
-                      class="text-2xl lg:text-3xl font-bold text-slate-900 mb-1"
+                    <p class="text-sm text-slate-600 leading-relaxed mb-3">
+                      {{ card.description }}
+                    </p>
+
+                    <!-- Action Text -->
+                    @if (card.actionText && !card.completed) {
+                    <div
+                      class="flex items-center gap-2 text-sm font-medium group-hover:text-teal-600 transition-colors duration-200"
+                      [class]="getCardIconTextClass(card.color)"
                     >
-                      {{ stat.value }}
-                    </p>
-
-                    <!-- Label -->
-                    <p class="text-sm font-medium text-slate-600">
-                      {{ stat.label }}
-                    </p>
-
-                    <!-- Description -->
-                    @if (stat.description) {
-                    <p class="text-xs text-slate-500 mt-2">
-                      {{ stat.description }}
-                    </p>
+                      <lucide-icon [img]="ArrowRightIcon" [size]="14" />
+                      <span>{{ card.actionText }}</span>
+                    </div>
                     }
                   </div>
                 </div>
@@ -112,121 +242,128 @@
               }
             </div>
           </div>
-          }
 
-          <!-- Quick Actions for Funder -->
-          @if (userType() === 'funder' &&
-          onboardingState()?.canCreateOpportunities) {
-          <div class="space-y-4">
-            <h3 class="text-lg font-bold text-slate-900">Quick Actions</h3>
-            <div class="bg-white rounded-2xl border border-slate-200 p-6">
-              <div class="flex flex-col sm:flex-row gap-3">
-                <ui-button
-                  variant="primary"
-                  (clicked)="createOpportunity()"
-                  class="flex-1"
-                >
-                  <lucide-icon [img]="PlusIcon" [size]="16" class="mr-2" />
-                  Create Opportunity
-                </ui-button>
-                <!-- <ui-button
-                  variant="outline"
-                  (clicked)="viewAllOpportunities()"
-                  class="flex-1"
+          <!-- Platform Statistics (SME View) -->
+          @if (userType() !== 'funder') {
+          <div class="mb-6">
+            <div
+              class="bg-white rounded-2xl border border-slate-200 p-6 lg:p-8"
+            >
+              <div class="flex items-center gap-3 mb-6">
+                <div
+                  class="w-10 h-10 rounded-lg bg-teal-100 flex items-center justify-center"
                 >
                   <lucide-icon
-                    [img]="FolderOpenIcon"
-                    [size]="16"
-                    class="mr-2"
+                    [img]="BarChart3Icon"
+                    [size]="20"
+                    class="text-teal-600"
                   />
-                  View All
-                </ui-button> -->
+                </div>
+                <div>
+                  <h3 class="text-lg font-bold text-slate-900">
+                    Platform Insights
+                  </h3>
+                  <p class="text-sm text-slate-600">
+                    Success metrics from our community
+                  </p>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-2 lg:grid-cols-4 gap-6">
+                @for (stat of statsCards(); track stat.id) {
+                <div class="text-center">
+                  <div
+                    [class]="getStatCardIconBg(stat.color)"
+                    class="w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-3"
+                  >
+                    <lucide-icon
+                      [img]="stat.icon"
+                      [size]="20"
+                      [class]="getStatCardIconColor(stat.color)"
+                    />
+                  </div>
+                  <p class="text-2xl font-bold text-slate-900 mb-1">
+                    {{ stat.value }}
+                  </p>
+                  <p class="text-xs font-medium text-slate-600">
+                    {{ stat.label }}
+                  </p>
+                </div>
+                }
               </div>
             </div>
           </div>
           }
 
-          <!-- Onboarding Cards Section -->
-          <div class="space-y-4">
-            <div>
-              <h3 class="text-lg font-bold text-slate-900 mb-2">
-                {{ userType() === "funder" ? "Get Started" : "Next Steps" }}
-              </h3>
-              <p class="text-sm text-slate-600">
-                Essential information to maximize your experience
-              </p>
-            </div>
-
-            <div class="space-y-3">
-              @for (card of onboardingCards(); track card.id) {
-              <div
-                class="bg-white rounded-2xl border border-slate-200 p-6 hover:shadow-md hover:border-slate-300 transition-all duration-200 cursor-pointer group"
-                [class]="getCardBorderClass(card.color)"
-                (click)="handleCardAction(card)"
+          <!-- Quick Actions Section (Mobile - Funder) -->
+          @if (userType() === 'funder' &&
+          onboardingState()?.canCreateOpportunities) {
+          <div class="lg:hidden mb-6">
+            <div class="bg-white rounded-2xl border border-slate-200 p-4">
+              <button
+                class="w-full flex items-center justify-center gap-2 bg-teal-500 text-white font-medium rounded-xl px-6 py-3 text-sm hover:bg-teal-600 active:bg-teal-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2"
+                (click)="createOpportunity()"
               >
-                <div class="flex items-start justify-between gap-4">
-                  <div class="flex items-start gap-4 flex-1 min-w-0">
-                    <div
-                      [class]="
-                        getCardIconClass(card.color) +
-                        ' w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0'
-                      "
-                    >
-                      <lucide-icon
-                        [img]="card.icon"
-                        [size]="24"
-                        [class]="getCardIconTextClass(card.color)"
-                      ></lucide-icon>
-                    </div>
+                <lucide-icon [img]="PlusIcon" [size]="16" />
+                <span>Create New Opportunity</span>
+              </button>
+            </div>
+          </div>
+          }
 
-                    <div class="flex-1 min-w-0">
-                      <div class="flex items-center gap-2 mb-1">
-                        <h4 class="text-base font-semibold text-slate-900">
-                          {{ card.title }}
-                        </h4>
-                        @if (card.completed) {
-                        <lucide-icon
-                          [img]="CheckCircleIcon"
-                          [size]="16"
-                          class="text-green-600 flex-shrink-0"
-                        />
-                        }
-                      </div>
-                      <p class="text-sm text-slate-600 leading-relaxed">
-                        {{ card.description }}
-                      </p>
-
-                      @if (card.actionText && !card.completed) {
-                      <div class="mt-3 pt-3 border-t border-slate-100">
-                        <span
-                          class="text-xs text-slate-500 flex items-center gap-1 group-hover:text-slate-700 transition-colors"
-                        >
-                          <lucide-icon [img]="EyeIcon" [size]="14" />
-                          {{ card.actionText }}
-                          @if (card.rightPanelContent) { in the side panel }
-                        </span>
-                      </div>
-                      }
-                    </div>
-                  </div>
-
+          <!-- Help & Resources -->
+          <div class="mb-6">
+            <div
+              class="bg-gradient-to-br from-blue-50 to-teal-50 rounded-2xl border border-blue-200/50 p-6 lg:p-8"
+            >
+              <div
+                class="flex flex-col lg:flex-row items-start lg:items-center gap-6"
+              >
+                <div
+                  class="w-14 h-14 rounded-xl bg-blue-100 flex items-center justify-center flex-shrink-0"
+                >
                   <lucide-icon
-                    [img]="ArrowRightIcon"
-                    [size]="20"
-                    class="text-slate-400 group-hover:text-slate-600 transition-colors flex-shrink-0 mt-1"
+                    [img]="LightbulbIcon"
+                    [size]="28"
+                    class="text-blue-600"
                   />
                 </div>
+
+                <div class="flex-1">
+                  <h3 class="text-lg font-bold text-slate-900 mb-2">
+                    Need Help Getting Started?
+                  </h3>
+                  <p class="text-sm text-slate-600 mb-4">
+                    Access our comprehensive guides, video tutorials, and
+                    support resources to maximize your success on Kapify.
+                  </p>
+                  <div class="flex flex-col sm:flex-row gap-2">
+                    <button
+                      class="inline-flex items-center justify-center gap-2 bg-white text-slate-900 font-medium rounded-xl px-4 py-2.5 text-sm hover:bg-slate-50 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 border border-slate-200"
+                      (click)="openHelpCenter()"
+                    >
+                      <lucide-icon [img]="BookOpenIcon" [size]="16" />
+                      <span>View Guides</span>
+                    </button>
+                    <button
+                      class="inline-flex items-center justify-center gap-2 bg-white text-slate-900 font-medium rounded-xl px-4 py-2.5 text-sm hover:bg-slate-50 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 border border-slate-200"
+                      (click)="contactSupport()"
+                    >
+                      <lucide-icon [img]="UsersIcon" [size]="16" />
+                      <span>Contact Support</span>
+                    </button>
+                  </div>
+                </div>
               </div>
-              }
             </div>
           </div>
         </div>
       </div>
     </main>
 
-    <!-- Right Side - Fixed Panel (hidden on mobile, ~40% on desktop) -->
+    <!-- Right Side - Fixed Panel (Desktop Only) -->
     <aside
-      class="hidden lg:flex lg:w-2/5 flex-col flex-shrink-0 sticky top-0 h-screen z-30"
+      class="hidden lg:flex lg:w-2/5 flex-col flex-shrink-0 sticky top-0 h-screen z-30 border-l border-slate-200"
     >
       <app-right-panel
         [content]="rightPanelContent()"
@@ -235,4 +372,40 @@
       />
     </aside>
   </div>
+
+  <!-- Mobile Bottom Sheet Trigger -->
+  <button
+    class="lg:hidden fixed bottom-6 right-6 w-14 h-14 bg-teal-500 text-white rounded-full shadow-lg hover:bg-teal-600 active:bg-teal-700 transition-all duration-200 flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 z-40"
+    (click)="toggleMobilePanel()"
+    aria-label="Open activity panel"
+  >
+    <lucide-icon [img]="EyeIcon" [size]="24" />
+  </button>
+
+  <!-- Mobile Bottom Sheet -->
+  @if (isMobilePanelOpen()) {
+  <div
+    class="lg:hidden fixed inset-0 z-50 bg-black/25 backdrop-blur-sm"
+    (click)="toggleMobilePanel()"
+  >
+    <div
+      class="absolute bottom-0 left-0 right-0 bg-white rounded-t-2xl max-h-[80vh] overflow-hidden shadow-2xl"
+      (click)="$event.stopPropagation()"
+    >
+      <!-- Handle Bar -->
+      <div class="flex justify-center py-3 border-b border-slate-200">
+        <div class="w-12 h-1 bg-slate-300 rounded-full"></div>
+      </div>
+
+      <!-- Panel Content -->
+      <div class="overflow-y-auto max-h-[calc(80vh-60px)]">
+        <app-right-panel
+          [content]="rightPanelContent()"
+          (contentChange)="onRightPanelContentChange($event)"
+          [userType]="userType()"
+        />
+      </div>
+    </div>
+  </div>
+  }
 </div>
