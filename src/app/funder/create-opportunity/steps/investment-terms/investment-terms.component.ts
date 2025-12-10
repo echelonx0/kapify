@@ -27,9 +27,9 @@ type FundingType =
   selector: 'app-funding-structure',
   standalone: true,
   imports: [CommonModule, FormsModule, LucideAngularModule],
-  templateUrl: './fund-structure.component.html',
+  templateUrl: './investment-terms.component.html',
 })
-export class FundingStructureComponent {
+export class InvestmentTermsComponent {
   public formState = inject(OpportunityFormStateService);
   public ui = inject(OpportunityUIHelperService);
 
