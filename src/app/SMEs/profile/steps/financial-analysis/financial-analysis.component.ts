@@ -461,54 +461,6 @@ export class FinancialAnalysisComponent implements OnInit, OnDestroy {
     this.clearAllData();
   }
 
-  // ===============================
-  // TEMPLATE & DATA DOWNLOAD
-  // ===============================
-
-  downloadTemplate() {
-    const currentYear = new Date().getFullYear();
-    const years = Array.from({ length: 9 }, (_, i) => currentYear - 3 + i);
-
-    const incomeLabels = [
-      'Revenue',
-      'Cost of sales',
-      'Gross Profit',
-      'Administrative expenses',
-      'Other Operating Expenses (Excl depreciation & amortisation)',
-      'Salaries & Staff Cost',
-      'EBITDA',
-      'Interest Income',
-      'Finances Cost',
-      'Depreciation & Amortisation',
-      'Profit before tax',
-    ];
-
-    const ratioRows = [
-      'Gross Profit Margin',
-      'Net Profit Margin',
-      'Return on Assets (ROA)',
-      'Return on Equity (ROE)',
-      'Current Ratio',
-      'Debt to Equity Ratio',
-      'Interest Coverage Ratio',
-      'Asset Turnover',
-    ];
-
-    const incomeData: (string | number)[][] = [['Item', ...years]];
-    incomeLabels.forEach((label) => {
-      incomeData.push([label, ...Array(EXPECTED_COLUMN_COUNT).fill(0)]);
-    });
-
-    incomeData.push(Array(EXPECTED_COLUMN_COUNT + 1).fill(''));
-
-    const ratioData: (string | number)[][] = [['Ratio', ...years]];
-    ratioRows.forEach((label) => {
-      ratioData.push([label, ...Array(EXPECTED_COLUMN_COUNT).fill(0)]);
-    });
-
-    this.downloadExcelFile(incomeData, 'financial_template.xlsx');
-  }
-
   async downloadCurrentData() {
     if (!this.hasFinancialData()) return;
 
@@ -1019,5 +971,18 @@ export class FinancialAnalysisComponent implements OnInit, OnDestroy {
       this.activeTab() === 'cash-flow' &&
       this.cashFlowData().length > 5
     );
+  }
+
+  downloadTemplate() {
+    const templateUrl =
+      'https://hsilpedhzelahseceats.supabase.co/storage/v1/object/public/sample-data/financial_template.xlsx';
+
+    const link = document.createElement('a');
+    link.href = templateUrl;
+    link.download = 'financial_template.xlsx';
+    link.target = '_blank';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   }
 }

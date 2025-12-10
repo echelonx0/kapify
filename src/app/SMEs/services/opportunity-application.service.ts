@@ -6,12 +6,14 @@ import { AuthService } from '../../auth/production.auth.service';
 import { SharedSupabaseService } from '../../shared/services/shared-supabase.service';
 import { ProfileData } from '../profile/models/funding.models';
 import { SMEProfileStepsService } from '../profile/services/sme-profile-steps.service';
-import { OpportunityApplication, ApplicationDraft, CoverInformation } from '../profile/models/sme-profile.models';
- 
-
+import {
+  OpportunityApplication,
+  ApplicationDraft,
+  CoverInformation,
+} from '../profile/models/sme-profile.models';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class OpportunityApplicationService {
   private supabase = inject(SharedSupabaseService);
@@ -23,17 +25,18 @@ export class OpportunityApplicationService {
   isSaving = signal(false);
   isSubmitting = signal(false);
   error = signal<string | null>(null);
-  
+
   // Data streams
-  private applicationsSubject = new BehaviorSubject<OpportunityApplication[]>([]);
+  private applicationsSubject = new BehaviorSubject<OpportunityApplication[]>(
+    []
+  );
   applications$ = this.applicationsSubject.asObservable();
-  
+
   // Draft management
   private draftsSubject = new BehaviorSubject<ApplicationDraft[]>([]);
   drafts$ = this.draftsSubject.asObservable();
 
   constructor() {
-   
     this.loadUserApplications();
     this.loadDrafts();
   }
@@ -52,11 +55,11 @@ export class OpportunityApplicationService {
     this.error.set(null);
 
     return from(this.fetchUserApplications(currentUser.id)).pipe(
-      tap(applications => {
+      tap((applications) => {
         this.applicationsSubject.next(applications);
         this.isLoading.set(false);
       }),
-      catchError(error => {
+      catchError((error) => {
         this.error.set('Failed to load applications');
         this.isLoading.set(false);
         console.error('Load applications error:', error);
@@ -65,12 +68,15 @@ export class OpportunityApplicationService {
     );
   }
 
-  private async fetchUserApplications(userId: string): Promise<OpportunityApplication[]> {
+  private async fetchUserApplications(
+    userId: string
+  ): Promise<OpportunityApplication[]> {
     console.log('Fetching applications for user:', userId);
     try {
       const { data, error } = await this.supabase
         .from('applications')
-        .select(`
+        .select(
+          `
           *,
           opportunity:opportunity_id (
             id,
@@ -82,15 +88,18 @@ export class OpportunityApplicationService {
             organization_id,
             decision_timeframe
           )
-        `)
+        `
+        )
         .eq('applicant_id', userId)
         .order('created_at', { ascending: false });
 
       if (error) {
         throw new Error(`Failed to fetch applications: ${error.message}`);
       }
-console.log('Fetched applications data:', data);
-      return (data || []).map((item: any) => this.transformDatabaseToLocal(item));
+      console.log('Fetched applications data:', data);
+      return (data || []).map((item: any) =>
+        this.transformDatabaseToLocal(item)
+      );
     } catch (error) {
       console.error('Error fetching user applications:', error);
       throw error;
@@ -102,7 +111,7 @@ console.log('Fetched applications data:', data);
   // ===============================
 
   createApplication(
-    opportunityId: string, 
+    opportunityId: string,
     coverInformation: CoverInformation
   ): Observable<OpportunityApplication> {
     const currentUser = this.authService.user();
@@ -116,23 +125,25 @@ console.log('Fetched applications data:', data);
     // Get user's profile data
     const profileData = this.profileService.data();
 
-    return from(this.submitApplicationToDatabase(
-      currentUser.id,
-      opportunityId,
-      profileData,
-      coverInformation
-    )).pipe(
-      tap(application => {
+    return from(
+      this.submitApplicationToDatabase(
+        currentUser.id,
+        opportunityId,
+        profileData,
+        coverInformation
+      )
+    ).pipe(
+      tap((application) => {
         // Update local state
         const currentApps = this.applicationsSubject.value;
         this.applicationsSubject.next([application, ...currentApps]);
-        
+
         // Clear any draft for this opportunity
         this.clearDraft(opportunityId);
-        
+
         this.isSubmitting.set(false);
       }),
-      catchError(error => {
+      catchError((error) => {
         this.error.set('Failed to submit application');
         this.isSubmitting.set(false);
         console.error('Submit application error:', error);
@@ -158,20 +169,21 @@ console.log('Fetched applications data:', data);
         form_data: {
           profileData,
           coverInformation,
-          submissionVersion: '1.0'
+          submissionVersion: '1.0',
         },
         documents: profileData.documents || {},
         review_notes: [],
         terms: {},
         submitted_at: new Date().toISOString(),
         created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
       };
 
       const { data, error } = await this.supabase
         .from('applications')
         .insert(applicationData)
-        .select(`
+        .select(
+          `
           *,
           opportunity:opportunity_id (
             id,
@@ -183,7 +195,8 @@ console.log('Fetched applications data:', data);
             organization_id,
             decision_timeframe
           )
-        `)
+        `
+        )
         .single();
 
       if (error) {
@@ -200,11 +213,16 @@ console.log('Fetched applications data:', data);
     }
   }
 
-  private async incrementOpportunityApplicationCount(opportunityId: string): Promise<void> {
+  private async incrementOpportunityApplicationCount(
+    opportunityId: string
+  ): Promise<void> {
     try {
-      const { error } = await this.supabase.rpc('increment_opportunity_applications', {
-        opportunity_id: opportunityId
-      });
+      const { error } = await this.supabase.rpc(
+        'increment_opportunity_applications',
+        {
+          opportunity_id: opportunityId,
+        }
+      );
 
       if (error) {
         console.warn('Failed to update opportunity application count:', error);
@@ -218,20 +236,25 @@ console.log('Fetched applications data:', data);
   // DRAFT MANAGEMENT
   // ===============================
 
-  saveDraft(opportunityId: string, coverInformation: Partial<CoverInformation>): Observable<void> {
+  saveDraft(
+    opportunityId: string,
+    coverInformation: Partial<CoverInformation>
+  ): Observable<void> {
     this.isSaving.set(true);
-    
+
     return from(this.saveDraftToStorage(opportunityId, coverInformation)).pipe(
       tap(() => {
         this.isSaving.set(false);
         // Update drafts list
         const currentDrafts = this.draftsSubject.value;
-        const existingIndex = currentDrafts.findIndex(d => d.opportunityId === opportunityId);
-        
+        const existingIndex = currentDrafts.findIndex(
+          (d) => d.opportunityId === opportunityId
+        );
+
         const draft: ApplicationDraft = {
           opportunityId,
           coverInformation,
-          lastSaved: new Date()
+          lastSaved: new Date(),
         };
 
         if (existingIndex >= 0) {
@@ -239,10 +262,10 @@ console.log('Fetched applications data:', data);
         } else {
           currentDrafts.push(draft);
         }
-        
+
         this.draftsSubject.next([...currentDrafts]);
       }),
-      catchError(error => {
+      catchError((error) => {
         this.error.set('Failed to save draft');
         this.isSaving.set(false);
         console.error('Save draft error:', error);
@@ -252,18 +275,18 @@ console.log('Fetched applications data:', data);
   }
 
   private async saveDraftToStorage(
-    opportunityId: string, 
+    opportunityId: string,
     coverInformation: Partial<CoverInformation>
   ): Promise<void> {
     try {
       const draftData = {
         opportunityId,
         coverInformation,
-        lastSaved: new Date().toISOString()
+        lastSaved: new Date().toISOString(),
       };
-      
+
       localStorage.setItem(
-        `application-draft-${opportunityId}`, 
+        `application-draft-${opportunityId}`,
         JSON.stringify(draftData)
       );
     } catch (error) {
@@ -274,12 +297,14 @@ console.log('Fetched applications data:', data);
 
   loadDraft(opportunityId: string): ApplicationDraft | null {
     try {
-      const draftStr = localStorage.getItem(`application-draft-${opportunityId}`);
+      const draftStr = localStorage.getItem(
+        `application-draft-${opportunityId}`
+      );
       if (draftStr) {
         const draft = JSON.parse(draftStr);
         return {
           ...draft,
-          lastSaved: new Date(draft.lastSaved)
+          lastSaved: new Date(draft.lastSaved),
         };
       }
       return null;
@@ -292,10 +317,12 @@ console.log('Fetched applications data:', data);
   clearDraft(opportunityId: string): void {
     try {
       localStorage.removeItem(`application-draft-${opportunityId}`);
-      
+
       // Update drafts list
       const currentDrafts = this.draftsSubject.value;
-      const filteredDrafts = currentDrafts.filter(d => d.opportunityId !== opportunityId);
+      const filteredDrafts = currentDrafts.filter(
+        (d) => d.opportunityId !== opportunityId
+      );
       this.draftsSubject.next(filteredDrafts);
     } catch (error) {
       console.error('Error clearing draft:', error);
@@ -305,7 +332,7 @@ console.log('Fetched applications data:', data);
   private loadDrafts(): void {
     try {
       const drafts: ApplicationDraft[] = [];
-      
+
       // Scan localStorage for draft keys
       for (let i = 0; i < localStorage.length; i++) {
         const key = localStorage.key(i);
@@ -316,7 +343,7 @@ console.log('Fetched applications data:', data);
               const draft = JSON.parse(draftStr);
               drafts.push({
                 ...draft,
-                lastSaved: new Date(draft.lastSaved)
+                lastSaved: new Date(draft.lastSaved),
               });
             } catch (e) {
               console.warn('Invalid draft data for key:', key);
@@ -324,7 +351,7 @@ console.log('Fetched applications data:', data);
           }
         }
       }
-      
+
       this.draftsSubject.next(drafts);
     } catch (error) {
       console.error('Error loading drafts:', error);
@@ -337,7 +364,7 @@ console.log('Fetched applications data:', data);
 
   getApplicationById(id: string): Observable<OpportunityApplication | null> {
     return from(this.fetchApplicationById(id)).pipe(
-      catchError(error => {
+      catchError((error) => {
         this.error.set('Failed to load application');
         console.error('Fetch application error:', error);
         return throwError(() => error);
@@ -345,11 +372,14 @@ console.log('Fetched applications data:', data);
     );
   }
 
-  private async fetchApplicationById(id: string): Promise<OpportunityApplication | null> {
+  private async fetchApplicationById(
+    id: string
+  ): Promise<OpportunityApplication | null> {
     try {
       const { data, error } = await this.supabase
         .from('applications')
-        .select(`
+        .select(
+          `
           *,
           opportunity:opportunity_id (
             id,
@@ -361,12 +391,14 @@ console.log('Fetched applications data:', data);
             organization_id,
             decision_timeframe
           )
-        `)
+        `
+        )
         .eq('id', id)
         .single();
 
       if (error) {
-        if (error.code === 'PGRST116') { // No rows returned
+        if (error.code === 'PGRST116') {
+          // No rows returned
           return null;
         }
         throw new Error(`Failed to fetch application: ${error.message}`);
@@ -379,20 +411,23 @@ console.log('Fetched applications data:', data);
     }
   }
 
-  withdrawApplication(id: string, reason: string): Observable<OpportunityApplication> {
+  withdrawApplication(
+    id: string,
+    reason: string
+  ): Observable<OpportunityApplication> {
     this.error.set(null);
 
     return from(this.updateApplicationStatus(id, 'withdrawn', reason)).pipe(
-      tap(updatedApp => {
+      tap((updatedApp) => {
         // Update local state
         const currentApps = this.applicationsSubject.value;
-        const index = currentApps.findIndex(app => app.id === id);
+        const index = currentApps.findIndex((app) => app.id === id);
         if (index >= 0) {
           currentApps[index] = updatedApp;
           this.applicationsSubject.next([...currentApps]);
         }
       }),
-      catchError(error => {
+      catchError((error) => {
         this.error.set('Failed to withdraw application');
         console.error('Withdraw application error:', error);
         return throwError(() => error);
@@ -401,14 +436,14 @@ console.log('Fetched applications data:', data);
   }
 
   private async updateApplicationStatus(
-    id: string, 
-    status: OpportunityApplication['status'], 
+    id: string,
+    status: OpportunityApplication['status'],
     reason?: string
   ): Promise<OpportunityApplication> {
     try {
       const updateData: any = {
         status,
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
       };
 
       if (reason) {
@@ -422,10 +457,13 @@ console.log('Fetched applications data:', data);
             note: reason,
             type: 'external',
             createdAt: new Date(),
-            isRead: false
+            isRead: false,
           };
 
-          updateData.review_notes = [...(currentApp.reviewNotes || []), newNote];
+          updateData.review_notes = [
+            ...(currentApp.reviewNotes || []),
+            newNote,
+          ];
         }
       }
 
@@ -433,7 +471,8 @@ console.log('Fetched applications data:', data);
         .from('applications')
         .update(updateData)
         .eq('id', id)
-        .select(`
+        .select(
+          `
           *,
           opportunity:opportunity_id (
             id,
@@ -445,7 +484,8 @@ console.log('Fetched applications data:', data);
             organization_id,
             decision_timeframe
           )
-        `)
+        `
+        )
         .single();
 
       if (error) {
@@ -472,17 +512,17 @@ console.log('Fetched applications data:', data);
     rejected: number;
   }> {
     const applications = this.applicationsSubject.value;
-    
+
     const stats = {
       total: applications.length,
       draft: 0,
       submitted: 0,
       underReview: 0,
       approved: 0,
-      rejected: 0
+      rejected: 0,
     };
 
-    applications.forEach(app => {
+    applications.forEach((app) => {
       switch (app.status) {
         case 'draft':
           stats.draft++;
@@ -511,7 +551,24 @@ console.log('Fetched applications data:', data);
 
   private transformDatabaseToLocal(dbData: any): OpportunityApplication {
     const formData = dbData.form_data || {};
-    
+
+    // Extract coverInformation - handles both nested and flat structures
+    let coverInformation: CoverInformation;
+
+    if (formData.coverInformation) {
+      // Nested structure (new submissions)
+      coverInformation = formData.coverInformation;
+    } else {
+      // Flat structure (existing data) - extract from root level
+      coverInformation = {
+        requestedAmount: this.extractRequestedAmount(formData),
+        purposeStatement: formData.purposeStatement || '',
+        useOfFunds: formData.useOfFunds || '',
+        timeline: formData.timeline || '',
+        opportunityAlignment: formData.opportunityAlignment || '',
+      };
+    }
+
     return {
       id: dbData.id,
       applicantId: dbData.applicant_id,
@@ -521,23 +578,39 @@ console.log('Fetched applications data:', data);
       status: dbData.status,
       stage: dbData.stage,
       profileData: formData.profileData || {},
-      coverInformation: formData.coverInformation || {
-        requestedAmount: 0,
-        purposeStatement: '',
-        useOfFunds: '',
-        timeline: '',
-        opportunityAlignment: ''
-      },
-      submittedAt: dbData.submitted_at ? new Date(dbData.submitted_at) : undefined,
-      reviewStartedAt: dbData.review_started_at ? new Date(dbData.review_started_at) : undefined,
+      coverInformation,
+      submittedAt: dbData.submitted_at
+        ? new Date(dbData.submitted_at)
+        : undefined,
+      reviewStartedAt: dbData.review_started_at
+        ? new Date(dbData.review_started_at)
+        : undefined,
       reviewedAt: dbData.reviewed_at ? new Date(dbData.reviewed_at) : undefined,
       decidedAt: dbData.decided_at ? new Date(dbData.decided_at) : undefined,
       createdAt: new Date(dbData.created_at),
       updatedAt: new Date(dbData.updated_at),
       opportunity: dbData.opportunity,
       reviewNotes: dbData.review_notes || [],
-      aiAssessment: formData.aiAssessment
+      aiAssessment: formData.aiAssessment,
     };
+  }
+
+  /**
+   * Extract requested amount safely (handles string or number, returns 0 if invalid)
+   */
+  private extractRequestedAmount(formData: Record<string, any>): number {
+    const value = formData['requestedAmount'];
+
+    if (typeof value === 'number') {
+      return value;
+    }
+
+    if (typeof value === 'string' && value.trim() !== '') {
+      const parsed = parseFloat(value);
+      return isNaN(parsed) ? 0 : parsed;
+    }
+
+    return 0;
   }
 
   // ===============================
@@ -559,14 +632,19 @@ console.log('Fetched applications data:', data);
   // Check if user has already applied to an opportunity
   hasAppliedToOpportunity(opportunityId: string): boolean {
     return this.applicationsSubject.value.some(
-      app => app.opportunityId === opportunityId && app.status !== 'withdrawn'
+      (app) => app.opportunityId === opportunityId && app.status !== 'withdrawn'
     );
   }
 
   // Get application for specific opportunity
-  getApplicationForOpportunity(opportunityId: string): OpportunityApplication | null {
-    return this.applicationsSubject.value.find(
-      app => app.opportunityId === opportunityId && app.status !== 'withdrawn'
-    ) || null;
+  getApplicationForOpportunity(
+    opportunityId: string
+  ): OpportunityApplication | null {
+    return (
+      this.applicationsSubject.value.find(
+        (app) =>
+          app.opportunityId === opportunityId && app.status !== 'withdrawn'
+      ) || null
+    );
   }
 }
