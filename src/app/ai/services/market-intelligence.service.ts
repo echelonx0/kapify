@@ -1,9 +1,8 @@
 // src/app/ai/services/market-intelligence.service.ts
 import { Injectable, inject, signal } from '@angular/core';
 import { Observable, from, of, throwError } from 'rxjs';
-import {  catchError, tap } from 'rxjs/operators';
+import { catchError, tap } from 'rxjs/operators';
 import { SharedSupabaseService } from 'src/app/shared/services/shared-supabase.service';
- 
 
 export interface MarketIntelligence {
   industry: string;
@@ -18,6 +17,18 @@ export interface MarketIntelligence {
     dealCount: number;
     valuationTrend: 'up' | 'down' | 'stable';
   };
+  // ADD THESE MISSING FIELDS
+  riskFactors?: Array<{
+    factor: string;
+    severity: 'low' | 'medium' | 'high';
+    impact: string;
+    timeframe: 'immediate' | 'short_term' | 'medium_term' | 'long_term';
+  }>;
+  opportunities?: Array<{
+    opportunity: string;
+    rationale: string;
+    timeframe: string;
+  }>;
   sources: Array<{
     type: 'search_query' | 'web_source' | 'news' | 'report';
     title: string;
@@ -76,15 +87,15 @@ export interface IntelligenceRequest {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class MarketIntelligenceService {
   private supabase = inject(SharedSupabaseService);
-  
+
   // State management
   isLoading = signal(false);
   error = signal<string | null>(null);
-  
+
   constructor() {}
 
   // ===============================
@@ -95,22 +106,30 @@ export class MarketIntelligenceService {
    * Get comprehensive market intelligence for an industry
    */
   getMarketIntelligence(
-    industry: string, 
-    options: { 
-      maxAge?: number; 
-      sector?: string; 
-      forceRefresh?: boolean 
+    industry: string,
+    options: {
+      maxAge?: number;
+      sector?: string;
+      forceRefresh?: boolean;
     } = {}
   ): Observable<MarketIntelligence | null> {
     const { maxAge = 24, sector, forceRefresh = false } = options;
     const cacheKey = this.buildMarketCacheKey(industry, sector);
-    
+
     this.isLoading.set(true);
     this.error.set(null);
 
-    return from(this.fetchMarketIntelligence(industry, sector, cacheKey, maxAge, forceRefresh)).pipe(
+    return from(
+      this.fetchMarketIntelligence(
+        industry,
+        sector,
+        cacheKey,
+        maxAge,
+        forceRefresh
+      )
+    ).pipe(
       tap(() => this.isLoading.set(false)),
-      catchError(error => {
+      catchError((error) => {
         this.error.set(`Market intelligence failed: ${error.message}`);
         this.isLoading.set(false);
         console.error('Market intelligence error:', error);
@@ -128,13 +147,20 @@ export class MarketIntelligenceService {
     options: { maxAge?: number; forceRefresh?: boolean } = {}
   ): Observable<CompetitorIntelligence | null> {
     const { maxAge = 48, forceRefresh = false } = options;
-    
+
     this.isLoading.set(true);
     this.error.set(null);
 
-    return from(this.fetchCompetitorIntelligence(companyName, industry, maxAge, forceRefresh)).pipe(
+    return from(
+      this.fetchCompetitorIntelligence(
+        companyName,
+        industry,
+        maxAge,
+        forceRefresh
+      )
+    ).pipe(
       tap(() => this.isLoading.set(false)),
-      catchError(error => {
+      catchError((error) => {
         this.error.set(`Competitor analysis failed: ${error.message}`);
         this.isLoading.set(false);
         console.error('Competitor intelligence error:', error);
@@ -151,10 +177,10 @@ export class MarketIntelligenceService {
     timeframe: '1M' | '3M' | '6M' | '1Y' = '3M'
   ): Observable<any> {
     this.isLoading.set(true);
-    
+
     return from(this.fetchFundingTrends(industry, timeframe)).pipe(
       tap(() => this.isLoading.set(false)),
-      catchError(error => {
+      catchError((error) => {
         this.error.set(`Funding trends failed: ${error.message}`);
         this.isLoading.set(false);
         return throwError(() => error);
@@ -167,10 +193,10 @@ export class MarketIntelligenceService {
    */
   batchIntelligenceRequest(requests: IntelligenceRequest[]): Observable<any[]> {
     this.isLoading.set(true);
-    
+
     return from(this.processBatchRequest(requests)).pipe(
       tap(() => this.isLoading.set(false)),
-      catchError(error => {
+      catchError((error) => {
         this.error.set(`Batch intelligence failed: ${error.message}`);
         this.isLoading.set(false);
         return throwError(() => error);
@@ -223,17 +249,20 @@ export class MarketIntelligenceService {
       }
 
       console.log(`Fetching fresh market intelligence for: ${industry}`);
-      
+
       // Generate new intelligence via Edge Function
-      const { data, error } = await this.supabase.functions.invoke('market-intelligence', {
-        body: {
-          type: 'market_analysis',
-          industry,
-          sector,
-          cacheKey,
-          maxAgeHours
+      const { data, error } = await this.supabase.functions.invoke(
+        'market-intelligence',
+        {
+          body: {
+            type: 'market_analysis',
+            industry,
+            sector,
+            cacheKey,
+            maxAgeHours,
+          },
         }
-      });
+      );
 
       if (error) {
         throw new Error(`Market intelligence API error: ${error.message}`);
@@ -244,17 +273,19 @@ export class MarketIntelligenceService {
       }
 
       return data as MarketIntelligence;
-
     } catch (error) {
       console.error('Failed to fetch market intelligence:', error);
-      
+
       // Try to return stale cached data as fallback
-      const staleCache = await this.getCachedIntelligence(cacheKey, maxAgeHours * 4);
+      const staleCache = await this.getCachedIntelligence(
+        cacheKey,
+        maxAgeHours * 4
+      );
       if (staleCache) {
         console.warn('Using stale market intelligence data due to API failure');
         return this.transformCachedMarketData(staleCache);
       }
-      
+
       throw error;
     }
   }
@@ -273,7 +304,10 @@ export class MarketIntelligenceService {
           .select('*')
           .ilike('company_name', `%${companyName}%`)
           .eq('industry', industry)
-          .gte('last_updated', new Date(Date.now() - maxAgeHours * 60 * 60 * 1000).toISOString())
+          .gte(
+            'last_updated',
+            new Date(Date.now() - maxAgeHours * 60 * 60 * 1000).toISOString()
+          )
           .single();
 
         if (cached) {
@@ -285,55 +319,66 @@ export class MarketIntelligenceService {
       console.log(`Fetching fresh competitor intelligence for: ${companyName}`);
 
       // Generate new competitor intelligence
-      const { data, error } = await this.supabase.functions.invoke('competitor-analysis', {
-        body: {
-          companyName,
-          industry,
-          maxAgeHours
+      const { data, error } = await this.supabase.functions.invoke(
+        'competitor-analysis',
+        {
+          body: {
+            companyName,
+            industry,
+            maxAgeHours,
+          },
         }
-      });
+      );
 
       if (error) {
         throw new Error(`Competitor analysis API error: ${error.message}`);
       }
 
       return data as CompetitorIntelligence;
-
     } catch (error) {
       console.error('Failed to fetch competitor intelligence:', error);
       throw error;
     }
   }
 
-  private async fetchFundingTrends(industry: string, timeframe: string): Promise<any> {
+  private async fetchFundingTrends(
+    industry: string,
+    timeframe: string
+  ): Promise<any> {
     try {
-      const { data, error } = await this.supabase.functions.invoke('funding-trends', {
-        body: {
-          industry,
-          timeframe
+      const { data, error } = await this.supabase.functions.invoke(
+        'funding-trends',
+        {
+          body: {
+            industry,
+            timeframe,
+          },
         }
-      });
+      );
 
       if (error) throw error;
       return data;
-
     } catch (error) {
       console.error('Failed to fetch funding trends:', error);
       throw error;
     }
   }
 
-  private async processBatchRequest(requests: IntelligenceRequest[]): Promise<any[]> {
+  private async processBatchRequest(
+    requests: IntelligenceRequest[]
+  ): Promise<any[]> {
     try {
-      const { data, error } = await this.supabase.functions.invoke('batch-intelligence', {
-        body: {
-          requests
+      const { data, error } = await this.supabase.functions.invoke(
+        'batch-intelligence',
+        {
+          body: {
+            requests,
+          },
         }
-      });
+      );
 
       if (error) throw error;
       return data || [];
-
     } catch (error) {
       console.error('Failed to process batch intelligence request:', error);
       throw error;
@@ -344,13 +389,19 @@ export class MarketIntelligenceService {
   // CACHE UTILITIES
   // ===============================
 
-  private async getCachedIntelligence(cacheKey: string, maxAgeHours: number): Promise<any> {
+  private async getCachedIntelligence(
+    cacheKey: string,
+    maxAgeHours: number
+  ): Promise<any> {
     try {
       const { data, error } = await this.supabase
         .from('market_intelligence_cache')
         .select('*')
         .eq('cache_key', cacheKey)
-        .gte('created_at', new Date(Date.now() - maxAgeHours * 60 * 60 * 1000).toISOString())
+        .gte(
+          'created_at',
+          new Date(Date.now() - maxAgeHours * 60 * 60 * 1000).toISOString()
+        )
         .gt('expires_at', new Date().toISOString())
         .single();
 
@@ -393,13 +444,16 @@ export class MarketIntelligenceService {
 
       const now = new Date();
       const total = data?.length || 0;
-      const expired = data?.filter(item => new Date(item.expires_at) < now).length || 0;
+      const expired =
+        data?.filter((item) => new Date(item.expires_at) < now).length || 0;
 
       return {
         totalEntries: total,
         expiredEntries: expired,
-        hitRate: total > 0 ? ((total - expired) / total * 100) : 0,
-        lastCleanup: data?.[0]?.created_at ? new Date(data[0].created_at) : new Date()
+        hitRate: total > 0 ? ((total - expired) / total) * 100 : 0,
+        lastCleanup: data?.[0]?.created_at
+          ? new Date(data[0].created_at)
+          : new Date(),
       };
     } catch (error) {
       console.error('Failed to fetch cache stats:', error);
@@ -407,7 +461,7 @@ export class MarketIntelligenceService {
         totalEntries: 0,
         expiredEntries: 0,
         hitRate: 0,
-        lastCleanup: new Date()
+        lastCleanup: new Date(),
       };
     }
   }
@@ -428,12 +482,14 @@ export class MarketIntelligenceService {
         averageRoundSize: 0,
         totalFunding: 0,
         dealCount: 0,
-        valuationTrend: 'stable' as const
+        valuationTrend: 'stable' as const,
       },
+      riskFactors: cached.data?.riskFactors || [],
+      opportunities: cached.data?.opportunities || [],
       sources: cached.sources || [],
       confidence: cached.confidence_score || 75,
       lastUpdated: new Date(cached.updated_at),
-      cacheKey: cached.cache_key
+      cacheKey: cached.cache_key,
     };
   }
 
@@ -447,12 +503,12 @@ export class MarketIntelligenceService {
         strengths: [],
         weaknesses: [],
         opportunities: [],
-        threats: []
+        threats: [],
       },
       riskFactors: cached.risk_factors || [],
       sources: cached.sources || [],
       confidence: cached.confidence_score || 75,
-      lastUpdated: new Date(cached.last_updated)
+      lastUpdated: new Date(cached.last_updated),
     };
   }
 
@@ -462,7 +518,9 @@ export class MarketIntelligenceService {
 
   private buildMarketCacheKey(industry: string, sector?: string): string {
     const base = `market_${industry.toLowerCase().replace(/\s+/g, '_')}`;
-    return sector ? `${base}_${sector.toLowerCase().replace(/\s+/g, '_')}` : base;
+    return sector
+      ? `${base}_${sector.toLowerCase().replace(/\s+/g, '_')}`
+      : base;
   }
 
   /**
@@ -478,14 +536,28 @@ export class MarketIntelligenceService {
    */
   getIntelligencePriorities(industry: string): string[] {
     const priorities: Record<string, string[]> = {
-      'technology': ['funding_trends', 'regulatory_changes', 'competitive_landscape'],
-      'healthcare': ['regulatory_changes', 'clinical_trials', 'market_access'],
-      'finance': ['regulatory_changes', 'market_conditions', 'competitive_rates'],
-      'manufacturing': ['supply_chain', 'commodity_prices', 'regulatory_compliance'],
-      'retail': ['consumer_trends', 'seasonal_patterns', 'competitive_pricing']
+      technology: [
+        'funding_trends',
+        'regulatory_changes',
+        'competitive_landscape',
+      ],
+      healthcare: ['regulatory_changes', 'clinical_trials', 'market_access'],
+      finance: ['regulatory_changes', 'market_conditions', 'competitive_rates'],
+      manufacturing: [
+        'supply_chain',
+        'commodity_prices',
+        'regulatory_compliance',
+      ],
+      retail: ['consumer_trends', 'seasonal_patterns', 'competitive_pricing'],
     };
 
-    return priorities[industry.toLowerCase()] || ['market_trends', 'competitive_activity', 'regulatory_changes'];
+    return (
+      priorities[industry.toLowerCase()] || [
+        'market_trends',
+        'competitive_activity',
+        'regulatory_changes',
+      ]
+    );
   }
 
   /**
@@ -501,10 +573,14 @@ export class MarketIntelligenceService {
       summary: `Market analysis for ${intelligence.industry} sector showing ${intelligence.trends.length} key trends.`,
       keyInsights: [
         ...intelligence.trends.slice(0, 3),
-        ...intelligence.timingInsights.slice(0, 2)
+        ...intelligence.timingInsights.slice(0, 2),
       ],
-      actionItems: intelligence.timingInsights.map(insight => `Consider: ${insight}`),
-      riskAlerts: intelligence.regulatoryChanges.map(change => `Monitor: ${change}`)
+      actionItems: intelligence.timingInsights.map(
+        (insight) => `Consider: ${insight}`
+      ),
+      riskAlerts: intelligence.regulatoryChanges.map(
+        (change) => `Monitor: ${change}`
+      ),
     };
   }
 

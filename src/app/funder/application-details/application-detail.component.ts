@@ -18,19 +18,35 @@ import { FundingProfileBackendService } from 'src/app/SMEs/services/funding-prof
 import { ProfileDataTransformerService } from 'src/app/SMEs/services/profile-data-transformer.service';
 import { ProfileData } from 'src/app/SMEs/profile/models/funding.models';
 import { FundingApplication } from 'src/app/SMEs/models/application.models';
-import { AiExecutiveSummaryComponent } from './components/ai-executive-summary/ai-executive-summary.component';
 
 import { ApplicationMetricsComponent } from '../components/application-metrics/application-metrics.component';
 import { ApplicationHeaderComponent } from '../components/application-header/application-header.component';
 import { StatusManagementModalComponent } from '../components/status-management-modal/status-management-modal.component';
 import { FundingOpportunity } from '../create-opportunity/shared/funding.interfaces';
 
+// interface ApplicationFormData {
+//   requestedAmount?: number | string;
+//   purposeStatement?: string;
+//   useOfFunds?: string;
+//   timeline?: string;
+//   opportunityAlignment?: string;
+//   [key: string]: any;
+// }
+
 interface ApplicationFormData {
+  // Required by AI Assistant
+  fundingType: string;
+  offerAmount: string;
+
+  // Application-specific fields
   requestedAmount?: number | string;
   purposeStatement?: string;
   useOfFunds?: string;
   timeline?: string;
   opportunityAlignment?: string;
+  industry?: string;
+  targetStage?: string;
+
   [key: string]: any;
 }
 
@@ -40,7 +56,6 @@ interface ApplicationFormData {
   imports: [
     CommonModule,
     LucideAngularModule,
-    AiExecutiveSummaryComponent,
     ApplicationTabsComponent,
     AiAssistantComponent,
     StatusManagementModalComponent,
@@ -107,9 +122,28 @@ export class ApplicationDetailComponent implements OnInit, OnDestroy {
     };
   });
 
+  // formData = computed((): ApplicationFormData => {
+  //   const app = this.application();
+  //   return (app?.formData as ApplicationFormData) || {};
+  // });
+
   formData = computed((): ApplicationFormData => {
     const app = this.application();
-    return (app?.formData as ApplicationFormData) || {};
+    const opp = this.opportunity();
+    const rawFormData = (app?.formData as any) || {};
+
+    return {
+      // Map to AI Assistant's expected format
+      fundingType: opp?.fundingType || 'equity',
+      offerAmount: rawFormData.requestedAmount?.toString() || '0',
+
+      // Include all application data
+      ...rawFormData,
+
+      // Add opportunity context
+      industry: rawFormData.industry || opp?.['industry'],
+      targetStage: rawFormData.targetStage || opp?.['targetStage'],
+    };
   });
 
   ngOnInit() {
