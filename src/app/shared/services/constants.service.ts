@@ -1,6 +1,6 @@
 // src/app/shared/services/constants.service.ts
 import { Injectable, inject, signal } from '@angular/core';
-import { SupabaseConstantsService } from './supabas-constants.service';
+import { SupabaseConstantsService } from './remote-constants.service';
 
 export interface SelectOption {
   value: string;
