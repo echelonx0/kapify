@@ -210,6 +210,7 @@
 //     this.formState.onImageError(field);
 //   }
 // }
+
 // src/app/funder/services/ui-helper.service.ts
 import { Injectable, inject, signal, computed } from '@angular/core';
 import { StepNavigationService } from '../step-navigation.service';
@@ -258,10 +259,22 @@ export class OpportunityUIHelperService {
     const current = this.formState.formData()[field] as string[];
     const allSelected = current.length === options.length;
 
-    options.forEach((option) => {
-      const shouldSelect = !allSelected;
-      this.formState.updateMultiSelectField(field, option.value, shouldSelect);
-    });
+    if (allSelected) {
+      // Deselect all - clear the array
+      this.formState.formData.update((data) => ({
+        ...data,
+        [field]: [],
+      }));
+    } else {
+      // Select all - set to all option values
+      const allValues = options.map((option) => option.value);
+      this.formState.formData.update((data) => ({
+        ...data,
+        [field]: allValues,
+      }));
+    }
+
+    this.formState.hasUnsavedChanges.set(true);
   }
 
   isAllSelected(

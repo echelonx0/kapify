@@ -339,7 +339,6 @@
 //     );
 //   }
 // }
-
 // src/app/shared/services/supabase-constants.service.ts
 import { Injectable, inject, signal } from '@angular/core';
 import { SharedSupabaseService } from './shared-supabase.service';
@@ -384,13 +383,19 @@ export class SupabaseConstantsService {
   private readonly LOCAL_STORAGE_KEY = 'kapify_constants_backup';
   private readonly CACHE_VERSION = 'v1';
 
+  constructor() {
+    // Auto-initialize on service creation
+    this.initialize();
+  }
+
   async initialize(): Promise<void> {
     this.isLoading.set(true);
     try {
       await this.loadAllConstants();
       this.error.set(null);
+      console.log('✅ Constants loaded successfully');
     } catch (err) {
-      console.error('Failed to load constants from Supabase:', err);
+      console.error('❌ Failed to load constants from Supabase:', err);
       this.loadFromLocalBackup();
       this.error.set('Using cached constants. Some data may be outdated.');
     } finally {
@@ -418,6 +423,14 @@ export class SupabaseConstantsService {
     this.geographicRegions.set(allConstants[3]);
     this.currencies.set(allConstants[4]);
 
+    console.log('📊 Constants loaded:', {
+      fundingOptions: allConstants[0].length,
+      industries: allConstants[1].length,
+      businessStages: allConstants[2].length,
+      geographicRegions: allConstants[3].length,
+      currencies: allConstants[4].length,
+    });
+
     // Save to local backup
     this.saveToLocalBackup({
       fundingOptions: allConstants[0],
@@ -438,7 +451,10 @@ export class SupabaseConstantsService {
       .eq('is_active', true)
       .order('order_index', { ascending: true });
 
-    if (error) throw error;
+    if (error) {
+      console.error(`Error loading ${categoryKey}:`, error);
+      throw error;
+    }
 
     return (data || []).map((c: any) => ({
       value: c.value_key,
@@ -583,7 +599,7 @@ export class SupabaseConstantsService {
     try {
       const backup = localStorage.getItem(this.LOCAL_STORAGE_KEY);
       if (!backup) {
-        console.warn('No local backup found');
+        console.warn('⚠️ No local backup found, using empty arrays');
         return;
       }
 
@@ -594,6 +610,7 @@ export class SupabaseConstantsService {
         this.businessStages.set(parsed.data.businessStages || []);
         this.geographicRegions.set(parsed.data.geographicRegions || []);
         this.currencies.set(parsed.data.currencies || []);
+        console.log('📦 Loaded constants from local backup');
       }
     } catch (err) {
       console.error('Failed to load local backup:', err);
