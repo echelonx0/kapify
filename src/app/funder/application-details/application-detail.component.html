@@ -98,8 +98,7 @@
   <div class="grid grid-cols-12 gap-6">
     <!-- Main Content Area -->
     <div class="col-span-8 space-y-6">
-      <!-- AI-Powered Executive Summary -->
-      <div class="gradient-border">
+      <!-- <div class="gradient-border">
         @if (hasCompleteDataForAnalysis()) {
         <app-ai-executive-summary
           [application]="application()!"
@@ -129,7 +128,7 @@
           </div>
         </div>
         }
-      </div>
+      </div> -->
 
       <!-- Enhanced Application Details -->
       @if(profileData()){
@@ -162,7 +161,15 @@
     <div class="col-span-4">
       <div class="sticky top-24">
         @if (hasCompleteDataForAnalysis()) {
-        <app-ai-assistant> </app-ai-assistant>
+        <!-- <app-ai-assistant> </app-ai-assistant> -->
+        <app-ai-assistant
+          [currentStep]="'review'"
+          [formData]="formData()"
+          [completionPercentage]="100"
+          [currentOpportunity]="opportunity()"
+          [applicationData]="application()"
+        >
+        </app-ai-assistant>
         } @else if (profileLoading()) {
         <div class="card">
           <div class="p-6 text-center">

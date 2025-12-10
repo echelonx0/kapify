@@ -23,14 +23,22 @@ import {
   DollarSign,
   Clock,
   Zap,
+  CheckCircle,
+  XCircle,
+  AlertCircle as AlertCircleIcon,
 } from 'lucide-angular';
-import { Router } from '@angular/router';
+
 import { Subject, takeUntil } from 'rxjs';
 import {
   MarketIntelligenceService,
   MarketIntelligence,
   CompetitorIntelligence,
 } from '../services/market-intelligence.service';
+import {
+  ApplicationIntelligenceService,
+  ApplicationInsight,
+  InvestmentScore,
+} from '../services/application-intelligence.service';
 
 interface FormData {
   fundingType: string;
@@ -60,282 +68,7 @@ interface IntelligenceInsight {
   selector: 'app-ai-assistant',
   standalone: true,
   imports: [CommonModule, LucideAngularModule],
-  template: `
-    <div
-      class="border-[0.5px] bg-gradient-to-br from-orange-400 via-primary-400 to-cyan-400 p-0.1 rounded-xl sticky top-6"
-    >
-      <div class="bg-white rounded-xl p-6">
-        <div class="flex items-center space-x-3 mb-4">
-          <h3 class="font-semibold text-gray-900">Kapify Assistant</h3>
-          @if (isLoadingIntelligence()) {
-          <div
-            class="w-4 h-4 border-2 border-slate-500 border-t-transparent rounded-full animate-spin"
-          ></div>
-          }
-        </div>
-
-        <div class="space-y-4">
-          <!-- Real-Time Market Intelligence -->
-          @if (topInsight()) {
-          <div
-            [class]="getInsightCardClass(topInsight()!.urgency)"
-            class="rounded-lg p-4"
-          >
-            <div class="flex items-start space-x-3">
-              <div
-                class="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5"
-                [class]="getInsightIconBg(topInsight()!.urgency)"
-              >
-                <lucide-icon
-                  [img]="getInsightIcon(topInsight()!.type)"
-                  [size]="12"
-                  [class]="getInsightIconColor(topInsight()!.urgency)"
-                ></lucide-icon>
-              </div>
-              <div class="flex-1">
-                <h4
-                  class="text-sm font-medium mb-1"
-                  [class]="getInsightTitleColor(topInsight()!.urgency)"
-                >
-                  {{ topInsight()!.title }}
-                </h4>
-                <p
-                  class="text-xs leading-relaxed"
-                  [class]="getInsightTextColor(topInsight()!.urgency)"
-                >
-                  {{ topInsight()!.description }}
-                </p>
-                @if (topInsight()!.actionItem) {
-                <button
-                  class="text-xs font-medium mt-2 hover:underline"
-                  [class]="getInsightActionColor(topInsight()!.urgency)"
-                  (click)="handleInsightAction(topInsight()!)"
-                >
-                  {{ topInsight()!.actionItem }} →
-                </button>
-                }
-                <div class="flex items-center justify-between mt-2">
-                  <span
-                    class="text-xs opacity-75"
-                    [class]="getInsightTextColor(topInsight()!.urgency)"
-                  >
-                    Confidence: {{ topInsight()!.confidence }}%
-                  </span>
-                  @if (topInsight()!.source) {
-                  <span
-                    class="text-xs opacity-60"
-                    [class]="getInsightTextColor(topInsight()!.urgency)"
-                  >
-                    {{ topInsight()!.source }}
-                  </span>
-                  }
-                </div>
-              </div>
-            </div>
-          </div>
-          }
-
-          <!-- Enhanced Market Insight -->
-          <div class="bg-primary-50 border border-primary-200 rounded-lg p-4">
-            <div class="flex items-start space-x-3">
-              <div
-                class="w-6 h-6 bg-primary-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5"
-              >
-                <lucide-icon
-                  [img]="TrendingUpIcon"
-                  [size]="12"
-                  class="text-primary-600"
-                ></lucide-icon>
-              </div>
-              <div class="flex-1">
-                <h4 class="text-sm font-medium text-primary-900 mb-1">
-                  Market Intelligence
-                </h4>
-                <p class="text-xs text-primary-700 leading-relaxed">
-                  {{ getEnhancedMarketInsight() }}
-                </p>
-                @if (hasMarketData()) {
-                <div class="mt-2 text-xs text-primary-600">
-                  <span class="font-medium">{{ getMarketStats() }}</span>
-                </div>
-                }
-              </div>
-            </div>
-          </div>
-
-          <!-- Smart Suggestion with Intelligence -->
-          <div class="bg-slate-50 border border-slate-200 rounded-lg p-4">
-            <div class="flex items-start space-x-3">
-              <div
-                class="w-6 h-6 bg-slate-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5"
-              >
-                <lucide-icon
-                  [img]="LightbulbIcon"
-                  [size]="12"
-                  class="text-slate-600"
-                ></lucide-icon>
-              </div>
-              <div class="flex-1">
-                <h4 class="text-sm font-medium text-slate-900 mb-1">
-                  Smart Suggestion
-                </h4>
-                <p class="text-xs text-slate-700 leading-relaxed">
-                  {{ getIntelligentSuggestion() }}
-                </p>
-                <button
-                  class="text-xs text-slate-600 hover:text-slate-800 font-medium mt-2"
-                  (click)="applySuggestion()"
-                >
-                  Apply suggestion →
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <!-- Quick Actions -->
-          <div class="space-y-2">
-            <h4 class="text-sm font-semibold text-gray-900">Quick Actions</h4>
-
-            <button
-              class="w-full text-left p-3 border border-gray-200 rounded-lg hover:border-primary-300 hover:bg-primary-50 transition-all group"
-              (click)="analyzeMarketTiming()"
-              [disabled]="isLoadingIntelligence()"
-            >
-              <div class="flex items-center space-x-3">
-                <lucide-icon
-                  [img]="ClockIcon"
-                  [size]="16"
-                  class="text-gray-400 group-hover:text-primary-600"
-                ></lucide-icon>
-                <span class="text-sm text-gray-700 group-hover:text-primary-700"
-                  >Analyze Market Timing</span
-                >
-              </div>
-            </button>
-
-            <button
-              class="w-full text-left p-3 border border-gray-200 rounded-lg hover:border-primary-300 hover:bg-primary-50 transition-all group"
-              (click)="researchCompetitors()"
-              [disabled]="isLoadingIntelligence()"
-            >
-              <div class="flex items-center space-x-3">
-                <lucide-icon
-                  [img]="TargetIcon"
-                  [size]="16"
-                  class="text-gray-400 group-hover:text-primary-600"
-                ></lucide-icon>
-                <span class="text-sm text-gray-700 group-hover:text-primary-700"
-                  >Research Competitors</span
-                >
-              </div>
-            </button>
-
-            <button
-              class="w-full text-left p-3 border border-gray-200 rounded-lg hover:border-primary-300 hover:bg-primary-50 transition-all group"
-              (click)="calculateReturns()"
-            >
-              <div class="flex items-center space-x-3">
-                <lucide-icon
-                  [img]="CalculatorIcon"
-                  [size]="16"
-                  class="text-gray-400 group-hover:text-primary-600"
-                ></lucide-icon>
-                <span class="text-sm text-gray-700 group-hover:text-primary-700"
-                  >Calculate Returns</span
-                >
-              </div>
-            </button>
-
-            <button
-              class="w-full text-left p-3 border border-gray-200 rounded-lg hover:border-primary-300 hover:bg-primary-50 transition-all group"
-              (click)="generateDescription()"
-            >
-              <div class="flex items-center space-x-3">
-                <lucide-icon
-                  [img]="FileTextIcon"
-                  [size]="16"
-                  class="text-gray-400 group-hover:text-primary-600"
-                ></lucide-icon>
-                <span class="text-sm text-gray-700 group-hover:text-primary-700"
-                  >Generate Description</span
-                >
-              </div>
-            </button>
-          </div>
-
-          <!-- Intelligence Summary -->
-          @if (allInsights().length > 1) {
-          <div class="border-t border-gray-200 pt-4">
-            <div class="text-xs text-gray-500 mb-2">
-              Additional Insights ({{ allInsights().length - 1 }})
-            </div>
-            <div class="space-y-2">
-              @for (insight of allInsights().slice(1, 4); track insight.title) {
-              <div class="flex items-center space-x-2">
-                <div
-                  class="w-2 h-2 rounded-full"
-                  [class]="getUrgencyDot(insight.urgency)"
-                ></div>
-                <span class="text-xs text-gray-600 line-clamp-1">{{
-                  insight.title
-                }}</span>
-              </div>
-              } @if (allInsights().length > 4) {
-              <button
-                class="text-xs text-primary-600 hover:text-primary-800 font-medium"
-                (click)="showAllInsights()"
-              >
-                +{{ allInsights().length - 4 }} more insights
-              </button>
-              }
-            </div>
-          </div>
-          }
-
-          <!-- Progress Indicator -->
-          <div class="border-t border-gray-200 pt-4">
-            <div class="text-xs text-gray-500 mb-2">Form completion</div>
-            <div class="flex items-center space-x-2">
-              <div class="flex-1 bg-gray-200 rounded-full h-1.5">
-                <div
-                  class="bg-gradient-to-r from-primary-500 to-slate-500 h-1.5 rounded-full transition-all duration-300"
-                  [style.width.%]="completionPercentage"
-                ></div>
-              </div>
-              <span class="text-xs font-medium text-gray-700"
-                >{{ completionPercentage }}%</span
-              >
-            </div>
-          </div>
-
-          <!-- Contextual Help -->
-          @if (contextualHelp()) {
-          <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-            <div class="flex items-start space-x-3">
-              <div
-                class="w-6 h-6 bg-yellow-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5"
-              >
-                <lucide-icon
-                  [img]="HelpCircleIcon"
-                  [size]="12"
-                  class="text-yellow-600"
-                ></lucide-icon>
-              </div>
-              <div class="flex-1">
-                <h4 class="text-sm font-medium text-yellow-900 mb-1">
-                  {{ contextualHelp()!.title }}
-                </h4>
-                <p class="text-xs text-yellow-700 leading-relaxed">
-                  {{ contextualHelp()!.message }}
-                </p>
-              </div>
-            </div>
-          </div>
-          }
-        </div>
-      </div>
-    </div>
-  `,
+  templateUrl: 'ai-assistant.component.html',
 })
 export class AiAssistantComponent implements OnInit, OnDestroy {
   @Input() currentStep: string = 'basic';
@@ -345,6 +78,7 @@ export class AiAssistantComponent implements OnInit, OnDestroy {
   @Input() applicationData?: any;
 
   private marketIntelligence = inject(MarketIntelligenceService);
+  private appIntelligence = inject(ApplicationIntelligenceService);
   private destroy$ = new Subject<void>();
 
   // Icons
@@ -360,12 +94,20 @@ export class AiAssistantComponent implements OnInit, OnDestroy {
   DollarSignIcon = DollarSign;
   ClockIcon = Clock;
   ZapIcon = Zap;
+  CheckCircleIcon = CheckCircle;
+  XCircleIcon = XCircle;
+  AlertCircleIcon = AlertCircleIcon;
 
   // Intelligence State
   marketData = signal<MarketIntelligence | null>(null);
   competitorData = signal<CompetitorIntelligence | null>(null);
   isLoadingIntelligence = signal(false);
   intelligenceError = signal<string | null>(null);
+
+  // Application Intelligence State
+  applicationAnalysis = signal<ApplicationInsight[]>([]);
+  investmentScore = signal<InvestmentScore | null>(null);
+  isAnalyzingApplication = signal(false);
 
   // Market research state
   isGeneratingResearch = signal(false);
@@ -388,9 +130,44 @@ export class AiAssistantComponent implements OnInit, OnDestroy {
           description: insight,
           actionItem: 'Review timing strategy',
           confidence: market.confidence,
-          source: 'Market Analysis',
+          source: 'Market Intelligence (Live Data)',
         }))
       );
+    }
+
+    // Risk Factors from Market Intelligence
+    if (market?.riskFactors?.length) {
+      market.riskFactors.forEach((risk: any) => {
+        insights.push({
+          type: 'risk_alert',
+          urgency:
+            risk.severity === 'high'
+              ? 'high'
+              : risk.severity === 'medium'
+              ? 'medium'
+              : 'low',
+          title: risk.factor,
+          description: risk.impact,
+          actionItem: `Review ${risk.timeframe} risk mitigation`,
+          confidence: market.confidence,
+          source: 'Market Intelligence (Live Data)',
+        });
+      });
+    }
+
+    // Opportunities from Market Intelligence
+    if (market?.opportunities?.length) {
+      market.opportunities.forEach((opp: any) => {
+        insights.push({
+          type: 'opportunity',
+          urgency: 'medium',
+          title: opp.opportunity,
+          description: `${opp.rationale}. Window: ${opp.timeframe}`,
+          actionItem: 'Assess opportunity fit',
+          confidence: market.confidence,
+          source: 'Market Intelligence (Live Data)',
+        });
+      });
     }
 
     // Funding trend insights
@@ -455,6 +232,20 @@ export class AiAssistantComponent implements OnInit, OnDestroy {
       });
     }
 
+    // Application-specific insights
+    const appInsights = this.applicationAnalysis() || [];
+    appInsights.forEach((insight: ApplicationInsight) => {
+      insights.push({
+        type: insight.type === 'strength' ? 'opportunity' : 'risk_alert',
+        urgency: insight.severity,
+        title: insight.title,
+        description: insight.description,
+        actionItem: insight.recommendation,
+        confidence: this.investmentScore()?.confidence || 75,
+        source: 'Application Analysis',
+      });
+    });
+
     return insights.sort((a, b) => {
       const urgencyWeight = { high: 3, medium: 2, low: 1 };
       return urgencyWeight[b.urgency] - urgencyWeight[a.urgency];
@@ -483,6 +274,7 @@ export class AiAssistantComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.loadMarketIntelligence();
+    this.analyzeApplication();
     this.setupIntelligenceRefresh();
   }
 
@@ -545,6 +337,64 @@ export class AiAssistantComponent implements OnInit, OnDestroy {
     }
   }
 
+  // private analyzeApplication() {
+  //   if (!this.applicationData || !this.currentOpportunity) {
+  //     console.log('No application data for analysis');
+  //     return;
+  //   }
+
+  //   this.isAnalyzingApplication.set(true);
+
+  //   try {
+  //     const analysis = this.appIntelligence.analyzeApplication(
+  //       this.applicationData,
+  //       this.currentOpportunity,
+  //       this.applicationData.profileData
+  //     );
+
+  //     this.applicationAnalysis.set(analysis.insights);
+  //     this.investmentScore.set(analysis.score);
+
+  //     console.log('Application analysis complete:', analysis);
+  //   } catch (error) {
+  //     console.error('Application analysis failed:', error);
+  //   } finally {
+  //     this.isAnalyzingApplication.set(false);
+  //   }
+  // }
+
+  // In ai-assistant.component.ts, update the analyzeApplication method:
+
+  private analyzeApplication() {
+    if (!this.applicationData || !this.currentOpportunity) {
+      console.log('No application data for analysis');
+      return;
+    }
+
+    this.isAnalyzingApplication.set(true);
+
+    // Use comprehensive analysis that calls all Edge Functions
+    this.appIntelligence
+      .getComprehensiveAnalysis(
+        this.applicationData,
+        this.currentOpportunity,
+        this.applicationData.profileData
+      )
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (analysis) => {
+          this.applicationAnalysis.set(analysis.insights);
+          this.investmentScore.set(analysis.investmentScore);
+          this.isAnalyzingApplication.set(false);
+
+          console.log('Comprehensive analysis complete:', analysis);
+        },
+        error: (error) => {
+          console.error('Comprehensive analysis failed:', error);
+          this.isAnalyzingApplication.set(false);
+        },
+      });
+  }
   private setupIntelligenceRefresh() {
     // Refresh intelligence every 30 minutes
     const refreshInterval = setInterval(() => {
@@ -558,10 +408,6 @@ export class AiAssistantComponent implements OnInit, OnDestroy {
       clearInterval(refreshInterval);
     });
   }
-
-  // ===============================
-  // ENHANCED INSIGHTS METHODS
-  // ===============================
 
   // ===============================
   // MARKET RESEARCH FUNCTIONALITY
@@ -597,7 +443,6 @@ export class AiAssistantComponent implements OnInit, OnDestroy {
       });
 
       this.marketResearchGenerated.set(true);
-      // this.marketResearchRequested.emit();
       console.log('Market research generated successfully');
     } catch (error) {
       console.error('Error generating market research:', error);
@@ -617,8 +462,19 @@ export class AiAssistantComponent implements OnInit, OnDestroy {
   getIntelligentSuggestion(): string {
     const market = this.marketData();
     const insights = this.allInsights();
+    const score = this.investmentScore();
 
-    // Priority: High urgency insights first
+    // Priority: Investment score recommendation
+    if (score) {
+      if (score.recommendation === 'strong_buy') {
+        return `Strong investment opportunity (${score.overall}/100). Key strengths align with market opportunity.`;
+      }
+      if (score.recommendation === 'pass') {
+        return `Significant concerns identified (${score.overall}/100). Review risk factors before proceeding.`;
+      }
+    }
+
+    // High urgency insights
     const highUrgencyInsight = insights.find((i) => i.urgency === 'high');
     if (highUrgencyInsight) {
       return `URGENT: ${highUrgencyInsight.description}`;
@@ -639,12 +495,7 @@ export class AiAssistantComponent implements OnInit, OnDestroy {
       )}. Valuations are ${trend.valuationTrend}.`;
     }
 
-    // Fallback to traditional suggestions
-    if (this.currentStep === 'terms' && this.formData.fundingType === 'debt') {
-      return 'Based on current market rates, consider setting your interest rate between 11-14% for competitive positioning.';
-    }
-
-    return 'Market intelligence is being analyzed. Suggestions will appear as data becomes available.';
+    return 'Analyzing application and market data...';
   }
 
   getEnhancedMarketInsight(): string {
@@ -758,12 +609,10 @@ export class AiAssistantComponent implements OnInit, OnDestroy {
 
   private exploreOpportunity(insight: IntelligenceInsight) {
     console.log('Exploring opportunity:', insight.title);
-    // Could navigate to opportunity details or show more info
   }
 
   private addressRisk(insight: IntelligenceInsight) {
     console.log('Addressing risk:', insight.title);
-    // Could show risk mitigation suggestions or documentation
   }
 
   applySuggestion(): void {
@@ -782,9 +631,39 @@ export class AiAssistantComponent implements OnInit, OnDestroy {
     console.log('Showing all insights:', this.allInsights());
   }
 
+  refreshAnalysis(): void {
+    this.loadMarketIntelligence();
+    this.analyzeApplication();
+  }
+
   // ===============================
   // UI HELPER METHODS
   // ===============================
+
+  getScoreColor(score: number): string {
+    if (score >= 75) return 'text-green-600';
+    if (score >= 60) return 'text-amber-600';
+    if (score >= 40) return 'text-blue-600';
+    return 'text-red-600';
+  }
+
+  getScoreBgColor(score: number): string {
+    if (score >= 75) return 'bg-green-50 border-green-200';
+    if (score >= 60) return 'bg-amber-50 border-amber-200';
+    if (score >= 40) return 'bg-blue-50 border-blue-200';
+    return 'bg-red-50 border-red-200';
+  }
+
+  getRecommendationColor(recommendation: string): string {
+    if (recommendation === 'strong_buy') return 'text-green-700';
+    if (recommendation === 'consider') return 'text-amber-700';
+    if (recommendation === 'need_more_info') return 'text-blue-700';
+    return 'text-red-700';
+  }
+
+  getRecommendationText(recommendation: string): string {
+    return recommendation.replace(/_/g, ' ').toUpperCase();
+  }
 
   private assessTimingUrgency(insight: string): 'low' | 'medium' | 'high' {
     const urgentKeywords = ['urgent', 'immediate', 'crisis', 'crash', 'boom'];
@@ -816,7 +695,7 @@ export class AiAssistantComponent implements OnInit, OnDestroy {
   getInsightCardClass(urgency: string): string {
     const classes = {
       high: 'bg-red-50 border-red-200',
-      medium: 'bg-orange-50 border-orange-200',
+      medium: 'bg-amber-50 border-amber-200',
       low: 'bg-blue-50 border-blue-200',
     };
     return `border ${classes[urgency as keyof typeof classes]}`;
@@ -825,7 +704,7 @@ export class AiAssistantComponent implements OnInit, OnDestroy {
   getInsightIconBg(urgency: string): string {
     const classes = {
       high: 'bg-red-100',
-      medium: 'bg-orange-100',
+      medium: 'bg-amber-100',
       low: 'bg-blue-100',
     };
     return classes[urgency as keyof typeof classes];
@@ -834,7 +713,7 @@ export class AiAssistantComponent implements OnInit, OnDestroy {
   getInsightIconColor(urgency: string): string {
     const classes = {
       high: 'text-red-600',
-      medium: 'text-orange-600',
+      medium: 'text-amber-600',
       low: 'text-blue-600',
     };
     return classes[urgency as keyof typeof classes];
@@ -843,7 +722,7 @@ export class AiAssistantComponent implements OnInit, OnDestroy {
   getInsightTitleColor(urgency: string): string {
     const classes = {
       high: 'text-red-900',
-      medium: 'text-orange-900',
+      medium: 'text-amber-900',
       low: 'text-blue-900',
     };
     return classes[urgency as keyof typeof classes];
@@ -852,7 +731,7 @@ export class AiAssistantComponent implements OnInit, OnDestroy {
   getInsightTextColor(urgency: string): string {
     const classes = {
       high: 'text-red-700',
-      medium: 'text-orange-700',
+      medium: 'text-amber-700',
       low: 'text-blue-700',
     };
     return classes[urgency as keyof typeof classes];
@@ -861,7 +740,7 @@ export class AiAssistantComponent implements OnInit, OnDestroy {
   getInsightActionColor(urgency: string): string {
     const classes = {
       high: 'text-red-600 hover:text-red-800',
-      medium: 'text-orange-600 hover:text-orange-800',
+      medium: 'text-amber-600 hover:text-amber-800',
       low: 'text-blue-600 hover:text-blue-800',
     };
     return classes[urgency as keyof typeof classes];
@@ -870,7 +749,7 @@ export class AiAssistantComponent implements OnInit, OnDestroy {
   getUrgencyDot(urgency: string): string {
     const classes = {
       high: 'bg-red-500',
-      medium: 'bg-orange-500',
+      medium: 'bg-amber-500',
       low: 'bg-blue-500',
     };
     return classes[urgency as keyof typeof classes];
@@ -886,7 +765,6 @@ export class AiAssistantComponent implements OnInit, OnDestroy {
   }
 
   private estimateMarketRate(fundingTrends: any): string {
-    // Simple heuristic based on deal activity and trends
     if (fundingTrends.valuationTrend === 'down') return '12-15';
     if (fundingTrends.valuationTrend === 'up') return '15-18';
     return '13-16';

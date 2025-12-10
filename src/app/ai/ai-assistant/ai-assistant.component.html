@@ -1,274 +1,352 @@
-<div
-  class="border-[0.5px] bg-gradient-to-br from-orange-400 via-primary-400 to-cyan-400 p-0.1 rounded-xl sticky top-6"
->
-  <div class="bg-white rounded-xl p-6">
-    <div class="flex items-center space-x-3 mb-4">
-      <h3 class="font-semibold text-gray-900">Kapify Assistant</h3>
-      @if (isLoadingIntelligence()) {
+<!-- src/app/ai/ai-assistant/ai-assistant.component.html -->
+<div class="border border-slate-200 bg-white rounded-2xl shadow-sm">
+  <div
+    class="px-6 py-4 border-b border-slate-200 bg-gradient-to-r from-teal-50 to-slate-50"
+  >
+    <div class="flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <lucide-icon
+          [img]="SparklesIcon"
+          [size]="20"
+          class="text-teal-600"
+        ></lucide-icon>
+        <h3 class="font-semibold text-slate-900">Decision Intelligence</h3>
+      </div>
+      @if (isLoadingIntelligence() || isAnalyzingApplication()) {
       <div
-        class="w-4 h-4 border-2 border-slate-500 border-t-transparent rounded-full animate-spin"
+        class="w-4 h-4 border-2 border-teal-500 border-t-transparent rounded-full animate-spin"
       ></div>
       }
     </div>
+  </div>
 
-    <div class="space-y-4">
-      <!-- Real-Time Market Intelligence -->
-      @if (topInsight()) {
-      <div
-        [class]="getInsightCardClass(topInsight()!.urgency)"
-        class="rounded-lg p-4"
-      >
-        <div class="flex items-start space-x-3">
+  <div class="p-6 space-y-4">
+    <!-- Investment Score Card -->
+    @if (investmentScore()) {
+    <div
+      class="p-4 rounded-xl border transition-all duration-200"
+      [class]="getScoreBgColor(investmentScore()!.overall)"
+    >
+      <div class="flex items-center justify-between mb-3">
+        <h4 class="text-sm font-semibold text-slate-900">Investment Score</h4>
+        <div class="text-right">
           <div
-            class="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5"
-            [class]="getInsightIconBg(topInsight()!.urgency)"
+            class="text-2xl font-bold"
+            [class]="getScoreColor(investmentScore()!.overall)"
           >
-            <lucide-icon
-              [img]="getInsightIcon(topInsight()!.type)"
-              [size]="12"
-              [class]="getInsightIconColor(topInsight()!.urgency)"
-            ></lucide-icon>
+            {{ investmentScore()!.overall }}
+            <span class="text-base text-slate-500">/100</span>
           </div>
-          <div class="flex-1">
-            <h4
-              class="text-sm font-medium mb-1"
-              [class]="getInsightTitleColor(topInsight()!.urgency)"
-            >
-              {{ topInsight()!.title }}
-            </h4>
-            <p
-              class="text-xs leading-relaxed"
-              [class]="getInsightTextColor(topInsight()!.urgency)"
-            >
-              {{ topInsight()!.description }}
-            </p>
-            @if (topInsight()!.actionItem) {
-            <button
-              class="text-xs font-medium mt-2 hover:underline"
-              [class]="getInsightActionColor(topInsight()!.urgency)"
-              (click)="handleInsightAction(topInsight()!)"
-            >
-              {{ topInsight()!.actionItem }} →
-            </button>
-            }
-            <div class="flex items-center justify-between mt-2">
-              <span
-                class="text-xs opacity-75"
-                [class]="getInsightTextColor(topInsight()!.urgency)"
-              >
-                Confidence: {{ topInsight()!.confidence }}%
-              </span>
-              @if (topInsight()!.source) {
-              <span
-                class="text-xs opacity-60"
-                [class]="getInsightTextColor(topInsight()!.urgency)"
-              >
-                {{ topInsight()!.source }}
-              </span>
-              }
-            </div>
-          </div>
-        </div>
-      </div>
-      }
-
-      <!-- Enhanced Market Insight -->
-      <div class="bg-primary-50 border border-primary-200 rounded-lg p-4">
-        <div class="flex items-start space-x-3">
           <div
-            class="w-6 h-6 bg-primary-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5"
+            class="text-xs font-semibold uppercase tracking-wide mt-1"
+            [class]="getRecommendationColor(investmentScore()!.recommendation)"
           >
-            <lucide-icon
-              [img]="TrendingUpIcon"
-              [size]="12"
-              class="text-primary-600"
-            ></lucide-icon>
-          </div>
-          <div class="flex-1">
-            <h4 class="text-sm font-medium text-primary-900 mb-1">
-              Market Intelligence
-            </h4>
-            <p class="text-xs text-primary-700 leading-relaxed">
-              {{ getEnhancedMarketInsight() }}
-            </p>
-            @if (hasMarketData()) {
-            <div class="mt-2 text-xs text-primary-600">
-              <span class="font-medium">{{ getMarketStats() }}</span>
-            </div>
-            }
+            {{ getRecommendationText(investmentScore()!.recommendation) }}
           </div>
         </div>
       </div>
 
-      <!-- Smart Suggestion with Intelligence -->
-      <div class="bg-slate-50 border border-slate-200 rounded-lg p-4">
-        <div class="flex items-start space-x-3">
-          <div
-            class="w-6 h-6 bg-slate-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5"
-          >
-            <lucide-icon
-              [img]="LightbulbIcon"
-              [size]="12"
-              class="text-slate-600"
-            ></lucide-icon>
-          </div>
-          <div class="flex-1">
-            <h4 class="text-sm font-medium text-slate-900 mb-1">
-              Smart Suggestion
-            </h4>
-            <p class="text-xs text-slate-700 leading-relaxed">
-              {{ getIntelligentSuggestion() }}
-            </p>
-            <button
-              class="text-xs text-slate-600 hover:text-slate-800 font-medium mt-2"
-              (click)="applySuggestion()"
-            >
-              Apply suggestion →
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Quick Actions -->
       <div class="space-y-2">
-        <h4 class="text-sm font-semibold text-gray-900">Quick Actions</h4>
-
-        <button
-          class="w-full text-left p-3 border border-gray-200 rounded-lg hover:border-primary-300 hover:bg-primary-50 transition-all group"
-          (click)="analyzeMarketTiming()"
-          [disabled]="isLoadingIntelligence()"
-        >
-          <div class="flex items-center space-x-3">
-            <lucide-icon
-              [img]="ClockIcon"
-              [size]="16"
-              class="text-gray-400 group-hover:text-primary-600"
-            ></lucide-icon>
-            <span class="text-sm text-gray-700 group-hover:text-primary-700"
-              >Analyze Market Timing</span
-            >
-          </div>
-        </button>
-
-        <button
-          class="w-full text-left p-3 border border-gray-200 rounded-lg hover:border-primary-300 hover:bg-primary-50 transition-all group"
-          (click)="researchCompetitors()"
-          [disabled]="isLoadingIntelligence()"
-        >
-          <div class="flex items-center space-x-3">
-            <lucide-icon
-              [img]="TargetIcon"
-              [size]="16"
-              class="text-gray-400 group-hover:text-primary-600"
-            ></lucide-icon>
-            <span class="text-sm text-gray-700 group-hover:text-primary-700"
-              >Research Competitors</span
-            >
-          </div>
-        </button>
-
-        <button
-          class="w-full text-left p-3 border border-gray-200 rounded-lg hover:border-primary-300 hover:bg-primary-50 transition-all group"
-          (click)="calculateReturns()"
-        >
-          <div class="flex items-center space-x-3">
-            <lucide-icon
-              [img]="CalculatorIcon"
-              [size]="16"
-              class="text-gray-400 group-hover:text-primary-600"
-            ></lucide-icon>
-            <span class="text-sm text-gray-700 group-hover:text-primary-700"
-              >Calculate Returns</span
-            >
-          </div>
-        </button>
-
-        <button
-          class="w-full text-left p-3 border border-gray-200 rounded-lg hover:border-primary-300 hover:bg-primary-50 transition-all group"
-          (click)="generateDescription()"
-        >
-          <div class="flex items-center space-x-3">
-            <lucide-icon
-              [img]="FileTextIcon"
-              [size]="16"
-              class="text-gray-400 group-hover:text-primary-600"
-            ></lucide-icon>
-            <span class="text-sm text-gray-700 group-hover:text-primary-700"
-              >Generate Description</span
-            >
-          </div>
-        </button>
-      </div>
-
-      <!-- Intelligence Summary -->
-      @if (allInsights().length > 1) {
-      <div class="border-t border-gray-200 pt-4">
-        <div class="text-xs text-gray-500 mb-2">
-          Additional Insights ({{ allInsights().length - 1 }})
-        </div>
-        <div class="space-y-2">
-          @for (insight of allInsights().slice(1, 4); track insight.title) {
+        <div class="flex items-center justify-between text-xs">
+          <span class="text-slate-600">Financial Health</span>
           <div class="flex items-center space-x-2">
-            <div
-              class="w-2 h-2 rounded-full"
-              [class]="getUrgencyDot(insight.urgency)"
-            ></div>
-            <span class="text-xs text-gray-600 line-clamp-1">{{
-              insight.title
+            <div class="w-24 h-1.5 bg-slate-200 rounded-full overflow-hidden">
+              <div
+                class="h-full bg-gradient-to-r from-teal-400 to-teal-500 transition-all duration-700"
+                [style.width.%]="investmentScore()!.breakdown.financial"
+              ></div>
+            </div>
+            <span class="font-medium text-slate-900 w-8 text-right">{{
+              investmentScore()!.breakdown.financial
             }}</span>
           </div>
-          } @if (allInsights().length > 4) {
-          <button
-            class="text-xs text-primary-600 hover:text-primary-800 font-medium"
-            (click)="showAllInsights()"
+        </div>
+
+        <div class="flex items-center justify-between text-xs">
+          <span class="text-slate-600">Market Fit</span>
+          <div class="flex items-center space-x-2">
+            <div class="w-24 h-1.5 bg-slate-200 rounded-full overflow-hidden">
+              <div
+                class="h-full bg-gradient-to-r from-teal-400 to-teal-500 transition-all duration-700"
+                [style.width.%]="investmentScore()!.breakdown.market"
+              ></div>
+            </div>
+            <span class="font-medium text-slate-900 w-8 text-right">{{
+              investmentScore()!.breakdown.market
+            }}</span>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-between text-xs">
+          <span class="text-slate-600">Team/Profile</span>
+          <div class="flex items-center space-x-2">
+            <div class="w-24 h-1.5 bg-slate-200 rounded-full overflow-hidden">
+              <div
+                class="h-full bg-gradient-to-r from-teal-400 to-teal-500 transition-all duration-700"
+                [style.width.%]="investmentScore()!.breakdown.team"
+              ></div>
+            </div>
+            <span class="font-medium text-slate-900 w-8 text-right">{{
+              investmentScore()!.breakdown.team
+            }}</span>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-between text-xs">
+          <span class="text-slate-600">Traction</span>
+          <div class="flex items-center space-x-2">
+            <div class="w-24 h-1.5 bg-slate-200 rounded-full overflow-hidden">
+              <div
+                class="h-full bg-gradient-to-r from-teal-400 to-teal-500 transition-all duration-700"
+                [style.width.%]="investmentScore()!.breakdown.traction"
+              ></div>
+            </div>
+            <span class="font-medium text-slate-900 w-8 text-right">{{
+              investmentScore()!.breakdown.traction
+            }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div
+        class="mt-3 pt-3 border-t text-xs text-slate-600 flex items-center justify-between"
+        [class.border-green-200]="investmentScore()!.overall >= 75"
+        [class.border-amber-200]="
+          investmentScore()!.overall >= 60 && investmentScore()!.overall < 75
+        "
+        [class.border-red-200]="investmentScore()!.overall < 60"
+      >
+        <span>Confidence: {{ investmentScore()!.confidence }}%</span>
+        <button
+          (click)="refreshAnalysis()"
+          class="text-teal-600 hover:text-teal-700 font-medium transition-colors"
+        >
+          Refresh
+        </button>
+      </div>
+    </div>
+    }
+
+    <!-- Top Priority Insight -->
+    @if (topInsight()) {
+    <div
+      [class]="getInsightCardClass(topInsight()!.urgency)"
+      class="rounded-xl p-4 transition-all duration-200 hover:shadow-sm"
+    >
+      <div class="flex items-start space-x-3">
+        <div
+          class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+          [class]="getInsightIconBg(topInsight()!.urgency)"
+        >
+          <lucide-icon
+            [img]="getInsightIcon(topInsight()!.type)"
+            [size]="16"
+            [class]="getInsightIconColor(topInsight()!.urgency)"
+          ></lucide-icon>
+        </div>
+        <div class="flex-1 min-w-0">
+          <h4
+            class="text-sm font-semibold mb-1"
+            [class]="getInsightTitleColor(topInsight()!.urgency)"
           >
-            +{{ allInsights().length - 4 }} more insights
+            {{ topInsight()!.title }}
+          </h4>
+          <p
+            class="text-xs leading-relaxed mb-2"
+            [class]="getInsightTextColor(topInsight()!.urgency)"
+          >
+            {{ topInsight()!.description }}
+          </p>
+          @if (topInsight()!.actionItem) {
+          <button
+            class="text-xs font-medium hover:underline transition-all"
+            [class]="getInsightActionColor(topInsight()!.urgency)"
+            (click)="handleInsightAction(topInsight()!)"
+          >
+            {{ topInsight()!.actionItem }} →
           </button>
+          }
+          <div class="flex items-center justify-between mt-2 text-xs">
+            <span
+              class="opacity-75"
+              [class]="getInsightTextColor(topInsight()!.urgency)"
+            >
+              {{ topInsight()!.source }}
+            </span>
+            <span
+              class="opacity-60"
+              [class]="getInsightTextColor(topInsight()!.urgency)"
+            >
+              {{ topInsight()!.confidence }}% confidence
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+    }
+
+    <!-- Market Intelligence Summary -->
+    <div class="bg-teal-50 border border-teal-200/50 rounded-xl p-4">
+      <div class="flex items-start space-x-3">
+        <div
+          class="w-8 h-8 bg-teal-100 rounded-lg flex items-center justify-center flex-shrink-0"
+        >
+          <lucide-icon
+            [img]="TrendingUpIcon"
+            [size]="16"
+            class="text-teal-600"
+          ></lucide-icon>
+        </div>
+        <div class="flex-1">
+          <h4 class="text-sm font-semibold text-teal-900 mb-1">
+            Market Context
+          </h4>
+          <p class="text-xs text-teal-700 leading-relaxed">
+            {{ getEnhancedMarketInsight() }}
+          </p>
+          @if (hasMarketData()) {
+          <div class="mt-2 text-xs font-medium text-teal-600">
+            {{ getMarketStats() }}
+          </div>
           }
         </div>
       </div>
-      }
-
-      <!-- Progress Indicator -->
-      <div class="border-t border-gray-200 pt-4">
-        <div class="text-xs text-gray-500 mb-2">Form completion</div>
-        <div class="flex items-center space-x-2">
-          <div class="flex-1 bg-gray-200 rounded-full h-1.5">
-            <div
-              class="bg-gradient-to-r from-primary-500 to-slate-500 h-1.5 rounded-full transition-all duration-300"
-              [style.width.%]="completionPercentage"
-            ></div>
-          </div>
-          <span class="text-xs font-medium text-gray-700"
-            >{{ completionPercentage }}%</span
-          >
-        </div>
-      </div>
-
-      <!-- Contextual Help -->
-      @if (contextualHelp()) {
-      <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-        <div class="flex items-start space-x-3">
-          <div
-            class="w-6 h-6 bg-yellow-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5"
-          >
-            <lucide-icon
-              [img]="HelpCircleIcon"
-              [size]="12"
-              class="text-yellow-600"
-            ></lucide-icon>
-          </div>
-          <div class="flex-1">
-            <h4 class="text-sm font-medium text-yellow-900 mb-1">
-              {{ contextualHelp()!.title }}
-            </h4>
-            <p class="text-xs text-yellow-700 leading-relaxed">
-              {{ contextualHelp()!.message }}
-            </p>
-          </div>
-        </div>
-      </div>
-      }
     </div>
+
+    <!-- Smart Suggestion -->
+    <div class="bg-slate-50 border border-slate-200 rounded-xl p-4">
+      <div class="flex items-start space-x-3">
+        <div
+          class="w-8 h-8 bg-slate-100 rounded-lg flex items-center justify-center flex-shrink-0"
+        >
+          <lucide-icon
+            [img]="LightbulbIcon"
+            [size]="16"
+            class="text-slate-600"
+          ></lucide-icon>
+        </div>
+        <div class="flex-1">
+          <h4 class="text-sm font-semibold text-slate-900 mb-1">Key Insight</h4>
+          <p class="text-xs text-slate-700 leading-relaxed">
+            {{ getIntelligentSuggestion() }}
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="space-y-2">
+      <h4 class="text-sm font-semibold text-slate-900">Quick Actions</h4>
+
+      <button
+        class="w-full text-left p-3 border border-slate-200 rounded-xl hover:border-teal-300 hover:bg-teal-50 transition-all group"
+        (click)="analyzeMarketTiming()"
+        [disabled]="isLoadingIntelligence()"
+      >
+        <div class="flex items-center space-x-3">
+          <lucide-icon
+            [img]="ClockIcon"
+            [size]="16"
+            class="text-slate-400 group-hover:text-teal-600 transition-colors"
+          ></lucide-icon>
+          <span
+            class="text-sm text-slate-700 group-hover:text-teal-700 transition-colors"
+            >Refresh Market Timing</span
+          >
+        </div>
+      </button>
+
+      <button
+        class="w-full text-left p-3 border border-slate-200 rounded-xl hover:border-teal-300 hover:bg-teal-50 transition-all group"
+        (click)="researchCompetitors()"
+        [disabled]="isLoadingIntelligence()"
+      >
+        <div class="flex items-center space-x-3">
+          <lucide-icon
+            [img]="TargetIcon"
+            [size]="16"
+            class="text-slate-400 group-hover:text-teal-600 transition-colors"
+          ></lucide-icon>
+          <span
+            class="text-sm text-slate-700 group-hover:text-teal-700 transition-colors"
+            >Research Competitors</span
+          >
+        </div>
+      </button>
+
+      <button
+        class="w-full text-left p-3 border border-slate-200 rounded-xl hover:border-teal-300 hover:bg-teal-50 transition-all group"
+        (click)="calculateReturns()"
+      >
+        <div class="flex items-center space-x-3">
+          <lucide-icon
+            [img]="CalculatorIcon"
+            [size]="16"
+            class="text-slate-400 group-hover:text-teal-600 transition-colors"
+          ></lucide-icon>
+          <span
+            class="text-sm text-slate-700 group-hover:text-teal-700 transition-colors"
+            >Calculate ROI</span
+          >
+        </div>
+      </button>
+
+      <button
+        class="w-full text-left p-3 border border-slate-200 rounded-xl hover:border-teal-300 hover:bg-teal-50 transition-all group"
+        (click)="generateDescription()"
+      >
+        <div class="flex items-center space-x-3">
+          <lucide-icon
+            [img]="FileTextIcon"
+            [size]="16"
+            class="text-slate-400 group-hover:text-teal-600 transition-colors"
+          ></lucide-icon>
+          <span
+            class="text-sm text-slate-700 group-hover:text-teal-700 transition-colors"
+            >Generate Evaluation Notes</span
+          >
+        </div>
+      </button>
+    </div>
+
+    <!-- Additional Insights Summary -->
+    @if (allInsights().length > 1) {
+    <div class="border-t border-slate-200 pt-4">
+      <div class="flex items-center justify-between mb-2">
+        <span class="text-xs font-semibold text-slate-600"
+          >Additional Insights ({{ allInsights().length - 1 }})</span
+        >
+        <button
+          (click)="showAllInsights()"
+          class="text-xs text-teal-600 hover:text-teal-700 font-medium transition-colors"
+        >
+          View All
+        </button>
+      </div>
+      <div class="space-y-2">
+        @for (insight of allInsights().slice(1, 4); track insight.title) {
+        <div
+          class="flex items-center space-x-2 p-2 rounded-lg hover:bg-slate-50 transition-colors cursor-pointer"
+          (click)="handleInsightAction(insight)"
+        >
+          <div
+            class="w-2 h-2 rounded-full flex-shrink-0"
+            [class]="getUrgencyDot(insight.urgency)"
+          ></div>
+          <span class="text-xs text-slate-700 line-clamp-1 flex-1">{{
+            insight.title
+          }}</span>
+        </div>
+        } @if (allInsights().length > 4) {
+        <button
+          class="text-xs text-teal-600 hover:text-teal-700 font-medium pl-4 transition-colors"
+          (click)="showAllInsights()"
+        >
+          +{{ allInsights().length - 4 }} more insights
+        </button>
+        }
+      </div>
+    </div>
+    }
   </div>
 </div>
