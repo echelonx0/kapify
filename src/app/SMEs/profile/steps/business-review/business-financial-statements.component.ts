@@ -3,9 +3,7 @@
 // import { CommonModule } from '@angular/common';
 // import { LucideAngularModule, ChevronDown, ChevronUp } from 'lucide-angular';
 // import { SelectOption, UiSelectComponent } from 'src/app/shared/components/ui-select/ui-select.component';
- 
 
- 
 // @Component({
 //   selector: 'app-business-financial-statements',
 //   standalone: true,
@@ -145,11 +143,14 @@
 //   }
 // }
 
- import { Component, input, output } from '@angular/core';
+import { Component, input, output } from '@angular/core';
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { LucideAngularModule, ChevronDown, ChevronUp } from 'lucide-angular';
-import { SelectOption, UiSelectComponent } from 'src/app/shared/components/ui-select/ui-select.component'; 
+import {
+  SelectOption,
+  UiSelectComponent,
+} from 'src/app/shared/components/ui-select/ui-select.component';
 import { FormFieldComponent } from 'src/app/shared/components/form-field/app-form-field.component';
 
 @Component({
@@ -160,108 +161,131 @@ import { FormFieldComponent } from 'src/app/shared/components/form-field/app-for
     ReactiveFormsModule,
     LucideAngularModule,
     UiSelectComponent,
-    FormFieldComponent
+    FormFieldComponent,
   ],
   template: `
     <div class="space-y-6">
       <!-- Section Header -->
-      <div class="flex items-center justify-between cursor-pointer" (click)="toggleExpanded()">
+      <div
+        class="flex items-center justify-between cursor-pointer"
+        (click)="toggleExpanded()"
+      >
         <div class="flex items-center gap-3">
-          <h3 class="text-lg font-semibold text-neutral-900">Financial Statements</h3>
-          <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
-            [class]="isComplete() ? 'bg-green-100 text-green-800' : 'bg-amber-100 text-amber-800'">
+          <h3 class="text-lg font-semibold text-neutral-900">
+            Financial Statements
+          </h3>
+          <span
+            class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
+            [class]="
+              isComplete()
+                ? 'bg-green-100 text-green-800'
+                : 'bg-amber-100 text-amber-800'
+            "
+          >
             {{ isComplete() ? 'Complete' : 'In Progress' }}
           </span>
         </div>
         <div class="text-neutral-500">
           @if (isExpanded()) {
-            <lucide-angular [img]="ChevronUpIcon" class="w-5 h-5"></lucide-angular>
+          <lucide-angular
+            [img]="ChevronUpIcon"
+            class="w-5 h-5"
+          ></lucide-angular>
           } @else {
-            <lucide-angular [img]="ChevronDownIcon" class="w-5 h-5"></lucide-angular>
+          <lucide-angular
+            [img]="ChevronDownIcon"
+            class="w-5 h-5"
+          ></lucide-angular>
           }
         </div>
       </div>
 
       <!-- Content -->
       @if (isExpanded()) {
-        <div [formGroup]="form()" class="space-y-6">
-          <!-- Audit Status & Budget Row -->
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <app-form-field label="Are the financial statements audited, reviewed, compiled or unaudited?">
-              <ui-select
-                placeholder="Are they audited?"
-                [options]="auditOptions"
-                [required]="true"
-                formControlName="financialStatementsAudited"
-                [error]="getFieldError('financialStatementsAudited')"
-              ></ui-select>
-            </app-form-field>
+      <div [formGroup]="form()" class="space-y-6">
+        <!-- Audit Status & Budget Row -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <app-form-field
+            label="Are the financial statements audited, reviewed, compiled or unaudited?"
+          >
+            <ui-select
+              placeholder="Are they audited?"
+              [options]="auditOptions"
+              [required]="true"
+              formControlName="financialStatementsAudited"
+              [error]="getFieldError('financialStatementsAudited')"
+            ></ui-select>
+          </app-form-field>
 
-            <app-form-field label="Is a budget available?">
-              <ui-select
-                placeholder="Do you have a budget?"
-                [options]="yesNoOptions"
-                [required]="true"
-                formControlName="budgetAvailable"
-                [error]="getFieldError('budgetAvailable')"
-              ></ui-select>
-            </app-form-field>
-          </div>
-
-          <!-- Contracts & Funding Row -->
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <app-form-field label="Are there any long term contracts in place?">
-              <ui-select
-                placeholder="Do you have any?"
-                [options]="yesNoOptions"
-                [required]="true"
-                formControlName="longTermContracts"
-                [error]="getFieldError('longTermContracts')"
-              ></ui-select>
-            </app-form-field>
-
-            <app-form-field label="Is there any off balance sheet funding?">
-              <ui-select
-                placeholder="Do you use this?"
-                [options]="yesNoOptions"
-                [required]="true"
-                formControlName="offBalanceSheetFunding"
-                [error]="getFieldError('offBalanceSheetFunding')"
-              ></ui-select>
-            </app-form-field>
-          </div>
-
-          <!-- Asset Register & Permissions Row -->
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <app-form-field label="Is there an asset register available?">
-              <ui-select
-                placeholder="Do you maintain one?"
-                [options]="yesNoOptions"
-                [required]="true"
-                formControlName="assetRegisterAvailable"
-                [error]="getFieldError('assetRegisterAvailable')"
-              ></ui-select>
-            </app-form-field>
-
-            <app-form-field label="Will lender permissions be required?">
-              <ui-select
-                placeholder="Will lenders need approval?"
-                [options]="yesNoOptions"
-                [required]="true"
-                formControlName="lenderPermissionsRequired"
-                [error]="getFieldError('lenderPermissionsRequired')"
-              ></ui-select>
-            </app-form-field>
-          </div>
+          <app-form-field label="Is a budget available?">
+            <ui-select
+              placeholder="Do you have a budget?"
+              [options]="yesNoOptions"
+              [required]="true"
+              formControlName="budgetAvailable"
+              [error]="getFieldError('budgetAvailable')"
+            ></ui-select>
+          </app-form-field>
         </div>
+
+        <!-- Contracts & Funding Row -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <app-form-field
+            label="Are there any long term contracts which could give rise to liabilities?"
+          >
+            <ui-select
+              placeholder="Do you have any?"
+              [options]="yesNoOptions"
+              [required]="true"
+              formControlName="longTermContracts"
+              [error]="getFieldError('longTermContracts')"
+            ></ui-select>
+          </app-form-field>
+
+          <app-form-field label="Is there any off balance sheet funding?">
+            <ui-select
+              placeholder="Do you use this?"
+              [options]="yesNoOptions"
+              [required]="true"
+              formControlName="offBalanceSheetFunding"
+              [error]="getFieldError('offBalanceSheetFunding')"
+            ></ui-select>
+          </app-form-field>
+        </div>
+
+        <!-- Asset Register & Permissions Row -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <app-form-field label="Is there an asset register available?">
+            <ui-select
+              placeholder="Do you maintain one?"
+              [options]="yesNoOptions"
+              [required]="true"
+              formControlName="assetRegisterAvailable"
+              [error]="getFieldError('assetRegisterAvailable')"
+            ></ui-select>
+          </app-form-field>
+
+          <app-form-field label="Will lender permissions be required?">
+            <ui-select
+              placeholder="Will lenders need approval?"
+              [options]="yesNoOptions"
+              [required]="true"
+              formControlName="lenderPermissionsRequired"
+              [error]="getFieldError('lenderPermissionsRequired')"
+            ></ui-select>
+          </app-form-field>
+        </div>
+      </div>
       }
     </div>
   `,
-  styles: [`
-    :host {
-      display: block;
-    }
-  `]
+  styles: [
+    `
+      :host {
+        display: block;
+      }
+    `,
+  ],
 })
 export class BusinessFinancialStatementsComponent {
   form = input.required<FormGroup>();
@@ -274,14 +298,14 @@ export class BusinessFinancialStatementsComponent {
 
   yesNoOptions: SelectOption[] = [
     { label: 'Yes', value: 'yes' },
-    { label: 'No', value: 'no' }
+    { label: 'No', value: 'no' },
   ];
 
   auditOptions: SelectOption[] = [
     { label: 'Audited', value: 'audited' },
     { label: 'Reviewed', value: 'reviewed' },
-    { label: 'Compiled', value: 'compiled' },
-    { label: 'Unaudited', value: 'unaudited' }
+
+    { label: 'Neither', value: 'neither' },
   ];
 
   toggleExpanded(): void {

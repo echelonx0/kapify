@@ -459,20 +459,7 @@ export class OpportunityFormStateService {
   }
 
   // ===== LOCAL STORAGE =====
-  // private setupLocalAutoSave(): void {
-  //   this.localAutoSaveSubject
-  //     .pipe(
-  //       debounceTime(10000),
-  //       distinctUntilChanged(
-  //         (prev, curr) => JSON.stringify(prev) === JSON.stringify(curr)
-  //       ),
-  //       takeUntil(this.destroy$)
-  //     )
-  //     .subscribe(() => {
-  //       // ← Key change: capture formData fresh at save time, not in closure
-  //       this.saveToLocalStorage(this.formData());
-  //     });
-  // }
+
   private setupLocalAutoSave(): void {
     this.localAutoSaveSubject
       .pipe(debounceTime(10000), takeUntil(this.destroy$))
