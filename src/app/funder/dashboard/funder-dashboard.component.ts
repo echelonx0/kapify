@@ -21,12 +21,11 @@ import {
   ArrowRight,
   FileText,
   ClockIcon,
-  BarChart3,
   FolderOpen,
-  Settings,
-  Home,
   ChevronDown,
   ChevronUp,
+  House,
+  ChartColumn,
 } from 'lucide-angular';
 import { UiButtonComponent } from '../../shared/components';
 import {
@@ -44,6 +43,7 @@ import { PublicProfileService } from '../services/public-profile.service';
 import { FunderApplicationsComponent } from '../application-details/funder-applications/funder-applications.component';
 import { DraftManagementService } from '../services/draft-management.service';
 import { ActionModalService } from 'src/app/shared/components/modal/modal.service';
+import { OpportunityActionModalComponent } from 'src/app/shared/components/modal/app-modal.component';
 
 type TabId = 'overview' | 'opportunities' | 'applications' | 'settings';
 
@@ -64,6 +64,7 @@ interface Tab {
     FunderDocumentAnalysisComponent,
     OrganizationStatusSidebarComponent,
     FunderApplicationsComponent,
+    OpportunityActionModalComponent,
   ],
   templateUrl: 'dashboard.component.html',
   styleUrl: 'funder-dashboard.component.css',
@@ -80,12 +81,14 @@ export class FunderDashboardComponent implements OnInit, OnDestroy {
   // State
   activeTab = signal<TabId>('overview');
   isDocumentAnalysisExpanded = signal(true);
+  isDraftBannerExpanded = signal(false); // Collapsed by default on mobile
   private route = inject(ActivatedRoute);
+
   tabs: Tab[] = [
     {
       id: 'overview',
       label: 'Overview',
-      icon: Home,
+      icon: House,
       description: 'Dashboard overview and key metrics',
     },
     {
@@ -113,7 +116,7 @@ export class FunderDashboardComponent implements OnInit, OnDestroy {
   ArrowRightIcon = ArrowRight;
   ClockIcon = ClockIcon;
   FileTextIcon = FileText;
-  BarChart3Icon = BarChart3;
+  BarChart3Icon = ChartColumn;
   ChevronDownIcon = ChevronDown;
   ChevronUpIcon = ChevronUp;
 
@@ -138,8 +141,9 @@ export class FunderDashboardComponent implements OnInit, OnDestroy {
     this.setupSubscriptions();
     this.loadPublicProfile();
     this.loadDocumentAnalysisPreference();
+    this.loadDraftBannerPreference();
 
-    // 🔸 Watch for query param "tab"
+    // Watch for query param "tab"
     this.route.queryParams.subscribe((params) => {
       const tab = params['tab'] as TabId | undefined;
       if (tab && this.tabs.some((t) => t.id === tab)) {
@@ -169,6 +173,24 @@ export class FunderDashboardComponent implements OnInit, OnDestroy {
 
   private saveDocumentAnalysisPreference(expanded: boolean) {
     localStorage.setItem('documentAnalysisExpanded', expanded.toString());
+  }
+
+  // Draft Banner Toggle Methods (Mobile only)
+  toggleDraftBanner() {
+    const newState = !this.isDraftBannerExpanded();
+    this.isDraftBannerExpanded.set(newState);
+    this.saveDraftBannerPreference(newState);
+  }
+
+  private loadDraftBannerPreference() {
+    const saved = localStorage.getItem('draftBannerExpanded');
+    if (saved !== null) {
+      this.isDraftBannerExpanded.set(saved === 'true');
+    }
+  }
+
+  private saveDraftBannerPreference(expanded: boolean) {
+    localStorage.setItem('draftBannerExpanded', expanded.toString());
   }
 
   // Tab navigation
@@ -381,19 +403,14 @@ export class FunderDashboardComponent implements OnInit, OnDestroy {
     this.router.navigate(['/funder/opportunities/edit', opportunityId]);
   }
 
-  // UPDATED: Use ActionModalService instead of ViewChild
   deleteOpportunity(opportunityId: string) {
+    console.log('OpportunityID: ', opportunityId);
     const opportunity = this.recentOpportunities().find(
       (o) => o.id === opportunityId
     );
     if (!opportunity) return;
 
-    this.actionModalService.showDelete(
-      opportunity.title,
-      opportunity.currentApplications > 0,
-      opportunity.currentApplications
-    );
-
+    // Only call open() with all data and callbacks
     this.actionModalService.open(
       {
         actionType: 'delete',
@@ -431,8 +448,7 @@ export class FunderDashboardComponent implements OnInit, OnDestroy {
     );
     if (!opportunity) return;
 
-    this.actionModalService.showDuplicate(opportunity.title);
-
+    // Only call open() with all data and callbacks
     this.actionModalService.open(
       {
         actionType: 'duplicate',
