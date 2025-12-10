@@ -16,7 +16,7 @@ import { OpportunityUIHelperService } from '../../services/ui-helper.service';
   selector: 'app-application-settings',
   standalone: true,
   imports: [CommonModule, FormsModule, LucideAngularModule],
-  templateUrl: './fund-terms.component.html',
+  templateUrl: './fund-settings.component.html',
   styles: [
     `
       :host {
@@ -25,7 +25,7 @@ import { OpportunityUIHelperService } from '../../services/ui-helper.service';
     `,
   ],
 })
-export class ApplicationSettingsComponent implements OnInit {
+export class FundSettingsComponent implements OnInit {
   public formState = inject(OpportunityFormStateService);
   public ui = inject(OpportunityUIHelperService);
 

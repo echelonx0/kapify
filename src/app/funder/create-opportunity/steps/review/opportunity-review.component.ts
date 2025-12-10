@@ -1,9 +1,8 @@
 // src/app/funder/create-opportunity/steps/review/opportunity-review.component.ts
 import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { LucideAngularModule } from 'lucide-angular';
+import { CircleAlert, CircleX, LucideAngularModule } from 'lucide-angular';
 import {
-  AlertCircle,
   Check,
   Target,
   DollarSign,
@@ -12,7 +11,6 @@ import {
   TrendingUp,
   Shield,
   Calendar,
-  XCircle,
 } from 'lucide-angular';
 
 @Component({
@@ -23,7 +21,7 @@ import {
 })
 export class OpportunityReviewComponent {
   // Icons
-  AlertCircleIcon = AlertCircle;
+  AlertCircleIcon = CircleAlert;
   CheckIcon = Check;
   TargetIcon = Target;
   DollarSignIcon = DollarSign;
@@ -32,7 +30,7 @@ export class OpportunityReviewComponent {
   TrendingUpIcon = TrendingUp;
   ShieldIcon = Shield;
   CalendarIcon = Calendar;
-  XCircleIcon = XCircle;
+  XCircleIcon = CircleX;
 
   // Inputs from parent component
   @Input() validationErrors: Array<{ field: string; message: string }> = [];

@@ -9,109 +9,113 @@ import { ToastService } from './services/toast.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="fixed top-0 left-0 right-0 z-50 pointer-events-none">
-      <div class="flex flex-col items-center gap-2 px-4 pt-4">
+      <div class="flex flex-col">
         @for (toast of toastService.toasts(); track toast.id) {
         <div
           [class]="getToastClasses(toast.type)"
           [attr.data-toast-id]="toast.id"
-          class="pointer-events-auto flex items-center gap-3 w-full max-w-md px-4 py-3 rounded-xl shadow-md animate-fade-in"
+          class="pointer-events-auto w-full border-b animate-slide-down"
         >
-          <!-- Icon -->
-          <div [class]="getIconClasses(toast.type)">
-            @switch (toast.type) { @case ('success') {
-            <svg
-              class="w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-              />
-            </svg>
-            } @case ('error') {
-            <svg
-              class="w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M12 8v4m0 4v.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-              />
-            </svg>
-            } @case ('warning') {
-            <svg
-              class="w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M12 9v2m0 4v2m.813-8.457A8.975 8.975 0 0112 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10c0-1.063-.108-2.1-.322-3.113m0 0a8.967 8.967 0 01-.664-3.157m0 0C18.935 5.25 19 4.636 19 4m-7 12h.01M12 12h.01"
-              />
-            </svg>
-            } @case ('info') {
-            <svg
-              class="w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-              />
-            </svg>
-            } }
-          </div>
-
-          <!-- Message -->
-          <span class="flex-1 text-sm font-medium">
-            {{ toast.message }}
-          </span>
-
-          <!-- Dismiss Button -->
-          <button
-            (click)="toastService.dismiss(toast.id)"
-            class="flex-shrink-0 text-slate-400 hover:text-slate-600 transition-colors duration-200 p-1 -mr-2"
-            [attr.aria-label]="'Dismiss ' + toast.type + ' notification'"
+          <div
+            class="max-w-7xl mx-auto px-4 lg:px-8 py-3 flex items-center gap-3"
           >
-            <svg
-              class="w-4.5 h-4.5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
+            <!-- Icon -->
+            <div [class]="getIconClasses(toast.type)">
+              @switch (toast.type) { @case ('success') {
+              <svg
+                class="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+              } @case ('error') {
+              <svg
+                class="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M12 8v4m0 4v.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+              } @case ('warning') {
+              <svg
+                class="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+              } @case ('info') {
+              <svg
+                class="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+              } }
+            </div>
+
+            <!-- Message -->
+            <span class="flex-1 text-sm font-medium">
+              {{ toast.message }}
+            </span>
+
+            <!-- Dismiss Button -->
+            <button
+              (click)="toastService.dismiss(toast.id)"
+              class="flex-shrink-0 text-slate-400 hover:text-slate-600 transition-colors duration-200 p-1.5 -mr-2"
+              [attr.aria-label]="'Dismiss ' + toast.type + ' notification'"
             >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
-          </button>
+              <svg
+                class="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </button>
+          </div>
         </div>
         }
       </div>
     </div>
   `,
   styles: `
-    @keyframes fadeIn {
+    @keyframes slideDown {
       from {
         opacity: 0;
-        transform: translateY(-8px);
+        transform: translateY(-100%);
       }
       to {
         opacity: 1;
@@ -120,11 +124,11 @@ import { ToastService } from './services/toast.service';
     }
 
     :host {
-      --animate-duration: 250ms;
+      --animate-duration: 300ms;
     }
 
-    :global(.animate-fade-in) {
-      animation: fadeIn var(--animate-duration) ease-out;
+    :global(.animate-slide-down) {
+      animation: slideDown var(--animate-duration) ease-out;
     }
   `,
 })
@@ -132,8 +136,7 @@ export class ToastComponent {
   protected toastService = inject(ToastService);
 
   getToastClasses(type: string): string {
-    const baseClasses =
-      'flex items-center gap-3 border transition-all duration-200';
+    const baseClasses = 'flex items-center border transition-all duration-200';
 
     switch (type) {
       case 'success':

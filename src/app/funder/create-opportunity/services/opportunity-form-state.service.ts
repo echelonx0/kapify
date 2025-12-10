@@ -58,12 +58,13 @@ export interface ValidationError {
 @Injectable({ providedIn: 'root' })
 export class OpportunityFormStateService {
   private destroy$ = new Subject<void>();
-  private localAutoSaveSubject = new Subject<void>(); // ← Changed: now emits void, captures formData fresh at save time
+  private localAutoSaveSubject = new Subject<void>(); // emits void, captures formData fresh at save time
 
   formData = signal<CreateOpportunityFormData>(this.getInitialState());
   validationErrors = signal<ValidationError[]>([]);
   hasUnsavedChanges = signal(false);
   lastLocalSave = signal<string | null>(null);
+
   // Add this signal near the top with other signals:
   isValidating = signal(true);
   hasMediaContent = computed(() => {
@@ -87,7 +88,7 @@ export class OpportunityFormStateService {
   ): void {
     this.formData.update((data) => ({ ...data, [field]: value }));
     this.hasUnsavedChanges.set(true);
-    this.localAutoSaveSubject.next(); // ← Changed: just trigger debounce, no data
+    this.localAutoSaveSubject.next(); //  just trigger debounce, no data
   }
 
   updateMultiSelectField(
@@ -103,14 +104,14 @@ export class OpportunityFormStateService {
       return { ...data, [field]: newArray };
     });
     this.hasUnsavedChanges.set(true);
-    this.localAutoSaveSubject.next(); // ← Changed: just trigger debounce
+    this.localAutoSaveSubject.next(); //   just trigger debounce
   }
 
   onNumberInput(field: keyof CreateOpportunityFormData, value: string): void {
     const cleanValue = value.replace(/[^\d]/g, '');
     this.formData.update((data) => ({ ...data, [field]: cleanValue }));
     this.hasUnsavedChanges.set(true);
-    this.localAutoSaveSubject.next(); // ← Changed: just trigger debounce
+    this.localAutoSaveSubject.next(); //   just trigger debounce
   }
 
   // ===== LIST MANAGEMENT (Investment & Exclusion Criteria) =====
@@ -126,7 +127,7 @@ export class OpportunityFormStateService {
       [field]: [...(data[field] as string[]), trimmed],
     }));
     this.hasUnsavedChanges.set(true);
-    this.localAutoSaveSubject.next(); // ← Changed: just trigger debounce
+    this.localAutoSaveSubject.next(); //   trigger debounce
     return true;
   }
 
@@ -139,7 +140,7 @@ export class OpportunityFormStateService {
       [field]: (data[field] as string[]).filter((_, i) => i !== index),
     }));
     this.hasUnsavedChanges.set(true);
-    this.localAutoSaveSubject.next(); // ← Changed: just trigger debounce
+    this.localAutoSaveSubject.next(); //   trigger debounce
   }
 
   // ===== NUMBER FORMATTING =====
