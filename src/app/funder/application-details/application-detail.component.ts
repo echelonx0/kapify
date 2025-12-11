@@ -24,15 +24,6 @@ import { ApplicationHeaderComponent } from '../components/application-header/app
 import { StatusManagementModalComponent } from '../components/status-management-modal/status-management-modal.component';
 import { FundingOpportunity } from '../create-opportunity/shared/funding.interfaces';
 
-// interface ApplicationFormData {
-//   requestedAmount?: number | string;
-//   purposeStatement?: string;
-//   useOfFunds?: string;
-//   timeline?: string;
-//   opportunityAlignment?: string;
-//   [key: string]: any;
-// }
-
 interface ApplicationFormData {
   // Required by AI Assistant
   fundingType: string;
@@ -214,21 +205,86 @@ export class ApplicationDetailComponent implements OnInit, OnDestroy {
     this.profileLoading.set(true);
     this.profileError.set(null);
 
+    console.log('🔍 [APP-DETAIL] ==========================================');
+    console.log('🔍 [APP-DETAIL] Loading profile for applicant:', applicantId);
+
     try {
       const fundingProfile = await this.backendService
         .loadSavedProfileForUser(applicantId)
         .pipe(takeUntil(this.destroy$))
         .toPromise();
 
+      console.log(
+        '🔍 [APP-DETAIL] Raw fundingProfile received:',
+        fundingProfile
+      );
+      console.log(
+        '🔍 [APP-DETAIL] fundingProfile keys:',
+        Object.keys(fundingProfile || {})
+      );
+      console.log(
+        '🔍 [APP-DETAIL] Has financialProfile:',
+        !!fundingProfile?.financialProfile
+      );
+      console.log(
+        '🔍 [APP-DETAIL] Has financialAnalysis:',
+        !!fundingProfile?.financialAnalysis
+      );
+
+      if (fundingProfile?.financialAnalysis) {
+        console.log(
+          '💰 [APP-DETAIL] financialAnalysis keys:',
+          Object.keys(fundingProfile.financialAnalysis)
+        );
+        console.log(
+          '💰 [APP-DETAIL] Income statement rows:',
+          fundingProfile.financialAnalysis.incomeStatement?.length || 0
+        );
+        console.log(
+          '💰 [APP-DETAIL] Has uploaded file:',
+          !!fundingProfile.financialAnalysis.uploadedFile
+        );
+      }
+
       if (fundingProfile) {
         const profileData =
           this.transformer.transformFromFundingProfile(fundingProfile);
+
+        console.log(
+          '🔄 [APP-DETAIL] Transformed profileData keys:',
+          Object.keys(profileData)
+        );
+        console.log(
+          '🔄 [APP-DETAIL] Has financialInfo:',
+          !!profileData.financialInfo
+        );
+        console.log(
+          '🔄 [APP-DETAIL] Has financialAnalysis:',
+          !!profileData.financialAnalysis
+        );
+
+        if (profileData.financialAnalysis) {
+          console.log(
+            '💰 [APP-DETAIL] Transformed financialAnalysis keys:',
+            Object.keys(profileData.financialAnalysis)
+          );
+        }
+
         this.profileData.set(profileData);
+
+        console.log('✅ [APP-DETAIL] Signal set successfully');
+        console.log(
+          '✅ [APP-DETAIL] Current profileData signal value:',
+          this.profileData()
+        );
+        console.log(
+          '🔍 [APP-DETAIL] =========================================='
+        );
       } else {
         throw new Error('No profile data returned');
       }
     } catch (error) {
-      console.error('Failed to load applicant profile:', error);
+      console.error('❌ [APP-DETAIL] Failed to load applicant profile:', error);
 
       let errorMessage = 'Unable to load applicant profile data.';
       if (error instanceof Error) {

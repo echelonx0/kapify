@@ -334,57 +334,43 @@
   }
 
   <!-- FINANCIAL INFO TAB -->
-  @if (activeTab() === 'financial' && financialInfo()) {
-  <div class="space-y-4">
+  @if (activeTab() === 'financial') {
+  <div class="space-y-6">
+    <!-- Basic Financial Info (if available) -->
+    @if (financialInfo()) {
     <div class="grid grid-cols-2 gap-4">
       @if (financialInfo()!.annualRevenue) {
-      <div class="bg-green-50 border border-green-200/50 rounded-xl p-4">
-        <div class="flex items-start gap-3">
-          <lucide-icon
-            [img]="TrendingUpIcon"
-            class="w-5 h-5 text-green-600 mt-0.5"
-          />
-          <div class="flex-1 min-w-0">
-            <p class="text-xs font-medium text-green-700 mb-1">
-              Annual Revenue
-            </p>
-            <p class="text-sm font-bold text-green-900">
-              {{ financialInfo()!.annualRevenue }}
-            </p>
-          </div>
+      <!-- Annual Revenue -->
+      <div class="bg-emerald-50 border border-emerald-200 rounded-lg p-4">
+        <div class="flex items-center gap-2 text-emerald-700 mb-1">
+          <lucide-icon [img]="TrendingUpIcon" [size]="16"></lucide-icon>
+          <span class="text-sm font-medium">Annual Revenue</span>
         </div>
+        <p class="text-2xl font-bold text-emerald-900">
+          {{ formatNumber(annualRevenueValue()) }}
+        </p>
       </div>
-      } @if (financialInfo()!.monthlyRevenue) {
-      <div class="bg-blue-50 border border-blue-200/50 rounded-xl p-4">
-        <div class="flex items-start gap-3">
-          <lucide-icon
-            [img]="DollarSignIcon"
-            class="w-5 h-5 text-blue-600 mt-0.5"
-          />
-          <div class="flex-1 min-w-0">
-            <p class="text-xs font-medium text-blue-700 mb-1">
-              Monthly Revenue
-            </p>
-            <p class="text-sm font-bold text-blue-900">
-              {{ financialInfo()!.monthlyRevenue }}
-            </p>
-          </div>
+
+      <!-- Monthly Revenue -->
+      <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <div class="flex items-center gap-2 text-blue-700 mb-1">
+          <lucide-icon [img]="DollarSignIcon" [size]="16"></lucide-icon>
+          <span class="text-sm font-medium">Monthly Revenue</span>
         </div>
+        <p class="text-2xl font-bold text-blue-900">
+          {{ formatNumber(monthlyRevenueValue()) }}
+        </p>
       </div>
-      } @if (financialInfo()!.profitMargin) {
-      <div class="bg-slate-50 border border-slate-200 rounded-xl p-4">
-        <div class="flex items-start gap-3">
-          <lucide-icon
-            [img]="TrendingUpIcon"
-            class="w-5 h-5 text-slate-600 mt-0.5"
-          />
-          <div class="flex-1 min-w-0">
-            <p class="text-xs font-medium text-slate-500 mb-1">Profit Margin</p>
-            <p class="text-sm font-semibold text-slate-900">
-              {{ financialInfo()!.profitMargin }}
-            </p>
-          </div>
+
+      <!-- Profit Margin -->
+      <div class="bg-slate-50 border border-slate-200 rounded-lg p-4">
+        <div class="flex items-center gap-2 text-slate-700 mb-1">
+          <lucide-icon [img]="TrendingUpIcon" [size]="16"></lucide-icon>
+          <span class="text-sm font-medium">Profit Margin</span>
         </div>
+        <p class="text-2xl font-bold text-slate-900">
+          {{ financialInfo()?.profitMargin || 0 }}%
+        </p>
       </div>
       } @if (financialInfo()!.creditRating) {
       <div class="bg-slate-50 border border-slate-200 rounded-xl p-4">
@@ -401,56 +387,16 @@
           </div>
         </div>
       </div>
-      } @if (financialInfo()!.existingDebt) {
-      <div
-        class="bg-amber-50 border border-amber-200/50 rounded-xl p-4 col-span-2"
-      >
-        <div class="flex items-start gap-3">
-          <lucide-icon
-            [img]="DollarSignIcon"
-            class="w-5 h-5 text-amber-600 mt-0.5"
-          />
-          <div class="flex-1 min-w-0">
-            <p class="text-xs font-medium text-amber-700 mb-1">Existing Debt</p>
-            <p class="text-sm font-semibold text-amber-900">
-              {{ financialInfo()!.existingDebt }}
-            </p>
-          </div>
-        </div>
-      </div>
       }
     </div>
-
-    @if (financialInfo()!.bankingDetails) {
-    <div class="bg-slate-50 border border-slate-200 rounded-xl p-4">
-      <h4 class="text-sm font-semibold text-slate-900 mb-3">
-        Banking Relationship
-      </h4>
-      <div class="grid grid-cols-2 gap-3">
-        <div>
-          <p class="text-xs text-slate-500 mb-1">Primary Bank</p>
-          <p class="text-sm font-medium text-slate-900">
-            {{ financialInfo()!.bankingDetails.bankName }}
-          </p>
-        </div>
-        <div>
-          <p class="text-xs text-slate-500 mb-1">Account Type</p>
-          <p class="text-sm font-medium text-slate-900">
-            {{ financialInfo()!.bankingDetails.accountType }}
-          </p>
-        </div>
-        <div class="col-span-2">
-          <p class="text-xs text-slate-500 mb-1">Years with Bank</p>
-          <p class="text-sm font-medium text-slate-900">
-            {{ financialInfo()!.bankingDetails.yearsWithBank }} years
-          </p>
-        </div>
-      </div>
-    </div>
     }
+
+    <!-- Financial Analysis Component -->
+    <app-financial-analysis-viewer
+      [financialAnalysis]="financialAnalysis()"
+    ></app-financial-analysis-viewer>
   </div>
   }
-
   <!-- FUNDING INFO TAB -->
   @if (activeTab() === 'funding' && fundingInfo()) {
   <div class="space-y-4">
@@ -755,7 +701,7 @@
   }
 
   <!-- STRATEGY TAB -->
-  @if (activeTab() === 'strategy') {
+  <!-- @if (activeTab() === 'strategy') {
   <div class="space-y-4">
     @if (businessStrategy()) {
     <div class="bg-slate-50 border border-slate-200 rounded-xl p-4">
@@ -786,5 +732,5 @@
     </div>
     }
   </div>
-  }
+  } -->
 </div>

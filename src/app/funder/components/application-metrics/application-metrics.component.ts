@@ -18,10 +18,10 @@ import {
   Target,
   FileText,
   Activity,
-  BarChart3,
   Lightbulb,
-  AlertCircle,
-  AlertTriangle,
+  ChartColumn,
+  CircleAlert,
+  TriangleAlert,
 } from 'lucide-angular';
 import { FundingApplication } from 'src/app/SMEs/models/application.models';
 import { FundingOpportunity } from '../../create-opportunity/shared/funding.interfaces';
@@ -30,6 +30,7 @@ import {
   ManagementMember,
   BoardMember,
 } from 'src/app/SMEs/applications/models/funding-application.models';
+import { FinancialAnalysisViewerComponent } from '../financial-analysis-viewer/financial-analysis-viewer.component';
 
 type TabId =
   | 'overview'
@@ -50,7 +51,11 @@ interface Tab {
 @Component({
   selector: 'app-application-metrics',
   standalone: true,
-  imports: [CommonModule, LucideAngularModule],
+  imports: [
+    CommonModule,
+    LucideAngularModule,
+    FinancialAnalysisViewerComponent,
+  ],
   templateUrl: './application-metrics.component.html',
   styleUrls: ['./application-metrics.component.css'],
 })
@@ -75,24 +80,24 @@ export class ApplicationMetricsComponent {
   TargetIcon = Target;
   FileTextIcon = FileText;
   ActivityIcon = Activity;
-  BarChart3Icon = BarChart3;
+  BarChart3Icon = ChartColumn;
   LightbulbIcon = Lightbulb;
-  AlertCircleIcon = AlertCircle;
-  AlertTriangleIcon = AlertTriangle;
+  AlertCircleIcon = CircleAlert;
+  AlertTriangleIcon = TriangleAlert;
 
   // Active tab state
   activeTab = signal<TabId>('overview');
 
   // Tab configuration
   tabs: Tab[] = [
-    { id: 'overview', label: 'Overview', icon: this.ActivityIcon },
-    // { id: 'personal', label: 'Contact', icon: this.UserIcon },
-    { id: 'business', label: 'Business', icon: this.BuildingIcon },
+    { id: 'overview', label: 'Request Summary', icon: this.ActivityIcon },
+
+    { id: 'business', label: 'Operations', icon: this.BuildingIcon },
     { id: 'financial', label: 'Financials', icon: this.BarChart3Icon },
-    // { id: 'funding', label: 'Funding', icon: this.DollarSignIcon },
+
     { id: 'management', label: 'Leadership', icon: this.UsersIcon },
     { id: 'swot', label: 'SWOT', icon: this.LightbulbIcon },
-    { id: 'strategy', label: 'Strategy', icon: this.TargetIcon },
+    // { id: 'strategy', label: 'Strategy', icon: this.TargetIcon },
   ];
 
   requestedAmount = computed(() => {
@@ -105,7 +110,21 @@ export class ApplicationMetricsComponent {
     }
     return null;
   });
+  // Add after line 100 (after existing computed properties)
 
+  monthlyRevenueValue = computed(() => {
+    const value = this.financialInfo()?.monthlyRevenue;
+    return typeof value === 'number'
+      ? value
+      : parseFloat(String(value || 0)) || 0;
+  });
+
+  annualRevenueValue = computed(() => {
+    const value = this.financialInfo()?.annualRevenue;
+    return typeof value === 'number'
+      ? value
+      : parseFloat(String(value || 0)) || 0;
+  });
   timeline = computed(() => {
     const formData = this.application?.formData as any;
     return formData?.timeline || null;
@@ -146,14 +165,16 @@ export class ApplicationMetricsComponent {
 
   businessStrategy = computed(() => this.profileData?.businessPlan);
 
-  financialAnalysis = computed(() => this.profileData?.financialAnalysis);
+  financialAnalysis = computed(
+    () => this.profileData?.financialAnalysis || null
+  );
 
   setActiveTab(tabId: TabId) {
     this.activeTab.set(tabId);
   }
 
   /**
-   * Format currency with zero decimal places
+   * Format currency with zero decimal places and commas
    */
   formatCurrency(amount: number, currency: string = 'ZAR'): string {
     const roundedAmount = Math.round(amount);
@@ -163,6 +184,16 @@ export class ApplicationMetricsComponent {
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(roundedAmount);
+  }
+
+  /**
+   * Format number with zero decimal places and commas (no currency symbol)
+   */
+  formatNumber(value: number): string {
+    return new Intl.NumberFormat('en-ZA', {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(Math.round(value));
   }
 
   formatDate(date: Date): string {
