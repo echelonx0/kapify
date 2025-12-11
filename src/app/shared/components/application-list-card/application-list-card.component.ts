@@ -16,9 +16,9 @@ import {
   Calendar,
   Building,
   User,
-  AlertCircle,
-  CheckCircle,
   LogOut,
+  CircleAlert,
+  CircleCheckBig,
 } from 'lucide-angular';
 import { UserType } from '../../models/user.models';
 import { ApplicationManagementService } from 'src/app/SMEs/services/application-management.service';
@@ -114,8 +114,8 @@ export class ApplicationListCardComponent {
   CalendarIcon = Calendar;
   BuildingIcon = Building;
   UserIcon = User;
-  AlertCircleIcon = AlertCircle;
-  CheckCircleIcon = CheckCircle;
+  AlertCircleIcon = CircleAlert;
+  CheckCircleIcon = CircleCheckBig;
   LogOutIcon = LogOut;
 
   statusText = computed(() => {
@@ -164,9 +164,9 @@ export class ApplicationListCardComponent {
       draft: FileText,
       submitted: Clock,
       under_review: Clock,
-      approved: CheckCircle,
-      rejected: AlertCircle,
-      withdrawn: AlertCircle,
+      approved: CircleCheckBig,
+      rejected: CircleAlert,
+      withdrawn: CircleAlert,
     };
     return iconMap[this.application.status] || FileText;
   });

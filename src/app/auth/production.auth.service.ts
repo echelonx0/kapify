@@ -151,8 +151,6 @@ export class AuthService implements OnDestroy {
    * Initialize auth: wire up session changes to user profile loading
    */
   private async initializeAuth(): Promise<void> {
-    console.log('🔐 Starting auth initialization...');
-
     this.updateLoadingState({ initialization: true });
 
     try {
@@ -171,8 +169,6 @@ export class AuthService implements OnDestroy {
       this.supabaseService
         .onAuthStateChange(async (event, session) => {
           try {
-            console.log(`🔐 Auth state changed: ${event}`);
-
             if (session?.user) {
               await this.establishUserSession(session);
             } else {
@@ -182,7 +178,6 @@ export class AuthService implements OnDestroy {
               }
             }
           } catch (error: any) {
-            console.error('Error handling auth state change:', error);
             // Don't clear state on transient errors
             if (!this.isTransientError(error)) {
               this.clearAuthState();
@@ -195,7 +190,6 @@ export class AuthService implements OnDestroy {
       this.clearAuthState();
     } finally {
       this.updateLoadingState({ initialization: false });
-      console.log('✅ Auth initialization completed');
     }
   }
 
@@ -204,8 +198,6 @@ export class AuthService implements OnDestroy {
    * Matches component: this.authService.register(formData)
    */
   register(credentials: RegisterRequest): Observable<AuthOperationResult> {
-    console.log('📝 Starting registration process...');
-
     this.updateLoadingState({ registration: true });
 
     // Validate input
@@ -226,7 +218,6 @@ export class AuthService implements OnDestroy {
         timeout(60000),
         tap((result) => {
           if (result.success && result.user) {
-            console.log('✅ Registration transaction completed');
             this.updateAuthStateFromTransaction(result);
           }
         }),
@@ -255,19 +246,13 @@ export class AuthService implements OnDestroy {
    * Matches component: this.authService.login(formData)
    */
   login(credentials: LoginRequest): Observable<AuthOperationResult> {
-    console.log('🔑 Starting login process...');
-
     this.updateLoadingState({ login: true });
 
     return from(
       this.performLogin(credentials.email, credentials.password)
     ).pipe(
       timeout(30000),
-      tap((result) => {
-        if (result.success) {
-          console.log('✅ Login completed successfully');
-        }
-      }),
+
       catchError((error) => {
         console.error('❌ Login failed:', error);
         return of({
@@ -515,8 +500,6 @@ export class AuthService implements OnDestroy {
    */
   async getUserOrganizationId(userId: string): Promise<string | undefined> {
     try {
-      console.log('🔍 Fetching org ID for user:', userId);
-
       // Use direct query instead of relying on RLS to avoid recursion
       const { data, error } = await this.supabaseService
         .from('organization_users')
@@ -548,7 +531,6 @@ export class AuthService implements OnDestroy {
         return undefined;
       }
 
-      console.log('✅ Organization ID found:', data.organization_id);
       return data.organization_id;
     } catch (error: any) {
       console.error(
@@ -563,8 +545,6 @@ export class AuthService implements OnDestroy {
    * Sign out
    */
   async signOut(): Promise<void> {
-    console.log('🔓 Starting sign out...');
-
     try {
       const { error } = await this.supabaseService.auth.signOut();
       if (error && !this.isTransientError(error)) {

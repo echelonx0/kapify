@@ -1,18 +1,27 @@
 <!-- src/app/funder/applications/funder-applications.component.html -->
 <div class="space-y-8 pb-20">
-  
   <!-- Header with Title & Refresh -->
   <div class="flex items-center justify-between">
     <div>
       <h1 class="text-3xl font-bold text-slate-900">Applications</h1>
       <p class="text-slate-600 mt-2">Manage and review all applications</p>
     </div>
-    <button 
+    <button
       (click)="refreshApplicationsData()"
       class="px-6 py-2.5 bg-primary-500 text-white text-sm font-medium rounded-xl hover:bg-primary-600 active:bg-primary-700 transition-colors duration-200 flex items-center gap-2"
     >
-      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+      <svg
+        class="w-4 h-4"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+        ></path>
       </svg>
       Refresh
     </button>
@@ -20,68 +29,138 @@
 
   <!-- Stats Grid -->
   @if (applicationStats() && !applicationsLoading()) {
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-      <!-- Total Applications -->
-      <div class="bg-white rounded-2xl border border-slate-200 p-6">
-        <div class="flex items-start justify-between">
-          <div>
-            <p class="text-xs font-semibold text-slate-600 uppercase tracking-wide">Total Applications</p>
-            <p class="text-3xl font-bold text-slate-900 mt-2">{{ applicationStats()!.total }}</p>
-          </div>
-          <div class="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center flex-shrink-0">
-            <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-            </svg>
-          </div>
+  <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+    <!-- Total Applications -->
+    <div class="bg-white rounded-2xl border border-slate-200 p-6">
+      <div class="flex items-start justify-between">
+        <div>
+          <p
+            class="text-xs font-semibold text-slate-600 uppercase tracking-wide"
+          >
+            Total Applications
+          </p>
+          <p class="text-3xl font-bold text-slate-900 mt-2">
+            {{ applicationStats()!.total }}
+          </p>
         </div>
-      </div>
-
-      <!-- In Review -->
-      <div class="bg-white rounded-2xl border border-slate-200 p-6">
-        <div class="flex items-start justify-between">
-          <div>
-            <p class="text-xs font-semibold text-slate-600 uppercase tracking-wide">In Review</p>
-            <p class="text-3xl font-bold text-orange-600 mt-2">{{ applicationsInReview().length }}</p>
-          </div>
-          <div class="w-10 h-10 bg-orange-50 rounded-lg flex items-center justify-center flex-shrink-0">
-            <svg class="w-5 h-5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-            </svg>
-          </div>
-        </div>
-      </div>
-
-      <!-- Approved -->
-      <div class="bg-white rounded-2xl border border-slate-200 p-6">
-        <div class="flex items-start justify-between">
-          <div>
-            <p class="text-xs font-semibold text-slate-600 uppercase tracking-wide">Approved</p>
-            <p class="text-3xl font-bold text-green-600 mt-2">{{ applicationStats()!.byStatus['approved'] || 0 }}</p>
-          </div>
-          <div class="w-10 h-10 bg-green-50 rounded-lg flex items-center justify-center flex-shrink-0">
-            <svg class="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
-              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-            </svg>
-          </div>
-        </div>
-      </div>
-
-      <!-- Avg Processing Time -->
-      <div class="bg-white rounded-2xl border border-slate-200 p-6">
-        <div class="flex items-start justify-between">
-          <div>
-            <p class="text-xs font-semibold text-slate-600 uppercase tracking-wide">Avg Processing</p>
-            <p class="text-3xl font-bold text-slate-900 mt-2">{{ applicationStats()!.averageProcessingTime }}</p>
-            <p class="text-xs text-slate-600 mt-1">days</p>
-          </div>
-          <div class="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center flex-shrink-0">
-            <svg class="w-5 h-5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-            </svg>
-          </div>
+        <div
+          class="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center flex-shrink-0"
+        >
+          <svg
+            class="w-5 h-5 text-blue-600"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+            ></path>
+          </svg>
         </div>
       </div>
     </div>
+
+    <!-- In Review -->
+    <div class="bg-white rounded-2xl border border-slate-200 p-6">
+      <div class="flex items-start justify-between">
+        <div>
+          <p
+            class="text-xs font-semibold text-slate-600 uppercase tracking-wide"
+          >
+            In Review
+          </p>
+          <p class="text-3xl font-bold text-orange-600 mt-2">
+            {{ applicationsInReview().length }}
+          </p>
+        </div>
+        <div
+          class="w-10 h-10 bg-orange-50 rounded-lg flex items-center justify-center flex-shrink-0"
+        >
+          <svg
+            class="w-5 h-5 text-orange-600"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+            ></path>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- Approved -->
+    <div class="bg-white rounded-2xl border border-slate-200 p-6">
+      <div class="flex items-start justify-between">
+        <div>
+          <p
+            class="text-xs font-semibold text-slate-600 uppercase tracking-wide"
+          >
+            Approved
+          </p>
+          <p class="text-3xl font-bold text-green-600 mt-2">
+            {{ applicationStats()!.byStatus["approved"] || 0 }}
+          </p>
+        </div>
+        <div
+          class="w-10 h-10 bg-green-50 rounded-lg flex items-center justify-center flex-shrink-0"
+        >
+          <svg
+            class="w-5 h-5 text-green-600"
+            fill="currentColor"
+            viewBox="0 0 20 20"
+          >
+            <path
+              fill-rule="evenodd"
+              d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+              clip-rule="evenodd"
+            ></path>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- Avg Processing Time -->
+    <div class="bg-white rounded-2xl border border-slate-200 p-6">
+      <div class="flex items-start justify-between">
+        <div>
+          <p
+            class="text-xs font-semibold text-slate-600 uppercase tracking-wide"
+          >
+            Avg Processing
+          </p>
+          <p class="text-3xl font-bold text-slate-900 mt-2">
+            {{ applicationStats()!.averageProcessingTime }}
+          </p>
+          <p class="text-xs text-slate-600 mt-1">days</p>
+        </div>
+        <div
+          class="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center flex-shrink-0"
+        >
+          <svg
+            class="w-5 h-5 text-slate-600"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+            ></path>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </div>
   }
 
   <!-- Filter Section -->
@@ -96,67 +175,95 @@
         />
       </div>
       <div class="text-sm text-slate-600 whitespace-nowrap">
-        <strong>{{ filteredApplications().length }}</strong> of <strong>{{ allApplications().length }}</strong> applications
+        <strong>{{ filteredApplications().length }}</strong> of
+        <strong>{{ allApplications().length }}</strong> applications
       </div>
     </div>
   </div>
 
   <!-- Loading State -->
   @if (applicationsLoading()) {
-    <div class="bg-white rounded-2xl border border-slate-200 p-12 text-center">
-      <div class="animate-spin rounded-full h-10 w-10 border-2 border-slate-300 border-t-primary-500 mx-auto mb-4"></div>
-      <p class="text-slate-600">Loading applications...</p>
-    </div>
+  <div class="bg-white rounded-2xl border border-slate-200 p-12 text-center">
+    <div
+      class="animate-spin rounded-full h-10 w-10 border-2 border-slate-300 border-t-primary-500 mx-auto mb-4"
+    ></div>
+    <p class="text-slate-600">Loading applications...</p>
+  </div>
   }
 
   <!-- Error State -->
   @if (applicationsError()) {
-    <div class="bg-white rounded-2xl border border-slate-200 p-12 text-center">
-      <div class="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4">
-        <svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4v2m0 0v2m0-6v-2m0 0V7a2 2 0 012-2h2.586a1 1 0 01.707.293l2.414 2.414a1 1 0 01.293.707V19a2 2 0 01-2 2h-2a2 2 0 01-2-2m0-14a2 2 0 00-2 2m2-2V7a2 2 0 012-2h2.586a1 1 0 01.707.293l2.414 2.414a1 1 0 01.293.707V19a2 2 0 01-2 2h-2a2 2 0 01-2-2m0 0V9m0 4v2"></path>
-        </svg>
-      </div>
-      <h3 class="text-lg font-bold text-slate-900 mb-2">Error Loading Applications</h3>
-      <p class="text-slate-600 mb-6">{{ applicationsError() }}</p>
-      <button 
-        (click)="refreshApplicationsData()"
-        class="px-6 py-2.5 bg-primary-500 text-white text-sm font-medium rounded-xl hover:bg-primary-600 active:bg-primary-700 transition-colors duration-200"
+  <div class="bg-white rounded-2xl border border-slate-200 p-12 text-center">
+    <div
+      class="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4"
+    >
+      <svg
+        class="w-8 h-8 text-red-600"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
       >
-        Try Again
-      </button>
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M12 9v2m0 4v2m0 0v2m0-6v-2m0 0V7a2 2 0 012-2h2.586a1 1 0 01.707.293l2.414 2.414a1 1 0 01.293.707V19a2 2 0 01-2 2h-2a2 2 0 01-2-2m0-14a2 2 0 00-2 2m2-2V7a2 2 0 012-2h2.586a1 1 0 01.707.293l2.414 2.414a1 1 0 01.293.707V19a2 2 0 01-2 2h-2a2 2 0 01-2-2m0 0V9m0 4v2"
+        ></path>
+      </svg>
     </div>
+    <h3 class="text-lg font-bold text-slate-900 mb-2">
+      Error Loading Applications
+    </h3>
+    <p class="text-slate-600 mb-6">{{ applicationsError() }}</p>
+    <button
+      (click)="refreshApplicationsData()"
+      class="px-6 py-2.5 bg-primary-500 text-white text-sm font-medium rounded-xl hover:bg-primary-600 active:bg-primary-700 transition-colors duration-200"
+    >
+      Try Again
+    </button>
+  </div>
   }
 
   <!-- Empty State -->
-  @if (!applicationsLoading() && !applicationsError() && filteredApplications().length === 0) {
-    <div class="bg-white rounded-2xl border border-slate-200 p-12 text-center">
-      <div class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
-        <svg class="w-8 h-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
-        </svg>
-      </div>
-      <h3 class="text-lg font-bold text-slate-900 mb-2">No applications found</h3>
-      <p class="text-slate-600 mb-6">
-        @if (selectedOpportunityFilter()) {
-          No applications for the selected opportunity.
-        } @else {
-          Applications will appear here once SMEs start applying to your opportunities.
-        }
-      </p>
-      @if (selectedOpportunityFilter()) {
-        <button 
-          (click)="clearFilter()"
-          class="px-4 py-2.5 bg-slate-100 text-slate-700 text-sm font-medium rounded-xl hover:bg-slate-200 active:bg-slate-300 transition-colors duration-200"
-        >
-          Show All Applications
-        </button>
-      }
+  @if (!applicationsLoading() && !applicationsError() &&
+  filteredApplications().length === 0) {
+  <div class="bg-white rounded-2xl border border-slate-200 p-12 text-center">
+    <div
+      class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4"
+    >
+      <svg
+        class="w-8 h-8 text-slate-400"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="1.5"
+          d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"
+        ></path>
+      </svg>
     </div>
+    <h3 class="text-lg font-bold text-slate-900 mb-2">No applications found</h3>
+    <p class="text-slate-600 mb-6">
+      @if (selectedOpportunityFilter()) { No applications for the selected
+      opportunity. } @else { Applications will appear here once SMEs start
+      applying to your opportunities. }
+    </p>
+    @if (selectedOpportunityFilter()) {
+    <button
+      (click)="clearFilter()"
+      class="px-4 py-2.5 bg-slate-100 text-slate-700 text-sm font-medium rounded-xl hover:bg-slate-200 active:bg-slate-300 transition-colors duration-200"
+    >
+      Show All Applications
+    </button>
+    }
+  </div>
   }
 
   <!-- Recent Activity Section (Only when no filter applied) -->
-  @if (!selectedOpportunityFilter() && !applicationsLoading() && !applicationsError() && recentApplicationsComputed().length > 0) {
+  <!-- @if (!selectedOpportunityFilter() && !applicationsLoading() && !applicationsError() && recentApplicationsComputed().length > 0) {
     <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden">
       <div class="px-6 py-5 border-b border-slate-200">
         <h2 class="text-lg font-bold text-slate-900">Recent Activity</h2>
@@ -183,56 +290,57 @@
         }
       </div>
     </div>
-  }
+  } -->
 
   <!-- All Applications Section -->
-  @if (!applicationsLoading() && !applicationsError() && filteredApplications().length > 0) {
-    <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden">
-      <div class="px-6 py-5 border-b border-slate-200">
-        <h2 class="text-lg font-bold text-slate-900">
-          @if (selectedOpportunityFilter()) {
-            Applications for Selected Opportunity
-          } @else {
-            All Applications
-          }
-        </h2>
-        <p class="text-sm text-slate-600 mt-1">{{ filteredApplications().length }} applications total</p>
-      </div>
-      <div class="divide-y divide-slate-200">
-        @for (application of filteredApplications(); track application.id) {
-          <div class="p-6 hover:bg-slate-50 transition-colors duration-200">
-            <app-application-list-card
-              [application]="transformToApplicationCard(application)"
-              [userType]="'funder'"
-              [showProgress]="true"
-            >
-              <div slot="actions" class="flex items-center gap-2">
-                <button
-                  (click)="viewApplication(application.id)"
-                  class="px-3 py-1.5 bg-primary-500 text-white text-xs font-medium rounded-lg hover:bg-primary-600 active:bg-primary-700 transition-colors duration-200"
-                >
-                  View
-                </button>
-                
-                @if (application.status === 'under_review') {
-                  <button
-                    (click)="updateApplicationStatus(application.id, 'approved')"
-                    class="px-3 py-1.5 bg-green-50 text-green-700 text-xs font-medium rounded-lg hover:bg-green-100 active:bg-green-200 transition-colors duration-200"
-                  >
-                    Approve
-                  </button>
-                  <button
-                    (click)="updateApplicationStatus(application.id, 'rejected')"
-                    class="px-3 py-1.5 bg-red-50 text-red-700 text-xs font-medium rounded-lg hover:bg-red-100 active:bg-red-200 transition-colors duration-200"
-                  >
-                    Reject
-                  </button>
-                }
-              </div>
-            </app-application-list-card>
-          </div>
-        }
-      </div>
+  @if (!applicationsLoading() && !applicationsError() &&
+  filteredApplications().length > 0) {
+  <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden">
+    <div class="px-6 py-5 border-b border-slate-200">
+      <h2 class="text-lg font-bold text-slate-900">
+        @if (selectedOpportunityFilter()) { Applications for Selected
+        Opportunity } @else { Aplications to Funds Under Management by your
+        Organisations }
+      </h2>
+      <p class="text-sm text-slate-600 mt-1">
+        {{ filteredApplications().length }} applications total
+      </p>
     </div>
+    <div class="divide-y divide-slate-200">
+      @for (application of filteredApplications(); track application.id) {
+      <div class="p-6 hover:bg-slate-50 transition-colors duration-200">
+        <app-application-list-card
+          [application]="transformToApplicationCard(application)"
+          [userType]="'funder'"
+          [showProgress]="true"
+        >
+          <div slot="actions" class="flex items-center gap-2">
+            <button
+              (click)="viewApplication(application.id)"
+              class="px-3 py-1.5 bg-primary-500 text-white text-xs font-medium rounded-lg hover:bg-primary-600 active:bg-primary-700 transition-colors duration-200"
+            >
+              View
+            </button>
+
+            @if (application.status === 'under_review') {
+            <button
+              (click)="updateApplicationStatus(application.id, 'approved')"
+              class="px-3 py-1.5 bg-green-50 text-green-700 text-xs font-medium rounded-lg hover:bg-green-100 active:bg-green-200 transition-colors duration-200"
+            >
+              Approve
+            </button>
+            <button
+              (click)="updateApplicationStatus(application.id, 'rejected')"
+              class="px-3 py-1.5 bg-red-50 text-red-700 text-xs font-medium rounded-lg hover:bg-red-100 active:bg-red-200 transition-colors duration-200"
+            >
+              Reject
+            </button>
+            }
+          </div>
+        </app-application-list-card>
+      </div>
+      }
+    </div>
+  </div>
   }
 </div>

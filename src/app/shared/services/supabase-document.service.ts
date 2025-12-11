@@ -1,12 +1,5 @@
 import { Injectable, signal, inject } from '@angular/core';
-import {
-  Observable,
-  from,
-  throwError,
-  BehaviorSubject,
-  Subject,
-  timer,
-} from 'rxjs';
+import { Observable, from, throwError, BehaviorSubject, Subject } from 'rxjs';
 import { tap, catchError, map, switchMap } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import { SharedSupabaseService } from './shared-supabase.service';
@@ -135,7 +128,7 @@ export class SupabaseDocumentService {
         this.updateUploadProgress(documentKey, 100, 'complete');
         this.isUploading.set(false);
         this.scheduleProgressCleanup(documentKey);
-        console.log('✅ Document uploaded:', result.fileName);
+        // console.log('✅ Document uploaded:', result.fileName);
       }),
       catchError((error) => {
         const message = error?.message || 'Upload failed';

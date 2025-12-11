@@ -1,5 +1,4 @@
 // src/app/SMEs/profile/steps/financial-analysis/utils/excel-parser.service.ts
-
 import { Injectable } from '@angular/core';
 
 export interface FinancialRowData {
@@ -35,15 +34,16 @@ export interface ParsedFinancialData {
   columnHeaders: string[];
   lastUpdated: string;
   uploadedFile?: {
-    id?: string; // ← Added
+    id?: string;
     documentKey: string;
     fileName: string;
     publicUrl: string;
-    filePath?: string; // ← Added
-    fileSize?: number; // ← Added
-    mimeType?: string; // ← Added
+    filePath?: string;
+    fileSize?: number;
+    mimeType?: string;
   };
 }
+
 export interface ParseValidation {
   isValid: boolean;
   errors: string[];
@@ -56,122 +56,8 @@ export interface ParseProgress {
   message: string;
 }
 
-// Constants - Updated to match Charles's template
-const EXPECTED_COLUMN_COUNT = 7; // 7 years in Charles's template
-const MAX_ROWS_TO_SCAN = 80;
-
-// Income Statement rows (rows 6-18 in Charles's template)
-const INCOME_STATEMENT_LABELS = [
-  'Revenue',
-  'Cost of sales',
-  'Gross Profit',
-  'Administrative expenses',
-  'Other Operating Expenses (Excl depreciation & amortisation)',
-  'Salaries & Staff Cost',
-  'EBITDA',
-  'Interest Income',
-  'Finances Cost',
-  'Depreciation & Amortisation',
-  'Profit before tax',
-  'Income tax expense',
-  'Profit/(Loss) for the period',
-];
-
-// Financial Ratios rows (rows 21-26 in Charles's template)
-const RATIO_LABELS = [
-  'Sales Growth',
-  'Gross profit margin',
-  'Cost to Income ratio',
-  'Operating margin. (EBITDA)',
-  'Interest Cover Ratio',
-  'Net Operating Profit Margin',
-];
-
-// Balance Sheet - Non-Current Assets (rows 31-39)
-const NON_CURRENT_ASSET_LABELS = [
-  'Non-Currents Assets',
-  "Property Plant and Equipment's",
-  'Intangible assets',
-  'Long term investments',
-  'Loan To Shareholders',
-  'Loan To Directors',
-  'Inter-Company Loan Receivables',
-  'Finance Lease Asset',
-  'Deferred Tax Asset',
-];
-
-// Balance Sheet - Current Assets (rows 41-46)
-const CURRENT_ASSET_LABELS = [
-  'Current Assets',
-  'Cash and Cash Equivalent',
-  'Trade & Other Receivables',
-  'Inventory',
-  'Short Term Investments/Savings',
-  'Assets Held for Sale',
-];
-
-// Balance Sheet - Equity (rows 52-56)
-const EQUITY_LABELS = [
-  'Equities',
-  'Share Capital',
-  'Retained Earnings',
-  'Dividends Paid',
-  'Other Non-distributable Reserves',
-];
-
-// Balance Sheet - Non-Current Liabilities (rows 58-64)
-const NON_CURRENT_LIABILITY_LABELS = [
-  'Liabilities',
-  'Long Term Portion of Loans',
-  'Deferred Tax Liability',
-  'Loans From Shareholders',
-  'Loans From Directors',
-  'Inter-Company Loan Payables',
-  'Finance Lease Liability',
-];
-
-// Balance Sheet - Current Liabilities (rows 66-68)
-const CURRENT_LIABILITY_LABELS = [
-  'Current Liabilities',
-  'Short Term Portion of Loan',
-  'Trade & Other Payables',
-];
-
-// Cash Flow - Operating (rows 6-10 in CashFlow sheet)
-const OPERATING_CASH_FLOW_LABELS = [
-  'Cash generated from operations',
-  'Interested Received',
-  'Interest Paid',
-  'Income taxes paid',
-  'Net cash from operating activities',
-];
-
-// Cash Flow - Investing (rows 12-16 in CashFlow sheet)
-const INVESTING_CASH_FLOW_LABELS = [
-  'Cash flows from investing activities',
-  'Purchase of property, plant and equipment',
-  'Proceeds from sale of equipment',
-  'Acquisition of portfolio investments',
-  'Net cash used in investing activities',
-];
-
-// Cash Flow - Financing (rows 18-24 in CashFlow sheet)
-const FINANCING_CASH_FLOW_LABELS = [
-  'Cash flows from financing activities',
-  'Proceeds from issue of share capital (Equity Investor)',
-  'Proceeds from long-term borrowings (Debt Investor)',
-  'Dividends Received',
-  'Shareholder Loans/(Repayments)',
-  'Capital Repayments of Loans',
-  'Net cash used in financing activities',
-];
-
-// Cash Flow - Summary (rows 26, 28, 30 in CashFlow sheet)
-const SUMMARY_CASH_FLOW_LABELS = [
-  'Net increase in cash and cash equivalents',
-  'Cash and cash equivalents at beginning of period',
-  'Cash and cash equivalents at end of period',
-];
+// Constants
+const EXPECTED_COLUMN_COUNT = 7;
 
 @Injectable({
   providedIn: 'root',

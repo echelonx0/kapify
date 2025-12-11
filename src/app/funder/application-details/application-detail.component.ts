@@ -19,7 +19,7 @@ import { ProfileDataTransformerService } from 'src/app/SMEs/services/profile-dat
 import { ProfileData } from 'src/app/SMEs/profile/models/funding.models';
 import { FundingApplication } from 'src/app/SMEs/models/application.models';
 
-import { ApplicationMetricsComponent } from '../components/application-metrics/application-metrics.component';
+import { ApplicationMetricsComponent } from './components/application-metrics/application-metrics.component';
 import { ApplicationHeaderComponent } from '../components/application-header/application-header.component';
 import { StatusManagementModalComponent } from '../components/status-management-modal/status-management-modal.component';
 import { FundingOpportunity } from '../create-opportunity/shared/funding.interfaces';
@@ -112,11 +112,6 @@ export class ApplicationDetailComponent implements OnInit, OnDestroy {
       },
     };
   });
-
-  // formData = computed((): ApplicationFormData => {
-  //   const app = this.application();
-  //   return (app?.formData as ApplicationFormData) || {};
-  // });
 
   formData = computed((): ApplicationFormData => {
     const app = this.application();
