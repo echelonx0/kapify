@@ -77,6 +77,8 @@ export class AiAssistantComponent implements OnInit, OnDestroy {
   @Input() currentOpportunity?: any;
   @Input() applicationData?: any;
 
+  private lastAnalysisHash = signal<string | null>(null);
+
   private marketIntelligence = inject(MarketIntelligenceService);
   private appIntelligence = inject(ApplicationIntelligenceService);
   private destroy$ = new Subject<void>();
@@ -345,35 +347,50 @@ export class AiAssistantComponent implements OnInit, OnDestroy {
 
   //   this.isAnalyzingApplication.set(true);
 
-  //   try {
-  //     const analysis = this.appIntelligence.analyzeApplication(
+  //   // Use comprehensive analysis that calls all Edge Functions
+  //   this.appIntelligence
+  //     .getComprehensiveAnalysis(
   //       this.applicationData,
   //       this.currentOpportunity,
   //       this.applicationData.profileData
-  //     );
+  //     )
+  //     .pipe(takeUntil(this.destroy$))
+  //     .subscribe({
+  //       next: (analysis) => {
+  //         this.applicationAnalysis.set(analysis.insights);
+  //         this.investmentScore.set(analysis.investmentScore);
+  //         this.isAnalyzingApplication.set(false);
 
-  //     this.applicationAnalysis.set(analysis.insights);
-  //     this.investmentScore.set(analysis.score);
-
-  //     console.log('Application analysis complete:', analysis);
-  //   } catch (error) {
-  //     console.error('Application analysis failed:', error);
-  //   } finally {
-  //     this.isAnalyzingApplication.set(false);
-  //   }
+  //         console.log('Comprehensive analysis complete:', analysis);
+  //       },
+  //       error: (error) => {
+  //         console.error('Comprehensive analysis failed:', error);
+  //         this.isAnalyzingApplication.set(false);
+  //       },
+  //     });
   // }
-
-  // In ai-assistant.component.ts, update the analyzeApplication method:
 
   private analyzeApplication() {
     if (!this.applicationData || !this.currentOpportunity) {
-      console.log('No application data for analysis');
       return;
     }
 
+    const hash = btoa(
+      JSON.stringify({
+        application: this.applicationData,
+        opportunity: this.currentOpportunity,
+        profile: this.applicationData.profileData,
+      })
+    );
+
+    if (this.lastAnalysisHash() === hash) {
+      console.log('Skipping analysis: no input changes');
+      return;
+    }
+
+    this.lastAnalysisHash.set(hash);
     this.isAnalyzingApplication.set(true);
 
-    // Use comprehensive analysis that calls all Edge Functions
     this.appIntelligence
       .getComprehensiveAnalysis(
         this.applicationData,
@@ -395,6 +412,7 @@ export class AiAssistantComponent implements OnInit, OnDestroy {
         },
       });
   }
+
   private setupIntelligenceRefresh() {
     // Refresh intelligence every 30 minutes
     const refreshInterval = setInterval(() => {

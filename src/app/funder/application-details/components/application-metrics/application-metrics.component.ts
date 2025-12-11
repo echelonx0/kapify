@@ -1,5 +1,5 @@
-// src/app/funder/components/application-detail/components/application-metrics/application-metrics.component.ts
-import { Component, Input, computed, signal } from '@angular/core';
+// src/app/funder/application-details/components/application-metrics/application-metrics.component.ts
+import { Component, Input, computed, effect, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   LucideAngularModule,
@@ -24,7 +24,7 @@ import {
   TriangleAlert,
 } from 'lucide-angular';
 import { FundingApplication } from 'src/app/SMEs/models/application.models';
-import { FundingOpportunity } from '../../create-opportunity/shared/funding.interfaces';
+import { FundingOpportunity } from '../../../create-opportunity/shared/funding.interfaces';
 import { ProfileData } from 'src/app/SMEs/profile/models/funding.models';
 import {
   ManagementMember,
@@ -91,15 +91,16 @@ export class ApplicationMetricsComponent {
   // Tab configuration
   tabs: Tab[] = [
     { id: 'overview', label: 'Request Summary', icon: this.ActivityIcon },
-
     { id: 'business', label: 'Operations', icon: this.BuildingIcon },
     { id: 'financial', label: 'Financials', icon: this.BarChart3Icon },
-
     { id: 'management', label: 'Leadership', icon: this.UsersIcon },
     { id: 'swot', label: 'SWOT', icon: this.LightbulbIcon },
-    // { id: 'strategy', label: 'Strategy', icon: this.TargetIcon },
   ];
-
+  constructor() {
+    effect(() => {
+      console.log('Financial analysis data:', this.financialAnalysis());
+    });
+  }
   requestedAmount = computed(() => {
     const formData = this.application?.formData as any;
     const amount = formData?.requestedAmount;
