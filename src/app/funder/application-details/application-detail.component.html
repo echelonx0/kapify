@@ -1,3 +1,4 @@
+<!-- src/app/funders/application-detail/application-detail.component.html - FIXED VERSION -->
 @if (application()) {
 
 <div class="sticky top-0 z-10 bg-neutral-50 border-b border-gray-200">
@@ -129,13 +130,15 @@
     <div class="col-span-4">
       <div class="sticky top-24">
         @if (hasCompleteDataForAnalysis()) {
-        <!-- <app-ai-assistant> </app-ai-assistant> -->
+        <!-- ✅ FIXED: Now passes profileData and organizationId -->
         <app-ai-assistant
           [currentStep]="'review'"
           [formData]="formData()"
           [completionPercentage]="100"
           [currentOpportunity]="opportunity()"
           [applicationData]="application()"
+          [profileData]="profileData()"
+          [organizationId]="organizationId()"
         >
         </app-ai-assistant>
         } @else if (profileLoading()) {

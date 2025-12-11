@@ -121,9 +121,7 @@ export class ProfileManagementService {
     const currentAuth = this.authService.user();
     if (currentAuth) {
       this.loadProfileData().subscribe({
-        next: (profileData) => {
-          console.log('Profile data loaded successfully');
-        },
+        next: (profileData) => {},
         error: (error) => {
           console.error('Failed to load initial profile data:', error);
           this.createProfileFromAuthUser();
@@ -169,11 +167,6 @@ export class ProfileManagementService {
 
   // Enhanced database loading to include unified organization data
   private loadFromDatabase(userId: string): Observable<UserProfileData> {
-    console.log(
-      '🔍 ProfileManagementService: Starting loadFromDatabase for',
-      userId
-    );
-
     return new Observable((observer) => {
       Promise.all([
         // Load user from database
@@ -198,9 +191,9 @@ export class ProfileManagementService {
           .maybeSingle(),
       ]).then(
         ([userResult, profileResult, orgUserResult]) => {
-          console.log('🔍 User result:', userResult);
-          console.log('🔍 Profile result:', profileResult);
-          console.log('🔍 OrgUser result:', orgUserResult);
+          // console.log('🔍 User result:', userResult);
+          // console.log('🔍 Profile result:', profileResult);
+          // console.log('🔍 OrgUser result:', orgUserResult);
           if (userResult.error && profileResult.error) {
             throw new Error('User not found in database');
           }
@@ -481,7 +474,6 @@ export class ProfileManagementService {
       map(() => updatedData),
       tap(() => {
         this.isLoading.set(false);
-        console.log('Profile updated and synced');
       }),
       catchError((error) => {
         console.warn(
