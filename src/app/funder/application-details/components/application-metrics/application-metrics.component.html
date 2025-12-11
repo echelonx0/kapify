@@ -90,55 +90,10 @@
       <p class="text-sm text-slate-700 leading-relaxed">{{ useOfFunds() }}</p>
     </div>
     }
-
-    <!-- Quick Stats Grid -->
-    <div class="grid grid-cols-2 gap-4">
-      @if (businessInfo()?.companyName) {
-      <div class="bg-white border border-slate-200 rounded-xl p-4">
-        <div class="flex items-center gap-2 mb-2">
-          <lucide-icon [img]="BuildingIcon" class="w-4 h-4 text-slate-500" />
-          <span class="text-xs font-medium text-slate-600">Company</span>
-        </div>
-        <p class="text-sm font-semibold text-slate-900">
-          {{ businessInfo()!.companyName }}
-        </p>
-      </div>
-      } @if (businessInfo()?.industry) {
-      <div class="bg-white border border-slate-200 rounded-xl p-4">
-        <div class="flex items-center gap-2 mb-2">
-          <lucide-icon [img]="BriefcaseIcon" class="w-4 h-4 text-slate-500" />
-          <span class="text-xs font-medium text-slate-600">Industry</span>
-        </div>
-        <p class="text-sm font-semibold text-slate-900">
-          {{ businessInfo()!.industry }}
-        </p>
-      </div>
-      } @if (financialInfo()?.annualRevenue) {
-      <div class="bg-white border border-slate-200 rounded-xl p-4">
-        <div class="flex items-center gap-2 mb-2">
-          <lucide-icon [img]="TrendingUpIcon" class="w-4 h-4 text-slate-500" />
-          <span class="text-xs font-medium text-slate-600">Annual Revenue</span>
-        </div>
-        <p class="text-sm font-semibold text-slate-900">
-          {{ financialInfo()!.annualRevenue }}
-        </p>
-      </div>
-      } @if (businessInfo()?.numberOfEmployees) {
-      <div class="bg-white border border-slate-200 rounded-xl p-4">
-        <div class="flex items-center gap-2 mb-2">
-          <lucide-icon [img]="UsersIcon" class="w-4 h-4 text-slate-500" />
-          <span class="text-xs font-medium text-slate-600">Employees</span>
-        </div>
-        <p class="text-sm font-semibold text-slate-900">
-          {{ businessInfo()!.numberOfEmployees }}
-        </p>
-      </div>
-      }
-    </div>
   </div>
   }
 
-  <!-- PERSONAL INFO TAB -->
+  <!-- Personal INFO TAB -->
   @if (activeTab() === 'personal' && personalInfo()) {
   <div class="space-y-4">
     <div class="grid grid-cols-2 gap-4">
@@ -336,67 +291,23 @@
   <!-- FINANCIAL INFO TAB -->
   @if (activeTab() === 'financial') {
   <div class="space-y-6">
-    <!-- Basic Financial Info (if available) -->
-    @if (financialInfo()) {
-    <div class="grid grid-cols-2 gap-4">
-      @if (financialInfo()!.annualRevenue) {
-      <!-- Annual Revenue -->
-      <div class="bg-emerald-50 border border-emerald-200 rounded-lg p-4">
-        <div class="flex items-center gap-2 text-emerald-700 mb-1">
-          <lucide-icon [img]="TrendingUpIcon" [size]="16"></lucide-icon>
-          <span class="text-sm font-medium">Annual Revenue</span>
-        </div>
-        <p class="text-2xl font-bold text-emerald-900">
-          {{ formatNumber(annualRevenueValue()) }}
-        </p>
-      </div>
-
-      <!-- Monthly Revenue -->
-      <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
-        <div class="flex items-center gap-2 text-blue-700 mb-1">
-          <lucide-icon [img]="DollarSignIcon" [size]="16"></lucide-icon>
-          <span class="text-sm font-medium">Monthly Revenue</span>
-        </div>
-        <p class="text-2xl font-bold text-blue-900">
-          {{ formatNumber(monthlyRevenueValue()) }}
-        </p>
-      </div>
-
-      <!-- Profit Margin -->
-      <div class="bg-slate-50 border border-slate-200 rounded-lg p-4">
-        <div class="flex items-center gap-2 text-slate-700 mb-1">
-          <lucide-icon [img]="TrendingUpIcon" [size]="16"></lucide-icon>
-          <span class="text-sm font-medium">Profit Margin</span>
-        </div>
-        <p class="text-2xl font-bold text-slate-900">
-          {{ financialInfo()?.profitMargin || 0 }}%
-        </p>
-      </div>
-      } @if (financialInfo()!.creditRating) {
-      <div class="bg-slate-50 border border-slate-200 rounded-xl p-4">
-        <div class="flex items-start gap-3">
-          <lucide-icon
-            [img]="CreditCardIcon"
-            class="w-5 h-5 text-slate-600 mt-0.5"
-          />
-          <div class="flex-1 min-w-0">
-            <p class="text-xs font-medium text-slate-500 mb-1">Credit Rating</p>
-            <p class="text-sm font-semibold text-slate-900">
-              {{ financialInfo()!.creditRating }}
-            </p>
-          </div>
-        </div>
-      </div>
-      }
-    </div>
-    }
-
     <!-- Financial Analysis Component -->
     <app-financial-analysis-viewer
       [financialAnalysis]="financialAnalysis()"
     ></app-financial-analysis-viewer>
   </div>
   }
+
+  <!-- OPERATIONS TAB (NEW) -->
+  @if (activeTab() === 'operations') {
+  <div class="space-y-6">
+    <!-- Business Assessment Component -->
+    <app-business-assessment-viewer
+      [businessAssessment]="businessAssessment()"
+    ></app-business-assessment-viewer>
+  </div>
+  }
+
   <!-- FUNDING INFO TAB -->
   @if (activeTab() === 'funding' && fundingInfo()) {
   <div class="space-y-4">
@@ -699,38 +610,4 @@
     </div>
   </div>
   }
-
-  <!-- STRATEGY TAB -->
-  <!-- @if (activeTab() === 'strategy') {
-  <div class="space-y-4">
-    @if (businessStrategy()) {
-    <div class="bg-slate-50 border border-slate-200 rounded-xl p-4">
-      <div class="flex items-center gap-2 mb-3">
-        <lucide-icon [img]="TargetIcon" [size]="20" class="text-slate-600" />
-        <h4 class="text-sm font-semibold text-slate-900">Business Strategy</h4>
-      </div>
-      <p class="text-sm text-slate-600">Strategic planning data available</p>
-    </div>
-    } @if (businessReview()) {
-    <div class="bg-slate-50 border border-slate-200 rounded-xl p-4">
-      <div class="flex items-center gap-2 mb-3">
-        <lucide-icon [img]="FileTextIcon" [size]="20" class="text-slate-600" />
-        <h4 class="text-sm font-semibold text-slate-900">Business Review</h4>
-      </div>
-      <p class="text-sm text-slate-600">
-        Comprehensive business assessment on file
-      </p>
-    </div>
-    } @if (!businessStrategy() && !businessReview()) {
-    <div class="text-center py-12">
-      <lucide-icon
-        [img]="TargetIcon"
-        [size]="48"
-        class="text-slate-300 mx-auto mb-4"
-      />
-      <p class="text-sm text-slate-600">No strategic planning data available</p>
-    </div>
-    }
-  </div>
-  } -->
 </div>

@@ -380,7 +380,6 @@ export class AuthService implements OnDestroy {
       const userProfile = result.user;
       userProfile.organizationId = result.organizationId;
       this.userSubject.set(userProfile);
-      console.log('✅ Auth state updated with registration result');
     }
   }
 
@@ -403,14 +402,11 @@ export class AuthService implements OnDestroy {
    * Establish user session after login/auth state change
    */
   private async establishUserSession(session: Session): Promise<void> {
-    console.log('🔐 Establishing user session...');
-
     this.updateLoadingState({ sessionUpdate: true });
 
     try {
       const userProfile = await this.buildUserProfile(session.user);
       this.userSubject.set(userProfile);
-      console.log('✅ User session established:', userProfile.email);
     } catch (error) {
       console.error('Failed to establish user session:', error);
       this.clearAuthState();

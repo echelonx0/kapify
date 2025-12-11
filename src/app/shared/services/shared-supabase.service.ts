@@ -92,8 +92,6 @@ export class SharedSupabaseService implements OnDestroy {
       if (data?.session) {
         this.sessionSubject.next(data.session);
       }
-
-      console.log('✅ Supabase initialized successfully');
     } catch (error) {
       console.error('❌ Supabase initialization failed:', error);
       throw error;
@@ -111,10 +109,6 @@ export class SharedSupabaseService implements OnDestroy {
     SharedSupabaseService.instance.auth.onAuthStateChange((event, session) => {
       this.sessionSubject.next(session);
       this.authChangeSubject.next({ event, session });
-      console.log(
-        `🔐 Auth state changed: ${event}`,
-        session?.user?.email || 'no user'
-      );
     });
   }
 
