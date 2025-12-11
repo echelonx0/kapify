@@ -7,6 +7,7 @@ import {
   ManagementStructure,
 } from '../applications/models/funding-application.models';
 import { ProfileData } from '../profile/models/funding.models';
+import { ParsedFinancialData } from '../profile/steps/financial-analysis/utils/excel-parser.service';
 
 @Injectable({
   providedIn: 'root',
@@ -16,7 +17,13 @@ export class ProfileDataTransformerService {
   transformToFundingProfile(
     profileData: Partial<ProfileData>
   ): FundingApplicationProfile {
-    return {
+    console.log('🔄 [TRANSFORMER] Input profileData:', profileData);
+    console.log(
+      '🔄 [TRANSFORMER] Has financialAnalysis:',
+      !!profileData.financialAnalysis
+    );
+
+    const result = {
       companyInfo: this.transformCompanyInfo(
         profileData.businessInfo,
         profileData.personalInfo
@@ -43,7 +50,18 @@ export class ProfileDataTransformerService {
         profileData.financialAnalysis,
         profileData.fundingInfo
       ),
+
+      // ✅ CRITICAL - Pass through financialAnalysis
+      financialAnalysis: profileData.financialAnalysis,
     };
+
+    console.log('✅ [TRANSFORMER] Output result:', result);
+    console.log(
+      '✅ [TRANSFORMER] Result has financialAnalysis:',
+      !!result.financialAnalysis
+    );
+
+    return result;
   }
 
   private transformSwotAnalysis(swotAnalysis: any): SWOTAnalysis | undefined {
@@ -60,7 +78,6 @@ export class ProfileDataTransformerService {
     };
   }
 
-  // Transform FundingApplicationProfile back to ProfileData for UI consumption
   transformFromFundingProfile(
     fundingProfile: FundingApplicationProfile
   ): Partial<ProfileData> {
@@ -77,16 +94,18 @@ export class ProfileDataTransformerService {
       ),
       businessPlan: this.extractBusinessPlan(fundingProfile.businessStrategy),
       financialInfo: this.extractFinancialInfo(fundingProfile.financialProfile),
+
+      // ✅ USE THE METHOD - Transform financialProfile to ParsedFinancialData
       financialAnalysis: this.extractFinancialAnalysis(
         fundingProfile.financialProfile
       ),
+
       fundingInfo: this.extractFundingInfo(
         fundingProfile.financialProfile,
         fundingProfile.businessStrategy
       ),
     };
   }
-
   // ===============================
   // TRANSFORM TO BACKEND METHODS
   // ===============================
@@ -448,15 +467,25 @@ export class ProfileDataTransformerService {
     };
   }
 
-  private extractFinancialAnalysis(financialProfile: any) {
+  private extractFinancialAnalysis(
+    financialProfile: any
+  ): ParsedFinancialData | undefined {
     if (!financialProfile) return undefined;
 
+    // If it's already in ParsedFinancialData format (from financialAnalysis field)
+    if (financialProfile.incomeStatement && financialProfile.columnHeaders) {
+      return financialProfile as ParsedFinancialData;
+    }
+
+    // Otherwise, construct from FinancialProfile backend data
     return {
-      template: undefined,
-      notes: '',
-      incomeStatement: [],
-      financialRatios: [],
-      lastUpdated: new Date().toISOString(),
+      incomeStatement: financialProfile.incomeStatement || [],
+      balanceSheet: financialProfile.balanceSheet || [],
+      cashFlow: financialProfile.cashFlow || [],
+      financialRatios: financialProfile.financialRatios || [],
+      columnHeaders: financialProfile.columnHeaders || [],
+      lastUpdated: financialProfile.lastUpdated || new Date().toISOString(),
+      uploadedFile: financialProfile.uploadedFile || undefined,
     };
   }
 

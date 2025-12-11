@@ -19,7 +19,10 @@ import {
 } from 'lucide-angular';
 import { interval, Subscription, Subject } from 'rxjs';
 import { debounceTime, takeWhile, takeUntil } from 'rxjs/operators';
-import { SupabaseDocumentService } from '../../../../shared/services/supabase-document.service';
+import {
+  DocumentUploadResult,
+  SupabaseDocumentService,
+} from '../../../../shared/services/supabase-document.service';
 import {
   ExcelFinancialParserService,
   ParseProgress,
@@ -76,7 +79,7 @@ export class FinancialAnalysisComponent implements OnInit, OnDestroy {
 
   // Tab state
   activeTab = signal<FinancialTab>('income-statement');
-
+  private uploadMetadata = signal<DocumentUploadResult | null>(null);
   // Data signals
   incomeStatementData = signal<FinancialRowData[]>([]);
   balanceSheetData = signal<BalanceSheetRowData[]>([]);
@@ -339,6 +342,7 @@ export class FinancialAnalysisComponent implements OnInit, OnDestroy {
     this.parseProgress.set(null);
 
     try {
+      // Parse the Excel file
       const parsedData = await this.excelParser.parseFinancialExcel(
         file,
         (progress) => {
@@ -347,6 +351,7 @@ export class FinancialAnalysisComponent implements OnInit, OnDestroy {
         }
       );
 
+      // Validate parsed data
       const validation = this.excelParser.validateParsedData(parsedData);
 
       if (!validation.isValid) {
@@ -361,30 +366,76 @@ export class FinancialAnalysisComponent implements OnInit, OnDestroy {
         this.parseWarnings.set(validation.warnings);
       }
 
+      // Check data quality
       const qualityWarning = this.checkDataQuality(parsedData);
       if (qualityWarning) {
         this.parseWarnings.update((warnings) => [...warnings, qualityWarning]);
       }
 
+      // Upload file to storage
       this.loadingState.set('uploading');
       this.loadingMessage.set('Uploading file...');
 
       const uploadResult = await this.uploadFileToStorage(file);
+      this.uploadMetadata.set(uploadResult);
 
+      // Attach upload metadata to parsed data
       parsedData.uploadedFile = {
+        id: uploadResult.id,
         documentKey: uploadResult.documentKey,
         fileName: uploadResult.fileName,
         publicUrl: uploadResult.publicUrl,
+        filePath: uploadResult.filePath,
+        fileSize: uploadResult.fileSize,
+        mimeType: uploadResult.mimeType,
       };
 
+      // Apply parsed data to component state
       this.applyParsedData(parsedData);
       this.uploadedTemplate.set(file);
       this.recalculateAllRatios();
-      this.triggerDataChange();
 
+      // ✅ BUILD COMPLETE PROFILE DATA
+      const profileData = this.buildFinancialProfileData();
+      console.log('📊 [DEBUG] Built financial profile data:', profileData);
+      console.log(
+        '📊 [DEBUG] Has incomeStatement:',
+        profileData.incomeStatement.length
+      );
+      console.log('📊 [DEBUG] Has uploadedFile:', !!profileData.uploadedFile);
+
+      // ✅ UPDATE PROFILE SERVICE
+      this.profileService.updateFinancialAnalysis(profileData);
+      console.log('✅ [DEBUG] Updated profileService with financial analysis');
+
+      // ✅ VERIFY IT'S IN THE PROFILE DATA
+      const currentProfileData = this.profileService.data();
+      console.log(
+        '🔍 [DEBUG] Profile service data after update:',
+        currentProfileData
+      );
+      console.log(
+        '🔍 [DEBUG] Has financialAnalysis in profile:',
+        !!currentProfileData.financialAnalysis
+      );
+
+      // ✅ FORCE IMMEDIATE SAVE TO BACKEND
+      console.log('💾 [DEBUG] Triggering immediate backend save...');
+      try {
+        await this.profileService.saveCurrentProgress();
+        console.log('✅ [DEBUG] Immediate backend save completed successfully');
+        this.lastSaved.set(new Date());
+      } catch (saveError) {
+        console.error('❌ [DEBUG] Backend save failed:', saveError);
+        this.parseError.set(
+          'File uploaded but failed to save to backend. Please try saving manually.'
+        );
+      }
+
+      // Mark as ready
       this.loadingState.set('ready');
     } catch (error) {
-      console.error('Error processing financial file:', error);
+      console.error('❌ Error processing financial file:', error);
       this.parseError.set(
         error instanceof Error ? error.message : 'Failed to process file'
       );
@@ -393,6 +444,80 @@ export class FinancialAnalysisComponent implements OnInit, OnDestroy {
       this.parseProgress.set(null);
     }
   }
+  // async onFileSelected(file: File) {
+  //   const allowedTypes = ['.xlsx', '.xls'];
+  //   const fileExtension = '.' + file.name.split('.').pop()?.toLowerCase();
+
+  //   if (!allowedTypes.includes(fileExtension)) {
+  //     this.parseError.set('Please upload only Excel files (.xlsx, .xls)');
+  //     return;
+  //   }
+
+  //   if (file.size > 10 * 1024 * 1024) {
+  //     this.parseError.set('File size must be less than 10MB');
+  //     return;
+  //   }
+
+  //   this.loadingState.set('parsing');
+  //   this.parseError.set(null);
+  //   this.parseWarnings.set([]);
+  //   this.parseProgress.set(null);
+
+  //   try {
+  //     const parsedData = await this.excelParser.parseFinancialExcel(
+  //       file,
+  //       (progress) => {
+  //         this.parseProgress.set(progress);
+  //         this.loadingMessage.set(progress.message);
+  //       }
+  //     );
+
+  //     const validation = this.excelParser.validateParsedData(parsedData);
+
+  //     if (!validation.isValid) {
+  //       this.parseError.set(
+  //         `Template validation failed: ${validation.errors.join(', ')}`
+  //       );
+  //       this.loadingState.set('ready');
+  //       return;
+  //     }
+
+  //     if (validation.warnings.length > 0) {
+  //       this.parseWarnings.set(validation.warnings);
+  //     }
+
+  //     const qualityWarning = this.checkDataQuality(parsedData);
+  //     if (qualityWarning) {
+  //       this.parseWarnings.update((warnings) => [...warnings, qualityWarning]);
+  //     }
+
+  //     this.loadingState.set('uploading');
+  //     this.loadingMessage.set('Uploading file...');
+
+  //     const uploadResult = await this.uploadFileToStorage(file);
+  //     this.uploadMetadata.set(uploadResult);
+  //     parsedData.uploadedFile = {
+  //       documentKey: uploadResult.documentKey,
+  //       fileName: uploadResult.fileName,
+  //       publicUrl: uploadResult.publicUrl,
+  //     };
+
+  //     this.applyParsedData(parsedData);
+  //     this.uploadedTemplate.set(file);
+  //     this.recalculateAllRatios();
+  //     this.triggerDataChange();
+
+  //     this.loadingState.set('ready');
+  //   } catch (error) {
+  //     console.error('Error processing financial file:', error);
+  //     this.parseError.set(
+  //       error instanceof Error ? error.message : 'Failed to process file'
+  //     );
+  //     this.loadingState.set('ready');
+  //   } finally {
+  //     this.parseProgress.set(null);
+  //   }
+  // }
 
   private async uploadFileToStorage(file: File): Promise<any> {
     return new Promise((resolve, reject) => {
@@ -479,21 +604,6 @@ export class FinancialAnalysisComponent implements OnInit, OnDestroy {
     } catch (error) {
       console.error('Download failed:', error);
       this.parseError.set('Failed to download data. Please try again.');
-    }
-  }
-
-  private async downloadExcelFile(
-    data: (string | number)[][],
-    fileName: string
-  ) {
-    try {
-      const XLSX = await import('xlsx');
-      const wb = XLSX.utils.book_new();
-      const ws = XLSX.utils.aoa_to_sheet(data);
-      XLSX.utils.book_append_sheet(wb, ws, 'Financial Data');
-      XLSX.writeFile(wb, fileName);
-    } catch (error) {
-      console.error('Template download failed:', error);
     }
   }
 
@@ -788,12 +898,38 @@ export class FinancialAnalysisComponent implements OnInit, OnDestroy {
     }
   }
 
+  // private buildFinancialProfileData(): ParsedFinancialData {
+  //     const metadata = this.uploadMetadata();
+  //   const uploadedFile = this.uploadedTemplate()
+
+  //     ? {
+  //         documentKey: 'financial-template',
+  //         fileName: this.uploadedTemplate()?.name || 'financial_template.xlsx',
+  //           publicUrl: metadata.publicUrl,
+  //       }
+  //     : undefined;
+
+  //   return {
+  //     incomeStatement: this.incomeStatementData(),
+  //     balanceSheet: this.balanceSheetData(),
+  //     cashFlow: this.cashFlowData(),
+  //     financialRatios: this.financialRatiosData(),
+  //     columnHeaders: this.columnHeaders(),
+  //     lastUpdated: new Date().toISOString(),
+  //     uploadedFile,
+  //   };
+  // }
+
   private buildFinancialProfileData(): ParsedFinancialData {
-    const uploadedFile = this.uploadedTemplate()
+    const metadata = this.uploadMetadata();
+    const uploadedFile = metadata
       ? {
-          documentKey: 'financial-template',
-          fileName: this.uploadedTemplate()?.name || 'financial_template.xlsx',
-          publicUrl: '',
+          documentKey: metadata.documentKey,
+          fileName: metadata.fileName,
+          publicUrl: metadata.publicUrl,
+          filePath: metadata.filePath,
+          fileSize: metadata.fileSize,
+          mimeType: metadata.mimeType,
         }
       : undefined;
 
@@ -886,47 +1022,55 @@ export class FinancialAnalysisComponent implements OnInit, OnDestroy {
     this.triggerDataChange();
   }
 
-  // shouldShowValidation(): boolean {
-  //   // Don't show during loading
-  //   if (this.isLoading()) {
-  //     return false;
-  //   }
+  //  this method to forces a render cycle delay
+  // private async loadExistingData(): Promise<void> {
+  //   return new Promise(async (resolve) => {
+  //     // CRITICAL: Ensure skeleton shows by delaying data load
+  //     await new Promise((r) => setTimeout(r, 100));
 
-  //   // Don't show if no data
-  //   if (!this.hasFinancialData()) {
-  //     return false;
-  //   }
+  //     const profileData = this.profileService.data();
+  //     const financialAnalysis = profileData.financialAnalysis;
 
-  //   // CRITICAL: Don't show while editing
-  //   if (this.editingMode()) {
-  //     return false;
-  //   }
+  //     if (financialAnalysis && this.isValidFinancialData(financialAnalysis)) {
+  //       this.loadFromExistingData(financialAnalysis as ParsedFinancialData);
+  //     } else {
+  //       this.initializeEmptyData();
+  //     }
 
-  //   // Only show when data is stable
-  //   return this.loadingState() === 'ready';
+  //     // Small delay to ensure data is rendered before hiding skeleton
+  //     await new Promise((r) => setTimeout(r, 200));
+  //     resolve();
+  //   });
   // }
 
-  // src/app/SMEs/profile/steps/financial-analysis/financial-analysis.component.ts
-
-  // Add this method to force a render cycle delay
   private async loadExistingData(): Promise<void> {
-    return new Promise(async (resolve) => {
-      // CRITICAL: Ensure skeleton shows by delaying data load
-      await new Promise((r) => setTimeout(r, 100));
+    await new Promise((r) => setTimeout(r, 100));
 
-      const profileData = this.profileService.data();
-      const financialAnalysis = profileData.financialAnalysis;
+    const profileData = this.profileService.data();
+    const financialAnalysis = profileData.financialAnalysis;
 
-      if (financialAnalysis && this.isValidFinancialData(financialAnalysis)) {
-        this.loadFromExistingData(financialAnalysis as ParsedFinancialData);
-      } else {
-        this.initializeEmptyData();
+    if (financialAnalysis && this.isValidFinancialData(financialAnalysis)) {
+      this.loadFromExistingData(financialAnalysis as ParsedFinancialData);
+
+      // ✅ Restore upload metadata if exists
+      if (financialAnalysis.uploadedFile) {
+        this.uploadMetadata.set({
+          id: financialAnalysis.uploadedFile.id || '',
+          documentKey: financialAnalysis.uploadedFile.documentKey,
+          originalName: financialAnalysis.uploadedFile.fileName,
+          fileName: financialAnalysis.uploadedFile.fileName,
+          filePath: financialAnalysis.uploadedFile.filePath || '',
+          fileSize: financialAnalysis.uploadedFile.fileSize || 0,
+          mimeType: financialAnalysis.uploadedFile.mimeType || '',
+          publicUrl: financialAnalysis.uploadedFile.publicUrl,
+          category: 'financial',
+        });
       }
+    } else {
+      this.initializeEmptyData();
+    }
 
-      // Small delay to ensure data is rendered before hiding skeleton
-      await new Promise((r) => setTimeout(r, 200));
-      resolve();
-    });
+    await new Promise((r) => setTimeout(r, 200));
   }
 
   // Update shouldShowValidation to be more defensive

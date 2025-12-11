@@ -5,8 +5,8 @@ import {
   Session,
   AuthChangeEvent,
 } from '@supabase/supabase-js';
-import { BehaviorSubject, Observable, Subject, from } from 'rxjs';
-import { shareReplay, takeUntil, tap, catchError } from 'rxjs/operators';
+import { BehaviorSubject, Observable, Subject } from 'rxjs';
+import { shareReplay, takeUntil } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 
 /**

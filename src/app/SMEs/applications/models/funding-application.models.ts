@@ -1,3 +1,5 @@
+import { ParsedFinancialData } from '../../profile/steps/financial-analysis/utils/excel-parser.service';
+
 // src/app/profile/models/funding-application.models.ts
 export interface FundingApplicationProfile {
   // Company Information
@@ -20,6 +22,7 @@ export interface FundingApplicationProfile {
 
   // Financial Profile (formerly financial)
   financialProfile?: FinancialProfile;
+  financialAnalysis?: ParsedFinancialData;
 }
 
 export interface CompanyInformation {

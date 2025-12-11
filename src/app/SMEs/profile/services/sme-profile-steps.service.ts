@@ -216,9 +216,21 @@ export class SMEProfileStepsService {
   }
 
   async saveCurrentProgress(): Promise<void> {
-    await this.saveToBackend(true); // Manual save
-  }
+    const currentData = this.profileData();
 
+    // ✅ DEBUG LOG
+    console.log('💾 [DEBUG] Saving profile data:', currentData);
+    console.log(
+      '💾 [DEBUG] Has financialAnalysis:',
+      !!currentData.financialAnalysis
+    );
+    console.log(
+      '💾 [DEBUG] financialAnalysis content:',
+      currentData.financialAnalysis
+    );
+
+    await this.saveToBackend(true);
+  }
   private async saveToBackend(isManual: boolean = false): Promise<void> {
     const user = this.authService.user();
     if (!user || this.isSaving()) return;
@@ -397,6 +409,48 @@ export class SMEProfileStepsService {
     });
   }
 
+  // private hasDataForStep(stepId: string, data: Partial<ProfileData>): boolean {
+  //   switch (stepId) {
+  //     case 'company-info':
+  //       return !!(
+  //         data.businessInfo?.companyName || data.personalInfo?.firstName
+  //       );
+  //     case 'documents':
+  //       return (
+  //         !!(
+  //           data.supportingDocuments &&
+  //           Object.keys(data.supportingDocuments).length > 0
+  //         ) || !!(data.documents && Object.keys(data.documents).length > 0)
+  //       );
+  //     case 'business-assessment':
+  //       return !!(
+  //         data.businessReview && Object.keys(data.businessReview).length > 0
+  //       );
+  //     case 'swot-analysis':
+  //       return !!(
+  //         data.swotAnalysis?.strengths?.length ||
+  //         data.swotAnalysis?.weaknesses?.length
+  //       );
+  //     case 'management':
+  //       return !!(
+  //         data.managementGovernance &&
+  //         Object.keys(data.managementGovernance).length > 0
+  //       );
+  //     case 'business-strategy':
+  //       return !!(
+  //         data.businessPlan && Object.keys(data.businessPlan).length > 0
+  //       );
+  //     case 'financial-profile':
+  //       return !!(
+  //         data.financialInfo?.monthlyRevenue || data.financialAnalysis?.template
+  //       );
+  //     case 'review':
+  //       return this.steps.filter((s) => s.required).every((s) => s.completed);
+  //     default:
+  //       return false;
+  //   }
+  // }
+
   private hasDataForStep(stepId: string, data: Partial<ProfileData>): boolean {
     switch (stepId) {
       case 'company-info':
@@ -429,8 +483,11 @@ export class SMEProfileStepsService {
           data.businessPlan && Object.keys(data.businessPlan).length > 0
         );
       case 'financial-profile':
+        // ✅ FIXED - Check for valid financial data
         return !!(
-          data.financialInfo?.monthlyRevenue || data.financialAnalysis?.template
+          data.financialInfo?.monthlyRevenue ||
+          data.financialAnalysis?.incomeStatement?.length ||
+          data.financialAnalysis?.uploadedFile?.publicUrl
         );
       case 'review':
         return this.steps.filter((s) => s.required).every((s) => s.completed);

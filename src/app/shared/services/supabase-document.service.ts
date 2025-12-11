@@ -7,7 +7,7 @@ import {
   Subject,
   timer,
 } from 'rxjs';
-import { tap, catchError, map, switchMap, takeUntil } from 'rxjs/operators';
+import { tap, catchError, map, switchMap } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import { SharedSupabaseService } from './shared-supabase.service';
 

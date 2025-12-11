@@ -48,7 +48,6 @@ interface TabData {
     CommonModule,
     FormsModule,
     LucideAngularModule,
-
     ApplicationMessagingComponent,
     StatusTrackerComponent,
   ],
