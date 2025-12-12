@@ -43,9 +43,9 @@ import {
     UiButtonComponent,
     ShareholderManagerComponent,
   ],
-  templateUrl: 'admin-information.component.html',
+  templateUrl: 'company-info.component.html',
 })
-export class AdminInformationComponent implements OnInit, OnDestroy {
+export class CompanyInfoComponent implements OnInit, OnDestroy {
   private fundingApplicationService = inject(FundingProfileSetupService);
   private fb = inject(FormBuilder);
 
@@ -176,19 +176,20 @@ export class AdminInformationComponent implements OnInit, OnDestroy {
       staffCount: ['', [Validators.required, Validators.min(1)]],
       businessDescription: [
         '',
-        [Validators.required, Validators.maxLength(500)],
+        [
+          Validators.required,
+          Validators.minLength(20),
+          Validators.maxLength(500),
+        ],
       ],
 
-      // Legal and Compliance
-      cipcReturns: ['', [Validators.required]],
-      vatRegistered: ['', [Validators.required]],
+      // Legal and Compliance (OPTIONAL - captures data but doesn't block save)
+      cipcReturns: [''],
+      vatRegistered: [''],
       vatNumber: [''],
-      taxCompliance: ['', [Validators.required]],
-      incomeTaxNumber: [
-        '',
-        [Validators.required, Validators.pattern(/^\d{10}$/)],
-      ],
-      workmansComp: ['', [Validators.required]],
+      taxCompliance: [''],
+      incomeTaxNumber: ['', [Validators.pattern(/^\d{10}$/)]],
+      workmansComp: [''],
     });
   }
 
@@ -253,14 +254,23 @@ export class AdminInformationComponent implements OnInit, OnDestroy {
     const vatRegisteredControl = this.adminForm.get('vatRegistered');
     const vatNumberControl = this.adminForm.get('vatNumber');
 
-    if (vatRegisteredControl) {
+    if (vatRegisteredControl && vatNumberControl) {
+      // Set initial validation based on current value
+      if (vatRegisteredControl.value === 'yes') {
+        vatNumberControl.setValidators([Validators.required]);
+      } else {
+        vatNumberControl.clearValidators();
+      }
+      vatNumberControl.updateValueAndValidity({ emitEvent: false });
+
+      // Subscribe to future changes
       vatRegisteredControl.valueChanges.subscribe((value) => {
         if (value === 'yes') {
-          vatNumberControl?.setValidators([Validators.required]);
+          vatNumberControl.setValidators([Validators.required]);
         } else {
-          vatNumberControl?.clearValidators();
+          vatNumberControl.clearValidators();
         }
-        vatNumberControl?.updateValueAndValidity();
+        vatNumberControl.updateValueAndValidity();
       });
     }
   }
@@ -282,15 +292,25 @@ export class AdminInformationComponent implements OnInit, OnDestroy {
   // ===============================
 
   async saveManually() {
-    if (this.isSaving() || !this.adminForm.valid) return;
+    if (this.isSaving() || !this.adminForm.valid) {
+      console.log(
+        'Form validity check - Valid:',
+        this.adminForm.valid,
+        'Errors:',
+        this.getFormErrors()
+      );
+      return;
+    }
 
     this.isSaving.set(true);
     try {
       const companyData = this.buildCompanyInfoData();
+      console.log('📤 Saving company data:', companyData);
       this.fundingApplicationService.updateCompanyInfo(companyData);
       await this.fundingApplicationService.saveCurrentProgress();
       this.lastSaved.set(new Date());
       this.adminForm.markAsPristine();
+      console.log('✅ Company information saved successfully');
     } catch (error) {
       console.error('Failed to save company information:', error);
     } finally {
@@ -423,15 +443,32 @@ export class AdminInformationComponent implements OnInit, OnDestroy {
 
     if (field.errors['required']) return `${displayName} is required`;
     if (field.errors['email']) return 'Enter a valid email address';
+    if (field.errors['minlength']) {
+      return `${displayName} must be at least ${field.errors['minlength'].requiredLength} characters`;
+    }
+    if (field.errors['maxlength']) return `Cannot exceed 500 characters`;
     if (field.errors['pattern'] && fieldName === 'incomeTaxNumber') {
       return 'Income tax number must be exactly 10 digits';
     }
     if (field.errors['pattern']) return 'Invalid format';
     if (field.errors['min']) return 'Value must be greater than 0';
     if (field.errors['max']) return 'Value cannot exceed 100';
-    if (field.errors['maxlength']) return 'Cannot exceed 500 characters';
 
     return undefined;
+  }
+
+  /**
+   * Debug helper: returns all field errors for troubleshooting
+   */
+  private getFormErrors(): Record<string, any> {
+    const errors: Record<string, any> = {};
+    Object.keys(this.adminForm.controls).forEach((key) => {
+      const control = this.adminForm.get(key);
+      if (control && control.errors) {
+        errors[key] = control.errors;
+      }
+    });
+    return errors;
   }
 
   private getFieldDisplayName(fieldName: string): string {

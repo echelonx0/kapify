@@ -39,20 +39,17 @@ export const profileRoutes: Routes = [
         children: [
           {
             path: '',
-            // UPDATED: Redirect to new naming convention
+
             redirectTo: 'company-info',
             pathMatch: 'full' as 'full',
           },
 
-          // ===============================
-          // NEW FUNDING APPLICATION ROUTES
-          // ===============================
           {
             path: 'company-info',
             loadComponent: () =>
-              import(
-                './steps/admin-information-step/admin-information.component'
-              ).then((c) => c.AdminInformationComponent),
+              import('./steps/company-info-step/company-info.component').then(
+                (c) => c.CompanyInfoComponent
+              ),
             title: 'Company Information - Funding Application',
           },
           {
