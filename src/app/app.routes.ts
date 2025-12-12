@@ -13,6 +13,7 @@ import { VersionInfoComponent } from './shared/components/version-info.component
 import { PricingPageComponent } from './dashboard/finance/pricing-page/pricing-page.component';
 import { PublicProfileViewComponent } from './SMEs/profile/public-page/public-profile.component';
 import { AcceptInvitationComponent } from './auth/accept-invitation/accept-invitation.component';
+import { InvoiceComponent } from './invoice/invoice.component';
 
 export const routes: Routes = [
   // Public routes
@@ -131,6 +132,12 @@ export const routes: Routes = [
       import('./dashboard/finance/finance.routes').then((m) => m.financeRoutes),
   },
 
+  {
+    path: 'invoice',
+    component: InvoiceComponent,
+    canActivate: [AuthGuard],
+    title: 'Invoices - Kapify',
+  },
   // Funding routes
   {
     path: 'funding',
