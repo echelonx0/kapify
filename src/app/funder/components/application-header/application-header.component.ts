@@ -1,33 +1,41 @@
 // src/app/funder/components/application-detail/components/application-header/application-header.component.ts
 
-import { Component, Input, Output, EventEmitter, computed } from '@angular/core';
+import {
+  Component,
+  Input,
+  Output,
+  EventEmitter,
+  computed,
+  inject,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { 
-  LucideAngularModule, 
+import {
+  LucideAngularModule,
   ArrowLeft,
   AlertCircle,
   Loader2,
-  Settings
+  Settings,
 } from 'lucide-angular';
 
 import { FundingApplication } from 'src/app/SMEs/models/application.models';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-application-header',
   standalone: true,
   imports: [CommonModule, LucideAngularModule],
   templateUrl: './application-header.component.html',
-  styleUrls: ['./application-header.component.css']
+  styleUrls: ['./application-header.component.css'],
 })
 export class ApplicationHeaderComponent {
   @Input() application!: FundingApplication;
   @Input() profileLoading = false;
   @Input() profileError: string | null = null;
   @Input() hasCompleteData = false;
-  
+
   @Output() back = new EventEmitter<void>();
   @Output() manageStatus = new EventEmitter<void>();
-
+  private router = inject(Router);
   // Icons
   ArrowLeftIcon = ArrowLeft;
   AlertCircleIcon = AlertCircle;
@@ -42,7 +50,7 @@ export class ApplicationHeaderComponent {
       under_review: 'status-badge status-under-review',
       approved: 'status-badge status-approved',
       rejected: 'status-badge status-rejected',
-      withdrawn: 'status-badge status-draft'
+      withdrawn: 'status-badge status-draft',
     };
     return classMap[status] || 'status-badge status-draft';
   });
@@ -55,7 +63,7 @@ export class ApplicationHeaderComponent {
       under_review: 'Under Review',
       approved: 'Approved',
       rejected: 'Rejected',
-      withdrawn: 'Withdrawn'
+      withdrawn: 'Withdrawn',
     };
     return statusMap[status] || status;
   });
@@ -75,12 +83,19 @@ export class ApplicationHeaderComponent {
       day: 'numeric',
       year: 'numeric',
       hour: '2-digit',
-      minute: '2-digit'
+      minute: '2-digit',
     }).format(date);
   }
 
   onBack() {
+    // This goes to all the applications on that fund
     this.back.emit();
+  }
+  allApplications() {
+    // This goes to the applications tab for the user
+    this.router.navigate(['/funder/dashboard'], {
+      queryParams: { tab: 'applications' },
+    });
   }
 
   onManageStatus() {

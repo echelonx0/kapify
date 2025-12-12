@@ -58,7 +58,6 @@ export interface CompanyInformation {
   bbbeeLevel?: string;
   regulatoryLicenses: string[];
 
-  // ← ADD THESE MISSING LEGAL FIELDS:
   businessStage?: string;
   cipcReturns?: string;
   incomeTaxNumber?: string;

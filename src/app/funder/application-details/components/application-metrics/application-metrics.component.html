@@ -1,4 +1,4 @@
-<!-- src/app/funder/components/application-detail/components/application-metrics/application-metrics.component.html -->
+<!-- src/app/funder/components/application-detail/components/application-metrics/application-metrics.component.html - UPDATED -->
 
 <!-- Tab Navigation -->
 <div class="border-b border-slate-200 mb-6">
@@ -6,10 +6,10 @@
     @for (tab of tabs; track tab.id) {
     <button
       (click)="setActiveTab(tab.id)"
-      [class.bg-orange-50]="activeTab() === tab.id"
-      [class.text-orange-700]="activeTab() === tab.id"
+      [class.bg-teal-50]="activeTab() === tab.id"
+      [class.text-teal-700]="activeTab() === tab.id"
       [class.border-b-2]="activeTab() === tab.id"
-      [class.border-orange-500]="activeTab() === tab.id"
+      [class.border-teal-500]="activeTab() === tab.id"
       [class.text-slate-600]="activeTab() !== tab.id"
       [class.hover:text-slate-900]="activeTab() !== tab.id"
       [class.hover:bg-slate-50]="activeTab() !== tab.id"
@@ -93,86 +93,28 @@
   </div>
   }
 
-  <!-- Personal INFO TAB -->
-  @if (activeTab() === 'personal' && personalInfo()) {
-  <div class="space-y-4">
-    <div class="grid grid-cols-2 gap-4">
-      @if (personalInfo()!.firstName || personalInfo()!.lastName) {
-      <div class="bg-slate-50 border border-slate-200 rounded-xl p-4">
-        <div class="flex items-start gap-3">
-          <lucide-icon [img]="UserIcon" class="w-5 h-5 text-slate-600 mt-0.5" />
-          <div class="flex-1 min-w-0">
-            <p class="text-xs font-medium text-slate-500 mb-1">Full Name</p>
-            <p class="text-sm font-semibold text-slate-900">
-              {{ personalInfo()!.firstName }} {{ personalInfo()!.lastName }}
-            </p>
-          </div>
-        </div>
-      </div>
-      } @if (personalInfo()!.position) {
-      <div class="bg-slate-50 border border-slate-200 rounded-xl p-4">
-        <div class="flex items-start gap-3">
-          <lucide-icon
-            [img]="BriefcaseIcon"
-            class="w-5 h-5 text-slate-600 mt-0.5"
-          />
-          <div class="flex-1 min-w-0">
-            <p class="text-xs font-medium text-slate-500 mb-1">Position</p>
-            <p class="text-sm font-semibold text-slate-900">
-              {{ personalInfo()!.position }}
-            </p>
-          </div>
-        </div>
-      </div>
-      } @if (personalInfo()!.email) {
-      <div class="bg-slate-50 border border-slate-200 rounded-xl p-4">
-        <div class="flex items-start gap-3">
-          <lucide-icon [img]="MailIcon" class="w-5 h-5 text-slate-600 mt-0.5" />
-          <div class="flex-1 min-w-0">
-            <p class="text-xs font-medium text-slate-500 mb-1">Email Address</p>
-            <p class="text-sm font-semibold text-slate-900 truncate">
-              {{ personalInfo()!.email }}
-            </p>
-          </div>
-        </div>
-      </div>
-      } @if (personalInfo()!.phone) {
-      <div class="bg-slate-50 border border-slate-200 rounded-xl p-4">
-        <div class="flex items-start gap-3">
-          <lucide-icon
-            [img]="PhoneIcon"
-            class="w-5 h-5 text-slate-600 mt-0.5"
-          />
-          <div class="flex-1 min-w-0">
-            <p class="text-xs font-medium text-slate-500 mb-1">Phone Number</p>
-            <p class="text-sm font-semibold text-slate-900">
-              {{ personalInfo()!.phone }}
-            </p>
-          </div>
-        </div>
-      </div>
-      } @if (personalInfo()!.idNumber) {
-      <div
-        class="bg-slate-50 border border-slate-200 rounded-xl p-4 col-span-2"
-      >
-        <div class="flex items-start gap-3">
-          <lucide-icon [img]="HashIcon" class="w-5 h-5 text-slate-600 mt-0.5" />
-          <div class="flex-1 min-w-0">
-            <p class="text-xs font-medium text-slate-500 mb-1">ID Number</p>
-            <p class="text-sm font-semibold text-slate-900">
-              {{ personalInfo()!.idNumber }}
-            </p>
-          </div>
-        </div>
-      </div>
-      }
-    </div>
-  </div>
-  }
-
-  <!-- BUSINESS INFO TAB -->
+  <!-- BUSINESS INFO TAB - UPDATED WITH BUSINESS DESCRIPTION -->
   @if (activeTab() === 'business' && businessInfo()) {
   <div class="space-y-4">
+    <!-- Business Description (Full Width) -->
+    @if (businessDescription()) {
+    <div class="bg-slate-50 border border-slate-200 rounded-xl p-4">
+      <div class="flex items-start gap-3 mb-3">
+        <lucide-icon
+          [img]="FileTextIcon"
+          class="w-5 h-5 text-slate-600 mt-0.5"
+        />
+        <h3 class="text-sm font-semibold text-slate-900">
+          About this business
+        </h3>
+      </div>
+      <p class="text-sm text-slate-700 leading-relaxed">
+        {{ businessDescription() }}
+      </p>
+    </div>
+    }
+
+    <!-- Business Details Grid (2 columns) -->
     <div class="grid grid-cols-2 gap-4">
       @if (businessInfo()!.companyName) {
       <div class="bg-slate-50 border border-slate-200 rounded-xl p-4">
@@ -298,201 +240,13 @@
   </div>
   }
 
-  <!-- OPERATIONS TAB (NEW) -->
+  <!-- OPERATIONS TAB -->
   @if (activeTab() === 'operations') {
   <div class="space-y-6">
     <!-- Business Assessment Component -->
     <app-business-assessment-viewer
       [businessAssessment]="businessAssessment()"
     ></app-business-assessment-viewer>
-  </div>
-  }
-
-  <!-- FUNDING INFO TAB -->
-  @if (activeTab() === 'funding' && fundingInfo()) {
-  <div class="space-y-4">
-    <div class="grid grid-cols-2 gap-4">
-      @if (fundingInfo()!.amountRequired) {
-      <div class="bg-orange-50 border border-orange-200/50 rounded-xl p-4">
-        <div class="flex items-start gap-3">
-          <lucide-icon
-            [img]="DollarSignIcon"
-            class="w-5 h-5 text-orange-600 mt-0.5"
-          />
-          <div class="flex-1 min-w-0">
-            <p class="text-xs font-medium text-orange-700 mb-1">
-              Amount Required
-            </p>
-            <p class="text-sm font-bold text-orange-900">
-              {{ fundingInfo()!.amountRequired }}
-            </p>
-          </div>
-        </div>
-      </div>
-      } @if (fundingInfo()!.timelineRequired) {
-      <div class="bg-blue-50 border border-blue-200/50 rounded-xl p-4">
-        <div class="flex items-start gap-3">
-          <lucide-icon
-            [img]="CalendarIcon"
-            class="w-5 h-5 text-blue-600 mt-0.5"
-          />
-          <div class="flex-1 min-w-0">
-            <p class="text-xs font-medium text-blue-700 mb-1">
-              Timeline Required
-            </p>
-            <p class="text-sm font-semibold text-blue-900">
-              {{ fundingInfo()!.timelineRequired }}
-            </p>
-          </div>
-        </div>
-      </div>
-      } @if (fundingInfo()!.repaymentPeriod) {
-      <div class="bg-slate-50 border border-slate-200 rounded-xl p-4">
-        <div class="flex items-start gap-3">
-          <lucide-icon
-            [img]="CalendarIcon"
-            class="w-5 h-5 text-slate-600 mt-0.5"
-          />
-          <div class="flex-1 min-w-0">
-            <p class="text-xs font-medium text-slate-500 mb-1">
-              Repayment Period
-            </p>
-            <p class="text-sm font-semibold text-slate-900">
-              {{ fundingInfo()!.repaymentPeriod }}
-            </p>
-          </div>
-        </div>
-      </div>
-      }
-
-      <div class="bg-slate-50 border border-slate-200 rounded-xl p-4">
-        <div class="flex items-start gap-3">
-          <lucide-icon
-            [img]="FileTextIcon"
-            class="w-5 h-5 text-slate-600 mt-0.5"
-          />
-          <div class="flex-1 min-w-0">
-            <p class="text-xs font-medium text-slate-500 mb-1">
-              Collateral Available
-            </p>
-            <p class="text-sm font-semibold text-slate-900">
-              {{ fundingInfo()!.collateralAvailable ? "Yes" : "No" }}
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    @if (fundingInfo()!.purposeOfFunding) {
-    <div class="bg-slate-50 border border-slate-200 rounded-xl p-4">
-      <h4 class="text-sm font-semibold text-slate-900 mb-2">
-        Purpose of Funding
-      </h4>
-      <p class="text-sm text-slate-700 leading-relaxed">
-        {{ fundingInfo()!.purposeOfFunding }}
-      </p>
-    </div>
-    } @if (fundingInfo()!.collateralAvailable &&
-    fundingInfo()!.collateralDescription) {
-    <div class="bg-slate-50 border border-slate-200 rounded-xl p-4">
-      <h4 class="text-sm font-semibold text-slate-900 mb-2">
-        Collateral Description
-      </h4>
-      <p class="text-sm text-slate-700 leading-relaxed">
-        {{ fundingInfo()!.collateralDescription }}
-      </p>
-    </div>
-    }
-  </div>
-  }
-
-  <!-- MANAGEMENT TAB -->
-  @if (activeTab() === 'management') {
-  <div class="space-y-6">
-    @if (managementTeam().length > 0) {
-    <div>
-      <div class="flex items-center justify-between mb-4">
-        <h4 class="text-sm font-semibold text-slate-900">Management Team</h4>
-        <span
-          class="text-xs font-medium text-slate-500 bg-slate-100 px-2.5 py-1 rounded-full"
-        >
-          {{ managementTeam().length }} members
-        </span>
-      </div>
-      <div class="space-y-3">
-        @for (member of managementTeam(); track $index) {
-        <div
-          class="bg-slate-50 border border-slate-200 rounded-xl p-4 hover:shadow-sm hover:border-slate-300 transition-all duration-200"
-        >
-          <div class="flex items-start justify-between">
-            <div class="flex-1">
-              <p class="text-sm font-semibold text-slate-900 mb-1">
-                {{ member.fullName }}
-              </p>
-              <p class="text-xs text-slate-600 mb-2">{{ member.role }}</p>
-              @if (member.qualification) {
-              <p class="text-xs text-slate-500">{{ member.qualification }}</p>
-              }
-            </div>
-            @if (member.yearsOfExperience) {
-            <span
-              class="bg-blue-50 text-blue-700 text-xs font-medium px-2.5 py-1 rounded-full border border-blue-200/50"
-            >
-              {{ member.yearsOfExperience }}y exp
-            </span>
-            }
-          </div>
-        </div>
-        }
-      </div>
-    </div>
-    } @if (boardOfDirectors().length > 0) {
-    <div>
-      <div class="flex items-center justify-between mb-4">
-        <h4 class="text-sm font-semibold text-slate-900">Board of Directors</h4>
-        <span
-          class="text-xs font-medium text-slate-500 bg-slate-100 px-2.5 py-1 rounded-full"
-        >
-          {{ boardOfDirectors().length }} directors
-        </span>
-      </div>
-      <div class="space-y-3">
-        @for (member of boardOfDirectors(); track $index) {
-        <div
-          class="bg-slate-50 border border-slate-200 rounded-xl p-4 hover:shadow-sm hover:border-slate-300 transition-all duration-200"
-        >
-          <div class="flex items-start justify-between">
-            <div class="flex-1">
-              <p class="text-sm font-semibold text-slate-900 mb-1">
-                {{ member.fullName }}
-              </p>
-              <p class="text-xs text-slate-600 mb-2">{{ member.role }}</p>
-              @if (member.expertise) {
-              <p class="text-xs text-slate-500">{{ member.expertise }}</p>
-              }
-            </div>
-            @if (member.independent) {
-            <span
-              class="bg-green-50 text-green-700 text-xs font-medium px-2.5 py-1 rounded-full border border-green-200/50"
-            >
-              Independent
-            </span>
-            }
-          </div>
-        </div>
-        }
-      </div>
-    </div>
-    } @if (managementTeam().length === 0 && boardOfDirectors().length === 0) {
-    <div class="text-center py-12">
-      <lucide-icon
-        [img]="UsersIcon"
-        [size]="48"
-        class="text-slate-300 mx-auto mb-4"
-      />
-      <p class="text-sm text-slate-600">No leadership information available</p>
-    </div>
-    }
   </div>
   }
 

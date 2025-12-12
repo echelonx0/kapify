@@ -6,13 +6,18 @@
       <!-- Left Section: Back Button & Status -->
       <div class="flex items-center space-x-4">
         <button
-          (click)="onBack()"
+          (click)="allApplications()"
           class="flex items-center space-x-2 text-gray-600 hover:text-gray-900 transition-colors"
         >
           <lucide-icon [img]="ArrowLeftIcon" [size]="16"></lucide-icon>
-          <span class="font-medium">Back to Applications</span>
+          <span class="font-medium">Back to all Funds</span>
         </button>
-
+        <button
+          (click)="onBack()"
+          class="flex items-center space-x-2 text-gray-600 hover:text-gray-900 transition-colors"
+        >
+          <span class="font-medium">Applications for this Opportunity</span>
+        </button>
         <div class="h-6 w-px bg-gray-300"></div>
 
         <div class="flex items-center space-x-3">

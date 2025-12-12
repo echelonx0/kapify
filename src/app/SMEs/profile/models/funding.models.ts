@@ -52,6 +52,7 @@ export interface ProfileData {
       province: string;
       postalCode: string;
     };
+    businessDescription?: string;
   };
 
   // Financial Info
@@ -114,4 +115,5 @@ export interface ProfileData {
   financialAnalysis?: ParsedFinancialData;
 
   supportingDocuments?: Record<string, any>;
+  businessDescription?: string;
 }
