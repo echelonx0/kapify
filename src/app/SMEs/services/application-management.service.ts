@@ -1352,10 +1352,6 @@ export class ApplicationManagementService {
     }
   }
 
-  /**
-   * Fetch documents for an applicant - FIXED VERSION
-   * Uses direct query instead of service to avoid RLS issues
-   */
   private async fetchApplicantDocuments(
     applicantId: string,
     applicationId?: string

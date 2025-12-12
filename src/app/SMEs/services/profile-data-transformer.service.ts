@@ -217,7 +217,8 @@ export class ProfileDataTransformerService {
       registrationNumber: businessInfo.registrationNumber || '',
       vatNumber: businessInfo.vatNumber,
       industryType: businessInfo.industry || '',
-      businessActivity: businessInfo.industry || '',
+      businessActivity: businessInfo.businessDescription || '',
+
       foundingYear:
         new Date().getFullYear() - (businessInfo.yearsInOperation || 0),
       operationalYears: businessInfo.yearsInOperation || 0,
@@ -386,6 +387,7 @@ export class ProfileDataTransformerService {
         province: '',
         postalCode: '',
       },
+      businessDescription: companyInfo.businessActivity || '',
     };
   }
 

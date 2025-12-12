@@ -347,7 +347,7 @@ export class ApplicationManagementComponent implements OnInit {
 
   // Navigation
   goBack() {
-    this.router.navigate(['/funder/dashboard']);
+    window.history.back();
   }
 
   // Utility methods
