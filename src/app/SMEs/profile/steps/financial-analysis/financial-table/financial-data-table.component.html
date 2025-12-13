@@ -16,7 +16,7 @@
       <!-- Previous Button -->
       <button
         (click)="goToPreviousYears()"
-        [disabled]="!hasPreviousYear()"
+        [disabled]="!canGoPrevious"
         class="inline-flex items-center justify-center w-10 h-10 rounded-lg font-medium transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed"
         [class]="
           isDarkMode()
@@ -31,7 +31,8 @@
       <!-- Year Tabs Container -->
       <div class="flex-1 overflow-x-auto scrollbar-hide">
         <div class="flex gap-2 min-w-max px-2">
-          @for (year of visibleHeaders(); track trackByColumn($index, year)) {
+          @for (year of getVisibleHeaders(); track trackByColumn($index, year))
+          {
           <button
             class="px-4 py-2 rounded-lg text-sm font-semibold whitespace-nowrap transition-all duration-200 border-2"
             [class]="getYearTabClass($index)"
@@ -46,7 +47,7 @@
       <!-- Next Button -->
       <button
         (click)="goToNextYears()"
-        [disabled]="!hasNextYear()"
+        [disabled]="!canGoNext"
         class="inline-flex items-center justify-center w-10 h-10 rounded-lg font-medium transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed"
         [class]="
           isDarkMode()
@@ -64,7 +65,7 @@
       class="mt-3 text-center text-xs transition-colors duration-300"
       [class]="isDarkMode() ? 'text-[var(--text-tertiary)]' : 'text-slate-500'"
     >
-      Showing {{ yearRangeLabel() }}
+      Showing {{ yearRangeText }}
     </div>
   </div>
   }
@@ -108,7 +109,7 @@
             </th>
 
             <!-- Year Column Headers (Filtered) -->
-            @for (header of visibleHeaders(); track trackByColumn($index,
+            @for (header of getVisibleHeaders(); track trackByColumn($index,
             header)) {
             <th
               class="px-4 py-3 text-right min-w-[140px] transition-colors duration-300"
@@ -131,7 +132,8 @@
 
         <!-- Table Body -->
         <tbody>
-          @for (section of sections; track trackBySection($index, section)) {
+          @for (section of sections; track trackBySection($index, section); let
+          sectionIndex = $index) {
           <!-- Section Header Row (Collapsible) -->
           @if (section.isCollapsible) {
           <tr
@@ -141,11 +143,11 @@
                 ? 'bg-[var(--bg-secondary)] border-[var(--border-color)] hover:bg-[var(--bg-tertiary)]'
                 : 'bg-teal-50/50 border-slate-200 hover:bg-teal-50'
             "
-            (click)="toggleSection($index)"
+            (click)="toggleSection(sectionIndex)"
           >
             <td
               class="sticky left-0 z-10 px-4 py-3 transition-colors duration-300"
-              [attr.colspan]="visibleHeaders().length + 1"
+              [attr.colspan]="getVisibleHeaders().length + 1"
               [class]="
                 isDarkMode() ? 'bg-[var(--bg-secondary)]' : 'bg-teal-50/50'
               "
@@ -153,7 +155,7 @@
               <div class="flex items-center gap-2">
                 <lucide-icon
                   [name]="
-                    isSectionCollapsed($index)
+                    isSectionCollapsed(sectionIndex)
                       ? ChevronRightIcon
                       : ChevronDownIcon
                   "
@@ -187,7 +189,7 @@
           >
             <td
               class="sticky left-0 z-10 px-4 py-3 transition-colors duration-300"
-              [attr.colspan]="visibleHeaders().length + 1"
+              [attr.colspan]="getVisibleHeaders().length + 1"
               [class]="
                 isDarkMode() ? 'bg-[var(--bg-secondary)]' : 'bg-teal-50/50'
               "
@@ -205,8 +207,9 @@
           }
 
           <!-- Section Rows (Show if not collapsed) -->
-          @if (!section.isCollapsible || !isSectionCollapsed($index)) { @for
-          (row of section.rows; track trackByRow($index, row)) {
+          @if (!section.isCollapsible || !isSectionCollapsed(sectionIndex)) {
+          @for (row of section.rows; track trackByRow($index, row); let rowIndex
+          = $index) {
           <tr
             class="border-b transition-colors duration-200 hover:opacity-80"
             [class]="getRowClasses(row)"
@@ -242,14 +245,17 @@
 
             <!-- Data Cells (Filtered by Year Window) -->
             @for (value of getVisibleRowValues(row.values); track
-            trackByColumn($index, visibleHeaders()[$index])) {
+            trackByColumn($index, getVisibleHeaders()[$index]); let
+            visibleColIndex = $index) {
             <td class="px-4 py-3 min-w-[140px] transition-colors duration-300">
               @if (isRowEditable(row)) {
               <!-- Editable Cell (Edit Mode) -->
               <input
                 type="text"
                 [value]="formatNumber(value)"
-                (blur)="onCellChange($index, $index, $index, $event)"
+                (blur)="
+                  onCellChange(sectionIndex, rowIndex, visibleColIndex, $event)
+                "
                 (focus)="onInputFocus($event)"
                 (keydown.enter)="onEnterKey($event)"
                 [class]="isDarkMode() ? 'dark-mode-input' : 'light-mode-input'"

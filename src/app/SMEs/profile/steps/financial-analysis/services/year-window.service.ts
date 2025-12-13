@@ -1,4 +1,6 @@
 // src/app/SMEs/profile/steps/financial-analysis/services/year-window.service.ts
+// FIXED: Added comprehensive logging to debug row value filtering
+
 import { Injectable, signal, computed } from '@angular/core';
 
 export interface YearWindow {
@@ -33,10 +35,21 @@ export class YearWindowService {
    * Initialize with all available year headers
    */
   setHeaders(headers: string[]): void {
+    console.log('📊 YearWindowService.setHeaders:', {
+      headersLength: headers.length,
+      headers: headers,
+      yearsPerView: this.yearsPerView(),
+    });
+
     this.allHeaders.set(headers);
     // Reset window to show most recent 3 years
     const maxStart = Math.max(0, headers.length - this.yearsPerView());
     this.windowStartIndex.set(maxStart);
+
+    console.log('📊 Window initialized to:', {
+      windowStart: maxStart,
+      visibleYears: this.getWindow().visibleYears,
+    });
   }
 
   /**
@@ -49,10 +62,35 @@ export class YearWindowService {
 
   /**
    * Get filtered values for a row (only visible year columns)
+   * CRITICAL: This must match the visible window indices
    */
   getVisibleRowValues(allValues: number[]): number[] {
     const window = this.currentWindow();
-    return allValues.slice(window.startIndex, window.endIndex + 1);
+
+    // VERIFY: allValues length should match allHeaders length
+    if (allValues.length !== this.allHeaders().length) {
+      console.warn('⚠️ Row value length mismatch:', {
+        allValuesLength: allValues.length,
+        allHeadersLength: this.allHeaders().length,
+        expectedCount: this.allHeaders().length,
+      });
+    }
+
+    const sliced = allValues.slice(window.startIndex, window.endIndex + 1);
+
+    console.log('🔍 getVisibleRowValues:', {
+      allValuesLength: allValues.length,
+      window: {
+        startIndex: window.startIndex,
+        endIndex: window.endIndex,
+        visibleYears: window.visibleYears,
+      },
+      slicedLength: sliced.length,
+      expectedLength: window.visibleYears.length,
+      match: sliced.length === window.visibleYears.length,
+    });
+
+    return sliced;
   }
 
   /**
@@ -64,7 +102,14 @@ export class YearWindowService {
     const currentStart = this.windowStartIndex();
 
     if (currentStart < maxStart) {
-      this.windowStartIndex.set(Math.min(currentStart + 1, maxStart));
+      const newStart = Math.min(currentStart + 1, maxStart);
+      this.windowStartIndex.set(newStart);
+
+      console.log('➡️ nextWindow:', {
+        from: currentStart,
+        to: newStart,
+        visibleYears: this.getWindow().visibleYears,
+      });
     }
   }
 
@@ -74,7 +119,14 @@ export class YearWindowService {
   previousWindow(): void {
     const currentStart = this.windowStartIndex();
     if (currentStart > 0) {
-      this.windowStartIndex.set(currentStart - 1);
+      const newStart = currentStart - 1;
+      this.windowStartIndex.set(newStart);
+
+      console.log('⬅️ previousWindow:', {
+        from: currentStart,
+        to: newStart,
+        visibleYears: this.getWindow().visibleYears,
+      });
     }
   }
 
@@ -85,6 +137,11 @@ export class YearWindowService {
     const headers = this.allHeaders();
     const maxStart = Math.max(0, headers.length - this.yearsPerView());
     this.windowStartIndex.set(maxStart);
+
+    console.log('🔄 resetToLatest:', {
+      windowStart: maxStart,
+      visibleYears: this.getWindow().visibleYears,
+    });
   }
 
   /**
@@ -92,6 +149,7 @@ export class YearWindowService {
    */
   showAllData(): void {
     this.windowStartIndex.set(0);
+    console.log('📋 showAllData - showing all years');
   }
 
   /**
@@ -103,10 +161,21 @@ export class YearWindowService {
 
   /**
    * Get original column index for a visible column (for data updates)
+   * visibleColumnIndex is the index within the visible window (0, 1, 2)
+   * Returns the actual index in the full data array
    */
   getOriginalColumnIndex(visibleColumnIndex: number): number {
     const window = this.currentWindow();
-    return window.startIndex + visibleColumnIndex;
+    const originalIndex = window.startIndex + visibleColumnIndex;
+
+    console.log('🔗 getOriginalColumnIndex:', {
+      visibleColumnIndex,
+      windowStart: window.startIndex,
+      originalIndex,
+      visibleYears: window.visibleYears,
+    });
+
+    return originalIndex;
   }
 
   /**
