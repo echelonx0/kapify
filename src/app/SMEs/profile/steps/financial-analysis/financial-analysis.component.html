@@ -172,13 +172,11 @@
     <!-- Income Statement Tab -->
     @if (activeTab() === 'income-statement') {
     <div class="flex items-center justify-between mb-6">
-      <button
-        (click)="toggleEditMode()"
-        class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-100 text-slate-700 text-sm font-medium hover:bg-slate-200 active:bg-slate-300"
-      >
-        <lucide-icon [name]="EditIcon" [size]="16" />
-        {{ editingMode() ? "Done" : "Edit" }}
-      </button>
+      <p class="text-sm">
+        If you need to make changes to data that has already been uploaded,
+        please make the edits directly on the import template and upload the
+        updated file again
+      </p>
     </div>
 
     @if (incomeStatementSections().length > 0) {
@@ -198,13 +196,11 @@
     <!-- Balance Sheet Tab -->
     @if (activeTab() === 'balance-sheet') {
     <div class="flex items-center justify-between mb-6">
-      <button
-        (click)="toggleEditMode()"
-        class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-100 text-slate-700 text-sm font-medium hover:bg-slate-200 active:bg-slate-300"
-      >
-        <lucide-icon [name]="EditIcon" [size]="16" />
-        {{ editingMode() ? "Done" : "Edit" }}
-      </button>
+      <p class="text-sm">
+        If you need to make changes to data that has already been uploaded,
+        please make the edits directly on the import template and upload the
+        updated file again
+      </p>
 
       <!-- ONLY SHOW VALIDATION WHEN NOT EDITING -->
       @if (shouldShowValidation() && !editingMode() && balanceSheetData().length
@@ -246,13 +242,11 @@
     <!-- Cash Flow Tab -->
     @if (activeTab() === 'cash-flow') {
     <div class="flex items-center justify-between mb-6">
-      <button
-        (click)="toggleEditMode()"
-        class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-100 text-slate-700 text-sm font-medium hover:bg-slate-200 active:bg-slate-300"
-      >
-        <lucide-icon [name]="EditIcon" [size]="16" />
-        {{ editingMode() ? "Done" : "Edit" }}
-      </button>
+      <p class="text-sm">
+        If you need to make changes to data that has already been uploaded,
+        please make the edits directly on the import template and upload the
+        updated file again
+      </p>
 
       <!-- ONLY SHOW VALIDATION WHEN NOT EDITING -->
       @if (shouldShowValidation() && !editingMode() && cashFlowData().length >

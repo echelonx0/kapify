@@ -1,6 +1,3 @@
-// src/app/SMEs/profile/steps/financial-analysis/financial-table/financial-data-table.component.ts
-// FIXED: Moved effects to field initializers to resolve NG0203 injection context error
-
 import {
   Component,
   Input,
@@ -19,7 +16,6 @@ import {
   ChevronRight,
   Lock,
 } from 'lucide-angular';
-import { YearWindowService } from '../services/year-window.service';
 import { FullscreenDarkModeService } from '../services/fullscreen-dark-mode.service';
 
 export interface FinancialTableRow {
@@ -60,127 +56,139 @@ export class FinancialDataTableComponent implements OnInit {
     value: number;
   }>();
 
-  private yearWindow = inject(YearWindowService);
   private darkModeService = inject(FullscreenDarkModeService);
 
   // Icons
   ChevronDownIcon = ChevronDown;
   ChevronRightIcon = ChevronRight;
   LockIcon = Lock;
-
-  // Math reference for template
   Math = Math;
 
-  // Dark mode signals
+  // Dark mode
   isDarkMode = signal(false);
-
-  // Track collapsed sections
   collapsedSections = signal<Set<number>>(new Set());
 
-  // Visible headers and window state
-  visibleHeaders = signal<string[]>([]);
-  hasNextYear = signal(false);
-  hasPreviousYear = signal(false);
-  yearRangeLabel = signal('');
+  // Year window state - MANUAL MANAGEMENT
+  currentWindowStart = 0;
+  currentWindowEnd = 0;
+  visibleYearHeaders: string[] = [];
+  canGoPrevious = false;
+  canGoNext = false;
+  yearRangeText = '';
 
-  // Effect: Watch dark mode state
   private darkModeEffect = effect(() => {
     this.isDarkMode.set(this.darkModeService.isDarkMode());
   });
 
-  // Effect: Watch for header changes
-  private headerEffect = effect(() => {
-    if (this.columnHeaders.length > 0) {
-      this.yearWindow.setHeaders(this.columnHeaders);
-      this.updateVisibleHeaders();
-    }
-  });
-
-  // Effect: Watch for edit mode changes
-  private editModeEffect = effect(() => {
-    if (this.editMode) {
-      this.yearWindow.showAllData();
-      this.updateVisibleHeaders();
-    } else {
-      this.yearWindow.resetToLatest();
-      this.updateVisibleHeaders();
-    }
-  });
-
   ngOnInit() {
-    // Initialize year window with headers
-    this.yearWindow.setHeaders(this.columnHeaders);
-    this.updateVisibleHeaders();
+    this.initializeWindow();
   }
 
   /**
-   * Update visible headers and navigation state
+   * Initialize the window with latest years
    */
-  private updateVisibleHeaders(): void {
-    const window = this.yearWindow.getWindow();
-    this.visibleHeaders.set(window.visibleYears);
-    this.hasNextYear.set(window.hasNextWindow);
-    this.hasPreviousYear.set(window.hasPreviousWindow);
+  private initializeWindow(): void {
+    const YEARS_PER_VIEW = 3;
+    if (this.columnHeaders.length === 0) return;
 
-    if (window.visibleYears.length > 0) {
-      const first = window.visibleYears[0];
-      const last = window.visibleYears[window.visibleYears.length - 1];
-      this.yearRangeLabel.set(`${first} to ${last}`);
-    }
+    const maxStart = Math.max(0, this.columnHeaders.length - YEARS_PER_VIEW);
+    this.setWindowPosition(maxStart);
   }
 
   /**
-   * Get year tab styling
+   * Set window to a specific start position and update all state
    */
-  getYearTabClass(index: number): string {
-    if (this.isDarkMode()) {
-      if (index === 0 || index === this.visibleHeaders().length - 1) {
-        return 'bg-[var(--accent-teal-light)] text-[var(--accent-teal)] border-[var(--accent-teal)]/30';
-      }
-      return 'bg-[var(--button-bg)] text-[var(--text-secondary)] border-[var(--border-color)] hover:border-[var(--border-color)]';
+  private setWindowPosition(startIndex: number): void {
+    const YEARS_PER_VIEW = 3;
+    const headers = this.columnHeaders;
+
+    // Clamp to valid range
+    const start = Math.max(0, Math.min(startIndex, headers.length - 1));
+    const end = Math.min(start + YEARS_PER_VIEW, headers.length);
+
+    // Update state
+    this.currentWindowStart = start;
+    this.currentWindowEnd = end;
+    this.visibleYearHeaders = headers.slice(start, end);
+    this.canGoPrevious = start > 0;
+    this.canGoNext = end < headers.length;
+
+    if (this.visibleYearHeaders.length > 0) {
+      const first = this.visibleYearHeaders[0];
+      const last = this.visibleYearHeaders[this.visibleYearHeaders.length - 1];
+      this.yearRangeText = `${first} to ${last}`;
     }
 
-    if (index === 0 || index === this.visibleHeaders().length - 1) {
-      return 'bg-teal-50 text-teal-700 border-teal-300/50';
-    }
-    return 'bg-white text-slate-700 border-slate-200 hover:border-slate-300';
+    console.log('🎯 Window position set:', {
+      start,
+      end,
+      visible: this.visibleYearHeaders,
+      canPrev: this.canGoPrevious,
+      canNext: this.canGoNext,
+    });
   }
 
   /**
-   * Get filtered row values (only visible columns)
-   */
-  getVisibleRowValues(allValues: number[]): number[] {
-    if (this.editMode) {
-      return allValues; // Show all values in edit mode
-    }
-    return this.yearWindow.getVisibleRowValues(allValues);
-  }
-
-  /**
-   * Navigate to next year window
+   * Navigate arrows - public methods called from template
    */
   goToNextYears(): void {
-    this.yearWindow.nextWindow();
-    this.updateVisibleHeaders();
+    const YEARS_PER_VIEW = 3;
+    const nextStart = this.currentWindowStart + 1;
+    const maxStart = Math.max(0, this.columnHeaders.length - YEARS_PER_VIEW);
+
+    if (nextStart <= maxStart) {
+      console.log('➡️ Next:', this.currentWindowStart, '→', nextStart);
+      this.setWindowPosition(nextStart);
+    }
   }
 
-  /**
-   * Navigate to previous year window
-   */
   goToPreviousYears(): void {
-    this.yearWindow.previousWindow();
-    this.updateVisibleHeaders();
+    if (this.currentWindowStart > 0) {
+      const prevStart = this.currentWindowStart - 1;
+      console.log('⬅️ Previous:', this.currentWindowStart, '→', prevStart);
+      this.setWindowPosition(prevStart);
+    }
   }
 
   /**
-   * Check if showing all years (edit mode indicator)
+   * Get visible headers - called in template *@for*
    */
-  isShowingAllYears(): boolean {
-    return this.editMode || this.columnHeaders.length <= 3;
+  getVisibleHeaders(): string[] {
+    return this.visibleYearHeaders;
   }
 
   /**
-   * Toggle section collapse state
+   * Get visible row values - called in template *@for*
+   */
+  getVisibleRowValues(allValues: number[]): number[] {
+    const filtered = allValues.slice(
+      this.currentWindowStart,
+      this.currentWindowEnd
+    );
+    return filtered;
+  }
+
+  /**
+   * Get year tab class
+   */
+  getYearTabClass(index: number): string {
+    const visible = this.visibleYearHeaders;
+
+    if (this.isDarkMode()) {
+      if (index === 0 || index === visible.length - 1) {
+        return 'bg-[var(--accent-teal-light)] text-[var(--accent-teal)] border-[var(--accent-teal)]/30';
+      }
+      return 'bg-[var(--button-bg)] text-[var(--text-secondary)] border-[var(--border-color)]';
+    }
+
+    if (index === 0 || index === visible.length - 1) {
+      return 'bg-teal-50 text-teal-700 border-teal-300/50';
+    }
+    return 'bg-white text-slate-700 border-slate-200';
+  }
+
+  /**
+   * Toggle section
    */
   toggleSection(sectionIndex: number) {
     const collapsed = this.collapsedSections();
@@ -195,21 +203,17 @@ export class FinancialDataTableComponent implements OnInit {
     this.collapsedSections.set(newCollapsed);
   }
 
-  /**
-   * Check if section is collapsed
-   */
   isSectionCollapsed(sectionIndex: number): boolean {
     return this.collapsedSections().has(sectionIndex);
   }
 
   /**
-   * Format number with commas and round to zero decimals
+   * Number formatting
    */
   formatNumber(value: number): string {
     if (value === null || value === undefined || isNaN(value)) {
       return '0';
     }
-
     const rounded = Math.round(value);
     return rounded.toLocaleString('en-US', {
       minimumFractionDigits: 0,
@@ -217,9 +221,6 @@ export class FinancialDataTableComponent implements OnInit {
     });
   }
 
-  /**
-   * Parse formatted number string back to number
-   */
   parseNumber(value: string): number {
     if (!value) return 0;
     const cleanValue = value.replace(/,/g, '');
@@ -228,8 +229,7 @@ export class FinancialDataTableComponent implements OnInit {
   }
 
   /**
-   * Handle cell value change
-   * Convert visible column index to original column index for data updates
+   * Cell change handler
    */
   onCellChange(
     sectionIndex: number,
@@ -241,9 +241,8 @@ export class FinancialDataTableComponent implements OnInit {
     const rawValue = input.value;
     const numericValue = this.parseNumber(rawValue);
 
-    // Map visible column index to original column index
-    const originalColIndex =
-      this.yearWindow.getOriginalColumnIndex(visibleColIndex);
+    // Convert visible index to original index
+    const originalColIndex = this.currentWindowStart + visibleColIndex;
 
     this.cellValueChanged.emit({
       sectionIndex,
@@ -255,17 +254,11 @@ export class FinancialDataTableComponent implements OnInit {
     input.value = this.formatNumber(numericValue);
   }
 
-  /**
-   * Handle input focus - select all text for easy editing
-   */
   onInputFocus(event: FocusEvent) {
     const input = event.target as HTMLInputElement;
     input.select();
   }
 
-  /**
-   * Handle Enter key press
-   */
   onEnterKey(event: Event) {
     const input = event.target as HTMLInputElement;
     if (input) {
@@ -274,22 +267,15 @@ export class FinancialDataTableComponent implements OnInit {
   }
 
   /**
-   * Check if a row is editable
+   * Row styling
    */
   isRowEditable(row: FinancialTableRow): boolean {
     const editable = row.isEditable ?? row.editable;
-    if (editable === false) {
-      return false;
-    }
-    if (row.isCalculated) {
-      return false;
-    }
+    if (editable === false) return false;
+    if (row.isCalculated) return false;
     return this.editMode;
   }
 
-  /**
-   * Get cell styling classes
-   */
   getCellClasses(row: FinancialTableRow, value: number): string {
     const classes: string[] = ['text-right'];
 
@@ -297,7 +283,6 @@ export class FinancialDataTableComponent implements OnInit {
       classes.push('font-semibold');
     }
 
-    // In dark mode, use CSS variables; in light mode, use Tailwind
     if (!this.isDarkMode()) {
       if (value < 0) {
         classes.push('text-red-700');
@@ -311,9 +296,6 @@ export class FinancialDataTableComponent implements OnInit {
     return classes.join(' ');
   }
 
-  /**
-   * Get row styling classes
-   */
   getRowClasses(row: FinancialTableRow): string {
     const classes: string[] = ['border-b', 'transition-colors', 'duration-200'];
 
@@ -343,7 +325,7 @@ export class FinancialDataTableComponent implements OnInit {
   }
 
   /**
-   * Track by functions for *ngFor optimization
+   * Track by functions
    */
   trackBySection(index: number, section: FinancialTableSection): string {
     return `section-${index}-${section.title}`;
