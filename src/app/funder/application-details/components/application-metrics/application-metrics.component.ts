@@ -1,4 +1,4 @@
-// src/app/funder/application-details/components/application-metrics/application-metrics.component.ts - UPDATED
+// src/app/funder/application-details/components/application-metrics/application-metrics.component.ts
 import { Component, Input, signal, computed, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
@@ -26,6 +26,7 @@ import { FundingApplication } from 'src/app/SMEs/models/application.models';
 import { ProfileData } from 'src/app/SMEs/profile/models/funding.models';
 import { BusinessAssessmentViewerComponent } from '../business-operations/business-operations.component';
 import { FinancialAnalysisViewerComponent } from '../financial-analysis-viewer/financial-analysis-viewer.component';
+import { BusinessInfoComponent } from '../business-info/business-info.component';
 import { FundingOpportunity } from 'src/app/funder/create-opportunity/shared/funding.interfaces';
 
 interface Tab {
@@ -42,6 +43,7 @@ interface Tab {
     LucideAngularModule,
     FinancialAnalysisViewerComponent,
     BusinessAssessmentViewerComponent,
+    BusinessInfoComponent,
   ],
   templateUrl: './application-metrics.component.html',
 })
@@ -75,12 +77,9 @@ export class ApplicationMetricsComponent implements OnInit {
 
   tabs: Tab[] = [
     { id: 'overview', label: 'Request Summary', icon: Activity },
-    // { id: 'personal', label: 'Key Person', icon: User },
     { id: 'business', label: 'Business', icon: Building },
     { id: 'financial', label: 'Financials', icon: DollarSign },
     { id: 'operations', label: 'Operations', icon: Cpu },
-    // { id: 'funding', label: 'Funding', icon: Target },
-    // { id: 'management', label: 'Leadership', icon: Users },
     { id: 'swot', label: 'SWOT', icon: TrendingUp },
   ];
 
@@ -107,8 +106,6 @@ export class ApplicationMetricsComponent implements OnInit {
 
   personalInfo = computed(() => this.profileData.personalInfo || null);
   businessInfo = computed(() => this.profileData.businessInfo || null);
-
-  // ✅ FIXED: Extract businessDescription from businessInfo
   businessDescription = computed(
     () => this.profileData.businessInfo?.businessDescription || null
   );
@@ -132,11 +129,7 @@ export class ApplicationMetricsComponent implements OnInit {
 
   ngOnInit() {
     console.log('📊 [METRICS] Profile Data:', this.profileData);
-    console.log('📊 [METRICS] Business Assessment:', this.businessAssessment());
-    console.log(
-      '📊 [METRICS] Business Description:',
-      this.businessDescription()
-    );
+    console.log('[Application Data]', this.application);
   }
 
   setActiveTab(tabId: string) {

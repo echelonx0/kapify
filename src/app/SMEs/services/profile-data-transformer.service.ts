@@ -17,11 +17,11 @@ export class ProfileDataTransformerService {
   transformToFundingProfile(
     profileData: Partial<ProfileData>
   ): FundingApplicationProfile {
-    console.log('🔄 [TRANSFORMER] Input profileData:', profileData);
-    console.log(
-      '🔄 [TRANSFORMER] Has financialAnalysis:',
-      !!profileData.financialAnalysis
-    );
+    // console.log('🔄 [TRANSFORMER] Input profileData:', profileData);
+    // console.log(
+    //   '🔄 [TRANSFORMER] Has financialAnalysis:',
+    //   !!profileData.financialAnalysis
+    // );
 
     const result = {
       companyInfo: this.transformCompanyInfo(
@@ -81,14 +81,14 @@ export class ProfileDataTransformerService {
   transformFromFundingProfile(
     fundingProfile: FundingApplicationProfile
   ): Partial<ProfileData> {
-    console.log(
-      '🔄 [TRANSFORMER FROM BACKEND] Input fundingProfile:',
-      fundingProfile
-    );
-    console.log(
-      '🔄 [TRANSFORMER FROM BACKEND] Has financialAnalysis:',
-      !!fundingProfile.financialAnalysis
-    );
+    // console.log(
+    //   '🔄 [TRANSFORMER FROM BACKEND] Input fundingProfile:',
+    //   fundingProfile
+    // );
+    // console.log(
+    //   '🔄 [TRANSFORMER FROM BACKEND] Has financialAnalysis:',
+    //   !!fundingProfile.financialAnalysis
+    // );
 
     const result = {
       businessInfo: this.extractBusinessInfo(fundingProfile.companyInfo),
@@ -492,14 +492,14 @@ export class ProfileDataTransformerService {
     financialAnalysis: any,
     financialProfile?: any
   ): ParsedFinancialData | undefined {
-    console.log(
-      '🔍 [EXTRACT FINANCIAL ANALYSIS] Input financialAnalysis:',
-      financialAnalysis
-    );
-    console.log(
-      '🔍 [EXTRACT FINANCIAL ANALYSIS] Input financialProfile:',
-      financialProfile
-    );
+    // console.log(
+    //   '🔍 [EXTRACT FINANCIAL ANALYSIS] Input financialAnalysis:',
+    //   financialAnalysis
+    // );
+    // console.log(
+    //   '🔍 [EXTRACT FINANCIAL ANALYSIS] Input financialProfile:',
+    //   financialProfile
+    // );
 
     // Priority 1: Use financialAnalysis if it exists (from financial-analysis section)
     if (financialAnalysis) {
@@ -520,9 +520,9 @@ export class ProfileDataTransformerService {
         financialAnalysis.incomeStatement ||
         financialAnalysis.columnHeaders
       ) {
-        console.log(
-          '✅ [EXTRACT FINANCIAL ANALYSIS] Transforming to ParsedFinancialData'
-        );
+        // console.log(
+        //   '✅ [EXTRACT FINANCIAL ANALYSIS] Transforming to ParsedFinancialData'
+        // );
         return {
           incomeStatement: financialAnalysis.incomeStatement || [],
           balanceSheet: financialAnalysis.balanceSheet || [],
@@ -539,9 +539,9 @@ export class ProfileDataTransformerService {
     // Priority 2: Check if financialProfile has embedded financial analysis data
     if (financialProfile) {
       if (this.isValidParsedFinancialData(financialProfile)) {
-        console.log(
-          '✅ [EXTRACT FINANCIAL ANALYSIS] Using financialProfile as ParsedFinancialData'
-        );
+        // console.log(
+        //   '✅ [EXTRACT FINANCIAL ANALYSIS] Using financialProfile as ParsedFinancialData'
+        // );
         return financialProfile as ParsedFinancialData;
       }
 
@@ -568,7 +568,7 @@ export class ProfileDataTransformerService {
     return undefined;
   }
 
-  // ✅ NEW - Validation helper
+  // Validation helper
   private isValidParsedFinancialData(data: any): boolean {
     if (!data || typeof data !== 'object') return false;
 

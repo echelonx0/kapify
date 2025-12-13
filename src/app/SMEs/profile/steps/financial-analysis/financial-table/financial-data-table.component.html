@@ -1,41 +1,33 @@
-<!-- DARK MODE TABLE - Bloomberg Terminal Style -->
-
-<div class="space-y-4" [class.dark-mode]="isDarkMode()">
-  <!-- Year Navigation (Only show if not edit mode and more than 3 years) -->
+<!-- src/app/SMEs/profile/steps/financial-analysis/financial-table/financial-data-table.html -->
+<div class="space-y-4">
+  <!-- Year Navigation (Only show if more than 3 years and not in edit mode) -->
   @if (!editMode && columnHeaders.length > 3) {
   <div
-    class="rounded-xl border p-4 sticky top-0 z-10 transition-all duration-300"
-    [class]="
-      isDarkMode()
-        ? 'bg-[var(--bg-secondary)] border-[var(--border-color)]'
-        : 'bg-white border-slate-200'
-    "
+    class="rounded-xl border border-slate-200 bg-white p-4 sticky top-0 z-10 transition-all duration-300"
   >
-    <!-- Year Tabs Navigation -->
     <div class="flex items-center justify-between gap-4">
       <!-- Previous Button -->
       <button
         (click)="goToPreviousYears()"
-        [disabled]="!canGoPrevious"
-        class="inline-flex items-center justify-center w-10 h-10 rounded-lg font-medium transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed"
-        [class]="
-          isDarkMode()
-            ? 'bg-[var(--button-bg)] text-[var(--text-primary)] hover:bg-[var(--button-hover)]'
-            : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
-        "
+        [disabled]="!canGoPrevious()"
+        class="inline-flex items-center justify-center w-10 h-10 rounded-lg font-medium transition-all duration-200 bg-slate-100 text-slate-700 hover:bg-slate-200 disabled:opacity-30 disabled:cursor-not-allowed"
         title="View previous years"
       >
         <span class="text-lg">←</span>
       </button>
 
-      <!-- Year Tabs Container -->
+      <!-- Year Tabs -->
       <div class="flex-1 overflow-x-auto scrollbar-hide">
         <div class="flex gap-2 min-w-max px-2">
-          @for (year of getVisibleHeaders(); track trackByColumn($index, year))
+          @for (year of visibleYearHeaders(); track trackByHeader($index, year))
           {
           <button
             class="px-4 py-2 rounded-lg text-sm font-semibold whitespace-nowrap transition-all duration-200 border-2"
-            [class]="getYearTabClass($index)"
+            [class]="
+              $index === 0 || $index === visibleYearHeaders().length - 1
+                ? 'bg-teal-50 text-teal-700 border-teal-300/50'
+                : 'bg-white text-slate-700 border-slate-200'
+            "
             disabled
           >
             {{ year }}
@@ -47,13 +39,8 @@
       <!-- Next Button -->
       <button
         (click)="goToNextYears()"
-        [disabled]="!canGoNext"
-        class="inline-flex items-center justify-center w-10 h-10 rounded-lg font-medium transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed"
-        [class]="
-          isDarkMode()
-            ? 'bg-[var(--button-bg)] text-[var(--text-primary)] hover:bg-[var(--button-hover)]'
-            : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
-        "
+        [disabled]="!canGoNext()"
+        class="inline-flex items-center justify-center w-10 h-10 rounded-lg font-medium transition-all duration-200 bg-slate-100 text-slate-700 hover:bg-slate-200 disabled:opacity-30 disabled:cursor-not-allowed"
         title="View next years"
       >
         <span class="text-lg">→</span>
@@ -61,68 +48,31 @@
     </div>
 
     <!-- Year Range Label -->
-    <div
-      class="mt-3 text-center text-xs transition-colors duration-300"
-      [class]="isDarkMode() ? 'text-[var(--text-tertiary)]' : 'text-slate-500'"
-    >
-      Showing {{ yearRangeText }}
+    <div class="mt-3 text-center text-xs text-slate-500">
+      Showing {{ yearRangeText() }}
     </div>
   </div>
   }
 
   <!-- Data Table -->
-  <div
-    class="rounded-xl border overflow-hidden transition-all duration-300"
-    [class]="
-      isDarkMode()
-        ? 'border-[var(--border-color)] bg-[var(--bg-secondary)]'
-        : 'border-slate-200 bg-white'
-    "
-  >
+  <div class="rounded-xl border border-slate-200 bg-white overflow-hidden">
     <div class="overflow-x-auto">
       <table class="w-full border-collapse">
         <!-- Table Header -->
         <thead>
-          <tr
-            class="border-b transition-colors duration-300"
-            [class]="
-              isDarkMode()
-                ? 'bg-[var(--bg-tertiary)] border-[var(--border-color)]'
-                : 'bg-slate-50/50 border-slate-200'
-            "
-          >
+          <tr class="border-b border-slate-200 bg-slate-50/50">
             <!-- Item Column Header -->
-            <th
-              class="sticky left-0 z-20 px-4 py-3 text-left transition-colors duration-300"
-              [class]="
-                isDarkMode() ? 'bg-[var(--bg-tertiary)]' : 'bg-slate-50/50'
-              "
-            >
-              <span
-                class="text-sm font-semibold transition-colors duration-300"
-                [class]="
-                  isDarkMode() ? 'text-[var(--text-primary)]' : 'text-slate-900'
-                "
-              >
+            <th class="sticky left-0 z-20 px-4 py-3 text-left bg-slate-50/50">
+              <span class="text-sm font-semibold text-slate-900">
                 {{ itemLabel }}
               </span>
             </th>
 
-            <!-- Year Column Headers (Filtered) -->
-            @for (header of getVisibleHeaders(); track trackByColumn($index,
+            <!-- Year Column Headers -->
+            @for (header of visibleYearHeaders(); track trackByHeader($index,
             header)) {
-            <th
-              class="px-4 py-3 text-right min-w-[140px] transition-colors duration-300"
-              [class]="
-                isDarkMode() ? 'bg-[var(--bg-tertiary)]' : 'bg-slate-50/50'
-              "
-            >
-              <span
-                class="text-sm font-semibold transition-colors duration-300"
-                [class]="
-                  isDarkMode() ? 'text-[var(--accent-teal)]' : 'text-slate-900'
-                "
-              >
+            <th class="px-4 py-3 text-right min-w-[140px] bg-slate-50/50">
+              <span class="text-sm font-semibold text-slate-900">
                 {{ header }}
               </span>
             </th>
@@ -134,23 +84,25 @@
         <tbody>
           @for (section of sections; track trackBySection($index, section); let
           sectionIndex = $index) {
+          <!-- Spacing before section (for Financial Ratios tab spacing) -->
+          @if (section.spacingBefore && sectionIndex > 0) {
+          <tr class="h-6 bg-transparent">
+            <td [attr.colspan]="visibleYearHeaders().length + 1"></td>
+          </tr>
+          }
+
           <!-- Section Header Row (Collapsible) -->
           @if (section.isCollapsible) {
           <tr
-            class="border-b cursor-pointer transition-all duration-200"
-            [class]="
-              isDarkMode()
-                ? 'bg-[var(--bg-secondary)] border-[var(--border-color)] hover:bg-[var(--bg-tertiary)]'
-                : 'bg-teal-50/50 border-slate-200 hover:bg-teal-50'
-            "
+            [class]="getSectionHeaderClasses(section)"
+            class="cursor-pointer transition-all duration-200"
             (click)="toggleSection(sectionIndex)"
           >
             <td
-              class="sticky left-0 z-10 px-4 py-3 transition-colors duration-300"
-              [attr.colspan]="getVisibleHeaders().length + 1"
-              [class]="
-                isDarkMode() ? 'bg-[var(--bg-secondary)]' : 'bg-teal-50/50'
-              "
+              class="sticky left-0 z-10 px-4 py-3"
+              [attr.colspan]="visibleYearHeaders().length + 1"
+              [class.bg-orange-50]="section.accentColor === 'orange'"
+              [class.bg-teal-50]="section.accentColor !== 'orange'"
             >
               <div class="flex items-center gap-2">
                 <lucide-icon
@@ -160,17 +112,11 @@
                       : ChevronDownIcon
                   "
                   [size]="16"
-                  [class]="
-                    isDarkMode() ? 'text-[var(--accent-teal)]' : 'text-teal-600'
-                  "
+                  [class]="getSectionIconColor(section)"
                 />
                 <span
-                  class="text-sm font-bold uppercase tracking-wide transition-colors duration-300"
-                  [class]="
-                    isDarkMode()
-                      ? 'text-[var(--text-primary)]'
-                      : 'text-slate-900'
-                  "
+                  [class]="getSectionTextColor(section)"
+                  class="text-sm font-bold uppercase tracking-wide"
                 >
                   {{ section.title }}
                 </span>
@@ -178,27 +124,21 @@
             </td>
           </tr>
           } @else {
-          <!-- Non-collapsible Section Header -->
+          <!-- Non-Collapsible Section Header -->
           <tr
-            class="border-b transition-colors duration-300"
-            [class]="
-              isDarkMode()
-                ? 'bg-[var(--bg-secondary)] border-[var(--border-color)]'
-                : 'bg-teal-50/50 border-slate-200'
-            "
+            class="border-b border-slate-200 transition-all duration-200"
+            [class.bg-orange-50]="section.accentColor === 'orange'"
+            [class.bg-teal-50]="section.accentColor !== 'orange'"
           >
             <td
-              class="sticky left-0 z-10 px-4 py-3 transition-colors duration-300"
-              [attr.colspan]="getVisibleHeaders().length + 1"
-              [class]="
-                isDarkMode() ? 'bg-[var(--bg-secondary)]' : 'bg-teal-50/50'
-              "
+              class="sticky left-0 z-10 px-4 py-3"
+              [attr.colspan]="visibleYearHeaders().length + 1"
+              [class.bg-orange-50]="section.accentColor === 'orange'"
+              [class.bg-teal-50]="section.accentColor !== 'orange'"
             >
               <span
-                class="text-sm font-bold uppercase tracking-wide transition-colors duration-300"
-                [class]="
-                  isDarkMode() ? 'text-[var(--text-primary)]' : 'text-slate-900'
-                "
+                [class]="getSectionTextColor(section)"
+                class="text-sm font-bold uppercase tracking-wide"
               >
                 {{ section.title }}
               </span>
@@ -206,22 +146,17 @@
           </tr>
           }
 
-          <!-- Section Rows (Show if not collapsed) -->
+          <!-- Section Rows -->
           @if (!section.isCollapsible || !isSectionCollapsed(sectionIndex)) {
           @for (row of section.rows; track trackByRow($index, row); let rowIndex
           = $index) {
           <tr
-            class="border-b transition-colors duration-200 hover:opacity-80"
+            class="border-b border-slate-200 transition-colors duration-200 hover:opacity-80"
             [class]="getRowClasses(row)"
           >
-            <!-- Row Label Cell -->
+            <!-- Row Label -->
             <td
-              class="sticky left-0 z-10 px-4 py-3 text-sm transition-colors duration-300"
-              [class]="
-                isDarkMode()
-                  ? 'bg-[var(--bg-secondary)] text-[var(--text-primary)]'
-                  : 'bg-white text-slate-900'
-              "
+              class="sticky left-0 z-10 px-4 py-3 text-sm bg-white text-slate-900"
             >
               <div class="flex items-center gap-2">
                 <span [class.font-semibold]="row.isBold || row.isTotal">
@@ -232,24 +167,20 @@
                 <lucide-icon
                   [name]="LockIcon"
                   [size]="14"
-                  [class]="
-                    isDarkMode()
-                      ? 'text-[var(--text-tertiary)]'
-                      : 'text-slate-400'
-                  "
+                  class="text-slate-400"
                   title="Auto-calculated field"
                 />
                 }
               </div>
             </td>
 
-            <!-- Data Cells (Filtered by Year Window) -->
+            <!-- Data Cells -->
             @for (value of getVisibleRowValues(row.values); track
-            trackByColumn($index, getVisibleHeaders()[$index]); let
+            trackByHeader($index, visibleYearHeaders()[$index]); let
             visibleColIndex = $index) {
-            <td class="px-4 py-3 min-w-[140px] transition-colors duration-300">
+            <td class="px-4 py-3 min-w-[140px] text-right">
               @if (isRowEditable(row)) {
-              <!-- Editable Cell (Edit Mode) -->
+              <!-- Editable Input -->
               <input
                 type="text"
                 [value]="formatNumber(value)"
@@ -258,35 +189,22 @@
                 "
                 (focus)="onInputFocus($event)"
                 (keydown.enter)="onEnterKey($event)"
-                [class]="isDarkMode() ? 'dark-mode-input' : 'light-mode-input'"
-                class="w-full px-3 py-2 text-right rounded-lg font-mono transition-all duration-200 focus:ring-2 focus:outline-none"
-                style="font-size: 14px !important"
+                class="w-full px-3 py-2 rounded-lg border border-slate-200 bg-white text-slate-900 text-right font-mono focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200"
+                style="font-size: 14px"
               />
               } @else {
-              <!-- Read-only Cell -->
+              <!-- Read-Only Display -->
               <div
                 [class]="getCellClasses(row, value)"
-                class="px-3 py-2 text-sm font-mono text-right transition-colors duration-300"
-                style="font-size: 14px !important"
+                class="px-3 py-2 text-sm font-mono"
+                style="font-size: 14px"
               >
                 @if (value < 0) {
-                <span
-                  [class]="
-                    isDarkMode()
-                      ? 'text-[var(--accent-negative)]'
-                      : 'text-red-700'
-                  "
-                >
+                <span class="text-red-700">
                   ({{ formatNumber(Math.abs(value)) }})
                 </span>
                 } @else {
-                <span
-                  [class]="
-                    isDarkMode()
-                      ? 'text-[var(--text-primary)]'
-                      : 'text-slate-700'
-                  "
-                >
+                <span class="text-slate-700">
                   {{ formatNumber(value) }}
                 </span>
                 }
@@ -301,12 +219,7 @@
 
       <!-- Empty State -->
       @if (sections.length === 0) {
-      <div
-        class="text-center py-12 transition-colors duration-300"
-        [class]="
-          isDarkMode() ? 'text-[var(--text-tertiary)]' : 'text-slate-500'
-        "
-      >
+      <div class="text-center py-12 text-slate-500">
         <p class="text-sm">No data available</p>
       </div>
       }
@@ -314,23 +227,8 @@
   </div>
 </div>
 
-<!-- Dark Mode Styles -->
+<!-- Scrollbar Hide Utility -->
 <style>
-  :host-context(.dark-mode) {
-    --text-color: var(--text-primary);
-    --bg-color: var(--bg-primary);
-  }
-
-  .dark-mode-input {
-    @apply bg-[var(--input-bg)] border border-[var(--input-border)] text-[var(--input-text)] placeholder-[var(--text-tertiary)];
-    @apply focus:ring-[var(--accent-teal)] focus:border-transparent;
-  }
-
-  .light-mode-input {
-    @apply bg-white border border-slate-200 text-slate-900 placeholder-slate-400;
-    @apply focus:ring-teal-500 focus:border-transparent;
-  }
-
   .scrollbar-hide {
     -ms-overflow-style: none;
     scrollbar-width: none;
@@ -338,27 +236,5 @@
 
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
-  }
-
-  /* Advanced dark mode glow effects */
-  :global(.dark-mode-active) {
-    color-scheme: dark;
-  }
-
-  :global(.dark-mode-active) table th {
-    text-shadow: 0 0 8px rgba(0, 217, 255, 0.2);
-  }
-
-  :global(.dark-mode-active) table td {
-    border-bottom-color: var(--border-color);
-  }
-
-  /* Neon glow on positive/negative values in advanced mode */
-  :global(.dark-mode-active) .text-\[var\(--accent-positive\)\] {
-    text-shadow: 0 0 6px rgba(0, 255, 127, 0.4);
-  }
-
-  :global(.dark-mode-active) .text-\[var\(--accent-negative\)\] {
-    text-shadow: 0 0 6px rgba(255, 51, 51, 0.4);
   }
 </style>

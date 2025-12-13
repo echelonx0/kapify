@@ -1,14 +1,13 @@
 import { Component, OnInit, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { Invoice, InvoiceService } from './invoice.service';
+import { InvoiceService, Invoice } from './invoice.service';
 
 @Component({
-  selector: 'app-invoice',
+  selector: 'app-invoices',
   standalone: true,
   imports: [CommonModule],
   templateUrl: './invoice.component.html',
-  //   styleUrls: ['./invoice.component.css'],
 })
 export class InvoiceComponent implements OnInit {
   private invoiceService = inject(InvoiceService);
@@ -17,7 +16,7 @@ export class InvoiceComponent implements OnInit {
   invoices = signal<Invoice[]>([]);
   loading = signal(true);
   error = signal<string | null>(null);
-
+  isPurchaseModalOpen = signal(false);
   ngOnInit() {
     this.loadInvoices();
   }
@@ -87,16 +86,15 @@ export class InvoiceComponent implements OnInit {
 
   viewInvoice(invoice: Invoice) {
     if (invoice.zohoInvoiceId) {
-      // Open Zoho invoice in new tab (if public URL available)
-      // For now, just log - we'll implement this after Zoho integration
       console.log('View invoice:', invoice.zohoInvoiceId);
+      // TODO: Implement viewing invoice in Zoho
     }
   }
 
   downloadInvoice(invoice: Invoice) {
     if (invoice.zohoInvoiceId) {
-      // Download from Zoho (implement after integration)
       console.log('Download invoice:', invoice.zohoInvoiceId);
+      // TODO: Implement downloading invoice from Zoho
     }
   }
 
@@ -105,6 +103,11 @@ export class InvoiceComponent implements OnInit {
   }
 
   goToCredits() {
-    this.router.navigate(['/finance/credits']);
+    // this.router.navigate(['/dashboard/settings']);
+    this.isPurchaseModalOpen.set(true);
+  }
+
+  goHome() {
+    this.router.navigate(['/']);
   }
 }

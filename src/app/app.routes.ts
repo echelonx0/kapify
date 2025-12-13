@@ -14,6 +14,7 @@ import { PricingPageComponent } from './dashboard/finance/pricing-page/pricing-p
 import { PublicProfileViewComponent } from './SMEs/profile/public-page/public-profile.component';
 import { AcceptInvitationComponent } from './auth/accept-invitation/accept-invitation.component';
 import { InvoiceComponent } from './invoice/invoice.component';
+import { CreditsComponent } from './credit-system/credit-component/credit.component';
 
 export const routes: Routes = [
   // Public routes
@@ -138,6 +139,7 @@ export const routes: Routes = [
     canActivate: [AuthGuard],
     title: 'Invoices - Kapify',
   },
+
   // Funding routes
   {
     path: 'funding',
@@ -176,6 +178,13 @@ export const routes: Routes = [
     path: '404',
     component: NotFoundComponent,
     title: 'Page Not Found - Kapify',
+  },
+
+  {
+    path: 'credits',
+    component: CreditsComponent,
+    canActivate: [AuthGuard],
+    title: 'Buy Credits - Kapify',
   },
 
   // Catch all - redirect to 404

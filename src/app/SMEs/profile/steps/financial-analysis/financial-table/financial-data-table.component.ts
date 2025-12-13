@@ -1,3 +1,4 @@
+// src/app/SMEs/profile/steps/financial-analysis/financial-table/financial-data-table-refactored-v2.component.ts
 import {
   Component,
   Input,
@@ -16,17 +17,15 @@ import {
   ChevronRight,
   Lock,
 } from 'lucide-angular';
-import { FullscreenDarkModeService } from '../services/fullscreen-dark-mode.service';
 
 export interface FinancialTableRow {
   label: string;
   values: number[];
   isCalculated?: boolean;
-  isEditable?: boolean;
+  editable?: boolean;
   isBold?: boolean;
   isTotal?: boolean;
   type?: 'currency' | 'percentage' | 'ratio';
-  editable: boolean;
 }
 
 export interface FinancialTableSection {
@@ -35,6 +34,8 @@ export interface FinancialTableSection {
   isCollapsible?: boolean;
   defaultExpanded?: boolean;
   collapsed?: boolean;
+  accentColor?: 'orange' | 'teal'; // For ratio sections (orange) vs regular (teal)
+  spacingBefore?: boolean; // Add spacing before this section (for Financial Ratios tab)
 }
 
 @Component({
@@ -56,141 +57,97 @@ export class FinancialDataTableComponent implements OnInit {
     value: number;
   }>();
 
-  private darkModeService = inject(FullscreenDarkModeService);
-
   // Icons
   ChevronDownIcon = ChevronDown;
   ChevronRightIcon = ChevronRight;
   LockIcon = Lock;
   Math = Math;
 
-  // Dark mode
-  isDarkMode = signal(false);
+  // Year window state
+  private readonly YEARS_PER_VIEW = 3;
+  currentWindowStart = signal(0);
+  currentWindowEnd = signal(0);
+  visibleYearHeaders = signal<string[]>([]);
+  canGoPrevious = signal(false);
+  canGoNext = signal(false);
+  yearRangeText = signal('');
+
   collapsedSections = signal<Set<number>>(new Set());
-
-  // Year window state - MANUAL MANAGEMENT
-  currentWindowStart = 0;
-  currentWindowEnd = 0;
-  visibleYearHeaders: string[] = [];
-  canGoPrevious = false;
-  canGoNext = false;
-  yearRangeText = '';
-
-  private darkModeEffect = effect(() => {
-    this.isDarkMode.set(this.darkModeService.isDarkMode());
-  });
 
   ngOnInit() {
     this.initializeWindow();
   }
 
   /**
-   * Initialize the window with latest years
+   * Initialize year window to show last 3 years
    */
   private initializeWindow(): void {
-    const YEARS_PER_VIEW = 3;
     if (this.columnHeaders.length === 0) return;
 
-    const maxStart = Math.max(0, this.columnHeaders.length - YEARS_PER_VIEW);
+    const maxStart = Math.max(
+      0,
+      this.columnHeaders.length - this.YEARS_PER_VIEW
+    );
     this.setWindowPosition(maxStart);
   }
 
   /**
-   * Set window to a specific start position and update all state
+   * Set window to specific start position
    */
   private setWindowPosition(startIndex: number): void {
-    const YEARS_PER_VIEW = 3;
     const headers = this.columnHeaders;
-
-    // Clamp to valid range
     const start = Math.max(0, Math.min(startIndex, headers.length - 1));
-    const end = Math.min(start + YEARS_PER_VIEW, headers.length);
+    const end = Math.min(start + this.YEARS_PER_VIEW, headers.length);
 
-    // Update state
-    this.currentWindowStart = start;
-    this.currentWindowEnd = end;
-    this.visibleYearHeaders = headers.slice(start, end);
-    this.canGoPrevious = start > 0;
-    this.canGoNext = end < headers.length;
+    this.currentWindowStart.set(start);
+    this.currentWindowEnd.set(end);
+    this.visibleYearHeaders.set(headers.slice(start, end));
+    this.canGoPrevious.set(start > 0);
+    this.canGoNext.set(end < headers.length);
 
-    if (this.visibleYearHeaders.length > 0) {
-      const first = this.visibleYearHeaders[0];
-      const last = this.visibleYearHeaders[this.visibleYearHeaders.length - 1];
-      this.yearRangeText = `${first} to ${last}`;
+    const visible = this.visibleYearHeaders();
+    if (visible.length > 0) {
+      const first = visible[0];
+      const last = visible[visible.length - 1];
+      this.yearRangeText.set(`${first} to ${last}`);
     }
-
-    console.log('🎯 Window position set:', {
-      start,
-      end,
-      visible: this.visibleYearHeaders,
-      canPrev: this.canGoPrevious,
-      canNext: this.canGoNext,
-    });
   }
 
   /**
-   * Navigate arrows - public methods called from template
+   * Navigate to next years
    */
   goToNextYears(): void {
-    const YEARS_PER_VIEW = 3;
-    const nextStart = this.currentWindowStart + 1;
-    const maxStart = Math.max(0, this.columnHeaders.length - YEARS_PER_VIEW);
+    const nextStart = this.currentWindowStart() + 1;
+    const maxStart = Math.max(
+      0,
+      this.columnHeaders.length - this.YEARS_PER_VIEW
+    );
 
     if (nextStart <= maxStart) {
-      console.log('➡️ Next:', this.currentWindowStart, '→', nextStart);
       this.setWindowPosition(nextStart);
     }
   }
 
+  /**
+   * Navigate to previous years
+   */
   goToPreviousYears(): void {
-    if (this.currentWindowStart > 0) {
-      const prevStart = this.currentWindowStart - 1;
-      console.log('⬅️ Previous:', this.currentWindowStart, '→', prevStart);
-      this.setWindowPosition(prevStart);
+    if (this.currentWindowStart() > 0) {
+      this.setWindowPosition(this.currentWindowStart() - 1);
     }
   }
 
   /**
-   * Get visible headers - called in template *@for*
-   */
-  getVisibleHeaders(): string[] {
-    return this.visibleYearHeaders;
-  }
-
-  /**
-   * Get visible row values - called in template *@for*
+   * Get filtered row values for visible window
    */
   getVisibleRowValues(allValues: number[]): number[] {
-    const filtered = allValues.slice(
-      this.currentWindowStart,
-      this.currentWindowEnd
-    );
-    return filtered;
+    return allValues.slice(this.currentWindowStart(), this.currentWindowEnd());
   }
 
   /**
-   * Get year tab class
+   * Toggle section expansion
    */
-  getYearTabClass(index: number): string {
-    const visible = this.visibleYearHeaders;
-
-    if (this.isDarkMode()) {
-      if (index === 0 || index === visible.length - 1) {
-        return 'bg-[var(--accent-teal-light)] text-[var(--accent-teal)] border-[var(--accent-teal)]/30';
-      }
-      return 'bg-[var(--button-bg)] text-[var(--text-secondary)] border-[var(--border-color)]';
-    }
-
-    if (index === 0 || index === visible.length - 1) {
-      return 'bg-teal-50 text-teal-700 border-teal-300/50';
-    }
-    return 'bg-white text-slate-700 border-slate-200';
-  }
-
-  /**
-   * Toggle section
-   */
-  toggleSection(sectionIndex: number) {
+  toggleSection(sectionIndex: number): void {
     const collapsed = this.collapsedSections();
     const newCollapsed = new Set(collapsed);
 
@@ -208,7 +165,45 @@ export class FinancialDataTableComponent implements OnInit {
   }
 
   /**
-   * Number formatting
+   * Get section header classes based on accent color
+   */
+  getSectionHeaderClasses(section: FinancialTableSection): string {
+    const classes: string[] = [
+      'border-b',
+      'border-slate-200',
+      'transition-all',
+      'duration-200',
+    ];
+
+    if (section.accentColor === 'orange') {
+      classes.push('bg-orange-50/50', 'hover:bg-orange-50');
+    } else {
+      classes.push('bg-teal-50/50', 'hover:bg-teal-50');
+    }
+
+    return classes.join(' ');
+  }
+
+  /**
+   * Get section header icon color
+   */
+  getSectionIconColor(section: FinancialTableSection): string {
+    return section.accentColor === 'orange'
+      ? 'text-orange-600'
+      : 'text-teal-600';
+  }
+
+  /**
+   * Get section header text color
+   */
+  getSectionTextColor(section: FinancialTableSection): string {
+    return section.accentColor === 'orange'
+      ? 'text-orange-900'
+      : 'text-slate-900';
+  }
+
+  /**
+   * Number formatting and parsing
    */
   formatNumber(value: number): string {
     if (value === null || value === undefined || isNaN(value)) {
@@ -229,20 +224,18 @@ export class FinancialDataTableComponent implements OnInit {
   }
 
   /**
-   * Cell change handler
+   * Handle cell value changes
    */
   onCellChange(
     sectionIndex: number,
     rowIndex: number,
     visibleColIndex: number,
     event: Event
-  ) {
+  ): void {
     const input = event.target as HTMLInputElement;
     const rawValue = input.value;
     const numericValue = this.parseNumber(rawValue);
-
-    // Convert visible index to original index
-    const originalColIndex = this.currentWindowStart + visibleColIndex;
+    const originalColIndex = this.currentWindowStart() + visibleColIndex;
 
     this.cellValueChanged.emit({
       sectionIndex,
@@ -254,28 +247,29 @@ export class FinancialDataTableComponent implements OnInit {
     input.value = this.formatNumber(numericValue);
   }
 
-  onInputFocus(event: FocusEvent) {
+  onInputFocus(event: FocusEvent): void {
     const input = event.target as HTMLInputElement;
     input.select();
   }
 
-  onEnterKey(event: Event) {
+  onEnterKey(event: Event): void {
     const input = event.target as HTMLInputElement;
-    if (input) {
-      input.blur();
-    }
+    input?.blur();
   }
 
   /**
-   * Row styling
+   * Check if row is editable
    */
   isRowEditable(row: FinancialTableRow): boolean {
-    const editable = row.isEditable ?? row.editable;
+    const editable = row.editable ?? true;
     if (editable === false) return false;
     if (row.isCalculated) return false;
     return this.editMode;
   }
 
+  /**
+   * Get CSS classes for cells
+   */
   getCellClasses(row: FinancialTableRow, value: number): string {
     const classes: string[] = ['text-right'];
 
@@ -283,49 +277,36 @@ export class FinancialDataTableComponent implements OnInit {
       classes.push('font-semibold');
     }
 
-    if (!this.isDarkMode()) {
-      if (value < 0) {
-        classes.push('text-red-700');
-      } else if (row.isTotal) {
-        classes.push('text-slate-900');
-      } else {
-        classes.push('text-slate-700');
-      }
-    }
-
-    return classes.join(' ');
-  }
-
-  getRowClasses(row: FinancialTableRow): string {
-    const classes: string[] = ['border-b', 'transition-colors', 'duration-200'];
-
-    if (this.isDarkMode()) {
-      classes.push('bg-[var(--bg-secondary)]');
-      classes.push('border-[var(--border-color)]');
-
-      if (row.isTotal) {
-        classes.push('border-t-2');
-        classes.push('bg-[var(--bg-tertiary)]');
-      }
-
-      if (row.isCalculated) {
-        classes.push('opacity-80');
-      }
+    if (value < 0) {
+      classes.push('text-red-700');
+    } else if (row.isTotal) {
+      classes.push('text-slate-900');
     } else {
-      if (row.isTotal) {
-        classes.push('bg-slate-50', 'border-t-2', 'border-slate-300');
-      }
-
-      if (row.isCalculated) {
-        classes.push('bg-teal-50/30');
-      }
+      classes.push('text-slate-700');
     }
 
     return classes.join(' ');
   }
 
   /**
-   * Track by functions
+   * Get CSS classes for rows
+   */
+  getRowClasses(row: FinancialTableRow): string {
+    const classes: string[] = ['border-b', 'transition-colors', 'duration-200'];
+
+    if (row.isTotal) {
+      classes.push('bg-slate-50', 'border-t-2', 'border-slate-300');
+    }
+
+    if (row.isCalculated) {
+      classes.push('bg-teal-50/30');
+    }
+
+    return classes.join(' ');
+  }
+
+  /**
+   * Track by functions for *@for loops
    */
   trackBySection(index: number, section: FinancialTableSection): string {
     return `section-${index}-${section.title}`;
@@ -335,7 +316,7 @@ export class FinancialDataTableComponent implements OnInit {
     return `row-${index}-${row.label}`;
   }
 
-  trackByColumn(index: number, header: string): string {
+  trackByHeader(index: number, header: string): string {
     return `col-${index}-${header}`;
   }
 }

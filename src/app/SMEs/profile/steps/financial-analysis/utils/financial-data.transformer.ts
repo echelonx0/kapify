@@ -1,636 +1,115 @@
-// // src/app/SMEs/profile/steps/financial-analysis/utils/financial-data.transformer.ts
-
-// import {
-//   FinancialTableSection,
-//   FinancialTableRow,
-// } from '../financial-table/financial-data-table.component';
-// import {
-//   FinancialRowData,
-//   FinancialRatioData,
-//   BalanceSheetRowData,
-//   CashFlowRowData,
-// } from './excel-parser.service';
-
-// /**
-//  * Calculated field labels for Income Statement
-//  * These fields are computed from other values and should not be directly editable
-//  */
-// const INCOME_CALCULATED_FIELDS = [
-//   'Gross Profit',
-//   'EBITDA',
-//   'Profit before tax',
-// ];
-
-// /**
-//  * Calculated field labels for Balance Sheet
-//  * Totals and subtotals that are computed
-//  */
-// const BALANCE_CALCULATED_FIELDS = [
-//   'Total Current Assets',
-//   'Total Non-Current Assets',
-//   'Total Assets',
-//   'Total Current Liabilities',
-//   'Total Non-Current Liabilities',
-//   'Total Liabilities',
-//   'Total Equity',
-//   'Total Shareholders Equity',
-//   'Total Equities and Liabilities',
-// ];
-
-// /**
-//  * Calculated field labels for Cash Flow
-//  * Net cash amounts and totals
-//  */
-// const CASHFLOW_CALCULATED_FIELDS = [
-//   'Net cash from operating activities',
-//   'Net cash used in investing activities',
-//   'Net cash used in financing activities',
-//   'Net increase in cash and cash equivalents',
-//   'Net change in cash',
-//   'Cash and cash equivalents at end of period',
-// ];
-
-// export class FinancialDataTransformer {
-//   /**
-//    * Transform income statement data to table sections
-//    */
-//   static transformIncomeStatement(
-//     data: FinancialRowData[]
-//   ): FinancialTableSection[] {
-//     if (!data || data.length === 0) {
-//       return [];
-//     }
-
-//     const rows: FinancialTableRow[] = data.map((item) => ({
-//       label: item.label,
-//       values: item.values,
-//       editable: item.editable ?? !this.isCalculatedIncomeField(item.label),
-//       type: 'currency',
-//       isCalculated: this.isCalculatedIncomeField(item.label),
-//     }));
-
-//     return [
-//       {
-//         title: 'Income Statement',
-//         rows,
-//         collapsed: false,
-//       },
-//     ];
-//   }
-
-//   /**
-//    * Transform financial ratios data to table sections
-//    */
-//   static transformFinancialRatios(
-//     data: FinancialRatioData[]
-//   ): FinancialTableSection[] {
-//     if (!data || data.length === 0) {
-//       return [];
-//     }
-
-//     const rows: FinancialTableRow[] = data.map((item) => ({
-//       label: item.label,
-//       values: item.values,
-//       editable: false, // Ratios are calculated, not directly editable
-//       type: item.type || 'ratio',
-//       isCalculated: true, // All ratios are calculated
-//     }));
-
-//     return [
-//       {
-//         title: 'Financial Ratios',
-//         rows,
-//         collapsed: false,
-//       },
-//     ];
-//   }
-
-//   /**
-//    * Transform balance sheet data to table sections
-//    * Groups by category: Assets, Liabilities, Equity
-//    */
-//   static transformBalanceSheet(
-//     data: BalanceSheetRowData[]
-//   ): FinancialTableSection[] {
-//     if (!data || data.length === 0) {
-//       return [];
-//     }
-
-//     const assets = data.filter((r) => r.category === 'assets');
-//     const liabilities = data.filter((r) => r.category === 'liabilities');
-//     const equity = data.filter((r) => r.category === 'equity');
-
-//     const sections: FinancialTableSection[] = [];
-
-//     if (assets.length > 0) {
-//       sections.push({
-//         title: 'Assets',
-//         rows: assets.map((item) => ({
-//           label: item.label,
-//           values: item.values,
-//           editable: item.editable ?? !this.isCalculatedBalanceField(item.label),
-//           type: 'currency' as const,
-//           isCalculated: this.isCalculatedBalanceField(item.label),
-//         })),
-//         collapsed: false,
-//       });
-//     }
-
-//     if (liabilities.length > 0) {
-//       sections.push({
-//         title: 'Liabilities',
-//         rows: liabilities.map((item) => ({
-//           label: item.label,
-//           values: item.values,
-//           editable: item.editable ?? !this.isCalculatedBalanceField(item.label),
-//           type: 'currency' as const,
-//           isCalculated: this.isCalculatedBalanceField(item.label),
-//         })),
-//         collapsed: false,
-//       });
-//     }
-
-//     if (equity.length > 0) {
-//       sections.push({
-//         title: 'Equity',
-//         rows: equity.map((item) => ({
-//           label: item.label,
-//           values: item.values,
-//           editable: item.editable ?? !this.isCalculatedBalanceField(item.label),
-//           type: 'currency' as const,
-//           isCalculated: this.isCalculatedBalanceField(item.label),
-//         })),
-//         collapsed: false,
-//       });
-//     }
-
-//     return sections;
-//   }
-
-//   /**
-//    * Transform cash flow data to table sections
-//    * Groups by category: Operating, Investing, Financing
-//    */
-//   static transformCashFlow(data: CashFlowRowData[]): FinancialTableSection[] {
-//     if (!data || data.length === 0) {
-//       return [];
-//     }
-
-//     const operating = data.filter((r) => r.category === 'operating');
-//     const investing = data.filter((r) => r.category === 'investing');
-//     const financing = data.filter((r) => r.category === 'financing');
-
-//     const sections: FinancialTableSection[] = [];
-
-//     if (operating.length > 0) {
-//       sections.push({
-//         title: 'Operating Activities',
-//         rows: operating.map((item) => ({
-//           label: item.label,
-//           values: item.values,
-//           editable:
-//             item.editable ?? !this.isCalculatedCashFlowField(item.label),
-//           type: 'currency' as const,
-//           isCalculated: this.isCalculatedCashFlowField(item.label),
-//         })),
-//         collapsed: false,
-//       });
-//     }
-
-//     if (investing.length > 0) {
-//       sections.push({
-//         title: 'Investing Activities',
-//         rows: investing.map((item) => ({
-//           label: item.label,
-//           values: item.values,
-//           editable:
-//             item.editable ?? !this.isCalculatedCashFlowField(item.label),
-//           type: 'currency' as const,
-//           isCalculated: this.isCalculatedCashFlowField(item.label),
-//         })),
-//         collapsed: false,
-//       });
-//     }
-
-//     if (financing.length > 0) {
-//       sections.push({
-//         title: 'Financing Activities',
-//         rows: financing.map((item) => ({
-//           label: item.label,
-//           values: item.values,
-//           editable:
-//             item.editable ?? !this.isCalculatedCashFlowField(item.label),
-//           type: 'currency' as const,
-//           isCalculated: this.isCalculatedCashFlowField(item.label),
-//         })),
-//         collapsed: false,
-//       });
-//     }
-
-//     return sections;
-//   }
-
-//   // ===============================
-//   // REVERSE TRANSFORMATIONS (Table -> Data)
-//   // ===============================
-
-//   /**
-//    * Transform table data back to income statement format
-//    */
-//   static transformTableToIncomeStatement(
-//     sections: FinancialTableSection[]
-//   ): FinancialRowData[] {
-//     const incomeSection = sections.find((s) => s.title === 'Income Statement');
-//     if (!incomeSection) return [];
-
-//     return incomeSection.rows.map((row) => ({
-//       label: row.label,
-//       values: row.values,
-//       editable: row.editable,
-//     }));
-//   }
-
-//   /**
-//    * Transform table data back to financial ratios format
-//    */
-//   static transformTableToFinancialRatios(
-//     sections: FinancialTableSection[]
-//   ): FinancialRatioData[] {
-//     const ratiosSection = sections.find((s) => s.title === 'Financial Ratios');
-//     if (!ratiosSection) return [];
-
-//     return ratiosSection.rows.map((row) => ({
-//       label: row.label,
-//       values: row.values,
-//       editable: row.editable,
-//       type: (row.type as 'percentage' | 'ratio' | 'currency') || 'ratio',
-//     }));
-//   }
-
-//   /**
-//    * Transform table sections back to balance sheet format
-//    */
-//   static transformTableToBalanceSheet(
-//     sections: FinancialTableSection[]
-//   ): BalanceSheetRowData[] {
-//     const result: BalanceSheetRowData[] = [];
-
-//     const assetsSection = sections.find((s) => s.title === 'Assets');
-//     if (assetsSection) {
-//       assetsSection.rows.forEach((row) => {
-//         result.push({
-//           label: row.label,
-//           category: 'assets',
-//           values: row.values,
-//           editable: row.editable,
-//         });
-//       });
-//     }
-
-//     const liabilitiesSection = sections.find((s) => s.title === 'Liabilities');
-//     if (liabilitiesSection) {
-//       liabilitiesSection.rows.forEach((row) => {
-//         result.push({
-//           label: row.label,
-//           category: 'liabilities',
-//           values: row.values,
-//           editable: row.editable,
-//         });
-//       });
-//     }
-
-//     const equitySection = sections.find((s) => s.title === 'Equity');
-//     if (equitySection) {
-//       equitySection.rows.forEach((row) => {
-//         result.push({
-//           label: row.label,
-//           category: 'equity',
-//           values: row.values,
-//           editable: row.editable,
-//         });
-//       });
-//     }
-
-//     return result;
-//   }
-
-//   /**
-//    * Transform table sections back to cash flow format
-//    */
-//   static transformTableToCashFlow(
-//     sections: FinancialTableSection[]
-//   ): CashFlowRowData[] {
-//     const result: CashFlowRowData[] = [];
-
-//     const operatingSection = sections.find(
-//       (s) => s.title === 'Operating Activities'
-//     );
-//     if (operatingSection) {
-//       operatingSection.rows.forEach((row) => {
-//         result.push({
-//           label: row.label,
-//           category: 'operating',
-//           values: row.values,
-//           editable: row.editable,
-//         });
-//       });
-//     }
-
-//     const investingSection = sections.find(
-//       (s) => s.title === 'Investing Activities'
-//     );
-//     if (investingSection) {
-//       investingSection.rows.forEach((row) => {
-//         result.push({
-//           label: row.label,
-//           category: 'investing',
-//           values: row.values,
-//           editable: row.editable,
-//         });
-//       });
-//     }
-
-//     const financingSection = sections.find(
-//       (s) => s.title === 'Financing Activities'
-//     );
-//     if (financingSection) {
-//       financingSection.rows.forEach((row) => {
-//         result.push({
-//           label: row.label,
-//           category: 'financing',
-//           values: row.values,
-//           editable: row.editable,
-//         });
-//       });
-//     }
-
-//     return result;
-//   }
-
-//   // ===============================
-//   // HELPER METHODS
-//   // ===============================
-
-//   /**
-//    * Check if an Income Statement field is calculated
-//    */
-//   private static isCalculatedIncomeField(label: string): boolean {
-//     return INCOME_CALCULATED_FIELDS.some(
-//       (field) => label.toLowerCase() === field.toLowerCase()
-//     );
-//   }
-
-//   /**
-//    * Check if a Balance Sheet field is calculated (totals)
-//    */
-//   private static isCalculatedBalanceField(label: string): boolean {
-//     const lowerLabel = label.toLowerCase();
-//     return BALANCE_CALCULATED_FIELDS.some(
-//       (field) =>
-//         lowerLabel === field.toLowerCase() ||
-//         lowerLabel.includes(field.toLowerCase())
-//     );
-//   }
-
-//   /**
-//    * Check if a Cash Flow field is calculated
-//    */
-//   private static isCalculatedCashFlowField(label: string): boolean {
-//     const lowerLabel = label.toLowerCase();
-//     return CASHFLOW_CALCULATED_FIELDS.some(
-//       (field) =>
-//         lowerLabel === field.toLowerCase() ||
-//         lowerLabel.includes(field.toLowerCase())
-//     );
-//   }
-// }
-// src/app/SMEs/profile/steps/financial-analysis/utils/financial-data.transformer.ts
-// UPDATED: Handles Charles's template structure with proper section grouping
-
+// src/app/SMEs/profile/steps/financial-analysis/utils/financial-data-transformer-refactored-v2.ts
 import {
   FinancialTableSection,
   FinancialTableRow,
 } from '../financial-table/financial-data-table.component';
 import {
   FinancialRowData,
-  FinancialRatioData,
   BalanceSheetRowData,
   CashFlowRowData,
+  FinancialRatioData,
 } from './excel-parser.service';
-
-/**
- * Calculated field labels for Income Statement
- */
-const INCOME_CALCULATED_FIELDS = [
-  'Gross Profit',
-  'EBITDA',
-  'Profit before tax',
-  'Profit/(Loss) for the period',
-];
-
-/**
- * Section headers in Balance Sheet (not editable)
- */
-const BALANCE_SECTION_HEADERS = [
-  'Non-Currents Assets',
-  'Current Assets',
-  'Equities',
-  'Liabilities',
-  'Current Liabilities',
-];
-
-/**
- * Calculated/Total fields in Balance Sheet
- */
-const BALANCE_CALCULATED_FIELDS = [
-  'Total Assets',
-  'Total Equities and Liabilities',
-];
-
-/**
- * Calculated fields in Cash Flow
- */
-const CASHFLOW_CALCULATED_FIELDS = [
-  'Net cash from operating activities',
-  'Net cash used in investing activities',
-  'Net cash used in financing activities',
-  'Net increase in cash and cash equivalents',
-  'Cash and cash equivalents at end of period',
-];
 
 export class FinancialDataTransformer {
   /**
-   * Transform income statement data to table sections
+   * Transform Income Statement rows + income ratios into table sections
+   * Income statement data + separate collapsible section (orange) for income ratios
    */
   static transformIncomeStatement(
-    data: FinancialRowData[]
+    incomeData: FinancialRowData[],
+    incomeRatios?: FinancialRatioData[]
   ): FinancialTableSection[] {
-    if (!data || data.length === 0) {
-      return [];
-    }
+    if (incomeData.length === 0) return [];
 
-    const rows: FinancialTableRow[] = data.map((item) => ({
-      label: item.label,
-      values: item.values,
-      editable: item.editable ?? !this.isCalculatedIncomeField(item.label),
-      type: 'currency',
-      isCalculated: this.isCalculatedIncomeField(item.label),
-      isBold: this.isCalculatedIncomeField(item.label),
-    }));
-
-    return [
+    const sections: FinancialTableSection[] = [
       {
         title: 'Income Statement',
-        rows,
-        collapsed: false,
+        rows: incomeData.map((row) => ({
+          label: row.label,
+          values: row.values,
+          editable: row.editable ?? true,
+          isCalculated: !row.editable,
+          isBold: this.isBoldIncomeRow(row.label),
+          isTotal: this.isTotalIncomeRow(row.label),
+          type: 'currency' as const,
+        })),
+        isCollapsible: false,
+        defaultExpanded: true,
       },
     ];
-  }
 
-  /**
-   * Transform financial ratios data to table sections
-   */
-  static transformFinancialRatios(
-    data: FinancialRatioData[]
-  ): FinancialTableSection[] {
-    if (!data || data.length === 0) {
-      return [];
+    // Add income-based ratios as separate collapsible section (orange, expanded by default)
+    if (incomeRatios && incomeRatios.length > 0) {
+      sections.push({
+        title: 'Financial Performance Ratios',
+        rows: incomeRatios.map((ratio) => ({
+          label: ratio.label,
+          values: ratio.values,
+          editable: false,
+          isCalculated: true,
+          isBold: false,
+          isTotal: false,
+          type: ratio.type,
+        })),
+        isCollapsible: true,
+        defaultExpanded: true,
+        accentColor: 'orange', // Orange-50 background for ratio section
+      });
     }
 
-    const rows: FinancialTableRow[] = data.map((item) => ({
-      label: item.label,
-      values: item.values,
-      editable: false,
-      type: item.type || 'ratio',
-      isCalculated: true,
-    }));
-
-    return [
-      {
-        title: 'Financial Ratios',
-        rows,
-        collapsed: false,
-      },
-    ];
+    return sections;
   }
 
   /**
-   * Transform balance sheet data to table sections
-   * Groups by: Non-Current Assets, Current Assets, Total Assets, Equity, Non-Current Liabilities, Current Liabilities
+   * Transform Balance Sheet rows + balance sheet ratios into table sections
+   * Groups by: Non-Current Assets | Current Assets | Equities | Liabilities
+   * Plus separate collapsible section (orange) for balance sheet ratios
    */
   static transformBalanceSheet(
-    data: BalanceSheetRowData[]
+    balanceData: BalanceSheetRowData[],
+    balanceRatios?: FinancialRatioData[]
   ): FinancialTableSection[] {
-    if (!data || data.length === 0) {
-      return [];
-    }
+    if (balanceData.length === 0) return [];
 
     const sections: FinancialTableSection[] = [];
+    let currentSection: { title: string; rows: BalanceSheetRowData[] } | null =
+      null;
 
-    // Non-Current Assets
-    const nonCurrentAssets = data.filter(
-      (r) => r.category === 'assets' && r.subcategory === 'non-current'
-    );
-    if (nonCurrentAssets.length > 0) {
-      sections.push({
-        title: 'Non-Current Assets',
-        rows: nonCurrentAssets.map((item) => this.toTableRow(item, 'balance')),
-        collapsed: false,
-        isCollapsible: true,
-      });
+    // Group balance sheet data by sections
+    for (const row of balanceData) {
+      if (row.isSectionHeader) {
+        if (currentSection && currentSection.rows.length > 0) {
+          sections.push(this.createBalanceSheetSection(currentSection));
+        }
+        currentSection = {
+          title: row.label,
+          rows: [],
+        };
+      } else if (currentSection) {
+        currentSection.rows.push(row);
+      }
     }
 
-    // Current Assets
-    const currentAssets = data.filter(
-      (r) => r.category === 'assets' && r.subcategory === 'current'
-    );
-    if (currentAssets.length > 0) {
-      sections.push({
-        title: 'Current Assets',
-        rows: currentAssets.map((item) => this.toTableRow(item, 'balance')),
-        collapsed: false,
-        isCollapsible: true,
-      });
+    if (currentSection && currentSection.rows.length > 0) {
+      sections.push(this.createBalanceSheetSection(currentSection));
     }
 
-    // Total Assets (standalone row, no subcategory)
-    const totalAssets = data.filter(
-      (r) =>
-        r.category === 'assets' &&
-        !r.subcategory &&
-        r.label.toLowerCase().includes('total')
-    );
-    if (totalAssets.length > 0) {
+    // Add balance sheet ratios as separate collapsible section (orange, expanded by default)
+    if (balanceRatios && balanceRatios.length > 0) {
       sections.push({
-        title: 'Total Assets',
-        rows: totalAssets.map((item) => ({
-          ...this.toTableRow(item, 'balance'),
-          isTotal: true,
-          isBold: true,
+        title: 'Financial Ratios',
+        rows: balanceRatios.map((ratio) => ({
+          label: ratio.label,
+          values: ratio.values,
+          editable: false,
+          isCalculated: true,
+          isBold: false,
+          isTotal: false,
+          type: ratio.type,
         })),
-        collapsed: false,
-        isCollapsible: false,
-      });
-    }
-
-    // Equity
-    const equity = data.filter((r) => r.category === 'equity');
-    if (equity.length > 0) {
-      sections.push({
-        title: 'Equity',
-        rows: equity.map((item) => this.toTableRow(item, 'balance')),
-        collapsed: false,
         isCollapsible: true,
-      });
-    }
-
-    // Non-Current Liabilities (labeled as "Liabilities" in Charles's template)
-    const nonCurrentLiabilities = data.filter(
-      (r) => r.category === 'liabilities' && r.subcategory === 'non-current'
-    );
-    if (nonCurrentLiabilities.length > 0) {
-      sections.push({
-        title: 'Non-Current Liabilities',
-        rows: nonCurrentLiabilities.map((item) =>
-          this.toTableRow(item, 'balance')
-        ),
-        collapsed: false,
-        isCollapsible: true,
-      });
-    }
-
-    // Current Liabilities
-    const currentLiabilities = data.filter(
-      (r) => r.category === 'liabilities' && r.subcategory === 'current'
-    );
-    if (currentLiabilities.length > 0) {
-      sections.push({
-        title: 'Current Liabilities',
-        rows: currentLiabilities.map((item) =>
-          this.toTableRow(item, 'balance')
-        ),
-        collapsed: false,
-        isCollapsible: true,
-      });
-    }
-
-    // Total Equities and Liabilities (standalone row)
-    const totalEL = data.filter(
-      (r) =>
-        r.category === 'liabilities' &&
-        !r.subcategory &&
-        r.label.toLowerCase().includes('total')
-    );
-    if (totalEL.length > 0) {
-      sections.push({
-        title: 'Total',
-        rows: totalEL.map((item) => ({
-          ...this.toTableRow(item, 'balance'),
-          isTotal: true,
-          isBold: true,
-        })),
-        collapsed: false,
-        isCollapsible: false,
+        defaultExpanded: true,
+        accentColor: 'orange', // Orange-50 background for ratio section
       });
     }
 
@@ -638,202 +117,208 @@ export class FinancialDataTransformer {
   }
 
   /**
-   * Transform cash flow data to table sections
-   * Groups by: Operating, Investing, Financing, Summary
+   * Transform Cash Flow rows into organized sections
+   * Groups by: Operating | Investing | Financing | Summary
    */
   static transformCashFlow(data: CashFlowRowData[]): FinancialTableSection[] {
-    if (!data || data.length === 0) {
-      return [];
+    if (data.length === 0) return [];
+
+    const operatingRows: CashFlowRowData[] = [];
+    const investingRows: CashFlowRowData[] = [];
+    const financingRows: CashFlowRowData[] = [];
+    const summaryRows: CashFlowRowData[] = [];
+
+    for (const row of data) {
+      switch (row.category) {
+        case 'operating':
+          operatingRows.push(row);
+          break;
+        case 'investing':
+          investingRows.push(row);
+          break;
+        case 'financing':
+          financingRows.push(row);
+          break;
+        case 'summary':
+          summaryRows.push(row);
+          break;
+      }
     }
 
     const sections: FinancialTableSection[] = [];
 
-    // Operating Activities
-    const operating = data.filter((r) => r.category === 'operating');
-    if (operating.length > 0) {
+    if (operatingRows.length > 0) {
       sections.push({
         title: 'Operating Activities',
-        rows: operating.map((item) => this.toCashFlowTableRow(item)),
-        collapsed: false,
-        isCollapsible: true,
+        rows: operatingRows.map((row) => ({
+          label: row.label,
+          values: row.values,
+          editable: row.editable,
+          isCalculated: !row.editable,
+          isBold: row.isSubtotal,
+          isTotal: row.isSubtotal,
+          type: 'currency' as const,
+        })),
+        isCollapsible: false,
+        defaultExpanded: true,
       });
     }
 
-    // Investing Activities
-    const investing = data.filter((r) => r.category === 'investing');
-    if (investing.length > 0) {
+    if (investingRows.length > 0) {
       sections.push({
         title: 'Investing Activities',
-        rows: investing.map((item) => this.toCashFlowTableRow(item)),
-        collapsed: false,
-        isCollapsible: true,
+        rows: investingRows.map((row) => ({
+          label: row.label,
+          values: row.values,
+          editable: row.editable,
+          isCalculated: !row.editable,
+          isBold: row.isSubtotal,
+          isTotal: row.isSubtotal,
+          type: 'currency' as const,
+        })),
+        isCollapsible: false,
+        defaultExpanded: true,
       });
     }
 
-    // Financing Activities
-    const financing = data.filter((r) => r.category === 'financing');
-    if (financing.length > 0) {
+    if (financingRows.length > 0) {
       sections.push({
         title: 'Financing Activities',
-        rows: financing.map((item) => this.toCashFlowTableRow(item)),
-        collapsed: false,
-        isCollapsible: true,
+        rows: financingRows.map((row) => ({
+          label: row.label,
+          values: row.values,
+          editable: row.editable,
+          isCalculated: !row.editable,
+          isBold: row.isSubtotal,
+          isTotal: row.isSubtotal,
+          type: 'currency' as const,
+        })),
+        isCollapsible: false,
+        defaultExpanded: true,
       });
     }
 
-    // Summary (Net change, opening/closing cash)
-    const summary = data.filter((r) => r.category === 'summary');
-    if (summary.length > 0) {
+    if (summaryRows.length > 0) {
       sections.push({
-        title: 'Cash Position',
-        rows: summary.map((item) => ({
-          ...this.toCashFlowTableRow(item),
+        title: 'Summary',
+        rows: summaryRows.map((row) => ({
+          label: row.label,
+          values: row.values,
+          editable: row.editable,
+          isCalculated: !row.editable,
           isBold: true,
+          isTotal: true,
+          type: 'currency' as const,
         })),
-        collapsed: false,
         isCollapsible: false,
+        defaultExpanded: true,
       });
     }
 
     return sections;
   }
 
-  // ===============================
-  // HELPER METHODS
-  // ===============================
+  /**
+   * Transform Financial Ratios into organized sections by type
+   * Income ratios at top + spacing + Balance sheet ratios below
+   * Both with orange-50 background, both collapsible (expanded by default)
+   */
+  static transformFinancialRatios(
+    incomeRatios?: FinancialRatioData[],
+    balanceRatios?: FinancialRatioData[]
+  ): FinancialTableSection[] {
+    const sections: FinancialTableSection[] = [];
 
-  private static toTableRow(
-    item: BalanceSheetRowData,
-    context: 'balance' | 'cashflow'
-  ): FinancialTableRow {
-    const isHeader = BALANCE_SECTION_HEADERS.some(
-      (h) => item.label.toLowerCase().trim() === h.toLowerCase().trim()
-    );
-    const isCalculated = isHeader || this.isCalculatedBalanceField(item.label);
+    // Income-based ratios section
+    if (incomeRatios && incomeRatios.length > 0) {
+      sections.push({
+        title: 'Income Statement Ratios',
+        rows: incomeRatios.map((ratio) => ({
+          label: ratio.label,
+          values: ratio.values,
+          editable: false,
+          isCalculated: true,
+          isBold: false,
+          isTotal: false,
+          type: ratio.type,
+        })),
+        isCollapsible: true,
+        defaultExpanded: true,
+        accentColor: 'orange',
+      });
+    }
 
+    // Balance sheet ratios section (with spacing above)
+    if (balanceRatios && balanceRatios.length > 0) {
+      sections.push({
+        title: 'Balance Sheet Ratios',
+        rows: balanceRatios.map((ratio) => ({
+          label: ratio.label,
+          values: ratio.values,
+          editable: false,
+          isCalculated: true,
+          isBold: false,
+          isTotal: false,
+          type: ratio.type,
+        })),
+        isCollapsible: true,
+        defaultExpanded: true,
+        accentColor: 'orange',
+        spacingBefore: true, // Add spacing before this section
+      });
+    }
+
+    return sections;
+  }
+
+  // ===== PRIVATE HELPERS =====
+
+  private static createBalanceSheetSection(section: {
+    title: string;
+    rows: BalanceSheetRowData[];
+  }): FinancialTableSection {
     return {
-      label: item.label,
-      values: item.values,
-      editable: item.editable && !isHeader && !isCalculated,
-      type: 'currency',
-      isCalculated,
-      isBold: isHeader || isCalculated,
+      title: section.title,
+      rows: section.rows.map((row) => ({
+        label: row.label,
+        values: row.values,
+        editable: row.editable,
+        isCalculated: !row.editable,
+        isBold: this.isBoldBalanceRow(row),
+        isTotal: row.isTotal || false,
+        type: 'currency' as const,
+      })),
+      isCollapsible: false,
+      defaultExpanded: true,
     };
   }
 
-  private static toCashFlowTableRow(item: CashFlowRowData): FinancialTableRow {
-    const isCalculated = this.isCalculatedCashFlowField(item.label);
-
-    return {
-      label: item.label,
-      values: item.values,
-      editable: item.editable && !isCalculated,
-      type: 'currency',
-      isCalculated,
-      isBold: isCalculated,
-    };
-  }
-
-  private static isCalculatedIncomeField(label: string): boolean {
-    return INCOME_CALCULATED_FIELDS.some((field) =>
-      label.toLowerCase().includes(field.toLowerCase())
-    );
-  }
-
-  private static isCalculatedBalanceField(label: string): boolean {
-    return BALANCE_CALCULATED_FIELDS.some((field) =>
-      label.toLowerCase().includes(field.toLowerCase())
-    );
-  }
-
-  private static isCalculatedCashFlowField(label: string): boolean {
-    return CASHFLOW_CALCULATED_FIELDS.some((field) =>
-      label.toLowerCase().includes(field.toLowerCase())
-    );
-  }
-
-  // ===============================
-  // REVERSE TRANSFORMATIONS (for saving back)
-  // ===============================
-
-  static transformTableToBalanceSheet(
-    sections: FinancialTableSection[]
-  ): BalanceSheetRowData[] {
-    const result: BalanceSheetRowData[] = [];
-
-    const sectionMapping: {
-      title: string;
-      category: 'assets' | 'liabilities' | 'equity';
-      subcategory?: 'current' | 'non-current';
-    }[] = [
-      {
-        title: 'Non-Current Assets',
-        category: 'assets',
-        subcategory: 'non-current',
-      },
-      { title: 'Current Assets', category: 'assets', subcategory: 'current' },
-      { title: 'Total Assets', category: 'assets' },
-      { title: 'Equity', category: 'equity' },
-      {
-        title: 'Non-Current Liabilities',
-        category: 'liabilities',
-        subcategory: 'non-current',
-      },
-      {
-        title: 'Current Liabilities',
-        category: 'liabilities',
-        subcategory: 'current',
-      },
-      { title: 'Total', category: 'liabilities' },
+  private static isBoldIncomeRow(label: string): boolean {
+    const boldRows = [
+      'Gross Profit',
+      'EBITDA',
+      'Profit before tax',
+      'Profit/(Loss) for the period',
     ];
-
-    for (const mapping of sectionMapping) {
-      const section = sections.find((s) => s.title === mapping.title);
-      if (section) {
-        section.rows.forEach((row) => {
-          result.push({
-            label: row.label,
-            category: mapping.category,
-            subcategory: mapping.subcategory,
-            values: row.values,
-            editable: row.editable,
-          });
-        });
-      }
-    }
-
-    return result;
+    return boldRows.some((row) => label.toLowerCase() === row.toLowerCase());
   }
 
-  static transformTableToCashFlow(
-    sections: FinancialTableSection[]
-  ): CashFlowRowData[] {
-    const result: CashFlowRowData[] = [];
-
-    const sectionMapping: {
-      title: string;
-      category: 'operating' | 'investing' | 'financing' | 'summary';
-    }[] = [
-      { title: 'Operating Activities', category: 'operating' },
-      { title: 'Investing Activities', category: 'investing' },
-      { title: 'Financing Activities', category: 'financing' },
-      { title: 'Cash Position', category: 'summary' },
+  private static isTotalIncomeRow(label: string): boolean {
+    const totalRows = [
+      'Gross Profit',
+      'EBITDA',
+      'Profit before tax',
+      'Profit/(Loss) for the period',
     ];
+    return totalRows.some((row) => label.toLowerCase() === row.toLowerCase());
+  }
 
-    for (const mapping of sectionMapping) {
-      const section = sections.find((s) => s.title === mapping.title);
-      if (section) {
-        section.rows.forEach((row) => {
-          result.push({
-            label: row.label,
-            category: mapping.category,
-            values: row.values,
-            editable: row.editable,
-          });
-        });
-      }
-    }
-
-    return result;
+  private static isBoldBalanceRow(row: BalanceSheetRowData): boolean {
+    return (
+      row.isTotal ||
+      ['Assets', 'Equities', 'Liabilities'].some((keyword) =>
+        row.label.toLowerCase().includes(keyword.toLowerCase())
+      )
+    );
   }
 }

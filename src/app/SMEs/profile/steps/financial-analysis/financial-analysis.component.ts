@@ -103,26 +103,81 @@ export class FinancialAnalysisComponent implements OnInit, OnDestroy {
   parseWarnings = signal<string[]>([]);
   parseProgress = signal<ParseProgress | null>(null);
 
-  // Computed table sections
-  incomeStatementSections = computed(() =>
-    FinancialDataTransformer.transformIncomeStatement(
-      this.incomeStatementData()
-    )
-  );
-
-  balanceSheetSections = computed(() =>
-    FinancialDataTransformer.transformBalanceSheet(this.balanceSheetData())
-  );
-
   cashFlowSections = computed(() =>
     FinancialDataTransformer.transformCashFlow(this.cashFlowData())
   );
 
-  financialRatiosSections = computed(() =>
-    FinancialDataTransformer.transformFinancialRatios(
-      this.financialRatiosData()
-    )
-  );
+  // WITH THESE:
+  incomeStatementSections = computed(() => {
+    const incomeRatios = this.financialRatiosData().filter((r) =>
+      [
+        'Sales Growth',
+        'Gross profit margin',
+        'Cost to Income ratio',
+        'Operating margin (EBITDA)',
+        'Interest Cover Ratio',
+        'Net Operating Profit Margin',
+      ].some((label) => r.label.toLowerCase().includes(label.toLowerCase()))
+    );
+
+    return FinancialDataTransformer.transformIncomeStatement(
+      this.incomeStatementData(),
+      incomeRatios //   PASSING INCOME RATIOS
+    );
+  });
+
+  balanceSheetSections = computed(() => {
+    const balanceRatios = this.financialRatiosData().filter((r) =>
+      [
+        'Return on Equity',
+        'Return on Assets',
+        'Current Ratio',
+        'Acid Test Ratio',
+        'Debt Equity Ratio',
+        'Debtors Days',
+        'Creditors Days',
+        'Equity Investment Value',
+        'Return on Investment',
+      ].some((label) => r.label.toLowerCase().includes(label.toLowerCase()))
+    );
+
+    return FinancialDataTransformer.transformBalanceSheet(
+      this.balanceSheetData(),
+      balanceRatios //   PASSING BALANCE RATIOS
+    );
+  });
+
+  financialRatiosSections = computed(() => {
+    const incomeRatios = this.financialRatiosData().filter((r) =>
+      [
+        'Sales Growth',
+        'Gross profit margin',
+        'Cost to Income ratio',
+        'Operating margin (EBITDA)',
+        'Interest Cover Ratio',
+        'Net Operating Profit Margin',
+      ].some((label) => r.label.toLowerCase().includes(label.toLowerCase()))
+    );
+
+    const balanceRatios = this.financialRatiosData().filter((r) =>
+      [
+        'Return on Equity',
+        'Return on Assets',
+        'Current Ratio',
+        'Acid Test Ratio',
+        'Debt Equity Ratio',
+        'Debtors Days',
+        'Creditors Days',
+        'Equity Investment Value',
+        'Return on Investment',
+      ].some((label) => r.label.toLowerCase().includes(label.toLowerCase()))
+    );
+
+    return FinancialDataTransformer.transformFinancialRatios(
+      incomeRatios, // ✅ INCOME RATIOS AT TOP
+      balanceRatios // ✅ BALANCE RATIOS AT BOTTOM WITH SPACING
+    );
+  });
 
   // VALIDATION - Now computed, always accurate
   validationResults = computed(() => {
@@ -823,28 +878,6 @@ export class FinancialAnalysisComponent implements OnInit, OnDestroy {
       this.isSaving.set(false);
     }
   }
-
-  // private buildFinancialProfileData(): ParsedFinancialData {
-  //     const metadata = this.uploadMetadata();
-  //   const uploadedFile = this.uploadedTemplate()
-
-  //     ? {
-  //         documentKey: 'financial-template',
-  //         fileName: this.uploadedTemplate()?.name || 'financial_template.xlsx',
-  //           publicUrl: metadata.publicUrl,
-  //       }
-  //     : undefined;
-
-  //   return {
-  //     incomeStatement: this.incomeStatementData(),
-  //     balanceSheet: this.balanceSheetData(),
-  //     cashFlow: this.cashFlowData(),
-  //     financialRatios: this.financialRatiosData(),
-  //     columnHeaders: this.columnHeaders(),
-  //     lastUpdated: new Date().toISOString(),
-  //     uploadedFile,
-  //   };
-  // }
 
   private buildFinancialProfileData(): ParsedFinancialData {
     const metadata = this.uploadMetadata();

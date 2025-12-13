@@ -162,6 +162,8 @@
           [isLoading]="isSaving()"
           (organizationUpdated)="onOrganizationUpdated($event)"
         />
+        } @case ('account') {
+        <app-account />
         } @case ('contact') {
         <app-contact-details
           [organization]="organization()"
