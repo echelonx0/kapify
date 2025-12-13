@@ -4,12 +4,12 @@
   <!-- Header with Upload Info -->
   @if (uploadedFile()) {
   <div
-    class="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-4"
+    class="bg-gradient-to-r from-slate-50 to-teal-50 border border-slate-200 rounded-xl p-4"
   >
     <div class="flex items-center justify-between">
       <div class="flex items-center gap-3">
         <div
-          class="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center"
+          class="w-12 h-12 bg-stone-600 rounded-lg flex items-center justify-center"
         >
           <lucide-icon
             [img]="FileSpreadsheetIcon"
@@ -18,24 +18,18 @@
           ></lucide-icon>
         </div>
         <div>
-          <p class="font-semibold text-gray-900">
-            {{ uploadedFile()!.fileName }}
-          </p>
+          <p class="font-semibold text-gray-900">Financials</p>
           <p class="text-sm text-gray-600">
             Last updated: {{ formatDate(financialAnalysis!.lastUpdated) }}
           </p>
         </div>
       </div>
       <button
-        (click)="downloadTemplate()"
-        class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"
+        (click)="openExpandedView()"
+        class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-stone-600 rounded-lg hover:bg-stone-700 transition-colors"
       >
-        <lucide-icon
-          [img]="DownloadIcon"
-          [size]="16"
-          class="mr-2"
-        ></lucide-icon>
-        Download File
+        <lucide-icon [img]="ViewIcon" [size]="16" class="mr-2"></lucide-icon>
+        Explore Financial Data
       </button>
     </div>
   </div>
@@ -180,3 +174,98 @@
 
   }
 </div>
+
+<!-- EXPANDED VIEW MODAL -->
+@if (showExpandedView()) {
+<div
+  class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+  (click)="closeExpandedView()"
+>
+  <div
+    class="bg-white rounded-2xl shadow-2xl max-w-6xl w-full max-h-[90vh] overflow-hidden flex flex-col"
+    (click)="$event.stopPropagation()"
+  >
+    <!-- Modal Header -->
+    <div
+      class="bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-blue-200 p-6 flex items-center justify-between"
+    >
+      <h2 class="text-2xl font-bold text-gray-900">Financial Data Explorer</h2>
+      <button
+        (click)="closeExpandedView()"
+        class="p-2 hover:bg-blue-100 rounded-lg transition-colors"
+      >
+        <lucide-icon
+          [img]="CloseIcon"
+          [size]="24"
+          class="text-gray-600"
+        ></lucide-icon>
+      </button>
+    </div>
+
+    <!-- Modal Tabs -->
+    <div class="border-b border-slate-200 px-6">
+      <nav class="-mb-px flex gap-6">
+        <button
+          (click)="switchTab('income')"
+          [class]="
+            activeTab() === 'income'
+              ? 'border-b-2 border-teal-500 text-teal-600'
+              : 'border-b-2 border-transparent text-slate-600 hover:text-slate-900 hover:border-slate-300'
+          "
+          class="whitespace-nowrap py-4 px-1 font-medium text-sm"
+        >
+          Income Statement
+        </button>
+        <button
+          (click)="switchTab('balance')"
+          [class]="
+            activeTab() === 'balance'
+              ? 'border-b-2 border-teal-500 text-teal-600'
+              : 'border-b-2 border-transparent text-slate-600 hover:text-slate-900 hover:border-slate-300'
+          "
+          class="whitespace-nowrap py-4 px-1 font-medium text-sm"
+        >
+          Balance Sheet
+        </button>
+        <button
+          (click)="switchTab('cash')"
+          [class]="
+            activeTab() === 'cash'
+              ? 'border-b-2 border-teal-500 text-teal-600'
+              : 'border-b-2 border-transparent text-slate-600 hover:text-slate-900 hover:border-slate-300'
+          "
+          class="whitespace-nowrap py-4 px-1 font-medium text-sm"
+        >
+          Cash Flow
+        </button>
+      </nav>
+    </div>
+
+    <!-- Modal Content -->
+    <div class="overflow-y-auto flex-1 p-6">
+      @if (activeTab() === 'income' && incomeStatementSections().length > 0) {
+      <app-financial-data-table
+        [sections]="incomeStatementSections()"
+        [columnHeaders]="columnHeaders()"
+        [editMode]="false"
+        itemLabel="Item"
+      />
+      } @if (activeTab() === 'balance' && balanceSheetSections().length > 0) {
+      <app-financial-data-table
+        [sections]="balanceSheetSections()"
+        [columnHeaders]="columnHeaders()"
+        [editMode]="false"
+        itemLabel="Account"
+      />
+      } @if (activeTab() === 'cash' && cashFlowSections().length > 0) {
+      <app-financial-data-table
+        [sections]="cashFlowSections()"
+        [columnHeaders]="columnHeaders()"
+        [editMode]="false"
+        itemLabel="Activity"
+      />
+      }
+    </div>
+  </div>
+</div>
+}

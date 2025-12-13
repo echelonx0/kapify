@@ -96,7 +96,7 @@ export class ApplicationMetricsComponent implements OnInit {
 
   fundingType = computed(() => {
     const formData = this.profileData.businessPlan as any;
-    console.log(formData.fundingRequirements, 'Form Data');
+
     return formData?.fundingRequirements.fundingType || null;
   });
 
@@ -134,8 +134,8 @@ export class ApplicationMetricsComponent implements OnInit {
   swotAnalysis = computed(() => this.profileData.swotAnalysis || null);
 
   ngOnInit() {
-    console.log('📊 [METRICS] Profile Data:', this.profileData);
-    console.log('[Application Data]', this.application);
+    // console.log('📊 [METRICS] Profile Data:', this.profileData);
+    // console.log('[Application Data]', this.application);
   }
 
   setActiveTab(tabId: string) {
