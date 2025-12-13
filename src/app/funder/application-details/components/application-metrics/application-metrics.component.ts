@@ -94,6 +94,12 @@ export class ApplicationMetricsComponent implements OnInit {
     return formData?.timeline || null;
   });
 
+  fundingType = computed(() => {
+    const formData = this.profileData.businessPlan as any;
+    console.log(formData.fundingRequirements, 'Form Data');
+    return formData?.fundingRequirements.fundingType || null;
+  });
+
   purposeStatement = computed(() => {
     const formData = this.application.formData as any;
     return formData?.purposeStatement || this.application.description || null;

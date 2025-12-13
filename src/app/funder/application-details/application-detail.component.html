@@ -99,7 +99,7 @@
   <div class="grid grid-cols-12 gap-6">
     <!-- Main Content Area -->
     <div class="col-span-8 space-y-6">
-      <!-- Enhanced Application Details -->
+      <!--  Application Details -->
       @if(profileData()){
       <div class="card">
         <div class="p-6">
@@ -130,7 +130,7 @@
     <div class="col-span-4">
       <div class="sticky top-24">
         @if (hasCompleteDataForAnalysis()) {
-        <!-- ✅ FIXED: Now passes profileData and organizationId -->
+
         <app-ai-assistant
           [currentStep]="'review'"
           [formData]="formData()"
