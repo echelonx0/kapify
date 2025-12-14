@@ -103,7 +103,7 @@ export class SidebarNavComponent implements OnInit {
     },
     {
       id: 'funding',
-      label: 'Funding Opportunities',
+      label: 'Funds Marketplace',
       icon: DollarSign,
       route: '/funding/opportunities',
       userTypes: ['sme', 'funder'],
@@ -112,6 +112,14 @@ export class SidebarNavComponent implements OnInit {
     {
       id: 'funder-applications',
       label: 'Applications',
+      icon: BookOpen,
+      route: '/dashboard/funder-dashboard',
+      userTypes: ['funder'],
+    },
+
+    {
+      id: 'funder-applications',
+      label: 'Opportunities',
       icon: BookOpen,
       route: '/dashboard/funder-dashboard',
       userTypes: ['funder'],

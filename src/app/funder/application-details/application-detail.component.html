@@ -1,3 +1,4 @@
+<!-- src/app/funders/application-detail/application-detail.component.html - FIXED VERSION -->
 @if (application()) {
 
 <div class="sticky top-0 z-10 bg-neutral-50 border-b border-gray-200">
@@ -98,40 +99,7 @@
   <div class="grid grid-cols-12 gap-6">
     <!-- Main Content Area -->
     <div class="col-span-8 space-y-6">
-      <!-- AI-Powered Executive Summary -->
-      <div class="gradient-border">
-        @if (hasCompleteDataForAnalysis()) {
-        <app-ai-executive-summary
-          [application]="application()!"
-          [opportunity]="opportunity()!"
-        >
-        </app-ai-executive-summary>
-        } @else if (profileLoading()) {
-        <div class="gradient-content">
-          <div class="flex items-center justify-center py-8">
-            <lucide-icon
-              [img]="Loader2Icon"
-              [size]="24"
-              class="animate-spin text-purple-600 mr-2"
-            ></lucide-icon>
-            <span class="text-gray-600">Preparing analysis...</span>
-          </div>
-        </div>
-        } @else {
-        <div class="gradient-content">
-          <div class="flex items-center justify-center py-8 text-orange-600">
-            <lucide-icon
-              [img]="AlertCircleIcon"
-              [size]="20"
-              class="mr-2"
-            ></lucide-icon>
-            <span>Evaluation unavailable without complete profile data</span>
-          </div>
-        </div>
-        }
-      </div>
-
-      <!-- Enhanced Application Details -->
+      <!--  Application Details -->
       @if(profileData()){
       <div class="card">
         <div class="p-6">
@@ -162,7 +130,17 @@
     <div class="col-span-4">
       <div class="sticky top-24">
         @if (hasCompleteDataForAnalysis()) {
-        <app-ai-assistant> </app-ai-assistant>
+
+        <app-ai-assistant
+          [currentStep]="'review'"
+          [formData]="formData()"
+          [completionPercentage]="100"
+          [currentOpportunity]="opportunity()"
+          [applicationData]="application()"
+          [profileData]="profileData()"
+          [organizationId]="organizationId()"
+        >
+        </app-ai-assistant>
         } @else if (profileLoading()) {
         <div class="card">
           <div class="p-6 text-center">

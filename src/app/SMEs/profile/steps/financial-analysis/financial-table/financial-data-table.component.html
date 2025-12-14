@@ -1,0 +1,240 @@
+<!-- src/app/SMEs/profile/steps/financial-analysis/financial-table/financial-data-table.html -->
+<div class="space-y-4">
+  <!-- Year Navigation (Only show if more than 3 years and not in edit mode) -->
+  @if (!editMode && columnHeaders.length > 3) {
+  <div
+    class="rounded-xl border border-slate-200 bg-white p-4 sticky top-0 z-10 transition-all duration-300"
+  >
+    <div class="flex items-center justify-between gap-4">
+      <!-- Previous Button -->
+      <button
+        (click)="goToPreviousYears()"
+        [disabled]="!canGoPrevious()"
+        class="inline-flex items-center justify-center w-10 h-10 rounded-lg font-medium transition-all duration-200 bg-slate-100 text-slate-700 hover:bg-slate-200 disabled:opacity-30 disabled:cursor-not-allowed"
+        title="View previous years"
+      >
+        <span class="text-lg">←</span>
+      </button>
+
+      <!-- Year Tabs -->
+      <div class="flex-1 overflow-x-auto scrollbar-hide">
+        <div class="flex gap-2 min-w-max px-2">
+          @for (year of visibleYearHeaders(); track trackByHeader($index, year))
+          {
+          <button
+            class="px-4 py-2 rounded-lg text-sm font-semibold whitespace-nowrap transition-all duration-200 border-2"
+            [class]="
+              $index === 0 || $index === visibleYearHeaders().length - 1
+                ? 'bg-teal-50 text-teal-700 border-teal-300/50'
+                : 'bg-white text-slate-700 border-slate-200'
+            "
+            disabled
+          >
+            {{ year }}
+          </button>
+          }
+        </div>
+      </div>
+
+      <!-- Next Button -->
+      <button
+        (click)="goToNextYears()"
+        [disabled]="!canGoNext()"
+        class="inline-flex items-center justify-center w-10 h-10 rounded-lg font-medium transition-all duration-200 bg-slate-100 text-slate-700 hover:bg-slate-200 disabled:opacity-30 disabled:cursor-not-allowed"
+        title="View next years"
+      >
+        <span class="text-lg">→</span>
+      </button>
+    </div>
+
+    <!-- Year Range Label -->
+    <div class="mt-3 text-center text-xs text-slate-500">
+      Showing {{ yearRangeText() }}
+    </div>
+  </div>
+  }
+
+  <!-- Data Table -->
+  <div class="rounded-xl border border-slate-200 bg-white overflow-hidden">
+    <div class="overflow-x-auto">
+      <table class="w-full border-collapse">
+        <!-- Table Header -->
+        <thead>
+          <tr class="border-b border-slate-200 bg-slate-50/50">
+            <!-- Item Column Header -->
+            <th class="sticky left-0 z-20 px-4 py-3 text-left bg-slate-50/50">
+              <span class="text-sm font-semibold text-slate-900">
+                {{ itemLabel }}
+              </span>
+            </th>
+
+            <!-- Year Column Headers -->
+            @for (header of visibleYearHeaders(); track trackByHeader($index,
+            header)) {
+            <th class="px-4 py-3 text-right min-w-[140px] bg-slate-50/50">
+              <span class="text-sm font-semibold text-slate-900">
+                {{ header }}
+              </span>
+            </th>
+            }
+          </tr>
+        </thead>
+
+        <!-- Table Body -->
+        <tbody>
+          @for (section of sections; track trackBySection($index, section); let
+          sectionIndex = $index) {
+          <!-- Spacing before section (for Financial Ratios tab spacing) -->
+          @if (section.spacingBefore && sectionIndex > 0) {
+          <tr class="h-6 bg-transparent">
+            <td [attr.colspan]="visibleYearHeaders().length + 1"></td>
+          </tr>
+          }
+
+          <!-- Section Header Row (Collapsible) -->
+          @if (section.isCollapsible) {
+          <tr
+            [class]="getSectionHeaderClasses(section)"
+            class="cursor-pointer transition-all duration-200"
+            (click)="toggleSection(sectionIndex)"
+          >
+            <td
+              class="sticky left-0 z-10 px-4 py-3"
+              [attr.colspan]="visibleYearHeaders().length + 1"
+              [class.bg-orange-50]="section.accentColor === 'orange'"
+              [class.bg-teal-50]="section.accentColor !== 'orange'"
+            >
+              <div class="flex items-center gap-2">
+                <lucide-icon
+                  [name]="
+                    isSectionCollapsed(sectionIndex)
+                      ? ChevronRightIcon
+                      : ChevronDownIcon
+                  "
+                  [size]="16"
+                  [class]="getSectionIconColor(section)"
+                />
+                <span
+                  [class]="getSectionTextColor(section)"
+                  class="text-sm font-bold uppercase tracking-wide"
+                >
+                  {{ section.title }}
+                </span>
+              </div>
+            </td>
+          </tr>
+          } @else {
+          <!-- Non-Collapsible Section Header -->
+          <tr
+            class="border-b border-slate-200 transition-all duration-200"
+            [class.bg-orange-50]="section.accentColor === 'orange'"
+            [class.bg-teal-50]="section.accentColor !== 'orange'"
+          >
+            <td
+              class="sticky left-0 z-10 px-4 py-3"
+              [attr.colspan]="visibleYearHeaders().length + 1"
+              [class.bg-orange-50]="section.accentColor === 'orange'"
+              [class.bg-teal-50]="section.accentColor !== 'orange'"
+            >
+              <span
+                [class]="getSectionTextColor(section)"
+                class="text-sm font-bold uppercase tracking-wide"
+              >
+                {{ section.title }}
+              </span>
+            </td>
+          </tr>
+          }
+
+          <!-- Section Rows -->
+          @if (!section.isCollapsible || !isSectionCollapsed(sectionIndex)) {
+          @for (row of section.rows; track trackByRow($index, row); let rowIndex
+          = $index) {
+          <tr
+            class="border-b border-slate-200 transition-colors duration-200 hover:opacity-80"
+            [class]="getRowClasses(row)"
+          >
+            <!-- Row Label -->
+            <td
+              class="sticky left-0 z-10 px-4 py-3 text-sm bg-white text-slate-900"
+            >
+              <div class="flex items-center gap-2">
+                <span [class.font-semibold]="row.isBold || row.isTotal">
+                  {{ row.label }}
+                </span>
+
+                @if (row.isCalculated) {
+                <lucide-icon
+                  [name]="LockIcon"
+                  [size]="14"
+                  class="text-slate-400"
+                  title="Auto-calculated field"
+                />
+                }
+              </div>
+            </td>
+
+            <!-- Data Cells -->
+            @for (value of getVisibleRowValues(row.values); track
+            trackByHeader($index, visibleYearHeaders()[$index]); let
+            visibleColIndex = $index) {
+            <td class="px-4 py-3 min-w-[140px] text-right">
+              @if (isRowEditable(row)) {
+              <!-- Editable Input -->
+              <input
+                type="text"
+                [value]="formatNumber(value)"
+                (blur)="
+                  onCellChange(sectionIndex, rowIndex, visibleColIndex, $event)
+                "
+                (focus)="onInputFocus($event)"
+                (keydown.enter)="onEnterKey($event)"
+                class="w-full px-3 py-2 rounded-lg border border-slate-200 bg-white text-slate-900 text-right font-mono focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200"
+                style="font-size: 14px"
+              />
+              } @else {
+              <!-- Read-Only Display -->
+              <div
+                [class]="getCellClasses(row, value)"
+                class="px-3 py-2 text-sm font-mono"
+                style="font-size: 14px"
+              >
+                @if (value < 0) {
+                <span class="text-red-700">
+                  ({{ formatNumber(Math.abs(value)) }})
+                </span>
+                } @else {
+                <span class="text-slate-700">
+                  {{ formatNumber(value) }}
+                </span>
+                }
+              </div>
+              }
+            </td>
+            }
+          </tr>
+          } } }
+        </tbody>
+      </table>
+
+      <!-- Empty State -->
+      @if (sections.length === 0) {
+      <div class="text-center py-12 text-slate-500">
+        <p class="text-sm">No data available</p>
+      </div>
+      }
+    </div>
+  </div>
+</div>
+
+<!-- Scrollbar Hide Utility -->
+<style>
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+</style>

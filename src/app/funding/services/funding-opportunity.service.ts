@@ -146,6 +146,14 @@ export class FundingOpportunityService {
     );
   }
 
+  // Add after line 100
+  private parseNumber(value: string | number | undefined): number {
+    if (typeof value === 'number') return value;
+    if (!value) return 0;
+    const cleaned = String(value).replace(/[^\d]/g, '');
+    return Number(cleaned) || 0;
+  }
+
   /**
    * Save entire form data (splits into sections automatically)
    */
@@ -776,9 +784,10 @@ export class FundingOpportunityService {
         description: formData.description,
         short_description: formData.shortDescription,
         target_company_profile: formData.targetCompanyProfile,
-        offer_amount: formData.offerAmount || 0,
-        min_investment: formData.minInvestment || 0,
-        max_investment: formData.offerAmount || 0,
+        // offer_amount: formData.offerAmount || 0,
+        // min_investment: formData.minInvestment || 0,
+        // max_investment: formData.offerAmount || 0,
+        // typical_investment: formData.maxInvestment || 0,
         currency: formData.currency || 'ZAR',
         funding_type: Array.isArray(formData.fundingType)
           ? formData.fundingType
@@ -820,7 +829,11 @@ export class FundingOpportunityService {
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
         published_at: new Date().toISOString(),
-        typical_investment: formData.maxInvestment || 0,
+
+        typical_investment: this.parseNumber(formData.typicalInvestment),
+        offer_amount: this.parseNumber(formData.offerAmount),
+        min_investment: this.parseNumber(formData.minInvestment),
+        max_investment: this.parseNumber(formData.maxInvestment),
       };
 
       console.log('📝 Prepared opportunity data for insert');
@@ -934,10 +947,15 @@ export class FundingOpportunityService {
         description: formData.description,
         short_description: formData.shortDescription,
         target_company_profile: formData.targetCompanyProfile,
-        offer_amount: formData.typicalInvestment || 0,
-        typical_investment: formData.typicalInvestment || 0,
-        min_investment: formData.minInvestment,
-        max_investment: formData.maxInvestment,
+        // offer_amount: formData.typicalInvestment || 0,
+        // typical_investment: formData.typicalInvestment || 0,
+        // min_investment: formData.minInvestment,
+        // max_investment: formData.maxInvestment,
+
+        typical_investment: this.parseNumber(formData.typicalInvestment),
+        offer_amount: this.parseNumber(formData.offerAmount),
+        min_investment: this.parseNumber(formData.minInvestment),
+        max_investment: this.parseNumber(formData.maxInvestment),
         currency: formData.currency,
         funding_type: formData.fundingType,
         interest_rate: formData.interestRate,

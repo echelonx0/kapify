@@ -1,10 +1,12 @@
+// src/app/data-room/services/credit-deduction.service.ts - FIXED VERSION
+// UPDATED: Uses spendCredits() from OrgCreditService instead of non-existent deductCredits()
 import { Injectable, inject } from '@angular/core';
-import { Observable, throwError } from 'rxjs';
-import { map, catchError } from 'rxjs/operators';
+import { Observable, from } from 'rxjs';
 import { OrgCreditService } from 'src/app/shared/services/credit.service';
+import { CreditCostsService } from '../../admin/services/credit-costs.service';
 
 /**
- * Credit action types with fixed costs
+ * Credit action types
  */
 export enum CreditAction {
   VIEW = 'view',
@@ -14,10 +16,9 @@ export enum CreditAction {
 }
 
 /**
- * Cost configuration for each action
- * Update this to change pricing
+ * Fallback costs if database fetch fails
  */
-const ACTION_COSTS: Record<CreditAction, number> = {
+const FALLBACK_COSTS: Record<string, number> = {
   [CreditAction.VIEW]: 10,
   [CreditAction.GENERATE]: 50,
   [CreditAction.SHARE]: 20,
@@ -32,49 +33,68 @@ export interface DeductionResult {
   timestamp: Date;
 }
 
-/**
- * CreditDeductionService
- *
- * Handles credit cost calculations and deductions for data room actions.
- * Single responsibility: manage credit deduction logic.
- *
- * Usage:
- *   const cost = this.deductionService.getCost('view'); // 10
- *   this.deductionService.deductCredits('org-1', 'download').subscribe(
- *     result => console.log('New balance:', result.newBalance)
- *   );
- */
 @Injectable({ providedIn: 'root' })
 export class CreditDeductionService {
   private creditService = inject(OrgCreditService);
+  private costsService = inject(CreditCostsService);
+  private localCostsCache = new Map<string, number>();
+  private cacheInitialized = false;
 
   constructor() {
     console.log('✅ CreditDeductionService initialized');
+    this.initializeCache();
   }
 
-  /**
-   * Get the cost of an action in credits
-   * Returns 0 if action not recognized
-   */
+  private async initializeCache(): Promise<void> {
+    try {
+      const costs = await this.costsService.getActiveCosts();
+      this.localCostsCache = new Map(costs);
+      this.cacheInitialized = true;
+      console.log(
+        `✅ Credit costs cache initialized: ${this.localCostsCache.size} actions`
+      );
+    } catch (err) {
+      console.warn(
+        '⚠️ Failed to initialize costs cache, using fallbacks:',
+        err
+      );
+      Object.entries(FALLBACK_COSTS).forEach(([key, value]) => {
+        this.localCostsCache.set(key, value);
+      });
+      this.cacheInitialized = true;
+    }
+  }
+
+  async getCostAsync(action: CreditAction | string): Promise<number> {
+    return await this.costsService.getCost(
+      action as string,
+      FALLBACK_COSTS[action as string] || 0
+    );
+  }
+
   getCost(action: CreditAction | string): number {
-    return ACTION_COSTS[action as CreditAction] || 0;
+    if (this.localCostsCache.has(action as string)) {
+      return this.localCostsCache.get(action as string)!;
+    }
+    return FALLBACK_COSTS[action as string] || 0;
   }
 
-  /**
-   * Check if an organization can afford an action
-   * @param orgId Organization ID
-   * @param action Action to check cost for
-   * @returns Promise<boolean> true if wallet has enough credits
-   */
+  async refreshCosts(): Promise<void> {
+    try {
+      const costs = await this.costsService.getActiveCosts();
+      this.localCostsCache = new Map(costs);
+      console.log('✅ Credit costs cache refreshed');
+    } catch (err) {
+      console.error('❌ Failed to refresh costs cache:', err);
+    }
+  }
+
   async canAfford(
     orgId: string,
     action: CreditAction | string
   ): Promise<boolean> {
-    const cost = this.getCost(action);
-
-    if (cost === 0) {
-      return true; // Free action
-    }
+    const cost = await this.getCostAsync(action);
+    if (cost === 0) return true;
 
     try {
       const wallet = await this.creditService.getOrCreateOrgWallet(orgId);
@@ -86,98 +106,100 @@ export class CreditDeductionService {
   }
 
   /**
-   * Deduct credits for an action
-   * Throws if insufficient balance
-   *
-   * @param orgId Organization ID
-   * @param action Action to deduct credits for
-   * @returns Observable<DeductionResult> with new balance and details
-   *
-   * @throws Error if insufficient credits or org not found
+   * ✅ FIXED: Now uses spendCredits() RPC function
    */
   deductCredits(
     orgId: string,
     action: CreditAction | string
   ): Observable<DeductionResult> {
-    const cost = this.getCost(action);
+    return from(
+      (async () => {
+        const cost = await this.getCostAsync(action);
 
-    // Free action (cost = 0)
-    if (cost === 0) {
-      console.log(`✅ Free action: ${action}`);
-      return new Observable(sub => {
-        sub.next({
-          newBalance: 0,
-          previousBalance: 0,
-          amountDeducted: 0,
-          action: action as string,
-          timestamp: new Date(),
-        });
-        sub.complete();
-      });
-    }
-
-    // Paid action - deduct credits
-    return new Observable(sub => {
-      this.creditService
-        .getOrCreateOrgWallet(orgId)
-        .then(wallet => {
-          const previousBalance = wallet.balance;
-
-          // Check if sufficient balance
-          if (previousBalance < cost) {
-            const shortfall = cost - previousBalance;
-            throw new Error(
-              `Insufficient credits. Need ${cost}, have ${previousBalance} (short by ${shortfall})`
-            );
-          }
-
-          console.log(
-            `💳 Deducting ${cost} credits for action: ${action} (balance: ${previousBalance} → ${
-              previousBalance - cost
-            })`
-          );
-
-          // Deduct credits
-          return this.creditService.deductCredits(orgId, cost).then(newBalance => ({
-            newBalance,
-            previousBalance,
-          }));
-        })
-        .then(({ newBalance, previousBalance }) => {
-          const result: DeductionResult = {
-            newBalance,
-            previousBalance,
-            amountDeducted: cost,
+        if (cost === 0) {
+          console.log(`✅ Free action: ${action}`);
+          return {
+            newBalance: 0,
+            previousBalance: 0,
+            amountDeducted: 0,
             action: action as string,
             timestamp: new Date(),
           };
+        }
 
-          console.log(
-            `✅ Credits deducted successfully. New balance: ${newBalance}`
+        const wallet = await this.creditService.getOrCreateOrgWallet(orgId);
+        const previousBalance = wallet.balance;
+
+        if (previousBalance < cost) {
+          const shortfall = cost - previousBalance;
+          throw new Error(
+            `Insufficient credits. Need ${cost}, have ${previousBalance} (short by ${shortfall})`
           );
+        }
 
-          sub.next(result);
-          sub.complete();
-        })
-        .catch(err => {
-          console.error('❌ Error deducting credits:', err);
-          sub.error(err);
-        });
+        console.log(
+          `💳 Deducting ${cost} credits for action: ${action} (balance: ${previousBalance} → ${
+            previousBalance - cost
+          })`
+        );
+
+        // ✅ Use spendCredits RPC function
+        await this.creditService
+          .spendCredits(
+            orgId,
+            cost,
+            `Credits spent for action: ${action}`,
+            undefined
+          )
+          .toPromise();
+
+        // Fetch updated wallet
+        const updatedWallet = await this.creditService.getOrCreateOrgWallet(
+          orgId
+        );
+
+        const result: DeductionResult = {
+          newBalance: updatedWallet.balance,
+          previousBalance,
+          amountDeducted: cost,
+          action: action as string,
+          timestamp: new Date(),
+        };
+
+        console.log(
+          `✅ Credits deducted successfully. New balance: ${result.newBalance}`
+        );
+
+        return result;
+      })()
+    );
+  }
+
+  async getAllActionCostsAsync(): Promise<Record<string, number>> {
+    const costs = await this.costsService.getActiveCosts();
+    const result: Record<string, number> = {};
+    costs.forEach((value, key) => {
+      result[key] = value;
     });
+    return result;
   }
 
-  /**
-   * Get all available actions with their costs
-   * Useful for displaying pricing to users
-   */
   getAllActionCosts(): Record<CreditAction, number> {
-    return { ...ACTION_COSTS };
+    const result: Record<string, number> = {};
+    this.localCostsCache.forEach((value, key) => {
+      result[key] = value;
+    });
+    return result as Record<CreditAction, number>;
   }
 
-  /**
-   * Format action cost for display
-   * e.g., "Download (15 credits)"
-   */
+  async formatActionCostAsync(action: CreditAction | string): Promise<string> {
+    const cost = await this.getCostAsync(action);
+    if (cost === 0) {
+      return `${this.capitalizeAction(action)} (Free)`;
+    }
+    return `${this.capitalizeAction(action)} (${cost} credits)`;
+  }
+
   formatActionCost(action: CreditAction | string): string {
     const cost = this.getCost(action);
     if (cost === 0) {
@@ -186,11 +208,9 @@ export class CreditDeductionService {
     return `${this.capitalizeAction(action)} (${cost} credits)`;
   }
 
-  /**
-   * Capitalize action name for display
-   * e.g., "download" → "Download"
-   */
   private capitalizeAction(action: CreditAction | string): string {
-    return (action as string).charAt(0).toUpperCase() + (action as string).slice(1);
+    return (
+      (action as string).charAt(0).toUpperCase() + (action as string).slice(1)
+    );
   }
 }

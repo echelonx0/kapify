@@ -1,0 +1,150 @@
+<!-- src/app/funder/application-details/components/business-assessment-viewer/business-assessment-viewer.component.html -->
+@if (!hasData()) {
+<div class="text-center py-12">
+  <lucide-icon
+    [img]="Building2Icon"
+    [size]="48"
+    class="text-slate-300 mx-auto mb-4"
+  />
+  <p class="text-sm text-slate-600">No business assessment data available</p>
+</div>
+} @else {
+<div class="space-y-6">
+  <!-- Operations Overview -->
+  @if (operationsMetrics().length > 0) {
+  <div>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+      @for (metric of operationsMetrics(); track metric.label) {
+      <div class="border rounded-xl p-4">
+        <div class="flex items-center gap-2 mb-2">
+          <span class="text-xs font-semibold text-slate-600">{{
+            metric.label
+          }}</span>
+        </div>
+        <p class="text-sm font-bold text-slate-900">{{ metric.value }}</p>
+      </div>
+      }
+    </div>
+  </div>
+  }
+
+  <!-- Staffing Metrics -->
+  @if (staffingMetrics().length > 0) {
+  <div>
+    <h4
+      class="text-sm font-semibold text-slate-900 mb-4 flex items-center gap-2"
+    >
+      <lucide-icon [img]="UsersIcon" [size]="16" class="text-slate-600" />
+      Workforce & Performance
+    </h4>
+    <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+      @for (metric of staffingMetrics(); track metric.label) {
+      <div class="border rounded-xl p-4" [class]="metric.bgClass">
+        <div class="flex items-center gap-2 mb-2">
+          <lucide-icon
+            [img]="metric.icon"
+            [size]="16"
+            [class]="metric.colorClass"
+          />
+          <span class="text-xs font-semibold text-slate-600">{{
+            metric.label
+          }}</span>
+        </div>
+        <p class="text-lg font-bold text-slate-900">{{ metric.value }}</p>
+      </div>
+      }
+    </div>
+  </div>
+  }
+
+  <!-- KPI Metrics -->
+  @if (kpiMetrics().length > 0) {
+  <div>
+    <h4
+      class="text-sm font-semibold text-slate-900 mb-4 flex items-center gap-2"
+    >
+      <lucide-icon [img]="BarChart3Icon" [size]="16" class="text-slate-600" />
+      Key Performance Indicators
+    </h4>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+      @for (kpi of kpiMetrics(); track kpi.metric) {
+      <div
+        class="bg-slate-50 border border-slate-200 rounded-xl p-4 hover:shadow-sm hover:border-slate-300 transition-all duration-200"
+      >
+        <div class="flex items-center gap-2 mb-2">
+          <lucide-icon
+            [img]="TrendingUpIcon"
+            [size]="14"
+            class="text-slate-600"
+          />
+          <span class="text-xs font-medium text-slate-600">{{
+            kpi.metric
+          }}</span>
+        </div>
+        <p class="text-lg font-bold text-slate-900">
+          {{ kpi.value }}
+          <span class="text-xs font-normal text-slate-500">{{ kpi.unit }}</span>
+        </p>
+        @if (kpi.period) {
+        <p class="text-xs text-slate-500 mt-1">{{ kpi.period }}</p>
+        }
+      </div>
+      }
+    </div>
+  </div>
+  }
+
+  <!-- Compliance & Risk -->
+  @if (complianceMetrics().length > 0) {
+  <div>
+    <h4
+      class="text-sm font-semibold text-slate-900 mb-4 flex items-center gap-2"
+    >
+      <lucide-icon [img]="ShieldIcon" [size]="16" class="text-slate-600" />
+      Compliance & Risk Management
+    </h4>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+      @for (metric of complianceMetrics(); track metric.label) {
+      <div
+        class="bg-slate-50 border border-slate-200 rounded-xl p-4 flex items-center justify-between hover:shadow-sm hover:border-slate-300 transition-all duration-200"
+      >
+        <div class="flex items-center gap-3">
+          <lucide-icon
+            [img]="getStatusIcon(metric.status)"
+            [size]="18"
+            [class]="getStatusColor(metric.status)"
+          />
+          <div>
+            <p class="text-xs font-medium text-slate-600">{{ metric.label }}</p>
+            <p class="text-sm font-semibold text-slate-900">
+              {{ metric.value }}
+            </p>
+          </div>
+        </div>
+      </div>
+      }
+    </div>
+  </div>
+  }
+
+  <!-- Additional Information -->
+  @if (additionalInfo().length > 0) {
+  <div>
+    <h4
+      class="text-sm font-semibold text-slate-900 mb-4 flex items-center gap-2"
+    >
+      <lucide-icon [img]="FileTextIcon" [size]="16" class="text-slate-600" />
+      Additional Information
+    </h4>
+    <div class="space-y-3">
+      @for (info of additionalInfo(); track info.label) {
+      <div class="bg-slate-50 border border-slate-200 rounded-xl p-4">
+        <p class="text-xs font-medium text-slate-500 mb-1">{{ info.label }}</p>
+        <p class="text-sm text-slate-900">{{ info.value }}</p>
+      </div>
+      }
+    </div>
+  </div>
+  }
+</div>
+}

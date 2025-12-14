@@ -41,6 +41,7 @@ import {
 import { trigger, transition, style, animate } from '@angular/animations';
 import { FundingOpportunityService } from '../../funding/services/funding-opportunity.service';
 import { ModalService } from '../../shared/services/modal.service';
+import { ToastService } from '../../shared/services/toast.service';
 import { OpportunityFormStateService } from './services/opportunity-form-state.service';
 import {
   FundingOpportunity,
@@ -50,17 +51,17 @@ import { OrganizationStateService } from '../services/organization-state.service
 import { StepNavigationService } from './step-navigation.service';
 import { OpportunityBasicsComponent } from './steps/basic.component';
 import { EligibilityFiltersComponent } from './steps/eligibility-terms/eligibility.component';
-import { MediaBrandingComponent } from './steps/media.component';
-import { ApplicationSettingsComponent } from './steps/fund-terms/fund-terms.component';
-import { FundingStructureComponent } from './steps/fund-structure/fund-structure.component';
+
+import { InvestmentTermsComponent } from './steps/investment-terms/investment-terms.component';
 import { SectorValidationModalComponent } from './components/sector-validation-modal.component';
 import { OpportunityStepsNavigationComponent } from './components/steps-navigation-component';
 
 import { ActionModalService } from 'src/app/shared/components/modal/modal.service';
 import { OpportunityFormActionsComponent } from './shared/opportunity-form-actions.component';
 import { OpportunityUIHelperService } from './services/ui-helper.service';
-import { ToastrService } from 'ngx-toastr';
 import { OpportunityActionModalComponent } from 'src/app/shared/components/modal/app-modal.component';
+import { OpportunityReviewComponent } from './steps/review/opportunity-review.component';
+import { FundSettingsComponent } from './steps/fund-settings/fund-settings.component';
 
 @Component({
   selector: 'app-opportunity-form',
@@ -70,10 +71,10 @@ import { OpportunityActionModalComponent } from 'src/app/shared/components/modal
     CommonModule,
     LucideAngularModule,
     OpportunityBasicsComponent,
-
-    FundingStructureComponent,
+    OpportunityReviewComponent,
+    InvestmentTermsComponent,
     EligibilityFiltersComponent,
-    ApplicationSettingsComponent,
+    FundSettingsComponent,
     OpportunityStepsNavigationComponent,
     SectorValidationModalComponent,
     OpportunityFormActionsComponent,
@@ -106,6 +107,7 @@ export class CreateOpportunityComponent implements OnInit, OnDestroy {
   private opportunityService = inject(FundingOpportunityService);
   private modalService = inject(ModalService);
   private actionModalService = inject(ActionModalService);
+  private toast = inject(ToastService);
   public formState = inject(OpportunityFormStateService);
   public stepNavigation = inject(StepNavigationService);
   public ui = inject(OpportunityUIHelperService);
@@ -157,13 +159,11 @@ export class CreateOpportunityComponent implements OnInit, OnDestroy {
   ChevronDownIcon = ChevronDown;
   XCircleIcon = XCircle;
 
-  constructor(private toastr: ToastrService) {
+  constructor() {
     this.initializeEffects();
   }
 
   ngOnInit() {
-    console.log('=== CREATE OPPORTUNITY COMPONENT INIT ===');
-
     this.detectMode();
     console.log(
       'Form Data Current formState.formData:',
@@ -209,6 +209,7 @@ export class CreateOpportunityComponent implements OnInit, OnDestroy {
 
   onSectorValidationComplete() {
     this.modalService.closeSectorValidation();
+    this.toast.success('Organization setup completed successfully');
     this.organizationState.loadOrganizationData();
     this.setupSubscriptions();
   }
@@ -244,17 +245,14 @@ export class CreateOpportunityComponent implements OnInit, OnDestroy {
         next: (response) => {
           if (response.success && response.draftData) {
             console.log('Loaded response Draft Data:', response.draftData);
-            console.log(
-              'Draft Data Description in response?',
-              !!response.draftData?.description
-            );
             this.formState.loadFromDraft(response.draftData);
-            console.log('Draft Data', response.draftData);
+            this.toast.info('Draft loaded successfully');
           }
           this.isLoading.set(false);
         },
         error: (error) => {
           console.error('Failed to load draft:', error);
+          this.toast.error('Failed to load draft data');
           this.isLoading.set(false);
         },
       });
@@ -275,12 +273,13 @@ export class CreateOpportunityComponent implements OnInit, OnDestroy {
         next: (response) => {
           if (response.success && response.draftData) {
             this.formState.loadFromDraft(response.draftData);
-            console.log('Draft Data', response.draftData);
+            this.toast.info('Opportunity loaded for editing');
           }
           this.isLoading.set(false);
         },
         error: (error) => {
           console.error('Failed to load opportunity for editing:', error);
+          this.toast.error('Failed to load opportunity');
           this.isLoading.set(false);
           this.router.navigate(['/funding/opportunities']);
         },
@@ -315,13 +314,13 @@ export class CreateOpportunityComponent implements OnInit, OnDestroy {
         }
 
         // ===== INVESTMENT BOUNDS VALIDATION =====
+
         const typicalInv =
           this.formState.parseNumberValue(data.typicalInvestment) || 1;
         const minInv = this.formState.parseNumberValue(data.minInvestment) || 1;
         const maxInv =
           this.formState.parseNumberValue(data.maxInvestment) || typicalInv;
 
-        // Ensure: min ≤ typical ≤ max, all > 0
         const validatedMinInv = Math.max(1, minInv);
         const validatedMaxInv = Math.max(validatedMinInv, maxInv);
         const validatedTypicalInv = Math.max(
@@ -346,7 +345,6 @@ export class CreateOpportunityComponent implements OnInit, OnDestroy {
           fundId: orgId,
           organizationId: orgId,
 
-          // Investment amounts with validated bounds
           offerAmount: validatedMaxInv,
           minInvestment: validatedMinInv,
           maxInvestment: validatedMaxInv,
@@ -405,8 +403,6 @@ export class CreateOpportunityComponent implements OnInit, OnDestroy {
                 ? data.geographicRestrictions
                 : undefined,
             requiresCollateral: data.requiresCollateral,
-            // excludeCriteria: [],
-            // funderDefinedCriteria: [data.investmentCriteria || undefined],
           },
 
           autoMatch: data.autoMatch,
@@ -430,9 +426,9 @@ export class CreateOpportunityComponent implements OnInit, OnDestroy {
       }
     });
   }
+
   private validateRequiredFields(data: OpportunityFormData): string | null {
     if (!data.title.trim()) return 'Opportunity title is required.';
-
     if (!data.description.trim()) return 'Full description is required.';
     if (!data.fundingType) return 'Funding type must be selected.';
     if (
@@ -469,8 +465,9 @@ export class CreateOpportunityComponent implements OnInit, OnDestroy {
     console.log('=== PUBLISH FLOW START ===');
 
     if (!this.canPublish()) {
-      console.warn(
-        '⚠️ Cannot publish: Validation failed or missing organization'
+      console.warn('⚠️ Cannot publish: Validation failed');
+      this.toast.warning(
+        'Please complete all required fields before publishing'
       );
       return;
     }
@@ -480,9 +477,10 @@ export class CreateOpportunityComponent implements OnInit, OnDestroy {
     const orgId = this.organizationState.organizationId();
 
     if (!orgId) {
-      this.publishError.set(
-        'Organization ID is missing. Please complete your organization setup.'
-      );
+      const errorMsg =
+        'Organization ID is missing. Please complete your organization setup.';
+      this.publishError.set(errorMsg);
+      this.toast.error(errorMsg);
       return;
     }
 
@@ -493,18 +491,19 @@ export class CreateOpportunityComponent implements OnInit, OnDestroy {
 
         this.opportunityService.publishOpportunity(opportunityData).subscribe({
           next: (response) => {
-            console.log('✅ PUBLISH SUCCESSFUL:', response);
-            // ✅ CLEAR IMMEDIATELY
+            console.log('✅ PUBLISH SUCCESS:', response);
+
+            // Clear form state
             this.formState.clearDraft();
             this.publishError.set(null);
-            this.formState.validationErrors.set([]); // Add this line
+            this.formState.validationErrors.set([]);
 
             this.opportunityId.set(response.opportunityId);
 
-            // Show success modal via service
-            this.actionModalService.showPublishSuccess(title);
+            // Show success toast
+            this.toast.success(`"${title}" published successfully!`);
 
-            // Set callbacks
+            // Show success modal
             this.actionModalService.open(
               {
                 actionType: 'publish-success',
@@ -512,9 +511,6 @@ export class CreateOpportunityComponent implements OnInit, OnDestroy {
               },
               {
                 onSuccess: () => {
-                  console.log(
-                    'Success callback: navigating to published opportunity'
-                  );
                   this.router.navigate([
                     '/funding/opportunities',
                     response.opportunityId,
@@ -527,9 +523,11 @@ export class CreateOpportunityComponent implements OnInit, OnDestroy {
             console.error('❌ PUBLISH FAILED:', error);
 
             const errorMessage = this.extractErrorMessage(error);
-            console.error('Error message for user:', errorMessage);
 
-            // Show error modal via service
+            // Show error toast
+            this.toast.error(errorMessage, 6000);
+
+            // Show error modal
             this.actionModalService.showPublishError(title, errorMessage);
             this.publishError.set(errorMessage);
           },
@@ -541,7 +539,13 @@ export class CreateOpportunityComponent implements OnInit, OnDestroy {
         const errorMessage = this.extractErrorMessage(error);
         this.publishError.set(errorMessage);
 
-        // Show error modal via service
+        // Show error toast
+        this.toast.error(
+          `Failed to prepare opportunity: ${errorMessage}`,
+          6000
+        );
+
+        // Show error modal
         this.actionModalService.showPublishError(
           'Cannot publish',
           `Failed to prepare opportunity: ${errorMessage}`
@@ -552,25 +556,12 @@ export class CreateOpportunityComponent implements OnInit, OnDestroy {
 
   private extractErrorMessage(error: any): string {
     console.log('Extracting error message from:', error);
-    if (error?.error?.message) {
-      console.log('Found error.error.message:', error.error.message);
-      return error.error.message;
-    }
-    if (error?.message) {
-      console.log('Found error.message:', error.message);
-      return error.message;
-    }
-    if (error?.details) {
-      console.log('Found error.details:', error.details);
-      return error.details;
-    }
-    if (error?.hint) {
-      console.log('Found error.hint:', error.hint);
+    if (error?.error?.message) return error.error.message;
+    if (error?.message) return error.message;
+    if (error?.details) return error.details;
+    if (error?.hint)
       return `${error.hint} Please check your data and try again.`;
-    }
     if (error?.code) {
-      console.log('Found error.code:', error.code);
-
       const errorCodeMap: { [key: string]: string } = {
         PGRST: 'Database connection error. Please try again.',
         '23505':
@@ -581,14 +572,12 @@ export class CreateOpportunityComponent implements OnInit, OnDestroy {
       };
 
       for (const [code, message] of Object.entries(errorCodeMap)) {
-        if (error.code.includes(code)) {
-          return message;
-        }
+        if (error.code.includes(code)) return message;
       }
 
       return `Error code ${error.code}: Unable to publish. Please try again.`;
     }
-    return 'An unexpected error occurred while publishing your opportunity. Please try again or contact support.';
+    return 'An unexpected error occurred while publishing. Please try again.';
   }
 
   saveDraft(): void {
@@ -598,17 +587,22 @@ export class CreateOpportunityComponent implements OnInit, OnDestroy {
         this.opportunityService.saveDraft(opportunityData).subscribe({
           next: (response) => {
             console.log('✅ Draft saved:', response);
+            this.toast.success('Draft saved successfully');
             this.publishError.set(null);
           },
           error: (error) => {
             console.error('❌ Failed to save draft:', error);
-            this.publishError.set(error.message || 'Failed to save draft');
+            const errorMsg = error.message || 'Failed to save draft';
+            this.toast.error(errorMsg);
+            this.publishError.set(errorMsg);
           },
         });
       },
       error: (error) => {
         console.error('❌ Failed to build opportunity data:', error);
-        this.publishError.set(error.message || 'Failed to prepare data');
+        const errorMsg = error.message || 'Failed to prepare data';
+        this.toast.error(errorMsg);
+        this.publishError.set(errorMsg);
       },
     });
   }
@@ -616,8 +610,10 @@ export class CreateOpportunityComponent implements OnInit, OnDestroy {
   updateOpportunity(): void {
     if (!this.opportunityId()) {
       console.error('No opportunity ID found for update');
+      this.toast.error('Cannot update: Opportunity ID missing');
       return;
     }
+
     const data = this.formState.formData();
     const title = data.title;
     const opportunityId = this.opportunityId()!;
@@ -630,9 +626,10 @@ export class CreateOpportunityComponent implements OnInit, OnDestroy {
             next: (response) => {
               console.log('✅ Opportunity updated:', response);
 
-              // Show success modal via service
-              this.actionModalService.showPublishSuccess(title);
+              // Show success toast
+              this.toast.success(`"${title}" updated successfully!`);
 
+              // Show success modal
               this.actionModalService.open(
                 {
                   actionType: 'publish-success',
@@ -653,7 +650,10 @@ export class CreateOpportunityComponent implements OnInit, OnDestroy {
 
               const errorMessage = this.extractErrorMessage(error);
 
-              // Show error modal via service
+              // Show error toast
+              this.toast.error(errorMessage, 6000);
+
+              // Show error modal
               this.actionModalService.showPublishError(title, errorMessage);
               this.publishError.set(errorMessage);
             },
@@ -666,170 +666,225 @@ export class CreateOpportunityComponent implements OnInit, OnDestroy {
     this.publishError.set(null);
     this.organizationState.clearOrganizationError();
     this.formState.validationErrors.set([]);
+    this.toast.dismissAll();
   }
 
   retryPublish(): void {
     console.log('Retrying publish...');
     this.clearErrors();
+    this.toast.info('Retrying publish...');
     this.publish();
   }
 
   goBack() {
     this.location.back();
   }
+
   goToOrganizationSetup() {
     this.router.navigate(['/funder/onboarding']);
   }
+
   retryLoadOrganization() {
+    this.toast.info('Retrying organization load...');
     this.organizationState.retryLoadOrganization();
   }
+
   isEditMode(): boolean {
     return this.mode() === 'edit';
   }
+
   isCreateMode(): boolean {
     return this.mode() === 'create';
   }
+
   nextStep() {
     this.stepNavigation.nextStep();
   }
+
   previousStep() {
     this.stepNavigation.previousStep();
   }
+
   goToStep(stepId: 'basic' | 'terms' | 'eligibility' | 'settings' | 'review') {
     this.stepNavigation.goToStep(stepId);
   }
+
   updateField(field: keyof OpportunityFormData, event: Event) {
     this.ui.onFieldChange(field, event);
   }
+
   updateCheckboxField(field: keyof OpportunityFormData, event: Event) {
     this.ui.onCheckboxChange(field, event);
   }
+
   updateMultiSelectField(field: keyof OpportunityFormData, event: Event) {
     this.ui.onMultiSelectChange(field, event);
   }
+
   onNumberInput(field: keyof OpportunityFormData, event: Event) {
     this.ui.onNumberInputChange(field, event);
   }
+
   get formData() {
     return this.formState.formData;
   }
+
   get validationErrors() {
     return this.formState.validationErrors;
   }
+
   get currentStep() {
     return this.stepNavigation.currentStep;
   }
+
   get currentStepErrors() {
     return this.stepNavigation.currentStepErrors;
   }
+
   get hasCurrentStepErrors() {
     return this.stepNavigation.hasCurrentStepErrors;
   }
+
   get steps() {
     return this.stepNavigation.steps;
   }
+
   get progressPercentage() {
     return this.stepNavigation.progressPercentage;
   }
+
   get canContinue() {
     return this.stepNavigation.canContinue;
   }
+
   get organizationLoading() {
     return this.organizationState.organizationLoading;
   }
+
   get organizationError() {
     return this.organizationState.organizationError;
   }
+
   get organizationId() {
     return this.organizationState.organizationId;
   }
+
   get canProceed() {
     return this.organizationState.canProceed;
   }
+
   getFieldClasses(fieldName: string) {
     return this.ui.getFieldClasses(fieldName);
   }
+
   showDatabaseSaveStatus() {
     return this.ui.showDatabaseSaveStatus();
   }
+
   showLocalSaveStatus() {
     return this.ui.showLocalSaveStatus();
   }
+
   showUnsavedIndicator() {
     return this.ui.showUnsavedIndicator();
   }
+
   getLastSavedText() {
     return this.ui.getLastSavedText();
   }
+
   getLocalSaveText() {
     return this.ui.getLocalSaveText();
   }
+
   getPageTitle() {
     return this.ui.getPageTitle(this.isEditMode());
   }
+
   getPageSubtitle() {
     return this.ui.getPageSubtitle(this.isEditMode());
   }
+
   getPublishButtonText() {
     return this.ui.getPublishButtonText(this.isEditMode());
   }
+
   getSaveButtonText() {
     return this.ui.getSaveButtonText(this.isEditMode());
   }
+
   getCurrentStepIcon() {
     return this.ui.getCurrentStepIcon();
   }
+
   getCurrentStepTitle() {
     return this.ui.getCurrentStepTitle();
   }
+
   getCurrentStepSubtitle() {
     return this.stepNavigation.getCurrentStepSubtitle(
       this.organizationLoading(),
       this.organizationError()
     );
   }
+
   formatNumberWithCommas(value: string | number) {
     return this.ui.formatNumberWithCommas(value);
   }
+
   getFormattedAmount(field: keyof OpportunityFormData) {
     return this.ui.getFormattedAmount(field);
   }
+
   getCompletionPercentage() {
     return this.ui.getCompletionPercentage();
   }
+
   getCurrentStepIndex() {
     return this.stepNavigation.currentStepIndex();
   }
+
   isStepCompleted(stepId: string) {
     return this.stepNavigation.isStepCompleted(stepId);
   }
+
   hasMediaContent() {
     return this.formState.hasMediaContent();
   }
+
   onImageError(field: keyof OpportunityFormData) {
     this.ui.onImageError(field);
   }
+
   clearDraft() {
     this.formState.clearDraft();
+    this.toast.info('Draft cleared');
   }
+
   getFieldError(fieldName: string) {
     return this.formState.getFieldError(fieldName);
   }
+
   hasFieldError(fieldName: string) {
     return this.formState.hasFieldError(fieldName);
   }
+
   hasFieldWarning(fieldName: string) {
     return this.formState.hasFieldWarning(fieldName);
   }
+
   get timeframes() {
     return this.ui.timeframes;
   }
+
   get targetIndustries() {
     return this.ui.targetIndustries;
   }
+
   get businessStages() {
     return this.ui.businessStages;
   }
+
   isFirstStep(): boolean {
     return this.currentStep() === 'basic';
   }

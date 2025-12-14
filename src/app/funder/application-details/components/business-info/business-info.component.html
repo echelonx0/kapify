@@ -1,0 +1,223 @@
+<!-- src/app/funder/components/application-detail/components/business-info/business-info.component.html -->
+
+<!-- Business Core Info Grid (Top) -->
+@if (getBusinessInfo()) {
+<div class="space-y-6">
+  <!-- Business Name + Core Details Grid -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    @if (getBusinessInfo()!.companyName) {
+    <div class="bg-white border border-slate-200 rounded-xl p-4">
+      <div class="flex items-start gap-3">
+        <!-- <div
+          class="w-10 h-10 bg-teal-100 rounded-lg flex items-center justify-center flex-shrink-0"
+        >
+          <lucide-icon [img]="BuildingIcon" [size]="16" class="text-teal-600" />
+        </div> -->
+        <div class="flex-1 min-w-0">
+          <p class="text-xs font-medium text-slate-500 mb-1">Company Name</p>
+          <p class="text-sm font-semibold text-slate-900">
+            {{ getBusinessInfo()!.companyName }}
+          </p>
+        </div>
+      </div>
+    </div>
+    } @if (getBusinessInfo()!.registrationNumber) {
+    <div class="bg-white border border-slate-200 rounded-xl p-4">
+      <div class="flex items-start gap-3">
+        <!-- <div
+          class="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center flex-shrink-0"
+        >
+          <lucide-icon [img]="HashIcon" [size]="16" class="text-slate-600" />
+        </div> -->
+        <div class="flex-1 min-w-0">
+          <p class="text-xs font-medium text-slate-500 mb-1">
+            Registration Number
+          </p>
+          <p class="text-sm font-semibold text-slate-900">
+            {{ getBusinessInfo()!.registrationNumber }}
+          </p>
+        </div>
+      </div>
+    </div>
+    } @if (getBusinessInfo()!.vatNumber) {
+    <div class="bg-white border border-slate-200 rounded-xl p-4">
+      <div class="flex items-start gap-3">
+        <!-- <div
+          class="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center flex-shrink-0"
+        >
+          <lucide-icon [img]="HashIcon" [size]="16" class="text-slate-600" />
+        </div> -->
+        <div class="flex-1 min-w-0">
+          <p class="text-xs font-medium text-slate-500 mb-1">VAT Number</p>
+          <p class="text-sm font-semibold text-slate-900">
+            {{ getBusinessInfo()!.vatNumber }}
+          </p>
+        </div>
+      </div>
+    </div>
+    } @if (getBusinessInfo()!.industry) {
+    <div class="bg-white border border-slate-200 rounded-xl p-4">
+      <div class="flex items-start gap-3">
+        <!-- <div
+          class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0"
+        >
+          <lucide-icon
+            [img]="BriefcaseIcon"
+            [size]="16"
+            class="text-blue-600"
+          />
+        </div> -->
+        <div class="flex-1 min-w-0">
+          <p class="text-xs font-medium text-slate-500 mb-1">Industry</p>
+          <p class="text-sm font-semibold text-slate-900">
+            {{ getBusinessInfo()!.industry }}
+          </p>
+        </div>
+      </div>
+    </div>
+    } @if (getBusinessInfo()!.yearsInOperation) {
+    <div class="bg-white border border-slate-200 rounded-xl p-4">
+      <div class="flex items-start gap-3">
+        <!-- <div
+          class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0"
+        >
+          <lucide-icon
+            [img]="CalendarIcon"
+            [size]="16"
+            class="text-green-600"
+          />
+        </div> -->
+        <div class="flex-1 min-w-0">
+          <p class="text-xs font-medium text-slate-500 mb-1">
+            Years in Operation
+          </p>
+          <p class="text-sm font-semibold text-slate-900">
+            {{ getBusinessInfo()!.yearsInOperation }} years
+          </p>
+        </div>
+      </div>
+    </div>
+    } @if (getBusinessInfo()!.numberOfEmployees) {
+    <div class="bg-white border border-slate-200 rounded-xl p-4">
+      <div class="flex items-start gap-3">
+        <!-- <div
+          class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0"
+        >
+          <lucide-icon [img]="UsersIcon" [size]="16" class="text-purple-600" />
+        </div> -->
+        <div class="flex-1 min-w-0">
+          <p class="text-xs font-medium text-slate-500 mb-1">
+            Number of Employees
+          </p>
+          <p class="text-sm font-semibold text-slate-900">
+            {{ getBusinessInfo()!.numberOfEmployees }}
+          </p>
+        </div>
+      </div>
+    </div>
+    } @if (getFullAddress()) {
+    <div
+      class="bg-white border border-slate-200 rounded-xl p-4 md:col-span-2 lg:col-span-3"
+    >
+      <div class="flex items-start gap-3">
+        <div
+          class="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center flex-shrink-0"
+        >
+          <lucide-icon [img]="MapPinIcon" [size]="16" class="text-orange-600" />
+        </div>
+        <div class="flex-1 min-w-0">
+          <p class="text-xs font-medium text-slate-500 mb-1">
+            Physical Address
+          </p>
+          <p class="text-sm font-semibold text-slate-900">
+            {{ getFullAddress() }}
+          </p>
+        </div>
+      </div>
+    </div>
+    }
+  </div>
+
+  <!-- Business Description (Full Width) -->
+  @if (getBusinessDescription()) {
+  <div class="bg-white border border-slate-200 rounded-xl p-6">
+    <div class="flex items-start gap-3 mb-3">
+      <div
+        class="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center flex-shrink-0"
+      >
+        <lucide-icon [img]="FileTextIcon" [size]="16" class="text-slate-600" />
+      </div>
+      <h3 class="text-sm font-semibold text-slate-900">About this Business</h3>
+    </div>
+    <p class="text-sm text-slate-700 leading-relaxed">
+      {{ getBusinessDescription() }}
+    </p>
+  </div>
+  }
+
+  <!-- Executive Rosters (Stacked Vertical Layout) -->
+  <div class="space-y-6">
+    @for (roster of rosters; track roster.id) {
+    <div
+      class="bg-white border border-slate-200 rounded-xl overflow-hidden"
+      [ngClass]="'border-' + getRosterColor(roster.color).border"
+    >
+      <!-- Roster Header (Collapsible) -->
+      <button
+        (click)="toggleRoster(roster.id)"
+        [ngClass]="getRosterColor(roster.color).bg"
+        class="w-full px-6 py-4 border-b border-slate-200 flex items-center justify-between hover:opacity-80 transition-opacity duration-200"
+      >
+        <div class="flex items-center gap-2">
+          <div
+            [ngClass]="'bg-' + roster.color + '-100'"
+            class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+          >
+            <lucide-icon
+              [img]="UsersIcon"
+              [size]="16"
+              [ngClass]="getRosterColor(roster.color).icon"
+            />
+          </div>
+          <h3
+            [ngClass]="getRosterColor(roster.color).text"
+            class="font-semibold text-sm"
+          >
+            {{ roster.title }}
+          </h3>
+        </div>
+        <div class="flex items-center gap-2">
+          <span
+            [ngClass]="getRosterColor(roster.color).text"
+            class="text-xs font-semibold"
+          >
+            {{ getRosterMembers(roster.id).length }}
+          </span>
+          <lucide-icon
+            [img]="ChevronDownIcon"
+            [size]="16"
+            [ngClass]="getRosterColor(roster.color).icon"
+            [class.rotate-180]="isRosterExpanded(roster.id)"
+            class="transition-transform duration-200"
+          />
+        </div>
+      </button>
+
+      <!-- Roster Content (Collapsible) -->
+      @if (isRosterExpanded(roster.id)) {
+      <div class="p-4 space-y-3 max-h-96 overflow-y-auto">
+        @if (getRosterMembers(roster.id).length > 0) { @for (member of
+        getRosterMembers(roster.id); track member.id) {
+        <app-team-member [member]="member"></app-team-member>
+        } }
+      </div>
+      } @else {
+      <div class="px-6 py-4 text-xs text-slate-500">
+        {{ getRosterMembers(roster.id).length }} member(s)
+      </div>
+      }
+    </div>
+    }
+  </div>
+</div>
+}

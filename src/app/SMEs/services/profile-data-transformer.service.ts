@@ -1,4 +1,4 @@
-// src/app/profile/services/profile-data-transformer.service.ts -
+// src/app/profile/services/profile-data-transformer.service.ts - FIXED VERSION
 import { Injectable } from '@angular/core';
 import {
   FundingApplicationProfile,
@@ -7,6 +7,7 @@ import {
   ManagementStructure,
 } from '../applications/models/funding-application.models';
 import { ProfileData } from '../profile/models/funding.models';
+import { ParsedFinancialData } from '../profile/steps/financial-analysis/utils/excel-parser.service';
 
 @Injectable({
   providedIn: 'root',
@@ -16,7 +17,13 @@ export class ProfileDataTransformerService {
   transformToFundingProfile(
     profileData: Partial<ProfileData>
   ): FundingApplicationProfile {
-    return {
+    // console.log('🔄 [TRANSFORMER] Input profileData:', profileData);
+    // console.log(
+    //   '🔄 [TRANSFORMER] Has financialAnalysis:',
+    //   !!profileData.financialAnalysis
+    // );
+
+    const result = {
       companyInfo: this.transformCompanyInfo(
         profileData.businessInfo,
         profileData.personalInfo
@@ -43,7 +50,18 @@ export class ProfileDataTransformerService {
         profileData.financialAnalysis,
         profileData.fundingInfo
       ),
+
+      // ✅ CRITICAL - Pass through financialAnalysis
+      financialAnalysis: profileData.financialAnalysis,
     };
+
+    console.log('✅ [TRANSFORMER] Output result:', result);
+    console.log(
+      '✅ [TRANSFORMER] Result has financialAnalysis:',
+      !!result.financialAnalysis
+    );
+
+    return result;
   }
 
   private transformSwotAnalysis(swotAnalysis: any): SWOTAnalysis | undefined {
@@ -60,11 +78,19 @@ export class ProfileDataTransformerService {
     };
   }
 
-  // Transform FundingApplicationProfile back to ProfileData for UI consumption
   transformFromFundingProfile(
     fundingProfile: FundingApplicationProfile
   ): Partial<ProfileData> {
-    return {
+    // console.log(
+    //   '🔄 [TRANSFORMER FROM BACKEND] Input fundingProfile:',
+    //   fundingProfile
+    // );
+    // console.log(
+    //   '🔄 [TRANSFORMER FROM BACKEND] Has financialAnalysis:',
+    //   !!fundingProfile.financialAnalysis
+    // );
+
+    const result = {
       businessInfo: this.extractBusinessInfo(fundingProfile.companyInfo),
       personalInfo: this.extractPersonalInfo(fundingProfile.companyInfo),
       supportingDocuments: fundingProfile.supportingDocuments,
@@ -77,14 +103,26 @@ export class ProfileDataTransformerService {
       ),
       businessPlan: this.extractBusinessPlan(fundingProfile.businessStrategy),
       financialInfo: this.extractFinancialInfo(fundingProfile.financialProfile),
+
+      // ✅ FIXED - Directly pass through financialAnalysis
       financialAnalysis: this.extractFinancialAnalysis(
+        fundingProfile.financialAnalysis,
         fundingProfile.financialProfile
       ),
+
       fundingInfo: this.extractFundingInfo(
         fundingProfile.financialProfile,
         fundingProfile.businessStrategy
       ),
     };
+
+    console.log('✅ [TRANSFORMER FROM BACKEND] Output result:', result);
+    console.log(
+      '✅ [TRANSFORMER FROM BACKEND] Result has financialAnalysis:',
+      !!result.financialAnalysis
+    );
+
+    return result;
   }
 
   // ===============================
@@ -179,14 +217,15 @@ export class ProfileDataTransformerService {
       registrationNumber: businessInfo.registrationNumber || '',
       vatNumber: businessInfo.vatNumber,
       industryType: businessInfo.industry || '',
-      businessActivity: businessInfo.industry || '',
+      businessActivity: businessInfo.businessDescription || '',
+
       foundingYear:
         new Date().getFullYear() - (businessInfo.yearsInOperation || 0),
       operationalYears: businessInfo.yearsInOperation || 0,
       companyType: 'pty_ltd' as const,
       ownership: [],
       employeeCount: businessInfo.numberOfEmployees || '',
-      businessPhone: businessInfo.businessPhone || '', // ← ADD THIS LINE
+      businessPhone: businessInfo.businessPhone || '',
       registeredAddress: businessInfo.physicalAddress
         ? {
             street: businessInfo.physicalAddress.street || '',
@@ -235,7 +274,6 @@ export class ProfileDataTransformerService {
           },
       taxComplianceStatus: 'compliant' as const,
       bbbeeLevel: undefined,
-
       regulatoryLicenses: [],
     };
   }
@@ -349,6 +387,7 @@ export class ProfileDataTransformerService {
         province: '',
         postalCode: '',
       },
+      businessDescription: companyInfo.businessActivity || '',
     };
   }
 
@@ -383,7 +422,7 @@ export class ProfileDataTransformerService {
       operationalCapacity: businessAssessment.operationalCapacity,
       supplyChain: businessAssessment.supplyChain,
       technologyUse: businessAssessment.technologyUse,
-      qualityStandards: businessAssessment.qualityStandards,
+
       keyPerformanceIndicators: businessAssessment.keyPerformanceIndicators,
       salesChannels: businessAssessment.salesChannels,
       customerRetention: businessAssessment.customerRetention,
@@ -398,7 +437,7 @@ export class ProfileDataTransformerService {
     return {
       managementTeam: managementStructure.managementTeam || [],
       boardOfDirectors: managementStructure.boardOfDirectors || [],
-      managementCommittee: [], // Add default empty array to satisfy interface
+      managementCommittee: [],
     };
   }
 
@@ -448,16 +487,97 @@ export class ProfileDataTransformerService {
     };
   }
 
-  private extractFinancialAnalysis(financialProfile: any) {
-    if (!financialProfile) return undefined;
+  // ✅ FIXED - This is the critical method
+  private extractFinancialAnalysis(
+    financialAnalysis: any,
+    financialProfile?: any
+  ): ParsedFinancialData | undefined {
+    // console.log(
+    //   '🔍 [EXTRACT FINANCIAL ANALYSIS] Input financialAnalysis:',
+    //   financialAnalysis
+    // );
+    // console.log(
+    //   '🔍 [EXTRACT FINANCIAL ANALYSIS] Input financialProfile:',
+    //   financialProfile
+    // );
 
-    return {
-      template: undefined,
-      notes: '',
-      incomeStatement: [],
-      financialRatios: [],
-      lastUpdated: new Date().toISOString(),
-    };
+    // Priority 1: Use financialAnalysis if it exists (from financial-analysis section)
+    if (financialAnalysis) {
+      console.log(
+        '✅ [EXTRACT FINANCIAL ANALYSIS] Using direct financialAnalysis data'
+      );
+
+      // If it's already in ParsedFinancialData format, return it directly
+      if (this.isValidParsedFinancialData(financialAnalysis)) {
+        console.log(
+          '✅ [EXTRACT FINANCIAL ANALYSIS] Data is valid ParsedFinancialData'
+        );
+        return financialAnalysis as ParsedFinancialData;
+      }
+
+      // If it has the shape but needs light transformation
+      if (
+        financialAnalysis.incomeStatement ||
+        financialAnalysis.columnHeaders
+      ) {
+        // console.log(
+        //   '✅ [EXTRACT FINANCIAL ANALYSIS] Transforming to ParsedFinancialData'
+        // );
+        return {
+          incomeStatement: financialAnalysis.incomeStatement || [],
+          balanceSheet: financialAnalysis.balanceSheet || [],
+          cashFlow: financialAnalysis.cashFlow || [],
+          financialRatios: financialAnalysis.financialRatios || [],
+          columnHeaders: financialAnalysis.columnHeaders || [],
+          lastUpdated:
+            financialAnalysis.lastUpdated || new Date().toISOString(),
+          uploadedFile: financialAnalysis.uploadedFile || undefined,
+        };
+      }
+    }
+
+    // Priority 2: Check if financialProfile has embedded financial analysis data
+    if (financialProfile) {
+      if (this.isValidParsedFinancialData(financialProfile)) {
+        // console.log(
+        //   '✅ [EXTRACT FINANCIAL ANALYSIS] Using financialProfile as ParsedFinancialData'
+        // );
+        return financialProfile as ParsedFinancialData;
+      }
+
+      // Check for embedded data in financialProfile
+      if (financialProfile.incomeStatement || financialProfile.columnHeaders) {
+        console.log(
+          '✅ [EXTRACT FINANCIAL ANALYSIS] Extracting from financialProfile'
+        );
+        return {
+          incomeStatement: financialProfile.incomeStatement || [],
+          balanceSheet: financialProfile.balanceSheet || [],
+          cashFlow: financialProfile.cashFlow || [],
+          financialRatios: financialProfile.financialRatios || [],
+          columnHeaders: financialProfile.columnHeaders || [],
+          lastUpdated: financialProfile.lastUpdated || new Date().toISOString(),
+          uploadedFile: financialProfile.uploadedFile || undefined,
+        };
+      }
+    }
+
+    console.log(
+      '⚠️ [EXTRACT FINANCIAL ANALYSIS] No valid financial analysis data found'
+    );
+    return undefined;
+  }
+
+  // Validation helper
+  private isValidParsedFinancialData(data: any): boolean {
+    if (!data || typeof data !== 'object') return false;
+
+    // Check for required fields that indicate ParsedFinancialData structure
+    const hasIncomeStatement = Array.isArray(data.incomeStatement);
+    const hasColumnHeaders = Array.isArray(data.columnHeaders);
+    const hasFinancialRatios = Array.isArray(data.financialRatios);
+
+    return hasIncomeStatement || hasColumnHeaders || hasFinancialRatios;
   }
 
   private extractFundingInfo(financialProfile: any, businessStrategy: any) {

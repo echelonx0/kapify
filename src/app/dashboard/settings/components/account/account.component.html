@@ -1,0 +1,344 @@
+<div class="space-y-6">
+  <!-- Account Information Card -->
+  <div
+    class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden"
+  >
+    <!-- Card Header -->
+    <div class="px-8 py-6 border-b border-slate-200 bg-slate-50/50">
+      <h3 class="text-xl font-bold text-slate-900">Account Settings</h3>
+      <p class="text-sm text-slate-600 mt-1">
+        Manage your account, preferences, and security
+      </p>
+    </div>
+
+    <!-- Form Content -->
+    <form [formGroup]="accountForm" (ngSubmit)="onSave()" class="p-8 space-y-8">
+      <!-- Account Details Grid -->
+      <div class="grid grid-cols-2 gap-6">
+        <!-- Email -->
+        <div class="col-span-2 md:col-span-1">
+          <label class="block text-sm font-semibold text-slate-900 mb-2">
+            Email Address
+            <span class="text-slate-400 font-normal">(Read-only)</span>
+          </label>
+          <input
+            type="email"
+            formControlName="email"
+            class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-slate-600 bg-slate-50 placeholder-slate-400"
+          />
+          <p class="mt-1.5 text-xs text-slate-500">
+            Contact support to change your email
+          </p>
+        </div>
+
+        <!-- Full Name -->
+        <div class="col-span-2 md:col-span-1">
+          <label class="block text-sm font-semibold text-slate-900 mb-2">
+            Full Name
+            <span class="text-orange-500">*</span>
+          </label>
+          <input
+            type="text"
+            formControlName="fullName"
+            placeholder="e.g., Jane Smith"
+            class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200"
+            [class.border-red-300]="
+              accountForm.get('fullName')?.invalid &&
+              accountForm.get('fullName')?.touched
+            "
+          />
+          @if (accountForm.get('fullName')?.invalid &&
+          accountForm.get('fullName')?.touched) {
+          <p
+            class="mt-1.5 text-xs font-medium text-red-600 flex items-center gap-1"
+          >
+            <span class="w-1 h-1 rounded-full bg-red-600"></span>
+            Full name is required
+          </p>
+          }
+        </div>
+
+        <!-- Job Title -->
+        <div class="col-span-2 md:col-span-1">
+          <label class="block text-sm font-semibold text-slate-900 mb-2">
+            Job Title
+            <span class="text-slate-400 font-normal">(Optional)</span>
+          </label>
+          <input
+            type="text"
+            formControlName="jobTitle"
+            placeholder="e.g., Product Manager"
+            class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200"
+          />
+        </div>
+
+        <!-- Phone -->
+        <div class="col-span-2 md:col-span-1">
+          <label class="block text-sm font-semibold text-slate-900 mb-2">
+            Phone Number
+            <span class="text-slate-400 font-normal">(Optional)</span>
+          </label>
+          <input
+            type="tel"
+            formControlName="phone"
+            placeholder="e.g., +27 (0) 12 345 6789"
+            class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200"
+          />
+        </div>
+      </div>
+
+      <!-- Preferences Section -->
+      <div class="space-y-4 pt-4 border-t border-slate-200">
+        <div>
+          <h4 class="text-sm font-semibold text-slate-900 mb-4">Preferences</h4>
+
+          <!-- Email Notifications -->
+          <div
+            class="flex items-center justify-between py-3 px-4 rounded-lg hover:bg-slate-50 transition-colors"
+          >
+            <div>
+              <p class="text-sm font-medium text-slate-900">
+                Email Notifications
+              </p>
+              <p class="text-xs text-slate-600 mt-0.5">
+                Receive updates about account activity
+              </p>
+            </div>
+            <input
+              type="checkbox"
+              formControlName="emailNotifications"
+              class="w-5 h-5 rounded border-slate-300 text-orange-500 focus:ring-orange-500 cursor-pointer"
+            />
+          </div>
+
+          <!-- Two-Factor Authentication -->
+          <div
+            class="flex items-center justify-between py-3 px-4 rounded-lg hover:bg-slate-50 transition-colors"
+          >
+            <div>
+              <p class="text-sm font-medium text-slate-900">
+                Two-Factor Authentication
+              </p>
+              <p class="text-xs text-slate-600 mt-0.5">
+                Add an extra layer of security
+              </p>
+            </div>
+            <button
+              type="button"
+              (click)="openTwoFactorModal()"
+              class="text-xs font-medium text-orange-600 hover:text-orange-700 px-3 py-1 rounded-lg hover:bg-orange-50 transition-colors"
+            >
+              Configure
+            </button>
+          </div>
+
+          <!-- Marketing Communications -->
+          <div
+            class="flex items-center justify-between py-3 px-4 rounded-lg hover:bg-slate-50 transition-colors"
+          >
+            <div>
+              <p class="text-sm font-medium text-slate-900">
+                Marketing Communications
+              </p>
+              <p class="text-xs text-slate-600 mt-0.5">
+                Receive product updates and news
+              </p>
+            </div>
+            <input
+              type="checkbox"
+              formControlName="marketingCommunications"
+              class="w-5 h-5 rounded border-slate-300 text-orange-500 focus:ring-orange-500 cursor-pointer"
+            />
+          </div>
+        </div>
+      </div>
+
+      <!-- Form Footer -->
+      <div
+        class="flex items-center justify-between pt-4 border-t border-slate-200"
+      >
+        <!-- Status Message -->
+        <div class="text-sm">
+          @if (lastSaved()) {
+          <div class="flex items-center gap-1.5 text-green-600 font-medium">
+            <lucide-icon [img]="CheckIcon" [size]="16" />
+            Saved {{ formatLastSaved(lastSaved()) }}
+          </div>
+          } @else if (hasUnsavedChanges()) {
+          <div class="flex items-center gap-1.5 text-amber-600 font-medium">
+            <lucide-icon [img]="AlertCircleIcon" [size]="16" />
+            You have unsaved changes
+          </div>
+          }
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex items-center gap-3">
+          <button
+            type="button"
+            (click)="onReset()"
+            [disabled]="isLoading || !hasUnsavedChanges()"
+            class="px-4 py-2.5 text-sm font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Reset
+          </button>
+
+          <button
+            type="submit"
+            [disabled]="accountForm.invalid || isLoading"
+            class="px-4 py-2.5 text-sm font-medium text-white bg-orange-500 hover:bg-orange-600 active:bg-orange-700 rounded-xl transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+          >
+            @if (isLoading) {
+            <div
+              class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"
+            ></div>
+            <span>Saving...</span>
+            } @else {
+            <lucide-icon [img]="SaveIcon" [size]="16" />
+            <span>Save Changes</span>
+            }
+          </button>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <!-- Password Change Card -->
+  <div
+    class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden"
+  >
+    <!-- Card Header -->
+    <div class="px-8 py-6 border-b border-slate-200 bg-slate-50/50">
+      <h3 class="text-xl font-bold text-slate-900">Password & Security</h3>
+      <p class="text-sm text-slate-600 mt-1">
+        Update your password and manage security settings
+      </p>
+    </div>
+
+    <!-- Content -->
+    <div class="p-8">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm font-medium text-slate-900">Password</p>
+          <p class="text-xs text-slate-600 mt-1">
+            Last changed {{ formatLastChanged(lastPasswordChanged()) }}
+          </p>
+        </div>
+        <button
+          type="button"
+          (click)="openPasswordModal()"
+          class="px-4 py-2.5 text-sm font-medium text-orange-600 hover:text-orange-700 border border-orange-200 hover:border-orange-300 rounded-xl transition-colors duration-200 bg-orange-50 hover:bg-orange-100"
+        >
+          Change Password
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Account Actions Card -->
+  <div
+    class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden"
+  >
+    <!-- Card Header -->
+    <div class="px-8 py-6 border-b border-slate-200 bg-slate-50/50">
+      <h3 class="text-xl font-bold text-slate-900">Account Actions</h3>
+      <p class="text-sm text-slate-600 mt-1">
+        Manage your account access and data
+      </p>
+    </div>
+
+    <!-- Actions -->
+    <div class="p-8 space-y-4">
+      <!-- Logout All Devices -->
+      <div
+        class="flex items-center justify-between p-4 rounded-lg hover:bg-slate-50 transition-colors border border-slate-200"
+      >
+        <div>
+          <p class="text-sm font-medium text-slate-900">Logout All Devices</p>
+          <p class="text-xs text-slate-600 mt-0.5">
+            Sign out from all active sessions
+          </p>
+        </div>
+        <button
+          type="button"
+          (click)="logoutAllDevices()"
+          [disabled]="isLoading"
+          class="px-4 py-2.5 text-sm font-medium text-slate-700 hover:text-slate-900 border border-slate-300 hover:border-slate-400 rounded-xl transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+        >
+          <lucide-icon [img]="LogOutIcon" [size]="16" />
+          <span>Logout</span>
+        </button>
+      </div>
+
+      <!-- Download Data -->
+      <div
+        class="flex items-center justify-between p-4 rounded-lg hover:bg-slate-50 transition-colors border border-slate-200"
+      >
+        <div>
+          <p class="text-sm font-medium text-slate-900">Download Your Data</p>
+          <p class="text-xs text-slate-600 mt-0.5">
+            Export all your account data as JSON
+          </p>
+        </div>
+        <button
+          type="button"
+          (click)="downloadData()"
+          [disabled]="isLoading"
+          class="px-4 py-2.5 text-sm font-medium text-slate-700 hover:text-slate-900 border border-slate-300 hover:border-slate-400 rounded-xl transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+        >
+          <lucide-icon [img]="DownloadIcon" [size]="16" />
+          <span>Download</span>
+        </button>
+      </div>
+
+      <!-- Delete Account -->
+      <div
+        class="flex items-center justify-between p-4 rounded-lg hover:bg-red-50 transition-colors border border-red-200"
+      >
+        <div>
+          <p class="text-sm font-medium text-red-900">Delete Account</p>
+          <p class="text-xs text-red-700 mt-0.5">
+            Permanently delete your account and all data
+          </p>
+        </div>
+        <button
+          type="button"
+          (click)="openDeleteModal()"
+          [disabled]="isLoading"
+          class="px-4 py-2.5 text-sm font-medium text-red-600 hover:text-red-700 border border-red-300 hover:border-red-400 rounded-xl transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 bg-red-50 hover:bg-red-100"
+        >
+          <lucide-icon [img]="TrashIcon" [size]="16" />
+          <span>Delete Account</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Error Alert -->
+  @if (error()) {
+  <div
+    class="px-4 py-3 bg-red-50 border border-red-200/50 rounded-xl flex items-center gap-3"
+  >
+    <lucide-icon
+      [img]="AlertCircleIcon"
+      [size]="18"
+      class="text-red-600 flex-shrink-0"
+    />
+    <p class="text-sm font-medium text-red-700">{{ error() }}</p>
+  </div>
+  }
+
+  <!-- Success Alert -->
+  @if (successMessage()) {
+  <div
+    class="px-4 py-3 bg-green-50 border border-green-200/50 rounded-xl flex items-center gap-3"
+  >
+    <lucide-icon
+      [img]="CheckIcon"
+      [size]="18"
+      class="text-green-600 flex-shrink-0"
+    />
+    <p class="text-sm font-medium text-green-700">{{ successMessage() }}</p>
+  </div>
+  }
+</div>

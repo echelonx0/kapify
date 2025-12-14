@@ -1,3 +1,4 @@
+// src/app/funders/application-detail/application-detail.component.ts - FIXED VERSION
 import {
   Component,
   signal,
@@ -18,19 +19,23 @@ import { FundingProfileBackendService } from 'src/app/SMEs/services/funding-prof
 import { ProfileDataTransformerService } from 'src/app/SMEs/services/profile-data-transformer.service';
 import { ProfileData } from 'src/app/SMEs/profile/models/funding.models';
 import { FundingApplication } from 'src/app/SMEs/models/application.models';
-import { AiExecutiveSummaryComponent } from './components/ai-executive-summary/ai-executive-summary.component';
+import { AuthService } from 'src/app/auth/production.auth.service';
 
-import { ApplicationMetricsComponent } from '../components/application-metrics/application-metrics.component';
+import { ApplicationMetricsComponent } from './components/application-metrics/application-metrics.component';
 import { ApplicationHeaderComponent } from '../components/application-header/application-header.component';
 import { StatusManagementModalComponent } from '../components/status-management-modal/status-management-modal.component';
 import { FundingOpportunity } from '../create-opportunity/shared/funding.interfaces';
 
 interface ApplicationFormData {
+  fundingType: string;
+  offerAmount: string;
   requestedAmount?: number | string;
   purposeStatement?: string;
   useOfFunds?: string;
   timeline?: string;
   opportunityAlignment?: string;
+  industry?: string;
+  targetStage?: string;
   [key: string]: any;
 }
 
@@ -40,7 +45,6 @@ interface ApplicationFormData {
   imports: [
     CommonModule,
     LucideAngularModule,
-    AiExecutiveSummaryComponent,
     ApplicationTabsComponent,
     AiAssistantComponent,
     StatusManagementModalComponent,
@@ -59,6 +63,7 @@ export class ApplicationDetailComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
   private backendService = inject(FundingProfileBackendService);
   private transformer = inject(ProfileDataTransformerService);
+  private authService = inject(AuthService);
 
   // Icons
   BotIcon = Bot;
@@ -70,6 +75,7 @@ export class ApplicationDetailComponent implements OnInit, OnDestroy {
   application = signal<FundingApplication | null>(null);
   opportunity = signal<FundingOpportunity | null>(null);
   profileData = signal<Partial<ProfileData> | null>(null);
+  organizationId = signal<string | undefined>(undefined);
 
   // Loading & Error States
   isLoading = signal(true);
@@ -109,14 +115,24 @@ export class ApplicationDetailComponent implements OnInit, OnDestroy {
 
   formData = computed((): ApplicationFormData => {
     const app = this.application();
-    return (app?.formData as ApplicationFormData) || {};
+    const opp = this.opportunity();
+    const rawFormData = (app?.formData as any) || {};
+
+    return {
+      fundingType: opp?.fundingType || 'equity',
+      offerAmount: rawFormData.requestedAmount?.toString() || '0',
+      ...rawFormData,
+      industry: rawFormData.industry || opp?.['industry'],
+      targetStage: rawFormData.targetStage || opp?.['targetStage'],
+    };
   });
 
-  ngOnInit() {
+  async ngOnInit() {
     const id = this.route.snapshot.paramMap.get('applicationId');
     if (id) {
       this.applicationId.set(id);
-      this.loadAllData();
+      await this.loadOrganizationId();
+      await this.loadAllData();
     } else {
       this.router.navigate(['/funder/dashboard']);
     }
@@ -125,6 +141,23 @@ export class ApplicationDetailComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     this.destroy$.next();
     this.destroy$.complete();
+  }
+
+  /**
+   * Load current funder's organization ID
+   */
+  private async loadOrganizationId() {
+    const user = this.authService.user();
+    if (!user) return;
+
+    try {
+      // Get organization ID from user's organization membership
+
+      const orgId = user.organizationId || user.id; // Fallback to user ID if no org
+      this.organizationId.set(orgId);
+    } catch (error) {
+      console.error('❌ [APP-DETAIL] Failed to load organization ID:', error);
+    }
   }
 
   /**
@@ -189,12 +222,13 @@ export class ApplicationDetailComponent implements OnInit, OnDestroy {
       if (fundingProfile) {
         const profileData =
           this.transformer.transformFromFundingProfile(fundingProfile);
+
         this.profileData.set(profileData);
       } else {
         throw new Error('No profile data returned');
       }
     } catch (error) {
-      console.error('Failed to load applicant profile:', error);
+      console.error('❌ [APP-DETAIL] Failed to load applicant profile:', error);
 
       let errorMessage = 'Unable to load applicant profile data.';
       if (error instanceof Error) {
@@ -270,7 +304,6 @@ export class ApplicationDetailComponent implements OnInit, OnDestroy {
    * Handle status action completion
    */
   async onStatusActionCompleted() {
-    // Reload application data to get updated status
     await this.loadAllData();
   }
 

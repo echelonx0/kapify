@@ -10,21 +10,26 @@ import { Subject } from 'rxjs';
 @Component({
   selector: 'app-dashboard-layout',
   standalone: true,
-  imports: [RouterOutlet, SidebarNavComponent, DashboardHeaderComponent, CommonModule],
+  imports: [
+    RouterOutlet,
+    SidebarNavComponent,
+    DashboardHeaderComponent,
+    CommonModule,
+  ],
   template: `
     <div class="min-h-screen bg-neutral-50 flex">
       <!-- Sidebar - always visible -->
       <sidebar-nav />
-      
+
       <!-- Main Content Area -->
       <div [class]="contentClass()">
         <!-- Conditionally show header -->
         @if (shouldShowHeader()) {
-          <div class="sticky top-0 z-10 bg-neutral-50 border-b border-gray-200">
-            <dashboard-header />
-          </div>
+        <div class="sticky top-0 z-10 bg-neutral-50 border-b border-gray-200">
+          <dashboard-header />
+        </div>
         }
-        
+
         <!-- Page Content -->
         <main [class]="mainClass()">
           <router-outlet />
@@ -46,7 +51,7 @@ export class DashboardLayoutComponent implements OnInit, OnDestroy {
     // Subscribe to router events
     this.router.events
       .pipe(
-        filter(event => event instanceof NavigationEnd),
+        filter((event) => event instanceof NavigationEnd),
         takeUntil(this.destroy$)
       )
       .subscribe((event: NavigationEnd) => {
@@ -62,7 +67,11 @@ export class DashboardLayoutComponent implements OnInit, OnDestroy {
   isHeaderDisabledRoute = computed(() => {
     const url = this.currentUrl();
     // Check for welcome route - it can be /dashboard/welcome or end with /welcome
-    return url.includes('/welcome') || url === '/dashboard/welcome';
+    return (
+      url.includes('/welcome') ||
+      url === '/dashboard/welcome' ||
+      url === '/dashboard/home'
+    );
   });
 
   shouldShowHeader = computed(() => {
@@ -75,8 +84,8 @@ export class DashboardLayoutComponent implements OnInit, OnDestroy {
 
   mainClass = computed(() => {
     // For welcome route, make it take full height without scrolling
-    return this.isHeaderDisabledRoute() 
-      ? 'flex-1 overflow-hidden h-screen' 
+    return this.isHeaderDisabledRoute()
+      ? 'flex-1 overflow-hidden h-screen'
       : 'flex-1 overflow-y-auto';
   });
 }

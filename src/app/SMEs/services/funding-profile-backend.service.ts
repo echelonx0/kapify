@@ -21,10 +21,6 @@ export class FundingProfileBackendService {
   error = signal<string | null>(null);
   lastSavedAt = signal<Date | null>(null);
 
-  // ===============================
-  // HELPER: Get User's Organization
-  // ===============================
-
   /**
    * Get the authenticated user's active organization
    */
@@ -102,11 +98,70 @@ export class FundingProfileBackendService {
   /**
    * Load profile for specific organization
    */
+  // private async loadFromSupabase(
+  //   organizationId: string
+  // ): Promise<FundingApplicationProfile> {
+  //   try {
+  //     console.log(`🔍 Loading profile for organization: ${organizationId}`);
+
+  //     const { data: sections, error } = await this.supabase
+  //       .from('business_plan_sections')
+  //       .select('*')
+  //       .eq('organization_id', organizationId)
+  //       .order('updated_at', { ascending: false });
+
+  //     if (error) {
+  //       throw new Error(`Supabase error: ${error.message}`);
+  //     }
+
+  //     const applicationData: FundingApplicationProfile = {};
+
+  //     sections?.forEach((section: any) => {
+  //       switch (section.section_type) {
+  //         case 'company-info':
+  //           applicationData.companyInfo = section.data;
+  //           break;
+  //         case 'documents':
+  //           applicationData.supportingDocuments = section.data;
+  //           break;
+  //         case 'business-assessment':
+  //           applicationData.businessAssessment = section.data;
+  //           break;
+  //         case 'swot-analysis':
+  //           applicationData.swotAnalysis = section.data;
+  //           break;
+  //         case 'management':
+  //           applicationData.managementStructure = section.data;
+  //           break;
+  //         case 'business-strategy':
+  //           applicationData.businessStrategy = section.data;
+  //           break;
+  //         case 'financial-profile':
+  //           applicationData.financialProfile = section.data;
+  //           break;
+  //         // ✅ ADD THIS
+  //         case 'financial-analysis':
+  //           applicationData.financialAnalysis = section.data;
+  //           break;
+  //       }
+  //     });
+
+  //     console.log(`✅ Profile loaded for org: ${organizationId}`);
+  //     return applicationData;
+  //   } catch (error) {
+  //     console.error('Error loading from Supabase:', error);
+  //     throw error;
+  //   }
+  // }
+
   private async loadFromSupabase(
     organizationId: string
   ): Promise<FundingApplicationProfile> {
     try {
-      console.log(`🔍 Loading profile for organization: ${organizationId}`);
+      console.log(
+        '📂 [BACKEND] Loading profile for organization:',
+        organizationId
+      );
 
       const { data: sections, error } = await this.supabase
         .from('business_plan_sections')
@@ -118,9 +173,17 @@ export class FundingProfileBackendService {
         throw new Error(`Supabase error: ${error.message}`);
       }
 
+      console.log('📂 [BACKEND] Sections found:', sections?.length || 0);
+      console.log(
+        '📂 [BACKEND] Section types:',
+        sections?.map((s) => s.section_type) || []
+      );
+
       const applicationData: FundingApplicationProfile = {};
 
       sections?.forEach((section: any) => {
+        console.log(`📂 [BACKEND] Processing section: ${section.section_type}`);
+
         switch (section.section_type) {
           case 'company-info':
             applicationData.companyInfo = section.data;
@@ -143,17 +206,32 @@ export class FundingProfileBackendService {
           case 'financial-profile':
             applicationData.financialProfile = section.data;
             break;
+          case 'financial-analysis':
+            console.log('💰 [BACKEND] Found financial-analysis section!');
+            console.log(
+              '💰 [BACKEND] Data keys:',
+              Object.keys(section.data || {})
+            );
+            applicationData.financialAnalysis = section.data;
+            break;
         }
       });
 
-      console.log(`✅ Profile loaded for org: ${organizationId}`);
+      console.log(
+        '✅ [BACKEND] Final applicationData keys:',
+        Object.keys(applicationData)
+      );
+      console.log(
+        '💰 [BACKEND] Has financialAnalysis:',
+        !!applicationData.financialAnalysis
+      );
+
       return applicationData;
     } catch (error) {
-      console.error('Error loading from Supabase:', error);
+      console.error('❌ [BACKEND] Error loading from Supabase:', error);
       throw error;
     }
   }
-
   /**
    * Load profile for a specific organization (for funder review)
    */
@@ -751,6 +829,9 @@ export class FundingProfileBackendService {
     );
   }
 
+  private isFinancialAnalysisComplete(data: any): boolean {
+    return !!(data.incomeStatement?.length > 0 || data.uploadedFile?.publicUrl);
+  }
   // ===============================
   // UTILITY METHODS
   // ===============================
@@ -834,6 +915,16 @@ export class FundingProfileBackendService {
       });
     }
 
+    if (applicationData.financialAnalysis) {
+      sections.push({
+        sectionType: 'financial-analysis',
+        data: applicationData.financialAnalysis as Record<string, any>,
+        completed: this.isFinancialAnalysisComplete(
+          applicationData.financialAnalysis
+        ),
+      });
+    }
+
     return sections;
   }
 
@@ -846,6 +937,7 @@ export class FundingProfileBackendService {
       management: 'Management Structure',
       'business-strategy': 'Business Strategy',
       'financial-profile': 'Financial Profile',
+      'financial-analysis': 'Financial Analysis', // ✅
     };
     return displayNames[sectionType] || sectionType;
   }

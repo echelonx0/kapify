@@ -1,0 +1,23 @@
+:host {
+  display: block;
+}
+
+/* Smooth hover transitions for cards */
+::ng-deep .group {
+  @apply transition-all duration-200;
+}
+
+/* Mobile optimization */
+@media (max-width: 640px) {
+  :host ::ng-deep h1 {
+    @apply text-4xl;
+  }
+
+  :host ::ng-deep p {
+    @apply text-base;
+  }
+
+  :host ::ng-deep button {
+    @apply w-full;
+  }
+}

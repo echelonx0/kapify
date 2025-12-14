@@ -1,0 +1,271 @@
+<div class="space-y-6">
+  @if (hasData()) {
+
+  <!-- Header with Upload Info -->
+  @if (uploadedFile()) {
+  <div
+    class="bg-gradient-to-r from-slate-50 to-teal-50 border border-slate-200 rounded-xl p-4"
+  >
+    <div class="flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div
+          class="w-12 h-12 bg-stone-600 rounded-lg flex items-center justify-center"
+        >
+          <lucide-icon
+            [img]="FileSpreadsheetIcon"
+            [size]="24"
+            class="text-white"
+          ></lucide-icon>
+        </div>
+        <div>
+          <p class="font-semibold text-gray-900">Financials</p>
+          <p class="text-sm text-gray-600">
+            Last updated: {{ formatDate(financialAnalysis!.lastUpdated) }}
+          </p>
+        </div>
+      </div>
+      <button
+        (click)="openExpandedView()"
+        class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-stone-600 rounded-lg hover:bg-stone-700 transition-colors"
+      >
+        <lucide-icon [img]="ViewIcon" [size]="16" class="mr-2"></lucide-icon>
+        Explore Financial Data
+      </button>
+    </div>
+  </div>
+  }
+
+  <!-- Revenue Trend -->
+  @if (revenueTrend()) {
+  <div class="bg-white border border-gray-200 rounded-lg p-6">
+    <div class="flex items-center justify-between mb-4">
+      <h4 class="font-semibold text-gray-900">Revenue Trend</h4>
+      @if (revenueGrowth()) {
+      <div class="flex items-center gap-2">
+        <lucide-icon
+          [img]="
+            revenueGrowth()!.isPositive ? TrendingUpIcon : TrendingDownIcon
+          "
+          [size]="20"
+          [class]="
+            revenueGrowth()!.isPositive ? 'text-green-600' : 'text-red-600'
+          "
+        ></lucide-icon>
+        <span
+          [class]="
+            revenueGrowth()!.isPositive ? 'text-green-600' : 'text-red-600'
+          "
+          class="text-lg font-bold"
+        >
+          {{ formatPercentage(revenueGrowth()!.percentage) }}
+        </span>
+      </div>
+      }
+    </div>
+
+    <div class="grid grid-cols-3 gap-4">
+      <div>
+        <p class="text-xs text-gray-500 mb-1">
+          {{ revenueTrend()!.periods[0] }}
+        </p>
+        <p class="text-lg font-bold text-gray-900">
+          {{ formatCurrency(revenueTrend()!.beforePrevious) }}
+        </p>
+      </div>
+      <div>
+        <p class="text-xs text-gray-500 mb-1">
+          {{ revenueTrend()!.periods[1] }}
+        </p>
+        <p class="text-lg font-bold text-gray-900">
+          {{ formatCurrency(revenueTrend()!.previous) }}
+        </p>
+      </div>
+      <div>
+        <p class="text-xs text-gray-500 mb-1">
+          {{ revenueTrend()!.periods[2] }}
+        </p>
+        <p class="text-lg font-bold text-blue-600">
+          {{ formatCurrency(revenueTrend()!.current) }}
+        </p>
+      </div>
+    </div>
+  </div>
+  }
+
+  <!-- Key Financial Ratios -->
+  @if (keyRatios().length > 0) {
+  <div class="bg-white border border-gray-200 rounded-lg p-6">
+    <h4 class="font-semibold text-gray-900 mb-4">Key Financial Ratios</h4>
+    <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+      @for (ratio of keyRatios(); track ratio.label) {
+      <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
+        <p class="text-xs text-gray-500 mb-1">{{ ratio.label }}</p>
+        <p class="text-lg font-bold text-gray-900">
+          {{ formatRatio(ratio.value, ratio.type) }}
+        </p>
+      </div>
+      }
+    </div>
+  </div>
+  }
+
+  <!-- Period Coverage -->
+  @if (columnHeaders().length > 0) {
+  <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
+    <div class="flex items-center gap-2 mb-3">
+      <lucide-icon
+        [img]="CalendarIcon"
+        [size]="18"
+        class="text-gray-600"
+      ></lucide-icon>
+      <h4 class="text-sm font-semibold text-gray-900">Reporting Periods</h4>
+    </div>
+    <div class="flex flex-wrap gap-2">
+      @for (header of columnHeaders(); track header) {
+      <span
+        class="bg-white border border-gray-300 text-gray-700 text-xs font-medium px-3 py-1.5 rounded-full"
+      >
+        {{ header }}
+      </span>
+      }
+    </div>
+  </div>
+  }
+
+  <!-- Data Quality Indicator -->
+  <div
+    class="bg-green-50 border border-green-200 rounded-lg p-4 flex items-start gap-3"
+  >
+    <lucide-icon
+      [img]="CheckCircleIcon"
+      [size]="20"
+      class="text-green-600 mt-0.5"
+    ></lucide-icon>
+    <div>
+      <p class="text-sm font-semibold text-green-900">
+        Complete Financial Data
+      </p>
+      <p class="text-xs text-green-700 mt-1">
+        Comprehensive financial statements uploaded and validated
+      </p>
+    </div>
+  </div>
+
+  } @else {
+
+  <!-- No Data State -->
+  <div class="text-center py-12">
+    <div
+      class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4"
+    >
+      <lucide-icon
+        [img]="BarChart3Icon"
+        [size]="24"
+        class="text-gray-400"
+      ></lucide-icon>
+    </div>
+    <h3 class="text-lg font-semibold text-gray-900 mb-2">
+      No Financial Analysis
+    </h3>
+    <p class="text-gray-600">
+      No financial template has been uploaded with this application...
+    </p>
+  </div>
+
+  }
+</div>
+
+<!-- EXPANDED VIEW MODAL -->
+@if (showExpandedView()) {
+<div
+  class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+  (click)="closeExpandedView()"
+>
+  <div
+    class="bg-white rounded-2xl shadow-2xl max-w-6xl w-full max-h-[90vh] overflow-hidden flex flex-col"
+    (click)="$event.stopPropagation()"
+  >
+    <!-- Modal Header -->
+    <div
+      class="bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-blue-200 p-6 flex items-center justify-between"
+    >
+      <h2 class="text-2xl font-bold text-gray-900">Financial Data Explorer</h2>
+      <button
+        (click)="closeExpandedView()"
+        class="p-2 hover:bg-blue-100 rounded-lg transition-colors"
+      >
+        <lucide-icon
+          [img]="CloseIcon"
+          [size]="24"
+          class="text-gray-600"
+        ></lucide-icon>
+      </button>
+    </div>
+
+    <!-- Modal Tabs -->
+    <div class="border-b border-slate-200 px-6">
+      <nav class="-mb-px flex gap-6">
+        <button
+          (click)="switchTab('income')"
+          [class]="
+            activeTab() === 'income'
+              ? 'border-b-2 border-teal-500 text-teal-600'
+              : 'border-b-2 border-transparent text-slate-600 hover:text-slate-900 hover:border-slate-300'
+          "
+          class="whitespace-nowrap py-4 px-1 font-medium text-sm"
+        >
+          Income Statement
+        </button>
+        <button
+          (click)="switchTab('balance')"
+          [class]="
+            activeTab() === 'balance'
+              ? 'border-b-2 border-teal-500 text-teal-600'
+              : 'border-b-2 border-transparent text-slate-600 hover:text-slate-900 hover:border-slate-300'
+          "
+          class="whitespace-nowrap py-4 px-1 font-medium text-sm"
+        >
+          Balance Sheet
+        </button>
+        <button
+          (click)="switchTab('cash')"
+          [class]="
+            activeTab() === 'cash'
+              ? 'border-b-2 border-teal-500 text-teal-600'
+              : 'border-b-2 border-transparent text-slate-600 hover:text-slate-900 hover:border-slate-300'
+          "
+          class="whitespace-nowrap py-4 px-1 font-medium text-sm"
+        >
+          Cash Flow
+        </button>
+      </nav>
+    </div>
+
+    <!-- Modal Content -->
+    <div class="overflow-y-auto flex-1 p-6">
+      @if (activeTab() === 'income' && incomeStatementSections().length > 0) {
+      <app-financial-data-table
+        [sections]="incomeStatementSections()"
+        [columnHeaders]="columnHeaders()"
+        [editMode]="false"
+        itemLabel="Item"
+      />
+      } @if (activeTab() === 'balance' && balanceSheetSections().length > 0) {
+      <app-financial-data-table
+        [sections]="balanceSheetSections()"
+        [columnHeaders]="columnHeaders()"
+        [editMode]="false"
+        itemLabel="Account"
+      />
+      } @if (activeTab() === 'cash' && cashFlowSections().length > 0) {
+      <app-financial-data-table
+        [sections]="cashFlowSections()"
+        [columnHeaders]="columnHeaders()"
+        [editMode]="false"
+        itemLabel="Activity"
+      />
+      }
+    </div>
+  </div>
+</div>
+}

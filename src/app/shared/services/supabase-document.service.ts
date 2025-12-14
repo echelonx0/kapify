@@ -1,13 +1,6 @@
 import { Injectable, signal, inject } from '@angular/core';
-import {
-  Observable,
-  from,
-  throwError,
-  BehaviorSubject,
-  Subject,
-  timer,
-} from 'rxjs';
-import { tap, catchError, map, switchMap, takeUntil } from 'rxjs/operators';
+import { Observable, from, throwError, BehaviorSubject, Subject } from 'rxjs';
+import { tap, catchError, map, switchMap } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import { SharedSupabaseService } from './shared-supabase.service';
 
@@ -135,7 +128,7 @@ export class SupabaseDocumentService {
         this.updateUploadProgress(documentKey, 100, 'complete');
         this.isUploading.set(false);
         this.scheduleProgressCleanup(documentKey);
-        console.log('✅ Document uploaded:', result.fileName);
+        // console.log('✅ Document uploaded:', result.fileName);
       }),
       catchError((error) => {
         const message = error?.message || 'Upload failed';
@@ -326,6 +319,35 @@ export class SupabaseDocumentService {
     }));
   }
 
+  /**
+   * Get documents for a specific user (admin/funder access)
+   * Used when viewing another user's documents (e.g., funder viewing applicant docs)
+   */
+  getDocumentsByUserId(
+    targetUserId: string,
+    applicationId?: string
+  ): Observable<Map<string, DocumentMetadata>> {
+    // Note: RLS policies must allow this access
+    return from(this.performGetDocuments(targetUserId, applicationId)).pipe(
+      map((documents) => {
+        const docMap = new Map<string, DocumentMetadata>();
+        documents.forEach((doc) => {
+          docMap.set(doc.documentKey, doc);
+        });
+        return docMap;
+      }),
+      catchError((error) => {
+        console.error(
+          'Failed to retrieve documents for user:',
+          targetUserId,
+          error
+        );
+        return throwError(
+          () => new Error(`Failed to load documents: ${error?.message}`)
+        );
+      })
+    );
+  }
   /**
    * Delete document by key
    * Matches component: this.documentService.deleteDocumentByKey(doc.key)

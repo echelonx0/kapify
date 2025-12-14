@@ -29,6 +29,7 @@ import { BillingCreditsComponent } from '../finance/billing/billing-credits.comp
 import { AuthService } from 'src/app/auth/production.auth.service';
 import { Router } from '@angular/router';
 import { FundingProfileSetupService } from 'src/app/SMEs/services/funding-profile-setup.service';
+import { AccountComponent } from './components/account/account.component';
 
 type SettingsSection =
   | 'general'
@@ -37,6 +38,7 @@ type SettingsSection =
   | 'integrations'
   | 'billing'
   | 'profile'
+  | 'account'
   | 'team';
 
 interface SettingsTab {
@@ -57,6 +59,7 @@ interface SettingsTab {
     LegalInfoComponent,
     TeamManagementComponent,
     BillingCreditsComponent,
+    AccountComponent,
   ],
   templateUrl: 'settings.component.html',
   styles: [
@@ -161,6 +164,12 @@ export class SettingsComponent implements OnInit, OnDestroy {
         id: 'team',
         label: 'Team Members',
         icon: this.UserIcon,
+        enabled: true,
+      },
+      {
+        id: 'account',
+        label: 'Your Account',
+        icon: this.ProfileIcon,
         enabled: true,
       },
       {

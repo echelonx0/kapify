@@ -28,6 +28,7 @@ import { LandingFooterComponent } from './footer/landing-footer.component';
 import { LandingHeaderComponent } from './landing-header.component';
 import { Router } from '@angular/router';
 import { SafeResourceUrl, DomSanitizer } from '@angular/platform-browser';
+import { KapifyHeroComponent } from './hero/kapify-hero.component';
 
 interface Statistic {
   value: string;
@@ -76,6 +77,7 @@ interface AudienceView {
     LucideAngularModule,
     LandingHeaderComponent,
     LandingFooterComponent,
+    KapifyHeroComponent,
   ],
   templateUrl: 'landing.component.html',
   styleUrl: 'landing.component.css',

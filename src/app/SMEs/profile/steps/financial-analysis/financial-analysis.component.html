@@ -1,51 +1,79 @@
-<!-- src/app/profile/steps/financial-analysis/financial-analysis.component.html -->
+<!-- src/app/SMEs/profile/steps/financial-analysis/financial-analysis.component.html -->
 <div class="max-w-7xl mx-auto space-y-4">
   <!-- Header Section -->
-  <div class="flex items-center justify-between mb-2 m-2">
+  <div class="flex items-center justify-between mb-2 px-2">
     <div>
-      <h1 class="text-2xl font-bold text-slate-700">Financial Analysis</h1>
+      <h1 class="text-2xl font-bold text-slate-900">Financial Analysis</h1>
     </div>
 
-    <!-- Save Status -->
-    <div class="flex items-center space-x-3">
+    <!-- Action Buttons -->
+    <div class="flex items-center gap-3">
+      <!-- Save Status -->
       @if (lastSaved()) {
-      <div class="flex items-center text-sm text-gray-500">
+      <div class="flex items-center text-sm text-slate-500">
         <lucide-icon
           [name]="ClockIcon"
           [size]="16"
-          class="mr-1 text-primary-500"
+          class="mr-1.5 text-teal-500"
         />
         <span>Saved {{ getLastSavedText() }}</span>
       </div>
       } @if (isSaving()) {
-      <div class="flex items-center text-sm text-primary-600">
+      <div class="flex items-center text-sm text-teal-600">
         <lucide-icon
           [name]="ClockIcon"
           [size]="16"
-          class="mr-1 animate-spin text-primary-500"
+          class="mr-1.5 animate-spin text-teal-500"
         />
         <span>Saving...</span>
       </div>
       }
 
-      <ui-button
-        variant="primary"
-        size="sm"
-        [disabled]="isSaving() || !hasFinancialData()"
-        (clicked)="saveManually()"
+      <!-- Replace Data Button -->
+      @if (hasFinancialData() && !isLoading()) {
+      <button
+        (click)="replaceData()"
+        class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-100 text-slate-700 text-sm font-medium hover:bg-slate-200 active:bg-slate-300 transition-colors duration-200"
       >
-        <lucide-icon [name]="SaveIcon" [size]="16" class="mr-1" />
+        <lucide-icon [name]="RefreshIcon" [size]="16" />
+        Replace Data
+      </button>
+      }
+
+      <!-- Download Current Data -->
+      @if (hasFinancialData() && !isLoading()) {
+      <button
+        (click)="downloadCurrentData()"
+        class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-100 text-slate-700 text-sm font-medium hover:bg-slate-200 active:bg-slate-300 transition-colors duration-200"
+      >
+        <lucide-icon [name]="DownloadIcon" [size]="16" />
+        Export
+      </button>
+      }
+
+      <!-- Save Now Button -->
+      <button
+        (click)="saveManually()"
+        [disabled]="isSaving() || !hasFinancialData() || isLoading()"
+        class="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-teal-500 text-white text-sm font-medium hover:bg-teal-600 active:bg-teal-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        <lucide-icon [name]="SaveIcon" [size]="16" />
         Save Now
-      </ui-button>
+      </button>
     </div>
   </div>
 
-  @if (!hasFinancialData()) {
+  <!-- Skeleton Loader - FIXED CONDITION -->
+  @if (isLoading()) {
+  <app-financial-table-skeleton [rowCount]="10" [columnCount]="9" />
+  }
+
   <!-- Upload Component -->
+  @if (!hasFinancialData() && !isLoading()) {
   <app-financial-upload
     [hasData]="hasFinancialData()"
     [uploadedFile]="uploadedTemplate()"
-    [isProcessing]="isParsingFile() || isUploading()"
+    [isProcessing]="isLoading()"
     [error]="parseError()"
     [warnings]="parseWarnings()"
     [progress]="parseProgress()"
@@ -60,84 +88,79 @@
   }
 
   <!-- Financial Data Display -->
-  @if (hasFinancialData()) {
+  @if (hasFinancialData() && !isLoading()) {
+
   <!-- Tab Navigation -->
-  <div class="border-b border-gray-200">
-    <nav class="-mb-px flex space-x-8 overflow-x-auto">
-      <!-- Income Statement Tab -->
+  <div class="border-b border-slate-200">
+    <nav class="-mb-px flex gap-6 overflow-x-auto">
       <button
         (click)="switchTab('income-statement')"
         [class]="
           activeTab() === 'income-statement'
-            ? 'border-primary-500 text-primary-600'
-            : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+            ? 'border-b-2 border-teal-500 text-teal-600'
+            : 'border-b-2 border-transparent text-slate-600 hover:text-slate-900 hover:border-slate-300'
         "
-        class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors duration-200"
+        class="whitespace-nowrap py-4 px-1 font-medium text-sm"
       >
         Income Statement
       </button>
 
-      <!-- Balance Sheet Tab -->
       <button
         (click)="switchTab('balance-sheet')"
         [class]="
           activeTab() === 'balance-sheet'
-            ? 'border-primary-500 text-primary-600'
-            : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+            ? 'border-b-2 border-teal-500 text-teal-600'
+            : 'border-b-2 border-transparent text-slate-600 hover:text-slate-900 hover:border-slate-300'
         "
-        class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors duration-200"
+        class="whitespace-nowrap py-4 px-1 font-medium text-sm"
       >
         Balance Sheet
       </button>
 
-      <!-- Cash Flow Tab -->
       <button
         (click)="switchTab('cash-flow')"
         [class]="
           activeTab() === 'cash-flow'
-            ? 'border-primary-500 text-primary-600'
-            : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+            ? 'border-b-2 border-teal-500 text-teal-600'
+            : 'border-b-2 border-transparent text-slate-600 hover:text-slate-900 hover:border-slate-300'
         "
-        class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors duration-200"
+        class="whitespace-nowrap py-4 px-1 font-medium text-sm"
       >
         Cash Flow Statement
       </button>
 
-      <!-- Financial Ratios Tab -->
       <button
         (click)="switchTab('financial-ratios')"
         [class]="
           activeTab() === 'financial-ratios'
-            ? 'border-primary-500 text-primary-600'
-            : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+            ? 'border-b-2 border-teal-500 text-teal-600'
+            : 'border-b-2 border-transparent text-slate-600 hover:text-slate-900 hover:border-slate-300'
         "
-        class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors duration-200"
+        class="whitespace-nowrap py-4 px-1 font-medium text-sm"
       >
         Financial Ratios
       </button>
 
-      <!-- Notes Tab -->
       <button
         (click)="switchTab('notes')"
         [class]="
           activeTab() === 'notes'
-            ? 'border-primary-500 text-primary-600'
-            : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+            ? 'border-b-2 border-teal-500 text-teal-600'
+            : 'border-b-2 border-transparent text-slate-600 hover:text-slate-900 hover:border-slate-300'
         "
-        class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors duration-200"
+        class="whitespace-nowrap py-4 px-1 font-medium text-sm"
       >
         Notes
       </button>
 
-      <!-- Health Score Tab -->
       <button
         (click)="switchTab('health-score')"
         [class]="
           activeTab() === 'health-score'
-            ? 'border-primary-500 text-primary-600'
-            : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+            ? 'border-b-2 border-teal-500 text-teal-600'
+            : 'border-b-2 border-transparent text-slate-600 hover:text-slate-900 hover:border-slate-300'
         "
-        class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors duration-200"
+        class="whitespace-nowrap py-4 px-1 font-medium text-sm"
       >
         Health Score
       </button>
@@ -148,14 +171,15 @@
   <div class="space-y-6">
     <!-- Income Statement Tab -->
     @if (activeTab() === 'income-statement') {
-
     <div class="flex items-center justify-between mb-6">
-      <ui-button variant="outline" size="sm" (clicked)="toggleEditMode()">
-        <lucide-icon [name]="EditIcon" [size]="16" class="mr-1" />
-        {{ editingMode() ? "Done" : "Edit" }}
-      </ui-button>
+      <p class="text-sm">
+        If you need to make changes to data that has already been uploaded,
+        please make the edits directly on the import template and upload the
+        updated file again
+      </p>
     </div>
 
+    @if (incomeStatementSections().length > 0) {
     <app-financial-data-table
       [sections]="incomeStatementSections()"
       [columnHeaders]="columnHeaders()"
@@ -163,29 +187,37 @@
       itemLabel="Item"
       (cellValueChanged)="onIncomeStatementCellChanged($event)"
     />
-
-    }
+    } @else {
+    <div class="bg-white rounded-2xl border border-slate-200 p-12 text-center">
+      <p class="text-slate-500">No income statement data available</p>
+    </div>
+    } }
 
     <!-- Balance Sheet Tab -->
     @if (activeTab() === 'balance-sheet') {
-
     <div class="flex items-center justify-between mb-6">
-      <ui-button variant="outline" size="sm" (clicked)="toggleEditMode()">
-        <lucide-icon [name]="EditIcon" [size]="16" class="mr-1" />
-        {{ editingMode() ? "Done" : "Edit" }}
-      </ui-button>
+      <p class="text-sm">
+        If you need to make changes to data that has already been uploaded,
+        please make the edits directly on the import template and upload the
+        updated file again
+      </p>
 
-      <!-- Validation Indicator -->
-      @if (balanceSheetData().length > 0) {
+      <!-- ONLY SHOW VALIDATION WHEN NOT EDITING -->
+      @if (shouldShowValidation() && !editingMode() && balanceSheetData().length
+      > 5) {
       <div class="flex items-center text-sm">
         @if (isBalanceSheetBalanced()) {
-        <span class="flex items-center text-green-600">
-          <lucide-icon name="check-circle-2" [size]="16" class="mr-1" />
+        <span
+          class="flex items-center gap-1.5 text-green-700 bg-green-50 px-3 py-1.5 rounded-lg border border-green-200/50"
+        >
+          <lucide-icon name="check-circle-2" [size]="16" />
           Balance Sheet Balanced
         </span>
         } @else {
-        <span class="flex items-center text-orange-600">
-          <lucide-icon name="alert-circle" [size]="16" class="mr-1" />
+        <span
+          class="flex items-center gap-1.5 text-amber-700 bg-amber-50 px-3 py-1.5 rounded-lg border border-amber-200/50"
+        >
+          <lucide-icon name="alert-circle" [size]="16" />
           Balance Sheet Out of Balance
         </span>
         }
@@ -193,6 +225,7 @@
       }
     </div>
 
+    @if (balanceSheetSections().length > 0) {
     <app-financial-data-table
       [sections]="balanceSheetSections()"
       [columnHeaders]="columnHeaders()"
@@ -200,29 +233,37 @@
       itemLabel="Account"
       (cellValueChanged)="onBalanceSheetCellChanged($event)"
     />
-
-    }
+    } @else {
+    <div class="bg-white rounded-2xl border border-slate-200 p-12 text-center">
+      <p class="text-slate-500">No balance sheet data available</p>
+    </div>
+    } }
 
     <!-- Cash Flow Tab -->
     @if (activeTab() === 'cash-flow') {
-
     <div class="flex items-center justify-between mb-6">
-      <ui-button variant="outline" size="sm" (clicked)="toggleEditMode()">
-        <lucide-icon [name]="EditIcon" [size]="16" class="mr-1" />
-        {{ editingMode() ? "Done" : "Edit" }}
-      </ui-button>
+      <p class="text-sm">
+        If you need to make changes to data that has already been uploaded,
+        please make the edits directly on the import template and upload the
+        updated file again
+      </p>
 
-      <!-- Cash Reconciliation Indicator -->
-      @if (cashFlowData().length > 0) {
+      <!-- ONLY SHOW VALIDATION WHEN NOT EDITING -->
+      @if (shouldShowValidation() && !editingMode() && cashFlowData().length >
+      5) {
       <div class="flex items-center text-sm">
         @if (isCashFlowReconciledToBS()) {
-        <span class="flex items-center text-green-600">
-          <lucide-icon name="check-circle-2" [size]="16" class="mr-1" />
+        <span
+          class="flex items-center gap-1.5 text-green-700 bg-green-50 px-3 py-1.5 rounded-lg border border-green-200/50"
+        >
+          <lucide-icon name="check-circle-2" [size]="16" />
           Cash Reconciled to Balance Sheet
         </span>
         } @else {
-        <span class="flex items-center text-orange-600">
-          <lucide-icon name="alert-circle" [size]="16" class="mr-1" />
+        <span
+          class="flex items-center gap-1.5 text-amber-700 bg-amber-50 px-3 py-1.5 rounded-lg border border-amber-200/50"
+        >
+          <lucide-icon name="alert-circle" [size]="16" />
           Cash Mismatch with Balance Sheet
         </span>
         }
@@ -230,6 +271,7 @@
       }
     </div>
 
+    @if (cashFlowSections().length > 0) {
     <app-financial-data-table
       [sections]="cashFlowSections()"
       [columnHeaders]="columnHeaders()"
@@ -237,75 +279,51 @@
       itemLabel="Activity"
       (cellValueChanged)="onCashFlowCellChanged($event)"
     />
-
-    }
+    } @else {
+    <div class="bg-white rounded-2xl border border-slate-200 p-12 text-center">
+      <p class="text-slate-500">No cash flow data available</p>
+    </div>
+    } }
 
     <!-- Financial Ratios Tab -->
     @if (activeTab() === 'financial-ratios') {
-
     <div class="flex items-center justify-between mb-6">
-      <ui-button variant="outline" size="sm" (clicked)="toggleEditMode()">
-        <lucide-icon [name]="EditIcon" [size]="16" class="mr-1" />
-        {{ editingMode() ? "Done" : "Edit" }}
-      </ui-button>
+      <span class="text-sm text-slate-600">
+        Ratios are automatically calculated based on your financial data.
+      </span>
     </div>
 
+    @if (financialRatiosSections().length > 0) {
     <app-financial-data-table
       [sections]="financialRatiosSections()"
       [columnHeaders]="columnHeaders()"
-      [editMode]="editingMode()"
+      [editMode]="false"
       itemLabel="Ratio"
       (cellValueChanged)="onFinancialRatiosCellChanged($event)"
     />
-
-    }
+    } @else {
+    <div class="bg-white rounded-2xl border border-slate-200 p-12 text-center">
+      <p class="text-slate-500">No financial ratios available</p>
+    </div>
+    } }
 
     <!-- Notes Tab -->
     @if (activeTab() === 'notes') {
-
     <app-financial-notes
       [(notes)]="notesText"
       (notesSaved)="onNotesSaved($event)"
     />
-
     }
 
     <!-- Health Score Tab -->
     @if (activeTab() === 'health-score') {
-
     <app-financial-summary
       [completionPercentage]="getCompletionPercentage()"
       [incomeStatementCount]="incomeStatementData().length"
       [financialRatiosCount]="financialRatiosData().length"
       [isValidTemplate]="hasValidTemplate()"
     />
-
     }
   </div>
-  }
-
-  <!-- Empty State -->
-  @if (!hasFinancialData() && !uploadedTemplate()) {
-  <ui-card>
-    <div class="p-6 text-center">
-      <lucide-icon
-        name="file-spreadsheet"
-        [size]="48"
-        class="mx-auto text-gray-400 mb-4"
-      />
-      <h3 class="text-lg font-medium text-gray-900 mb-2">No Financial Data</h3>
-      <p class="text-gray-600 mb-6">
-        Upload a financial template with your historical data and projections to
-        begin your analysis. The template includes predefined rows for income
-        statement, balance sheet, cash flow statement and financial ratios.
-      </p>
-      <div class="flex justify-center space-x-4">
-        <ui-button variant="primary" (clicked)="downloadTemplate()">
-          <lucide-icon name="download" [size]="16" class="mr-2" />
-          Download Template
-        </ui-button>
-      </div>
-    </div>
-  </ui-card>
   }
 </div>
