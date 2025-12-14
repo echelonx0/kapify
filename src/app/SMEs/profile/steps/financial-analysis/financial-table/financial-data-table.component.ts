@@ -26,6 +26,7 @@ export interface FinancialTableRow {
   isBold?: boolean;
   isTotal?: boolean;
   type?: 'currency' | 'percentage' | 'ratio';
+  suffix?: string; // ADD THIS: "%", "x", or ""
 }
 
 export interface FinancialTableSection {
@@ -205,22 +206,22 @@ export class FinancialDataTableComponent implements OnInit {
   /**
    * Number formatting and parsing
    */
-  formatNumber(value: number): string {
+  formatNumber(value: number, row?: FinancialTableRow): string {
     if (value === null || value === undefined || isNaN(value)) {
-      return '0';
+      return '0.0';
     }
-    const rounded = Math.round(value);
-    return rounded.toLocaleString('en-US', {
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    });
-  }
 
+    // Always 1 decimal place
+    const formatted = value.toFixed(1);
+    const suffix = row?.suffix || '';
+
+    return `${formatted}${suffix}`;
+  }
   parseNumber(value: string): number {
     if (!value) return 0;
-    const cleanValue = value.replace(/,/g, '');
+    const cleanValue = value.replace(/[,%x\s]/g, '');
     const parsed = parseFloat(cleanValue);
-    return isNaN(parsed) ? 0 : Math.round(parsed);
+    return isNaN(parsed) ? 0 : parsed;
   }
 
   /**

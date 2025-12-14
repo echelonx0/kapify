@@ -409,48 +409,6 @@ export class SMEProfileStepsService {
     });
   }
 
-  // private hasDataForStep(stepId: string, data: Partial<ProfileData>): boolean {
-  //   switch (stepId) {
-  //     case 'company-info':
-  //       return !!(
-  //         data.businessInfo?.companyName || data.personalInfo?.firstName
-  //       );
-  //     case 'documents':
-  //       return (
-  //         !!(
-  //           data.supportingDocuments &&
-  //           Object.keys(data.supportingDocuments).length > 0
-  //         ) || !!(data.documents && Object.keys(data.documents).length > 0)
-  //       );
-  //     case 'business-assessment':
-  //       return !!(
-  //         data.businessReview && Object.keys(data.businessReview).length > 0
-  //       );
-  //     case 'swot-analysis':
-  //       return !!(
-  //         data.swotAnalysis?.strengths?.length ||
-  //         data.swotAnalysis?.weaknesses?.length
-  //       );
-  //     case 'management':
-  //       return !!(
-  //         data.managementGovernance &&
-  //         Object.keys(data.managementGovernance).length > 0
-  //       );
-  //     case 'business-strategy':
-  //       return !!(
-  //         data.businessPlan && Object.keys(data.businessPlan).length > 0
-  //       );
-  //     case 'financial-profile':
-  //       return !!(
-  //         data.financialInfo?.monthlyRevenue || data.financialAnalysis?.template
-  //       );
-  //     case 'review':
-  //       return this.steps.filter((s) => s.required).every((s) => s.completed);
-  //     default:
-  //       return false;
-  //   }
-  // }
-
   private hasDataForStep(stepId: string, data: Partial<ProfileData>): boolean {
     switch (stepId) {
       case 'company-info':

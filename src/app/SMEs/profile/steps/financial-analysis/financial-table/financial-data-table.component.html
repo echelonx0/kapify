@@ -183,7 +183,7 @@
               <!-- Editable Input -->
               <input
                 type="text"
-                [value]="formatNumber(value)"
+                [value]="formatNumber(value, row)"
                 (blur)="
                   onCellChange(sectionIndex, rowIndex, visibleColIndex, $event)
                 "
@@ -197,16 +197,15 @@
               <div
                 [class]="getCellClasses(row, value)"
                 class="px-3 py-2 text-sm font-mono"
-                style="font-size: 14px"
               >
                 @if (value < 0) {
-                <span class="text-red-700">
-                  ({{ formatNumber(Math.abs(value)) }})
-                </span>
+                <span class="text-red-700"
+                  >({{ formatNumber(Math.abs(value), row) }})</span
+                >
                 } @else {
-                <span class="text-slate-700">
-                  {{ formatNumber(value) }}
-                </span>
+                <span class="text-slate-700">{{
+                  formatNumber(value, row)
+                }}</span>
                 }
               </div>
               }

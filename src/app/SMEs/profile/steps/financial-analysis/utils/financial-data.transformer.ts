@@ -42,6 +42,15 @@ export class FinancialDataTransformer {
     if (incomeRatios && incomeRatios.length > 0) {
       sections.push({
         title: 'Financial Performance Ratios',
+        // rows: incomeRatios.map((ratio) => ({
+        //   label: ratio.label,
+        //   values: ratio.values,
+        //   editable: false,
+        //   isCalculated: true,
+        //   isBold: false,
+        //   isTotal: false,
+        //   type: ratio.type,
+        // })),
         rows: incomeRatios.map((ratio) => ({
           label: ratio.label,
           values: ratio.values,
@@ -50,6 +59,12 @@ export class FinancialDataTransformer {
           isBold: false,
           isTotal: false,
           type: ratio.type,
+          suffix:
+            ratio.type === 'percentage'
+              ? '%'
+              : ratio.type === 'ratio'
+              ? 'x'
+              : '',
         })),
         isCollapsible: true,
         defaultExpanded: true,
@@ -106,6 +121,12 @@ export class FinancialDataTransformer {
           isBold: false,
           isTotal: false,
           type: ratio.type,
+          suffix:
+            ratio.type === 'percentage'
+              ? '%'
+              : ratio.type === 'ratio'
+              ? 'x'
+              : '', // ADD THIS LINE
         })),
         isCollapsible: true,
         defaultExpanded: true,
@@ -241,6 +262,12 @@ export class FinancialDataTransformer {
           isBold: false,
           isTotal: false,
           type: ratio.type,
+          suffix:
+            ratio.type === 'percentage'
+              ? '%'
+              : ratio.type === 'ratio'
+              ? 'x'
+              : '', // ADD THIS LINE
         })),
         isCollapsible: true,
         defaultExpanded: true,
@@ -260,6 +287,12 @@ export class FinancialDataTransformer {
           isBold: false,
           isTotal: false,
           type: ratio.type,
+          suffix:
+            ratio.type === 'percentage'
+              ? '%'
+              : ratio.type === 'ratio'
+              ? 'x'
+              : '', // ADD THIS LINE
         })),
         isCollapsible: true,
         defaultExpanded: true,
