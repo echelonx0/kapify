@@ -134,7 +134,7 @@ export class ApplicationMetricsComponent implements OnInit {
   swotAnalysis = computed(() => this.profileData.swotAnalysis || null);
 
   ngOnInit() {
-    // console.log('📊 [METRICS] Profile Data:', this.profileData);
+    console.log('[METRICS] Business Review:', this.profileData.businessReview);
     // console.log('[Application Data]', this.application);
   }
 

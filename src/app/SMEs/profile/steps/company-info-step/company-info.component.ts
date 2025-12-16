@@ -305,12 +305,12 @@ export class CompanyInfoComponent implements OnInit, OnDestroy {
     this.isSaving.set(true);
     try {
       const companyData = this.buildCompanyInfoData();
-      console.log('📤 Saving company data:', companyData);
+      console.log('Saving company data:', companyData);
       this.fundingApplicationService.updateCompanyInfo(companyData);
       await this.fundingApplicationService.saveCurrentProgress();
       this.lastSaved.set(new Date());
       this.adminForm.markAsPristine();
-      console.log('✅ Company information saved successfully');
+      console.log('Company information saved successfully');
     } catch (error) {
       console.error('Failed to save company information:', error);
     } finally {

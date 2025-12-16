@@ -52,6 +52,16 @@ export class AdminLayoutComponent {
       label: 'Manage Costs',
       icon: 'fas fa-check-circle',
     },
+    {
+      path: 'back-office-questions',
+      label: 'Manage Back Office',
+      icon: 'fas fa-check-circle',
+    },
+    {
+      path: 'fund-financial-terms',
+      label: 'Manage Funding Terms',
+      icon: 'fas fa-check-circle',
+    },
   ];
 
   // Main app routes for quick navigation
