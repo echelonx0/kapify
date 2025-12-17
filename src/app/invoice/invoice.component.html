@@ -9,19 +9,20 @@
             View your purchase history and invoices
           </p>
         </div>
-        <button
-          (click)="goHome()"
-          class="bg-teal-500 text-white font-medium rounded-xl px-6 py-2.5 text-sm hover:bg-teal-600 active:bg-teal-700 transition-colors duration-200"
-        >
-          Home
-        </button>
-
-        <button
-          (click)="goToCredits()"
-          class="bg-teal-500 text-white font-medium rounded-xl px-6 py-2.5 text-sm hover:bg-teal-600 active:bg-teal-700 transition-colors duration-200"
-        >
-          Buy Credits
-        </button>
+        <div class="flex gap-2">
+          <button
+            (click)="goHome()"
+            class="bg-slate-100 text-slate-700 font-medium rounded-xl px-6 py-2.5 text-sm hover:bg-slate-200 active:bg-slate-300 transition-colors duration-200"
+          >
+            Home
+          </button>
+          <button
+            (click)="goToCredits()"
+            class="bg-teal-500 text-white font-medium rounded-xl px-6 py-2.5 text-sm hover:bg-teal-600 active:bg-teal-700 transition-colors duration-200"
+          >
+            Buy Credits
+          </button>
+        </div>
       </div>
     </div>
   </header>
@@ -40,7 +41,7 @@
     </div>
     } @else if (error()) {
     <!-- Error State -->
-    <div class="bg-red-50 border border-red-200/50 rounded-xl p-6 text-center">
+    <div class="bg-red-50 border border-red-200/50 rounded-2xl p-6 text-center">
       <div
         class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4"
       >
@@ -108,22 +109,34 @@
         <div class="flex items-start justify-between">
           <!-- Invoice Details -->
           <div class="flex-1">
-            <div class="flex items-center gap-3 mb-2">
+            <div class="flex items-center gap-3 mb-3">
+              <!-- Invoice Number -->
               <h3 class="text-lg font-semibold text-slate-900">
                 @if (invoice.zohoInvoiceNumber) {
                 {{ invoice.zohoInvoiceNumber }}
                 } @else { Invoice #{{ invoice.id.slice(0, 8) }}
                 }
               </h3>
+
+              <!-- Status Badge -->
               <span
                 class="px-2.5 py-1 rounded-full text-xs font-semibold border"
                 [ngClass]="getStatusColor(invoice.status)"
               >
                 {{ getStatusText(invoice.status) }}
               </span>
+
+              <!-- Payment Provider Badge -->
+              <span
+                class="px-2.5 py-1 rounded-full text-xs font-semibold border"
+                [ngClass]="getProviderBadgeColor(invoice.paymentProvider)"
+              >
+                {{ getProviderBadgeText(invoice.paymentProvider) }}
+              </span>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+            <!-- Invoice Details Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mt-4">
               <div>
                 <p class="text-xs text-slate-500 mb-1">Date</p>
                 <p class="text-sm font-medium text-slate-900">
@@ -142,12 +155,19 @@
                   {{ formatAmount(invoice.amountZar) }}
                 </p>
               </div>
+              <div>
+                <p class="text-xs text-slate-500 mb-1">Payment Reference</p>
+                <p class="text-xs font-mono text-slate-600">
+                  {{ getPaymentReference(invoice) }}
+                </p>
+              </div>
             </div>
           </div>
 
           <!-- Actions -->
           <div class="flex items-center gap-2 ml-4">
             @if (invoice.zohoInvoiceId) {
+            <!-- View Invoice -->
             <button
               (click)="viewInvoice(invoice)"
               class="text-slate-600 hover:bg-slate-100 active:bg-slate-200 rounded-lg p-2 transition-colors duration-200"
@@ -174,6 +194,8 @@
                 />
               </svg>
             </button>
+
+            <!-- Download Invoice -->
             <button
               (click)="downloadInvoice(invoice)"
               class="text-slate-600 hover:bg-slate-100 active:bg-slate-200 rounded-lg p-2 transition-colors duration-200"
@@ -195,6 +217,7 @@
               </svg>
             </button>
             } @else {
+            <!-- Processing -->
             <span class="text-xs text-slate-400 italic">Processing...</span>
             }
           </div>
