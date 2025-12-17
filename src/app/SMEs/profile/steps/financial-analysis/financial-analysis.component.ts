@@ -271,26 +271,6 @@ export class FinancialAnalysisComponent implements OnInit, OnDestroy {
     this.autoSaveSubscription?.unsubscribe();
   }
 
-  // ===============================
-  // LOADING STATE - SIMPLIFIED
-  // ===============================
-
-  // isLoading(): boolean {
-  //   const state = this.loadingState();
-  //   return state !== 'idle' && state !== 'ready';
-  // }
-
-  // isLoading(): boolean {
-  //   const activeTab = this.activeTab();
-  //   const tabState = this.tabLoadingState()[activeTab];
-
-  //   // If tab hasn't been viewed yet and is still in initial load, show skeleton
-  //   if (!this.initialTabsViewed().has(activeTab) && tabState !== 'ready') {
-  //     return true;
-  //   }
-
-  //   return tabState !== 'idle' && tabState !== 'ready';
-  // }
   isLoading(): boolean {
     const activeTab = this.activeTab();
     const tabState = this.tabLoadingState()[activeTab];

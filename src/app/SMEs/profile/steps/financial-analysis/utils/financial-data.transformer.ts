@@ -1,4 +1,4 @@
-// src/app/SMEs/profile/steps/financial-analysis/utils/financial-data-transformer-refactored-v4.ts
+// src/app/SMEs/profile/steps/financial-analysis/utils/financial-data-transformer-refactored.ts
 import {
   FinancialTableSection,
   FinancialTableRow,
@@ -68,16 +68,15 @@ export class FinancialDataTransformer {
 
   /**
    * Transform Balance Sheet rows + balance sheet ratios into table sections
-   * Structure:
-   * - ASSETS (visual label - no rows)
-   *   - Non-Current Assets (section)
-   *   - Current Assets (section)
-   *   - Total Assets (as final item)
-   * - EQUITIES AND LIABILITIES (visual label - no rows)
-   *   - Equities (section)
-   *   - Liabilities (section)
-   *   - Current Liabilities (section)
-   *   - Total Equities and Liabilities (as final item)
+   * NO REDUNDANT HEADERS - Clean structure:
+   * - Non-Current Assets
+   * - Current Assets
+   * - Total Assets (bold, teal-50 bg, as final row with spacing after)
+   * - Equities (with spacing before)
+   * - Liabilities (long-term)
+   * - Current Liabilities
+   * - Total Equities and Liabilities (bold, teal-50 bg, as final row with spacing after)
+   * - Financial Ratios (collapsible, orange, with spacing before)
    */
   static transformBalanceSheet(
     balanceData: BalanceSheetRowData[],
@@ -87,20 +86,10 @@ export class FinancialDataTransformer {
 
     const sections: FinancialTableSection[] = [];
 
-    // ===== ASSETS SECTION =====
-    // Add "ASSETS" as a visual label section (non-collapsible, read-only, empty rows)
-    sections.push({
-      title: 'ASSETS',
-      rows: [],
-      isCollapsible: false,
-      defaultExpanded: true,
-      isVisualLabel: true,
-    });
-
     // Extract and group asset rows by subsection
     const assetsBySubsection = this.groupAssetsBySubsection(balanceData);
 
-    // Add Non-Current Assets section
+    // ===== NON-CURRENT ASSETS =====
     if (assetsBySubsection.nonCurrent.length > 0) {
       sections.push({
         title: 'Non-Current Assets',
@@ -118,7 +107,7 @@ export class FinancialDataTransformer {
       });
     }
 
-    // Add Current Assets section
+    // ===== CURRENT ASSETS =====
     if (assetsBySubsection.current.length > 0) {
       sections.push({
         title: 'Current Assets',
@@ -136,7 +125,7 @@ export class FinancialDataTransformer {
       });
     }
 
-    // Add Total Assets as final section (not as separate header section)
+    // ===== TOTAL ASSETS (bold row with design system styling) =====
     const totalAssets = balanceData.find(
       (r) => r.label.toLowerCase() === 'total assets' && r.category === 'assets'
     );
@@ -148,29 +137,25 @@ export class FinancialDataTransformer {
             label: totalAssets.label,
             values: totalAssets.values,
             editable: false,
-            isCalculated: !totalAssets.editable,
+            isCalculated: true,
             isBold: true,
             isTotal: true,
             type: 'currency' as const,
+            // Design system: bg-teal-50, top border, bold text
+            styling: {
+              rowClass: 'bg-teal-50 border-t-2 border-slate-200',
+              labelClass: 'font-bold text-slate-900',
+            },
           },
         ],
         isCollapsible: false,
         defaultExpanded: true,
-        isSimpleRow: true, // NEW: Flag for simple sections with just one row
+        isSimpleRow: true,
+        spacingAfter: 'lg', // Space before next major section (Equities)
       });
     }
 
-    // ===== EQUITIES & LIABILITIES SECTION =====
-    // Add "EQUITIES AND LIABILITIES" as a visual label section
-    sections.push({
-      title: 'EQUITIES AND LIABILITIES',
-      rows: [],
-      isCollapsible: false,
-      defaultExpanded: true,
-      isVisualLabel: true,
-    });
-
-    // Add Equities section
+    // ===== EQUITIES (with spacing before) =====
     const equities = balanceData.filter((r) => r.category === 'equity');
     if (equities.length > 0) {
       sections.push({
@@ -186,10 +171,11 @@ export class FinancialDataTransformer {
         })),
         isCollapsible: false,
         defaultExpanded: true,
+        spacingBefore: 'lg', // Visual break from assets section
       });
     }
 
-    // Add Liabilities section (long-term)
+    // ===== LONG-TERM LIABILITIES =====
     const longTermLiabilities = balanceData.filter(
       (r) => r.category === 'liabilities' && r.subcategory === 'non-current'
     );
@@ -210,7 +196,7 @@ export class FinancialDataTransformer {
       });
     }
 
-    // Add Current Liabilities section
+    // ===== CURRENT LIABILITIES =====
     const currentLiabilities = balanceData.filter(
       (r) => r.category === 'liabilities' && r.subcategory === 'current'
     );
@@ -231,7 +217,7 @@ export class FinancialDataTransformer {
       });
     }
 
-    // Add Total Equities and Liabilities as final section (not as separate header section)
+    // ===== TOTAL EQUITIES AND LIABILITIES (bold row with design system styling) =====
     const totalEL = balanceData.find(
       (r) =>
         r.label.toLowerCase() === 'total equities and liabilities' &&
@@ -245,19 +231,25 @@ export class FinancialDataTransformer {
             label: totalEL.label,
             values: totalEL.values,
             editable: false,
-            isCalculated: !totalEL.editable,
+            isCalculated: true,
             isBold: true,
             isTotal: true,
             type: 'currency' as const,
+            // Design system: bg-teal-50, top border, bold text
+            styling: {
+              rowClass: 'bg-teal-50 border-t-2 border-slate-200',
+              labelClass: 'font-bold text-slate-900',
+            },
           },
         ],
         isCollapsible: false,
         defaultExpanded: true,
-        isSimpleRow: true, // NEW: Flag for simple sections with just one row
+        isSimpleRow: true,
+        spacingAfter: 'lg', // Space before ratios section
       });
     }
 
-    // Add balance sheet ratios as separate collapsible section (orange, expanded by default)
+    // ===== FINANCIAL RATIOS (collapsible, orange, with spacing before) =====
     if (balanceRatios && balanceRatios.length > 0) {
       sections.push({
         title: 'Financial Ratios',
@@ -279,7 +271,7 @@ export class FinancialDataTransformer {
         isCollapsible: true,
         defaultExpanded: true,
         accentColor: 'orange',
-        spacingBefore: true,
+        spacingBefore: 'lg',
       });
     }
 
@@ -488,7 +480,7 @@ export class FinancialDataTransformer {
         isCollapsible: true,
         defaultExpanded: true,
         accentColor: 'orange',
-        spacingBefore: true,
+        spacingBefore: 'md',
       });
     }
 

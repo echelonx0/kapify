@@ -1,243 +1,164 @@
-<!-- src/app/SMEs/profile/steps/financial-analysis/financial-table/financial-data-table-v4.html -->
+<!-- src/app/SMEs/profile/steps/financial-analysis/financial-table/financial-data-table.component.html -->
+
 <div class="space-y-4">
-  <!-- Year Navigation (Only show if more than 3 years and not in edit mode) -->
-  @if (!editMode && columnHeaders.length > 3) {
+  <!-- Year Navigation Bar -->
   <div
-    class="rounded-xl border border-slate-200 bg-white p-4 sticky top-0 z-10 transition-all duration-300"
+    class="flex items-center justify-between bg-white rounded-xl border border-slate-200 px-6 py-4"
   >
-    <div class="flex items-center justify-between gap-4">
-      <!-- Previous Button -->
+    <div class="flex items-center gap-4">
       <button
         (click)="goToPreviousYears()"
         [disabled]="!canGoPrevious()"
-        class="inline-flex items-center justify-center w-10 h-10 rounded-lg font-medium transition-all duration-200 bg-slate-100 text-slate-700 hover:bg-slate-200 disabled:opacity-30 disabled:cursor-not-allowed"
-        title="View previous years"
+        class="px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
       >
-        <span class="text-lg">←</span>
+        ← Previous
       </button>
 
-      <!-- Year Tabs -->
-      <div class="flex-1 overflow-x-auto scrollbar-hide">
-        <div class="flex gap-2 min-w-max px-2">
-          @for (year of visibleYearHeaders(); track trackByHeader($index, year))
-          {
-          <button
-            class="px-4 py-2 rounded-lg text-sm font-semibold whitespace-nowrap transition-all duration-200 border-2"
-            [class]="
-              $index === 0 || $index === visibleYearHeaders().length - 1
-                ? 'bg-teal-50 text-teal-700 border-teal-300/50'
-                : 'bg-white text-slate-700 border-slate-200'
-            "
-            disabled
-          >
-            {{ year }}
-          </button>
-          }
-        </div>
-      </div>
+      <span class="text-sm font-semibold text-slate-900 min-w-32 text-center">
+        {{ yearRangeText() }}
+      </span>
 
-      <!-- Next Button -->
       <button
         (click)="goToNextYears()"
         [disabled]="!canGoNext()"
-        class="inline-flex items-center justify-center w-10 h-10 rounded-lg font-medium transition-all duration-200 bg-slate-100 text-slate-700 hover:bg-slate-200 disabled:opacity-30 disabled:cursor-not-allowed"
-        title="View next years"
+        class="px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
       >
-        <span class="text-lg">→</span>
+        Next →
       </button>
     </div>
 
-    <!-- Year Range Label -->
-    <div class="mt-3 text-center text-xs text-slate-500">
-      Showing {{ yearRangeText() }}
+    <div class="text-xs text-slate-500">
+      Showing {{ visibleYearHeaders().length }} of
+      {{ columnHeaders.length }} years
     </div>
   </div>
+
+  <!-- Sections -->
+  @for (section of sections; track trackBySection($index, section)) {
+
+  <!-- Skip rendering sections with no rows (visual labels were removed) -->
+  @if (section.rows.length > 0) {
+
+  <!-- Spacing Before This Section -->
+  @if (section.spacingBefore) {
+  <div [class]="getSpacingBeforeClasses(section.spacingBefore)"></div>
   }
 
-  <!-- Data Table -->
-  <div class="rounded-xl border border-slate-200 bg-white overflow-hidden">
-    <div class="overflow-x-auto">
-      <table class="w-full border-collapse">
-        <!-- Table Header -->
-        <thead>
-          <tr class="border-b border-slate-200 bg-slate-50/50">
-            <!-- Item Column Header -->
-            <th class="sticky left-0 z-20 px-4 py-3 text-left bg-slate-50/50">
-              <span class="text-sm font-semibold text-slate-900">
-                {{ itemLabel }}
-              </span>
-            </th>
-
-            <!-- Year Column Headers -->
-            @for (header of visibleYearHeaders(); track trackByHeader($index,
-            header)) {
-            <th class="px-4 py-3 text-right min-w-[140px] bg-slate-50/50">
-              <span class="text-sm font-semibold text-slate-900">
-                {{ header }}
-              </span>
-            </th>
-            }
-          </tr>
-        </thead>
-
-        <!-- Table Body -->
-        <tbody>
-          @for (section of sections; track trackBySection($index, section); let
-          sectionIndex = $index) {
-          <!-- Spacing before section -->
-          @if (section.spacingBefore && sectionIndex > 0) {
-          <tr class="h-6 bg-transparent">
-            <td [attr.colspan]="visibleYearHeaders().length + 1"></td>
-          </tr>
+  <!-- Section Container -->
+  <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden">
+    <!-- Section Header (clickable if collapsible) -->
+    <div
+      class="px-6 py-4 border-b border-slate-200 bg-slate-50 flex items-center justify-between"
+      [class.cursor-pointer]="section.isCollapsible"
+      [class.hover:bg-slate-100]="section.isCollapsible"
+      (click)="section.isCollapsible && toggleSection($index)"
+    >
+      <div class="flex items-center gap-3">
+        <!-- Collapse Icon (only if collapsible) -->
+        @if (section.isCollapsible) {
+        <button
+          (click)="toggleSection($index); $event.stopPropagation()"
+          class="p-1 hover:bg-slate-200 rounded transition-colors"
+          [attr.aria-expanded]="!isSectionCollapsed($index)"
+        >
+          @if (isSectionCollapsed($index)) {
+          <lucide-icon
+            [name]="ChevronRightIcon"
+            [size]="18"
+            class="text-slate-600"
+          />
+          } @else {
+          <lucide-icon
+            [name]="ChevronDownIcon"
+            [size]="18"
+            class="text-slate-600"
+          />
           }
+        </button>
+        }
 
-          <!-- Visual Label Section (No rows, clean styling) -->
-          @if (isVisualLabel(section)) {
-          <tr class="border-b border-slate-200 bg-slate-50">
-            <td
-              class="sticky left-0 z-10 px-4 py-3"
-              [attr.colspan]="visibleYearHeaders().length + 1"
-            >
-              <span
-                class="text-sm font-bold uppercase tracking-wide text-slate-900"
-              >
-                {{ section.title }}
-              </span>
-            </td>
-          </tr>
-          }
-          <!-- Section Header Row (Collapsible) -->
-          @else if (section.isCollapsible) {
-          <tr
-            [class]="getSectionHeaderClasses(section)"
-            class="cursor-pointer transition-all duration-200 hover:bg-slate-100"
-            (click)="toggleSection(sectionIndex)"
-          >
-            <td
-              class="sticky left-0 z-10 px-4 py-3"
-              [attr.colspan]="visibleYearHeaders().length + 1"
-            >
-              <div class="flex items-center gap-2">
-                <lucide-icon
-                  [name]="
-                    isSectionCollapsed(sectionIndex)
-                      ? ChevronRightIcon
-                      : ChevronDownIcon
-                  "
-                  [size]="16"
-                  [class]="getSectionIconColor()"
-                />
-                <span
-                  class="text-sm font-semibold text-slate-900 uppercase tracking-wide"
-                >
-                  {{ section.title }}
-                </span>
-              </div>
-            </td>
-          </tr>
-          }
-          <!-- Regular Section Header (Non-collapsible) -->
-          @else {
-          <tr [class]="getSectionHeaderClasses(section)">
-            <td
-              class="sticky left-0 z-10 px-4 py-3"
-              [attr.colspan]="visibleYearHeaders().length + 1"
-            >
-              <span class="text-sm font-semibold text-slate-900">
-                {{ section.title }}
-              </span>
-            </td>
-          </tr>
-          }
+        <!-- Section Title -->
+        <h3 class="text-base font-semibold text-slate-900">
+          {{ section.title }}
+        </h3>
 
-          <!-- Section Rows -->
-          @if (!section.isCollapsible || !isSectionCollapsed(sectionIndex)) {
-          @for (row of section.rows; track trackByRow($index, row); let rowIndex
-          = $index) {
-          <tr
-            class="border-b border-slate-200 transition-colors duration-200 hover:opacity-80"
-            [class]="getRowClasses(row)"
-          >
-            <!-- Row Label -->
-            <td
-              class="sticky left-0 z-10 px-4 py-3 text-sm bg-white text-slate-900"
-            >
-              <div class="flex items-center gap-2">
-                <span [class.font-semibold]="row.isBold || row.isTotal">
-                  {{ row.label }}
-                </span>
-
-                @if (row.isCalculated) {
-                <lucide-icon
-                  [name]="LockIcon"
-                  [size]="14"
-                  class="text-slate-400"
-                  title="Auto-calculated field"
-                />
-                }
-              </div>
-            </td>
-
-            <!-- Data Cells -->
-            @for (value of getVisibleRowValues(row.values); track
-            trackByHeader($index, visibleYearHeaders()[$index]); let
-            visibleColIndex = $index) {
-            <td class="px-4 py-3 min-w-[140px] text-right">
-              @if (isRowEditable(row)) {
-              <!-- Editable Input -->
-              <input
-                type="text"
-                [value]="formatNumber(value, row)"
-                (blur)="
-                  onCellChange(sectionIndex, rowIndex, visibleColIndex, $event)
-                "
-                (focus)="onInputFocus($event)"
-                (keydown.enter)="onEnterKey($event)"
-                class="w-full px-3 py-2 rounded-lg border border-slate-200 bg-white text-slate-900 text-right font-mono focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200"
-                style="font-size: 14px"
-              />
-              } @else {
-              <!-- Read-Only Display -->
-              <div
-                [class]="getCellClasses(row, value)"
-                class="px-3 py-2 text-sm font-mono"
-              >
-                @if (value < 0) {
-                <span class="text-red-700"
-                  >({{ formatNumber(Math.abs(value), row) }})</span
-                >
-                } @else {
-                <span class="text-slate-700">{{
-                  formatNumber(value, row)
-                }}</span>
-                }
-              </div>
-              }
-            </td>
-            }
-          </tr>
-          } } }
-        </tbody>
-      </table>
-
-      <!-- Empty State -->
-      @if (sections.length === 0) {
-      <div class="text-center py-12 text-slate-500">
-        <p class="text-sm">No data available</p>
+        <!-- Accent Color Indicator (for ratios) -->
+        @if (section.accentColor === 'orange') {
+        <div class="ml-2 w-2 h-2 rounded-full bg-amber-500"></div>
+        }
       </div>
-      }
     </div>
+
+    <!-- Section Rows (shown unless collapsed) -->
+    @if (!isSectionCollapsed($index)) {
+    <table class="w-full">
+      <!-- Column Headers -->
+      <thead class="bg-white">
+        <tr class="border-b border-slate-200">
+          <th
+            class="text-left px-6 py-3 font-semibold text-slate-900 text-sm"
+          ></th>
+
+          @for (header of visibleYearHeaders(); track trackByHeader($index,
+          header)) {
+          <th
+            class="text-right px-4 py-3 font-semibold text-slate-900 text-sm min-w-24"
+          >
+            {{ header }}
+          </th>
+          }
+        </tr>
+      </thead>
+
+      <!-- Data Rows -->
+      <tbody>
+        @for (row of section.rows; track trackByRow($index, row)) {
+        <tr [class]="getRowClasses(row, true)">
+          <!-- Label Cell -->
+          <td [class]="'px-6 py-3 text-left ' + getLabelClasses(row)">
+            <div class="flex items-center gap-2">
+              <span class="flex-1">{{ row.label }}</span>
+
+              <!-- Lock Icon for Non-Editable Rows -->
+              @if (!row.editable || row.isCalculated) {
+              <lucide-icon
+                [name]="LockIcon"
+                [size]="16"
+                class="text-slate-400 flex-shrink-0"
+              />
+              }
+            </div>
+          </td>
+
+          <!-- Data Cells -->
+          @for (value of getVisibleRowValues(row.values); track
+          trackByHeader($index, $index.toString())) {
+          <td [class]="getCellClasses(row, value)">
+            @if (isRowEditable(row)) {
+            <!-- Editable Input -->
+            <input
+              type="text"
+              [value]="formatNumber(value, row)"
+              (change)="onCellChange($index, $index, $index, $event)"
+              (focus)="onInputFocus($event)"
+              (keydown.enter)="onEnterKey($event)"
+              class="w-full text-right px-2 py-1 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white hover:border-slate-300 transition-colors"
+            />
+            } @else {
+            <!-- Read-Only Display -->
+            <span>{{ formatNumber(value, row) }}</span>
+            }
+          </td>
+          }
+        </tr>
+        }
+      </tbody>
+    </table>
+    }
   </div>
+
+  <!-- Spacing After This Section -->
+  @if (section.spacingAfter) {
+  <div [class]="getSpacingAfterClasses(section.spacingAfter)"></div>
+  } } }
 </div>
-
-<!-- Scrollbar Hide Utility -->
-<style>
-  .scrollbar-hide {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-  }
-
-  .scrollbar-hide::-webkit-scrollbar {
-    display: none;
-  }
-</style>

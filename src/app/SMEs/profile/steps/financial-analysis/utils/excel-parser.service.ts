@@ -72,12 +72,6 @@ export class ExcelFinancialParserService {
     file: File,
     onProgress?: (progress: ParseProgress) => void
   ): Promise<ParsedFinancialData> {
-    // this.log(
-    //   '🔄 Starting Excel parse for:',
-    //   file.name,
-    //   `(${this.formatBytes(file.size)})`
-    // );
-
     // Stage 1: Read file
     onProgress?.({
       stage: 'reading',
@@ -193,14 +187,6 @@ export class ExcelFinancialParserService {
       message: 'Parse complete!',
     });
 
-    // this.log('✅ Parse successful:', {
-    //   incomeRows: parsedData.incomeStatement.length,
-    //   ratioRows: parsedData.financialRatios.length,
-    //   balanceSheetRows: parsedData.balanceSheet?.length || 0,
-    //   cashFlowRows: parsedData.cashFlow?.length || 0,
-    //   headers: parsedData.columnHeaders,
-    // });
-
     return parsedData;
   }
 
@@ -294,9 +280,6 @@ export class ExcelFinancialParserService {
     return { incomeStatement, incomeRatios, columnHeaders };
   }
 
-  // FIXED: parseBalanceSheetSheet - EXACT TEMPLATE MAPPING
-  // Replace the existing parseBalanceSheetSheet method in excel-parser.service.ts with this version
-
   /**
    * Parse Balance Sheet sheet (EXACT TEMPLATE MAPPING)
    * Template structure from financial_template.xlsx:
@@ -325,8 +308,6 @@ export class ExcelFinancialParserService {
     const balanceSheet: BalanceSheetRowData[] = [];
     const balanceSheetRatios: FinancialRatioData[] = [];
     const colCount = expectedColCount || EXPECTED_COLUMN_COUNT;
-
-    //  this.log('📊 Parsing Balance Sheet (Direct Template Mapping)...');
 
     // ===== ASSETS SECTION =====
     // Non-Current Assets Header (Row 5)
@@ -512,9 +493,6 @@ export class ExcelFinancialParserService {
 
     return { balanceSheet, balanceSheetRatios };
   }
-
-  // FIXED: parseCashFlowSheet - CORRECT TEMPLATE MAPPING
-  // Replace the existing parseCashFlowSheet method in excel-parser.service.ts
 
   /**
    * Parse Cash Flow sheet (EXACT TEMPLATE MAPPING)

@@ -25,6 +25,11 @@ export interface FinancialTableRow {
   isTotal?: boolean;
   type?: 'currency' | 'percentage' | 'ratio';
   suffix?: string;
+  // Design system styling for custom row styling (e.g., total rows with teal-50 bg)
+  styling?: {
+    rowClass?: string; // Custom row classes (e.g., 'bg-teal-50 border-t-2 border-slate-200')
+    labelClass?: string; // Custom label classes (e.g., 'font-bold text-slate-900')
+  };
 }
 
 export interface FinancialTableSection {
@@ -34,7 +39,9 @@ export interface FinancialTableSection {
   defaultExpanded?: boolean;
   collapsed?: boolean;
   accentColor?: 'orange' | 'teal';
-  spacingBefore?: boolean;
+  // Spacing control: 'sm' | 'md' | 'lg' (or undefined for no spacing)
+  spacingBefore?: 'sm' | 'md' | 'lg';
+  spacingAfter?: 'sm' | 'md' | 'lg';
   isVisualLabel?: boolean; // Visual label only (no rows)
   isSimpleRow?: boolean; // Section with single bold row (like totals)
 }
@@ -153,6 +160,32 @@ export class FinancialDataTableComponent implements OnInit {
     return section.isSimpleRow === true;
   }
 
+  /**
+   * Get spacing classes for section (margin-top)
+   */
+  getSpacingBeforeClasses(spacing?: 'sm' | 'md' | 'lg'): string {
+    if (!spacing) return '';
+    const spacingMap = {
+      sm: 'mt-2',
+      md: 'mt-4',
+      lg: 'mt-6',
+    };
+    return spacingMap[spacing] || '';
+  }
+
+  /**
+   * Get spacing classes for section (margin-bottom)
+   */
+  getSpacingAfterClasses(spacing?: 'sm' | 'md' | 'lg'): string {
+    if (!spacing) return '';
+    const spacingMap = {
+      sm: 'mb-2',
+      md: 'mb-4',
+      lg: 'mb-6',
+    };
+    return spacingMap[spacing] || '';
+  }
+
   getSectionHeaderClasses(section: FinancialTableSection): string {
     const classes: string[] = [
       'border-b',
@@ -233,8 +266,54 @@ export class FinancialDataTableComponent implements OnInit {
     return this.editMode;
   }
 
+  /**
+   * Get row classes including custom styling from transformer
+   */
+  getRowClasses(row: FinancialTableRow, isDataRow: boolean = true): string {
+    const classes: string[] = [];
+
+    // Apply custom styling from transformer (e.g., for total rows)
+    if (row.styling?.rowClass) {
+      classes.push(row.styling.rowClass);
+      // Return early if custom styling provided (it handles all styling)
+      return classes.join(' ');
+    }
+
+    // Default styling for data rows
+    if (isDataRow) {
+      classes.push('border-b', 'transition-colors', 'duration-200');
+
+      if (row.isTotal) {
+        classes.push('bg-teal-50', 'border-t-2', 'border-slate-200');
+      }
+
+      if (row.isCalculated) {
+        classes.push('bg-teal-50/30');
+      }
+    }
+
+    return classes.join(' ');
+  }
+
+  /**
+   * Get label classes including custom styling from transformer
+   */
+  getLabelClasses(row: FinancialTableRow): string {
+    // Apply custom styling from transformer
+    if (row.styling?.labelClass) {
+      return row.styling.labelClass;
+    }
+
+    // Default label styling
+    const classes: string[] = ['px-4', 'py-3'];
+    if (row.isBold || row.isTotal) {
+      classes.push('font-semibold');
+    }
+    return classes.join(' ');
+  }
+
   getCellClasses(row: FinancialTableRow, value: number): string {
-    const classes: string[] = ['text-right'];
+    const classes: string[] = ['text-right', 'px-4', 'py-3'];
 
     if (row.isBold || row.isTotal) {
       classes.push('font-semibold');
@@ -246,20 +325,6 @@ export class FinancialDataTableComponent implements OnInit {
       classes.push('text-slate-900');
     } else {
       classes.push('text-slate-700');
-    }
-
-    return classes.join(' ');
-  }
-
-  getRowClasses(row: FinancialTableRow): string {
-    const classes: string[] = ['border-b', 'transition-colors', 'duration-200'];
-
-    if (row.isTotal) {
-      classes.push('bg-slate-50', 'border-t-2', 'border-slate-300');
-    }
-
-    if (row.isCalculated) {
-      classes.push('bg-teal-50/30');
     }
 
     return classes.join(' ');
