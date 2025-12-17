@@ -95,74 +95,10 @@ export class FundingProfileBackendService {
     return this.loadFromSupabase(organizationId);
   }
 
-  /**
-   * Load profile for specific organization
-   */
-  // private async loadFromSupabase(
-  //   organizationId: string
-  // ): Promise<FundingApplicationProfile> {
-  //   try {
-  //     console.log(`🔍 Loading profile for organization: ${organizationId}`);
-
-  //     const { data: sections, error } = await this.supabase
-  //       .from('business_plan_sections')
-  //       .select('*')
-  //       .eq('organization_id', organizationId)
-  //       .order('updated_at', { ascending: false });
-
-  //     if (error) {
-  //       throw new Error(`Supabase error: ${error.message}`);
-  //     }
-
-  //     const applicationData: FundingApplicationProfile = {};
-
-  //     sections?.forEach((section: any) => {
-  //       switch (section.section_type) {
-  //         case 'company-info':
-  //           applicationData.companyInfo = section.data;
-  //           break;
-  //         case 'documents':
-  //           applicationData.supportingDocuments = section.data;
-  //           break;
-  //         case 'business-assessment':
-  //           applicationData.businessAssessment = section.data;
-  //           break;
-  //         case 'swot-analysis':
-  //           applicationData.swotAnalysis = section.data;
-  //           break;
-  //         case 'management':
-  //           applicationData.managementStructure = section.data;
-  //           break;
-  //         case 'business-strategy':
-  //           applicationData.businessStrategy = section.data;
-  //           break;
-  //         case 'financial-profile':
-  //           applicationData.financialProfile = section.data;
-  //           break;
-  //         // ✅ ADD THIS
-  //         case 'financial-analysis':
-  //           applicationData.financialAnalysis = section.data;
-  //           break;
-  //       }
-  //     });
-
-  //     console.log(`✅ Profile loaded for org: ${organizationId}`);
-  //     return applicationData;
-  //   } catch (error) {
-  //     console.error('Error loading from Supabase:', error);
-  //     throw error;
-  //   }
-  // }
-
   private async loadFromSupabase(
     organizationId: string
   ): Promise<FundingApplicationProfile> {
     try {
-      console.log(
-        '📂 [BACKEND] Loading profile for organization:',
-        organizationId
-      );
-
       const { data: sections, error } = await this.supabase
         .from('business_plan_sections')
         .select('*')
@@ -186,8 +122,11 @@ export class FundingProfileBackendService {
 
         switch (section.section_type) {
           case 'company-info':
+            console.log('🏢 [LOAD] company-info data:', section.data);
+            console.log('🏢 [LOAD] ownership field:', section.data?.ownership);
             applicationData.companyInfo = section.data;
             break;
+
           case 'documents':
             applicationData.supportingDocuments = section.data;
             break;

@@ -48,7 +48,7 @@ import {
 export class CompanyInfoComponent implements OnInit, OnDestroy {
   private fundingApplicationService = inject(FundingProfileSetupService);
   private fb = inject(FormBuilder);
-
+  private cachedCompanyInfo: any = null;
   // Forms
   adminForm: FormGroup;
   shareholderForm: FormGroup | undefined;
@@ -202,6 +202,7 @@ export class CompanyInfoComponent implements OnInit, OnDestroy {
     if (existingData) {
       this.populateAdminForm(existingData);
       this.loadShareholderData(existingData);
+      this.cachedCompanyInfo = existingData;
     }
   }
 
@@ -352,11 +353,14 @@ export class CompanyInfoComponent implements OnInit, OnDestroy {
       businessPhone: formValue.businessPhone || undefined,
       bbbeeLevel: formValue.bbbeeLevel || undefined,
 
-      ownership: this.shareholders().map((shareholder) => ({
-        ownerName: shareholder.fullName,
-        ownershipPercentage: shareholder.currentShareholding,
-        role: 'Shareholder',
-      })),
+      ownership:
+        this.shareholders().length > 0
+          ? this.shareholders().map((shareholder) => ({
+              ownerName: shareholder.fullName,
+              ownershipPercentage: shareholder.currentShareholding,
+              role: 'Shareholder',
+            }))
+          : this.cachedCompanyInfo?.ownership || [],
 
       registeredAddress: address,
       operationalAddress: address,

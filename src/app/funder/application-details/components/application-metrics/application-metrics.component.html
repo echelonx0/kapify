@@ -95,7 +95,10 @@
 
   <!-- BUSINESS INFO TAB - NOW USING STANDALONE COMPONENT -->
   @if (activeTab() === 'business') {
-  <app-business-info [profileData]="profileData"></app-business-info>
+  <app-business-info
+    [profileData]="profileData"
+    [rawProfileData]="rawProfileData"
+  ></app-business-info>
   }
 
   <!-- FINANCIAL INFO TAB -->

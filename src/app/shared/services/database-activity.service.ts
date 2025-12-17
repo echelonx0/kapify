@@ -2,7 +2,7 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { Observable, from, throwError, BehaviorSubject } from 'rxjs';
 import { tap, catchError } from 'rxjs/operators';
- 
+
 import { AuthService } from '../../auth/production.auth.service';
 import { SharedSupabaseService } from './shared-supabase.service';
 
@@ -11,7 +11,15 @@ export interface Activity {
   id: string;
   userId: string;
   organizationId?: string;
-  type: 'funding' | 'partnership' | 'milestone' | 'system' | 'application' | 'profile' | 'document' | 'verification';
+  type:
+    | 'funding'
+    | 'partnership'
+    | 'milestone'
+    | 'system'
+    | 'application'
+    | 'profile'
+    | 'document'
+    | 'verification';
   action: string; // More specific action like 'created', 'updated', 'submitted'
   message: string;
   entityType?: string; // What was acted upon: 'application', 'opportunity', 'profile'
@@ -58,14 +66,12 @@ export class DatabaseActivityService {
   // State management
   isLoading = signal(false);
   error = signal<string | null>(null);
-  
+
   // Reactive data streams
   private activitiesSubject = new BehaviorSubject<Activity[]>([]);
   activities$ = this.activitiesSubject.asObservable();
 
-  constructor() {
-     
-  }
+  constructor() {}
 
   // ===============================
   // GET ACTIVITIES
@@ -79,11 +85,11 @@ export class DatabaseActivityService {
     this.error.set(null);
 
     return from(this.fetchActivitiesFromDatabase(limit)).pipe(
-      tap(activities => {
+      tap((activities) => {
         this.activitiesSubject.next(activities);
         this.isLoading.set(false);
       }),
-      catchError(error => {
+      catchError((error) => {
         this.error.set('Failed to load activities');
         this.isLoading.set(false);
         console.error('Load activities error:', error);
@@ -95,13 +101,16 @@ export class DatabaseActivityService {
   /**
    * Get activities with pagination
    */
-  getActivitiesPaged(page: number, pageSize: number): Observable<{
+  getActivitiesPaged(
+    page: number,
+    pageSize: number
+  ): Observable<{
     activities: Activity[];
     total: number;
     hasMore: boolean;
   }> {
     return from(this.fetchActivitiesPaged(page, pageSize)).pipe(
-      catchError(error => {
+      catchError((error) => {
         this.error.set('Failed to load paginated activities');
         console.error('Load paginated activities error:', error);
         return throwError(() => error);
@@ -114,7 +123,7 @@ export class DatabaseActivityService {
    */
   getActivityById(id: string): Observable<Activity | null> {
     return from(this.fetchActivityById(id)).pipe(
-      catchError(error => {
+      catchError((error) => {
         this.error.set('Failed to load activity details');
         console.error('Fetch activity error:', error);
         return throwError(() => error);
@@ -141,12 +150,12 @@ export class DatabaseActivityService {
     metadata?: Record<string, any>;
   }): Observable<Activity> {
     return from(this.insertActivity(activityData)).pipe(
-      tap(newActivity => {
+      tap((newActivity) => {
         // Update local cache
         const currentActivities = this.activitiesSubject.value;
         this.activitiesSubject.next([newActivity, ...currentActivities]);
       }),
-      catchError(error => {
+      catchError((error) => {
         this.error.set('Failed to create activity');
         console.error('Create activity error:', error);
         return throwError(() => error);
@@ -162,7 +171,13 @@ export class DatabaseActivityService {
    * Track application-related activities
    */
   trackApplicationActivity(
-    action: 'created' | 'updated' | 'submitted' | 'approved' | 'rejected' | 'withdrawn',
+    action:
+      | 'created'
+      | 'updated'
+      | 'submitted'
+      | 'approved'
+      | 'rejected'
+      | 'withdrawn',
     applicationId: string,
     message: string,
     amount?: number
@@ -174,10 +189,11 @@ export class DatabaseActivityService {
       entityType: 'application',
       entityId: applicationId,
       amount,
-      status: 'completed'
+      status: 'completed',
     }).subscribe({
-      next: () => console.log(`Application activity tracked: ${action}`),
-      error: (error) => console.error('Failed to track application activity:', error)
+      // next: () => console.log(`Application activity tracked: ${action}`),
+      error: (error) =>
+        console.error('Failed to track application activity:', error),
     });
   }
 
@@ -199,10 +215,11 @@ export class DatabaseActivityService {
       entityId,
       amount,
       method,
-      status: 'completed'
+      status: 'completed',
     }).subscribe({
-      next: () => console.log(`Funding activity tracked: ${action}`),
-      error: (error) => console.error('Failed to track funding activity:', error)
+      // next: () => console.log(`Funding activity tracked: ${action}`),
+      error: (error) =>
+        console.error('Failed to track funding activity:', error),
     });
   }
 
@@ -220,10 +237,11 @@ export class DatabaseActivityService {
       message,
       entityType: 'profile',
       metadata: profileSection ? { section: profileSection } : undefined,
-      status: 'completed'
+      status: 'completed',
     }).subscribe({
-      next: () => console.log(`Profile activity tracked: ${action}`),
-      error: (error) => console.error('Failed to track profile activity:', error)
+      // next: () => console.log(`Profile activity tracked: ${action}`),
+      error: (error) =>
+        console.error('Failed to track profile activity:', error),
     });
   }
 
@@ -243,10 +261,11 @@ export class DatabaseActivityService {
       entityType: 'document',
       entityId: documentId,
       metadata: documentType ? { documentType } : undefined,
-      status: 'completed'
+      status: 'completed',
     }).subscribe({
-      next: () => console.log(`Document activity tracked: ${action}`),
-      error: (error) => console.error('Failed to track document activity:', error)
+      // next: () => console.log(`Document activity tracked: ${action}`),
+      error: (error) =>
+        console.error('Failed to track document activity:', error),
     });
   }
 
@@ -263,10 +282,11 @@ export class DatabaseActivityService {
       action,
       message,
       metadata,
-      status: 'completed'
+      status: 'completed',
     }).subscribe({
-      next: () => console.log(`System activity tracked: ${action}`),
-      error: (error) => console.error('Failed to track system activity:', error)
+      // next: () => console.log(`System activity tracked: ${action}`),
+      error: (error) =>
+        console.error('Failed to track system activity:', error),
     });
   }
 
@@ -274,7 +294,9 @@ export class DatabaseActivityService {
   // DATABASE OPERATIONS
   // ===============================
 
-  private async fetchActivitiesFromDatabase(limit: number): Promise<Activity[]> {
+  private async fetchActivitiesFromDatabase(
+    limit: number
+  ): Promise<Activity[]> {
     try {
       const currentUser = this.authService.user();
       if (!currentUser) {
@@ -293,7 +315,9 @@ export class DatabaseActivityService {
 
       // Filter by user ID and optionally organization ID
       if (organizationId) {
-        query = query.or(`user_id.eq.${currentUser.id},organization_id.eq.${organizationId}`);
+        query = query.or(
+          `user_id.eq.${currentUser.id},organization_id.eq.${organizationId}`
+        );
       } else {
         query = query.eq('user_id', currentUser.id);
       }
@@ -304,15 +328,17 @@ export class DatabaseActivityService {
         throw new Error(`Failed to fetch activities: ${error.message}`);
       }
 
-      console.log(`Fetched ${data?.length || 0} activities`);
-      return data?.map(item => this.transformDatabaseToLocal(item)) || [];
+      return data?.map((item) => this.transformDatabaseToLocal(item)) || [];
     } catch (error) {
       console.error('Error fetching activities:', error);
       throw error;
     }
   }
 
-  private async fetchActivitiesPaged(page: number, pageSize: number): Promise<{
+  private async fetchActivitiesPaged(
+    page: number,
+    pageSize: number
+  ): Promise<{
     activities: Activity[];
     total: number;
     hasMore: boolean;
@@ -332,7 +358,9 @@ export class DatabaseActivityService {
         .select('*', { count: 'exact', head: true });
 
       if (organizationId) {
-        countQuery = countQuery.or(`user_id.eq.${currentUser.id},organization_id.eq.${organizationId}`);
+        countQuery = countQuery.or(
+          `user_id.eq.${currentUser.id},organization_id.eq.${organizationId}`
+        );
       } else {
         countQuery = countQuery.eq('user_id', currentUser.id);
       }
@@ -351,7 +379,9 @@ export class DatabaseActivityService {
         .range(offset, offset + pageSize - 1);
 
       if (organizationId) {
-        dataQuery = dataQuery.or(`user_id.eq.${currentUser.id},organization_id.eq.${organizationId}`);
+        dataQuery = dataQuery.or(
+          `user_id.eq.${currentUser.id},organization_id.eq.${organizationId}`
+        );
       } else {
         dataQuery = dataQuery.eq('user_id', currentUser.id);
       }
@@ -359,10 +389,13 @@ export class DatabaseActivityService {
       const { data, error } = await dataQuery;
 
       if (error) {
-        throw new Error(`Failed to fetch paginated activities: ${error.message}`);
+        throw new Error(
+          `Failed to fetch paginated activities: ${error.message}`
+        );
       }
 
-      const activities = data?.map(item => this.transformDatabaseToLocal(item)) || [];
+      const activities =
+        data?.map((item) => this.transformDatabaseToLocal(item)) || [];
       const total = count || 0;
       const hasMore = offset + pageSize < total;
 
@@ -387,7 +420,8 @@ export class DatabaseActivityService {
         .single();
 
       if (error) {
-        if (error.code === 'PGRST116') { // No rows returned
+        if (error.code === 'PGRST116') {
+          // No rows returned
           return null;
         }
         throw new Error(`Failed to fetch activity: ${error.message}`);
@@ -430,7 +464,7 @@ export class DatabaseActivityService {
         amount: activityData.amount,
         status: activityData.status || 'completed',
         method: activityData.method,
-        metadata: activityData.metadata
+        metadata: activityData.metadata,
       };
 
       const { data, error } = await this.supabase
@@ -460,13 +494,13 @@ export class DatabaseActivityService {
           .eq('user_id', userId)
           .eq('status', 'active')
           .single(),
-        
+
         this.supabase
           .from('funder_organizations')
           .select('id')
           .eq('user_id', userId)
           .eq('status', 'active')
-          .single()
+          .single(),
       ]);
 
       // Return whichever organization exists (SME takes precedence)
@@ -489,7 +523,7 @@ export class DatabaseActivityService {
 
   private transformDatabaseToLocal(dbActivity: any): Activity {
     const userData = dbActivity.users?.raw_user_meta_data || {};
-    
+
     return {
       id: dbActivity.id,
       userId: dbActivity.user_id,
@@ -507,10 +541,12 @@ export class DatabaseActivityService {
       updatedAt: new Date(dbActivity.updated_at),
       user: {
         id: dbActivity.users?.id || dbActivity.user_id,
-        name: `${userData.firstName || ''} ${userData.lastName || ''}`.trim() || 'Unknown User',
+        name:
+          `${userData.firstName || ''} ${userData.lastName || ''}`.trim() ||
+          'Unknown User',
         email: userData.email || dbActivity.users?.email || '',
-        avatarUrl: userData.avatarUrl
-      }
+        avatarUrl: userData.avatarUrl,
+      },
     };
   }
 
@@ -522,7 +558,9 @@ export class DatabaseActivityService {
    * Format amount for display in Rand
    */
   formatAmount(amount: number): string {
-    return `R${(Math.abs(amount) / 100).toLocaleString(undefined, { minimumFractionDigits: 2 })}`;
+    return `R${(Math.abs(amount) / 100).toLocaleString(undefined, {
+      minimumFractionDigits: 2,
+    })}`;
   }
 
   /**
@@ -550,16 +588,16 @@ export class DatabaseActivityService {
    */
   getActivityTypeDisplayName(type: Activity['type']): string {
     const typeMap: Record<Activity['type'], string> = {
-      'funding': 'Funding',
-      'partnership': 'Partnership',
-      'milestone': 'Milestone',
-      'system': 'System',
-      'application': 'Application',
-      'profile': 'Profile',
-      'document': 'Document',
-      'verification': 'Verification'
+      funding: 'Funding',
+      partnership: 'Partnership',
+      milestone: 'Milestone',
+      system: 'System',
+      application: 'Application',
+      profile: 'Profile',
+      document: 'Document',
+      verification: 'Verification',
     };
-    
+
     return typeMap[type] || 'Activity';
   }
 
@@ -568,16 +606,16 @@ export class DatabaseActivityService {
    */
   getActivityTypeColor(type: Activity['type']): string {
     const colorMap: Record<Activity['type'], string> = {
-      'funding': 'green',
-      'partnership': 'blue',
-      'milestone': 'purple',
-      'system': 'gray',
-      'application': 'orange',
-      'profile': 'cyan',
-      'document': 'yellow',
-      'verification': 'teal'
+      funding: 'green',
+      partnership: 'blue',
+      milestone: 'purple',
+      system: 'gray',
+      application: 'orange',
+      profile: 'cyan',
+      document: 'yellow',
+      verification: 'teal',
     };
-    
+
     return colorMap[type] || 'gray';
   }
 

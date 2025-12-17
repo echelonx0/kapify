@@ -22,7 +22,7 @@ export class FundingProfileSetupService implements OnDestroy {
   private readonly authService = inject(AuthService);
   private readonly utilityService = inject(FundingApplicationUtilityService);
   private readonly supabase = inject(SharedSupabaseService);
-
+  private cachedCompanyInfo: any = null;
   // ===== ORGANIZATION CONTEXT =====
   currentOrganization = signal<string | null>(null);
   currentSlug = signal<string | null>(null);
