@@ -9,10 +9,9 @@
 // } from '@angular/core';
 // import { CommonModule } from '@angular/common';
 // import { FormsModule } from '@angular/forms';
-// import { LucideAngularModule, X, AlertCircle } from 'lucide-angular';
-// import { StripeService } from '../../services/stripe.service';
+// import { LucideAngularModule, X, AlertCircle, Loader } from 'lucide-angular';
+// import { PaystackService } from '../../services/paystack.service';
 // import { DatabaseActivityService } from 'src/app/shared/services/database-activity.service';
-// import { AuthService } from 'src/app/auth/production.auth.service';
 
 // @Component({
 //   selector: 'app-purchase-credits-modal',
@@ -138,14 +137,16 @@
 //               Cancel
 //             </button>
 //             <button
-//               (click)="handleCheckout()"
+//               (click)="handlePayment()"
 //               class="flex-1 px-4 py-2.5 bg-teal-500 text-white font-medium rounded-xl hover:bg-teal-600 active:bg-teal-700 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
 //               [disabled]="!isValidAmount() || isProcessing()"
 //             >
 //               @if (isProcessing()) {
-//               <div
-//                 class="w-4 h-4 rounded-full border-2 border-white border-t-teal-300 animate-spin"
-//               ></div>
+//               <lucide-icon
+//                 [img]="LoaderIcon"
+//                 [size]="16"
+//                 class="animate-spin"
+//               />
 //               <span>Processing...</span>
 //               } @else {
 //               <span>Continue to Payment</span>
@@ -176,12 +177,12 @@
 //   @Output() close = new EventEmitter<void>();
 //   @Output() success = new EventEmitter<void>();
 
-//   private stripeService = inject(StripeService);
+//   private paystackService = inject(PaystackService);
 //   private activityService = inject(DatabaseActivityService);
-//   private authService = inject(AuthService);
 
 //   XIcon = X;
 //   AlertIcon = AlertCircle;
+//   LoaderIcon = Loader;
 
 //   creditAmount = 50000;
 //   isProcessing = signal(false);
@@ -210,7 +211,7 @@
 //         type: 'system',
 //         action: 'credit_purchase_initiated',
 //         message: 'User opened purchase modal',
-//         metadata: { step: 'intent' },
+//         metadata: { step: 'intent', provider: 'paystack' },
 //       })
 //       .subscribe({
 //         error: (err) => console.warn('Failed to track purchase intent:', err),
@@ -218,9 +219,13 @@
 //   }
 
 //   /**
-//    * Track successful credit purchase (completion)
+//    * Track successful credit purchase
 //    */
-//   private trackPurchaseCompleted(creditAmount: number, costZAR: number): void {
+//   private trackPurchaseCompleted(
+//     creditAmount: number,
+//     costZAR: number,
+//     reference: string
+//   ): void {
 //     this.activityService
 //       .createActivity({
 //         type: 'system',
@@ -231,8 +236,10 @@
 //         amount: creditAmount,
 //         metadata: {
 //           step: 'completion',
+//           provider: 'paystack',
 //           creditsPurchased: creditAmount,
 //           costZAR: costZAR,
+//           paystackReference: reference,
 //         },
 //       })
 //       .subscribe({
@@ -252,6 +259,7 @@
 //         message: `Payment failed: ${errorMessage}`,
 //         metadata: {
 //           step: 'failed',
+//           provider: 'paystack',
 //           error: errorMessage,
 //         },
 //       })
@@ -293,7 +301,7 @@
 //     }
 //   }
 
-//   async handleCheckout(): Promise<void> {
+//   async handlePayment(): Promise<void> {
 //     if (!this.isValidAmount()) {
 //       this.error.set(
 //         `Minimum ${this.formatNumber(this.minCredits)} credits required`
@@ -311,49 +319,93 @@
 //     this.error.set(null);
 
 //     try {
-//       const result = await this.stripeService.createCheckoutSession({
+//       // Step 1: Initialize transaction on backend
+//       // console.log('📝 Initializing payment...');
+//       const initResult = await this.paystackService.initializeTransaction({
 //         organizationId: this.organizationId,
 //         creditAmount: this.creditAmount,
 //         amountZAR: this.totalCostZAR,
 //       });
 
-//       if (result.success && result.sessionId && result.publicKey) {
-//         try {
-//           // Track successful payment
-//           this.trackPurchaseCompleted(this.creditAmount, this.totalCostZAR);
-
-//           // Redirect to checkout
-//           await this.stripeService.redirectToCheckout(
-//             result.sessionId,
-//             result.publicKey
-//           );
-
-//           // Emit success after redirect
-//           this.success.emit();
-//           this.close.emit();
-//         } catch (redirectErr) {
-//           const errorMsg =
-//             redirectErr instanceof Error
-//               ? redirectErr.message
-//               : 'Failed to redirect to payment';
-//           this.error.set(errorMsg);
-//           this.trackPurchaseFailed(errorMsg);
-//           this.isProcessing.set(false);
-//         }
-//       } else {
-//         const errorMsg = result.error || 'Failed to create checkout session';
+//       if (!initResult.success || !initResult.accessCode) {
+//         const errorMsg = initResult.error || 'Failed to initialize payment';
+//         console.error('❌ Init failed:', errorMsg);
 //         this.error.set(errorMsg);
 //         this.trackPurchaseFailed(errorMsg);
 //         this.isProcessing.set(false);
+//         return;
 //       }
+
+//       //  console.log('✅ Payment initialized, opening Paystack popup...');
+
+//       // Step 2: Open Paystack Popup
+//       let reference: string;
+//       try {
+//         reference = await this.paystackService.openPaystackPopup(
+//           initResult.accessCode
+//         );
+//       } catch (popupErr) {
+//         const errorMsg =
+//           popupErr instanceof Error ? popupErr.message : 'Popup error';
+
+//         // User cancelled payment
+//         if (errorMsg.includes('cancelled')) {
+//           console.log('ℹ️ User cancelled payment');
+//           this.isProcessing.set(false);
+//           this.close.emit();
+//           return;
+//         }
+
+//         // Popup error
+//         console.error('❌ Popup error:', errorMsg);
+//         this.error.set(errorMsg);
+//         this.trackPurchaseFailed(errorMsg);
+//         this.isProcessing.set(false);
+//         return;
+//       }
+
+//       //  console.log('✅ Payment completed, reference:', reference);
+
+//       // Step 3: Verify payment (backend will add credits + create invoice)
+//       // console.log('🔍 Verifying payment...');
+//       const verifyResult = await this.paystackService.verifyPayment(reference);
+
+//       if (!verifyResult.success) {
+//         const errorMsg = verifyResult.error || 'Payment verification failed';
+//         console.error('❌ Verification failed:', errorMsg);
+//         this.error.set(errorMsg);
+//         this.trackPurchaseFailed(errorMsg);
+//         this.isProcessing.set(false);
+//         return;
+//       }
+
+//       //  console.log('✅ Verification successful');
+
+//       // Track success
+//       this.trackPurchaseCompleted(
+//         this.creditAmount,
+//         this.totalCostZAR,
+//         reference
+//       );
+
+//       // Close modal and notify parent
+//       this.success.emit();
+//       this.close.emit();
+//       this.isProcessing.set(false);
+
+//       // Redirect to success page
+//       //  console.log('📍 Redirecting to success page...');
+//       window.location.href = `/credits?status=success&reference=${reference}`;
 //     } catch (err) {
 //       const errorMsg = err instanceof Error ? err.message : 'Unknown error';
+//       console.error('❌ Payment error:', errorMsg);
 //       this.error.set(errorMsg);
 //       this.trackPurchaseFailed(errorMsg);
 //       this.isProcessing.set(false);
 //     }
 //   }
 // }
+
 import {
   Component,
   Input,
@@ -368,7 +420,6 @@ import { FormsModule } from '@angular/forms';
 import { LucideAngularModule, X, AlertCircle, Loader } from 'lucide-angular';
 import { PaystackService } from '../../services/paystack.service';
 import { DatabaseActivityService } from 'src/app/shared/services/database-activity.service';
-import { AuthService } from 'src/app/auth/production.auth.service';
 
 @Component({
   selector: 'app-purchase-credits-modal',
@@ -411,7 +462,7 @@ import { AuthService } from 'src/app/auth/production.auth.service';
               Pricing
             </p>
             <p class="text-sm text-teal-900">
-              <span class="font-semibold">R0.01</span> per credit
+              <span class="font-semibold">R1.00</span> per credit
             </p>
           </div>
 
@@ -454,7 +505,7 @@ import { AuthService } from 'src/app/auth/production.auth.service';
               </div>
               <div class="flex justify-between items-center">
                 <span class="text-sm font-medium text-slate-600">Rate</span>
-                <span class="font-semibold text-slate-900">R0.01/credit</span>
+                <span class="font-semibold text-slate-900">R1.00/credit</span>
               </div>
             </div>
             <div
@@ -536,19 +587,18 @@ export class PurchaseCreditsModalComponent implements OnInit {
 
   private paystackService = inject(PaystackService);
   private activityService = inject(DatabaseActivityService);
-  private authService = inject(AuthService);
 
   XIcon = X;
   AlertIcon = AlertCircle;
   LoaderIcon = Loader;
 
-  creditAmount = 50000;
+  creditAmount = 500;
   isProcessing = signal(false);
   error = signal<string | null>(null);
 
-  readonly minCredits = 10000;
-  readonly stepSize = 1000;
-  readonly creditsPerZAR = 100;
+  readonly minCredits = 100;
+  readonly stepSize = 10;
+  readonly creditsPerZAR = 1; // 1 ZAR = 1 credit
 
   get totalCostZAR(): number {
     return this.creditAmount / this.creditsPerZAR;
@@ -678,7 +728,7 @@ export class PurchaseCreditsModalComponent implements OnInit {
 
     try {
       // Step 1: Initialize transaction on backend
-      console.log('📝 Initializing payment...');
+      // console.log('📝 Initializing payment...');
       const initResult = await this.paystackService.initializeTransaction({
         organizationId: this.organizationId,
         creditAmount: this.creditAmount,
@@ -694,7 +744,7 @@ export class PurchaseCreditsModalComponent implements OnInit {
         return;
       }
 
-      console.log('✅ Payment initialized, opening Paystack popup...');
+      //  console.log('✅ Payment initialized, opening Paystack popup...');
 
       // Step 2: Open Paystack Popup
       let reference: string;
@@ -722,10 +772,10 @@ export class PurchaseCreditsModalComponent implements OnInit {
         return;
       }
 
-      console.log('✅ Payment completed, reference:', reference);
+      //  console.log('✅ Payment completed, reference:', reference);
 
       // Step 3: Verify payment (backend will add credits + create invoice)
-      console.log('🔍 Verifying payment...');
+      // console.log('🔍 Verifying payment...');
       const verifyResult = await this.paystackService.verifyPayment(reference);
 
       if (!verifyResult.success) {
@@ -737,7 +787,7 @@ export class PurchaseCreditsModalComponent implements OnInit {
         return;
       }
 
-      console.log('✅ Verification successful');
+      //  console.log('✅ Verification successful');
 
       // Track success
       this.trackPurchaseCompleted(
@@ -752,7 +802,7 @@ export class PurchaseCreditsModalComponent implements OnInit {
       this.isProcessing.set(false);
 
       // Redirect to success page
-      console.log('📍 Redirecting to success page...');
+      //  console.log('📍 Redirecting to success page...');
       window.location.href = `/credits?status=success&reference=${reference}`;
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : 'Unknown error';
