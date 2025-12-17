@@ -42,15 +42,7 @@ export class FinancialDataTransformer {
     if (incomeRatios && incomeRatios.length > 0) {
       sections.push({
         title: 'Financial Performance Ratios',
-        // rows: incomeRatios.map((ratio) => ({
-        //   label: ratio.label,
-        //   values: ratio.values,
-        //   editable: false,
-        //   isCalculated: true,
-        //   isBold: false,
-        //   isTotal: false,
-        //   type: ratio.type,
-        // })),
+
         rows: incomeRatios.map((ratio) => ({
           label: ratio.label,
           values: ratio.values,
