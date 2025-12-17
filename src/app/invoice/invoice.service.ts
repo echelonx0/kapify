@@ -7,131 +7,116 @@
 //   id: string;
 //   organizationId: string;
 //   stripeSessionId: string;
-//   zohoInvoiceId?: string;
-//   zohoInvoiceNumber?: string;
+//   zohoInvoiceId: string | null;
+//   zohoInvoiceNumber: string | null;
 //   creditAmount: number;
 //   amountZar: number;
 //   status: 'sent' | 'paid' | 'failed';
-//   zohoContactId?: string;
+//   zohoContactId: string | null;
 //   createdAt: string;
 //   updatedAt: string;
 // }
 
-// @Injectable({
-//   providedIn: 'root',
-// })
+// interface RawInvoice {
+//   id: string;
+//   organization_id: string;
+//   stripe_session_id: string;
+//   zoho_invoice_id: string | null;
+//   zoho_invoice_number: string | null;
+//   credit_amount: number;
+//   amount_zar: string;
+//   status: string;
+//   zoho_contact_id: string | null;
+//   created_at: string;
+//   updated_at: string;
+// }
+
+// @Injectable({ providedIn: 'root' })
 // export class InvoiceService {
 //   private supabase = inject(SharedSupabaseService);
 
-//   /**
-//    * Get all invoices for current user's organization
-//    */
 //   getInvoices(): Observable<Invoice[]> {
-//     const userId = this.supabase.getCurrentUserId();
-//     if (!userId) {
-//       return throwError(() => new Error('User not authenticated'));
-//     }
-
-//     return from(this.fetchInvoices(userId)).pipe(
-//       map((invoices) =>
-//         invoices.sort(
-//           (a, b) =>
-//             new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-//         )
-//       ),
+//     return from(this.fetchInvoices()).pipe(
+//       map((invoices) => invoices.map(this.transformInvoice)),
 //       catchError((error) => {
-//         console.error('Failed to fetch invoices:', error);
-//         return throwError(() => error);
+//         console.error('❌ Failed to fetch invoices:', error);
+//         return throwError(
+//           () => new Error(error.message || 'Failed to load invoices')
+//         );
 //       })
 //     );
 //   }
 
-//   /**
-//    * Get single invoice by ID
-//    */
-//   getInvoiceById(id: string): Observable<Invoice | null> {
-//     return from(this.fetchInvoiceById(id)).pipe(
-//       catchError((error) => {
-//         console.error('Failed to fetch invoice:', error);
-//         return throwError(() => error);
-//       })
-//     );
-//   }
+//   private async fetchInvoices(): Promise<RawInvoice[]> {
+//     const orgId = await this.getCurrentUserOrganizationId();
 
-//   /**
-//    * Fetch invoices from database
-//    */
-//   private async fetchInvoices(userId: string): Promise<Invoice[]> {
-//     // First get user's organization from user_profiles
-//     const { data: profile, error: profileError } = await this.supabase.client
-//       .from('user_profiles')
-//       .select('organization_id')
-//       .eq('user_id', userId)
-//       .single();
-
-//     if (profileError || !profile?.organization_id) {
+//     if (!orgId) {
 //       throw new Error('Organization not found');
 //     }
 
-//     // Fetch invoices for organization
 //     const { data, error } = await this.supabase.client
 //       .from('invoices')
 //       .select('*')
-//       .eq('organization_id', profile.organization_id)
+//       .eq('organization_id', orgId)
 //       .order('created_at', { ascending: false });
 
 //     if (error) {
-//       throw new Error(`Failed to fetch invoices: ${error.message}`);
+//       throw new Error(`Database error: ${error.message}`);
 //     }
 
-//     return (data || []).map(this.transformInvoice);
+//     return (data as RawInvoice[]) || [];
 //   }
 
-//   /**
-//    * Fetch single invoice
-//    */
-//   private async fetchInvoiceById(id: string): Promise<Invoice | null> {
+//   private async getCurrentUserOrganizationId(): Promise<string | null> {
+//     const userId = this.supabase.getCurrentUserId();
+
+//     if (!userId) {
+//       throw new Error('User not authenticated');
+//     }
+
 //     const { data, error } = await this.supabase.client
-//       .from('invoices')
-//       .select('*')
-//       .eq('id', id)
+//       .from('organization_users')
+//       .select('organization_id')
+//       .eq('user_id', userId)
+//       .eq('is_active', true)
 //       .single();
 
-//     if (error) {
-//       throw new Error(`Failed to fetch invoice: ${error.message}`);
+//     if (error || !data) {
+//       return null;
 //     }
 
-//     return data ? this.transformInvoice(data) : null;
+//     return data.organization_id;
 //   }
 
-//   /**
-//    * Transform database invoice to local model
-//    */
-//   private transformInvoice(data: any): Invoice {
+//   private transformInvoice(dbInvoice: RawInvoice): Invoice {
 //     return {
-//       id: data.id,
-//       organizationId: data.organization_id,
-//       stripeSessionId: data.stripe_session_id,
-//       zohoInvoiceId: data.zoho_invoice_id,
-//       zohoInvoiceNumber: data.zoho_invoice_number,
-//       creditAmount: data.credit_amount,
-//       amountZar: parseFloat(data.amount_zar),
-//       status: data.status,
-//       zohoContactId: data.zoho_contact_id,
-//       createdAt: data.created_at,
-//       updatedAt: data.updated_at,
+//       id: dbInvoice.id,
+//       organizationId: dbInvoice.organization_id,
+//       stripeSessionId: dbInvoice.stripe_session_id,
+//       zohoInvoiceId: dbInvoice.zoho_invoice_id,
+//       zohoInvoiceNumber: dbInvoice.zoho_invoice_number,
+//       creditAmount: dbInvoice.credit_amount,
+//       amountZar: parseFloat(dbInvoice.amount_zar),
+//       status: dbInvoice.status as 'sent' | 'paid' | 'failed',
+//       zohoContactId: dbInvoice.zoho_contact_id,
+//       createdAt: dbInvoice.created_at,
+//       updatedAt: dbInvoice.updated_at,
 //     };
 //   }
 // }
+
 import { Injectable, inject } from '@angular/core';
 import { Observable, from, throwError } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
 import { SharedSupabaseService } from '../shared/services/shared-supabase.service';
+import { AuthService } from '../auth/production.auth.service';
 
 export interface Invoice {
   id: string;
   organizationId: string;
-  stripeSessionId: string;
+  paymentProvider: 'stripe' | 'paystack';
+  stripeSessionId?: string | null;
+  paystackReference?: string | null;
   zohoInvoiceId: string | null;
   zohoInvoiceNumber: string | null;
   creditAmount: number;
@@ -145,7 +130,8 @@ export interface Invoice {
 interface RawInvoice {
   id: string;
   organization_id: string;
-  stripe_session_id: string;
+  stripe_session_id: string | null;
+  paystack_reference: string | null;
   zoho_invoice_id: string | null;
   zoho_invoice_number: string | null;
   credit_amount: number;
@@ -159,10 +145,14 @@ interface RawInvoice {
 @Injectable({ providedIn: 'root' })
 export class InvoiceService {
   private supabase = inject(SharedSupabaseService);
+  private authService = inject(AuthService);
 
+  /**
+   * Get all invoices for the current organization
+   */
   getInvoices(): Observable<Invoice[]> {
     return from(this.fetchInvoices()).pipe(
-      map((invoices) => invoices.map(this.transformInvoice)),
+      map((invoices) => invoices.map((inv) => this.transformInvoice(inv))),
       catchError((error) => {
         console.error('❌ Failed to fetch invoices:', error);
         return throwError(
@@ -172,8 +162,42 @@ export class InvoiceService {
     );
   }
 
+  /**
+   * Get a single invoice by ID
+   */
+  getInvoiceById(invoiceId: string): Observable<Invoice | null> {
+    return from(this.fetchInvoiceById(invoiceId)).pipe(
+      map((invoice) => (invoice ? this.transformInvoice(invoice) : null)),
+      catchError((error) => {
+        console.error('❌ Failed to fetch invoice:', error);
+        return throwError(
+          () => new Error(error.message || 'Failed to load invoice')
+        );
+      })
+    );
+  }
+
+  /**
+   * Get invoices by Paystack reference
+   */
+  getInvoiceByPaystackReference(reference: string): Observable<Invoice | null> {
+    return from(this.fetchInvoiceByPaystackReference(reference)).pipe(
+      map((invoice) => (invoice ? this.transformInvoice(invoice) : null)),
+      catchError((error) => {
+        console.error('❌ Failed to fetch invoice by reference:', error);
+        return throwError(
+          () =>
+            new Error(error.message || 'Failed to load invoice by reference')
+        );
+      })
+    );
+  }
+
+  /**
+   * Fetch invoices from database
+   */
   private async fetchInvoices(): Promise<RawInvoice[]> {
-    const orgId = await this.getCurrentUserOrganizationId();
+    const orgId = this.getCurrentUserOrganizationId();
 
     if (!orgId) {
       throw new Error('Organization not found');
@@ -192,32 +216,94 @@ export class InvoiceService {
     return (data as RawInvoice[]) || [];
   }
 
-  private async getCurrentUserOrganizationId(): Promise<string | null> {
-    const userId = this.supabase.getCurrentUserId();
+  /**
+   * Fetch single invoice by ID
+   */
+  private async fetchInvoiceById(
+    invoiceId: string
+  ): Promise<RawInvoice | null> {
+    const orgId = this.getCurrentUserOrganizationId();
 
-    if (!userId) {
-      throw new Error('User not authenticated');
+    if (!orgId) {
+      throw new Error('Organization not found');
     }
 
     const { data, error } = await this.supabase.client
-      .from('organization_users')
-      .select('organization_id')
-      .eq('user_id', userId)
-      .eq('is_active', true)
+      .from('invoices')
+      .select('*')
+      .eq('id', invoiceId)
+      .eq('organization_id', orgId)
       .single();
 
-    if (error || !data) {
-      return null;
+    if (error && error.code !== 'PGRST116') {
+      throw new Error(`Database error: ${error.message}`);
     }
 
-    return data.organization_id;
+    return (data as RawInvoice) || null;
   }
 
+  /**
+   * Fetch invoice by Paystack reference
+   */
+  private async fetchInvoiceByPaystackReference(
+    reference: string
+  ): Promise<RawInvoice | null> {
+    const orgId = this.getCurrentUserOrganizationId();
+
+    if (!orgId) {
+      throw new Error('Organization not found');
+    }
+
+    const { data, error } = await this.supabase.client
+      .from('invoices')
+      .select('*')
+      .eq('paystack_reference', reference)
+      .eq('organization_id', orgId)
+      .single();
+
+    if (error && error.code !== 'PGRST116') {
+      throw new Error(`Database error: ${error.message}`);
+    }
+
+    return (data as RawInvoice) || null;
+  }
+
+  /**
+   * Get current user's organization ID
+   */
+  private getCurrentUserOrganizationId(): string | null {
+    try {
+      const orgId = this.authService.getCurrentUserOrganizationId();
+      if (!orgId) {
+        console.error('Organization ID not found');
+        return null;
+      }
+      return orgId;
+    } catch (error) {
+      console.error('Error getting organization ID:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Transform database invoice to app interface
+   */
   private transformInvoice(dbInvoice: RawInvoice): Invoice {
+    // Determine payment provider based on which reference is present
+    const paymentProvider = dbInvoice.paystack_reference
+      ? 'paystack'
+      : 'stripe';
+
     return {
       id: dbInvoice.id,
       organizationId: dbInvoice.organization_id,
-      stripeSessionId: dbInvoice.stripe_session_id,
+      paymentProvider,
+      stripeSessionId:
+        paymentProvider === 'stripe' ? dbInvoice.stripe_session_id : undefined,
+      paystackReference:
+        paymentProvider === 'paystack'
+          ? dbInvoice.paystack_reference
+          : undefined,
       zohoInvoiceId: dbInvoice.zoho_invoice_id,
       zohoInvoiceNumber: dbInvoice.zoho_invoice_number,
       creditAmount: dbInvoice.credit_amount,
