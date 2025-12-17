@@ -1,4 +1,4 @@
-<!-- src/app/SMEs/profile/steps/financial-analysis/financial-table/financial-data-table.html -->
+<!-- src/app/SMEs/profile/steps/financial-analysis/financial-table/financial-data-table-v4.html -->
 <div class="space-y-4">
   <!-- Year Navigation (Only show if more than 3 years and not in edit mode) -->
   @if (!editMode && columnHeaders.length > 3) {
@@ -84,25 +84,38 @@
         <tbody>
           @for (section of sections; track trackBySection($index, section); let
           sectionIndex = $index) {
-          <!-- Spacing before section (for Financial Ratios tab spacing) -->
+          <!-- Spacing before section -->
           @if (section.spacingBefore && sectionIndex > 0) {
           <tr class="h-6 bg-transparent">
             <td [attr.colspan]="visibleYearHeaders().length + 1"></td>
           </tr>
           }
 
+          <!-- Visual Label Section (No rows, clean styling) -->
+          @if (isVisualLabel(section)) {
+          <tr class="border-b border-slate-200 bg-slate-50">
+            <td
+              class="sticky left-0 z-10 px-4 py-3"
+              [attr.colspan]="visibleYearHeaders().length + 1"
+            >
+              <span
+                class="text-sm font-bold uppercase tracking-wide text-slate-900"
+              >
+                {{ section.title }}
+              </span>
+            </td>
+          </tr>
+          }
           <!-- Section Header Row (Collapsible) -->
-          @if (section.isCollapsible) {
+          @else if (section.isCollapsible) {
           <tr
             [class]="getSectionHeaderClasses(section)"
-            class="cursor-pointer transition-all duration-200"
+            class="cursor-pointer transition-all duration-200 hover:bg-slate-100"
             (click)="toggleSection(sectionIndex)"
           >
             <td
               class="sticky left-0 z-10 px-4 py-3"
               [attr.colspan]="visibleYearHeaders().length + 1"
-              [class.bg-orange-50]="section.accentColor === 'orange'"
-              [class.bg-teal-50]="section.accentColor !== 'orange'"
             >
               <div class="flex items-center gap-2">
                 <lucide-icon
@@ -112,34 +125,25 @@
                       : ChevronDownIcon
                   "
                   [size]="16"
-                  [class]="getSectionIconColor(section)"
+                  [class]="getSectionIconColor()"
                 />
                 <span
-                  [class]="getSectionTextColor(section)"
-                  class="text-sm font-bold uppercase tracking-wide"
+                  class="text-sm font-semibold text-slate-900 uppercase tracking-wide"
                 >
                   {{ section.title }}
                 </span>
               </div>
             </td>
           </tr>
-          } @else {
-          <!-- Non-Collapsible Section Header -->
-          <tr
-            class="border-b border-slate-200 transition-all duration-200"
-            [class.bg-orange-50]="section.accentColor === 'orange'"
-            [class.bg-teal-50]="section.accentColor !== 'orange'"
-          >
+          }
+          <!-- Regular Section Header (Non-collapsible) -->
+          @else {
+          <tr [class]="getSectionHeaderClasses(section)">
             <td
               class="sticky left-0 z-10 px-4 py-3"
               [attr.colspan]="visibleYearHeaders().length + 1"
-              [class.bg-orange-50]="section.accentColor === 'orange'"
-              [class.bg-teal-50]="section.accentColor !== 'orange'"
             >
-              <span
-                [class]="getSectionTextColor(section)"
-                class="text-sm font-bold uppercase tracking-wide"
-              >
+              <span class="text-sm font-semibold text-slate-900">
                 {{ section.title }}
               </span>
             </td>

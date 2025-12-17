@@ -16,7 +16,7 @@ export class ActivityService {
   private databaseService = inject(DatabaseActivityService);
 
   constructor() {
-    console.log('ActivityService initialized with real database backend');
+    //  console.log('ActivityService initialized with real database backend');
   }
 
   // ===============================
@@ -35,9 +35,9 @@ export class ActivityService {
    */
   getActivitiesPaged(page: number, pageSize: number): Observable<Activity[]> {
     // Map the new interface to the old one for backward compatibility
-    return this.databaseService.getActivitiesPaged(page, pageSize).pipe(
-      map(result => result.activities)
-    );
+    return this.databaseService
+      .getActivitiesPaged(page, pageSize)
+      .pipe(map((result) => result.activities));
   }
 
   /**
@@ -46,7 +46,7 @@ export class ActivityService {
   getActivityById(id: number): Observable<Activity> {
     // Convert number ID to string for database service
     return this.databaseService.getActivityById(id.toString()).pipe(
-      map(activity => {
+      map((activity) => {
         if (!activity) {
           throw new Error('Activity not found');
         }
@@ -68,7 +68,7 @@ export class ActivityService {
       amount: activity.amount,
       status: activity.status || 'completed',
       method: activity.method,
-      metadata: activity.metadata
+      metadata: activity.metadata,
     });
   }
 
@@ -78,7 +78,9 @@ export class ActivityService {
   deleteActivity(id: number): Observable<void> {
     // Note: In the database version, we might not want to actually delete activities
     // for audit purposes. This could mark them as deleted instead.
-    console.warn('Activity deletion not implemented in database version for audit purposes');
+    console.warn(
+      'Activity deletion not implemented in database version for audit purposes'
+    );
     throw new Error('Activity deletion not supported');
   }
 
@@ -90,12 +92,23 @@ export class ActivityService {
    * Track application activities automatically
    */
   trackApplicationActivity(
-    action: 'created' | 'updated' | 'submitted' | 'approved' | 'rejected' | 'withdrawn',
+    action:
+      | 'created'
+      | 'updated'
+      | 'submitted'
+      | 'approved'
+      | 'rejected'
+      | 'withdrawn',
     applicationId: string,
     message: string,
     amount?: number
   ): void {
-    this.databaseService.trackApplicationActivity(action, applicationId, message, amount);
+    this.databaseService.trackApplicationActivity(
+      action,
+      applicationId,
+      message,
+      amount
+    );
   }
 
   /**
@@ -108,7 +121,13 @@ export class ActivityService {
     entityId?: string,
     method?: string
   ): void {
-    this.databaseService.trackFundingActivity(action, message, amount, entityId, method);
+    this.databaseService.trackFundingActivity(
+      action,
+      message,
+      amount,
+      entityId,
+      method
+    );
   }
 
   /**
@@ -131,7 +150,12 @@ export class ActivityService {
     documentId?: string,
     documentType?: string
   ): void {
-    this.databaseService.trackDocumentActivity(action, message, documentId, documentType);
+    this.databaseService.trackDocumentActivity(
+      action,
+      message,
+      documentId,
+      documentType
+    );
   }
 
   // ===============================
@@ -213,4 +237,3 @@ export class ActivityService {
     return this.databaseService.getActivityTypeColor(type);
   }
 }
- 

@@ -64,13 +64,12 @@
     </div>
   </div>
 
-  <!-- Skeleton Loader - FIXED CONDITION -->
+  <!-- Skeleton Loader - HIGHEST PRIORITY (shows during any tab load) -->
   @if (isLoading()) {
   <app-financial-table-skeleton [rowCount]="10" [columnCount]="9" />
   }
-
-  <!-- Upload Component -->
-  @if (!hasFinancialData() && !isLoading()) {
+  <!-- Upload Component - Show if no data AND not loading -->
+  @else if (!hasFinancialData()) {
   <app-financial-upload
     [hasData]="hasFinancialData()"
     [uploadedFile]="uploadedTemplate()"
@@ -87,9 +86,8 @@
     (errorClear)="clearErrors()"
   />
   }
-
-  <!-- Financial Data Display -->
-  @if (hasFinancialData() && !isLoading()) {
+  <!-- Financial Data Display - Show if has data AND not loading -->
+  @else if (hasFinancialData()) {
 
   <!-- Tab Navigation -->
   <div class="border-b border-slate-200">
@@ -326,5 +324,7 @@
     />
     }
   </div>
+
   }
+  <!-- End of @else if (hasFinancialData()) -->
 </div>

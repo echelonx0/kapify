@@ -91,14 +91,14 @@ export class FundingProfileSetupService implements OnDestroy {
     // First: try from auth service (fastest)
     const authOrgId = this.authService.getCurrentUserOrganizationId();
     if (authOrgId) {
-      console.log('✅ Organization from auth:', authOrgId);
+      //  console.log('✅ Organization from auth:', authOrgId);
       return authOrgId;
     }
 
     // Second: try localStorage (offline fallback)
     const localOrgId = this.getOrganizationFromLocalStorage();
     if (localOrgId) {
-      console.log('✅ Organization from localStorage:', localOrgId);
+      //  console.log('✅ Organization from localStorage:', localOrgId);
       return localOrgId;
     }
 
@@ -116,10 +116,10 @@ export class FundingProfileSetupService implements OnDestroy {
       if (saved) {
         const parsed = JSON.parse(saved);
         if (parsed.organizationId) {
-          console.log(
-            '✅ Organization retrieved from localStorage:',
-            parsed.organizationId
-          );
+          // console.log(
+          //   '✅ Organization retrieved from localStorage:',
+          //   parsed.organizationId
+          // );
           return parsed.organizationId;
         }
       }
@@ -135,7 +135,7 @@ export class FundingProfileSetupService implements OnDestroy {
   private setOrganizationContext(organizationId: string | null): void {
     if (organizationId) {
       this.currentOrganization.set(organizationId);
-      console.log('📦 Organization context set:', organizationId);
+      //  console.log('📦 Organization context set:', organizationId);
     } else {
       console.warn('⚠️ No organization ID to set');
     }
@@ -243,17 +243,17 @@ export class FundingProfileSetupService implements OnDestroy {
       }
 
       // Load localStorage
-      console.log('📂 Loading from localStorage...');
+      //  console.log('📂 Loading from localStorage...');
       this.loadFromLocalStorage();
 
       // Get org context (synchronous now)
-      console.log('🔍 Resolving organization context...');
+      // console.log('🔍 Resolving organization context...');
       const orgId = this.getOrganizationId(); // ← Sync, not async
       this.setOrganizationContext(orgId);
 
       // If we have org, sync backend
       if (orgId) {
-        console.log('🔄 Syncing with backend...');
+        // console.log('🔄 Syncing with backend...');
         try {
           const savedData = await firstValueFrom(
             this.backendService.loadSavedProfile()
@@ -266,7 +266,7 @@ export class FundingProfileSetupService implements OnDestroy {
             this.applicationData.set(mergedData);
             this.updateStepCompletionStatus();
             this.lastSaved.set(new Date());
-            console.log('✅ Backend sync successful');
+            //  console.log('✅ Backend sync successful');
           }
         } catch (backendError) {
           console.warn(
@@ -306,7 +306,7 @@ export class FundingProfileSetupService implements OnDestroy {
 
       await firstValueFrom(this.backendService.saveCompleteProfile(data));
       this.lastSaved.set(new Date());
-      console.log('✅ Application saved to backend');
+      //  console.log('✅ Application saved to backend');
 
       // Refresh slug after save
       await this.refreshSlug();
@@ -370,7 +370,7 @@ export class FundingProfileSetupService implements OnDestroy {
         return null;
       }
 
-      console.log('🔍 Fetching profile slug for org:', orgId);
+      // console.log('🔍 Fetching profile slug for org:', orgId);
 
       const { data, error } = await this.supabase
         .from('business_plan_sections')
@@ -387,7 +387,7 @@ export class FundingProfileSetupService implements OnDestroy {
 
       if (data?.slug) {
         this.currentSlug.set(data.slug);
-        console.log('✅ Slug loaded:', data.slug);
+        //  console.log('✅ Slug loaded:', data.slug);
         return data.slug;
       }
 
@@ -437,14 +437,14 @@ export class FundingProfileSetupService implements OnDestroy {
 
       const orgId = this.currentOrganization();
       if (!orgId) {
-        console.log('ℹ️ No org context yet, saving to localStorage only');
+        // console.log('ℹ️ No org context yet, saving to localStorage only');
         this.saveToLocalStorage();
         return;
       }
 
       await firstValueFrom(this.backendService.autoSaveProfile(currentData));
       this.lastSaved.set(new Date());
-      console.log('✅ Auto-save completed');
+      // console.log('✅ Auto-save completed');
     } catch (error) {
       console.warn(
         '⚠️ Auto-save to backend failed, falling back to localStorage:',
@@ -480,7 +480,7 @@ export class FundingProfileSetupService implements OnDestroy {
         JSON.stringify(dataToSave)
       );
       this.lastSavedLocally.set(new Date());
-      console.log('✅ Saved to localStorage');
+      // console.log('✅ Saved to localStorage');
     } catch (error) {
       console.error('Failed to save to localStorage:', error);
     }
@@ -502,7 +502,7 @@ export class FundingProfileSetupService implements OnDestroy {
           }
           this.updateStepCompletionStatus();
           this.lastSavedLocally.set(new Date(parsedData.lastSaved));
-          console.log('✅ Loaded from localStorage');
+          //  console.log('✅ Loaded from localStorage');
         }
       }
     } catch (error) {

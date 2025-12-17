@@ -167,7 +167,7 @@ export class SMEProfileStepsService {
     this.isLoading.set(true);
 
     try {
-      console.log('🔄 Loading saved profile from backend...');
+      // console.log('🔄 Loading saved profile from backend...');
       const fundingProfile = await this.backendService
         .loadSavedProfile()
         .toPromise();
@@ -184,9 +184,6 @@ export class SMEProfileStepsService {
         this.profileData.set(mergedData);
         this.updateStepCompletionFromData();
         this.lastSaved.set(new Date());
-        console.log(
-          '✅ Profile loaded from backend and merged with local data'
-        );
       }
     } catch (error) {
       console.warn(
@@ -219,15 +216,15 @@ export class SMEProfileStepsService {
     const currentData = this.profileData();
 
     // ✅ DEBUG LOG
-    console.log('💾 [DEBUG] Saving profile data:', currentData);
-    console.log(
-      '💾 [DEBUG] Has financialAnalysis:',
-      !!currentData.financialAnalysis
-    );
-    console.log(
-      '💾 [DEBUG] financialAnalysis content:',
-      currentData.financialAnalysis
-    );
+    // console.log('💾 [DEBUG] Saving profile data:', currentData);
+    // console.log(
+    //   '💾 [DEBUG] Has financialAnalysis:',
+    //   !!currentData.financialAnalysis
+    // );
+    // console.log(
+    //   '💾 [DEBUG] financialAnalysis content:',
+    //   currentData.financialAnalysis
+    // );
 
     await this.saveToBackend(true);
   }
@@ -250,10 +247,6 @@ export class SMEProfileStepsService {
       const fundingProfile =
         this.transformer.transformToFundingProfile(currentData);
 
-      console.log(
-        `🔄 ${isManual ? 'Manual' : 'Auto'} saving profile to backend...`
-      );
-
       // Save to backend using real service
       const response = await this.backendService
         .saveCompleteProfile(fundingProfile)
@@ -261,11 +254,6 @@ export class SMEProfileStepsService {
 
       if (response?.success) {
         this.lastSaved.set(new Date());
-        console.log(
-          `✅ Profile ${
-            isManual ? 'manually' : 'auto'
-          } saved to backend successfully`
-        );
       } else {
         throw new Error(response?.message || 'Save failed');
       }
@@ -441,7 +429,7 @@ export class SMEProfileStepsService {
           data.businessPlan && Object.keys(data.businessPlan).length > 0
         );
       case 'financial-profile':
-        // ✅ FIXED - Check for valid financial data
+        // - Check for valid financial data
         return !!(
           data.financialInfo?.monthlyRevenue ||
           data.financialAnalysis?.incomeStatement?.length ||
@@ -531,7 +519,7 @@ export class SMEProfileStepsService {
             this.lastSavedLocally.set(new Date(parsed.lastSaved));
           }
 
-          console.log('✅ Profile data loaded from localStorage');
+          //   console.log('✅ Profile data loaded from localStorage');
         }
       }
     } catch (error) {
@@ -573,7 +561,7 @@ export class SMEProfileStepsService {
 
     try {
       localStorage.removeItem(this.localStorageKey);
-      console.log('🗑️ Profile progress cleared');
+      // console.log('🗑️ Profile progress cleared');
     } catch (error) {
       console.warn('Failed to clear localStorage:', error);
     }
@@ -647,7 +635,7 @@ export class SMEProfileStepsService {
       await this.saveCurrentProgress();
 
       // For now, just mark as completed - no actual submission workflow
-      console.log('✅ Profile completed successfully');
+      // console.log('✅ Profile completed successfully');
 
       return { success: true };
     } catch (error) {

@@ -1,4 +1,4 @@
-// src/app/SMEs/profile/steps/financial-analysis/utils/financial-data-transformer-refactored-v2.ts
+// src/app/SMEs/profile/steps/financial-analysis/utils/financial-data-transformer-refactored-v4.ts
 import {
   FinancialTableSection,
   FinancialTableRow,
@@ -42,7 +42,6 @@ export class FinancialDataTransformer {
     if (incomeRatios && incomeRatios.length > 0) {
       sections.push({
         title: 'Financial Performance Ratios',
-
         rows: incomeRatios.map((ratio) => ({
           label: ratio.label,
           values: ratio.values,
@@ -60,7 +59,7 @@ export class FinancialDataTransformer {
         })),
         isCollapsible: true,
         defaultExpanded: true,
-        accentColor: 'orange', // Orange-50 background for ratio section
+        accentColor: 'orange',
       });
     }
 
@@ -69,8 +68,16 @@ export class FinancialDataTransformer {
 
   /**
    * Transform Balance Sheet rows + balance sheet ratios into table sections
-   * Groups by: Non-Current Assets | Current Assets | Equities | Liabilities
-   * Plus separate collapsible section (orange) for balance sheet ratios
+   * Structure:
+   * - ASSETS (visual label - no rows)
+   *   - Non-Current Assets (section)
+   *   - Current Assets (section)
+   *   - Total Assets (as final item)
+   * - EQUITIES AND LIABILITIES (visual label - no rows)
+   *   - Equities (section)
+   *   - Liabilities (section)
+   *   - Current Liabilities (section)
+   *   - Total Equities and Liabilities (as final item)
    */
   static transformBalanceSheet(
     balanceData: BalanceSheetRowData[],
@@ -79,26 +86,175 @@ export class FinancialDataTransformer {
     if (balanceData.length === 0) return [];
 
     const sections: FinancialTableSection[] = [];
-    let currentSection: { title: string; rows: BalanceSheetRowData[] } | null =
-      null;
 
-    // Group balance sheet data by sections
-    for (const row of balanceData) {
-      if (row.isSectionHeader) {
-        if (currentSection && currentSection.rows.length > 0) {
-          sections.push(this.createBalanceSheetSection(currentSection));
-        }
-        currentSection = {
-          title: row.label,
-          rows: [],
-        };
-      } else if (currentSection) {
-        currentSection.rows.push(row);
-      }
+    // ===== ASSETS SECTION =====
+    // Add "ASSETS" as a visual label section (non-collapsible, read-only, empty rows)
+    sections.push({
+      title: 'ASSETS',
+      rows: [],
+      isCollapsible: false,
+      defaultExpanded: true,
+      isVisualLabel: true,
+    });
+
+    // Extract and group asset rows by subsection
+    const assetsBySubsection = this.groupAssetsBySubsection(balanceData);
+
+    // Add Non-Current Assets section
+    if (assetsBySubsection.nonCurrent.length > 0) {
+      sections.push({
+        title: 'Non-Current Assets',
+        rows: assetsBySubsection.nonCurrent.map((row) => ({
+          label: row.label,
+          values: row.values,
+          editable: row.editable,
+          isCalculated: !row.editable,
+          isBold: false,
+          isTotal: false,
+          type: 'currency' as const,
+        })),
+        isCollapsible: false,
+        defaultExpanded: true,
+      });
     }
 
-    if (currentSection && currentSection.rows.length > 0) {
-      sections.push(this.createBalanceSheetSection(currentSection));
+    // Add Current Assets section
+    if (assetsBySubsection.current.length > 0) {
+      sections.push({
+        title: 'Current Assets',
+        rows: assetsBySubsection.current.map((row) => ({
+          label: row.label,
+          values: row.values,
+          editable: row.editable,
+          isCalculated: !row.editable,
+          isBold: false,
+          isTotal: false,
+          type: 'currency' as const,
+        })),
+        isCollapsible: false,
+        defaultExpanded: true,
+      });
+    }
+
+    // Add Total Assets as final section (not as separate header section)
+    const totalAssets = balanceData.find(
+      (r) => r.label.toLowerCase() === 'total assets' && r.category === 'assets'
+    );
+    if (totalAssets) {
+      sections.push({
+        title: 'Total Assets',
+        rows: [
+          {
+            label: totalAssets.label,
+            values: totalAssets.values,
+            editable: false,
+            isCalculated: !totalAssets.editable,
+            isBold: true,
+            isTotal: true,
+            type: 'currency' as const,
+          },
+        ],
+        isCollapsible: false,
+        defaultExpanded: true,
+        isSimpleRow: true, // NEW: Flag for simple sections with just one row
+      });
+    }
+
+    // ===== EQUITIES & LIABILITIES SECTION =====
+    // Add "EQUITIES AND LIABILITIES" as a visual label section
+    sections.push({
+      title: 'EQUITIES AND LIABILITIES',
+      rows: [],
+      isCollapsible: false,
+      defaultExpanded: true,
+      isVisualLabel: true,
+    });
+
+    // Add Equities section
+    const equities = balanceData.filter((r) => r.category === 'equity');
+    if (equities.length > 0) {
+      sections.push({
+        title: 'Equities',
+        rows: equities.map((row) => ({
+          label: row.label,
+          values: row.values,
+          editable: row.editable,
+          isCalculated: !row.editable,
+          isBold: false,
+          isTotal: false,
+          type: 'currency' as const,
+        })),
+        isCollapsible: false,
+        defaultExpanded: true,
+      });
+    }
+
+    // Add Liabilities section (long-term)
+    const longTermLiabilities = balanceData.filter(
+      (r) => r.category === 'liabilities' && r.subcategory === 'non-current'
+    );
+    if (longTermLiabilities.length > 0) {
+      sections.push({
+        title: 'Liabilities',
+        rows: longTermLiabilities.map((row) => ({
+          label: row.label,
+          values: row.values,
+          editable: row.editable,
+          isCalculated: !row.editable,
+          isBold: false,
+          isTotal: false,
+          type: 'currency' as const,
+        })),
+        isCollapsible: false,
+        defaultExpanded: true,
+      });
+    }
+
+    // Add Current Liabilities section
+    const currentLiabilities = balanceData.filter(
+      (r) => r.category === 'liabilities' && r.subcategory === 'current'
+    );
+    if (currentLiabilities.length > 0) {
+      sections.push({
+        title: 'Current Liabilities',
+        rows: currentLiabilities.map((row) => ({
+          label: row.label,
+          values: row.values,
+          editable: row.editable,
+          isCalculated: !row.editable,
+          isBold: false,
+          isTotal: false,
+          type: 'currency' as const,
+        })),
+        isCollapsible: false,
+        defaultExpanded: true,
+      });
+    }
+
+    // Add Total Equities and Liabilities as final section (not as separate header section)
+    const totalEL = balanceData.find(
+      (r) =>
+        r.label.toLowerCase() === 'total equities and liabilities' &&
+        r.category === 'liabilities'
+    );
+    if (totalEL) {
+      sections.push({
+        title: 'Total Equities and Liabilities',
+        rows: [
+          {
+            label: totalEL.label,
+            values: totalEL.values,
+            editable: false,
+            isCalculated: !totalEL.editable,
+            isBold: true,
+            isTotal: true,
+            type: 'currency' as const,
+          },
+        ],
+        isCollapsible: false,
+        defaultExpanded: true,
+        isSimpleRow: true, // NEW: Flag for simple sections with just one row
+      });
     }
 
     // Add balance sheet ratios as separate collapsible section (orange, expanded by default)
@@ -118,11 +274,12 @@ export class FinancialDataTransformer {
               ? '%'
               : ratio.type === 'ratio'
               ? 'x'
-              : '', // ADD THIS LINE
+              : '',
         })),
         isCollapsible: true,
         defaultExpanded: true,
-        accentColor: 'orange', // Orange-50 background for ratio section
+        accentColor: 'orange',
+        spacingBefore: true,
       });
     }
 
@@ -160,10 +317,25 @@ export class FinancialDataTransformer {
 
     const sections: FinancialTableSection[] = [];
 
+    // ===== OPERATING ACTIVITIES =====
     if (operatingRows.length > 0) {
+      const operatingHeaderRow = operatingRows.find(
+        (r) =>
+          !r.editable &&
+          !r.isSubtotal &&
+          r.label.toLowerCase().includes('cash flows from operating')
+      );
+
+      const operatingHeader =
+        operatingHeaderRow?.label || 'Operating Activities';
+
+      const operatingItems = operatingRows.filter(
+        (r) => r !== operatingHeaderRow
+      );
+
       sections.push({
-        title: 'Operating Activities',
-        rows: operatingRows.map((row) => ({
+        title: operatingHeader,
+        rows: operatingItems.map((row) => ({
           label: row.label,
           values: row.values,
           editable: row.editable,
@@ -177,10 +349,25 @@ export class FinancialDataTransformer {
       });
     }
 
+    // ===== INVESTING ACTIVITIES =====
     if (investingRows.length > 0) {
+      const investingHeaderRow = investingRows.find(
+        (r) =>
+          !r.editable &&
+          !r.isSubtotal &&
+          r.label.toLowerCase().includes('cash flows from investing')
+      );
+
+      const investingHeader =
+        investingHeaderRow?.label || 'Investing Activities';
+
+      const investingItems = investingRows.filter(
+        (r) => r !== investingHeaderRow
+      );
+
       sections.push({
-        title: 'Investing Activities',
-        rows: investingRows.map((row) => ({
+        title: investingHeader,
+        rows: investingItems.map((row) => ({
           label: row.label,
           values: row.values,
           editable: row.editable,
@@ -194,10 +381,25 @@ export class FinancialDataTransformer {
       });
     }
 
+    // ===== FINANCING ACTIVITIES =====
     if (financingRows.length > 0) {
+      const financingHeaderRow = financingRows.find(
+        (r) =>
+          !r.editable &&
+          !r.isSubtotal &&
+          r.label.toLowerCase().includes('cash flows from financing')
+      );
+
+      const financingHeader =
+        financingHeaderRow?.label || 'Financing Activities';
+
+      const financingItems = financingRows.filter(
+        (r) => r !== financingHeaderRow
+      );
+
       sections.push({
-        title: 'Financing Activities',
-        rows: financingRows.map((row) => ({
+        title: financingHeader,
+        rows: financingItems.map((row) => ({
           label: row.label,
           values: row.values,
           editable: row.editable,
@@ -211,6 +413,7 @@ export class FinancialDataTransformer {
       });
     }
 
+    // ===== SUMMARY SECTION =====
     if (summaryRows.length > 0) {
       sections.push({
         title: 'Summary',
@@ -219,8 +422,8 @@ export class FinancialDataTransformer {
           values: row.values,
           editable: row.editable,
           isCalculated: !row.editable,
-          isBold: true,
-          isTotal: true,
+          isBold: row.isSubtotal,
+          isTotal: row.isSubtotal,
           type: 'currency' as const,
         })),
         isCollapsible: false,
@@ -233,8 +436,6 @@ export class FinancialDataTransformer {
 
   /**
    * Transform Financial Ratios into organized sections by type
-   * Income ratios at top + spacing + Balance sheet ratios below
-   * Both with orange-50 background, both collapsible (expanded by default)
    */
   static transformFinancialRatios(
     incomeRatios?: FinancialRatioData[],
@@ -242,7 +443,6 @@ export class FinancialDataTransformer {
   ): FinancialTableSection[] {
     const sections: FinancialTableSection[] = [];
 
-    // Income-based ratios section
     if (incomeRatios && incomeRatios.length > 0) {
       sections.push({
         title: 'Income Statement Ratios',
@@ -259,7 +459,7 @@ export class FinancialDataTransformer {
               ? '%'
               : ratio.type === 'ratio'
               ? 'x'
-              : '', // ADD THIS LINE
+              : '',
         })),
         isCollapsible: true,
         defaultExpanded: true,
@@ -267,7 +467,6 @@ export class FinancialDataTransformer {
       });
     }
 
-    // Balance sheet ratios section (with spacing above)
     if (balanceRatios && balanceRatios.length > 0) {
       sections.push({
         title: 'Balance Sheet Ratios',
@@ -284,12 +483,12 @@ export class FinancialDataTransformer {
               ? '%'
               : ratio.type === 'ratio'
               ? 'x'
-              : '', // ADD THIS LINE
+              : '',
         })),
         isCollapsible: true,
         defaultExpanded: true,
         accentColor: 'orange',
-        spacingBefore: true, // Add spacing before this section
+        spacingBefore: true,
       });
     }
 
@@ -298,23 +497,17 @@ export class FinancialDataTransformer {
 
   // ===== PRIVATE HELPERS =====
 
-  private static createBalanceSheetSection(section: {
-    title: string;
-    rows: BalanceSheetRowData[];
-  }): FinancialTableSection {
+  private static groupAssetsBySubsection(data: BalanceSheetRowData[]): {
+    nonCurrent: BalanceSheetRowData[];
+    current: BalanceSheetRowData[];
+  } {
     return {
-      title: section.title,
-      rows: section.rows.map((row) => ({
-        label: row.label,
-        values: row.values,
-        editable: row.editable,
-        isCalculated: !row.editable,
-        isBold: this.isBoldBalanceRow(row),
-        isTotal: row.isTotal || false,
-        type: 'currency' as const,
-      })),
-      isCollapsible: false,
-      defaultExpanded: true,
+      nonCurrent: data.filter(
+        (r) => r.category === 'assets' && r.subcategory === 'non-current'
+      ),
+      current: data.filter(
+        (r) => r.category === 'assets' && r.subcategory === 'current'
+      ),
     };
   }
 
@@ -336,14 +529,5 @@ export class FinancialDataTransformer {
       'Profit/(Loss) for the period',
     ];
     return totalRows.some((row) => label.toLowerCase() === row.toLowerCase());
-  }
-
-  private static isBoldBalanceRow(row: BalanceSheetRowData): boolean {
-    return (
-      row.isTotal ||
-      ['Assets', 'Equities', 'Liabilities'].some((keyword) =>
-        row.label.toLowerCase().includes(keyword.toLowerCase())
-      )
-    );
   }
 }

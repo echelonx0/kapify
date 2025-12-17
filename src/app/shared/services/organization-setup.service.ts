@@ -29,17 +29,17 @@ export class OrganizationSetupService {
   private supabaseService = inject(SharedSupabaseService);
 
   constructor() {
-    console.log('OrganizationSetupService initialized');
+    // console.log('OrganizationSetupService initialized');
   }
 
   createOrganizationForUser(
     request: OrganizationCreationRequest
   ): Observable<OrganizationSetupResult> {
-    console.log(
-      'Creating organization for user:',
-      request.userId,
-      request.userType
-    );
+    // console.log(
+    //   'Creating organization for user:',
+    //   request.userId,
+    //   request.userType
+    // );
 
     return from(
       this.supabaseService.rpc('create_organization_for_registration', {
@@ -74,7 +74,7 @@ export class OrganizationSetupService {
           );
         }
 
-        console.log('✅ Organization created:', orgData.id);
+        // console.log('✅ Organization created:', orgData.id);
 
         return {
           success: true,

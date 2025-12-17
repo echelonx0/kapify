@@ -1,4 +1,4 @@
-// src/app/SMEs/profile/steps/financial-analysis/financial-table/financial-data-table-refactored-v2.component.ts
+// src/app/SMEs/profile/steps/financial-analysis/financial-table/financial-data-table-v4.component.ts
 import {
   Component,
   Input,
@@ -6,8 +6,6 @@ import {
   EventEmitter,
   signal,
   OnInit,
-  effect,
-  inject,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -26,7 +24,7 @@ export interface FinancialTableRow {
   isBold?: boolean;
   isTotal?: boolean;
   type?: 'currency' | 'percentage' | 'ratio';
-  suffix?: string; // ADD THIS: "%", "x", or ""
+  suffix?: string;
 }
 
 export interface FinancialTableSection {
@@ -35,8 +33,10 @@ export interface FinancialTableSection {
   isCollapsible?: boolean;
   defaultExpanded?: boolean;
   collapsed?: boolean;
-  accentColor?: 'orange' | 'teal'; // For ratio sections (orange) vs regular (teal)
-  spacingBefore?: boolean; // Add spacing before this section (for Financial Ratios tab)
+  accentColor?: 'orange' | 'teal';
+  spacingBefore?: boolean;
+  isVisualLabel?: boolean; // Visual label only (no rows)
+  isSimpleRow?: boolean; // Section with single bold row (like totals)
 }
 
 @Component({
@@ -79,12 +79,8 @@ export class FinancialDataTableComponent implements OnInit {
     this.initializeWindow();
   }
 
-  /**
-   * Initialize year window to show last 3 years
-   */
   private initializeWindow(): void {
     if (this.columnHeaders.length === 0) return;
-
     const maxStart = Math.max(
       0,
       this.columnHeaders.length - this.YEARS_PER_VIEW
@@ -92,9 +88,6 @@ export class FinancialDataTableComponent implements OnInit {
     this.setWindowPosition(maxStart);
   }
 
-  /**
-   * Set window to specific start position
-   */
   private setWindowPosition(startIndex: number): void {
     const headers = this.columnHeaders;
     const start = Math.max(0, Math.min(startIndex, headers.length - 1));
@@ -114,40 +107,27 @@ export class FinancialDataTableComponent implements OnInit {
     }
   }
 
-  /**
-   * Navigate to next years
-   */
   goToNextYears(): void {
     const nextStart = this.currentWindowStart() + 1;
     const maxStart = Math.max(
       0,
       this.columnHeaders.length - this.YEARS_PER_VIEW
     );
-
     if (nextStart <= maxStart) {
       this.setWindowPosition(nextStart);
     }
   }
 
-  /**
-   * Navigate to previous years
-   */
   goToPreviousYears(): void {
     if (this.currentWindowStart() > 0) {
       this.setWindowPosition(this.currentWindowStart() - 1);
     }
   }
 
-  /**
-   * Get filtered row values for visible window
-   */
   getVisibleRowValues(allValues: number[]): number[] {
     return allValues.slice(this.currentWindowStart(), this.currentWindowEnd());
   }
 
-  /**
-   * Toggle section expansion
-   */
   toggleSection(sectionIndex: number): void {
     const collapsed = this.collapsedSections();
     const newCollapsed = new Set(collapsed);
@@ -165,58 +145,49 @@ export class FinancialDataTableComponent implements OnInit {
     return this.collapsedSections().has(sectionIndex);
   }
 
-  /**
-   * Get section header classes based on accent color
-   */
+  isVisualLabel(section: FinancialTableSection): boolean {
+    return section.isVisualLabel === true;
+  }
+
+  isSimpleRow(section: FinancialTableSection): boolean {
+    return section.isSimpleRow === true;
+  }
+
   getSectionHeaderClasses(section: FinancialTableSection): string {
     const classes: string[] = [
       'border-b',
       'border-slate-200',
       'transition-all',
       'duration-200',
+      'bg-slate-50',
     ];
-
-    if (section.accentColor === 'orange') {
-      classes.push('bg-orange-50/50', 'hover:bg-orange-50');
-    } else {
-      classes.push('bg-teal-50/50', 'hover:bg-teal-50');
-    }
 
     return classes.join(' ');
   }
 
-  /**
-   * Get section header icon color
-   */
-  getSectionIconColor(section: FinancialTableSection): string {
-    return section.accentColor === 'orange'
-      ? 'text-orange-600'
-      : 'text-teal-600';
+  getSectionIconColor(): string {
+    return 'text-slate-600';
   }
 
-  /**
-   * Get section header text color
-   */
-  getSectionTextColor(section: FinancialTableSection): string {
-    return section.accentColor === 'orange'
-      ? 'text-orange-900'
-      : 'text-slate-900';
+  getSectionTextColor(): string {
+    return 'text-slate-900';
   }
 
-  /**
-   * Number formatting and parsing
-   */
+  getVisualLabelClasses(): string {
+    return 'border-b border-slate-200 bg-slate-50 px-4 py-3';
+  }
+
   formatNumber(value: number, row?: FinancialTableRow): string {
     if (value === null || value === undefined || isNaN(value)) {
       return '0.0';
     }
 
-    // Always 1 decimal place
     const formatted = value.toFixed(1);
     const suffix = row?.suffix || '';
 
     return `${formatted}${suffix}`;
   }
+
   parseNumber(value: string): number {
     if (!value) return 0;
     const cleanValue = value.replace(/[,%x\s]/g, '');
@@ -224,9 +195,6 @@ export class FinancialDataTableComponent implements OnInit {
     return isNaN(parsed) ? 0 : parsed;
   }
 
-  /**
-   * Handle cell value changes
-   */
   onCellChange(
     sectionIndex: number,
     rowIndex: number,
@@ -258,9 +226,6 @@ export class FinancialDataTableComponent implements OnInit {
     input?.blur();
   }
 
-  /**
-   * Check if row is editable
-   */
   isRowEditable(row: FinancialTableRow): boolean {
     const editable = row.editable ?? true;
     if (editable === false) return false;
@@ -268,9 +233,6 @@ export class FinancialDataTableComponent implements OnInit {
     return this.editMode;
   }
 
-  /**
-   * Get CSS classes for cells
-   */
   getCellClasses(row: FinancialTableRow, value: number): string {
     const classes: string[] = ['text-right'];
 
@@ -289,9 +251,6 @@ export class FinancialDataTableComponent implements OnInit {
     return classes.join(' ');
   }
 
-  /**
-   * Get CSS classes for rows
-   */
   getRowClasses(row: FinancialTableRow): string {
     const classes: string[] = ['border-b', 'transition-colors', 'duration-200'];
 
@@ -306,9 +265,6 @@ export class FinancialDataTableComponent implements OnInit {
     return classes.join(' ');
   }
 
-  /**
-   * Track by functions for *@for loops
-   */
   trackBySection(index: number, section: FinancialTableSection): string {
     return `section-${index}-${section.title}`;
   }

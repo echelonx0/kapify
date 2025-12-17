@@ -144,7 +144,7 @@ export class ProfileManagementService {
       return throwError(() => new Error('User not authenticated'));
     }
 
-    console.log('Loading profile data for user:', currentAuth.id);
+    //  console.log('Loading profile data for user:', currentAuth.id);
 
     return this.loadFromDatabase(currentAuth.id).pipe(
       catchError((error) => {
@@ -242,11 +242,11 @@ export class ProfileManagementService {
       profile: this.createDefaultProfile(),
     };
 
-    console.log('Created profile from auth user:', profileData);
+    // console.log('Created profile from auth user:', profileData);
 
     // Optionally sync to database in background
     this.syncToDatabase(profileData).subscribe({
-      next: () => console.log('Profile synced to database'),
+      // next: () => console.log('Profile synced to database'),
       error: (error) => console.warn('Database sync failed:', error),
     });
 
@@ -790,7 +790,7 @@ export class ProfileManagementService {
       return throwError(() => new Error('No profile data to sync'));
     }
 
-    console.log('Force syncing to database...');
+    // console.log('Force syncing to database...');
     return this.syncToDatabase(profileData);
   }
 }

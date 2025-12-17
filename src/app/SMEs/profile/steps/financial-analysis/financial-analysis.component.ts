@@ -80,6 +80,10 @@ export class FinancialAnalysisComponent implements OnInit, OnDestroy {
 
   // Tab state
   activeTab = signal<FinancialTab>('income-statement');
+  private initialTabsViewed = signal<Set<FinancialTab>>(
+    new Set(['income-statement'])
+  );
+
   private uploadMetadata = signal<DocumentUploadResult | null>(null);
   // Data signals
   incomeStatementData = signal<FinancialRowData[]>([]);
@@ -88,8 +92,14 @@ export class FinancialAnalysisComponent implements OnInit, OnDestroy {
   financialRatiosData = signal<FinancialRatioData[]>([]);
   columnHeaders = signal<string[]>([]);
 
-  // Single loading state
-  loadingState = signal<LoadingState>('idle');
+  tabLoadingState = signal<Record<FinancialTab, LoadingState>>({
+    'income-statement': 'idle',
+    'balance-sheet': 'idle',
+    'cash-flow': 'idle',
+    'financial-ratios': 'idle',
+    notes: 'idle',
+    'health-score': 'idle',
+  });
   loadingMessage = signal('');
 
   // State signals
@@ -217,6 +227,44 @@ export class FinancialAnalysisComponent implements OnInit, OnDestroy {
     this.setupAutoSave();
   }
 
+  /**
+   * Set all tabs to a specific loading state
+   */
+  private setAllTabsLoading(state: LoadingState): void {
+    this.tabLoadingState.update(() => ({
+      'income-statement': state,
+      'balance-sheet': state,
+      'cash-flow': state,
+      'financial-ratios': state,
+      notes: state,
+      'health-score': state,
+    }));
+  }
+
+  /**
+   * Mark financial data tabs as ready after successful parse
+   */
+  private markTabsAsReady(): void {
+    this.tabLoadingState.update((current) => ({
+      ...current,
+      'income-statement':
+        this.incomeStatementData().length > 0 ? 'ready' : 'idle',
+      'balance-sheet': this.balanceSheetData().length > 0 ? 'ready' : 'idle',
+      'cash-flow': this.cashFlowData().length > 0 ? 'ready' : 'idle',
+      'financial-ratios':
+        this.financialRatiosData().length > 0 ? 'ready' : 'idle',
+      notes: 'ready',
+      'health-score': 'ready',
+    }));
+  }
+
+  /**
+   * Get the current active tab's loading state
+   */
+  private getActiveTabLoadingState(): LoadingState {
+    return this.tabLoadingState()[this.activeTab()];
+  }
+
   ngOnDestroy() {
     this.destroy$.next();
     this.destroy$.complete();
@@ -227,11 +275,39 @@ export class FinancialAnalysisComponent implements OnInit, OnDestroy {
   // LOADING STATE - SIMPLIFIED
   // ===============================
 
-  isLoading(): boolean {
-    const state = this.loadingState();
-    return state !== 'idle' && state !== 'ready';
-  }
+  // isLoading(): boolean {
+  //   const state = this.loadingState();
+  //   return state !== 'idle' && state !== 'ready';
+  // }
 
+  // isLoading(): boolean {
+  //   const activeTab = this.activeTab();
+  //   const tabState = this.tabLoadingState()[activeTab];
+
+  //   // If tab hasn't been viewed yet and is still in initial load, show skeleton
+  //   if (!this.initialTabsViewed().has(activeTab) && tabState !== 'ready') {
+  //     return true;
+  //   }
+
+  //   return tabState !== 'idle' && tabState !== 'ready';
+  // }
+  isLoading(): boolean {
+    const activeTab = this.activeTab();
+    const tabState = this.tabLoadingState()[activeTab];
+    const hasBeenViewed = this.initialTabsViewed().has(activeTab);
+
+    // Show skeleton if:
+    // 1. Tab hasn't been viewed yet AND any tab is still loading, OR
+    // 2. This specific tab is still loading
+    const anyTabLoading = Object.values(this.tabLoadingState()).some(
+      (state) => state !== 'idle' && state !== 'ready'
+    );
+
+    return (
+      (!hasBeenViewed && anyTabLoading) ||
+      (tabState !== 'idle' && tabState !== 'ready')
+    );
+  }
   // ===============================
   // VALIDATION - PURE COMPUTATION
   // ===============================
@@ -325,6 +401,8 @@ export class FinancialAnalysisComponent implements OnInit, OnDestroy {
   switchTab(tab: FinancialTab) {
     this.activeTab.set(tab);
     this.editingMode.set(false);
+    // Mark this tab as viewed (so skeleton doesn't show on subsequent loads)
+    this.initialTabsViewed.update((viewed) => new Set([...viewed, tab]));
   }
 
   toggleEditMode() {
@@ -392,7 +470,7 @@ export class FinancialAnalysisComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this.loadingState.set('parsing');
+    this.setAllTabsLoading('parsing');
     this.parseError.set(null);
     this.parseWarnings.set([]);
     this.parseProgress.set(null);
@@ -414,7 +492,8 @@ export class FinancialAnalysisComponent implements OnInit, OnDestroy {
         this.parseError.set(
           `Template validation failed: ${validation.errors.join(', ')}`
         );
-        this.loadingState.set('ready');
+
+        this.setAllTabsLoading('ready');
         return;
       }
 
@@ -429,7 +508,7 @@ export class FinancialAnalysisComponent implements OnInit, OnDestroy {
       }
 
       // Upload file to storage
-      this.loadingState.set('uploading');
+      this.setAllTabsLoading('uploading');
       this.loadingMessage.set('Uploading file...');
 
       const uploadResult = await this.uploadFileToStorage(file);
@@ -479,7 +558,7 @@ export class FinancialAnalysisComponent implements OnInit, OnDestroy {
       // console.log('💾 [DEBUG] Triggering immediate backend save...');
       try {
         await this.profileService.saveCurrentProgress();
-        console.log('✅ [DEBUG] Immediate backend save completed successfully');
+        //  console.log('✅ [DEBUG] Immediate backend save completed successfully');
         this.lastSaved.set(new Date());
       } catch (saveError) {
         console.error('❌ [DEBUG] Backend save failed:', saveError);
@@ -489,13 +568,14 @@ export class FinancialAnalysisComponent implements OnInit, OnDestroy {
       }
 
       // Mark as ready
-      this.loadingState.set('ready');
+      // this.loadingState.set('ready');
+      this.markTabsAsReady();
     } catch (error) {
       console.error('❌ Error processing financial file:', error);
       this.parseError.set(
         error instanceof Error ? error.message : 'Failed to process file'
       );
-      this.loadingState.set('ready');
+      this.markTabsAsReady();
     } finally {
       this.parseProgress.set(null);
     }
@@ -1036,7 +1116,8 @@ export class FinancialAnalysisComponent implements OnInit, OnDestroy {
     }
 
     // Only show when data is stable and user is viewing (not editing)
-    return this.loadingState() === 'ready';
+    //return this.loadingState() === 'ready';
+    return this.getActiveTabLoadingState() === 'ready';
   }
 
   // Add method to check if validation should show for specific tab
