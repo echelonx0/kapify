@@ -294,13 +294,25 @@ export class ExcelFinancialParserService {
     return { incomeStatement, incomeRatios, columnHeaders };
   }
 
+  // FIXED: parseBalanceSheetSheet - EXACT TEMPLATE MAPPING
+  // Replace the existing parseBalanceSheetSheet method in excel-parser.service.ts with this version
+
   /**
-   * Parse Balance Sheet sheet
-   * Structure:
-   * - Assets section (Non-current + Current)
-   * - Equities section
-   * - Liabilities section (Non-current + Current)
-   * - Financial Ratios section at bottom
+   * Parse Balance Sheet sheet (EXACT TEMPLATE MAPPING)
+   * Template structure from financial_template.xlsx:
+   * - Row 5: Non-Current Assets (subtotal header)
+   * - Rows 6-13: Non-current asset items
+   * - Row 15: Current Assets (subtotal header)
+   * - Rows 16-20: Current asset items
+   * - Row 22: Total Assets
+   * - Row 26: Equities (subtotal header)
+   * - Rows 27-30: Equity items
+   * - Row 32: Liabilities (subtotal header)
+   * - Rows 33-38: Long-term liability items
+   * - Row 40: Current Liabilities (subtotal header)
+   * - Rows 41-42: Current liability items
+   * - Row 44: Total Equities and Liabilities
+   * - Rows 47-59: Financial Ratios
    */
   private parseBalanceSheetSheet(
     worksheet: any,
@@ -314,10 +326,10 @@ export class ExcelFinancialParserService {
     const balanceSheetRatios: FinancialRatioData[] = [];
     const colCount = expectedColCount || EXPECTED_COLUMN_COUNT;
 
-    this.log('📊 Parsing Balance Sheet...');
+    this.log('📊 Parsing Balance Sheet (Direct Template Mapping)...');
 
     // ===== ASSETS SECTION =====
-    // Non-Current Assets (rows 31-39)
+    // Non-Current Assets Header (Row 5)
     this.addSectionHeader(
       balanceSheet,
       'Non-Current Assets',
@@ -327,10 +339,11 @@ export class ExcelFinancialParserService {
       colCount
     );
 
+    // Non-Current Asset Items (Rows 6-13)
     const nonCurrentAssetRows = [6, 7, 8, 9, 10, 11, 12, 13];
     for (const row of nonCurrentAssetRows) {
-      const rowData = this.extractRowData(worksheet, 30 + row, colCount, XLSX);
-      if (rowData && !this.isBalanceSectionHeader(rowData.label)) {
+      const rowData = this.extractRowData(worksheet, row, colCount, XLSX);
+      if (rowData && rowData.label.trim() !== '') {
         balanceSheet.push({
           label: rowData.label,
           category: 'assets',
@@ -341,7 +354,7 @@ export class ExcelFinancialParserService {
       }
     }
 
-    // Current Assets (rows 41-46)
+    // Current Assets Header (Row 15)
     this.addSectionHeader(
       balanceSheet,
       'Current Assets',
@@ -351,10 +364,11 @@ export class ExcelFinancialParserService {
       colCount
     );
 
-    const currentAssetRows = [1, 2, 3, 4, 5, 6];
+    // Current Asset Items (Rows 16-20)
+    const currentAssetRows = [16, 17, 18, 19, 20];
     for (const row of currentAssetRows) {
-      const rowData = this.extractRowData(worksheet, 40 + row, colCount, XLSX);
-      if (rowData && !this.isBalanceSectionHeader(rowData.label)) {
+      const rowData = this.extractRowData(worksheet, row, colCount, XLSX);
+      if (rowData && rowData.label.trim() !== '') {
         balanceSheet.push({
           label: rowData.label,
           category: 'assets',
@@ -365,8 +379,8 @@ export class ExcelFinancialParserService {
       }
     }
 
-    // Total Assets (row 48)
-    const totalAssetsRow = this.extractRowData(worksheet, 48, colCount, XLSX);
+    // Total Assets (Row 22)
+    const totalAssetsRow = this.extractRowData(worksheet, 22, colCount, XLSX);
     if (totalAssetsRow) {
       balanceSheet.push({
         label: totalAssetsRow.label,
@@ -378,6 +392,7 @@ export class ExcelFinancialParserService {
     }
 
     // ===== EQUITIES SECTION =====
+    // Equities Header (Row 26)
     this.addSectionHeader(
       balanceSheet,
       'Equities',
@@ -387,10 +402,11 @@ export class ExcelFinancialParserService {
       colCount
     );
 
-    const equityRows = [26, 27, 28, 29, 30];
+    // Equity Items (Rows 27-30)
+    const equityRows = [27, 28, 29, 30];
     for (const row of equityRows) {
-      const rowData = this.extractRowData(worksheet, 50 + row, colCount, XLSX);
-      if (rowData && !this.isBalanceSectionHeader(rowData.label)) {
+      const rowData = this.extractRowData(worksheet, row, colCount, XLSX);
+      if (rowData && rowData.label.trim() !== '') {
         balanceSheet.push({
           label: rowData.label,
           category: 'equity',
@@ -401,20 +417,21 @@ export class ExcelFinancialParserService {
     }
 
     // ===== LIABILITIES SECTION =====
-    // Non-Current Liabilities (rows 58-64)
+    // Liabilities Header (Row 32)
     this.addSectionHeader(
       balanceSheet,
-      'Non-Current Liabilities',
+      'Liabilities',
       'liabilities',
       worksheet,
       XLSX,
       colCount
     );
 
-    const nonCurrentLiabilityRows = [33, 34, 35, 36, 37, 38, 39];
-    for (const row of nonCurrentLiabilityRows) {
-      const rowData = this.extractRowData(worksheet, 25 + row, colCount, XLSX);
-      if (rowData && !this.isBalanceSectionHeader(rowData.label)) {
+    // Long-Term Liability Items (Rows 33-38)
+    const longTermLiabilityRows = [33, 34, 35, 36, 37, 38];
+    for (const row of longTermLiabilityRows) {
+      const rowData = this.extractRowData(worksheet, row, colCount, XLSX);
+      if (rowData && rowData.label.trim() !== '') {
         balanceSheet.push({
           label: rowData.label,
           category: 'liabilities',
@@ -425,7 +442,7 @@ export class ExcelFinancialParserService {
       }
     }
 
-    // Current Liabilities (rows 66-68)
+    // Current Liabilities Header (Row 40)
     this.addSectionHeader(
       balanceSheet,
       'Current Liabilities',
@@ -435,10 +452,11 @@ export class ExcelFinancialParserService {
       colCount
     );
 
+    // Current Liability Items (Rows 41-42)
     const currentLiabilityRows = [41, 42];
     for (const row of currentLiabilityRows) {
-      const rowData = this.extractRowData(worksheet, 25 + row, colCount, XLSX);
-      if (rowData && !this.isBalanceSectionHeader(rowData.label)) {
+      const rowData = this.extractRowData(worksheet, row, colCount, XLSX);
+      if (rowData && rowData.label.trim() !== '') {
         balanceSheet.push({
           label: rowData.label,
           category: 'liabilities',
@@ -449,8 +467,8 @@ export class ExcelFinancialParserService {
       }
     }
 
-    // Total Equities and Liabilities (row 70)
-    const totalELRow = this.extractRowData(worksheet, 70, colCount, XLSX);
+    // Total Equities and Liabilities (Row 44)
+    const totalELRow = this.extractRowData(worksheet, 44, colCount, XLSX);
     if (totalELRow) {
       balanceSheet.push({
         label: totalELRow.label,
@@ -461,11 +479,11 @@ export class ExcelFinancialParserService {
       });
     }
 
-    // ===== BALANCE SHEET FINANCIAL RATIOS (rows 47+) =====
+    // ===== FINANCIAL RATIOS SECTION (Rows 47-59) =====
     this.log('📊 Parsing Financial Ratios from Balance Sheet...');
     const balanceRatioRows = [
       { row: 49, label: 'Return on Equity (ROE)' },
-      { row: 50, label: 'Return on Equity (ROA.)' },
+      { row: 50, label: 'Return on Equity (ROA)' },
       { row: 51, label: 'Debt Equity Ratio (Total liabilities)' },
       { row: 54, label: 'Current Ratio' },
       { row: 55, label: 'Acid Test Ratio (Quick Ratio)' },

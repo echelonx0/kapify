@@ -57,11 +57,11 @@ export class ProfileDataTransformerService {
       financialAnalysis: profileData.financialAnalysis,
     };
 
-    console.log('✅ [TRANSFORMER] Output result:', result);
-    console.log(
-      '✅ [TRANSFORMER] Result has financialAnalysis:',
-      !!result.financialAnalysis
-    );
+    // console.log('✅ [TRANSFORMER] Output result:', result);
+    // console.log(
+    //   '✅ [TRANSFORMER] Result has financialAnalysis:',
+    //   !!result.financialAnalysis
+    // );
 
     return result;
   }
@@ -515,15 +515,15 @@ export class ProfileDataTransformerService {
 
     // Priority 1: Use financialAnalysis if it exists (from financial-analysis section)
     if (financialAnalysis) {
-      console.log(
-        '✅ [EXTRACT FINANCIAL ANALYSIS] Using direct financialAnalysis data'
-      );
+      // console.log(
+      //   '✅ [EXTRACT FINANCIAL ANALYSIS] Using direct financialAnalysis data'
+      // );
 
       // If it's already in ParsedFinancialData format, return it directly
       if (this.isValidParsedFinancialData(financialAnalysis)) {
-        console.log(
-          '✅ [EXTRACT FINANCIAL ANALYSIS] Data is valid ParsedFinancialData'
-        );
+        // console.log(
+        //   '✅ [EXTRACT FINANCIAL ANALYSIS] Data is valid ParsedFinancialData'
+        // );
         return financialAnalysis as ParsedFinancialData;
       }
 
@@ -559,9 +559,9 @@ export class ProfileDataTransformerService {
 
       // Check for embedded data in financialProfile
       if (financialProfile.incomeStatement || financialProfile.columnHeaders) {
-        console.log(
-          '✅ [EXTRACT FINANCIAL ANALYSIS] Extracting from financialProfile'
-        );
+        // console.log(
+        //   '✅ [EXTRACT FINANCIAL ANALYSIS] Extracting from financialProfile'
+        // );
         return {
           incomeStatement: financialProfile.incomeStatement || [],
           balanceSheet: financialProfile.balanceSheet || [],
@@ -574,9 +574,9 @@ export class ProfileDataTransformerService {
       }
     }
 
-    console.log(
-      '⚠️ [EXTRACT FINANCIAL ANALYSIS] No valid financial analysis data found'
-    );
+    // console.log(
+    //   '⚠️ [EXTRACT FINANCIAL ANALYSIS] No valid financial analysis data found'
+    // );
     return undefined;
   }
 
