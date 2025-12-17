@@ -33,71 +33,180 @@
     </div>
   </div>
 
-  <!-- Sections -->
-  @for (section of sections; track trackBySection($index, section)) {
-
-  <!-- Skip rendering sections with no rows (visual labels were removed) -->
-  @if (section.rows.length > 0) {
-
-  <!-- Spacing Before This Section -->
+  <!-- Main Sections -->
+  @for (section of sections; track trackBySection($index, section); let
+  sectionIndex = $index) {
+  <!-- Spacing Before -->
   @if (section.spacingBefore) {
   <div [class]="getSpacingBeforeClasses(section.spacingBefore)"></div>
   }
 
-  <!-- Section Container -->
+  <!-- GROUP CONTAINER (e.g., ASSETS, EQUITIES & LIABILITIES) -->
+  @if (isGroupContainer(section) && section.children && section.children.length
+  > 0) {
   <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden">
-    <!-- Section Header (clickable if collapsible) -->
+    <!-- Container Header (collapsible) -->
     <div
-      class="px-6 py-4 border-b border-slate-200 bg-slate-50 flex items-center justify-between"
-      [class.cursor-pointer]="section.isCollapsible"
-      [class.hover:bg-slate-100]="section.isCollapsible"
-      (click)="section.isCollapsible && toggleSection($index)"
+      class="px-6 py-4 border-b border-slate-200 bg-slate-50 flex items-center justify-between cursor-pointer hover:bg-slate-100 transition-colors"
+      (click)="toggleSection(getSectionKey(section))"
     >
       <div class="flex items-center gap-3">
-        <!-- Collapse Icon (only if collapsible) -->
-        @if (section.isCollapsible) {
-        <button
-          (click)="toggleSection($index); $event.stopPropagation()"
-          class="p-1 hover:bg-slate-200 rounded transition-colors"
-          [attr.aria-expanded]="!isSectionCollapsed($index)"
+        <lucide-icon
+          [name]="
+            isSectionCollapsed(getSectionKey(section))
+              ? ChevronRightIcon
+              : ChevronDownIcon
+          "
+          [size]="18"
+          class="text-slate-600"
+        />
+        <h3
+          class="text-base font-semibold text-slate-900 uppercase tracking-wide"
         >
-          @if (isSectionCollapsed($index)) {
-          <lucide-icon
-            [name]="ChevronRightIcon"
-            [size]="18"
-            class="text-slate-600"
-          />
-          } @else {
-          <lucide-icon
-            [name]="ChevronDownIcon"
-            [size]="18"
-            class="text-slate-600"
-          />
-          }
-        </button>
+          {{ section.title }}
+        </h3>
+      </div>
+    </div>
+
+    <!-- Child Sections (only show if container is not collapsed) -->
+    @if (!isSectionCollapsed(getSectionKey(section))) {
+    <div class="space-y-0">
+      @for ( childSection of section.children; track trackBySection($index,
+      childSection); let childIndex = $index ) {
+      <!-- Skip header if marked as headerless (for total rows) -->
+      @if (!childSection.isHeaderless) {
+      <!-- Child Section Header -->
+      <div
+        class="px-6 py-3 border-b border-slate-200 bg-slate-50/50 flex items-center gap-2"
+      >
+        <h4 class="text-sm font-semibold text-slate-900">
+          {{ childSection.title }}
+        </h4>
+      </div>
+      }
+
+      <!-- Child Section Rows (in table format) -->
+      @if (childSection.rows.length > 0) {
+      <table class="w-full">
+        <!-- Column Headers (only show for first child to save space) -->
+        @if (childIndex === 0 && !childSection.isHeaderless) {
+        <thead class="bg-white">
+          <tr class="border-b border-slate-200">
+            <th
+              class="text-left px-6 py-3 font-semibold text-slate-900 text-sm"
+            >
+              {{ itemLabel }}
+            </th>
+
+            @for (header of visibleYearHeaders(); track trackByHeader($index,
+            header)) {
+            <th
+              class="text-right px-4 py-3 font-semibold text-slate-900 text-sm min-w-24"
+            >
+              {{ header }}
+            </th>
+            }
+          </tr>
+        </thead>
         }
 
-        <!-- Section Title -->
+        <!-- Child Section Data Rows -->
+        <tbody>
+          @for (row of childSection.rows; track trackByRow($index, row)) {
+          <tr [class]="getRowClasses(row, true)">
+            <!-- Label Cell -->
+            <td [class]="'px-6 py-3 text-left ' + getLabelClasses(row)">
+              <div
+                class="flex items-center gap-2"
+                [class.ml-6]="!childSection.isHeaderless"
+              >
+                <span class="flex-1">{{ row.label }}</span>
+
+                @if (!row.editable || row.isCalculated) {
+                <lucide-icon
+                  [name]="LockIcon"
+                  [size]="16"
+                  class="text-slate-400 flex-shrink-0"
+                />
+                }
+              </div>
+            </td>
+
+            <!-- Data Cells -->
+            @for ( value of getVisibleRowValues(row.values); track
+            trackByHeader($index, $index.toString()) ) {
+            <td [class]="getCellClasses(row, value)">
+              @if (isRowEditable(row)) {
+              <!-- Editable Input -->
+              <input
+                type="text"
+                [value]="formatNumber(value, row)"
+                (change)="onCellChange($index, $index, $index, $event)"
+                (focus)="onInputFocus($event)"
+                (keydown.enter)="onEnterKey($event)"
+                class="w-full text-right px-2 py-1 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white hover:border-slate-300 transition-colors"
+              />
+              } @else {
+              <!-- Read-Only Display -->
+              <span>{{ formatNumber(value, row) }}</span>
+              }
+            </td>
+            }
+          </tr>
+          }
+        </tbody>
+      </table>
+      } }
+    </div>
+    }
+  </div>
+  }
+
+  <!-- REGULAR SECTION (not a group container) -->
+  @else if (section.rows && section.rows.length > 0) {
+  <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden">
+    <!-- Section Header (collapsible if needed) -->
+    <div
+      [class]="
+        'px-6 py-4 border-b border-slate-200 bg-slate-50 flex items-center justify-between ' +
+        (section.isCollapsible ? 'cursor-pointer hover:bg-slate-100' : '')
+      "
+      [class.transition-colors]="section.isCollapsible"
+      (click)="section.isCollapsible && toggleSection(getSectionKey(section))"
+    >
+      <div class="flex items-center gap-3">
+        @if (section.isCollapsible) {
+        <lucide-icon
+          [name]="
+            isSectionCollapsed(getSectionKey(section))
+              ? ChevronRightIcon
+              : ChevronDownIcon
+          "
+          [size]="18"
+          class="text-slate-600"
+        />
+        }
+
         <h3 class="text-base font-semibold text-slate-900">
           {{ section.title }}
         </h3>
 
-        <!-- Accent Color Indicator (for ratios) -->
         @if (section.accentColor === 'orange') {
         <div class="ml-2 w-2 h-2 rounded-full bg-amber-500"></div>
         }
       </div>
     </div>
 
-    <!-- Section Rows (shown unless collapsed) -->
-    @if (!isSectionCollapsed($index)) {
+    <!-- Section Rows (if not collapsed) -->
+    @if (!section.isCollapsible || !isSectionCollapsed(getSectionKey(section)))
+    {
     <table class="w-full">
       <!-- Column Headers -->
       <thead class="bg-white">
         <tr class="border-b border-slate-200">
-          <th
-            class="text-left px-6 py-3 font-semibold text-slate-900 text-sm"
-          ></th>
+          <th class="text-left px-6 py-3 font-semibold text-slate-900 text-sm">
+            {{ itemLabel }}
+          </th>
 
           @for (header of visibleYearHeaders(); track trackByHeader($index,
           header)) {
@@ -119,7 +228,6 @@
             <div class="flex items-center gap-2">
               <span class="flex-1">{{ row.label }}</span>
 
-              <!-- Lock Icon for Non-Editable Rows -->
               @if (!row.editable || row.isCalculated) {
               <lucide-icon
                 [name]="LockIcon"
@@ -131,8 +239,8 @@
           </td>
 
           <!-- Data Cells -->
-          @for (value of getVisibleRowValues(row.values); track
-          trackByHeader($index, $index.toString())) {
+          @for ( value of getVisibleRowValues(row.values); track
+          trackByHeader($index, $index.toString()) ) {
           <td [class]="getCellClasses(row, value)">
             @if (isRowEditable(row)) {
             <!-- Editable Input -->
@@ -156,9 +264,10 @@
     </table>
     }
   </div>
+  }
 
-  <!-- Spacing After This Section -->
+  <!-- Spacing After -->
   @if (section.spacingAfter) {
   <div [class]="getSpacingAfterClasses(section.spacingAfter)"></div>
-  } } }
+  } }
 </div>

@@ -873,25 +873,32 @@ export class ExcelFinancialParserService {
   }
 
   private getRatioType(label: string): 'ratio' | 'percentage' | 'currency' {
+    // Days metrics show as plain numbers (no suffix)
+    if (label.toLowerCase().includes('days')) {
+      return 'ratio';
+    }
+
     if (
       label.toLowerCase().includes('margin') ||
-      label.toLowerCase().includes('growth') ||
-      label.toLowerCase().includes('days')
+      label.toLowerCase().includes('growth')
     ) {
       return 'percentage';
     }
+
     if (
       label.toLowerCase().includes('ratio') ||
       label.toLowerCase().includes('cover')
     ) {
       return 'ratio';
     }
+
     if (
       label.toLowerCase().includes('value') ||
       label.toLowerCase().includes('equity')
     ) {
       return 'currency';
     }
+
     return 'percentage';
   }
 
