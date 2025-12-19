@@ -153,22 +153,6 @@ export class AIAssistantModalComponent {
     try {
       let result: AIAnalysisResult;
 
-      // switch (this.selectedAction.type) {
-      //   case 'application_review':
-      //     result = await this.aiService.reviewApplication(request).toPromise();
-      //     break;
-      //   case 'background_check':
-      //     result = await this.aiService.performBackgroundCheck(request).toPromise();
-      //     break;
-      //   case 'market_research':
-      //     result = await this.aiService.conductMarketResearch(request).toPromise();
-      //     break;
-      //   case 'risk_assessment':
-      //     result = await this.aiService.assessRisk(request).toPromise();
-      //     break;
-      //   default:
-      //     throw new Error('Unknown analysis type');
-      // }
       let demoresult: AIAnalysisResult = {
         riskFactors: [],
         recommendations: [],
