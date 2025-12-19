@@ -35,6 +35,8 @@ import {
 } from 'src/app/SMEs/services/funding-steps.constants';
 import { FundingApplicationUtilityService } from 'src/app/SMEs/services/utility.service';
 import { FullscreenDarkModeService } from '../financial-analysis/services/fullscreen-dark-mode.service';
+import { StepSaveService } from '../../services/step-save.service';
+import { ToastService } from '../../../../shared/services/toast.service';
 
 @Component({
   selector: 'app-profile-steps-layout',
@@ -137,7 +139,7 @@ import { FullscreenDarkModeService } from '../financial-analysis/services/fullsc
               <button
                 *ngIf="!isFirstStep()"
                 (click)="previousStep()"
-                class="px-4 py-2.5 text-sm font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-xl flex items-center gap-2"
+                class="px-4 py-2.5 text-sm font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-xl flex items-center gap-2 transition-colors duration-200"
               >
                 <lucide-icon [name]="ArrowLeftIcon" [size]="16" />
                 <span class="hidden sm:inline">Back</span>
@@ -145,27 +147,84 @@ import { FullscreenDarkModeService } from '../financial-analysis/services/fullsc
 
               <div *ngIf="isFirstStep()"></div>
 
-              <!-- Next / Save Button -->
-              <div class="flex items-center gap-3">
-                <button
-                  *ngIf="isLastStep()"
-                  (click)="submitProfile()"
-                  [disabled]="isSubmitting()"
-                  class="px-6 py-2.5 text-sm font-medium text-white bg-teal-500 rounded-xl disabled:opacity-50 flex items-center gap-2"
+              <!-- Save Status & Actions -->
+              <div class="flex items-center gap-3 ml-auto">
+                <!-- Last Saved Indicator -->
+                @if (!isSavingLayout() && !hasUnsavedChanges()) {
+                <div
+                  class="flex items-center gap-1 text-sm text-green-700 bg-green-50 px-3 py-1.5 rounded-lg"
                 >
-                  <span *ngIf="!isSubmitting()">Save and Exit</span>
-                  <span *ngIf="isSubmitting()">Saving...</span>
+                  <lucide-icon [name]="CheckIcon" [size]="14" />
+                  <span>Saved {{ getLastSavedText() }}</span>
+                </div>
+                }
+
+                <!-- Unsaved Changes Warning -->
+                @if (hasUnsavedChanges()) {
+                <div
+                  class="flex items-center gap-1 text-sm text-amber-700 bg-amber-50 px-3 py-1.5 rounded-lg"
+                >
+                  <div
+                    class="w-2 h-2 bg-amber-500 rounded-full animate-pulse"
+                  ></div>
+                  <span>Unsaved changes</span>
+                </div>
+                }
+
+                <!-- Save Button (only enabled when unsaved changes exist) -->
+                <button
+                  (click)="saveCurrentStep()"
+                  [disabled]="!hasUnsavedChanges()"
+                  class="px-4 py-2.5 text-sm font-medium text-white bg-slate-500 disabled:bg-slate-300 disabled:cursor-not-allowed rounded-xl flex items-center gap-2 transition-colors duration-200 hover:bg-slate-600 active:bg-slate-700"
+                >
+                  @if (isSavingLayout()) {
+                  <lucide-icon
+                    [name]="ClockIcon"
+                    [size]="16"
+                    class="animate-spin"
+                  />
+                  <span>Saving...</span>
+                  } @else {
+                  <span>Save</span>
+                  }
                 </button>
 
+                <!-- Next / Submit Button -->
+                @if (isLastStep()) {
                 <button
-                  *ngIf="!isLastStep()"
-                  (click)="saveAndContinue()"
-                  [disabled]="isSaving()"
-                  class="px-6 py-2.5 text-sm font-medium text-white bg-teal-500 rounded-xl disabled:opacity-50 flex items-center gap-2"
+                  (click)="submitProfile()"
+                  [disabled]="isSavingLayout() || isSubmitting()"
+                  class="px-6 py-2.5 text-sm font-medium text-white bg-teal-500 hover:bg-teal-600 active:bg-teal-700 rounded-xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 transition-colors duration-200"
                 >
-                  <span *ngIf="!isSaving()">Continue</span>
-                  <span *ngIf="isSaving()">Saving...</span>
+                  @if (isSavingLayout() || isSubmitting()) {
+                  <lucide-icon
+                    [name]="ClockIcon"
+                    [size]="16"
+                    class="animate-spin"
+                  />
+                  <span>Saving...</span>
+                  } @else {
+                  <span>Save and Exit</span>
+                  }
                 </button>
+                } @else {
+                <button
+                  (click)="saveAndContinue()"
+                  [disabled]="isSavingLayout()"
+                  class="px-6 py-2.5 text-sm font-medium text-white bg-teal-500 hover:bg-teal-600 active:bg-teal-700 rounded-xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 transition-colors duration-200"
+                >
+                  @if (isSavingLayout()) {
+                  <lucide-icon
+                    [name]="ClockIcon"
+                    [size]="16"
+                    class="animate-spin"
+                  />
+                  <span>Saving...</span>
+                  } @else {
+                  <span>Save & Continue</span>
+                  }
+                </button>
+                }
               </div>
             </div>
           </footer>
@@ -240,6 +299,9 @@ export class ProfileStepsLayoutComponent implements OnInit {
   private stepCheckerService = inject(SMEProfileStepsService);
   private utilityService = inject(FundingApplicationUtilityService);
   private darkMode = inject(FullscreenDarkModeService);
+  private stepSaveService = inject(StepSaveService);
+  private toastService = inject(ToastService);
+
   // Fullscreen state
   isFullscreen = signal(false);
 
@@ -274,6 +336,12 @@ export class ProfileStepsLayoutComponent implements OnInit {
       ...this.stepUIConfig[step.id as keyof typeof this.stepUIConfig],
     }))
   );
+
+  // Computed: Unsaved changes
+  hasUnsavedChanges = computed(() => this.stepSaveService.hasUnsavedChanges());
+
+  // Computed: Is saving
+  isSavingLayout = computed(() => this.stepSaveService.isSaving());
 
   overallProgress = computed(() => {
     const totalSteps = this.profileService.steps.length;
@@ -392,40 +460,66 @@ export class ProfileStepsLayoutComponent implements OnInit {
 
   // Navigation
   goToStep(stepId: string) {
+    // Check for unsaved changes before navigating
+    if (
+      this.stepSaveService.hasUnsavedChanges() &&
+      !confirm(this.stepSaveService.getUnsavedWarningMessage())
+    ) {
+      return;
+    }
+
     this.profileService.setCurrentStep(stepId);
     this.router.navigate(['/profile/steps', stepId]);
+    this.stepSaveService.resetChangeDetection();
   }
 
   previousStep() {
+    // Check for unsaved changes before navigating
+    if (
+      this.stepSaveService.hasUnsavedChanges() &&
+      !confirm(this.stepSaveService.getUnsavedWarningMessage())
+    ) {
+      return;
+    }
+
     this.profileService.previousStep();
     this.router.navigate([
       '/profile/steps',
       this.profileService.currentStepId(),
     ]);
+    this.stepSaveService.resetChangeDetection();
   }
 
+  // Save current step from layout button
+  async saveCurrentStep() {
+    const result = await this.stepSaveService.saveCurrentStep();
+    // Toast is shown by service, no additional UI needed here
+  }
+
+  // Save and continue - only advance on success
   async saveAndContinue() {
-    this.isSaving.set(true);
-    try {
-      await new Promise((r) => setTimeout(r, 120));
-      await this.profileService.saveCurrentProgress();
-      this.lastSaved.set(new Date());
+    const result = await this.stepSaveService.saveCurrentStep();
+
+    if (result.success) {
       this.profileService.nextStep();
       this.router.navigate([
         '/profile/steps',
         this.profileService.currentStepId(),
       ]);
-    } finally {
-      this.isSaving.set(false);
+      this.stepSaveService.resetChangeDetection();
     }
+    // If failed, toast already shown by service
   }
 
   async submitProfile() {
     if (this.isLastStep()) {
-      await this.saveProgress();
-      this.router.navigate(['/profile'], {
-        queryParams: { completed: 'true' },
-      });
+      // Save before exit
+      const result = await this.stepSaveService.saveCurrentStep();
+      if (result.success) {
+        this.router.navigate(['/profile'], {
+          queryParams: { completed: 'true' },
+        });
+      }
       return;
     }
 
@@ -442,16 +536,6 @@ export class ProfileStepsLayoutComponent implements OnInit {
     }
   }
 
-  async saveProgress() {
-    this.isSaving.set(true);
-    try {
-      await this.profileService.saveCurrentProgress();
-      this.lastSaved.set(new Date());
-    } finally {
-      this.isSaving.set(false);
-    }
-  }
-
   isFirstStep() {
     return this.profileService.currentStepIndex() === 0;
   }
@@ -464,17 +548,6 @@ export class ProfileStepsLayoutComponent implements OnInit {
   }
 
   getLastSavedText() {
-    const saved = this.lastSaved();
-    if (!saved) return '';
-    const now = new Date();
-    const diffMs = now.getTime() - saved.getTime();
-    const mins = Math.floor(diffMs / 60000);
-
-    if (mins < 1) return 'just now';
-    if (mins < 60) return `${mins} min ago`;
-    const hours = Math.floor(mins / 60);
-    if (hours < 24) return `${hours}h ago`;
-
-    return saved.toLocaleDateString();
+    return this.stepSaveService.getLastSavedText();
   }
 }

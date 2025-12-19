@@ -50,7 +50,7 @@ export class RegistrationTransactionService {
   private organizationSetupService = inject(OrganizationSetupService);
 
   constructor() {
-    console.log('RegistrationTransactionService initialized');
+    // console.log('RegistrationTransactionService initialized');
   }
 
   // ===============================
@@ -60,7 +60,7 @@ export class RegistrationTransactionService {
   executeRegistrationTransaction(
     credentials: RegisterRequest
   ): Observable<RegistrationTransactionResult> {
-    console.log('Starting registration transaction for:', credentials.email);
+    //  console.log('Starting registration transaction for:', credentials.email);
 
     const transactionState: RegistrationTransactionState = {
       phase: 'auth',
@@ -73,7 +73,7 @@ export class RegistrationTransactionService {
     ).pipe(
       tap((result) => {
         if (result.success) {
-          console.log('Registration transaction completed successfully');
+          // console.log('Registration transaction completed successfully');
         } else {
           console.error('Registration transaction failed:', result.error);
         }

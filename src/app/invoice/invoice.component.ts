@@ -17,27 +17,35 @@ export class InvoiceComponent implements OnInit {
   loading = signal(true);
   error = signal<string | null>(null);
   isPurchaseModalOpen = signal(false);
+
   ngOnInit() {
     this.loadInvoices();
   }
 
+  /**
+   * Load invoices from service
+   */
   private loadInvoices() {
     this.loading.set(true);
     this.error.set(null);
 
     this.invoiceService.getInvoices().subscribe({
       next: (invoices) => {
+        console.log('✅ Loaded invoices:', invoices.length);
         this.invoices.set(invoices);
         this.loading.set(false);
       },
       error: (err) => {
-        console.error('Failed to load invoices:', err);
+        console.error('❌ Failed to load invoices:', err);
         this.error.set('Failed to load invoices. Please try again.');
         this.loading.set(false);
       },
     });
   }
 
+  /**
+   * Get status badge color based on invoice status
+   */
   getStatusColor(status: string): string {
     switch (status) {
       case 'paid':
@@ -51,6 +59,9 @@ export class InvoiceComponent implements OnInit {
     }
   }
 
+  /**
+   * Get status display text
+   */
   getStatusText(status: string): string {
     switch (status) {
       case 'paid':
@@ -64,6 +75,38 @@ export class InvoiceComponent implements OnInit {
     }
   }
 
+  /**
+   * Get payment provider badge text
+   */
+  getProviderBadgeText(provider: 'stripe' | 'paystack'): string {
+    return provider === 'paystack' ? 'Paystack' : 'Stripe';
+  }
+
+  /**
+   * Get payment provider badge color
+   */
+  getProviderBadgeColor(provider: 'stripe' | 'paystack'): string {
+    return provider === 'paystack'
+      ? 'bg-teal-50 text-teal-700 border-teal-200/50'
+      : 'bg-purple-50 text-purple-700 border-purple-200/50';
+  }
+
+  /**
+   * Get payment reference (Paystack or Stripe)
+   */
+  getPaymentReference(invoice: Invoice): string {
+    if (invoice.paymentProvider === 'paystack' && invoice.paystackReference) {
+      return invoice.paystackReference;
+    }
+    if (invoice.stripeSessionId) {
+      return invoice.stripeSessionId.substring(0, 20) + '...';
+    }
+    return 'N/A';
+  }
+
+  /**
+   * Format date for display
+   */
   formatDate(date: string): string {
     return new Date(date).toLocaleDateString('en-ZA', {
       year: 'numeric',
@@ -72,6 +115,9 @@ export class InvoiceComponent implements OnInit {
     });
   }
 
+  /**
+   * Format amount as ZAR currency
+   */
   formatAmount(amount: number): string {
     return new Intl.NumberFormat('en-ZA', {
       style: 'currency',
@@ -80,33 +126,52 @@ export class InvoiceComponent implements OnInit {
     }).format(amount);
   }
 
+  /**
+   * Format credits with thousand separator
+   */
   formatCredits(credits: number): string {
     return new Intl.NumberFormat('en-ZA').format(credits);
   }
 
+  /**
+   * View invoice in Zoho (if available)
+   */
   viewInvoice(invoice: Invoice) {
     if (invoice.zohoInvoiceId) {
-      console.log('View invoice:', invoice.zohoInvoiceId);
-      // TODO: Implement viewing invoice in Zoho
+      console.log('📄 View invoice:', invoice.zohoInvoiceNumber);
+      // TODO: Implement viewing invoice in Zoho dashboard
+      // Could open Zoho portal or embed iframe
     }
   }
 
+  /**
+   * Download invoice from Zoho (if available)
+   */
   downloadInvoice(invoice: Invoice) {
     if (invoice.zohoInvoiceId) {
-      console.log('Download invoice:', invoice.zohoInvoiceId);
-      // TODO: Implement downloading invoice from Zoho
+      console.log('⬇️ Download invoice:', invoice.zohoInvoiceNumber);
+      // TODO: Implement downloading invoice PDF from Zoho
+      // Use Zoho API to get PDF download link
     }
   }
 
+  /**
+   * Retry loading invoices
+   */
   retry() {
     this.loadInvoices();
   }
 
+  /**
+   * Open purchase credits modal
+   */
   goToCredits() {
-    // this.router.navigate(['/dashboard/settings']);
-    this.isPurchaseModalOpen.set(true);
+    this.router.navigate(['/credits']);
   }
 
+  /**
+   * Navigate to home
+   */
   goHome() {
     this.router.navigate(['/']);
   }

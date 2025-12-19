@@ -69,7 +69,7 @@
     <div class="bg-slate-50 border border-slate-200 rounded-xl p-4">
       <div class="flex items-start gap-2 mb-3">
         <lucide-icon [img]="TargetIcon" class="w-5 h-5 text-slate-600 mt-0.5" />
-        <h3 class="text-sm font-semibold text-slate-900">Purpose Statement</h3>
+        <h3 class="text-sm font-semibold text-slate-900">Funding Motivation</h3>
       </div>
       <p class="text-sm text-slate-700 leading-relaxed">
         {{ purposeStatement() }}
@@ -95,7 +95,10 @@
 
   <!-- BUSINESS INFO TAB - NOW USING STANDALONE COMPONENT -->
   @if (activeTab() === 'business') {
-  <app-business-info [profileData]="profileData"></app-business-info>
+  <app-business-info
+    [profileData]="profileData"
+    [rawProfileData]="rawProfileData"
+  ></app-business-info>
   }
 
   <!-- FINANCIAL INFO TAB -->

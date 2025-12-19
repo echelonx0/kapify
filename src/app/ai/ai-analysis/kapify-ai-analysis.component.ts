@@ -1,6 +1,16 @@
 // src/app/ai/ai-analysis/kapify-ai-analysis.component.ts
 
-import { Component, Input, Output, EventEmitter, signal, computed, inject, OnDestroy, OnInit } from '@angular/core';
+import {
+  Component,
+  Input,
+  Output,
+  EventEmitter,
+  signal,
+  computed,
+  inject,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Subject, takeUntil } from 'rxjs';
 
@@ -11,14 +21,24 @@ import { AiAnalysisProgressComponent } from './components/ai-analysis-progress.c
 import { ComprehensiveAnalysisResultsComponent } from './components/comprehensive-analysis-results.component';
 import { AnalysisErrorComponent } from './components/analysis-error.component';
 import { FundingApplicationProfile } from 'src/app/SMEs/applications/models/funding-application.models';
-import { ModularAIAnalysisService, ComprehensiveAnalysis } from '../services/modular-ai-analysis.service';
-import { BusinessRulesAnalysisService, BusinessRulesResult } from '../services/business-rules.service';
+import {
+  ModularAIAnalysisService,
+  ComprehensiveAnalysis,
+} from '../services/modular-ai-analysis.service';
+import {
+  BusinessRulesAnalysisService,
+  BusinessRulesResult,
+} from '../services/business-rules.service';
 import { FundingProfileBackendService } from 'src/app/SMEs/services/funding-profile-backend.service';
 import { ApplicationFormData } from 'src/app/SMEs/applications/new-application/models/application-form.model';
 import { FundingOpportunity } from 'src/app/funder/create-opportunity/shared/funding.interfaces';
 
- 
-type AnalysisState = 'pre-analysis' | 'business-rules' | 'ai-progress' | 'ai-results' | 'error';
+type AnalysisState =
+  | 'pre-analysis'
+  | 'business-rules'
+  | 'ai-progress'
+  | 'ai-results'
+  | 'error';
 
 @Component({
   selector: 'app-enhanced-ai-analysis',
@@ -29,75 +49,68 @@ type AnalysisState = 'pre-analysis' | 'business-rules' | 'ai-progress' | 'ai-res
     BusinessRulesResultsComponent,
     AiAnalysisProgressComponent,
     ComprehensiveAnalysisResultsComponent,
-    AnalysisErrorComponent
+    AnalysisErrorComponent,
   ],
   template: `
-    <div class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
-      
-      @switch (currentState()) {
-        
-        @case ('pre-analysis') {
-          <app-analysis-launcher
-            [analysisMode]="analysisMode"
-            [analysisPerspective]="analysisPerspective"
-            [canAnalyze]="canAnalyze()"
-            [validationIssues]="validationIssues()"
-            [isLoadingProfile]="isLoadingProfile()"
-            (startAnalysis)="startAnalysis()" />
-        }
-        
-        @case ('business-rules') {
-          <app-business-rules-results
-            [result]="businessRulesResult()!"
-            [analysisMode]="analysisMode"
-            [analysisPerspective]="analysisPerspective"
-            (startComprehensiveAnalysis)="startComprehensiveAnalysis()"
-            (improveApplication)="handleImproveApplication()"
-            (proceedWithApplication)="handleProceedWithApplication()"
-            (refreshAnalysis)="refreshAnalysis()" />
-        }
-        
-        @case ('ai-progress') {
-          <app-ai-analysis-progress
-            [currentStage]="getCurrentStage()"
-            [progress]="getAnalysisProgress()"
-            [analysisPerspective]="analysisPerspective"
-            (cancelAnalysis)="cancelAnalysis()" />
-        }
-        
-        @case ('ai-results') {
-          <app-comprehensive-analysis-results
-            [analysis]="comprehensiveAnalysis()!"
-            [analysisPerspective]="analysisPerspective"
-            [analysisWarnings]="analysisWarnings()"
-            (improveApplication)="handleImproveApplication()"
-            (proceedWithApplication)="handleProceedWithApplication()"
-            (refreshAnalysis)="refreshAnalysis()"
-            (retryAnalysis)="retryAnalysisWithDiagnostics()" />
-        }
-        
-        @case ('error') {
-          <app-analysis-error
-            [error]="analysisError()!"
-            [analysisPerspective]="analysisPerspective"
-            (retry)="retryAnalysisWithDiagnostics()"
-            (dismiss)="clearError()" />
-        }
-      }
-      
+    <div
+      class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden"
+    >
+      @switch (currentState()) { @case ('pre-analysis') {
+      <app-analysis-launcher
+        [analysisMode]="analysisMode"
+        [analysisPerspective]="analysisPerspective"
+        [canAnalyze]="canAnalyze()"
+        [validationIssues]="validationIssues()"
+        [isLoadingProfile]="isLoadingProfile()"
+        (startAnalysis)="startAnalysis()"
+      />
+      } @case ('business-rules') {
+      <app-business-rules-results
+        [result]="businessRulesResult()!"
+        [analysisMode]="analysisMode"
+        [analysisPerspective]="analysisPerspective"
+        (startComprehensiveAnalysis)="startComprehensiveAnalysis()"
+        (improveApplication)="handleImproveApplication()"
+        (proceedWithApplication)="handleProceedWithApplication()"
+        (refreshAnalysis)="refreshAnalysis()"
+      />
+      } @case ('ai-progress') {
+      <app-ai-analysis-progress
+        [currentStage]="getCurrentStage()"
+        [progress]="getAnalysisProgress()"
+        [analysisPerspective]="analysisPerspective"
+        (cancelAnalysis)="cancelAnalysis()"
+      />
+      } @case ('ai-results') {
+      <app-comprehensive-analysis-results
+        [analysis]="comprehensiveAnalysis()!"
+        [analysisPerspective]="analysisPerspective"
+        [analysisWarnings]="analysisWarnings()"
+        (improveApplication)="handleImproveApplication()"
+        (proceedWithApplication)="handleProceedWithApplication()"
+        (refreshAnalysis)="refreshAnalysis()"
+        (retryAnalysis)="retryAnalysisWithDiagnostics()"
+      />
+      } @case ('error') {
+      <app-analysis-error
+        [error]="analysisError()!"
+        [analysisPerspective]="analysisPerspective"
+        (retry)="retryAnalysisWithDiagnostics()"
+        (dismiss)="clearError()"
+      />
+      } }
     </div>
-  `
+  `,
 })
 export class KapifyAIAnalysisComponent implements OnInit, OnDestroy {
-
   @Input() opportunity: FundingOpportunity | null = null;
-   @Input() applicationData: ApplicationFormData | null = null; 
-  @Input() applicationId: string | null = null;  
-  @Input() businessProfile?: FundingApplicationProfile; 
+  @Input() applicationData: ApplicationFormData | null = null;
+  @Input() applicationId: string | null = null;
+  @Input() businessProfile?: FundingApplicationProfile;
   @Input() isSubmitted = false;
   @Input() analysisMode: 'profile' | 'opportunity' = 'opportunity';
   @Input() analysisPerspective: 'sme' | 'investor' = 'sme';
-  
+
   @Output() analysisCompleted = new EventEmitter<ComprehensiveAnalysis>();
   @Output() improvementRequested = new EventEmitter<void>();
   @Output() proceedRequested = new EventEmitter<void>();
@@ -110,43 +123,45 @@ export class KapifyAIAnalysisComponent implements OnInit, OnDestroy {
 
   // State Management
   currentState = signal<AnalysisState>('pre-analysis');
-  
+
   // Data State
   private loadedProfile = signal<FundingApplicationProfile | null>(null);
   businessRulesResult = signal<BusinessRulesResult | null>(null);
   comprehensiveAnalysis = signal<ComprehensiveAnalysis | null>(null);
-  
+
   // Loading & Error State
   isLoadingProfile = signal(false);
   analysisError = signal<string | null>(null);
   analysisWarnings = signal<string[]>([]);
 
   // Computed Properties
-  private currentProfile = computed(() => this.businessProfile || this.loadedProfile());
-  
+  private currentProfile = computed(
+    () => this.businessProfile || this.loadedProfile()
+  );
+
   canAnalyze = computed(() => {
     const profile = this.currentProfile();
     if (!profile) return false;
-    
+
     if (this.analysisMode === 'opportunity') {
       if (!this.opportunity || !this.applicationData) return false;
-      
+
       const data = this.applicationData;
       return !!(
-        data.requestedAmount && 
+        data.requestedAmount &&
         parseFloat(data.requestedAmount) > 0 &&
-        data.purposeStatement?.trim() && 
+        data.purposeStatement?.trim() &&
         data.useOfFunds?.trim()
       );
     }
-    
+
     return true;
   });
 
   validationIssues = computed(() => {
     const issues: string[] = [];
     const profile = this.currentProfile();
-    
+
     if (!profile) {
       if (this.isLoadingProfile()) {
         issues.push('Loading business profile...');
@@ -155,11 +170,11 @@ export class KapifyAIAnalysisComponent implements OnInit, OnDestroy {
       }
       return issues;
     }
-    
+
     if (this.analysisMode === 'opportunity') {
       if (!this.opportunity) issues.push('Funding opportunity data missing');
       if (!this.applicationData) issues.push('Application data missing');
-      
+
       const data = this.applicationData;
       if (data) {
         if (!data.requestedAmount || parseFloat(data.requestedAmount) <= 0) {
@@ -173,7 +188,7 @@ export class KapifyAIAnalysisComponent implements OnInit, OnDestroy {
         }
       }
     }
-    
+
     return issues;
   });
 
@@ -194,7 +209,8 @@ export class KapifyAIAnalysisComponent implements OnInit, OnDestroy {
 
   private loadBusinessProfile() {
     this.isLoadingProfile.set(true);
-    this.backendService.loadSavedProfile()
+    this.backendService
+      .loadSavedProfile()
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (profile) => {
@@ -206,7 +222,7 @@ export class KapifyAIAnalysisComponent implements OnInit, OnDestroy {
           this.analysisError.set('Failed to load business profile');
           this.currentState.set('error');
           this.isLoadingProfile.set(false);
-        }
+        },
       });
   }
 
@@ -228,13 +244,14 @@ export class KapifyAIAnalysisComponent implements OnInit, OnDestroy {
     const profile = this.currentProfile();
     if (!profile) return;
 
-    const analysisObservable = this.analysisMode === 'profile' 
-      ? this.businessRulesService.analyzeProfile(profile)
-      : this.businessRulesService.analyzeApplication(
-          profile, 
-          this.opportunity!, 
-          this.applicationData!
-        );
+    const analysisObservable =
+      this.analysisMode === 'profile'
+        ? this.businessRulesService.analyzeProfile(profile)
+        : this.businessRulesService.analyzeApplication(
+            profile,
+            this.opportunity!,
+            this.applicationData!
+          );
 
     analysisObservable.pipe(takeUntil(this.destroy$)).subscribe({
       next: (result) => {
@@ -246,7 +263,7 @@ export class KapifyAIAnalysisComponent implements OnInit, OnDestroy {
         console.error('Business rules analysis failed:', error);
         this.analysisError.set('Failed to perform initial analysis');
         this.currentState.set('error');
-      }
+      },
     });
   }
 
@@ -260,34 +277,33 @@ export class KapifyAIAnalysisComponent implements OnInit, OnDestroy {
     const application = {
       id: this.applicationId || `temp_${Date.now()}`,
       documents: {},
-      ...this.applicationData
+      ...this.applicationData,
     };
 
-    this.modularAIService.analyzeApplication(
-      application,
-      profile,
-      this.analysisPerspective  
-    ).pipe(takeUntil(this.destroy$)).subscribe({
-      next: (result) => {
-        this.comprehensiveAnalysis.set(result);
-        this.analysisCompleted.emit(result);
-        this.currentState.set('ai-results');
-        
-        if (result.confidence < 80) {
-          this.analysisWarnings.set([
-            'Some analysis modules used fallback data due to service issues.',
-            'Results may be less accurate than usual.',
-            'Consider retrying the analysis later for improved accuracy.'
-          ]);
-        }
-        
-        console.log('Comprehensive analysis completed:', result);
-      },
-      error: (error) => {
-        console.error('Comprehensive analysis failed:', error);
-        this.handleAnalysisError(error);
-      }
-    });
+    this.modularAIService
+      .analyzeApplication(application, profile, this.analysisPerspective)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (result) => {
+          this.comprehensiveAnalysis.set(result);
+          this.analysisCompleted.emit(result);
+          this.currentState.set('ai-results');
+
+          if (result.confidence < 80) {
+            this.analysisWarnings.set([
+              'Some analysis modules used fallback data due to service issues.',
+              'Results may be less accurate than usual.',
+              'Consider retrying the analysis later for improved accuracy.',
+            ]);
+          }
+
+          console.log('Comprehensive analysis completed:', result);
+        },
+        error: (error) => {
+          console.error('Comprehensive analysis failed:', error);
+          this.handleAnalysisError(error);
+        },
+      });
   }
 
   // =======================
@@ -300,16 +316,16 @@ export class KapifyAIAnalysisComponent implements OnInit, OnDestroy {
 
   retryAnalysisWithDiagnostics() {
     const profile = this.currentProfile();
-    
+
     console.log('Retrying analysis with diagnostics:', {
       hasProfile: !!profile,
       hasFinancialData: !!profile?.financialProfile,
       monthlyRevenue: profile?.financialProfile?.monthlyRevenue,
       hasApplicationData: !!this.applicationData,
       applicationId: this.applicationId,
-      analysisPerspective: this.analysisPerspective
+      analysisPerspective: this.analysisPerspective,
     });
-    
+
     this.startComprehensiveAnalysis();
   }
 
@@ -364,17 +380,24 @@ export class KapifyAIAnalysisComponent implements OnInit, OnDestroy {
 
   private handleAnalysisError(error: any) {
     let userMessage = 'Analysis could not be completed. ';
-    
+
     if (error.message?.includes('Financial analysis')) {
-      userMessage += 'There was an issue processing your financial data. Please ensure all financial information is complete and try again.';
+      userMessage +=
+        'There was an issue processing your financial data. Please ensure all financial information is complete and try again.';
     } else if (error.message?.includes('timeout')) {
-      userMessage += 'The analysis is taking longer than expected. Please try again.';
-    } else if (error.message?.includes('Invalid JSON') || error.message?.includes('Service unavailable')) {
-      userMessage += 'Our analysis service is temporarily unavailable. Please try again in a few minutes.';
+      userMessage +=
+        'The analysis is taking longer than expected. Please try again.';
+    } else if (
+      error.message?.includes('Invalid JSON') ||
+      error.message?.includes('Service unavailable')
+    ) {
+      userMessage +=
+        'Our analysis service is temporarily unavailable. Please try again in a few minutes.';
     } else {
-      userMessage += 'Please check your internet connection and try again. If the problem persists, contact support.';
+      userMessage +=
+        'Please check your internet connection and try again. If the problem persists, contact support.';
     }
-    
+
     this.analysisError.set(userMessage);
     this.currentState.set('error');
   }

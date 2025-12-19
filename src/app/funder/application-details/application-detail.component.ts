@@ -25,6 +25,7 @@ import { ApplicationMetricsComponent } from './components/application-metrics/ap
 import { ApplicationHeaderComponent } from '../components/application-header/application-header.component';
 import { StatusManagementModalComponent } from '../components/status-management-modal/status-management-modal.component';
 import { FundingOpportunity } from '../create-opportunity/shared/funding.interfaces';
+import { FundingApplicationProfile } from 'src/app/SMEs/applications/models/funding-application.models';
 
 interface ApplicationFormData {
   fundingType: string;
@@ -75,6 +76,7 @@ export class ApplicationDetailComponent implements OnInit, OnDestroy {
   application = signal<FundingApplication | null>(null);
   opportunity = signal<FundingOpportunity | null>(null);
   profileData = signal<Partial<ProfileData> | null>(null);
+  rawProfileData = signal<Partial<FundingApplicationProfile> | null>(null);
   organizationId = signal<string | undefined>(undefined);
 
   // Loading & Error States
@@ -218,6 +220,11 @@ export class ApplicationDetailComponent implements OnInit, OnDestroy {
         .loadSavedProfileForUser(applicantId)
         .pipe(takeUntil(this.destroy$))
         .toPromise();
+
+      console.log('Loaded funding profile:', fundingProfile);
+      if (fundingProfile) {
+        this.rawProfileData.set(fundingProfile);
+      }
 
       if (fundingProfile) {
         const profileData =

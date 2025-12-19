@@ -326,6 +326,7 @@ export interface ManagementStructure {
   executiveTeam: ExecutiveMember[];
   managementTeam: ManagementMember[];
   boardOfDirectors: BoardMember[];
+  shareholderOwnership?: ShareholderOwnership[];
 
   // Governance
   governanceStructure: string;
@@ -468,6 +469,11 @@ export interface BoardMember {
   appointmentDate: string;
   expertise: string;
   otherBoards?: string[];
+}
+
+export interface ShareholderOwnership {
+  shareholderName: string;
+  ownershipPercentage: number;
 }
 
 export interface AdvisoryMember {

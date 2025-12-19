@@ -1,4 +1,11 @@
-import { Component, Input, computed, signal, OnInit } from '@angular/core';
+import {
+  Component,
+  Input,
+  computed,
+  signal,
+  OnInit,
+  effect,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   LucideAngularModule,
@@ -31,6 +38,9 @@ export class FinancialAnalysisViewerComponent implements OnInit {
   showExpandedView = signal(false);
   activeTab = signal<'income' | 'balance' | 'cash'>('income');
 
+  // Period selection state
+  selectedPeriodIndex = signal<number>(0);
+
   // Icons
   TrendingUpIcon = TrendingUp;
   TrendingDownIcon = TrendingDown;
@@ -60,6 +70,14 @@ export class FinancialAnalysisViewerComponent implements OnInit {
 
   columnHeaders = computed(() => {
     return this.financialAnalysis?.columnHeaders || [];
+  });
+
+  // Reset selectedPeriodIndex to latest when financialAnalysis changes
+  private resetPeriodSelection = effect(() => {
+    const headers = this.columnHeaders();
+    if (headers.length > 0) {
+      this.selectedPeriodIndex.set(headers.length - 1);
+    }
   });
 
   // Transformed table data
@@ -116,19 +134,25 @@ export class FinancialAnalysisViewerComponent implements OnInit {
     };
   });
 
-  // Key financial ratios
+  // Key financial ratios for SELECTED period
   keyRatios = computed(() => {
     const ratios = this.financialAnalysis?.financialRatios;
     if (!ratios || ratios.length === 0) return [];
 
-    const lastPeriodIndex = this.columnHeaders().length - 1;
-    if (lastPeriodIndex < 0) return [];
+    const selectedIndex = this.selectedPeriodIndex();
 
     return ratios.map((ratio) => ({
       label: ratio.label,
-      value: ratio.values[lastPeriodIndex] || 0,
+      value: ratio.values[selectedIndex] ?? null,
       type: ratio.type,
     }));
+  });
+
+  // Get selected year for header display
+  selectedYear = computed(() => {
+    const headers = this.columnHeaders();
+    const index = this.selectedPeriodIndex();
+    return headers[index] || '';
   });
 
   // Recent revenue trend (last 3 periods)
@@ -170,10 +194,21 @@ export class FinancialAnalysisViewerComponent implements OnInit {
   });
 
   ngOnInit() {
-    // Prevent body scroll when modal is open
-    if (this.showExpandedView()) {
-      document.body.style.overflow = 'hidden';
+    // Initialize selectedPeriodIndex to latest
+    const headers = this.columnHeaders();
+    if (headers.length > 0) {
+      this.selectedPeriodIndex.set(headers.length - 1);
     }
+  }
+
+  // Select period by index
+  selectPeriod(index: number): void {
+    this.selectedPeriodIndex.set(index);
+  }
+
+  // Check if period is selected
+  isPeriodSelected(index: number): boolean {
+    return this.selectedPeriodIndex() === index;
   }
 
   // Format currency
@@ -192,7 +227,9 @@ export class FinancialAnalysisViewerComponent implements OnInit {
   }
 
   // Format ratio based on type
-  formatRatio(value: number, type: string): string {
+  formatRatio(value: number | null, type: string): string {
+    if (value === null || value === undefined) return 'N/A';
+
     switch (type) {
       case 'percentage':
         return `${value.toFixed(1)}%`;

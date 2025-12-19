@@ -16,7 +16,6 @@ import {
   Clock,
   DollarSign,
 } from 'lucide-angular';
-import { AuthService } from 'src/app/auth/production.auth.service';
 import { LandingHeaderComponent } from 'src/app/landing/landing-header.component';
 import { UseCasesComponent } from './use-cases.component';
 
@@ -51,7 +50,6 @@ interface PricingTier {
 })
 export class PricingPageComponent {
   private router = inject(Router);
-  private authService = inject(AuthService);
 
   // Icons
   CheckIcon = Check;

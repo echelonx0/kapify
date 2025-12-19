@@ -619,8 +619,6 @@ export class AuthService implements OnDestroy {
       return of({ success: true, organizationId: user.organizationId });
     }
 
-    console.log('🔄 Attempting to recover organization for user:', user.id);
-
     const credentials: RegisterRequest = {
       firstName: user.firstName,
       lastName: user.lastName,
@@ -646,10 +644,6 @@ export class AuthService implements OnDestroy {
               organizationId: result.organizationId,
             };
             this.userSubject.set(updatedUser);
-            console.log(
-              '✅ User organization recovered:',
-              result.organizationId
-            );
           }
         }),
         catchError((error) => {
@@ -677,10 +671,9 @@ export class AuthService implements OnDestroy {
    */
   getCurrentUserOrganizationId(): string | null {
     const user = this.userSubject();
-    console.info(user);
+
     if (user) {
       const userID = this.getUserOrganizationId(user?.id);
-      console.info(userID);
     }
 
     return user?.organizationId || null;
@@ -739,7 +732,6 @@ export class AuthService implements OnDestroy {
    * Clear all auth state
    */
   private clearAuthState(): void {
-    console.log('🧹 Clearing auth state');
     this.userSubject.set(null);
     this.loadingState.set({
       registration: false,

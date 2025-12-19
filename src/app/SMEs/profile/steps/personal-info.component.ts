@@ -6,11 +6,7 @@ import {
   FormGroup,
   Validators,
 } from '@angular/forms';
-import {
-  UiInputComponent,
-  UiCardComponent,
-  UiButtonComponent,
-} from '../../../shared/components';
+import { UiInputComponent, UiCardComponent } from '../../../shared/components';
 import { SMEProfileStepsService } from '../services/sme-profile-steps.service';
 
 @Component({

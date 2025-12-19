@@ -1,6 +1,6 @@
-// src/app/shared/services/supabase-constants.service.ts
+// src/app/admin/services/remote-constants.service.ts
 import { Injectable, inject, signal } from '@angular/core';
-import { SharedSupabaseService } from './shared-supabase.service';
+import { SharedSupabaseService } from '../../shared/services/shared-supabase.service';
 
 export interface SelectOption {
   value: string;

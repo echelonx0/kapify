@@ -53,6 +53,12 @@ export interface ProfileData {
       postalCode: string;
     };
     businessDescription?: string;
+    ownership?: Array<{
+      ownerName: string;
+      ownershipPercentage: number | string;
+      role: string;
+      idNumber?: string;
+    }>;
   };
 
   // Financial Info
@@ -94,6 +100,10 @@ export interface ProfileData {
     managementTeam: ManagementMember[];
     boardOfDirectors: BoardMember[];
     managementCommittee: CommitteeMember[];
+    shareholderOwnership?: {
+      shareholderName: string;
+      ownershipPercentage: number;
+    }[];
   };
 
   businessReview?: {

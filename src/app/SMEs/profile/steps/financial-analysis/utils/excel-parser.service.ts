@@ -72,12 +72,6 @@ export class ExcelFinancialParserService {
     file: File,
     onProgress?: (progress: ParseProgress) => void
   ): Promise<ParsedFinancialData> {
-    this.log(
-      '🔄 Starting Excel parse for:',
-      file.name,
-      `(${this.formatBytes(file.size)})`
-    );
-
     // Stage 1: Read file
     onProgress?.({
       stage: 'reading',
@@ -102,10 +96,10 @@ export class ExcelFinancialParserService {
       cellFormula: false,
     });
 
-    this.log('✓ Workbook loaded:', {
-      sheets: workbook.SheetNames.length,
-      sheetNames: workbook.SheetNames,
-    });
+    // this.log('✓ Workbook loaded:', {
+    //   sheets: workbook.SheetNames.length,
+    //   sheetNames: workbook.SheetNames,
+    // });
 
     // Stage 3: Validate sheet structure
     const incomeStatementSheet = workbook.SheetNames.find((name) =>
@@ -183,7 +177,7 @@ export class ExcelFinancialParserService {
     }
 
     if (validation.warnings.length > 0) {
-      this.log('⚠️ Warnings:', validation.warnings);
+      console.log('⚠️ Warnings:', validation.warnings);
     }
 
     // Stage 6: Complete
@@ -191,14 +185,6 @@ export class ExcelFinancialParserService {
       stage: 'complete',
       progress: 100,
       message: 'Parse complete!',
-    });
-
-    this.log('✅ Parse successful:', {
-      incomeRows: parsedData.incomeStatement.length,
-      ratioRows: parsedData.financialRatios.length,
-      balanceSheetRows: parsedData.balanceSheet?.length || 0,
-      cashFlowRows: parsedData.cashFlow?.length || 0,
-      headers: parsedData.columnHeaders,
     });
 
     return parsedData;
@@ -222,12 +208,12 @@ export class ExcelFinancialParserService {
 
     // Extract column headers from row 4 (Financial Year)
     columnHeaders = this.extractColumnHeaders(worksheet, 4, XLSX);
-    this.log('📅 Column headers:', columnHeaders);
+    //  this.log('📅 Column headers:', columnHeaders);
 
     const colCount = columnHeaders.length || EXPECTED_COLUMN_COUNT;
 
     // ===== INCOME STATEMENT ROWS (6-18) =====
-    this.log('📊 Parsing Income Statement...');
+    // this.log('📊 Parsing Income Statement...');
     const incomeRows = [
       { row: 6, label: 'Revenue' },
       { row: 7, label: 'Cost of sales' },
@@ -264,7 +250,7 @@ export class ExcelFinancialParserService {
     }
 
     // ===== FINANCIAL RATIOS ROWS (21-26) on Income Statement sheet =====
-    this.log('📊 Parsing Financial Ratios from Income Statement...');
+    // this.log('📊 Parsing Financial Ratios from Income Statement...');
     const ratioRows = [
       { row: 21, label: 'Sales Growth' },
       { row: 22, label: 'Gross profit margin' },
@@ -295,12 +281,21 @@ export class ExcelFinancialParserService {
   }
 
   /**
-   * Parse Balance Sheet sheet
-   * Structure:
-   * - Assets section (Non-current + Current)
-   * - Equities section
-   * - Liabilities section (Non-current + Current)
-   * - Financial Ratios section at bottom
+   * Parse Balance Sheet sheet (EXACT TEMPLATE MAPPING)
+   * Template structure from financial_template.xlsx:
+   * - Row 5: Non-Current Assets (subtotal header)
+   * - Rows 6-13: Non-current asset items
+   * - Row 15: Current Assets (subtotal header)
+   * - Rows 16-20: Current asset items
+   * - Row 22: Total Assets
+   * - Row 26: Equities (subtotal header)
+   * - Rows 27-30: Equity items
+   * - Row 32: Liabilities (subtotal header)
+   * - Rows 33-38: Long-term liability items
+   * - Row 40: Current Liabilities (subtotal header)
+   * - Rows 41-42: Current liability items
+   * - Row 44: Total Equities and Liabilities
+   * - Rows 47-59: Financial Ratios
    */
   private parseBalanceSheetSheet(
     worksheet: any,
@@ -314,10 +309,8 @@ export class ExcelFinancialParserService {
     const balanceSheetRatios: FinancialRatioData[] = [];
     const colCount = expectedColCount || EXPECTED_COLUMN_COUNT;
 
-    this.log('📊 Parsing Balance Sheet...');
-
     // ===== ASSETS SECTION =====
-    // Non-Current Assets (rows 31-39)
+    // Non-Current Assets Header (Row 5)
     this.addSectionHeader(
       balanceSheet,
       'Non-Current Assets',
@@ -327,10 +320,11 @@ export class ExcelFinancialParserService {
       colCount
     );
 
+    // Non-Current Asset Items (Rows 6-13)
     const nonCurrentAssetRows = [6, 7, 8, 9, 10, 11, 12, 13];
     for (const row of nonCurrentAssetRows) {
-      const rowData = this.extractRowData(worksheet, 30 + row, colCount, XLSX);
-      if (rowData && !this.isBalanceSectionHeader(rowData.label)) {
+      const rowData = this.extractRowData(worksheet, row, colCount, XLSX);
+      if (rowData && rowData.label.trim() !== '') {
         balanceSheet.push({
           label: rowData.label,
           category: 'assets',
@@ -341,7 +335,7 @@ export class ExcelFinancialParserService {
       }
     }
 
-    // Current Assets (rows 41-46)
+    // Current Assets Header (Row 15)
     this.addSectionHeader(
       balanceSheet,
       'Current Assets',
@@ -351,10 +345,11 @@ export class ExcelFinancialParserService {
       colCount
     );
 
-    const currentAssetRows = [1, 2, 3, 4, 5, 6];
+    // Current Asset Items (Rows 16-20)
+    const currentAssetRows = [16, 17, 18, 19, 20];
     for (const row of currentAssetRows) {
-      const rowData = this.extractRowData(worksheet, 40 + row, colCount, XLSX);
-      if (rowData && !this.isBalanceSectionHeader(rowData.label)) {
+      const rowData = this.extractRowData(worksheet, row, colCount, XLSX);
+      if (rowData && rowData.label.trim() !== '') {
         balanceSheet.push({
           label: rowData.label,
           category: 'assets',
@@ -365,8 +360,8 @@ export class ExcelFinancialParserService {
       }
     }
 
-    // Total Assets (row 48)
-    const totalAssetsRow = this.extractRowData(worksheet, 48, colCount, XLSX);
+    // Total Assets (Row 22)
+    const totalAssetsRow = this.extractRowData(worksheet, 22, colCount, XLSX);
     if (totalAssetsRow) {
       balanceSheet.push({
         label: totalAssetsRow.label,
@@ -378,6 +373,7 @@ export class ExcelFinancialParserService {
     }
 
     // ===== EQUITIES SECTION =====
+    // Equities Header (Row 26)
     this.addSectionHeader(
       balanceSheet,
       'Equities',
@@ -387,10 +383,11 @@ export class ExcelFinancialParserService {
       colCount
     );
 
-    const equityRows = [26, 27, 28, 29, 30];
+    // Equity Items (Rows 27-30)
+    const equityRows = [27, 28, 29, 30];
     for (const row of equityRows) {
-      const rowData = this.extractRowData(worksheet, 50 + row, colCount, XLSX);
-      if (rowData && !this.isBalanceSectionHeader(rowData.label)) {
+      const rowData = this.extractRowData(worksheet, row, colCount, XLSX);
+      if (rowData && rowData.label.trim() !== '') {
         balanceSheet.push({
           label: rowData.label,
           category: 'equity',
@@ -401,20 +398,21 @@ export class ExcelFinancialParserService {
     }
 
     // ===== LIABILITIES SECTION =====
-    // Non-Current Liabilities (rows 58-64)
+    // Liabilities Header (Row 32)
     this.addSectionHeader(
       balanceSheet,
-      'Non-Current Liabilities',
+      'Liabilities',
       'liabilities',
       worksheet,
       XLSX,
       colCount
     );
 
-    const nonCurrentLiabilityRows = [33, 34, 35, 36, 37, 38, 39];
-    for (const row of nonCurrentLiabilityRows) {
-      const rowData = this.extractRowData(worksheet, 25 + row, colCount, XLSX);
-      if (rowData && !this.isBalanceSectionHeader(rowData.label)) {
+    // Long-Term Liability Items (Rows 33-38)
+    const longTermLiabilityRows = [33, 34, 35, 36, 37, 38];
+    for (const row of longTermLiabilityRows) {
+      const rowData = this.extractRowData(worksheet, row, colCount, XLSX);
+      if (rowData && rowData.label.trim() !== '') {
         balanceSheet.push({
           label: rowData.label,
           category: 'liabilities',
@@ -425,7 +423,7 @@ export class ExcelFinancialParserService {
       }
     }
 
-    // Current Liabilities (rows 66-68)
+    // Current Liabilities Header (Row 40)
     this.addSectionHeader(
       balanceSheet,
       'Current Liabilities',
@@ -435,10 +433,11 @@ export class ExcelFinancialParserService {
       colCount
     );
 
+    // Current Liability Items (Rows 41-42)
     const currentLiabilityRows = [41, 42];
     for (const row of currentLiabilityRows) {
-      const rowData = this.extractRowData(worksheet, 25 + row, colCount, XLSX);
-      if (rowData && !this.isBalanceSectionHeader(rowData.label)) {
+      const rowData = this.extractRowData(worksheet, row, colCount, XLSX);
+      if (rowData && rowData.label.trim() !== '') {
         balanceSheet.push({
           label: rowData.label,
           category: 'liabilities',
@@ -449,8 +448,8 @@ export class ExcelFinancialParserService {
       }
     }
 
-    // Total Equities and Liabilities (row 70)
-    const totalELRow = this.extractRowData(worksheet, 70, colCount, XLSX);
+    // Total Equities and Liabilities (Row 44)
+    const totalELRow = this.extractRowData(worksheet, 44, colCount, XLSX);
     if (totalELRow) {
       balanceSheet.push({
         label: totalELRow.label,
@@ -461,17 +460,17 @@ export class ExcelFinancialParserService {
       });
     }
 
-    // ===== BALANCE SHEET FINANCIAL RATIOS (rows 47+) =====
-    this.log('📊 Parsing Financial Ratios from Balance Sheet...');
+    // ===== FINANCIAL RATIOS SECTION (Rows 47-59) =====
+    //  this.log('📊 Parsing Financial Ratios from Balance Sheet...');
     const balanceRatioRows = [
       { row: 49, label: 'Return on Equity (ROE)' },
-      { row: 50, label: 'Return on Equity (ROA.)' },
+      { row: 50, label: 'Return on Equity (ROA)' },
       { row: 51, label: 'Debt Equity Ratio (Total liabilities)' },
       { row: 54, label: 'Current Ratio' },
       { row: 55, label: 'Acid Test Ratio (Quick Ratio)' },
       { row: 56, label: 'Debtors Days' },
       { row: 57, label: 'Creditors Days' },
-      { row: 58, label: 'Equity Investment Value' },
+      // { row: 58, label: 'Equity Investment Value' },
       { row: 59, label: 'Return on Investment (ROI)' },
     ];
 
@@ -496,7 +495,20 @@ export class ExcelFinancialParserService {
   }
 
   /**
-   * Parse Cash Flow sheet
+   * Parse Cash Flow sheet (EXACT TEMPLATE MAPPING)
+   * Template structure from financial_template.xlsx:
+   * - Row 4: "Cash flows from operating activities" (header)
+   * - Rows 6-9: Operating activity items
+   * - Row 10: "Net cash from operating activities" (subtotal)
+   * - Row 12: "Cash flows from investing activities" (header)
+   * - Rows 13-15: Investing activity items
+   * - Row 16: "Net cash used in investing activities" (subtotal)
+   * - Row 18: "Cash flows from financing activities" (header)
+   * - Rows 19-23: Financing activity items
+   * - Row 24: "Net cash used in financing activities" (subtotal)
+   * - Row 26: "Net increase in cash and cash equivalents" (summary)
+   * - Row 28: "Cash and cash equivalents at beginning of period" (summary)
+   * - Row 30: "Cash and cash equivalents at end of period" (summary)
    */
   private parseCashFlowSheet(
     worksheet: any,
@@ -506,59 +518,167 @@ export class ExcelFinancialParserService {
     const cashFlow: CashFlowRowData[] = [];
     const colCount = expectedColCount || EXPECTED_COLUMN_COUNT;
 
-    this.log('📊 Parsing Cash Flow Statement...');
+    //  this.log('📊 Parsing Cash Flow Statement (Direct Template Mapping)...');
 
-    // Operating Activities (rows 6-10)
-    this.addCashFlowSection(
-      cashFlow,
-      'operating',
-      'Cash flows from operating activities',
-      worksheet,
-      XLSX,
-      [6, 7, 8, 9, 10],
-      colCount
-    );
+    // ===== OPERATING ACTIVITIES SECTION =====
+    // Operating Activities Header (Row 4) - NOT marked as section header, used as row
+    const operatingHeader = this.extractRowData(worksheet, 4, colCount, XLSX);
+    if (operatingHeader) {
+      cashFlow.push({
+        label: operatingHeader.label,
+        category: 'operating',
+        isSubtotal: false, // Header row, not subtotal
+        values: operatingHeader.values,
+        editable: false,
+      });
+    }
 
-    // Investing Activities (rows 12-16)
-    this.addCashFlowSection(
-      cashFlow,
-      'investing',
-      'Cash flows from investing activities',
-      worksheet,
-      XLSX,
-      [12, 13, 14, 15, 16],
-      colCount
-    );
-
-    // Financing Activities (rows 18-24)
-    this.addCashFlowSection(
-      cashFlow,
-      'financing',
-      'Cash flows from financing activities',
-      worksheet,
-      XLSX,
-      [18, 19, 20, 21, 22, 23, 24],
-      colCount
-    );
-
-    // Summary rows (26, 28, 30)
-    const summaryRows = [26, 28, 30];
-    for (const row of summaryRows) {
+    // Operating Activity Items (Rows 6-9)
+    const operatingRows = [6, 7, 8, 9];
+    for (const row of operatingRows) {
       const rowData = this.extractRowData(worksheet, row, colCount, XLSX);
-      if (rowData && rowData.label) {
+      if (rowData && rowData.label.trim() !== '') {
         cashFlow.push({
           label: rowData.label,
-          category: 'summary',
-          isSubtotal: true,
+          category: 'operating',
+          isSubtotal: false,
           values: rowData.values,
-          editable: false,
+          editable: !this.isCalculatedCashFlowField(rowData.label),
         });
       }
     }
 
+    // Net cash from operating activities (Row 10) - Subtotal
+    const netOperating = this.extractRowData(worksheet, 10, colCount, XLSX);
+    if (netOperating) {
+      cashFlow.push({
+        label: netOperating.label,
+        category: 'operating',
+        isSubtotal: true,
+        values: netOperating.values,
+        editable: false,
+      });
+    }
+
+    // ===== INVESTING ACTIVITIES SECTION =====
+    // Investing Activities Header (Row 12) - NOT marked as section header, used as row
+    const investingHeader = this.extractRowData(worksheet, 12, colCount, XLSX);
+    if (investingHeader) {
+      cashFlow.push({
+        label: investingHeader.label,
+        category: 'investing',
+        isSubtotal: false,
+        values: investingHeader.values,
+        editable: false,
+      });
+    }
+
+    // Investing Activity Items (Rows 13-15)
+    const investingRows = [13, 14, 15];
+    for (const row of investingRows) {
+      const rowData = this.extractRowData(worksheet, row, colCount, XLSX);
+      if (rowData && rowData.label.trim() !== '') {
+        cashFlow.push({
+          label: rowData.label,
+          category: 'investing',
+          isSubtotal: false,
+          values: rowData.values,
+          editable: !this.isCalculatedCashFlowField(rowData.label),
+        });
+      }
+    }
+
+    // Net cash used in investing activities (Row 16) - Subtotal
+    const netInvesting = this.extractRowData(worksheet, 16, colCount, XLSX);
+    if (netInvesting) {
+      cashFlow.push({
+        label: netInvesting.label,
+        category: 'investing',
+        isSubtotal: true,
+        values: netInvesting.values,
+        editable: false,
+      });
+    }
+
+    // ===== FINANCING ACTIVITIES SECTION =====
+    // Financing Activities Header (Row 18) - NOT marked as section header, used as row
+    const financingHeader = this.extractRowData(worksheet, 18, colCount, XLSX);
+    if (financingHeader) {
+      cashFlow.push({
+        label: financingHeader.label,
+        category: 'financing',
+        isSubtotal: false,
+        values: financingHeader.values,
+        editable: false,
+      });
+    }
+
+    // Financing Activity Items (Rows 19-23)
+    const financingRows = [19, 20, 21, 22, 23];
+    for (const row of financingRows) {
+      const rowData = this.extractRowData(worksheet, row, colCount, XLSX);
+      if (rowData && rowData.label.trim() !== '') {
+        cashFlow.push({
+          label: rowData.label,
+          category: 'financing',
+          isSubtotal: false,
+          values: rowData.values,
+          editable: !this.isCalculatedCashFlowField(rowData.label),
+        });
+      }
+    }
+
+    // Net cash used in financing activities (Row 24) - Subtotal
+    const netFinancing = this.extractRowData(worksheet, 24, colCount, XLSX);
+    if (netFinancing) {
+      cashFlow.push({
+        label: netFinancing.label,
+        category: 'financing',
+        isSubtotal: true,
+        values: netFinancing.values,
+        editable: false,
+      });
+    }
+
+    // ===== SUMMARY SECTION =====
+    // Net increase in cash (Row 26)
+    const netIncrease = this.extractRowData(worksheet, 26, colCount, XLSX);
+    if (netIncrease) {
+      cashFlow.push({
+        label: netIncrease.label,
+        category: 'summary',
+        isSubtotal: true,
+        values: netIncrease.values,
+        editable: false,
+      });
+    }
+
+    // Cash at beginning of period (Row 28)
+    const cashBeginning = this.extractRowData(worksheet, 28, colCount, XLSX);
+    if (cashBeginning) {
+      cashFlow.push({
+        label: cashBeginning.label,
+        category: 'summary',
+        isSubtotal: false,
+        values: cashBeginning.values,
+        editable: false,
+      });
+    }
+
+    // Cash at end of period (Row 30)
+    const cashEnding = this.extractRowData(worksheet, 30, colCount, XLSX);
+    if (cashEnding) {
+      cashFlow.push({
+        label: cashEnding.label,
+        category: 'summary',
+        isSubtotal: true,
+        values: cashEnding.values,
+        editable: false,
+      });
+    }
+
     return cashFlow;
   }
-
   // ===== HELPER METHODS =====
 
   private addSectionHeader(
@@ -753,25 +873,32 @@ export class ExcelFinancialParserService {
   }
 
   private getRatioType(label: string): 'ratio' | 'percentage' | 'currency' {
+    // Days metrics show as plain numbers (no suffix)
+    if (label.toLowerCase().includes('days')) {
+      return 'ratio';
+    }
+
     if (
       label.toLowerCase().includes('margin') ||
-      label.toLowerCase().includes('growth') ||
-      label.toLowerCase().includes('days')
+      label.toLowerCase().includes('growth')
     ) {
       return 'percentage';
     }
+
     if (
       label.toLowerCase().includes('ratio') ||
       label.toLowerCase().includes('cover')
     ) {
       return 'ratio';
     }
+
     if (
       label.toLowerCase().includes('value') ||
       label.toLowerCase().includes('equity')
     ) {
       return 'currency';
     }
+
     return 'percentage';
   }
 
@@ -782,20 +909,6 @@ export class ExcelFinancialParserService {
       reader.onerror = () => reject(new Error('Failed to read file'));
       reader.readAsArrayBuffer(file);
     });
-  }
-
-  private formatBytes(bytes: number): string {
-    if (bytes === 0) return '0 Bytes';
-    const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-  }
-
-  private log(...args: any[]) {
-    if (this.debugMode) {
-      console.log('[ExcelParser]', ...args);
-    }
   }
 
   setDebugMode(enabled: boolean) {

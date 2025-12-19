@@ -19,7 +19,7 @@ import {
 import {
   SupabaseConstantsService,
   Constant,
-} from 'src/app/shared/services/remote-constants.service';
+} from 'src/app/admin/services/remote-constants.service';
 
 interface NewConstantForm {
   value_key: string;

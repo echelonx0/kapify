@@ -231,6 +231,32 @@ export class AdminDashboardComponent implements OnInit {
   // NAVIGATION & UI ENHANCEMENTS
   // ===============================
 
+  navigateToBackOfficeQuestions() {
+    this.router.navigate(['/admin/back-office-questions']);
+  }
+  // And add this helper to get admin management links
+  getAdminManagementLinks() {
+    return [
+      {
+        icon: 'settings',
+        label: 'Constants',
+        description: 'Manage dropdown options and system constants',
+        route: '/admin/constants',
+      },
+      {
+        icon: 'dollar',
+        label: 'Credit Costs',
+        description: 'Configure credit pricing and costs',
+        route: '/admin/credit-costs',
+      },
+      {
+        icon: 'form',
+        label: 'Back Office Questions',
+        description: 'Manage business assessment form questions',
+        route: '/admin/back-office-questions',
+      },
+    ];
+  }
   setActiveTab(tab: TabType) {
     this.activeTab.set(tab);
   }

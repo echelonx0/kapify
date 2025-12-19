@@ -1,4 +1,4 @@
-<!-- src/app/profile/steps/admin-information-step/admin-information.component.html -->
+<!-- src/app/profile/steps/company-info-step/company-info.component.html -->
 <div class="space-y-6 px-4 lg:px-8">
   <!-- Auto-save Status Header -->
   <div class="bg-white rounded-2xl border border-slate-200 p-4">
@@ -28,7 +28,7 @@
           variant="outline"
           size="sm"
           (clicked)="saveManually()"
-          [disabled]="isSaving()"
+          [disabled]="isSaving() || !hasUnsavedChanges()"
         >
           @if (isSaving()) {
           <lucide-icon
@@ -80,7 +80,9 @@
         class="w-full px-6 py-4 text-left flex items-center justify-between hover:bg-slate-50 transition-colors"
       >
         <div>
-          <h3 class="text-lg font-semibold text-slate-900">Contact Details</h3>
+          <h3 class="text-lg font-semibold text-slate-900">
+            Key Person Details
+          </h3>
           <p class="text-sm text-slate-600 mt-1">
             Please provide details of the person to communicate with regarding
             your company's investor readiness and funding application.
@@ -465,16 +467,28 @@
             </select>
           </div>
 
-          <ui-input
-            label="Income TAX Number"
-            type="number"
-            placeholder="1234567890"
-            [error]="getFieldError('incomeTaxNumber')"
-            formControlName="incomeTaxNumber"
-            [maxLength]="10"
-            [required]="true"
-            hint="Exactly 10 digits"
-          />
+          <!-- Income Tax Number with Input Constraint -->
+          <div>
+            <label class="block text-sm font-semibold text-slate-900 mb-2">
+              Income TAX Number
+              <span class="text-red-600 ml-0.5">*</span>
+            </label>
+            <input
+              type="text"
+              inputmode="numeric"
+              placeholder="1234567890"
+              formControlName="incomeTaxNumber"
+              (input)="onIncomeTaxInput($event)"
+              maxlength="10"
+              class="block w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all duration-200"
+            />
+            <p class="text-xs text-slate-500 mt-1">Exactly 10 digits</p>
+            @if (getFieldError('incomeTaxNumber')) {
+            <p class="text-xs font-medium text-red-700 mt-1">
+              {{ getFieldError("incomeTaxNumber") }}
+            </p>
+            }
+          </div>
 
           <div>
             <label class="block text-sm font-semibold text-slate-900 mb-2">
@@ -542,7 +556,7 @@
           Company Information Progress
         </h3>
         <p class="text-sm text-slate-600">
-          Data auto-saves every 30 seconds. Manual save available anytime.
+          Changes auto-save to server. Manual save available anytime.
         </p>
       </div>
 

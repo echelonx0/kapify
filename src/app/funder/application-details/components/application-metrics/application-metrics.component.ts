@@ -28,6 +28,7 @@ import { BusinessAssessmentViewerComponent } from '../business-operations/busine
 import { FinancialAnalysisViewerComponent } from '../financial-analysis-viewer/financial-analysis-viewer.component';
 import { BusinessInfoComponent } from '../business-info/business-info.component';
 import { FundingOpportunity } from 'src/app/funder/create-opportunity/shared/funding.interfaces';
+import { FundingApplicationProfile } from 'src/app/SMEs/applications/models/funding-application.models';
 
 interface Tab {
   id: string;
@@ -51,6 +52,8 @@ export class ApplicationMetricsComponent implements OnInit {
   @Input({ required: true }) application!: FundingApplication;
   @Input({ required: true }) opportunity!: FundingOpportunity;
   @Input({ required: true }) profileData!: Partial<ProfileData>;
+  @Input({ required: true })
+  rawProfileData!: Partial<FundingApplicationProfile>;
 
   // Icons
   FileTextIcon = FileText;
@@ -128,13 +131,16 @@ export class ApplicationMetricsComponent implements OnInit {
   );
 
   boardOfDirectors = computed(
-    () => this.profileData.managementGovernance?.boardOfDirectors || []
+    () => this.rawProfileData.companyInfo?.ownership || []
   );
 
   swotAnalysis = computed(() => this.profileData.swotAnalysis || null);
 
   ngOnInit() {
-    // console.log('📊 [METRICS] Profile Data:', this.profileData);
+    console.log(
+      '[METRICS] Business Management:',
+      this.rawProfileData.companyInfo?.ownership
+    );
     // console.log('[Application Data]', this.application);
   }
 

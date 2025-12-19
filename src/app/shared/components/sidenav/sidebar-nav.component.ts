@@ -22,6 +22,8 @@ import {
   Menu,
   X,
   House,
+  Axis3d,
+  BinaryIcon,
 } from 'lucide-angular';
 import { AuthService } from 'src/app/auth/production.auth.service';
 import { ProfileManagementService } from '../../services/profile-management.service';
@@ -60,6 +62,8 @@ export class SidebarNavComponent implements OnInit {
   BookCheckIcon = BookCheck;
   MenuIcon = Menu;
   CloseIcon = X;
+  Axis3dIcon = Axis3d;
+  BinaryIcon = BinaryIcon;
 
   // State - Mobile Menu
   showMobileMenu = signal(false);
@@ -102,6 +106,13 @@ export class SidebarNavComponent implements OnInit {
       userTypes: ['sme'],
     },
     {
+      id: 'review',
+      label: 'Review',
+      icon: Axis3d,
+      route: '/profile/review',
+      userTypes: ['sme'],
+    },
+    {
       id: 'funding',
       label: 'Funds Marketplace',
       icon: DollarSign,
@@ -112,7 +123,7 @@ export class SidebarNavComponent implements OnInit {
     {
       id: 'funder-applications',
       label: 'Applications',
-      icon: BookOpen,
+      icon: BinaryIcon,
       route: '/dashboard/funder-dashboard',
       userTypes: ['funder'],
     },
@@ -127,7 +138,7 @@ export class SidebarNavComponent implements OnInit {
     {
       id: 'sme-applications',
       label: 'Applications',
-      icon: FileText,
+      icon: BinaryIcon,
       route: '/applications',
       userTypes: ['sme'],
       badge: 2,

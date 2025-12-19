@@ -8,11 +8,6 @@
     @if (getBusinessInfo()!.companyName) {
     <div class="bg-white border border-slate-200 rounded-xl p-4">
       <div class="flex items-start gap-3">
-        <!-- <div
-          class="w-10 h-10 bg-teal-100 rounded-lg flex items-center justify-center flex-shrink-0"
-        >
-          <lucide-icon [img]="BuildingIcon" [size]="16" class="text-teal-600" />
-        </div> -->
         <div class="flex-1 min-w-0">
           <p class="text-xs font-medium text-slate-500 mb-1">Company Name</p>
           <p class="text-sm font-semibold text-slate-900">
@@ -24,11 +19,6 @@
     } @if (getBusinessInfo()!.registrationNumber) {
     <div class="bg-white border border-slate-200 rounded-xl p-4">
       <div class="flex items-start gap-3">
-        <!-- <div
-          class="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center flex-shrink-0"
-        >
-          <lucide-icon [img]="HashIcon" [size]="16" class="text-slate-600" />
-        </div> -->
         <div class="flex-1 min-w-0">
           <p class="text-xs font-medium text-slate-500 mb-1">
             Registration Number
@@ -42,11 +32,6 @@
     } @if (getBusinessInfo()!.vatNumber) {
     <div class="bg-white border border-slate-200 rounded-xl p-4">
       <div class="flex items-start gap-3">
-        <!-- <div
-          class="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center flex-shrink-0"
-        >
-          <lucide-icon [img]="HashIcon" [size]="16" class="text-slate-600" />
-        </div> -->
         <div class="flex-1 min-w-0">
           <p class="text-xs font-medium text-slate-500 mb-1">VAT Number</p>
           <p class="text-sm font-semibold text-slate-900">
@@ -58,15 +43,6 @@
     } @if (getBusinessInfo()!.industry) {
     <div class="bg-white border border-slate-200 rounded-xl p-4">
       <div class="flex items-start gap-3">
-        <!-- <div
-          class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0"
-        >
-          <lucide-icon
-            [img]="BriefcaseIcon"
-            [size]="16"
-            class="text-blue-600"
-          />
-        </div> -->
         <div class="flex-1 min-w-0">
           <p class="text-xs font-medium text-slate-500 mb-1">Industry</p>
           <p class="text-sm font-semibold text-slate-900">
@@ -78,15 +54,6 @@
     } @if (getBusinessInfo()!.yearsInOperation) {
     <div class="bg-white border border-slate-200 rounded-xl p-4">
       <div class="flex items-start gap-3">
-        <!-- <div
-          class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0"
-        >
-          <lucide-icon
-            [img]="CalendarIcon"
-            [size]="16"
-            class="text-green-600"
-          />
-        </div> -->
         <div class="flex-1 min-w-0">
           <p class="text-xs font-medium text-slate-500 mb-1">
             Years in Operation
@@ -100,11 +67,6 @@
     } @if (getBusinessInfo()!.numberOfEmployees) {
     <div class="bg-white border border-slate-200 rounded-xl p-4">
       <div class="flex items-start gap-3">
-        <!-- <div
-          class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0"
-        >
-          <lucide-icon [img]="UsersIcon" [size]="16" class="text-purple-600" />
-        </div> -->
         <div class="flex-1 min-w-0">
           <p class="text-xs font-medium text-slate-500 mb-1">
             Number of Employees
@@ -155,11 +117,11 @@
   </div>
   }
 
-  <!-- Executive Rosters (Stacked Vertical Layout) -->
+  <!-- Executive Rosters (Table Row Layout) -->
   <div class="space-y-6">
     @for (roster of rosters; track roster.id) {
     <div
-      class="bg-white border border-slate-200 rounded-xl overflow-hidden"
+      class="bg-white border rounded-xl overflow-hidden"
       [ngClass]="'border-' + getRosterColor(roster.color).border"
     >
       <!-- Roster Header (Collapsible) -->
@@ -203,13 +165,104 @@
         </div>
       </button>
 
-      <!-- Roster Content (Collapsible) -->
+      <!-- Column Headers (Visible when expanded and has members) -->
+      @if (isRosterExpanded(roster.id) && getRosterMembers(roster.id).length >
+      0) {
+      <div
+        class="grid gap-4 px-6 py-2.5 bg-slate-50/50 border-b border-slate-200"
+        [ngClass]="{
+          'grid-cols-3': roster.id === 'shareholders',
+          'grid-cols-5': roster.id !== 'shareholders'
+        }"
+      >
+        <div class="flex items-center">
+          <p
+            class="text-xs font-semibold text-slate-600 uppercase tracking-wider"
+          >
+            {{ roster.id === "shareholders" ? "Name" : "Name & Surname" }}
+          </p>
+        </div>
+        <div class="flex items-center">
+          <p
+            class="text-xs font-semibold text-slate-600 uppercase tracking-wider"
+          >
+            {{ roster.id === "shareholders" ? "Role" : "Department" }}
+          </p>
+        </div>
+        @if (roster.id !== 'shareholders') {
+        <div class="flex items-center">
+          <p
+            class="text-xs font-semibold text-slate-600 uppercase tracking-wider"
+          >
+            Qualification
+          </p>
+        </div>
+        <div class="flex items-center">
+          <p
+            class="text-xs font-semibold text-slate-600 uppercase tracking-wider"
+          >
+            Field of Study
+          </p>
+        </div>
+        <div class="flex items-center">
+          <p
+            class="text-xs font-semibold text-slate-600 uppercase tracking-wider"
+          >
+            Experience
+          </p>
+        </div>
+        } @else {
+        <div class="flex items-center">
+          <p
+            class="text-xs font-semibold text-slate-600 uppercase tracking-wider"
+          >
+            Ownership %
+          </p>
+        </div>
+        }
+      </div>
+      }
+
+      <!-- Roster Content (Table Rows) -->
       @if (isRosterExpanded(roster.id)) {
-      <div class="p-4 space-y-3 max-h-96 overflow-y-auto">
+      <div class="max-h-96 overflow-y-auto">
         @if (getRosterMembers(roster.id).length > 0) { @for (member of
-        getRosterMembers(roster.id); track member.id) {
+        getRosterMembers(roster.id); track member.id) { @if (roster.id ===
+        'shareholders') {
+        <!-- Shareholder Row -->
+        <div
+          class="grid grid-cols-3 gap-4 px-6 py-4 border-b border-slate-200 hover:bg-slate-50/50 transition-colors duration-200"
+        >
+          <div class="flex items-center">
+            <p class="text-sm font-medium text-slate-900">
+              {{ member.fullName }}
+            </p>
+          </div>
+          <div class="flex items-center">
+            <p class="text-sm text-slate-600">
+              {{ member.role }}
+            </p>
+          </div>
+          <div class="flex items-center">
+            <span
+              class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200/50"
+            >
+              {{
+                isShareholder(member) && member.ownershipPercentage
+                  ? member.ownershipPercentage
+                  : "—"
+              }}
+            </span>
+          </div>
+        </div>
+        } @else {
+        <!-- Team Member Row (using existing component) -->
         <app-team-member [member]="member"></app-team-member>
-        } }
+        } } } @else {
+        <div class="px-6 py-4 text-xs text-slate-500 text-center">
+          No members added yet
+        </div>
+        }
       </div>
       } @else {
       <div class="px-6 py-4 text-xs text-slate-500">

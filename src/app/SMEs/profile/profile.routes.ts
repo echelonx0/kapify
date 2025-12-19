@@ -1,5 +1,6 @@
 // src/app/profile/profile.routes.ts
 import { Routes } from '@angular/router';
+import { UnsavedChangesGuard } from './guards/unsaved-changes.guard';
 
 export const profileRoutes: Routes = [
   {
@@ -8,6 +9,7 @@ export const profileRoutes: Routes = [
       import('./profile-layout.component').then(
         (c) => c.ProfileLayoutComponent
       ),
+    canDeactivate: [UnsavedChangesGuard], // ← Add this
     children: [
       {
         path: '',
@@ -19,6 +21,14 @@ export const profileRoutes: Routes = [
         loadComponent: () =>
           import('./pages/profile-home.component').then(
             (c) => c.ProfileHomeComponent
+          ),
+        title: 'Profile Overview - Kapify',
+      },
+      {
+        path: 'review',
+        loadComponent: () =>
+          import('./pages/profile-review.component').then(
+            (c) => c.ProfileReviewComponent
           ),
         title: 'Profile Overview - Kapify',
       },
