@@ -470,7 +470,7 @@ export class ExcelFinancialParserService {
       { row: 55, label: 'Acid Test Ratio (Quick Ratio)' },
       { row: 56, label: 'Debtors Days' },
       { row: 57, label: 'Creditors Days' },
-      { row: 58, label: 'Equity Investment Value' },
+      // { row: 58, label: 'Equity Investment Value' },
       { row: 59, label: 'Return on Investment (ROI)' },
     ];
 

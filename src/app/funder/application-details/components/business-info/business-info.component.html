@@ -172,7 +172,7 @@
         class="grid gap-4 px-6 py-2.5 bg-slate-50/50 border-b border-slate-200"
         [ngClass]="{
           'grid-cols-3': roster.id === 'shareholders',
-          'grid-cols-4': roster.id !== 'shareholders'
+          'grid-cols-5': roster.id !== 'shareholders'
         }"
       >
         <div class="flex items-center">
@@ -195,6 +195,13 @@
             class="text-xs font-semibold text-slate-600 uppercase tracking-wider"
           >
             Qualification
+          </p>
+        </div>
+        <div class="flex items-center">
+          <p
+            class="text-xs font-semibold text-slate-600 uppercase tracking-wider"
+          >
+            Field of Study
           </p>
         </div>
         <div class="flex items-center">

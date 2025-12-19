@@ -197,7 +197,7 @@ export class FinancialDataTransformer {
     );
     if (longTermLiabilities.length > 0) {
       liabilityChildren.push({
-        title: 'Liabilities',
+        title: 'Non Current Liabilities',
         rows: longTermLiabilities.map((row) => ({
           label: row.label,
           values: row.values,

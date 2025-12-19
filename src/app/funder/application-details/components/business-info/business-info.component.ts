@@ -23,6 +23,7 @@ interface TeamMember {
   department?: string;
   qualification?: string;
   yearsOfExperience?: string | number;
+  fieldOfStudy?: string;
 }
 
 interface Shareholder extends TeamMember {
@@ -81,16 +82,16 @@ export class BusinessInfoComponent {
       isExpanded: true,
     },
     {
-      id: 'board',
-      title: 'Board of Directors',
-      color: 'blue',
+      id: 'committee',
+      title: 'Management Committee',
+      color: 'amber',
       members: [],
       isExpanded: true,
     },
     {
-      id: 'committee',
-      title: 'Management Committee',
-      color: 'amber',
+      id: 'board',
+      title: 'Board of Directors',
+      color: 'blue',
       members: [],
       isExpanded: true,
     },
@@ -130,6 +131,7 @@ export class BusinessInfoComponent {
   }
 
   private normalizeMembers(members: any[]): TeamMember[] {
+    console.log('Normalizing members:', members);
     return members
       .filter((m) => m && m.fullName)
       .map((m) => ({
@@ -139,6 +141,7 @@ export class BusinessInfoComponent {
         department: m.department || undefined,
         qualification: m.qualification || undefined,
         yearsOfExperience: m.yearsOfExperience || undefined,
+        fieldOfStudy: m.fieldOfStudy || undefined,
       }));
   }
 

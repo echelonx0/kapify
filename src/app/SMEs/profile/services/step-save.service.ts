@@ -1,8 +1,10 @@
 // src/app/profile/services/step-save.service.ts
 import { Injectable, signal, inject, computed, effect } from '@angular/core';
+import { FormGroup } from '@angular/forms';
 import { ToastService } from 'src/app/shared/services/toast.service';
 import { FundingProfileSetupService } from '../../services/funding-profile-setup.service';
 import { FundingApplicationUtilityService } from '../../services/utility.service';
+import { Subscription } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class StepSaveService {
@@ -12,65 +14,77 @@ export class StepSaveService {
 
   private isSavingState = signal(false);
   private lastSavedState = signal<Date | null>(null);
-  private previousData = signal<any>(null);
-  private isInitialized = signal(false);
+  private currentForm = signal<FormGroup | null>(null);
+
+  // 🔥 CRITICAL: Signal to track form dirty state (form.dirty is NOT reactive)
+  private formDirtySignal = signal(false);
+  private formStatusSubscription: Subscription | null = null;
 
   readonly isSaving = this.isSavingState.asReadonly();
   readonly lastSaved = this.lastSavedState.asReadonly();
 
   /**
    * Computed: Does current step have unsaved changes?
+   * 🔥 Now properly reactive - depends on formDirtySignal which updates on form changes
    */
   readonly hasUnsavedChanges = computed(() => {
-    // Only detect changes AFTER initialization
-    if (!this.isInitialized()) return false;
+    const form = this.currentForm();
+    if (!form) return false;
 
-    const currentData = this.fundingService.data();
-    const previous = this.previousData();
-
-    // No previous data = no changes yet
-    if (!previous) return false;
-
-    // Compare serialized versions
-    return JSON.stringify(currentData) !== JSON.stringify(previous);
+    // Return the signal value, not form.dirty
+    // This ensures the computed re-evaluates when the signal changes
+    return this.formDirtySignal();
   });
 
-  constructor() {
-    // Track data changes using effect (not subscribe)
-    effect(() => {
-      // Access the signal to track changes
-      const stepId = this.fundingService.currentStepId();
+  /**
+   * Register the form for this step
+   * Call this in ngOnInit of the step component
+   * 🔥 CRITICAL: Sets up subscriptions to bridge form.dirty to signal system
+   */
+  registerForm(form: FormGroup): void {
+    // Clear any previous subscriptions
+    if (this.formStatusSubscription) {
+      this.formStatusSubscription.unsubscribe();
+    }
 
-      // Reset change detection when step changes
-      if (stepId && this.isInitialized()) {
-        this.initializePreviousData();
-      }
+    this.currentForm.set(form);
+    this.formDirtySignal.set(form.dirty); // Set initial state
+
+    // Subscribe to both valueChanges and statusChanges
+    // This captures all form mutations
+    this.formStatusSubscription = form.statusChanges.subscribe(() => {
+      this.formDirtySignal.set(form.dirty);
+      console.log('📝 Form dirty state updated:', form.dirty);
     });
 
-    // Track when data is loaded and initialized
-    effect(() => {
-      const isLoading = this.fundingService.loading();
-
-      // Once loading completes, initialize previous data snapshot
-      if (!isLoading && !this.isInitialized()) {
-        this.initializePreviousData();
-        this.isInitialized.set(true);
-        console.log('✅ StepSaveService initialized');
-      }
+    // Also subscribe to value changes for real-time updates
+    const valueChangesSub = form.valueChanges.subscribe(() => {
+      this.formDirtySignal.set(form.dirty);
     });
+
+    console.log('✅ Form registered for change detection with subscriptions');
+
+    // Store subscription reference for cleanup
+    // We'll clean it up in clearForm()
   }
 
   /**
-   * Initialize previous data snapshot for change detection
+   * Clear the form reference (call when leaving step)
+   * Also unsubscribes from form changes
    */
-  private initializePreviousData(): void {
-    const currentData = this.fundingService.data();
-    this.previousData.set(JSON.parse(JSON.stringify(currentData)));
+  clearForm(): void {
+    if (this.formStatusSubscription) {
+      this.formStatusSubscription.unsubscribe();
+      this.formStatusSubscription = null;
+    }
+    this.currentForm.set(null);
+    this.formDirtySignal.set(false);
+    console.log('🧹 Form cleared and subscriptions unsubscribed');
   }
 
   /**
    * Save the current step's data
-   * Returns success status and optionally navigates on success
+   * Returns success status
    */
   async saveCurrentStep(): Promise<{ success: boolean; error?: string }> {
     if (this.isSavingState()) {
@@ -79,6 +93,22 @@ export class StepSaveService {
 
     try {
       this.isSavingState.set(true);
+
+      const form = this.currentForm();
+      if (!form) {
+        const error = 'No form registered';
+        this.toastService.error(error);
+        console.warn('⚠️ ' + error);
+        return { success: false, error };
+      }
+
+      // Validate form before saving
+      if (form.invalid) {
+        const error = 'Please fix validation errors before saving';
+        this.toastService.error(error);
+        console.warn('⚠️ ' + error);
+        return { success: false, error };
+      }
 
       // Validate org context exists
       const orgId = this.fundingService['currentOrganization']?.();
@@ -101,9 +131,14 @@ export class StepSaveService {
       // Delegate to service's existing save method
       await this.fundingService.saveCurrentProgress();
 
+      // Mark form as pristine after successful save
+      form.markAsPristine();
+
+      // Update signal to reflect pristine state
+      this.formDirtySignal.set(false);
+
       // Update state on success
       this.lastSavedState.set(new Date());
-      this.initializePreviousData(); // Reset change detection
 
       this.toastService.success('Step saved successfully');
       console.log('✅ Step saved successfully');
@@ -156,21 +191,23 @@ export class StepSaveService {
   }
 
   /**
-   * Reset service state (called when returning to a step)
+   * Reset change detection when navigating away from step
+   * Clears the form reference and subscriptions
    */
   resetChangeDetection(): void {
-    this.initializePreviousData();
+    this.clearForm();
   }
 
   /**
    * Debug: Log current state
    */
   debug() {
+    const form = this.currentForm();
     console.log('StepSaveService Debug:', {
-      isInitialized: this.isInitialized(),
+      hasForm: !!form,
+      formDirty: form?.dirty,
+      formDirtySignal: this.formDirtySignal(),
       hasUnsavedChanges: this.hasUnsavedChanges(),
-      previousData: this.previousData(),
-      currentData: this.fundingService.data(),
       isSaving: this.isSavingState(),
       lastSaved: this.lastSavedState(),
     });

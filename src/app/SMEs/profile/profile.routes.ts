@@ -25,6 +25,14 @@ export const profileRoutes: Routes = [
         title: 'Profile Overview - Kapify',
       },
       {
+        path: 'review',
+        loadComponent: () =>
+          import('./pages/profile-review.component').then(
+            (c) => c.ProfileReviewComponent
+          ),
+        title: 'Profile Overview - Kapify',
+      },
+      {
         path: 'data-room',
         loadComponent: () =>
           import(

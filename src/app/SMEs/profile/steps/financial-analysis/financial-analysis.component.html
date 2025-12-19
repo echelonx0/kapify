@@ -183,7 +183,7 @@
       [sections]="incomeStatementSections()"
       [columnHeaders]="columnHeaders()"
       [editMode]="editingMode()"
-      itemLabel="Item"
+      itemLabel=""
       (cellValueChanged)="onIncomeStatementCellChanged($event)"
     />
     } @else {
@@ -229,7 +229,7 @@
       [sections]="balanceSheetSections()"
       [columnHeaders]="columnHeaders()"
       [editMode]="editingMode()"
-      itemLabel="Account"
+      itemLabel=""
       (cellValueChanged)="onBalanceSheetCellChanged($event)"
     />
     } @else {
@@ -275,7 +275,7 @@
       [sections]="cashFlowSections()"
       [columnHeaders]="columnHeaders()"
       [editMode]="editingMode()"
-      itemLabel="Activity"
+      itemLabel=""
       (cellValueChanged)="onCashFlowCellChanged($event)"
     />
     } @else {
@@ -297,7 +297,7 @@
       [sections]="financialRatiosSections()"
       [columnHeaders]="columnHeaders()"
       [editMode]="false"
-      itemLabel="Ratio"
+      itemLabel=""
       (cellValueChanged)="onFinancialRatiosCellChanged($event)"
     />
     } @else {
