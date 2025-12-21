@@ -4,7 +4,7 @@
   <div class="flex items-center justify-between">
     <div>
       <h1 class="text-3xl font-bold text-slate-900">Applications</h1>
-      <p class="text-slate-600 mt-2">Manage and review all applications</p>
+      <p class="text-slate-600 mt-2">Manage and review applications</p>
     </div>
     <button
       (click)="refreshApplicationsData()"
@@ -261,36 +261,6 @@
     }
   </div>
   }
-
-  <!-- Recent Activity Section (Only when no filter applied) -->
-  <!-- @if (!selectedOpportunityFilter() && !applicationsLoading() && !applicationsError() && recentApplicationsComputed().length > 0) {
-    <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden">
-      <div class="px-6 py-5 border-b border-slate-200">
-        <h2 class="text-lg font-bold text-slate-900">Recent Activity</h2>
-        <p class="text-sm text-slate-600 mt-1">Latest application updates</p>
-      </div>
-      <div class="divide-y divide-slate-200">
-        @for (application of recentApplicationsComputed().slice(0, 5); track application.id) {
-          <div class="p-6 hover:bg-slate-50 transition-colors duration-200">
-            <app-application-list-card
-              [application]="transformToApplicationCard(application)"
-              [userType]="'funder'"
-              [showProgress]="false"
-            >
-              <div slot="actions" class="flex items-center gap-2">
-                <button
-                  (click)="viewApplication(application.id)"
-                  class="px-3 py-1.5 text-primary-600 text-xs font-medium hover:bg-primary-50 rounded-lg transition-colors duration-200"
-                >
-                  Review →
-                </button>
-              </div>
-            </app-application-list-card>
-          </div>
-        }
-      </div>
-    </div>
-  } -->
 
   <!-- All Applications Section -->
   @if (!applicationsLoading() && !applicationsError() &&

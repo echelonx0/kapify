@@ -86,14 +86,16 @@ export class ProfileReviewComponent implements OnInit, OnDestroy {
 
   tabs: ReviewTab[] = [
     {
-      id: 'evaluator',
-      label: 'Quick Evaluator',
-      description: 'Upload a proposal and see Kapify in action',
-    },
-    {
       id: 'analysis',
       label: 'Profile Analysis',
-      description: 'Get comprehensive AI-powered insights on your profile',
+      description:
+        'Using your existing business data, Profile review analyzes how prepared your business is for funding. AI evaluates critical readiness factors, highlights areas needing improvement, and provides practical recommendations to help you become funding-ready.',
+    },
+    {
+      id: 'evaluator',
+      label: 'Quick Evaluator',
+      description:
+        'Upload your business plan or proposal for an AI-powered evaluation. The Quick Evaluator analyzes your content, identifies strengths and gaps, and provides clear, actionable guidance to help you refine and strengthen your plan.',
     },
   ];
 

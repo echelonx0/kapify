@@ -154,6 +154,7 @@ export class ApplicationDetailComponent implements OnInit, OnDestroy {
 
     try {
       // Get organization ID from user's organization membership
+      console.log('Current user:', user);
 
       const orgId = user.organizationId || user.id; // Fallback to user ID if no org
       this.organizationId.set(orgId);

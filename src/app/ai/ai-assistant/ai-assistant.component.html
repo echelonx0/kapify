@@ -4,7 +4,7 @@
   <app-credit-gating-modal
     [isOpen]="showCreditGatingModal()"
     [cost]="creditGatingCost()"
-    [currentBalance]="creditGating.wallet()?.balance || 0"
+    [currentBalance]="walletBalance()"
     [isLoading]="isProcessingCredits()"
     (onConfirmClick)="onGatingConfirm()"
     (onCancelClick)="onGatingCancel()"
@@ -17,11 +17,6 @@
     >
       <div class="flex items-center justify-between">
         <div class="flex space-x-3">
-          <!-- <lucide-icon
-            [img]="SparklesIcon"
-            [size]="20"
-            class="text-teal-600"
-          ></lucide-icon> -->
           <h3 class="font-semibold text-slate-900">
             Kapify Decision Intelligence
           </h3>
@@ -35,7 +30,7 @@
     </div>
 
     <div class="p-6 space-y-4">
-      <!-- ✅ Generate Analysis Button (NEW) -->
+      <!-- Generate Analysis Button  -->
       @if (!isAnalysisAvailable()) {
       <div class="flex flex-col gap-2">
         <button

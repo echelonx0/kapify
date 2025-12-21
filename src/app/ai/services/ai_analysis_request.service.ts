@@ -1,4 +1,4 @@
-// src/app/ai/services/ai-analysis-request.service.ts - FIXED
+// src/app/ai/services/ai-analysis-request.service.ts - UPDATED
 import { Injectable, inject } from '@angular/core';
 import { Observable, from, throwError } from 'rxjs';
 import { SharedSupabaseService } from 'src/app/shared/services/shared-supabase.service';
@@ -73,6 +73,7 @@ export class AiAnalysisRequestService {
    * @param applicationData Application snapshot
    * @param opportunityData Opportunity snapshot
    * @param profileData Profile snapshot
+   * @param userId User ID (from AuthService)
    * @returns Analysis request ID
    */
   async createAnalysisRequest(
@@ -81,7 +82,8 @@ export class AiAnalysisRequestService {
     cost: number,
     applicationData?: Record<string, any>,
     opportunityData?: Record<string, any>,
-    profileData?: Record<string, any>
+    profileData?: Record<string, any>,
+    userId?: string
   ): Promise<string> {
     try {
       const { data, error } = await this.supabase
@@ -93,6 +95,7 @@ export class AiAnalysisRequestService {
           app_data_param: applicationData || null,
           opp_data_param: opportunityData || null,
           profile_data_param: profileData || null,
+          user_id_param: userId || null,
         })
         .single();
 
@@ -102,7 +105,7 @@ export class AiAnalysisRequestService {
       }
 
       console.log(
-        `✅ [AI Analysis] Request created: ${data} (free: ${isFree}, cost: ${cost})`
+        `✅ [AI Analysis] Request created: ${data} (free: ${isFree}, cost: ${cost}, userId: ${userId})`
       );
       return data as string;
     } catch (error) {
@@ -119,12 +122,16 @@ export class AiAnalysisRequestService {
    * @param analysisResults The analysis results
    * @param investmentScore The investment score
    * @param error Optional error message if analysis failed
+   * @param userId Optional user ID for results insertion
+   * @param analysisType Type of analysis: 'profile' or 'opportunity' (default: 'profile')
    */
   async markAnalysisExecuted(
     requestId: string,
     analysisResults?: Record<string, any>,
     investmentScore?: Record<string, any>,
-    error?: string
+    error?: string,
+    userId?: string,
+    analysisType: string = 'profile'
   ): Promise<void> {
     try {
       const { error: rpcError } = await this.supabase.rpc(
@@ -134,6 +141,8 @@ export class AiAnalysisRequestService {
           analysis_results_param: analysisResults || null,
           investment_score_param: investmentScore || null,
           error_msg_param: error || null,
+          user_id_param: userId || null,
+          analysis_type_param: analysisType,
         }
       );
 
@@ -177,7 +186,7 @@ export class AiAnalysisRequestService {
   /**
    * Get all analysis requests for organization
    * @param orgId Organization ID
-   * @param limit Number of results to return
+   * @param limit Number of results to limit
    * @returns Array of analysis requests
    */
   async getOrgAnalysisRequests(

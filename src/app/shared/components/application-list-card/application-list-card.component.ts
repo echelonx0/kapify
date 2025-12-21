@@ -90,6 +90,7 @@ export class ApplicationListCardComponent {
   @Input({ required: true }) application!: BaseApplicationCard;
   @Input() userType: UserType = 'sme';
   @Input() showProgress: boolean = true;
+  @Input() funderOrganisationName: string = 'Funder Org';
 
   @Output() primaryAction = new EventEmitter<BaseApplicationCard>();
   @Output() secondaryAction = new EventEmitter<BaseApplicationCard>();
