@@ -67,6 +67,11 @@ export class AdminLayoutComponent {
       label: 'AI Management',
       icon: 'fas fa-brain',
     },
+    {
+      path: 'reports',
+      label: 'Reports',
+      icon: 'fas fa-chart-bar',
+    },
   ];
 
   // Main app routes for quick navigation

@@ -46,6 +46,13 @@ export const adminRoutes: Routes = [
         title: 'Organization Verification - Kapify Admin',
       },
       {
+        path: 'reports',
+        loadComponent: () =>
+          import('./reports/reports.component').then((m) => m.ReportsComponent),
+        title: 'Reports - Kapify Admin',
+      },
+
+      {
         path: 'constants',
         loadComponent: () => {
           console.log('Loading ConstantsManagementComponent...');
