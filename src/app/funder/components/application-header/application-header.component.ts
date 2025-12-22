@@ -72,7 +72,7 @@ export class ApplicationHeaderComponent implements OnInit, OnChanges {
       this.loadAnalysisIfReady();
     }
   }
-
+  //  da8d5d26-ff00-44ac-9e83-94535f981aa2
   /**
    * Load analysis if conditions are met
    */

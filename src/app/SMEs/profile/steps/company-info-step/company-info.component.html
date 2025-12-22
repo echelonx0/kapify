@@ -28,7 +28,7 @@
           variant="outline"
           size="sm"
           (clicked)="saveManually()"
-          [disabled]="isSaving() || !hasUnsavedChanges()"
+          [disabled]="isSaving()"
         >
           @if (isSaving()) {
           <lucide-icon
@@ -42,28 +42,36 @@
     </div>
   </div>
 
-  <!-- Warning Message -->
-  @if (showValidationWarning()) {
-  <div class="bg-amber-50 border border-amber-200/50 rounded-xl p-4">
+  <!-- 🔥 UPDATED: Enhanced Validation Warning with Error Count and List -->
+  @if (showValidationWarning() && validationErrorCount() > 0) {
+  <div class="bg-red-50 border border-red-200/50 rounded-xl p-4">
     <div class="flex items-start space-x-3">
       <lucide-icon
-        [img]="AlertTriangleIcon"
+        [img]="AlertCircleIcon"
         [size]="20"
-        class="text-amber-600 mt-0.5 flex-shrink-0"
+        class="text-red-600 mt-0.5 flex-shrink-0"
       />
-      <div>
-        <h4 class="text-sm font-semibold text-amber-900 mb-1">
-          Incomplete sections
+      <div class="flex-1">
+        <h4 class="text-sm font-semibold text-red-900 mb-1">
+          Please fix {{ validationErrorCount() }} validation
+          {{ validationErrorCount() === 1 ? "error" : "errors" }}
         </h4>
-        <p class="text-sm text-amber-800">
-          Some required fields haven't been filled out completely. You can
-          proceed to the next section, but you cannot submit without completing
-          all required sections.
+        <p class="text-sm text-red-800 mb-3">
+          The following fields need your attention before saving:
         </p>
+        <!-- Error List -->
+        <div class="space-y-1 max-h-40 overflow-y-auto">
+          @for (error of validationErrors(); track $index) {
+          <div class="flex items-start space-x-2">
+            <span class="text-red-600 text-xs mt-0.5">•</span>
+            <p class="text-xs text-red-700">{{ error }}</p>
+          </div>
+          }
+        </div>
       </div>
       <button
         (click)="dismissWarning()"
-        class="text-amber-400 hover:text-amber-600 ml-auto flex-shrink-0"
+        class="text-red-400 hover:text-red-600 ml-auto flex-shrink-0 text-xl leading-none"
       >
         ×
       </button>
@@ -138,6 +146,8 @@
                 type="tel"
                 placeholder="717496762"
                 formControlName="phone"
+                [class.border-red-300]="hasFieldError('phone')"
+                [class.bg-red-50]="hasFieldError('phone')"
                 class="flex-1 px-4 py-2.5 border border-slate-200 rounded-r-xl text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all duration-200"
               />
             </div>
@@ -293,6 +303,8 @@
             </label>
             <select
               formControlName="industry"
+              [class.border-red-300]="hasFieldError('industry')"
+              [class.bg-red-50]="hasFieldError('industry')"
               class="block w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all duration-200"
             >
               <option value="">Select industry</option>
@@ -307,6 +319,11 @@
               <option value="transport">Transport & Logistics</option>
               <option value="other">Other</option>
             </select>
+            @if (getFieldError('industry')) {
+            <p class="text-xs font-medium text-red-700 mt-2">
+              {{ getFieldError("industry") }}
+            </p>
+            }
           </div>
           <div>
             <label class="block text-sm font-semibold text-slate-900 mb-2">
@@ -315,6 +332,8 @@
             </label>
             <select
               formControlName="businessStage"
+              [class.border-red-300]="hasFieldError('businessStage')"
+              [class.bg-red-50]="hasFieldError('businessStage')"
               class="block w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all duration-200"
             >
               <option value="">Select stage</option>
@@ -324,6 +343,11 @@
               <option value="mature">Mature</option>
               <option value="expansion">Expansion</option>
             </select>
+            @if (getFieldError('businessStage')) {
+            <p class="text-xs font-medium text-red-700 mt-2">
+              {{ getFieldError("businessStage") }}
+            </p>
+            }
           </div>
           <div>
             <label class="block text-sm font-semibold text-slate-900 mb-2">
@@ -365,6 +389,8 @@
             formControlName="businessDescription"
             rows="4"
             placeholder="Describe your business activities, services, and market focus..."
+            [class.border-red-300]="hasFieldError('businessDescription')"
+            [class.bg-red-50]="hasFieldError('businessDescription')"
             class="block w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all duration-200 resize-none"
           ></textarea>
           <div class="flex justify-between items-center mt-2">
@@ -418,6 +444,8 @@
             </label>
             <select
               formControlName="cipcReturns"
+              [class.border-red-300]="hasFieldError('cipcReturns')"
+              [class.bg-red-50]="hasFieldError('cipcReturns')"
               class="block w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all duration-200"
             >
               <option value="">Select status</option>
@@ -425,6 +453,11 @@
               <option value="outstanding">Outstanding</option>
               <option value="in-progress">In Progress</option>
             </select>
+            @if (getFieldError('cipcReturns')) {
+            <p class="text-xs font-medium text-red-700 mt-2">
+              {{ getFieldError("cipcReturns") }}
+            </p>
+            }
           </div>
           <div>
             <label class="block text-sm font-semibold text-slate-900 mb-2">
@@ -433,12 +466,19 @@
             </label>
             <select
               formControlName="vatRegistered"
+              [class.border-red-300]="hasFieldError('vatRegistered')"
+              [class.bg-red-50]="hasFieldError('vatRegistered')"
               class="block w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all duration-200"
             >
               <option value="">Select option</option>
               <option value="yes">Yes</option>
               <option value="no">No</option>
             </select>
+            @if (getFieldError('vatRegistered')) {
+            <p class="text-xs font-medium text-red-700 mt-2">
+              {{ getFieldError("vatRegistered") }}
+            </p>
+            }
           </div>
 
           @if (adminForm.get('vatRegistered')?.value === 'yes') {
@@ -458,6 +498,8 @@
             </label>
             <select
               formControlName="taxCompliance"
+              [class.border-red-300]="hasFieldError('taxCompliance')"
+              [class.bg-red-50]="hasFieldError('taxCompliance')"
               class="block w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all duration-200"
             >
               <option value="">Select status</option>
@@ -465,6 +507,11 @@
               <option value="outstanding">Outstanding</option>
               <option value="in-progress">In Progress</option>
             </select>
+            @if (getFieldError('taxCompliance')) {
+            <p class="text-xs font-medium text-red-700 mt-2">
+              {{ getFieldError("taxCompliance") }}
+            </p>
+            }
           </div>
 
           <!-- Income Tax Number with Input Constraint -->
@@ -480,6 +527,8 @@
               formControlName="incomeTaxNumber"
               (input)="onIncomeTaxInput($event)"
               maxlength="10"
+              [class.border-red-300]="hasFieldError('incomeTaxNumber')"
+              [class.bg-red-50]="hasFieldError('incomeTaxNumber')"
               class="block w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all duration-200"
             />
             <p class="text-xs text-slate-500 mt-1">Exactly 10 digits</p>
@@ -497,6 +546,8 @@
             </label>
             <select
               formControlName="workmansComp"
+              [class.border-red-300]="hasFieldError('workmansComp')"
+              [class.bg-red-50]="hasFieldError('workmansComp')"
               class="block w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all duration-200"
             >
               <option value="">Select status</option>
@@ -504,6 +555,11 @@
               <option value="outstanding">Outstanding</option>
               <option value="not-applicable">Not Applicable</option>
             </select>
+            @if (getFieldError('workmansComp')) {
+            <p class="text-xs font-medium text-red-700 mt-2">
+              {{ getFieldError("workmansComp") }}
+            </p>
+            }
           </div>
         </div>
       </div>
