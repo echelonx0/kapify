@@ -141,20 +141,9 @@ export class ApplicationMetricsComponent implements OnInit {
   swotAnalysis = computed(() => this.profileData.swotAnalysis || null);
 
   ngOnInit() {
-    console.log(
-      '[METRICS] Business Management:',
-      this.rawProfileData.companyInfo
-    );
-    // console.log('[Application Data]', this.application);
-    // 1. taxComplianceStatus === this.rawProfileData.taxComplianceStatus
-    // 2. workMansCompensationComplianceStatus === this.rawprofile.workmansCompensation
-    // 3. bbbEEELevel === this.rawProfile.bbbeeLevel
-    // 4. cipcReturnsStatus === this.rawProfile.cipcReturns
-
-    // SARS Clearance
     // console.log(
-    //   '[SARS Clearance]',
-    //   this.rawProfileData.adminInformation?.sarsClearance
+    //   '[METRICS] Business Management:',
+    //   this.rawProfileData.companyInfo
     // );
   }
 
