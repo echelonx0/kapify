@@ -1,255 +1,417 @@
-<!-- organization-status-sidebar.component.html - DESIGN SYSTEM ENHANCED -->
-
 <div
-  class="bg-white rounded-2xl border border-slate-200 overflow-hidden sticky top-6"
+  class="h-full flex flex-col bg-white border-l border-slate-200 overflow-hidden"
 >
   <!-- Header -->
-  <div class="px-6 py-4 border-b border-slate-200 bg-slate-50/50">
-    <div class="flex items-center justify-between">
-      <div class="flex-1 min-w-0">
-        @if (onboardingState()) {
-        <h4 class="text-base font-semibold text-slate-900">
-          {{ getOrganizationName() }}
-        </h4>
-        }
+  <div
+    class="px-6 py-5 border-b border-slate-200 bg-gradient-to-r from-teal-50 to-blue-50 flex-shrink-0"
+  >
+    <div class="flex items-center gap-3">
+      <div>
+        <h2 class="text-base font-bold text-slate-900">Platform Guide</h2>
+        <p class="text-xs text-slate-600">How Kapify works</p>
       </div>
-
-      @if (canCollapse()) {
-      <button
-        (click)="toggleCollapsed()"
-        class="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-slate-100 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 flex-shrink-0 ml-2"
-        [attr.aria-label]="
-          isCollapsed() ? 'Expand sidebar' : 'Collapse sidebar'
-        "
-        [attr.aria-expanded]="!isCollapsed()"
-      >
-        <lucide-icon
-          [img]="isCollapsed() ? ChevronDownIcon : ChevronUpIcon"
-          [size]="16"
-          class="text-slate-600"
-        ></lucide-icon>
-      </button>
-      }
     </div>
   </div>
 
-  <!-- Content Area -->
-  <div class="p-6">
-    <!-- Collapsed Preview -->
-    @if (isCollapsed()) {
-    <div class="space-y-4">
-      <!-- Completion Progress Bar -->
-      <div>
-        <div class="flex items-center justify-between mb-2">
-          <span class="text-xs font-semibold text-slate-600">Completion</span>
-          <span class="text-xs font-bold text-slate-900"
-            >{{ getCompletionPercentage() }}%</span
-          >
+  <!-- Scrollable Content -->
+  <div class="flex-1 overflow-y-auto">
+    <div class="p-6 space-y-6">
+      <!-- AI Intelligence Section -->
+      <div class="space-y-3 fade-in" style="--delay: 0.1s">
+        <div class="flex items-center gap-2 mb-3">
+          <h3 class="text-sm font-bold text-slate-900">AI-Powered Matching</h3>
         </div>
-        <div class="h-2 bg-slate-100 rounded-full overflow-hidden">
-          <div
-            class="h-full rounded-full transition-all duration-700 ease-out bg-gradient-to-r from-teal-400 to-teal-500"
-            [style.width.%]="getCompletionPercentage()"
-          ></div>
-        </div>
-      </div>
-
-      <!-- Status Badge with Urgent Indicator -->
-      <div class="flex items-center justify-between">
-        <div
-          [class]="getStatusBadgeClass()"
-          class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold border"
-        >
-          <lucide-icon [img]="getStatusIcon()" [size]="14"></lucide-icon>
-          <span>{{ getStatusText() }}</span>
-        </div>
-
-        @if (hasUrgentItems()) {
-        <div class="relative flex-shrink-0">
-          <div class="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
-          <div
-            class="absolute inset-0 w-2 h-2 bg-red-500 rounded-full animate-ping opacity-75"
-          ></div>
-        </div>
-        }
-      </div>
-    </div>
-    } @else {
-    <!-- Expanded Content -->
-    <div class="space-y-6">
-      <!-- Logo Status Alert -->
-      @if (!getOrganizationLogo() && !isLogoOptional()) {
-      <div class="bg-amber-50 border border-amber-200/50 rounded-xl p-4">
-        <div class="flex items-start gap-3 mb-3">
-          <div
-            class="w-8 h-8 rounded-lg bg-amber-100 flex items-center justify-center flex-shrink-0"
-          >
-            <lucide-icon [img]="ClockIcon" [size]="16" class="text-amber-600" />
-          </div>
-          <div class="flex-1 min-w-0">
-            <p class="text-sm font-semibold text-amber-900 mb-1">
-              Add Organization Logo
-            </p>
-            <p class="text-xs text-amber-700">
-              Builds trust with SMEs and improves brand visibility
-            </p>
-          </div>
-        </div>
-        <button
-          class="text-sm font-semibold text-amber-600 hover:text-amber-700 transition-colors duration-200 focus:outline-none focus:underline"
-          (click)="completeSetup()"
-        >
-          Upload logo →
-        </button>
-      </div>
-      }
-
-      <!-- High Priority Missing Items -->
-      @if (getHighPriorityMissingItems().length > 0) {
-      <div class="space-y-3">
-        <h4 class="text-sm font-bold text-slate-900">Quick Wins</h4>
 
         <div class="space-y-2">
-          @for (item of getHighPriorityMissingItems().slice(0, 3); track
-          item.field) {
-          <div class="bg-red-50 border border-red-200/50 rounded-xl p-3">
-            <div class="flex items-start gap-2">
-              <div
-                class="w-6 h-6 rounded-lg bg-red-100 flex items-center justify-center flex-shrink-0"
-              >
-                <lucide-icon
-                  [img]="ClockIcon"
-                  [size]="14"
-                  class="text-red-600"
-                ></lucide-icon>
-              </div>
-              <div class="flex-1 min-w-0">
-                <p class="text-sm font-semibold text-red-900 mb-0.5">
-                  {{ item.item }}
-                </p>
-                <p class="text-xs text-red-700">{{ item.description }}</p>
-              </div>
+          <div
+            class="flex items-start gap-2 p-3 bg-slate-50 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer info-card"
+            style="--delay: 0.15s"
+          >
+            <lucide-icon
+              [img]="ZapIcon"
+              [size]="14"
+              class="text-teal-600 flex-shrink-0 mt-0.5"
+            />
+            <div>
+              <p class="text-xs font-semibold text-slate-900">
+                Smart Application Scoring
+              </p>
+              <p class="text-xs text-slate-600 mt-0.5">
+                AI analyzes applications against your criteria automatically
+              </p>
             </div>
           </div>
-          } @if (getTotalMissingItems() > 3) {
-          <button
-            class="text-sm font-semibold text-slate-600 hover:text-slate-900 transition-colors duration-200 focus:outline-none focus:underline"
-            (click)="showAllMissingItems()"
+
+          <div
+            class="flex items-start gap-2 p-3 bg-slate-50 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer info-card"
+            style="--delay: 0.2s"
           >
-            +{{ getTotalMissingItems() - 3 }} more items to complete
-          </button>
-          }
+            <lucide-icon
+              [img]="TrendingUpIcon"
+              [size]="14"
+              class="text-blue-600 flex-shrink-0 mt-0.5"
+            />
+            <div>
+              <p class="text-xs font-semibold text-slate-900">
+                Predictive Analytics
+              </p>
+              <p class="text-xs text-slate-600 mt-0.5">
+                Get insights on application success probability
+              </p>
+            </div>
+          </div>
         </div>
       </div>
-      }
 
-      <!-- Quick Actions -->
-      <div class="space-y-2">
-        <h4 class="text-sm font-bold text-slate-900 mb-3">Quick Actions</h4>
+      <!-- Data Privacy Section -->
+      <div class="space-y-3 fade-in" style="--delay: 0.25s">
+        <div class="flex items-center gap-2 mb-3">
+          <!-- <div
+            class="w-8 h-8 rounded-lg bg-green-100 flex items-center justify-center"
+          >
+            <lucide-icon
+              [img]="ShieldIcon"
+              [size]="16"
+              class="text-green-600"
+            />
+          </div> -->
+          <h3 class="text-sm font-bold text-slate-900">Data & Privacy</h3>
+        </div>
 
-        @if (!isComplete()) {
-        <button
-          class="w-full bg-teal-500 text-white font-medium rounded-xl px-4 py-3 text-sm hover:bg-teal-600 active:bg-teal-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 flex items-center justify-center gap-2"
-          (click)="completeSetup()"
-        >
-          <lucide-icon [img]="FileTextIcon" [size]="16"></lucide-icon>
-          <span>Complete Organization Setup</span>
-        </button>
-        }
+        <div class="space-y-2">
+          <div
+            class="flex items-start gap-2 p-3 bg-slate-50 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer info-card"
+            style="--delay: 0.3s"
+          >
+            <lucide-icon
+              [img]="LockIcon"
+              [size]="14"
+              class="text-green-600 flex-shrink-0 mt-0.5"
+            />
+            <div>
+              <p class="text-xs font-semibold text-slate-900">
+                Bank-Grade Security
+              </p>
+              <p class="text-xs text-slate-600 mt-0.5">
+                256-bit encryption, SOC 2 compliant
+              </p>
+            </div>
+          </div>
 
-        <button
-          class="w-full bg-slate-100 text-slate-700 font-medium rounded-xl px-4 py-2.5 text-sm hover:bg-slate-200 active:bg-slate-300 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 flex items-center justify-between"
-          (click)="editOrganization()"
-        >
-          <span>Edit Organization Details</span>
-          <lucide-icon
-            [img]="ExternalLinkIcon"
-            [size]="14"
-            class="flex-shrink-0"
-          ></lucide-icon>
-        </button>
-
-        @if (onboardingState()?.canCreateOpportunities) {
-        <button
-          class="w-full bg-slate-100 text-slate-700 font-medium rounded-xl px-4 py-2.5 text-sm hover:bg-slate-200 active:bg-slate-300 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 flex items-center justify-between"
-          (click)="managePublicProfile()"
-        >
-          <span>Manage Public Profile</span>
-          <lucide-icon
-            [img]="ExternalLinkIcon"
-            [size]="14"
-            class="flex-shrink-0"
-          ></lucide-icon>
-        </button>
-        }
-      </div>
-
-      <!-- Organization Metadata -->
-      @if (onboardingState()?.organization) {
-      <div class="pt-4 border-t border-slate-200">
-        <div class="mb-3">
-          <p class="text-xs font-semibold text-slate-500 mb-1">
-            Classification
-          </p>
-          <p class="text-sm font-semibold text-slate-900">
-            {{
-              formatOrganizationType(
-                onboardingState()!.organization!.organizationType
-              )
-            }}
-          </p>
+          <div
+            class="flex items-start gap-2 p-3 bg-slate-50 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer info-card"
+            style="--delay: 0.35s"
+          >
+            <lucide-icon
+              [img]="InfoIcon"
+              [size]="14"
+              class="text-blue-600 flex-shrink-0 mt-0.5"
+            />
+            <div>
+              <p class="text-xs font-semibold text-slate-900">
+                Your Data, Your Control
+              </p>
+              <p class="text-xs text-slate-600 mt-0.5">
+                Export or delete your data anytime
+              </p>
+            </div>
+          </div>
         </div>
       </div>
-      }
 
-      <!-- Main Status Card -->
-      <div [class]="getMainStatusCardClass()" class="rounded-xl p-4 border">
-        <div class="space-y-4">
-          <!-- Status Header -->
-          <div>
-            <h4 class="text-sm font-bold mb-1" [class]="getStatusTitleColor()">
-              {{ getMainStatusTitle() }}
-            </h4>
-            <p class="text-xs leading-relaxed" [class]="getStatusTextColor()">
-              {{ getMainStatusDescription() }}
-            </p>
+      <!-- Pricing Section -->
+      <div class="mt-4 space-y-3 fade-in" style="--delay: 0.4s">
+        <div class="flex items-center gap-2 mb-8">
+          <h3 class="text-sm font-bold text-slate-900">
+            Pricing & Subscriptions
+          </h3>
+        </div>
+
+        <div
+          class="p-4 mt-4 bg-gradient-to-br from-teal-50 to-blue-50 border border-teal-200/50 rounded-xl"
+        >
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs font-semibold text-slate-900"
+              >Kapify uses a credit system</span
+            >
+            <span
+              class="px-2 py-0.5 bg-teal-500 text-white text-xs font-bold rounded-full"
+              >Pay as you need</span
+            >
           </div>
-
-          <!-- Progress Section -->
-          <div>
-            <div class="flex items-center justify-between mb-2">
-              <span
-                class="text-xs font-semibold"
-                [class]="getStatusTextColor()"
-              >
-                Overall Progress
-              </span>
-              <span class="text-xs font-bold" [class]="getStatusTitleColor()">
-                {{ getCompletionPercentage() }}%
-              </span>
-            </div>
-            <div class="h-2 bg-white/50 rounded-full overflow-hidden">
-              <div
-                class="h-full rounded-full transition-all duration-700 ease-out"
-                [class]="getProgressBarColor()"
-                [style.width.%]="getCompletionPercentage()"
-              ></div>
-            </div>
-          </div>
-
-          <!-- Primary Action Button -->
-          @if (getPrimaryAction()) {
+          <p class="text-xs text-slate-600 mb-3">
+            Use credits to unlock premium features like AI-powered matching,
+            advanced analytics, and priority support. Only pay for what you use.
+          </p>
           <button
-            class="text-sm font-semibold hover:underline transition-colors duration-200 focus:outline-none"
-            [class]="getActionButtonColor()"
-            (click)="handlePrimaryAction()"
+            (click)="openPurchaseModal()"
+            class="w-full bg-white text-teal-600 font-semibold text-xs px-4 py-2 rounded-lg border border-teal-200 hover:bg-teal-50 transition-colors"
           >
-            {{ getPrimaryAction()!.action }} →
+            Buy More Credits
           </button>
-          }
+        </div>
+      </div>
+
+      <!-- Feedback Section -->
+      <div class="space-y-3 fade-in" style="--delay: 0.45s">
+        <div class="flex items-center gap-2 mb-3">
+          <h3 class="text-sm font-bold text-slate-900">Help & Feedback</h3>
+        </div>
+
+        <div class="space-y-2">
+          <button
+            (click)="openFeedbackForm('bug')"
+            class="w-full flex items-center gap-3 p-3 bg-slate-50 rounded-lg hover:bg-red-50 hover:border-red-200 border border-transparent transition-all text-left feedback-button"
+            style="--delay: 0.5s"
+          >
+            <div
+              class="w-8 h-8 rounded-lg bg-red-100 flex items-center justify-center flex-shrink-0"
+            >
+              <lucide-icon [img]="BugIcon" [size]="16" class="text-red-600" />
+            </div>
+            <div class="flex-1">
+              <p class="text-sm font-semibold text-slate-900">Report a Bug</p>
+              <p class="text-xs text-slate-600">Help us improve</p>
+            </div>
+            <lucide-icon
+              [img]="ChevronRightIcon"
+              [size]="16"
+              class="text-slate-400"
+            />
+          </button>
+
+          <button
+            (click)="openFeedbackForm('feature')"
+            class="w-full flex items-center gap-3 p-3 bg-slate-50 rounded-lg hover:bg-blue-50 hover:border-blue-200 border border-transparent transition-all text-left feedback-button"
+            style="--delay: 0.55s"
+          >
+            <div
+              class="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center flex-shrink-0"
+            >
+              <lucide-icon
+                [img]="LightbulbIcon"
+                [size]="16"
+                class="text-blue-600"
+              />
+            </div>
+            <div class="flex-1">
+              <p class="text-sm font-semibold text-slate-900">
+                Request a Feature
+              </p>
+              <p class="text-xs text-slate-600">Share your ideas</p>
+            </div>
+            <lucide-icon
+              [img]="ChevronRightIcon"
+              [size]="16"
+              class="text-slate-400"
+            />
+          </button>
+
+          <button
+            class="w-full flex items-center gap-3 p-3 bg-slate-50 rounded-lg hover:bg-slate-100 border border-transparent transition-all text-left feedback-button"
+            style="--delay: 0.6s"
+          >
+            <div
+              class="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center flex-shrink-0"
+            >
+              <lucide-icon
+                [img]="HelpCircleIcon"
+                [size]="16"
+                class="text-slate-600"
+              />
+            </div>
+            <div class="flex-1">
+              <p class="text-sm font-semibold text-slate-900">Help Center</p>
+              <p class="text-xs text-slate-600">Browse documentation</p>
+            </div>
+            <lucide-icon
+              [img]="ChevronRightIcon"
+              [size]="16"
+              class="text-slate-400"
+            />
+          </button>
         </div>
       </div>
     </div>
-    }
   </div>
 </div>
+
+<!-- Feedback Modal -->
+@if (showFeedbackModal()) {
+<div
+  class="fixed inset-0 z-50 flex items-center justify-center p-4"
+  (click)="closeFeedbackForm()"
+>
+  <!-- Backdrop -->
+  <div
+    class="absolute inset-0 bg-black/30 backdrop-blur-sm modal-backdrop"
+  ></div>
+
+  <!-- Modal -->
+  <div
+    class="relative bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-hidden modal-slide-up"
+    (click)="$event.stopPropagation()"
+  >
+    <!-- Header -->
+    <div
+      class="px-6 py-5 border-b border-slate-200 bg-gradient-to-r from-slate-50 to-white flex items-center justify-between"
+    >
+      <div class="flex items-center gap-3">
+        <div [class]="getFeedbackIconClass()">
+          <lucide-icon
+            [img]="getFeedbackIcon()"
+            [size]="20"
+            class="text-white"
+          />
+        </div>
+        <div>
+          <h3 class="text-lg font-bold text-slate-900">
+            {{ getFeedbackTitle() }}
+          </h3>
+          <p class="text-xs text-slate-600">
+            {{ getFeedbackDescription() }}
+          </p>
+        </div>
+      </div>
+      <button
+        (click)="closeFeedbackForm()"
+        class="p-2 hover:bg-slate-100 rounded-lg transition-colors"
+      >
+        <lucide-icon [img]="XIcon" [size]="20" class="text-slate-600" />
+      </button>
+    </div>
+
+    <!-- Form -->
+    <div class="p-6 overflow-y-auto max-h-[calc(90vh-200px)]">
+      <form (ngSubmit)="submitFeedback()" #feedbackForm="ngForm">
+        <!-- Title -->
+        <div class="mb-4">
+          <label class="block text-sm font-semibold text-slate-900 mb-2">
+            Title
+            <span class="text-red-500">*</span>
+          </label>
+          <input
+            type="text"
+            [(ngModel)]="feedback.title"
+            name="title"
+            required
+            maxlength="100"
+            placeholder="{{
+              feedbackType() === 'bug'
+                ? 'e.g., Form not submitting'
+                : 'e.g., Export to Excel'
+            }}"
+            class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all"
+          />
+          <p class="text-xs text-slate-500 mt-1">
+            {{ feedback.title.length }}/100 characters
+          </p>
+        </div>
+
+        <!-- Description -->
+        <div class="mb-4">
+          <label class="block text-sm font-semibold text-slate-900 mb-2">
+            Description
+            <span class="text-red-500">*</span>
+          </label>
+          <textarea
+            [(ngModel)]="feedback.description"
+            name="description"
+            required
+            rows="6"
+            maxlength="1000"
+            placeholder="{{ feedbackType() === 'bug' ? 'What happened? What did you expect to happen?' : 'Describe the feature you'd like to see' }}"
+            class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all resize-none"
+          ></textarea>
+          <p class="text-xs text-slate-500 mt-1">
+            {{ feedback.description.length }}/1000 characters
+          </p>
+        </div>
+
+        <!-- Category (for feature requests) -->
+        @if (feedbackType() === 'feature') {
+        <div class="mb-4">
+          <label class="block text-sm font-semibold text-slate-900 mb-2">
+            Category (Optional)
+          </label>
+          <select
+            [(ngModel)]="feedback.category"
+            name="category"
+            class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all"
+          >
+            <option value="">Select a category</option>
+            <option value="opportunities">Opportunities</option>
+            <option value="applications">Applications</option>
+            <option value="profile">Profile Management</option>
+            <option value="analytics">Analytics & Reporting</option>
+            <option value="integrations">Integrations</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+        }
+
+        <!-- Submit Button -->
+        <div class="flex gap-3">
+          <button
+            type="button"
+            (click)="closeFeedbackForm()"
+            class="flex-1 bg-slate-100 text-slate-700 font-semibold py-3 px-6 rounded-xl hover:bg-slate-200 transition-colors"
+            [disabled]="isSubmitting()"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            [disabled]="!feedbackForm.valid || isSubmitting()"
+            class="flex-1 bg-teal-500 text-white font-semibold py-3 px-6 rounded-xl hover:bg-teal-600 active:bg-teal-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+          >
+            @if (isSubmitting()) {
+            <div
+              class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"
+            ></div>
+            <span>Submitting...</span>
+            } @else {
+            <lucide-icon [img]="SendIcon" [size]="18" />
+            <span
+              >Submit
+              {{ feedbackType() === "bug" ? "Bug Report" : "Request" }}</span
+            >
+            }
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+}
+
+<!-- Success Toast -->
+@if (showSuccessToast()) {
+<div class="fixed bottom-6 right-6 z-50 toast-slide-up">
+  <div
+    class="bg-green-500 text-white px-6 py-4 rounded-xl shadow-2xl flex items-center gap-3"
+  >
+    <div
+      class="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center"
+    >
+      <lucide-icon [img]="CheckIcon" [size]="18" />
+    </div>
+    <div>
+      <p class="font-semibold">Success!</p>
+      <p class="text-sm opacity-90">
+        Your {{ feedbackType() }} has been submitted
+      </p>
+    </div>
+  </div>
+</div>
+}
+
+<!-- Purchase Modal -->
+@if (isPurchaseModalOpen()) {
+<app-purchase-credits-modal
+  [isOpen]="isPurchaseModalOpen()"
+  [organizationId]="wallet()?.organization_id || ''"
+  (close)="closePurchaseModal()"
+  (success)="onPurchaseSuccess()"
+/>
+}
