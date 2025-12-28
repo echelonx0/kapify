@@ -1,4 +1,4 @@
-<!-- Kapify Dashboard - With Animated CTA Card Component -->
+<!-- Kapify Dashboard - With Organization Status Overview Component -->
 <div class="min-h-screen bg-slate-50">
   <!-- Main Content Wrapper -->
   <div class="flex h-screen">
@@ -54,58 +54,6 @@
             </div>
           </div>
 
-          <!-- Analytics Dashboard Section (Funder Only) -->
-          @if (userType() === 'funder' && analytics()) {
-          <div class="mb-6">
-            <div class="flex items-center justify-between mb-4">
-              <div>
-                <h2 class="text-xl font-bold text-slate-900">Your Overview</h2>
-                <p class="text-sm text-slate-600 mt-0.5">
-                  Key metrics from your funding activities
-                </p>
-              </div>
-            </div>
-
-            <!-- Stats Grid -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              @for (stat of statsCards(); track stat.id) {
-              <div
-                class="bg-white rounded-2xl border border-slate-200 p-6 hover:shadow-md hover:border-slate-300 transition-all duration-200 group cursor-pointer"
-                (click)="handleStatClick(stat.id)"
-              >
-                <div class="flex items-start justify-between mb-4">
-                  <div
-                    [class]="getStatCardIconBg(stat.color)"
-                    class="w-12 h-12 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-200"
-                  >
-                    <lucide-icon
-                      [img]="stat.icon"
-                      [size]="24"
-                      [class]="getStatCardIconColor(stat.color)"
-                    />
-                  </div>
-                </div>
-
-                <div class="mb-2">
-                  <p class="text-3xl font-bold text-slate-900 mb-1">
-                    {{ stat.value }}
-                  </p>
-                  <p class="text-sm font-semibold text-slate-600">
-                    {{ stat.label }}
-                  </p>
-                </div>
-
-                @if (stat.description) {
-                <p class="text-xs text-slate-500 line-clamp-2">
-                  {{ stat.description }}
-                </p>
-                }
-              </div>
-              }
-            </div>
-          </div>
-          }
-
           <!-- Primary CTA Card Component (Extracted & Animated) -->
           <app-primary-cta-card
             [content]="ctaContent()"
@@ -127,9 +75,16 @@
             </div>
           </div>
           }
-
+          <!-- Organization Status Overview Section (Funder Only) -->
+          @if (userType() === 'funder' && onboardingState()) {
+          <div class="mt-6">
+            <app-organization-status-overview
+              (actionClicked)="handleOrganizationAction($event)"
+            />
+          </div>
+          }
           <!-- Help & Resources -->
-          <div class="mt-4">
+          <div class="mt-6">
             <div
               class="bg-gradient-to-br from-blue-50 to-teal-50 rounded-2xl border border-blue-200/50 p-6 lg:p-8"
             >
