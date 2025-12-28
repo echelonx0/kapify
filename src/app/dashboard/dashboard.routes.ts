@@ -60,11 +60,7 @@ export const dashboardRoutes: Routes = [
           ),
         title: 'Funder Dashboard - Kapify',
       },
-      // {
-      //   path: 'settings',
-      //   loadComponent: () => import('./pages/settings-page.component').then(c => c.SettingsComponent),
-      //   title: 'Settings - Kapify'
-      // },
+     
       {
         path: 'resources',
         loadComponent: () =>
