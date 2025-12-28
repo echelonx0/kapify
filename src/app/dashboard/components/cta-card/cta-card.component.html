@@ -1,0 +1,86 @@
+<!-- Primary CTA Card with Animations -->
+<div class="cta-card-wrapper" [class.animate-in]="isAnimating()">
+  <div
+    [class]="
+      'bg-gradient-to-r ' +
+      gradientClass() +
+      ' rounded-2xl p-6 lg:p-8 text-white shadow-lg cta-card'
+    "
+  >
+    <!-- Animated Background Particles -->
+    <div class="particles-container">
+      @for (particle of [0, 1, 2, 3]; track particle) {
+      <div
+        class="particle"
+        [style.top]="getParticleStyle(particle).top"
+        [style.left]="getParticleStyle(particle).left"
+        [style.right]="getParticleStyle(particle).right"
+        [style.width]="getParticleStyle(particle).size"
+        [style.height]="getParticleStyle(particle).size"
+        [style.animation-delay]="getParticleStyle(particle).delay"
+      ></div>
+      }
+    </div>
+
+    <!-- Content Container -->
+    <div class="relative z-10">
+      <div
+        class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6"
+      >
+        <div class="flex-1">
+          <!-- Icon Badge with Pulse Animation -->
+          <div
+            class="inline-flex items-center justify-center w-14 h-14 rounded-xl bg-white/20 backdrop-blur-sm mb-4 icon-badge"
+          >
+            <lucide-icon
+              [img]="ctaContent().icon"
+              [size]="28"
+              class="text-white"
+            />
+          </div>
+
+          <!-- Title with Slide-in Animation -->
+          <h2 class="text-2xl lg:text-3xl font-bold mb-3 cta-title">
+            {{ ctaContent().title }}
+          </h2>
+
+          <!-- Description with Fade-in -->
+          <p
+            class="text-sm lg:text-base opacity-90 mb-6 max-w-2xl leading-relaxed cta-description"
+          >
+            {{ ctaContent().description }}
+          </p>
+
+          <!-- CTA Button with Hover Effects -->
+          <button
+            class="inline-flex items-center gap-2 bg-white text-slate-900 font-semibold rounded-xl px-6 py-3 text-sm hover:bg-slate-50 active:bg-slate-100 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 cta-button group"
+            (click)="handleClick()"
+          >
+            <span>{{ ctaContent().buttonText }}</span>
+            <lucide-icon
+              [img]="ArrowRightIcon"
+              [size]="16"
+              class="group-hover:translate-x-1 transition-transform duration-200"
+            />
+          </button>
+        </div>
+
+        <!-- Decorative Icon (Desktop Only) with Float Animation -->
+        <div class="hidden xl:block flex-shrink-0">
+          <div
+            class="w-32 h-32 rounded-2xl bg-white/10 backdrop-blur-sm flex items-center justify-center decorative-icon"
+          >
+            <lucide-icon
+              [img]="ctaContent().icon"
+              [size]="64"
+              class="text-white opacity-40"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Animated Border Glow -->
+    <div class="border-glow"></div>
+  </div>
+</div>

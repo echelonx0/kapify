@@ -87,6 +87,14 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./reports/reports.component').then((m) => m.ReportsComponent),
   },
+  {
+    path: 'executive-application-form',
+    canActivate: [AuthGuard],
+    loadComponent: () =>
+      import(
+        './shared/executive-applications/executive-application-form.component'
+      ).then((m) => m.ExecutiveApplicationFormComponent),
+  },
   // Protected routes (require authentication)
   {
     path: 'dashboard',

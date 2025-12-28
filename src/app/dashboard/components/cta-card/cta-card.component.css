@@ -1,0 +1,359 @@
+/* Primary CTA Card Component Styles */
+/* Follows Kapify Design System with Enhanced Animations */
+
+/* Wrapper */
+.cta-card-wrapper {
+  position: relative;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 600ms ease-out, transform 600ms ease-out;
+}
+
+.cta-card-wrapper.animate-in {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Main Card with Gradient Animation */
+.cta-card {
+  position: relative;
+  overflow: hidden;
+  transition: all 300ms ease-in-out;
+  background-size: 200% 200%;
+  animation: gradientFlow 8s ease infinite;
+}
+
+@keyframes gradientFlow {
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+.cta-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
+    0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+/* Animated Background Particles */
+.particles-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  opacity: 0.15;
+  pointer-events: none;
+}
+
+.particle {
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(255, 255, 255, 0.3) 0%,
+    rgba(255, 255, 255, 0) 70%
+  );
+  animation: particleFloat 20s ease-in-out infinite;
+}
+
+@keyframes particleFloat {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.3;
+  }
+  33% {
+    transform: translate(30px, -30px) scale(1.1);
+    opacity: 0.5;
+  }
+  66% {
+    transform: translate(-20px, 20px) scale(0.9);
+    opacity: 0.4;
+  }
+}
+
+/* Icon Badge Pulse */
+.icon-badge {
+  animation: iconPulse 3s ease-in-out infinite;
+  position: relative;
+}
+
+@keyframes iconPulse {
+  0%,
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.4);
+  }
+  50% {
+    transform: scale(1.05);
+    box-shadow: 0 0 0 10px rgba(255, 255, 255, 0);
+  }
+}
+
+/* Title Slide-in */
+.cta-title {
+  animation: slideInFromLeft 800ms ease-out 200ms both;
+}
+
+@keyframes slideInFromLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Description Fade-in */
+.cta-description {
+  animation: fadeInUp 800ms ease-out 400ms both;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 0.9;
+    transform: translateY(0);
+  }
+}
+
+/* CTA Button with Ripple Effect */
+.cta-button {
+  animation: fadeInUp 800ms ease-out 600ms both;
+  position: relative;
+  overflow: hidden;
+}
+
+.cta-button::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(20, 184, 166, 0.2);
+  transform: translate(-50%, -50%);
+  transition: width 600ms ease-out, height 600ms ease-out;
+}
+
+.cta-button:hover::before {
+  width: 300px;
+  height: 300px;
+}
+
+.cta-button:active {
+  transform: scale(0.98);
+}
+
+/* Decorative Icon Float */
+.decorative-icon {
+  animation: decorativeFloat 6s ease-in-out infinite;
+}
+
+@keyframes decorativeFloat {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  33% {
+    transform: translateY(-10px) rotate(3deg);
+  }
+  66% {
+    transform: translateY(5px) rotate(-3deg);
+  }
+}
+
+/* Animated Border Glow */
+.border-glow {
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  border-radius: inherit;
+  background: linear-gradient(
+    45deg,
+    rgba(255, 255, 255, 0.1),
+    rgba(255, 255, 255, 0.3),
+    rgba(255, 255, 255, 0.1)
+  );
+  background-size: 200% 200%;
+  animation: borderGlow 4s ease infinite;
+  opacity: 0;
+  transition: opacity 300ms ease;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.cta-card:hover .border-glow {
+  opacity: 1;
+}
+
+@keyframes borderGlow {
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+/* Shimmer Effect on Hover */
+.cta-card::after {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    to bottom right,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.1) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  transform: rotate(45deg);
+  animation: shimmer 3s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%) rotate(45deg);
+  }
+  100% {
+    transform: translateX(100%) rotate(45deg);
+  }
+}
+
+/* Responsive Adjustments */
+@media (max-width: 1024px) {
+  /* Reduce animation intensity on mobile */
+  .cta-card {
+    animation: gradientFlow 12s ease infinite;
+  }
+
+  .particle {
+    animation: particleFloat 30s ease-in-out infinite;
+  }
+
+  .icon-badge {
+    animation: iconPulse 4s ease-in-out infinite;
+  }
+
+  .decorative-icon {
+    animation: none;
+  }
+
+  .cta-card::after {
+    animation: shimmer 5s ease-in-out infinite;
+  }
+}
+
+/* Accessibility - Respect reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  .cta-card-wrapper {
+    transition: opacity 200ms ease;
+    transform: none !important;
+  }
+
+  .cta-card,
+  .particle,
+  .icon-badge,
+  .decorative-icon,
+  .cta-card::after,
+  .border-glow {
+    animation: none !important;
+  }
+
+  .cta-title,
+  .cta-description,
+  .cta-button {
+    animation: fadeIn 300ms ease both !important;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  .cta-button::before {
+    transition: none !important;
+  }
+}
+
+/* Focus States */
+.cta-button:focus-visible {
+  outline: none;
+  box-shadow: inset 0 0 0 2px rgba(20, 184, 166, 0.5), 0 0 0 4px white;
+}
+
+/* Print Styles */
+@media print {
+  .particles-container,
+  .border-glow,
+  .cta-card::after {
+    display: none;
+  }
+
+  .cta-card {
+    animation: none;
+    background: linear-gradient(135deg, #14b8a6 0%, #0d9488 100%) !important;
+  }
+}
+
+/* Loading State */
+.cta-card.loading {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.cta-card.loading .cta-button {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Success State */
+.cta-card.success {
+  animation: successPulse 600ms ease-out;
+}
+
+@keyframes successPulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.02);
+  }
+}
+
+/* Stagger Animation for Multiple Cards */
+.cta-card-wrapper:nth-child(1) {
+  animation-delay: 0ms;
+}
+
+.cta-card-wrapper:nth-child(2) {
+  animation-delay: 100ms;
+}
+
+.cta-card-wrapper:nth-child(3) {
+  animation-delay: 200ms;
+}
