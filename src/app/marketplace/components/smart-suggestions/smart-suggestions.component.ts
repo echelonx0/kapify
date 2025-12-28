@@ -1,6 +1,11 @@
-// src/app/marketplace/components/smart-suggestions.component.ts
-
-import { Component, OnInit, signal, inject, computed } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  signal,
+  inject,
+  computed,
+  OnDestroy,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import {
@@ -8,7 +13,11 @@ import {
   Sparkles,
   TrendingUp,
   RefreshCw,
+  ChevronDown,
+  ChevronUp,
 } from 'lucide-angular';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 import { AuthService } from 'src/app/auth/production.auth.service';
 import {
   SuggestionsMatchingService,
@@ -23,49 +32,68 @@ import { SuggestionCardComponent } from './components/suggestion-card.component'
   templateUrl: 'smart-suggestions.component.html',
   styleUrl: 'smart-suggestions.component.css',
 })
-export class SmartSuggestionsComponent implements OnInit {
+export class SmartSuggestionsComponent implements OnInit, OnDestroy {
   private matchingService = inject(SuggestionsMatchingService);
   private router = inject(Router);
   private authService = inject(AuthService);
+  private destroy$ = new Subject<void>();
 
   // Icons
   SparklesIcon = Sparkles;
   TrendingUpIcon = TrendingUp;
   RefreshIcon = RefreshCw;
+  ChevronDownIcon = ChevronDown;
+  ChevronUpIcon = ChevronUp;
 
   // State
   suggestions = signal<MatchScore[]>([]);
   isLoading = signal(true);
   isRefreshing = signal(false);
   hasProfile = signal(false);
+  isCollapsed = signal(true); // Start collapsed
 
-  // Computed
+  // Computed properties
   isLoggedIn = computed(() => !!this.authService.user());
-  showComponent = computed(
-    () =>
-      this.isLoggedIn() && (!this.isLoading() || this.suggestions().length > 0)
-  );
+  isUserFunder = computed(() => this.authService.user()?.userType === 'funder');
+
+  // Hide entirely for funders, else show based on login
+  showComponent = computed(() => {
+    if (this.isUserFunder()) return false; // Funders: hide entirely
+    return this.isLoggedIn();
+  });
 
   ngOnInit() {
     this.loadSuggestions();
   }
 
+  ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
   private loadSuggestions() {
     this.isLoading.set(true);
 
-    this.matchingService.getSuggestedOpportunities(3, true).subscribe({
-      next: (matches) => {
-        this.suggestions.set(matches);
-        this.hasProfile.set(matches.some((m) => m.score > 50));
-        this.isLoading.set(false);
-        this.isRefreshing.set(false);
-      },
-      error: (error) => {
-        console.error('Error loading suggestions:', error);
-        this.isLoading.set(false);
-        this.isRefreshing.set(false);
-      },
-    });
+    this.matchingService
+      .getSuggestedOpportunities(3, true)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (matches) => {
+          this.suggestions.set(matches);
+          this.hasProfile.set(matches.some((m) => m.score > 50));
+          this.isLoading.set(false);
+          this.isRefreshing.set(false);
+        },
+        error: (error) => {
+          console.error('Error loading suggestions:', error);
+          this.isLoading.set(false);
+          this.isRefreshing.set(false);
+        },
+      });
+  }
+
+  toggleCollapse() {
+    this.isCollapsed.update((v) => !v);
   }
 
   refresh() {
@@ -136,8 +164,10 @@ export class SmartSuggestionsComponent implements OnInit {
   }
 
   viewAllOpportunities() {
-    const element = document.querySelector('.opportunities-grid');
-    element?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    const element = document.querySelector('app-opportunities-grid');
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
   }
 
   trackBySuggestion(index: number, suggestion: MatchScore): string {
