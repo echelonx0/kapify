@@ -5,143 +5,243 @@ import {
   LucideAngularModule,
   Clock,
   CheckCircle,
-  Trophy,
-  ArrowRight,
-  Briefcase,
   Shield,
-  Mail,
-  Zap,
+  ChevronDown,
+  ChevronUp,
+  Briefcase,
+  TrendingUp,
+  Users,
+  ArrowRight,
 } from 'lucide-angular';
-import { UiButtonComponent } from '../../../shared/components';
 
 @Component({
   selector: 'app-pending-verification-state',
   standalone: true,
-  imports: [CommonModule, LucideAngularModule, UiButtonComponent],
+  imports: [CommonModule, LucideAngularModule],
   template: `
     <div
-      class="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100   p-4 lg:p-8 overflow-hidden"
+      class="min-h-screen bg-gradient-to-br from-slate-50 via-slate-50 to-teal-50 p-6 flex items-center justify-center"
     >
-      <div class="w-full max-w-3xl mb-1">
-        <!-- Header -->
-        <div class="text-center mb-8">
-          <h1 class="text-2xl lg:text-3xl font-bold text-slate-900 mb-3">
-            Verification In Progress
-          </h1>
-        </div>
-
-        <!-- Main Content Grid -->
-        <div class="space-y-6">
-          <!-- Timeline Card -->
+      <div class="max-w-2xl w-full">
+        <!-- Main Status Card -->
+        <div
+          class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm"
+        >
+          <!-- Header with Status -->
           <div
-            class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden"
+            class="bg-gradient-to-r from-teal-50 to-emerald-50 border-b border-teal-100 px-8 py-6"
           >
-            <div class="px-6 py-4 border-b border-slate-200 bg-slate-50/50">
-              <h3 class="text-lg font-semibold text-slate-900">
-                Verification Timeline
-              </h3>
+            <div class="flex items-start gap-4">
+              <div
+                class="w-14 h-14 rounded-xl bg-teal-500 flex items-center justify-center flex-shrink-0"
+              >
+                <lucide-icon
+                  [img]="ShieldIcon"
+                  [size]="28"
+                  class="text-white"
+                />
+              </div>
+              <div class="flex-1">
+                <div class="flex items-center gap-3 mb-2">
+                  <h1 class="text-2xl font-bold text-slate-900">
+                    Verification Submitted
+                  </h1>
+                  <div
+                    class="flex items-center gap-1.5 px-3 py-1 bg-amber-100 text-amber-700 rounded-full text-sm font-semibold"
+                  >
+                    <lucide-icon [img]="ClockIcon" [size]="16" />
+                    <span>Under Review</span>
+                  </div>
+                </div>
+                <p class="text-slate-700 text-base leading-relaxed">
+                  Our team is reviewing your organization details. You'll
+                  receive an email notification once verification is complete.
+                </p>
+              </div>
             </div>
+          </div>
 
-            <div class="p-6 space-y-4">
-              <!-- Step 1: Submitted -->
-              <div class="flex items-start space-x-4">
-                <div class="flex flex-col items-center">
-                  <div
-                    class="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0 shadow-sm"
-                  >
-                    <lucide-icon
-                      [img]="CheckCircleIcon"
-                      [size]="20"
-                      class="text-white"
-                    />
-                  </div>
-                  <div class="w-0.5 h-8 bg-slate-200 my-1"></div>
-                </div>
-                <div class="flex-1 pt-1">
-                  <h4 class="font-semibold text-slate-900">
-                    Application Submitted
-                  </h4>
-                  <p class="text-sm text-slate-600">{{ verificationDate }}</p>
-                </div>
+          <!-- Expectation Setting -->
+          <div class="px-8 py-6 bg-amber-50 border-b border-amber-100">
+            <div class="flex items-center gap-3">
+              <lucide-icon
+                [img]="ClockIcon"
+                [size]="20"
+                class="text-amber-600 flex-shrink-0"
+              />
+              <div>
+                <p class="text-sm font-semibold text-amber-900">
+                  Expected completion: 2-3 business days
+                </p>
+                <p class="text-xs text-amber-700 mt-0.5">
+                  We'll notify you via email as soon as we're done
+                </p>
               </div>
+            </div>
+          </div>
 
-              <!-- Step 2: Under Review -->
-              <div class="flex items-start space-x-4">
-                <div class="flex flex-col items-center">
-                  <div
-                    class="w-10 h-10 bg-gradient-to-br from-amber-400 to-orange-500 rounded-full flex items-center justify-center flex-shrink-0 shadow-sm"
-                  >
-                    <div
-                      class="w-3 h-3 bg-white rounded-full animate-pulse"
-                    ></div>
-                  </div>
-                  <div class="w-0.5 h-8 bg-slate-200 my-1"></div>
+          <!-- What You Can Do Now -->
+          <div class="px-8 py-6 border-b border-slate-200">
+            <h2 class="text-lg font-bold text-slate-900 mb-4">
+              While You Wait
+            </h2>
+            <div class="space-y-3">
+              <button
+                (click)="onGoToDashboard()"
+                class="w-full flex items-start gap-3 p-4 bg-slate-50 rounded-lg hover:bg-slate-100 transition-colors text-left"
+              >
+                <div
+                  class="w-10 h-10 rounded-lg bg-teal-100 flex items-center justify-center flex-shrink-0"
+                >
+                  <lucide-icon
+                    [img]="TrendingUpIcon"
+                    [size]="20"
+                    class="text-teal-600"
+                  />
                 </div>
-                <div class="flex-1 pt-1">
-                  <h4 class="font-semibold text-slate-900">Under Review</h4>
+                <div class="flex-1">
+                  <h3 class="font-semibold text-slate-900 mb-1">
+                    Explore the Dashboard
+                  </h3>
                   <p class="text-sm text-slate-600">
-                    Our team is verifying your organization details
+                    Get familiar with analytics, reporting, and opportunity
+                    management tools
                   </p>
-                  <div
-                    class="mt-2 inline-flex items-center px-2.5 py-1 bg-amber-50 border border-amber-200/50 rounded-full"
-                  >
-                    <span class="text-xs font-semibold text-amber-700"
-                      >⏱️ Typically 2-3 business days</span
-                    >
-                  </div>
+                </div>
+              </button>
+
+              <button
+                (click)="onCreateOpportunity()"
+                class="w-full flex items-start gap-3 p-4 bg-slate-50 rounded-lg hover:bg-slate-100 transition-colors text-left"
+              >
+                <div
+                  class="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center flex-shrink-0"
+                >
+                  <lucide-icon
+                    [img]="BriefcaseIcon"
+                    [size]="20"
+                    class="text-blue-600"
+                  />
+                </div>
+                <div class="flex-1">
+                  <h3 class="font-semibold text-slate-900 mb-1">
+                    Draft Your First Opportunity
+                  </h3>
+                  <p class="text-sm text-slate-600">
+                    Prepare funding criteria and requirements (publish once
+                    verified)
+                  </p>
+                </div>
+              </button>
+
+              <button
+                class="w-full flex items-start gap-3 p-4 bg-slate-50 rounded-lg hover:bg-slate-100 transition-colors text-left"
+              >
+                <div
+                  class="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center flex-shrink-0"
+                >
+                  <lucide-icon
+                    [img]="UsersIcon"
+                    [size]="20"
+                    class="text-purple-600"
+                  />
+                </div>
+                <div class="flex-1">
+                  <h3 class="font-semibold text-slate-900 mb-1">
+                    Browse SME Profiles
+                  </h3>
+                  <p class="text-sm text-slate-600">
+                    Discover businesses aligned with your investment focus
+                  </p>
+                </div>
+              </button>
+            </div>
+          </div>
+
+          <!-- Expandable Timeline -->
+          <div class="px-8 py-4 bg-slate-50">
+            <button
+              (click)="toggleTimeline()"
+              class="w-full flex items-center justify-between text-sm font-semibold text-slate-700 hover:text-slate-900 transition-colors"
+            >
+              <span>View Verification Timeline</span>
+              <lucide-icon
+                [img]="showTimeline ? ChevronUpIcon : ChevronDownIcon"
+                [size]="16"
+              />
+            </button>
+
+            @if (showTimeline) {
+            <div class="mt-4 space-y-4">
+              <div class="flex items-start gap-3">
+                <div
+                  class="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center flex-shrink-0"
+                >
+                  <lucide-icon
+                    [img]="CheckCircleIcon"
+                    [size]="20"
+                    class="text-white"
+                  />
+                </div>
+                <div class="flex-1 pt-1">
+                  <p class="font-semibold text-slate-900 text-sm">
+                    Application Submitted
+                  </p>
+                  <p class="text-xs text-slate-500">{{ verificationDate }}</p>
                 </div>
               </div>
 
-              <!-- Step 3: Complete -->
-              <div class="flex items-start space-x-4">
-                <div class="flex flex-col items-center">
-                  <div
-                    class="w-10 h-10 bg-slate-200 rounded-full flex items-center justify-center flex-shrink-0"
-                  >
-                    <lucide-icon
-                      [img]="TrophyIcon"
-                      [size]="20"
-                      class="text-slate-600"
-                    />
-                  </div>
+              <div class="flex items-start gap-3">
+                <div
+                  class="w-8 h-8 rounded-full bg-amber-500 flex items-center justify-center flex-shrink-0 animate-pulse"
+                >
+                  <lucide-icon
+                    [img]="ClockIcon"
+                    [size]="20"
+                    class="text-white"
+                  />
                 </div>
                 <div class="flex-1 pt-1">
-                  <h4 class="font-semibold text-slate-500">
+                  <p class="font-semibold text-slate-900 text-sm">
+                    Under Review
+                  </p>
+                  <p class="text-xs text-slate-500">
+                    Our team is verifying your details
+                  </p>
+                </div>
+              </div>
+
+              <div class="flex items-start gap-3 opacity-40">
+                <div
+                  class="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center flex-shrink-0"
+                >
+                  <lucide-icon
+                    [img]="ShieldIcon"
+                    [size]="20"
+                    class="text-slate-400"
+                  />
+                </div>
+                <div class="flex-1 pt-1">
+                  <p class="font-semibold text-slate-600 text-sm">
                     Verification Complete
-                  </h4>
-                  <p class="text-sm text-slate-400">
+                  </p>
+                  <p class="text-xs text-slate-400">
                     You'll receive an email notification
                   </p>
                 </div>
               </div>
             </div>
+            }
           </div>
 
-          <!-- CTA Section -->
-          <div
-            class="bg-gradient-to-br from-teal-50 to-teal-100 border border-teal-300/50 rounded-2xl p-6 lg:p-8"
-          >
-            <div class="grid sm:grid-cols-2 gap-3 max-w-md mx-auto">
-              <ui-button
-                variant="primary"
-                size="md"
-                class="w-full"
-                (clicked)="onGoToDashboard()"
-              >
-                <lucide-icon [img]="ArrowRightIcon" [size]="18" class="mr-2" />
-                Go to Dashboard
-              </ui-button>
-
-              <ui-button
-                variant="secondary"
-                size="md"
-                class="w-full"
-                (clicked)="onCreateOpportunity()"
-              >
-                <lucide-icon [img]="BriefcaseIcon" [size]="18" class="mr-2" />
-                Create Opportunity
-              </ui-button>
-            </div>
+          <!-- Primary Action -->
+          <div class="px-8 py-6 bg-white">
+            <button
+              (click)="onGoToDashboard()"
+              class="w-full bg-teal-500 text-white font-semibold rounded-xl px-6 py-3.5 text-base hover:bg-teal-600 active:bg-teal-700 transition-colors focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2"
+            >
+              Go to Dashboard
+            </button>
           </div>
         </div>
       </div>
@@ -158,12 +258,20 @@ export class PendingVerificationStateComponent {
   // Icons
   ClockIcon = Clock;
   CheckCircleIcon = CheckCircle;
-  TrophyIcon = Trophy;
-  ArrowRightIcon = ArrowRight;
-  BriefcaseIcon = Briefcase;
   ShieldIcon = Shield;
-  Mail = Mail;
-  Zap = Zap;
+  ChevronDownIcon = ChevronDown;
+  ChevronUpIcon = ChevronUp;
+  BriefcaseIcon = Briefcase;
+  TrendingUpIcon = TrendingUp;
+  UsersIcon = Users;
+  ArrowRightIcon = ArrowRight;
+
+  // State
+  showTimeline = false;
+
+  toggleTimeline() {
+    this.showTimeline = !this.showTimeline;
+  }
 
   onGoToDashboard() {
     this.goToDashboard.emit();
@@ -171,13 +279,5 @@ export class PendingVerificationStateComponent {
 
   onCreateOpportunity() {
     this.createOpportunity.emit();
-  }
-
-  ngOnInit() {
-    document.body.style.overflow = 'hidden';
-  }
-
-  ngOnDestroy() {
-    document.body.style.overflow = '';
   }
 }
