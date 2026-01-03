@@ -44,6 +44,8 @@ export class ApplicationHeaderComponent implements OnInit, OnChanges {
   @Output() back = new EventEmitter<void>();
   @Output() manageStatus = new EventEmitter<void>();
 
+  @Output() showContactModal = new EventEmitter<void>();
+
   private router = inject(Router);
   private analysisResultsService = inject(AnalysisResultsService);
 
@@ -86,10 +88,6 @@ export class ApplicationHeaderComponent implements OnInit, OnChanges {
    * Load analysis results for this application
    */
   private loadAnalysis() {
-    console.log(
-      '📊 [HEADER] Loading analysis for application:',
-      this.application.id
-    );
     this.loadingAnalysis.set(true);
     this.analysisError.set(null);
 
@@ -99,14 +97,6 @@ export class ApplicationHeaderComponent implements OnInit, OnChanges {
         next: (result) => {
           this.analysis.set(result);
           this.loadingAnalysis.set(false);
-
-          if (result) {
-            console.log('✅ [HEADER] Analysis loaded:', result.id);
-          } else {
-            console.log(
-              'ℹ️ [HEADER] No analysis available for this application'
-            );
-          }
         },
         error: (error) => {
           console.error('❌ [HEADER] Failed to load analysis:', error);
@@ -175,13 +165,16 @@ export class ApplicationHeaderComponent implements OnInit, OnChanges {
     this.manageStatus.emit();
   }
 
+  onShowContact() {
+    this.showContactModal.emit();
+  }
+
   /**
    * Open analysis results modal
    */
   openAnalysisModal() {
     if (this.analysis()) {
       this.showAnalysisModal.set(true);
-      console.log('📊 [HEADER] Opening analysis modal');
     }
   }
 

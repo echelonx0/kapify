@@ -1,0 +1,103 @@
+@if (isOpen) {
+<div
+  class="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center p-4"
+>
+  <div
+    class="bg-white rounded-lg shadow-xl max-w-3xl w-full max-h-[90vh] flex flex-col"
+  >
+    <!-- Header -->
+    <div class="px-6 py-4 border-b flex items-center justify-between">
+      <h2 class="text-xl font-semibold text-gray-900">Contact Details</h2>
+      <button (click)="closeModal()" class="text-gray-400 hover:text-gray-600">
+        <lucide-icon [img]="XIcon" [size]="24"></lucide-icon>
+      </button>
+    </div>
+
+    <!-- Body -->
+    <div class="p-6 space-y-6 overflow-y-auto">
+      <!-- Company -->
+      <section>
+        <h3
+          class="text-sm font-medium text-gray-500 mb-2 flex items-center gap-2"
+        >
+          <lucide-icon [img]="BuildingIcon" [size]="16"></lucide-icon>
+          Company
+        </h3>
+        <div class="text-gray-900 font-medium">
+          {{ contactDetails.company.name || "—" }}
+        </div>
+        <div class="text-sm text-gray-600">
+          {{ contactDetails.company.industry || "—" }}
+        </div>
+      </section>
+
+      <!-- Primary Contact -->
+      <section>
+        <h3
+          class="text-sm font-medium text-gray-500 mb-2 flex items-center gap-2"
+        >
+          <lucide-icon [img]="UserIcon" [size]="16"></lucide-icon>
+          Primary Contact
+        </h3>
+
+        <div class="space-y-1">
+          <div class="font-medium text-gray-900">
+            {{ contactDetails.primaryContact.fullName || "—" }}
+          </div>
+          <div class="text-sm text-gray-600">
+            {{ contactDetails.primaryContact.position || "—" }}
+          </div>
+
+          <div class="flex items-center gap-2 text-sm text-gray-700">
+            <lucide-icon [img]="MailIcon" [size]="14"></lucide-icon>
+            {{ contactDetails.primaryContact.email || "—" }}
+          </div>
+
+          <div class="flex items-center gap-2 text-sm text-gray-700">
+            <lucide-icon [img]="PhoneIcon" [size]="14"></lucide-icon>
+            {{ contactDetails.primaryContact.phone || "—" }}
+          </div>
+        </div>
+      </section>
+
+      <!-- Addresses -->
+      <section>
+        <h3
+          class="text-sm font-medium text-gray-500 mb-2 flex items-center gap-2"
+        >
+          <lucide-icon [img]="MapPinIcon" [size]="16"></lucide-icon>
+          Addresses
+        </h3>
+
+        @if (contactDetails.addresses.registeredAddress; as addr) {
+        <div class="mb-3">
+          <p class="text-xs text-gray-500">Registered Address</p>
+          <p class="text-sm font-medium text-gray-900">
+            {{ addr.street }}, {{ addr.city }},
+            {{ addr.province }}
+          </p>
+        </div>
+        } @if (contactDetails.addresses.operationalAddress; as addr) {
+        <div>
+          <p class="text-xs text-gray-500">Operational Address</p>
+          <p class="text-sm font-medium text-gray-900">
+            {{ addr.street }}, {{ addr.city }},
+            {{ addr.province }}
+          </p>
+        </div>
+        }
+      </section>
+    </div>
+
+    <!-- Footer -->
+    <div class="px-6 py-4 border-t bg-gray-50 flex justify-end">
+      <button
+        (click)="closeModal()"
+        class="px-4 py-2 bg-white border rounded-lg text-gray-700 hover:bg-gray-50"
+      >
+        Close
+      </button>
+    </div>
+  </div>
+</div>
+}
