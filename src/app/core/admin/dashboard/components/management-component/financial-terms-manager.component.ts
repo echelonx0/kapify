@@ -15,7 +15,7 @@ import {
 import {
   FundFinancialTermsService,
   FundFinancialTerm,
-} from 'src/app/admin/services/fund-financial-terms.service';
+} from 'src/app/core/admin/services/fund-financial-terms.service';
 
 @Component({
   selector: 'app-fund-financial-terms-management',

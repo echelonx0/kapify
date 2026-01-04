@@ -3,7 +3,7 @@
 import { Injectable, inject } from '@angular/core';
 import { Observable, from } from 'rxjs';
 import { OrgCreditService } from 'src/app/shared/services/credit.service';
-import { CreditCostsService } from '../../admin/services/credit-costs.service';
+import { CreditCostsService } from '../../core/admin/services/credit-costs.service';
 
 /**
  * Credit action types

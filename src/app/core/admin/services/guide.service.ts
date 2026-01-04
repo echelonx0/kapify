@@ -1,7 +1,7 @@
 import { Injectable, inject, signal, computed } from '@angular/core';
 import { Observable, from, BehaviorSubject } from 'rxjs';
 import { map, tap, catchError } from 'rxjs/operators';
-import { SharedSupabaseService } from '../../shared/services/shared-supabase.service';
+import { SharedSupabaseService } from 'src/app/shared/services/shared-supabase.service';
 
 export interface Guide {
   id: string;
@@ -184,9 +184,7 @@ export class GuideService {
    * Get guide statistics (admin dashboard)
    */
   async getGuideStats(): Promise<GuideStat[]> {
-    const { data, error } = await this.supabase
-      .from('guide_stats')
-      .select('*');
+    const { data, error } = await this.supabase.from('guide_stats').select('*');
 
     if (error) throw error;
     return (data || []) as GuideStat[];
@@ -219,7 +217,11 @@ export class GuideService {
     const userId = this.supabase.getCurrentUserId();
     const { data, error } = await this.supabase
       .from('guides')
-      .update({ ...updates, updated_by: userId, updated_at: new Date().toISOString() })
+      .update({
+        ...updates,
+        updated_by: userId,
+        updated_at: new Date().toISOString(),
+      })
       .eq('id', id)
       .select()
       .single();
@@ -232,10 +234,7 @@ export class GuideService {
    * Delete guide
    */
   async deleteGuide(id: string): Promise<void> {
-    const { error } = await this.supabase
-      .from('guides')
-      .delete()
-      .eq('id', id);
+    const { error } = await this.supabase.from('guides').delete().eq('id', id);
 
     if (error) throw error;
   }
@@ -243,7 +242,9 @@ export class GuideService {
   /**
    * Bulk update guides (reorder)
    */
-  async reorderGuides(guides: Array<{ id: string; sort_order: number }>): Promise<void> {
+  async reorderGuides(
+    guides: Array<{ id: string; sort_order: number }>
+  ): Promise<void> {
     const userId = this.supabase.getCurrentUserId();
     const updates = guides.map((g) => ({
       ...g,
@@ -251,9 +252,7 @@ export class GuideService {
       updated_at: new Date().toISOString(),
     }));
 
-    const { error } = await this.supabase
-      .from('guides')
-      .upsert(updates);
+    const { error } = await this.supabase.from('guides').upsert(updates);
 
     if (error) throw error;
   }

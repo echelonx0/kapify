@@ -12,7 +12,7 @@ import {
   Users,
 } from 'lucide-angular';
 import { marked } from 'marked';
-import { GuideService, Guide } from 'src/app/admin/services/guide.service';
+import { GuideService, Guide } from 'src/app/core/admin/services/guide.service';
 
 @Component({
   selector: 'app-user-guides',

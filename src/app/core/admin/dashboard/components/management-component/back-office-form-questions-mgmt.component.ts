@@ -15,7 +15,7 @@ import {
 import {
   BackOfficeFormQuestionsService,
   BackOfficeFormQuestion,
-} from 'src/app/admin/services/form-questions.service';
+} from 'src/app/core/admin/services/form-questions.service';
 
 @Component({
   selector: 'app-back-office-questions-management',

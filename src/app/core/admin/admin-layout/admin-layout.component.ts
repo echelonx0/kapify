@@ -3,7 +3,7 @@ import { Component, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
-import { AuthService } from '../../auth/production.auth.service';
+import { AuthService } from 'src/app/auth/production.auth.service';
 
 interface NavItem {
   path: string;

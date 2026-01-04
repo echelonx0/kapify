@@ -2,7 +2,7 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { Observable, from, throwError, BehaviorSubject } from 'rxjs';
 import { catchError, tap, map } from 'rxjs/operators';
-import { SharedSupabaseService } from '../../shared/services/shared-supabase.service';
+import { SharedSupabaseService } from 'src/app/shared/services/shared-supabase.service';
 
 export interface AiService {
   id: string;

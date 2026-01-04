@@ -23,15 +23,16 @@ import {
 } from 'lucide-angular';
 
 import { AuthService } from '../../../auth/production.auth.service';
-import {
-  FeedbackService,
-  FeedbackType,
-} from 'src/app/admin/services/feedback.service';
+
 import { PurchaseCreditsModalComponent } from 'src/app/dashboard/finance/billing/purchase-credits-modal.component';
 import {
   OrgCreditService,
   OrgWallet,
 } from 'src/app/shared/services/credit.service';
+import {
+  FeedbackService,
+  FeedbackType,
+} from 'src/app/core/admin/services/feedback.service';
 
 @Component({
   selector: 'app-organization-status-sidebar',
