@@ -80,7 +80,9 @@ export class AcceptInvitationComponent implements OnInit {
         this.isValidating.set(false);
       },
       error: (err) => {
-        this.error.set('Failed to validate invitation. Please try again.');
+        this.error.set(
+          `Failed to validate invitation: ${err.message}. Please try again.`
+        );
         this.isValidating.set(false);
       },
     });

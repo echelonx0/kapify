@@ -87,6 +87,10 @@ export class ApplicationMetricsComponent implements OnInit {
   ];
 
   // Computed properties
+
+  // application-metrics.component.ts
+  companyCompliance = computed(() => this.rawProfileData.companyInfo || null);
+
   requestedAmount = computed(() => {
     const formData = this.application.formData as any;
     return formData?.requestedAmount || null;
@@ -137,11 +141,10 @@ export class ApplicationMetricsComponent implements OnInit {
   swotAnalysis = computed(() => this.profileData.swotAnalysis || null);
 
   ngOnInit() {
-    console.log(
-      '[METRICS] Business Management:',
-      this.rawProfileData.companyInfo?.ownership
-    );
-    // console.log('[Application Data]', this.application);
+    // console.log(
+    //   '[METRICS] Business Management:',
+    //   this.rawProfileData.companyInfo
+    // );
   }
 
   setActiveTab(tabId: string) {

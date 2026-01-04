@@ -33,6 +33,8 @@
   <div class="mb-8">
     <div class="flex items-center justify-between w-full">
       @for (step of steps(); track step.id) {
+      <!-- Hide selector step from progress if opportunity ID in route -->
+      @if (!(step.id === 'select-opportunity' && shouldSkipSelector())) {
       <div class="flex items-center flex-1 group">
         <div [class]="getStepClasses(step.id)" class="group-hover:scale-110">
           {{ step.number }}
@@ -55,7 +57,7 @@
         </div>
         }
       </div>
-      }
+      } }
     </div>
   </div>
 
@@ -70,8 +72,8 @@
           <span class="text-red-700 text-sm">{{ error() }}</span>
         </div>
         } @switch (currentStep()) {
-        <!-- STEP 1: Select Opportunity (Hidden if opportunityId in route) -->
-        @case ('select-opportunity') { @if (hasOpportunityIdParam() === false) {
+        <!-- STEP 1: Select Opportunity (Only show if NO opportunityId in route) -->
+        @case ('select-opportunity') { @if (!shouldSkipSelector()) {
         <app-opportunity-selector
           [opportunities]="availableOpportunities()"
           [selectedOpportunityId]="selectedOpportunity()?.id"
@@ -126,7 +128,8 @@
           class="flex items-center justify-between pt-6 mt-8 border-t border-slate-200"
         >
           <div class="flex items-center space-x-3">
-            @if (currentStep() !== 'select-opportunity') {
+            @if (currentStep() !== 'select-opportunity' && currentStep() !==
+            'application-details') {
             <button
               (click)="previousStep()"
               class="px-6 py-2.5 bg-slate-100 text-slate-700 font-medium rounded-xl hover:bg-slate-200 active:bg-slate-300 transition-colors duration-200"

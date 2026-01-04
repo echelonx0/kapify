@@ -57,6 +57,15 @@ export const routes: Routes = [
     title: 'Sign In - Kapify',
   },
 
+  {
+    path: 'faqs',
+    loadComponent: () =>
+      import('./core/components/faq/faq.component').then(
+        (c) => c.FAQsComponent
+      ),
+    title: 'FAQs - Kapify',
+  },
+
   // In your auth routes array:
   {
     path: 'auth/accept-invitation',
@@ -86,6 +95,14 @@ export const routes: Routes = [
     canActivate: [AuthGuard],
     loadComponent: () =>
       import('./reports/reports.component').then((m) => m.ReportsComponent),
+  },
+  {
+    path: 'executive-application-form',
+    canActivate: [AuthGuard],
+    loadComponent: () =>
+      import(
+        './shared/executive-applications/executive-application-form.component'
+      ).then((m) => m.ExecutiveApplicationFormComponent),
   },
   // Protected routes (require authentication)
   {

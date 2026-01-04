@@ -14,6 +14,7 @@ import {
   Cpu,
   BarChart3,
 } from 'lucide-angular';
+import { CompanyInformation } from 'src/app/SMEs/applications/models/funding-application.models';
 
 interface KPI {
   metric: string;
@@ -22,7 +23,7 @@ interface KPI {
   period: string;
 }
 
-// ✅ Flexible interface that accepts any shape of business review data
+//  Flexible interface that accepts any shape of business review data
 interface BusinessAssessment extends Record<string, any> {
   // Mapped from business review form (optional, may not always be present)
   accountingSystem?: string;
@@ -80,9 +81,12 @@ export class BusinessAssessmentViewerComponent {
   ) {
     this._businessAssessment.set(value || null);
   }
+  @Input() set companyCompliance(value: CompanyInformation | null | undefined) {
+    this._companyCompliance.set(value || null);
+  }
 
   private _businessAssessment = signal<BusinessAssessment | null>(null);
-
+  private _companyCompliance = signal<CompanyInformation | null>(null);
   // Icons
   Building2Icon = Building2;
   UsersIcon = Users;
@@ -98,6 +102,50 @@ export class BusinessAssessmentViewerComponent {
   // Computed properties
   hasData = computed(() => !!this._businessAssessment());
 
+  regulatoryCompliance = computed(() => {
+    const company = this._companyCompliance();
+    if (!company) return [];
+
+    return [
+      {
+        label: 'Tax Compliance Status',
+        value: this.formatComplianceStatus(company.taxComplianceStatus),
+        status: this.mapComplianceToStatus(company.taxComplianceStatus) as
+          | 'positive'
+          | 'neutral'
+          | 'negative',
+        icon: this.FileTextIcon,
+      },
+      {
+        label: 'CIPC Returns',
+        value: this.formatComplianceStatus(company.cipcReturns || 'unknown'),
+        status: this.mapComplianceToStatus(company.cipcReturns || 'unknown') as
+          | 'positive'
+          | 'neutral'
+          | 'negative',
+        icon: this.Building2Icon,
+      },
+      {
+        label: 'B-BBEE Level',
+        value: this.formatBBBEELevel(company.bbbeeLevel),
+        status: (company.bbbeeLevel ? 'positive' : 'neutral') as
+          | 'positive'
+          | 'neutral'
+          | 'negative',
+        icon: this.ShieldIcon,
+      },
+      {
+        label: "Workman's Compensation",
+        value: this.formatComplianceStatus(
+          company.workmansCompensation || 'unknown'
+        ),
+        status: this.mapComplianceToStatus(
+          company.workmansCompensation || 'unknown'
+        ) as 'positive' | 'neutral' | 'negative',
+        icon: this.UsersIcon,
+      },
+    ].filter((metric) => metric.value !== 'Unknown');
+  });
   operationsMetrics = computed((): MetricCard[] => {
     const assessment = this._businessAssessment();
     if (!assessment) return [];
@@ -363,5 +411,29 @@ export class BusinessAssessmentViewerComponent {
     if (status === 'positive') return 'text-green-600';
     if (status === 'neutral') return 'text-amber-600';
     return 'text-red-600';
+  }
+
+  private formatComplianceStatus(status: string): string {
+    const statusMap: Record<string, string> = {
+      compliant: 'Compliant',
+      outstanding: 'Outstanding',
+      under_review: 'Under Review',
+      unknown: 'Not Specified',
+    };
+    return statusMap[status] || this.formatValue(status);
+  }
+
+  private mapComplianceToStatus(
+    status: string
+  ): 'positive' | 'neutral' | 'negative' {
+    if (status === 'compliant') return 'positive';
+    if (status === 'under_review') return 'neutral';
+    if (status === 'outstanding') return 'negative';
+    return 'neutral';
+  }
+
+  private formatBBBEELevel(level?: string): string {
+    if (!level) return 'Not Specified';
+    return level.replace('level', 'Level ').toUpperCase();
   }
 }

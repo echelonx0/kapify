@@ -62,6 +62,26 @@ export class AdminLayoutComponent {
       label: 'Manage Funding Terms',
       icon: 'fas fa-check-circle',
     },
+    {
+      path: 'ai-management',
+      label: 'AI Management',
+      icon: 'fas fa-brain',
+    },
+    {
+      path: 'reports',
+      label: 'Reports',
+      icon: 'fas fa-chart-bar',
+    },
+    {
+      path: 'guides',
+      label: 'Guides Manager',
+      icon: 'fas fa-chart-bar',
+    },
+    {
+      path: 'faqs',
+      label: 'FAQs Manager',
+      icon: 'fas fa-chart-bar',
+    },
   ];
 
   // Main app routes for quick navigation

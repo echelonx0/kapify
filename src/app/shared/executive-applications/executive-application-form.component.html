@@ -1,0 +1,708 @@
+<!-- Executive Program Application Form -->
+<div class="min-h-screen bg-slate-50">
+  <div class="max-w-4xl mx-auto px-4 lg:px-8 py-8">
+    <!-- Header -->
+    <div class="mb-8">
+      <button
+        (click)="goBack()"
+        class="inline-flex items-center gap-2 text-slate-600 hover:text-slate-900 font-medium mb-4 transition-colors duration-200"
+      >
+        <lucide-icon [img]="ArrowLeftIcon" [size]="16" />
+        <span>Back to Dashboard</span>
+      </button>
+
+      <div class="bg-white rounded-2xl border border-slate-200 p-6 lg:p-8">
+        <div class="flex items-start gap-4">
+          <div
+            class="w-12 h-12 rounded-xl bg-teal-100 flex items-center justify-center flex-shrink-0"
+          >
+            <lucide-icon
+              [img]="UserCheckIcon"
+              [size]="24"
+              class="text-teal-600"
+            />
+          </div>
+          <div class="flex-1">
+            <h1 class="text-3xl font-bold text-slate-900 mb-2">
+              Executive Program Application
+            </h1>
+            <p class="text-sm text-slate-600">
+              Join our network of experienced professionals mentoring and
+              advising South African SMEs. Share your expertise and help
+              businesses grow while expanding your professional network.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Success Message -->
+    @if (showSuccessMessage()) {
+    <div
+      class="mb-6 bg-green-50 border border-green-200/50 rounded-xl p-4 flex items-center gap-3 animate-fadeIn"
+    >
+      <lucide-icon [img]="CheckCircleIcon" [size]="20" class="text-green-600" />
+      <p class="text-sm font-medium text-green-900">{{ successMessage() }}</p>
+    </div>
+    }
+
+    <!-- Error Message -->
+    @if (error()) {
+    <div
+      class="mb-6 bg-red-50 border border-red-200/50 rounded-xl p-4 flex items-center gap-3"
+    >
+      <lucide-icon [img]="AlertCircleIcon" [size]="20" class="text-red-600" />
+      <p class="text-sm font-medium text-red-900">{{ error() }}</p>
+    </div>
+    }
+
+    <!-- Application Form -->
+    <form [formGroup]="applicationForm" class="space-y-6">
+      <!-- Section 1: Personal Information -->
+      <div class="bg-white rounded-2xl border border-slate-200 p-6 lg:p-8">
+        <div class="flex items-center gap-3 mb-6">
+          <div
+            class="w-10 h-10 rounded-lg bg-teal-100 flex items-center justify-center"
+          >
+            <lucide-icon
+              [img]="UserCheckIcon"
+              [size]="20"
+              class="text-teal-600"
+            />
+          </div>
+          <div>
+            <h2 class="text-xl font-bold text-slate-900">
+              Personal Information
+            </h2>
+            <p class="text-sm text-slate-600">Tell us about yourself</p>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <!-- Full Name -->
+          <div>
+            <label class="block text-sm font-semibold text-slate-900 mb-2">
+              Full Name <span class="text-teal-500">*</span>
+            </label>
+            <input
+              type="text"
+              formControlName="fullName"
+              placeholder="John Doe"
+              class="w-full px-4 py-2.5 border rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200"
+              [class.border-red-300]="isFieldInvalid('fullName')"
+              [class.border-slate-200]="!isFieldInvalid('fullName')"
+            />
+            @if (isFieldInvalid('fullName')) {
+            <p class="text-xs text-red-700 mt-1">
+              {{ getFieldError("fullName") }}
+            </p>
+            }
+          </div>
+
+          <!-- Email -->
+          <div>
+            <label class="block text-sm font-semibold text-slate-900 mb-2">
+              Email Address <span class="text-teal-500">*</span>
+            </label>
+            <input
+              type="email"
+              formControlName="email"
+              placeholder="john@example.com"
+              class="w-full px-4 py-2.5 border rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200"
+              [class.border-red-300]="isFieldInvalid('email')"
+              [class.border-slate-200]="!isFieldInvalid('email')"
+            />
+            @if (isFieldInvalid('email')) {
+            <p class="text-xs text-red-700 mt-1">
+              {{ getFieldError("email") }}
+            </p>
+            }
+          </div>
+
+          <!-- Phone -->
+          <div>
+            <label class="block text-sm font-semibold text-slate-900 mb-2">
+              Phone Number
+              <span class="text-slate-400 font-normal">(Optional)</span>
+            </label>
+            <input
+              type="tel"
+              formControlName="phone"
+              placeholder="+27 XX XXX XXXX"
+              class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200"
+            />
+          </div>
+
+          <!-- Location -->
+          <div>
+            <label class="block text-sm font-semibold text-slate-900 mb-2">
+              Location
+              <span class="text-slate-400 font-normal">(Optional)</span>
+            </label>
+            <input
+              type="text"
+              formControlName="location"
+              placeholder="Cape Town, South Africa"
+              class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200"
+            />
+          </div>
+
+          <!-- LinkedIn URL -->
+          <div class="md:col-span-2">
+            <label class="block text-sm font-semibold text-slate-900 mb-2">
+              LinkedIn Profile URL
+              <span class="text-slate-400 font-normal">(Optional)</span>
+            </label>
+            <input
+              type="url"
+              formControlName="linkedinUrl"
+              placeholder="https://linkedin.com/in/yourprofile"
+              class="w-full px-4 py-2.5 border rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200"
+              [class.border-red-300]="isFieldInvalid('linkedinUrl')"
+              [class.border-slate-200]="!isFieldInvalid('linkedinUrl')"
+            />
+            @if (isFieldInvalid('linkedinUrl')) {
+            <p class="text-xs text-red-700 mt-1">
+              {{ getFieldError("linkedinUrl") }}
+            </p>
+            }
+          </div>
+        </div>
+      </div>
+
+      <!-- Section 2: Professional Background -->
+      <div class="bg-white rounded-2xl border border-slate-200 p-6 lg:p-8">
+        <div class="flex items-center gap-3 mb-6">
+          <div
+            class="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center"
+          >
+            <lucide-icon
+              [img]="BriefcaseIcon"
+              [size]="20"
+              class="text-blue-600"
+            />
+          </div>
+          <div>
+            <h2 class="text-xl font-bold text-slate-900">
+              Professional Background
+            </h2>
+            <p class="text-sm text-slate-600">
+              Your current role and experience
+            </p>
+          </div>
+        </div>
+
+        <div class="space-y-6">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Role Title -->
+            <div>
+              <label class="block text-sm font-semibold text-slate-900 mb-2">
+                Current Role <span class="text-teal-500">*</span>
+              </label>
+              <input
+                type="text"
+                formControlName="roleTitle"
+                placeholder="e.g., Chief Financial Officer"
+                class="w-full px-4 py-2.5 border rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200"
+                [class.border-red-300]="isFieldInvalid('roleTitle')"
+                [class.border-slate-200]="!isFieldInvalid('roleTitle')"
+              />
+              @if (isFieldInvalid('roleTitle')) {
+              <p class="text-xs text-red-700 mt-1">
+                {{ getFieldError("roleTitle") }}
+              </p>
+              }
+            </div>
+
+            <!-- Company Name -->
+            <div>
+              <label class="block text-sm font-semibold text-slate-900 mb-2">
+                Current Company <span class="text-teal-500">*</span>
+              </label>
+              <input
+                type="text"
+                formControlName="companyName"
+                placeholder="e.g., Acme Corporation"
+                class="w-full px-4 py-2.5 border rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200"
+                [class.border-red-300]="isFieldInvalid('companyName')"
+                [class.border-slate-200]="!isFieldInvalid('companyName')"
+              />
+              @if (isFieldInvalid('companyName')) {
+              <p class="text-xs text-red-700 mt-1">
+                {{ getFieldError("companyName") }}
+              </p>
+              }
+            </div>
+
+            <!-- Years of Experience -->
+            <div>
+              <label class="block text-sm font-semibold text-slate-900 mb-2">
+                Years of Experience <span class="text-teal-500">*</span>
+              </label>
+              <input
+                type="number"
+                formControlName="yearsExperience"
+                placeholder="15"
+                min="0"
+                max="70"
+                class="w-full px-4 py-2.5 border rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200"
+                [class.border-red-300]="isFieldInvalid('yearsExperience')"
+                [class.border-slate-200]="!isFieldInvalid('yearsExperience')"
+              />
+              @if (isFieldInvalid('yearsExperience')) {
+              <p class="text-xs text-red-700 mt-1">
+                {{ getFieldError("yearsExperience") }}
+              </p>
+              }
+            </div>
+
+            <!-- Industry -->
+            <div>
+              <label class="block text-sm font-semibold text-slate-900 mb-2">
+                Industry
+                <span class="text-slate-400 font-normal">(Optional)</span>
+              </label>
+              <input
+                type="text"
+                formControlName="industry"
+                placeholder="e.g., Financial Services"
+                class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200"
+              />
+            </div>
+          </div>
+
+          <!-- Professional Summary -->
+          <div>
+            <label class="block text-sm font-semibold text-slate-900 mb-2">
+              Professional Summary <span class="text-teal-500">*</span>
+            </label>
+            <textarea
+              formControlName="professionalSummary"
+              rows="5"
+              placeholder="Provide a brief summary of your professional background, key achievements, and areas of expertise... (minimum 50 characters)"
+              class="w-full px-4 py-2.5 border rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200 resize-none"
+              [class.border-red-300]="isFieldInvalid('professionalSummary')"
+              [class.border-slate-200]="!isFieldInvalid('professionalSummary')"
+            ></textarea>
+            <div class="flex items-center justify-between mt-1">
+              @if (isFieldInvalid('professionalSummary')) {
+              <p class="text-xs text-red-700">
+                {{ getFieldError("professionalSummary") }}
+              </p>
+              } @else {
+              <div></div>
+              }
+              <p class="text-xs text-slate-500">
+                {{ getCharacterCount("professionalSummary").current }} /
+                {{ getCharacterCount("professionalSummary").max }}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section 3: Expertise & Availability -->
+      <div class="bg-white rounded-2xl border border-slate-200 p-6 lg:p-8">
+        <div class="flex items-center gap-3 mb-6">
+          <div
+            class="w-10 h-10 rounded-lg bg-amber-100 flex items-center justify-center"
+          >
+            <lucide-icon
+              [img]="TargetIcon"
+              [size]="20"
+              class="text-amber-600"
+            />
+          </div>
+          <div>
+            <h2 class="text-xl font-bold text-slate-900">
+              Expertise & Availability
+            </h2>
+            <p class="text-sm text-slate-600">
+              Your areas of expertise and time commitment
+            </p>
+          </div>
+        </div>
+
+        <div class="space-y-6">
+          <!-- Expertise Areas -->
+          <div>
+            <label class="block text-sm font-semibold text-slate-900 mb-3">
+              Areas of Expertise <span class="text-teal-500">*</span>
+            </label>
+            <p class="text-xs text-slate-600 mb-3">Select all that apply</p>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+              @for (option of expertiseOptions; track option.value) {
+              <div
+                (click)="toggleExpertiseArea(option.value)"
+                class="flex items-start gap-3 p-4 border rounded-xl cursor-pointer transition-all duration-200"
+                [class.bg-teal-50]="isExpertiseSelected(option.value)"
+                [class.border-teal-50]="isExpertiseSelected(option.value)"
+                [class.border-slate-200]="!isExpertiseSelected(option.value)"
+                [class.hover:border-slate-300]="
+                  !isExpertiseSelected(option.value)
+                "
+              >
+                <div class="flex-shrink-0 mt-0.5">
+                  <div
+                    class="w-5 h-5 rounded border-2 flex items-center justify-center transition-colors duration-200"
+                    [class.bg-teal-500]="isExpertiseSelected(option.value)"
+                    [class.border-teal-500]="isExpertiseSelected(option.value)"
+                    [class.border-slate-300]="
+                      !isExpertiseSelected(option.value)
+                    "
+                  >
+                    @if (isExpertiseSelected(option.value)) {
+                    <lucide-icon
+                      [img]="CheckCircleIcon"
+                      [size]="12"
+                      class="text-white"
+                    />
+                    }
+                  </div>
+                </div>
+                <div class="flex-1">
+                  <p class="text-sm font-semibold text-slate-900">
+                    {{ option.label }}
+                  </p>
+                  <p class="text-xs text-slate-600 mt-0.5">
+                    {{ option.description }}
+                  </p>
+                </div>
+              </div>
+              }
+            </div>
+
+            @if (isFieldInvalid('expertiseAreas')) {
+            <p class="text-xs text-red-700 mt-2">
+              {{ getFieldError("expertiseAreas") }}
+            </p>
+            }
+          </div>
+
+          <!-- Other Expertise (conditional) -->
+          @if (isExpertiseSelected('other')) {
+          <div>
+            <label class="block text-sm font-semibold text-slate-900 mb-2">
+              Please specify your other expertise
+              <span class="text-teal-500">*</span>
+            </label>
+            <input
+              type="text"
+              formControlName="otherExpertise"
+              placeholder="e.g., Supply Chain Management"
+              class="w-full px-4 py-2.5 border rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200"
+              [class.border-red-300]="isFieldInvalid('otherExpertise')"
+              [class.border-slate-200]="!isFieldInvalid('otherExpertise')"
+            />
+            @if (isFieldInvalid('otherExpertise')) {
+            <p class="text-xs text-red-700 mt-1">
+              {{ getFieldError("otherExpertise") }}
+            </p>
+            }
+          </div>
+          }
+
+          <!-- Availability Hours -->
+          <div>
+            <label class="block text-sm font-semibold text-slate-900 mb-2">
+              Availability (hours per week)
+              <span class="text-slate-400 font-normal">(Optional)</span>
+            </label>
+            <input
+              type="number"
+              formControlName="availabilityHoursPerWeek"
+              placeholder="5"
+              min="1"
+              max="40"
+              class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200"
+            />
+            <p class="text-xs text-slate-600 mt-1">
+              How many hours per week can you commit?
+            </p>
+          </div>
+
+          <!-- Preferred Engagement Type -->
+          <div>
+            <label class="block text-sm font-semibold text-slate-900 mb-3">
+              Preferred Engagement Type <span class="text-teal-500">*</span>
+            </label>
+            <p class="text-xs text-slate-600 mb-3">
+              Select all that interest you
+            </p>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+              @for (option of engagementOptions; track option.value) {
+              <div
+                (click)="toggleEngagementType(option.value)"
+                class="flex items-start gap-3 p-4 border rounded-xl cursor-pointer transition-all duration-200"
+                [class.bg-teal-50]="isEngagementSelected(option.value)"
+                [class.border-teal-50]="isEngagementSelected(option.value)"
+                [class.border-slate-200]="!isEngagementSelected(option.value)"
+                [class.hover:border-slate-300]="
+                  !isEngagementSelected(option.value)
+                "
+              >
+                <div class="flex-shrink-0 mt-0.5">
+                  <div
+                    class="w-5 h-5 rounded border-2 flex items-center justify-center transition-colors duration-200"
+                    [class.bg-teal-500]="isEngagementSelected(option.value)"
+                    [class.border-teal-500]="isEngagementSelected(option.value)"
+                    [class.border-slate-300]="
+                      !isEngagementSelected(option.value)
+                    "
+                  >
+                    @if (isEngagementSelected(option.value)) {
+                    <lucide-icon
+                      [img]="CheckCircleIcon"
+                      [size]="12"
+                      class="text-white"
+                    />
+                    }
+                  </div>
+                </div>
+                <div class="flex-1">
+                  <p class="text-sm font-semibold text-slate-900">
+                    {{ option.label }}
+                  </p>
+                  <p class="text-xs text-slate-600 mt-0.5">
+                    {{ option.description }}
+                  </p>
+                </div>
+              </div>
+              }
+            </div>
+
+            @if (isFieldInvalid('preferredEngagementType')) {
+            <p class="text-xs text-red-700 mt-2">
+              {{ getFieldError("preferredEngagementType") }}
+            </p>
+            }
+          </div>
+        </div>
+      </div>
+
+      <!-- Section 4: Motivation & Goals -->
+      <div class="bg-white rounded-2xl border border-slate-200 p-6 lg:p-8">
+        <div class="flex items-center gap-3 mb-6">
+          <div
+            class="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center"
+          >
+            <lucide-icon
+              [img]="MessageSquareIcon"
+              [size]="20"
+              class="text-green-600"
+            />
+          </div>
+          <div>
+            <h2 class="text-xl font-bold text-slate-900">Motivation & Goals</h2>
+            <p class="text-sm text-slate-600">
+              Why you want to join our program
+            </p>
+          </div>
+        </div>
+
+        <div class="space-y-6">
+          <!-- Motivation -->
+          <div>
+            <label class="block text-sm font-semibold text-slate-900 mb-2">
+              Why do you want to join the Kapify Executive Program?
+              <span class="text-teal-500">*</span>
+            </label>
+            <textarea
+              formControlName="motivation"
+              rows="5"
+              placeholder="Tell us what motivates you to join our program, what you hope to achieve, and how you see yourself contributing to the growth of South African SMEs... (minimum 100 characters)"
+              class="w-full px-4 py-2.5 border rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200 resize-none"
+              [class.border-red-300]="isFieldInvalid('motivation')"
+              [class.border-slate-200]="!isFieldInvalid('motivation')"
+            ></textarea>
+            <div class="flex items-center justify-between mt-1">
+              @if (isFieldInvalid('motivation')) {
+              <p class="text-xs text-red-700">
+                {{ getFieldError("motivation") }}
+              </p>
+              } @else {
+              <div></div>
+              }
+              <p class="text-xs text-slate-500">
+                {{ getCharacterCount("motivation").current }} /
+                {{ getCharacterCount("motivation").max }}
+              </p>
+            </div>
+          </div>
+
+          <!-- Value Proposition -->
+          <div>
+            <label class="block text-sm font-semibold text-slate-900 mb-2">
+              What unique value can you bring to SMEs?
+              <span class="text-slate-400 font-normal">(Optional)</span>
+            </label>
+            <textarea
+              formControlName="valueProposition"
+              rows="4"
+              placeholder="Describe the specific value, insights, or connections you can offer to businesses in our network..."
+              class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200 resize-none"
+            ></textarea>
+            <div class="flex items-center justify-end mt-1">
+              <p class="text-xs text-slate-500">
+                {{ getCharacterCount("valueProposition").current }} /
+                {{ getCharacterCount("valueProposition").max }}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section 5: References (Optional) -->
+      <div class="bg-white rounded-2xl border border-slate-200 p-6 lg:p-8">
+        <div class="flex items-center gap-3 mb-6">
+          <div
+            class="w-10 h-10 rounded-lg bg-slate-100 flex items-center justify-center"
+          >
+            <lucide-icon
+              [img]="UserCheckIcon"
+              [size]="20"
+              class="text-slate-600"
+            />
+          </div>
+          <div>
+            <h2 class="text-xl font-bold text-slate-900">
+              Professional References
+            </h2>
+            <p class="text-sm text-slate-600">
+              Optional: Provide up to 2 professional references
+            </p>
+          </div>
+        </div>
+
+        <div class="space-y-6">
+          <!-- Reference 1 -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label class="block text-sm font-semibold text-slate-900 mb-2">
+                Reference 1 - Name
+              </label>
+              <input
+                type="text"
+                formControlName="referenceName1"
+                placeholder="Jane Smith"
+                class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200"
+              />
+            </div>
+
+            <div>
+              <label class="block text-sm font-semibold text-slate-900 mb-2">
+                Reference 1 - Email
+              </label>
+              <input
+                type="email"
+                formControlName="referenceEmail1"
+                placeholder="jane.smith@company.com"
+                class="w-full px-4 py-2.5 border rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200"
+                [class.border-red-300]="isFieldInvalid('referenceEmail1')"
+                [class.border-slate-200]="!isFieldInvalid('referenceEmail1')"
+              />
+              @if (isFieldInvalid('referenceEmail1')) {
+              <p class="text-xs text-red-700 mt-1">
+                {{ getFieldError("referenceEmail1") }}
+              </p>
+              }
+            </div>
+          </div>
+
+          <!-- Reference 2 -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label class="block text-sm font-semibold text-slate-900 mb-2">
+                Reference 2 - Name
+              </label>
+              <input
+                type="text"
+                formControlName="referenceName2"
+                placeholder="John Brown"
+                class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200"
+              />
+            </div>
+
+            <div>
+              <label class="block text-sm font-semibold text-slate-900 mb-2">
+                Reference 2 - Email
+              </label>
+              <input
+                type="email"
+                formControlName="referenceEmail2"
+                placeholder="john.brown@company.com"
+                class="w-full px-4 py-2.5 border rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200"
+                [class.border-red-300]="isFieldInvalid('referenceEmail2')"
+                [class.border-slate-200]="!isFieldInvalid('referenceEmail2')"
+              />
+              @if (isFieldInvalid('referenceEmail2')) {
+              <p class="text-xs text-red-700 mt-1">
+                {{ getFieldError("referenceEmail2") }}
+              </p>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="bg-white rounded-2xl border border-slate-200 p-6 lg:p-8">
+        <div
+          class="flex flex-col sm:flex-row items-center justify-between gap-4"
+        >
+          <!-- Left side buttons -->
+          <div class="flex items-center gap-3">
+            @if (existingApplication() && existingApplication().status ===
+            'draft') {
+            <button
+              type="button"
+              (click)="deleteDraft()"
+              [disabled]="isSaving()"
+              class="inline-flex items-center gap-2 text-red-600 font-medium hover:bg-red-50 active:bg-red-100 px-4 py-2.5 text-sm rounded-xl transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <lucide-icon [img]="Trash2Icon" [size]="16" />
+              <span>Delete Draft</span>
+            </button>
+            }
+          </div>
+
+          <!-- Right side buttons -->
+          <div class="flex items-center gap-3">
+            <button
+              type="button"
+              (click)="saveAsDraft()"
+              [disabled]="isSaving() || isLoading()"
+              class="inline-flex items-center gap-2 bg-slate-100 text-slate-700 font-medium rounded-xl px-6 py-2.5 text-sm hover:bg-slate-200 active:bg-slate-300 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2"
+            >
+              <lucide-icon [img]="SaveIcon" [size]="16" />
+              <span>{{ isSaving() ? "Saving..." : "Save as Draft" }}</span>
+            </button>
+
+            <button
+              type="button"
+              (click)="submitApplication()"
+              [disabled]="isSaving() || isLoading() || !applicationForm.valid"
+              class="inline-flex items-center gap-2 bg-teal-500 text-white font-medium rounded-xl px-6 py-2.5 text-sm hover:bg-teal-600 active:bg-teal-700 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2"
+            >
+              <lucide-icon [img]="SendIcon" [size]="16" />
+              <span>{{
+                isSaving() ? "Submitting..." : "Submit Application"
+              }}</span>
+            </button>
+          </div>
+        </div>
+
+        @if (!applicationForm.valid && applicationForm.touched) {
+        <div class="mt-4 p-4 bg-amber-50 border border-amber-200/50 rounded-xl">
+          <p class="text-sm text-amber-700">
+            Please complete all required fields before submitting your
+            application.
+          </p>
+        </div>
+        }
+      </div>
+    </form>
+  </div>
+</div>

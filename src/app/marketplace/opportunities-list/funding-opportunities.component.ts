@@ -225,7 +225,7 @@ export class FundingOpportunitiesComponent implements OnInit, OnDestroy {
       this.router.navigate(['/funding/opportunities', opportunityId]);
     } else if (this.currentUser()?.userType === 'funder') {
       // Authenticated Funder → funder view
-      this.router.navigate(['/funder/opportunities', opportunityId]);
+      this.router.navigate(['/funding/opportunities', opportunityId]);
     } else {
       // Fallback
       this.router.navigate(['/opportunity', opportunityId]);
@@ -235,7 +235,7 @@ export class FundingOpportunitiesComponent implements OnInit, OnDestroy {
   applyToOpportunity(opportunityId: string) {
     if (!this.currentUser()) {
       // Not authenticated → redirect to public view first
-      this.router.navigate(['/opportunity', opportunityId]);
+      this.router.navigate(['/funding/opportunities', opportunityId]);
       return;
     }
 

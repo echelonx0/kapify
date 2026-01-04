@@ -1,0 +1,210 @@
+/* Executive Application Form Component Styles */
+/* Follows Kapify Design System */
+
+/* Container */
+:host {
+  display: block;
+  min-height: 100vh;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 300ms ease-out;
+}
+
+/* Form Sections - Slide in on scroll */
+.bg-white.rounded-2xl {
+  animation: fadeIn 400ms ease-out;
+}
+
+/* Smooth transitions on all inputs */
+input,
+textarea,
+select {
+  transition: all 200ms ease-in-out;
+}
+
+/* Focus state enhancement */
+input:focus,
+textarea:focus,
+select:focus {
+  transform: translateY(-1px);
+}
+
+/* Checkbox/Selection cards - Hover enhancement */
+.cursor-pointer {
+  transition: all 200ms ease-in-out;
+}
+
+.cursor-pointer:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.cursor-pointer:active {
+  transform: translateY(0);
+}
+
+/* Character count styling */
+textarea + div p {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Button loading state */
+button:disabled {
+  position: relative;
+}
+
+button:disabled::after {
+  content: "";
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  top: 50%;
+  left: 50%;
+  margin-left: -8px;
+  margin-top: -8px;
+  border: 2px solid transparent;
+  border-top-color: currentColor;
+  border-radius: 50%;
+  animation: spin 600ms linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Error shake animation */
+@keyframes shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-5px);
+  }
+  75% {
+    transform: translateX(5px);
+  }
+}
+
+.border-red-300 {
+  animation: shake 400ms ease-in-out;
+}
+
+/* Section number badges (optional enhancement) */
+.section-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #14b8a6 0%, #0d9488 100%);
+  color: white;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  /* Stack action buttons on mobile */
+  .flex.items-center.justify-between {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  /* Full-width buttons on mobile */
+  button {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* Print styles */
+@media print {
+  .no-print {
+    display: none;
+  }
+
+  .bg-white {
+    box-shadow: none;
+    border: 1px solid #e2e8f0;
+  }
+
+  button {
+    display: none;
+  }
+}
+
+/* Accessibility - Focus visible */
+*:focus-visible {
+  outline: 2px solid #14b8a6;
+  outline-offset: 2px;
+}
+
+/* Selection card checked state */
+.bg-teal-50 {
+  position: relative;
+}
+
+.bg-teal-50::after {
+  content: "";
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #14b8a6;
+  box-shadow: 0 0 0 4px rgba(20, 184, 166, 0.2);
+}
+
+/* Smooth scroll behavior */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Loading skeleton (optional) */
+.skeleton {
+  background: linear-gradient(90deg, #e2e8f0 25%, #cbd5e1 50%, #e2e8f0 75%);
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite;
+}
+
+@keyframes loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* Success message pulse */
+.bg-green-50 {
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.9;
+  }
+}

@@ -2,6 +2,15 @@
 @if (application()) {
 
 <div class="sticky top-0 z-10 bg-neutral-50 border-b border-gray-200">
+  <!-- <app-application-header
+    [application]="application()!"
+    [profileLoading]="profileLoading()"
+    [profileError]="profileError()"
+    [hasCompleteData]="hasCompleteDataForAnalysis()"
+    (back)="goBack()"
+    (manageStatus)="openStatusModal()"
+  >
+  </app-application-header> -->
   <app-application-header
     [application]="application()!"
     [profileLoading]="profileLoading()"
@@ -9,6 +18,7 @@
     [hasCompleteData]="hasCompleteDataForAnalysis()"
     (back)="goBack()"
     (manageStatus)="openStatusModal()"
+    (showContactModal)="openContactModal()"
   >
   </app-application-header>
 </div>
@@ -206,4 +216,11 @@
   (actionCompleted)="onStatusActionCompleted()"
 >
 </app-status-management-modal>
+
+} @if (contactDetails(); as details) {
+<app-contact-details-modal
+  [isOpen]="showContactModal()"
+  [contactDetails]="details"
+  (close)="closeContactModal()"
+/>
 }

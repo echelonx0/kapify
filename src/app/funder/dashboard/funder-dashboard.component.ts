@@ -34,10 +34,7 @@ import {
 } from '../services/funder-onboarding.service';
 import { OpportunityManagementService } from '../services/opportunity-management.service';
 import { FunderDocumentAnalysisComponent } from 'src/app/ai/document-analysis/funder-document-analysis.component';
-import {
-  ActionEvent,
-  OrganizationStatusSidebarComponent,
-} from '../components/status-sidebar/status-sidebar.component';
+import { OrganizationStatusSidebarComponent } from '../components/status-sidebar/status-sidebar.component';
 import { PublicProfile } from '../models/public-profile.models';
 import { PublicProfileService } from '../services/public-profile.service';
 import { FunderApplicationsComponent } from '../application-details/funder-applications/funder-applications.component';
@@ -550,45 +547,6 @@ export class FunderDashboardComponent implements OnInit, OnDestroy {
 
   formatNumber(num: number): string {
     return new Intl.NumberFormat('en-ZA').format(num);
-  }
-
-  handleOrganizationAction(event: ActionEvent) {
-    console.log('Organization action:', event);
-
-    switch (event.type) {
-      case 'complete_setup':
-        this.completeOnboarding();
-        break;
-
-      case 'get_verified':
-        this.requestVerification();
-        break;
-
-      case 'edit_organization':
-        this.editOrganization();
-        break;
-
-      case 'manage_public_profile':
-        this.managePublicProfile();
-        break;
-
-      default:
-        console.warn('Unknown organization action:', event.type);
-    }
-  }
-
-  private requestVerification() {
-    this.onboardingService
-      .requestVerification()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (result) => {
-          console.log('Verification requested:', result.message);
-        },
-        error: (error) => {
-          console.error('Verification request failed:', error);
-        },
-      });
   }
 
   completeOnboarding() {

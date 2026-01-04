@@ -11,10 +11,10 @@ import { CommonModule } from '@angular/common';
 import { Subject } from 'rxjs';
 import {
   LucideAngularModule,
-  AlertCircle,
   FileText,
   Eye,
   ArrowRight,
+  CircleAlert,
 } from 'lucide-angular';
 import { ApplicationManagementService } from 'src/app/SMEs/services/application-management.service';
 import {
@@ -51,7 +51,7 @@ export class FunderApplicationsComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
 
   // Icons
-  AlertCircleIcon = AlertCircle;
+  AlertCircleIcon = CircleAlert;
   FileTextIcon = FileText;
   EyeIcon = Eye;
   ArrowRightIcon = ArrowRight;

@@ -592,21 +592,21 @@ export class OrganizationInvitationService {
   /**
    * Accept invitation (called during registration/login)
    */
-  acceptInvitation(
-    token: string,
-    userId: string
-  ): Observable<{
-    success: boolean;
-    organizationId?: string;
-    role?: string;
-  }> {
-    return from(this.performAcceptInvitation(token, userId)).pipe(
-      catchError((error) => {
-        console.error('❌ Accept invitation failed:', error);
-        return of({ success: false });
-      })
-    );
-  }
+  // acceptInvitation(
+  //   token: string,
+  //   userId: string
+  // ): Observable<{
+  //   success: boolean;
+  //   organizationId?: string;
+  //   role?: string;
+  // }> {
+  //   return from(this.performAcceptInvitation(token, userId)).pipe(
+  //     catchError((error) => {
+  //       console.error('❌ Accept invitation failed:', error);
+  //       return of({ success: false });
+  //     })
+  //   );
+  // }
 
   /**
    * Perform accept invitation

@@ -1,4 +1,3 @@
-// 3. Fixed dashboard.routes.ts
 import { Routes } from '@angular/router';
 import { ReportsComponent } from '../reports/reports.component';
 
@@ -37,6 +36,25 @@ export const dashboardRoutes: Routes = [
           ),
         title: 'Welcome - Kapify',
       },
+      {
+        path: 'faqs',
+        loadComponent: () =>
+          import('../core/components/faq/dashboard-faqs.component').then(
+            (c) => c.DashboardFAQsComponent
+          ),
+        title: 'FAQs - Kapify',
+      },
+      // ============================================================================
+      // 🆕 GUIDES ROUTE
+      // ============================================================================
+      {
+        path: 'guides',
+        loadComponent: () =>
+          import('../shared/user-guides/user-guides.component').then(
+            (c) => c.UserGuidesComponent
+          ),
+        title: 'Funding Readiness Guide - Kapify',
+      },
 
       // Other routes
       {
@@ -60,11 +78,7 @@ export const dashboardRoutes: Routes = [
           ),
         title: 'Funder Dashboard - Kapify',
       },
-      // {
-      //   path: 'settings',
-      //   loadComponent: () => import('./pages/settings-page.component').then(c => c.SettingsComponent),
-      //   title: 'Settings - Kapify'
-      // },
+
       {
         path: 'resources',
         loadComponent: () =>

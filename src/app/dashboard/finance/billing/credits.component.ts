@@ -15,8 +15,8 @@ import {
   Zap,
   History,
   CreditCard,
-  AlertCircle,
-  CheckCircle2,
+  CircleAlert,
+  CircleCheck,
 } from 'lucide-angular';
 
 import {
@@ -353,8 +353,8 @@ export class CreditsComponent implements OnInit, OnDestroy {
   ZapIcon = Zap;
   HistoryIcon = History;
   CreditCardIcon = CreditCard;
-  AlertCircleIcon = AlertCircle;
-  CheckCircle2Icon = CheckCircle2;
+  AlertCircleIcon = CircleAlert;
+  CheckCircle2Icon = CircleCheck;
 
   // Payment Status
   status = signal<'success' | 'cancelled' | null>(null);

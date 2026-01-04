@@ -1,0 +1,159 @@
+<!-- organization-status-overview.component.html - SLEEK & COMPACT -->
+
+<div class="status-overview-container" [class.is-animated]="isAnimated()">
+  @if (!onboardingState()) {
+  <!-- Loading State -->
+  <div class="bg-white rounded-2xl border border-slate-200 p-6">
+    <div class="flex items-center justify-center gap-3">
+      <div
+        class="animate-spin w-5 h-5 border-2 border-teal-500 border-t-transparent rounded-full"
+      ></div>
+      <p class="text-sm text-slate-600">Loading...</p>
+    </div>
+  </div>
+  } @else {
+  <!-- Header Section -->
+  <div
+    class="flex items-center justify-between mb-4 slide-in-left"
+    style="--delay: 0.05s"
+  >
+    <div class="flex items-center gap-3">
+      @if (getOrganizationLogo()) {
+      <img
+        [src]="getOrganizationLogo()"
+        [alt]="getOrganizationName() + ' logo'"
+        (error)="onLogoLoadError()"
+        class="w-10 h-10 rounded-lg object-cover flex-shrink-0 border border-slate-200 logo-fade-in"
+      />
+      } @else {
+      <div
+        [class]="getStatusIconBg()"
+        class="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 icon-scale"
+      >
+        <lucide-icon
+          [img]="Building2Icon"
+          [size]="20"
+          [class]="getStatusIconColor()"
+        />
+      </div>
+      }
+      <div>
+        <h2 class="text-xl font-bold text-slate-900">
+          {{ getOrganizationName() }}
+        </h2>
+        <p class="text-sm text-slate-600">
+          {{
+            formatOrganizationType(
+              onboardingState()!.organization!.organizationType
+            )
+          }}
+        </p>
+      </div>
+    </div>
+
+    <!-- Status Badge -->
+    <div
+      [class]="getStatusBadgeClass()"
+      class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border badge-pop-in"
+      style="--delay: 0.1s"
+    >
+      <lucide-icon [img]="getStatusIcon()" [size]="12" />
+      <span>{{ getStatusText() }}</span>
+    </div>
+  </div>
+
+  <!-- Compact Status Card -->
+  <div
+    class="bg-white rounded-2xl border border-slate-200 p-6 status-card slide-in-up"
+    style="--delay: 0.15s"
+  >
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <!-- Progress Section -->
+      <div class="lg:col-span-2">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-sm font-semibold text-slate-900"
+            >Setup Progress</span
+          >
+          <span class="text-sm font-bold text-teal-600"
+            >{{ getCompletionPercentage() }}%</span
+          >
+        </div>
+
+        <div class="h-2 bg-slate-100 rounded-full overflow-hidden mb-3">
+          <div
+            class="h-full rounded-full transition-all duration-700 ease-out progress-bar-fill"
+            [class]="getProgressBarColor()"
+            [style.width.%]="getCompletionPercentage()"
+          ></div>
+        </div>
+
+        <p class="text-sm text-slate-600 mb-4">
+          {{ getMainStatusDescription() }}
+        </p>
+
+        <!-- Urgent Items Inline -->
+        @if (hasUrgentItems() && getTotalMissingItems() > 0) {
+        <div
+          class="flex items-center gap-2 p-3 bg-red-50 border border-red-200/50 rounded-lg"
+        >
+          <lucide-icon
+            [img]="AlertTriangleIcon"
+            [size]="16"
+            class="text-red-600 flex-shrink-0"
+          />
+          <div class="flex-1 min-w-0">
+            <p class="text-sm font-semibold text-red-900">
+              {{ getPrimaryAction()?.item }} needed
+            </p>
+            <p class="text-xs text-red-700">
+              {{ getPrimaryAction()?.description }}
+            </p>
+          </div>
+        </div>
+        }
+      </div>
+
+      <!-- Actions Section -->
+      <div class="flex flex-col gap-2">
+        @if (!isComplete()) {
+        <button
+          class="w-full bg-teal-500 text-white font-medium rounded-lg px-4 py-2.5 text-sm hover:bg-teal-600 active:bg-teal-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 flex items-center justify-center gap-2 action-button"
+          (click)="completeSetup()"
+        >
+          <lucide-icon [img]="FileTextIcon" [size]="16" />
+          <span>Complete Setup</span>
+        </button>
+        } @else if (isComplete() && !isVerified() && canRequestVerification()) {
+        <button
+          class="w-full bg-teal-500 text-white font-medium rounded-lg px-4 py-2.5 text-sm hover:bg-teal-600 active:bg-teal-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 flex items-center justify-center gap-2 action-button"
+          (click)="requestVerification()"
+        >
+          <lucide-icon [img]="ShieldIcon" [size]="16" />
+          <span>Request Verification</span>
+        </button>
+        }
+
+        <button
+          class="w-full bg-slate-100 text-slate-700 font-medium rounded-lg px-4 py-2.5 text-sm hover:bg-slate-200 active:bg-slate-300 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 flex items-center justify-center gap-2 action-button"
+          (click)="editOrganization()"
+          style="--delay: 0.05s"
+        >
+          <span>Edit Details</span>
+          <lucide-icon [img]="ExternalLinkIcon" [size]="14" />
+        </button>
+
+        @if (canCreateOpportunities()) {
+        <button
+          class="w-full bg-slate-100 text-slate-700 font-medium rounded-lg px-4 py-2.5 text-sm hover:bg-slate-200 active:bg-slate-300 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 flex items-center justify-center gap-2 action-button"
+          (click)="managePublicProfile()"
+          style="--delay: 0.1s"
+        >
+          <span>Manage Profile</span>
+          <lucide-icon [img]="ExternalLinkIcon" [size]="14" />
+        </button>
+        }
+      </div>
+    </div>
+  </div>
+  }
+</div>
