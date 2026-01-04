@@ -17,7 +17,6 @@ import { AdvancedFiltersComponent } from '../components/filters.component';
 import { OpportunitiesGridComponent } from '../components/opportuniy-grid/opportunities-grid.component';
 import { SearchStatsBarComponent } from './search-stats-bar.component';
 import { EmptyStateComponent } from '../components/empty-state.component';
-import { NewsletterSignupComponent } from '../components/newsletter-signup.component';
 import { LoadingStateComponent } from './loading-state.component';
 import { MarketplaceHeaderComponent } from '../components/marketplace-header.component';
 import { SmartSuggestionsComponent } from '../components/smart-suggestions/smart-suggestions.component';
@@ -36,7 +35,7 @@ import { FundingOpportunity } from 'src/app/funder/create-opportunity/shared/fun
     EmptyStateComponent,
     OpportunitiesGridComponent,
     AdvancedFiltersComponent,
-    NewsletterSignupComponent,
+    // NewsletterSignupComponent,
     SmartSuggestionsComponent,
     LandingHeaderComponent,
     LandingFooterComponent,

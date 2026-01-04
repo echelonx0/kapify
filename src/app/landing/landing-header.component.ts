@@ -292,10 +292,10 @@ export class LandingHeaderComponent {
       label: 'FAQs',
       action: () => this.gotoFAQS(),
     },
-    {
-      label: 'Funding',
-      action: () => this.goToMarketplace(),
-    },
+    // {
+    //   label: 'Funding',
+    //   action: () => this.goToMarketplace(),
+    // },
     // {
     //   label: 'Resources',
     //   action: () => this.scrollToSection('resources'),

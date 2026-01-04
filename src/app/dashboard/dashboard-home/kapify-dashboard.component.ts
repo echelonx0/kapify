@@ -46,7 +46,7 @@ import { AuthService } from 'src/app/auth/production.auth.service';
 import { FunderOnboardingService } from 'src/app/funder/services/funder-onboarding.service';
 import { OpportunityManagementService } from 'src/app/funder/services/opportunity-management.service';
 import {
-  PrimaryCTACardComponent,
+  // PrimaryCTACardComponent,
   CTAContent,
 } from '../components/cta-card/cta-card.component';
 import {
@@ -75,7 +75,7 @@ interface OnboardingCard {
     FormsModule,
     LucideAngularModule,
     RightPanelComponent,
-    PrimaryCTACardComponent,
+    // PrimaryCTACardComponent,
     OrganizationStatusOverviewComponent,
   ],
   templateUrl: './kapify-dashboard.component.html',

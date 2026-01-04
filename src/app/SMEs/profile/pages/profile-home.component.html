@@ -17,7 +17,7 @@
       </div>
 
       <!-- Stat Card 2: Key Metric (Dynamic) -->
-      <div
+      <!-- <div
         class="bg-white rounded-2xl p-8 shadow-sm hover:shadow-md transition-shadow h-fit"
       >
         <div class="text-center">
@@ -28,7 +28,7 @@
             {{ getMetricLabel() }}
           </p>
         </div>
-      </div>
+      </div> -->
 
       <!-- Mini Stats Grid (2x2) -->
       <div class="grid grid-cols-2 gap-4">
@@ -213,72 +213,6 @@
           <lucide-icon [img]="RefreshIcon" [size]="16"></lucide-icon>
           Refresh Link
         </button>
-      </div>
-
-      <!-- Hero Image Card -->
-      <div
-        class="relative rounded-xl md:rounded-2xl overflow-hidden h-32 md:h-40 shadow-md group cursor-pointer"
-      >
-        <img
-          [src]="currentImage"
-          alt="Profile Banner"
-          class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-        />
-        <div
-          class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"
-        ></div>
-      </div>
-
-      <!-- Service/Feature Highlight Card -->
-      <div
-        class="bg-teal-500 text-white rounded-xl md:rounded-2xl p-4 md:p-5 shadow-md"
-      >
-        <div class="flex items-start justify-between mb-2">
-          <div class="bg-white bg-opacity-20 p-2 md:p-3 rounded-lg">
-            <lucide-icon
-              [img]="BuildingIcon"
-              [size]="20"
-              class="text-white md:[size]='24'"
-            ></lucide-icon>
-          </div>
-        </div>
-        <h3 class="font-bold text-sm md:text-base mb-2">
-          {{ getServiceTitle() }}
-        </h3>
-        <p class="text-xs md:text-sm text-white/90 mb-3">
-          {{ getServiceDescription() }}
-        </p>
-        <button
-          class="text-xs md:text-sm font-semibold text-teal-500 bg-white rounded-lg px-3 py-1.5 md:py-2 hover:bg-slate-100 transition-colors"
-        >
-          Learn More →
-        </button>
-      </div>
-
-      <!-- Primary CTA -->
-      <div
-        class="bg-white rounded-xl md:rounded-2xl p-4 md:p-5 shadow-sm border-2 border-dashed border-slate-200 text-center"
-      >
-        <h3 class="text-base md:text-lg font-bold text-slate-900 mb-1">
-          Unlock Premium
-        </h3>
-        <p class="text-xs md:text-sm text-slate-600 mb-3">
-          Advanced tools to build a standout profile.
-        </p>
-        <ui-button
-          variant="primary"
-          size="sm"
-          class="w-full"
-          [disabled]="completionPercentage() < 100"
-          (clicked)="submitProfile()"
-        >
-          {{ completionPercentage() >= 100 ? "Submit Profile" : "Continue" }}
-          <lucide-icon
-            [img]="ArrowRightIcon"
-            [size]="14"
-            class="ml-2 md:[size]='16'"
-          ></lucide-icon>
-        </ui-button>
       </div>
 
       <!-- Mobile: Help Section (Show only on mobile) -->
