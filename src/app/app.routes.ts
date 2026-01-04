@@ -94,7 +94,9 @@ export const routes: Routes = [
     path: 'reports',
     canActivate: [AuthGuard],
     loadComponent: () =>
-      import('./reports/reports.component').then((m) => m.ReportsComponent),
+      import('./features/reports/reports.component').then(
+        (m) => m.ReportsComponent
+      ),
   },
   {
     path: 'executive-application-form',
@@ -181,13 +183,6 @@ export const routes: Routes = [
         (m) => m.FunderProfileComponent
       ),
     title: 'Funder Profile - Kapify',
-  },
-
-  {
-    path: 'test/parser',
-    loadComponent: () =>
-      import('./test/parser-test.component').then((m) => m.ParserTestComponent),
-    title: 'Excel Parser Test',
   },
 
   // 404 Page - MUST come before catch-all
