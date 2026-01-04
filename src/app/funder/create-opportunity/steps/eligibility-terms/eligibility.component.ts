@@ -7,7 +7,7 @@ import { OpportunityFormStateService } from 'src/app/funder/create-opportunity/s
 import { ClickOutsideDirective } from 'src/app/shared/directives/click-outside.directive';
 import { CriteriaChipListComponent } from 'src/app/funder/create-opportunity/shared/criteria-chip-list.component';
 import { OpportunityUIHelperService } from '../../services/ui-helper.service';
-import { SupabaseConstantsService } from 'src/app/admin/services/remote-constants.service';
+import { SupabaseConstantsService } from 'src/app/core/admin/services/remote-constants.service';
 
 @Component({
   selector: 'app-eligibility-filters',

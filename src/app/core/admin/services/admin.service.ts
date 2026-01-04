@@ -1,7 +1,7 @@
 import { Injectable, inject, OnDestroy } from '@angular/core';
 import { Observable, from, throwError, of, Subject } from 'rxjs';
 import { catchError, switchMap, takeUntil, tap } from 'rxjs/operators';
-import { SharedSupabaseService } from '../../shared/services/shared-supabase.service';
+import { SharedSupabaseService } from 'src/app/shared/services/shared-supabase.service';
 
 // Admin interfaces
 export interface AdminStats {

@@ -10,13 +10,14 @@ import {
   AdminOrganization,
   AdminOpportunity,
 } from '../services/admin.service';
-import { AuthService } from '../../auth/production.auth.service';
-import { UiButtonComponent, UiCardComponent } from '../../shared/components';
+
+import { OrganizationVerificationComponent } from '../organization-verification/organization-verification.component';
+import { AuthService } from 'src/app/auth/production.auth.service';
+import { UiButtonComponent, UiCardComponent } from 'src/app/shared/components';
 import {
   DropdownComponent,
   DropdownOption,
-} from '../../shared/components/ui/shared-ui-components';
-import { OrganizationVerificationComponent } from '../organization-verification/organization-verification.component';
+} from 'src/app/shared/components/ui/shared-ui-components';
 
 type TabType =
   | 'overview'

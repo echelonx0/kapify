@@ -1,6 +1,6 @@
 // src/app/admin/services/fund-financial-terms.service.ts
 import { Injectable, inject, signal } from '@angular/core';
-import { SharedSupabaseService } from '../../shared/services/shared-supabase.service';
+import { SharedSupabaseService } from 'src/app/shared/services/shared-supabase.service';
 
 export interface FundFinancialTerm {
   id: string;

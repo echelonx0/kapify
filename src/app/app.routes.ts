@@ -88,7 +88,7 @@ export const routes: Routes = [
   {
     path: 'administrator',
     loadChildren: () =>
-      import('./admin/admin.routes').then((m) => m.adminRoutes),
+      import('./core/admin/admin.routes').then((m) => m.adminRoutes),
   },
   {
     path: 'reports',

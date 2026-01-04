@@ -1,9 +1,10 @@
 import { Injectable, inject, signal, OnDestroy } from '@angular/core';
 import { Observable, from, throwError, BehaviorSubject, Subject } from 'rxjs';
 import { tap, catchError, takeUntil } from 'rxjs/operators';
-import { SharedSupabaseService } from '../../shared/services/shared-supabase.service';
-import { ActivityService } from '../../shared/services/activity.service';
+
 import { MessagingService } from 'src/app/messaging/services/messaging.service';
+import { ActivityService } from 'src/app/shared/services/activity.service';
+import { SharedSupabaseService } from 'src/app/shared/services/shared-supabase.service';
 
 export interface VerificationOrganization {
   id: string;

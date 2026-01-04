@@ -131,7 +131,7 @@ import { OpportunityUIHelperService } from '../../services/ui-helper.service';
 import {
   FundFinancialTermsService,
   FundFinancialTerm,
-} from 'src/app/admin/services/fund-financial-terms.service';
+} from 'src/app/core/admin/services/fund-financial-terms.service';
 import { OpportunityFormStateService } from '../../services/opportunity-form-state.service';
 
 type FundingType =

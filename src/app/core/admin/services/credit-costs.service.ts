@@ -2,7 +2,7 @@
 import { Injectable, inject, signal, OnDestroy } from '@angular/core';
 import { Observable, from, throwError, BehaviorSubject, Subject } from 'rxjs';
 import { map, catchError, tap, takeUntil } from 'rxjs/operators';
-import { SharedSupabaseService } from '../../shared/services/shared-supabase.service';
+import { SharedSupabaseService } from 'src/app/shared/services/shared-supabase.service';
 
 /**
  * Credit action cost record from database
@@ -64,10 +64,10 @@ export interface AddCostRequest {
 
 /**
  * CreditCostsService
- * 
+ *
  * Manages credit action costs configuration.
  * Used by admin for CRUD operations and by CreditDeductionService for cost lookups.
- * 
+ *
  * Responsibilities:
  * - Fetch all action costs (admin view)
  * - Fetch active costs (client lookup)
@@ -146,7 +146,9 @@ export class CreditCostsService implements OnDestroy {
     }
 
     try {
-      const { data, error } = await this.supabase.rpc('get_active_credit_costs');
+      const { data, error } = await this.supabase.rpc(
+        'get_active_credit_costs'
+      );
 
       if (error) throw error;
 
@@ -157,7 +159,9 @@ export class CreditCostsService implements OnDestroy {
       });
       this.cacheTimestamp = Date.now();
 
-      console.log(`✅ Refreshed credit costs cache: ${this.costsCache.size} actions`);
+      console.log(
+        `✅ Refreshed credit costs cache: ${this.costsCache.size} actions`
+      );
       return this.costsCache;
     } catch (err) {
       console.error('❌ Failed to fetch active costs:', err);
@@ -211,7 +215,9 @@ export class CreditCostsService implements OnDestroy {
   /**
    * Update an existing action cost
    */
-  updateCost(request: UpdateCostRequest): Observable<{ success: boolean; old_cost: number; new_cost: number }> {
+  updateCost(
+    request: UpdateCostRequest
+  ): Observable<{ success: boolean; old_cost: number; new_cost: number }> {
     this.isLoading.set(true);
     this.error.set(null);
 
@@ -229,12 +235,18 @@ export class CreditCostsService implements OnDestroy {
     ).pipe(
       map((result) => {
         if (result.error) throw result.error;
-        return result.data as { success: boolean; old_cost: number; new_cost: number };
+        return result.data as {
+          success: boolean;
+          old_cost: number;
+          new_cost: number;
+        };
       }),
       tap((result) => {
         this.invalidateCache();
         this.isLoading.set(false);
-        console.log(`✅ Updated cost for ${request.action_key}: ${result.old_cost} → ${result.new_cost}`);
+        console.log(
+          `✅ Updated cost for ${request.action_key}: ${result.old_cost} → ${result.new_cost}`
+        );
       }),
       catchError((err) => {
         const message = err?.message || 'Failed to update credit cost';
@@ -250,7 +262,9 @@ export class CreditCostsService implements OnDestroy {
   /**
    * Add a new action cost
    */
-  addCost(request: AddCostRequest): Observable<{ success: boolean; id: string; action_key: string }> {
+  addCost(
+    request: AddCostRequest
+  ): Observable<{ success: boolean; id: string; action_key: string }> {
     this.isLoading.set(true);
     this.error.set(null);
 
@@ -267,7 +281,11 @@ export class CreditCostsService implements OnDestroy {
     ).pipe(
       map((result) => {
         if (result.error) throw result.error;
-        return result.data as { success: boolean; id: string; action_key: string };
+        return result.data as {
+          success: boolean;
+          id: string;
+          action_key: string;
+        };
       }),
       tap((result) => {
         this.invalidateCache();
@@ -340,27 +358,35 @@ export class CreditCostsService implements OnDestroy {
   /**
    * Fetch audit history from activities table
    */
-  private async fetchAuditHistory(limit: number): Promise<CreditCostAuditEntry[]> {
+  private async fetchAuditHistory(
+    limit: number
+  ): Promise<CreditCostAuditEntry[]> {
     const { data: activities, error } = await this.supabase
       .from('activities')
       .select('*')
       .eq('type', 'admin')
-      .in('action', ['credit_cost_updated', 'credit_cost_created', 'credit_cost_deleted'])
+      .in('action', [
+        'credit_cost_updated',
+        'credit_cost_created',
+        'credit_cost_deleted',
+      ])
       .order('created_at', { ascending: false })
       .limit(limit);
 
     if (error) throw error;
 
     // Fetch user emails for display
-    const userIds = [...new Set((activities || []).map((a) => a.user_id).filter(Boolean))];
-    
+    const userIds = [
+      ...new Set((activities || []).map((a) => a.user_id).filter(Boolean)),
+    ];
+
     let userMap = new Map<string, string>();
     if (userIds.length > 0) {
       const { data: users } = await this.supabase
         .from('users')
         .select('id, email')
         .in('id', userIds);
-      
+
       userMap = new Map((users || []).map((u) => [u.id, u.email]));
     }
 

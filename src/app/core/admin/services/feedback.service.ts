@@ -2,7 +2,7 @@
 import { Injectable, inject } from '@angular/core';
 import { Observable, from, throwError, BehaviorSubject } from 'rxjs';
 import { tap, catchError, map } from 'rxjs/operators';
-import { AuthService } from '../../auth/production.auth.service';
+import { AuthService } from 'src/app/auth/production.auth.service';
 import { SharedSupabaseService } from 'src/app/shared/services/shared-supabase.service';
 
 export type FeedbackType = 'bug' | 'feature';

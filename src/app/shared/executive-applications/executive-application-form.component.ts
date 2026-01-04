@@ -35,7 +35,7 @@ import {
   EngagementType,
   ExecutiveApplicationService,
   ExecutiveApplicationFormData,
-} from 'src/app/admin/services/executive-application.service';
+} from 'src/app/core/admin/services/executive-application.service';
 
 interface ExpertiseOption {
   value: ExpertiseArea;
