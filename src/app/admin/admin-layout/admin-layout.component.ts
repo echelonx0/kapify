@@ -72,6 +72,11 @@ export class AdminLayoutComponent {
       label: 'Reports',
       icon: 'fas fa-chart-bar',
     },
+    {
+      path: 'guides',
+      label: 'Guides Manager',
+      icon: 'fas fa-chart-bar',
+    },
   ];
 
   // Main app routes for quick navigation

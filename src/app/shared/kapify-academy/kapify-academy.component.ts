@@ -17,7 +17,6 @@ import {
   Sparkles,
 } from 'lucide-angular';
 import { AuthService } from 'src/app/auth/production.auth.service';
-import { UiButtonComponent } from 'src/app/shared/components';
 
 interface VideoResource {
   id: string;

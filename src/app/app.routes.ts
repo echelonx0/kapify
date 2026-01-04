@@ -57,6 +57,15 @@ export const routes: Routes = [
     title: 'Sign In - Kapify',
   },
 
+  {
+    path: 'faqs',
+    loadComponent: () =>
+      import('./core/components/faq/faq.component').then(
+        (c) => c.FAQsComponent
+      ),
+    title: 'FAQs - Kapify',
+  },
+
   // In your auth routes array:
   {
     path: 'auth/accept-invitation',
