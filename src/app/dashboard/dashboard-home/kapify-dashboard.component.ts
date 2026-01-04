@@ -18,22 +18,23 @@ import {
   TrendingUp,
   DollarSign,
   Plus,
-  Filter,
   Eye,
   Search,
   X,
   BookOpen,
   Users,
   Target,
-  CheckCircle,
   ArrowRight,
   Lightbulb,
   Shield,
   Zap,
-  BarChart3,
   FolderOpen,
   Home,
   ChevronDown,
+  CircleQuestionMark,
+  ChartColumn,
+  CircleCheckBig,
+  Funnel,
 } from 'lucide-angular';
 import {
   RightPanelContent,
@@ -95,22 +96,23 @@ export class KapifyDashboard implements OnInit, OnDestroy {
   TrendingUpIcon = TrendingUp;
   DollarSignIcon = DollarSign;
   PlusIcon = Plus;
-  FilterIcon = Filter;
+  FilterIcon = Funnel;
   EyeIcon = Eye;
   SearchIcon = Search;
   XIcon = X;
   BookOpenIcon = BookOpen;
   UsersIcon = Users;
   TargetIcon = Target;
-  CheckCircleIcon = CheckCircle;
+  CheckCircleIcon = CircleCheckBig;
   ArrowRightIcon = ArrowRight;
   LightbulbIcon = Lightbulb;
   ShieldIcon = Shield;
   ZapIcon = Zap;
-  BarChart3Icon = BarChart3;
+  BarChart3Icon = ChartColumn;
   FolderOpenIcon = FolderOpen;
   HomeIcon = Home;
   ChevronDownIcon = ChevronDown;
+  HelpCircleIcon = CircleQuestionMark;
 
   // State Signals
   isLoading = signal(false);
@@ -317,6 +319,10 @@ export class KapifyDashboard implements OnInit, OnDestroy {
     } else if (card.actionRoute) {
       this.router.navigate([card.actionRoute]);
     }
+  }
+
+  viewFAQs(): void {
+    this.router.navigate(['/dashboard/faqs']);
   }
 
   // CTA Card action handler
