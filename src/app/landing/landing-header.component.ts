@@ -11,7 +11,6 @@ import {
 } from 'lucide-angular';
 
 import { AuthService } from 'src/app/auth/production.auth.service';
-import { UiButtonComponent } from '../shared/components';
 
 interface NavItem {
   label: string;
@@ -288,6 +287,11 @@ export class LandingHeaderComponent {
       label: 'How It Works',
       action: () => this.goToPricing(),
     },
+
+    {
+      label: 'FAQs',
+      action: () => this.gotoFAQS(),
+    },
     {
       label: 'Funding',
       action: () => this.goToMarketplace(),
@@ -323,7 +327,10 @@ export class LandingHeaderComponent {
     this.router.navigate(['/pricing']);
     this.mobileMenuOpen.set(false);
   }
-
+  gotoFAQS() {
+    this.router.navigate(['/faqs']);
+    this.mobileMenuOpen.set(false);
+  }
   goToMarketplace() {
     this.router.navigate(['/marketplace']);
     this.mobileMenuOpen.set(false);

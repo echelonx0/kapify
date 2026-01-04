@@ -1,8 +1,8 @@
 import { Injectable, inject } from '@angular/core';
 import { Observable, from, throwError } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
-import { SharedSupabaseService } from '../shared/services/shared-supabase.service';
-import { AuthService } from '../auth/production.auth.service';
+import { AuthService } from 'src/app/auth/production.auth.service';
+import { SharedSupabaseService } from 'src/app/shared/services/shared-supabase.service';
 
 export interface Invoice {
   id: string;

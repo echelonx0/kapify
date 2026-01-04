@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { Observable, from, of, BehaviorSubject, combineLatest } from 'rxjs';
 import { map, catchError, shareReplay, tap } from 'rxjs/operators';
-import { SharedSupabaseService } from '../shared/services/shared-supabase.service';
+import { SharedSupabaseService } from 'src/app/shared/services/shared-supabase.service';
 
 export interface DocumentAnalysis {
   id: string;
