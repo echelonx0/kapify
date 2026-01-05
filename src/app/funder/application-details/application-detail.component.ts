@@ -1,4 +1,4 @@
-// src/app/funders/application-detail/application-detail.component.ts - FIXED VERSION
+// src/app/funders/application-detail/application-detail.component.ts - CLEANED VERSION
 import {
   Component,
   signal,
@@ -26,8 +26,6 @@ import { ApplicationHeaderComponent } from '../components/application-header/app
 import { StatusManagementModalComponent } from '../components/status-management-modal/status-management-modal.component';
 import { FundingOpportunity } from '../create-opportunity/shared/funding.interfaces';
 import { FundingApplicationProfile } from 'src/app/SMEs/applications/models/funding-application.models';
-import { ContactDetails } from '../models/contact-details.models';
-import { ContactDetailsModalComponent } from '../components/contact-detail/contact-details.component';
 
 interface ApplicationFormData {
   fundingType: string;
@@ -53,7 +51,6 @@ interface ApplicationFormData {
     StatusManagementModalComponent,
     ApplicationHeaderComponent,
     ApplicationMetricsComponent,
-    ContactDetailsModalComponent,
   ],
   templateUrl: './application-detail.component.html',
   styleUrls: ['./application-detail.component.css'],
@@ -73,7 +70,6 @@ export class ApplicationDetailComponent implements OnInit, OnDestroy {
   BotIcon = Bot;
   AlertCircleIcon = AlertCircle;
   Loader2Icon = Loader2;
-  showContactModal = signal(false);
 
   // State
   applicationId = signal<string>('');
@@ -96,52 +92,6 @@ export class ApplicationDetailComponent implements OnInit, OnDestroy {
   hasCompleteDataForAnalysis = computed(
     () => !!(this.application() && this.opportunity() && this.profileData())
   );
-  contactDetails = computed<ContactDetails | null>(() => {
-    const profile = this.rawProfileData();
-    if (!profile) return null;
-
-    const companyInfo = profile.companyInfo;
-    const contactPerson = companyInfo?.contactPerson;
-
-    return {
-      company: {
-        name: companyInfo?.companyName,
-        phone: companyInfo?.businessPhone,
-        industry: companyInfo?.industryType,
-        companyType: companyInfo?.companyType,
-        foundingYear: companyInfo?.foundingYear,
-      },
-
-      primaryContact: {
-        fullName: contactPerson?.fullName,
-        position: contactPerson?.position,
-        email: contactPerson?.email,
-        phone: contactPerson?.phone,
-      },
-
-      addresses: {
-        registeredAddress: companyInfo?.registeredAddress
-          ? {
-              street: companyInfo.registeredAddress.street,
-              city: companyInfo.registeredAddress.city,
-              province: companyInfo.registeredAddress.province,
-              postalCode: companyInfo.registeredAddress.postalCode,
-              country: companyInfo.registeredAddress.country,
-            }
-          : undefined,
-
-        operationalAddress: companyInfo?.operationalAddress
-          ? {
-              street: companyInfo.operationalAddress.street,
-              city: companyInfo.operationalAddress.city,
-              province: companyInfo.operationalAddress.province,
-              postalCode: companyInfo.operationalAddress.postalCode,
-              country: companyInfo.operationalAddress.country,
-            }
-          : undefined,
-      },
-    };
-  });
 
   applicationForAI = computed(() => {
     const app = this.application();
@@ -203,13 +153,10 @@ export class ApplicationDetailComponent implements OnInit, OnDestroy {
     if (!user) return;
 
     try {
-      // Get organization ID from user's organization membership
-      // console.log('Current user:', user);
-
-      const orgId = user.organizationId || user.id; // Fallback to user ID if no org
+      const orgId = user.organizationId || user.id;
       this.organizationId.set(orgId);
     } catch (error) {
-      console.error('❌ [APP-DETAIL] Failed to load organization ID:', error);
+      console.error('❌ [APP-DETAIL] Failed to load organization ID:');
     }
   }
 
@@ -272,7 +219,6 @@ export class ApplicationDetailComponent implements OnInit, OnDestroy {
         .pipe(takeUntil(this.destroy$))
         .toPromise();
 
-      console.log('Loaded funding profile:', fundingProfile);
       if (fundingProfile) {
         this.rawProfileData.set(fundingProfile);
       }
@@ -370,13 +316,5 @@ export class ApplicationDetailComponent implements OnInit, OnDestroy {
    */
   onMarketResearchRequested() {
     console.log('Market research requested');
-  }
-
-  openContactModal() {
-    this.showContactModal.set(true);
-  }
-
-  closeContactModal() {
-    this.showContactModal.set(false);
   }
 }

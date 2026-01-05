@@ -142,6 +142,15 @@ export const funderRoutes: Routes = [
       // },
 
       // In funder.routes.ts
+
+      {
+        path: 'allapplications',
+        loadComponent: () =>
+          import(
+            './application-details/applications-list/applications-list.component'
+          ).then((m) => m.FunderApplicationsListComponent),
+        title: 'All Applications - Kapify',
+      },
       {
         path: 'applications',
         loadComponent: () =>

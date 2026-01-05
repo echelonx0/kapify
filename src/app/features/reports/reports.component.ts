@@ -413,7 +413,9 @@ export class ReportsComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (stats) => this.stats.set(stats),
-        error: () => {}, // Silently fail on stats
+        error: (error) => {
+          console.error(error);
+        },
       });
   }
 

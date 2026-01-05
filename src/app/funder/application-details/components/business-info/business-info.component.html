@@ -77,28 +77,70 @@
         </div>
       </div>
     </div>
-    } @if (getFullAddress()) {
-    <div
-      class="bg-white border border-slate-200 rounded-xl p-4 md:col-span-2 lg:col-span-3"
-    >
-      <div class="flex items-start gap-3">
-        <div
-          class="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center flex-shrink-0"
-        >
-          <lucide-icon [img]="MapPinIcon" [size]="16" class="text-orange-600" />
-        </div>
-        <div class="flex-1 min-w-0">
-          <p class="text-xs font-medium text-slate-500 mb-1">
-            Physical Address
-          </p>
-          <p class="text-sm font-semibold text-slate-900">
-            {{ getFullAddress() }}
-          </p>
-        </div>
-      </div>
-    </div>
     }
   </div>
+
+  <!-- Primary Contact (Replaces Physical Address) -->
+  @if (getPrimaryContact(); as contact) {
+  <div class="bg-white border border-slate-200 rounded-xl p-6">
+    <div class="flex items-start gap-3 mb-4">
+      <div
+        class="w-10 h-10 bg-teal-100 rounded-lg flex items-center justify-center flex-shrink-0"
+      >
+        <lucide-icon [img]="UserIcon" [size]="20" class="text-teal-600" />
+      </div>
+      <div class="flex-1 min-w-0">
+        <h3 class="text-sm font-semibold text-slate-900 mb-1">
+          Primary Contact
+        </h3>
+      </div>
+    </div>
+
+    <div class="space-y-3">
+      <!-- Name & Position -->
+      @if (contact.fullName) {
+      <div>
+        <p class="text-sm font-semibold text-slate-900">
+          {{ contact.fullName }}
+        </p>
+        @if (contact.position) {
+        <p class="text-sm text-slate-600">
+          {{ contact.position }}
+        </p>
+        }
+      </div>
+      }
+
+      <!-- Email -->
+      @if (contact.email) {
+      <div class="flex items-center gap-2 text-sm text-slate-700">
+        <lucide-icon [img]="MailIcon" [size]="16" class="text-slate-500" />
+        <span>{{ contact.email }}</span>
+      </div>
+      }
+
+      <!-- Phone -->
+      @if (contact.phone) {
+      <div class="flex items-center gap-2 text-sm text-slate-700">
+        <lucide-icon [img]="PhoneIcon" [size]="16" class="text-slate-500" />
+        <span>{{ contact.phone }}</span>
+      </div>
+      }
+
+      <!-- Address -->
+      @if (contact.address) {
+      <div class="flex items-start gap-2 text-sm text-slate-700">
+        <lucide-icon
+          [img]="MapPinIcon"
+          [size]="16"
+          class="text-slate-500 mt-0.5"
+        />
+        <span>{{ contact.address }}</span>
+      </div>
+      }
+    </div>
+  </div>
+  }
 
   <!-- Business Description (Full Width) -->
   @if (getBusinessDescription()) {

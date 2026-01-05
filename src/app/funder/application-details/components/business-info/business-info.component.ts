@@ -10,6 +10,9 @@ import {
   MapPin,
   FileText,
   ChevronDown,
+  User,
+  Mail,
+  Phone,
 } from 'lucide-angular';
 
 import { ProfileData } from 'src/app/SMEs/profile/models/funding.models';
@@ -38,6 +41,14 @@ interface RosterSection {
   isExpanded: boolean;
 }
 
+interface PrimaryContact {
+  fullName?: string;
+  position?: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+}
+
 @Component({
   selector: 'app-business-info',
   standalone: true,
@@ -59,6 +70,9 @@ export class BusinessInfoComponent {
   MapPinIcon = MapPin;
   FileTextIcon = FileText;
   ChevronDownIcon = ChevronDown;
+  UserIcon = User;
+  MailIcon = Mail;
+  PhoneIcon = Phone;
 
   // Signals for roster expansion state
   shareholdersExpanded = signal(true);
@@ -131,7 +145,6 @@ export class BusinessInfoComponent {
   }
 
   private normalizeMembers(members: any[]): TeamMember[] {
-    console.log('Normalizing members:', members);
     return members
       .filter((m) => m && m.fullName)
       .map((m) => ({
@@ -214,17 +227,44 @@ export class BusinessInfoComponent {
     return this.profileData.businessInfo?.businessDescription || null;
   }
 
-  getFullAddress(): string | null {
-    const business = this.getBusinessInfo();
-    if (!business) return null;
+  /**
+   * Get primary contact person details
+   */
+  getPrimaryContact(): PrimaryContact | null {
+    const companyInfo = this.rawProfileData.companyInfo;
+    const contactPerson = companyInfo?.contactPerson;
 
-    const parts = [
-      business.physicalAddress?.street,
-      business.physicalAddress?.city,
-      business.physicalAddress?.province,
-      business.physicalAddress?.postalCode,
-    ].filter(Boolean);
+    if (!contactPerson) return null;
 
-    return parts.length > 0 ? parts.join(', ') : null;
+    // Get address - prefer operational, fallback to registered
+    let address: string | undefined;
+    const operationalAddr = companyInfo?.operationalAddress;
+    const registeredAddr = companyInfo?.registeredAddress;
+
+    if (operationalAddr) {
+      const parts = [
+        operationalAddr.street,
+        operationalAddr.city,
+        operationalAddr.province,
+        operationalAddr.postalCode,
+      ].filter(Boolean);
+      address = parts.length > 0 ? parts.join(', ') : undefined;
+    } else if (registeredAddr) {
+      const parts = [
+        registeredAddr.street,
+        registeredAddr.city,
+        registeredAddr.province,
+        registeredAddr.postalCode,
+      ].filter(Boolean);
+      address = parts.length > 0 ? parts.join(', ') : undefined;
+    }
+
+    return {
+      fullName: contactPerson.fullName,
+      position: contactPerson.position,
+      email: contactPerson.email,
+      phone: contactPerson.phone,
+      address,
+    };
   }
 }
