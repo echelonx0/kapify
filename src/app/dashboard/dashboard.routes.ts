@@ -25,7 +25,7 @@ export const dashboardRoutes: Routes = [
 
       {
         path: 'reports',
-        component: AIReportsComponent,
+        component: ActivityLogsComponent,
       },
 
       {

@@ -5,7 +5,7 @@ import {
   KapifyReports,
   KapifyReportsFilter,
   KapifyReportsBulkUpload,
-} from './kapify-reports.interface';
+} from '../models/kapify-reports.interface';
 import { KapifyReportsRepositoryService } from './kapify-reports-repository.service';
 import { KapifyReportsTransformerService } from './kapify-reports-transformer.service';
 

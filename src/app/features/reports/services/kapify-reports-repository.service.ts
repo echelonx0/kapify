@@ -1,8 +1,8 @@
 import { Injectable, inject } from '@angular/core';
 import { Observable, from, throwError } from 'rxjs';
-import { SharedSupabaseService } from '../../shared/services/shared-supabase.service';
+import { SharedSupabaseService } from '../../../shared/services/shared-supabase.service';
 
-import { KapifyReportsFilter } from './kapify-reports.interface';
+import { KapifyReportsFilter } from '../models/kapify-reports.interface';
 import { FundingApplication } from 'src/app/SMEs/models/application.models';
 
 /**
@@ -75,7 +75,7 @@ export class KapifyReportsRepositoryService {
 
   /**
    * Fetch applications with all related data
-   * Optimized with batch operations
+   * Optimized with batch operations and proper null handling
    */
   async getApplicationsWithData(
     filters?: KapifyReportsFilter,
@@ -84,46 +84,58 @@ export class KapifyReportsRepositoryService {
     try {
       console.log('🔍 [REPO] Starting data fetch with filters:', filters);
 
-      // Step 1: Fetch applications
-      const applications = await this.fetchApplications(
+      // Step 1: Fetch applications (raw from DB)
+      const applicationsRaw = await this.fetchApplicationsRaw(
         filters,
         excludeStatuses
       );
 
-      if (!applications || applications.length === 0) {
+      if (!applicationsRaw || applicationsRaw.length === 0) {
         console.log('📭 [REPO] No applications found');
         return [];
       }
 
+      // Transform snake_case DB response to camelCase model
+      const applications = applicationsRaw.map((app) =>
+        this.transformDatabaseToApplication(app)
+      );
+
       console.log('✅ [REPO] Applications fetched:', applications.length);
 
-      // Step 2: Extract unique IDs for batch queries
-      const applicantIds = [
-        ...new Set(applications.map((app) => app.applicantId)),
-      ];
-      const opportunityIds = [
-        ...new Set(
-          applications
-            .map((app) => app.opportunityId)
-            .filter((id) => id !== null)
-        ),
-      ];
+      // Step 2: Extract unique IDs for batch queries (now using camelCase)
+      const applicantIds = this.extractUniqueIds(
+        applications.map((app) => app.applicantId)
+      );
+      const opportunityIds = this.extractUniqueIds(
+        applications
+          .map((app) => app.opportunityId)
+          .filter((id) => id !== null && id !== undefined)
+      );
 
       console.log('👥 [REPO] Unique applicants:', applicantIds.length);
       console.log('🎯 [REPO] Unique opportunities:', opportunityIds.length);
 
-      // Step 3: Batch fetch related data
+      // Step 3: Batch fetch related data (only if IDs exist)
       const [users, opportunities, companyInfos, financialProfiles] =
         await Promise.all([
-          this.fetchUsersByIds(applicantIds),
+          applicantIds.length > 0
+            ? this.fetchUsersByIds(applicantIds)
+            : Promise.resolve([]),
           opportunityIds.length > 0
             ? this.fetchOpportunitiesByIds(opportunityIds)
             : Promise.resolve([]),
-          this.fetchBusinessPlanSectionsByUserIds(applicantIds, 'company-info'),
-          this.fetchBusinessPlanSectionsByUserIds(
-            applicantIds,
-            'financial-profile'
-          ),
+          applicantIds.length > 0
+            ? this.fetchBusinessPlanSectionsByUserIds(
+                applicantIds,
+                'company-info'
+              )
+            : Promise.resolve([]),
+          applicantIds.length > 0
+            ? this.fetchBusinessPlanSectionsByUserIds(
+                applicantIds,
+                'financial-profile'
+              )
+            : Promise.resolve([]),
         ]);
 
       console.log('✅ [REPO] Related data fetched');
@@ -146,11 +158,13 @@ export class KapifyReportsRepositoryService {
 
       console.log('🔗 [REPO] Lookup maps created');
 
-      // Step 5: Enrich applications with related data
+      // Step 5: Enrich applications with related data (now using camelCase)
       const enrichedApplications = applications.map((app) => ({
         application: app,
-        user: userMap.get(app.opportunityId) || null,
-        opportunity: opportunityMap.get(app.opportunityId) || null,
+        user: userMap.get(app.applicantId) || null,
+        opportunity: app.opportunityId
+          ? opportunityMap.get(app.opportunityId) || null
+          : null,
         companyInfo: companyInfoMap.get(app.applicantId) || null,
         financialProfile: financialProfileMap.get(app.applicantId) || null,
       }));
@@ -168,69 +182,21 @@ export class KapifyReportsRepositoryService {
   }
 
   /**
-   * Fetch applications with optional filtering
+   * Extract unique non-null IDs from array
    */
-  private async fetchApplications(
-    filters?: KapifyReportsFilter,
-    excludeStatuses: string[] = ['draft', 'withdrawn']
-  ): Promise<FundingApplication[]> {
-    try {
-      let query = this.supabase.from('applications').select('*');
-
-      // Filter by opportunity
-      if (filters?.searchQuery) {
-        // Full-text search on title/description (client-side for now)
-        // Can be optimized to use Supabase full-text later
-      }
-
-      // Exclude draft and withdrawn
-      if (excludeStatuses.length > 0) {
-        query = query.not('status', 'in', `(${excludeStatuses.join(',')})`);
-      }
-
-      // Filter by status if specified
-      if (filters?.applicationStatus && filters.applicationStatus.length > 0) {
-        query = query.in('status', filters.applicationStatus);
-      }
-
-      // Filter by date range
-      if (filters?.dateRange) {
-        query = query
-          .gte('created_at', filters.dateRange.start.toISOString())
-          .lte('created_at', filters.dateRange.end.toISOString());
-      }
-
-      const { data, error } = await query.order('created_at', {
-        ascending: false,
-      });
-
-      if (error) {
-        throw new Error(`Supabase error: ${error.message}`);
-      }
-
-      // Client-side full-text search if needed
-      let results = data || [];
-      if (filters?.searchQuery) {
-        const searchLower = filters.searchQuery.toLowerCase();
-        results = results.filter(
-          (app) =>
-            app.title?.toLowerCase().includes(searchLower) ||
-            app.description?.toLowerCase().includes(searchLower)
-        );
-      }
-
-      return results;
-    } catch (error) {
-      console.error('❌ [REPO] Error fetching applications:', error);
-      throw error;
-    }
+  private extractUniqueIds(ids: (string | null | undefined)[]): string[] {
+    return [
+      ...new Set(
+        ids.filter((id): id is string => id !== null && id !== undefined)
+      ),
+    ];
   }
 
   /**
    * Batch fetch users by IDs
    */
   private async fetchUsersByIds(userIds: string[]): Promise<any[]> {
-    if (userIds.length === 0) return [];
+    if (!userIds || userIds.length === 0) return [];
 
     try {
       const { data, error } = await this.supabase
@@ -255,7 +221,7 @@ export class KapifyReportsRepositoryService {
   private async fetchOpportunitiesByIds(
     opportunityIds: string[]
   ): Promise<any[]> {
-    if (opportunityIds.length === 0) return [];
+    if (!opportunityIds || opportunityIds.length === 0) return [];
 
     try {
       const { data, error } = await this.supabase
@@ -281,7 +247,7 @@ export class KapifyReportsRepositoryService {
     userIds: string[],
     sectionType: string
   ): Promise<any[]> {
-    if (userIds.length === 0) return [];
+    if (!userIds || userIds.length === 0) return [];
 
     try {
       const { data, error } = await this.supabase
@@ -350,42 +316,50 @@ export class KapifyReportsRepositoryService {
     try {
       console.log('🔍 [REPO] Fetching single application:', applicationId);
 
-      // Fetch the application
-      const { data: appData, error: appError } = await this.supabase
+      // Fetch the application (raw from DB)
+      const { data: appDataRaw, error: appError } = await this.supabase
         .from('applications')
         .select('*')
         .eq('id', applicationId)
         .single();
 
-      if (appError || !appData) {
+      if (appError || !appDataRaw) {
         throw new Error('Application not found');
       }
 
+      // Transform to camelCase model
+      const appData = this.transformDatabaseToApplication(appDataRaw);
+
       console.log('✅ [REPO] Application found:', appData.id);
+
+      // Guard: applicantId must exist
+      if (!appData.applicantId) {
+        throw new Error('Application has no valid applicant');
+      }
 
       // Fetch related data
       const [user, opportunity, companyInfo, financialProfile] =
         await Promise.all([
-          this.fetchUsersByIds([appData.applicant_id]).then(
+          this.fetchUsersByIds([appData.applicantId]).then(
             (users) => users[0] || null
           ),
-          appData.opportunity_id
-            ? this.fetchOpportunitiesByIds([appData.opportunity_id]).then(
+          appData.opportunityId
+            ? this.fetchOpportunitiesByIds([appData.opportunityId]).then(
                 (opps) => opps[0] || null
               )
             : Promise.resolve(null),
           this.fetchBusinessPlanSectionsByUserIds(
-            [appData.applicant_id],
+            [appData.applicantId],
             'company-info'
           ).then((sections) => sections[0]?.data || null),
           this.fetchBusinessPlanSectionsByUserIds(
-            [appData.applicant_id],
+            [appData.applicantId],
             'financial-profile'
           ).then((sections) => sections[0]?.data || null),
         ]);
 
       return {
-        application: appData as FundingApplication,
+        application: appData,
         user,
         opportunity,
         companyInfo,
@@ -404,8 +378,8 @@ export class KapifyReportsRepositoryService {
     opportunityId: string
   ): Promise<EnrichedApplication[]> {
     try {
-      // Fetch applications for this opportunity
-      const { data: applications, error } = await this.supabase
+      // Fetch applications for this opportunity (raw from DB)
+      const { data: applicationsRaw, error } = await this.supabase
         .from('applications')
         .select('*')
         .eq('opportunity_id', opportunityId)
@@ -416,14 +390,24 @@ export class KapifyReportsRepositoryService {
         throw new Error(`Failed to fetch applications: ${error.message}`);
       }
 
-      if (!applications || applications.length === 0) {
+      if (!applicationsRaw || applicationsRaw.length === 0) {
         return [];
       }
 
-      // Extract applicant IDs
-      const applicantIds = [
-        ...new Set(applications.map((app) => app.applicant_id)),
-      ];
+      // Transform snake_case to camelCase
+      const applications = applicationsRaw.map((app) =>
+        this.transformDatabaseToApplication(app)
+      );
+
+      // Extract applicant IDs safely
+      const applicantIds = this.extractUniqueIds(
+        applications.map((app) => app.applicantId)
+      );
+
+      if (applicantIds.length === 0) {
+        console.warn('⚠️ [REPO] No valid applicant IDs found');
+        return [];
+      }
 
       // Batch fetch related data
       const [users, companyInfos, financialProfiles, opportunity] =
@@ -452,17 +436,107 @@ export class KapifyReportsRepositoryService {
 
       // Enrich applications
       return applications.map((app) => ({
-        application: app as FundingApplication,
-        user: userMap.get(app.applicant_id) || null,
+        application: app,
+        user: userMap.get(app.applicantId) || null,
         opportunity,
-        companyInfo: companyInfoMap.get(app.applicant_id) || null,
-        financialProfile: financialProfileMap.get(app.applicant_id) || null,
+        companyInfo: companyInfoMap.get(app.applicantId) || null,
+        financialProfile: financialProfileMap.get(app.applicantId) || null,
       }));
     } catch (error) {
       console.error(
         '❌ [REPO] Error fetching applications by opportunity:',
         error
       );
+      throw error;
+    }
+  }
+
+  // ===================================
+  // PRIVATE: DATA TRANSFORMATION
+  // ===================================
+
+  /**
+   * Transform Supabase snake_case response to FundingApplication camelCase model
+   * This is the critical boundary between DB and app
+   */
+  private transformDatabaseToApplication(dbRow: any): FundingApplication {
+    return {
+      id: dbRow.id,
+      applicantId: dbRow.applicant_id,
+      opportunityId: dbRow.opportunity_id,
+      title: dbRow.title,
+      description: dbRow.description,
+      status: dbRow.status,
+      stage: dbRow.stage,
+      formData: dbRow.form_data || {},
+      documents: dbRow.documents || {},
+      reviewNotes: dbRow.review_notes || [],
+      terms: dbRow.terms,
+      submittedAt: dbRow.submitted_at
+        ? new Date(dbRow.submitted_at)
+        : undefined,
+      reviewStartedAt: dbRow.review_started_at
+        ? new Date(dbRow.review_started_at)
+        : undefined,
+      reviewedAt: dbRow.reviewed_at ? new Date(dbRow.reviewed_at) : undefined,
+      decidedAt: dbRow.decided_at ? new Date(dbRow.decided_at) : undefined,
+      createdAt: new Date(dbRow.created_at),
+      updatedAt: new Date(dbRow.updated_at),
+      aiAnalysisStatus: dbRow.ai_analysis_status,
+      aiMatchScore: dbRow.ai_match_score,
+    };
+  }
+
+  /**
+   * Fetch raw applications from database (snake_case)
+   * Caller is responsible for transformation
+   */
+  private async fetchApplicationsRaw(
+    filters?: KapifyReportsFilter,
+    excludeStatuses: string[] = ['draft', 'withdrawn']
+  ): Promise<any[]> {
+    try {
+      let query = this.supabase.from('applications').select('*');
+
+      // Exclude draft and withdrawn
+      if (excludeStatuses.length > 0) {
+        query = query.not('status', 'in', `(${excludeStatuses.join(',')})`);
+      }
+
+      // Filter by status if specified
+      if (filters?.applicationStatus && filters.applicationStatus.length > 0) {
+        query = query.in('status', filters.applicationStatus);
+      }
+
+      // Filter by date range
+      if (filters?.dateRange) {
+        query = query
+          .gte('created_at', filters.dateRange.start.toISOString())
+          .lte('created_at', filters.dateRange.end.toISOString());
+      }
+
+      const { data, error } = await query.order('created_at', {
+        ascending: false,
+      });
+
+      if (error) {
+        throw new Error(`Supabase error: ${error.message}`);
+      }
+
+      // Client-side full-text search if needed
+      let results = data || [];
+      if (filters?.searchQuery) {
+        const searchLower = filters.searchQuery.toLowerCase();
+        results = results.filter(
+          (app) =>
+            app.title?.toLowerCase().includes(searchLower) ||
+            app.description?.toLowerCase().includes(searchLower)
+        );
+      }
+
+      return results;
+    } catch (error) {
+      console.error('❌ [REPO] Error fetching applications:', error);
       throw error;
     }
   }

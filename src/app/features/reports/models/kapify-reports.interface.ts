@@ -11,10 +11,25 @@ export interface KapifyReports {
   industry: string;
   physicalAddress: string;
   businessDetails: string;
-  businessStage: 'Pre-Launch' | 'Startup' | 'Early Growth' | 'Growth' | 'Mature' | 'Expansion';
+  businessStage:
+    | 'Pre-Launch'
+    | 'Startup'
+    | 'Early Growth'
+    | 'Growth'
+    | 'Mature'
+    | 'Expansion';
   yearsInOperation: number;
   numberOfEmployees: number;
-  bbbeeLeve: 'Level 1' | 'Level 2' | 'Level 3' | 'Level 4' | 'Level 5' | 'Level 6' | 'Level 7' | 'Level 8' | 'Non-Compliant';
+  bbbeeLeve:
+    | 'Level 1'
+    | 'Level 2'
+    | 'Level 3'
+    | 'Level 4'
+    | 'Level 5'
+    | 'Level 6'
+    | 'Level 7'
+    | 'Level 8'
+    | 'Non-Compliant';
   province: string;
   priorYearAnnualRevenue: number;
 
@@ -30,7 +45,18 @@ export interface KapifyReports {
   fundingType: 'Equity' | 'Debt' | 'Grant' | 'Hybrid';
   fundingOpportunity: string;
   useOfFunds: string;
-  applicationStatus: 'Draft' | 'Submitted' | 'Review' | 'Under Review' | 'Approved' | 'Rejected' | 'Withdrawn';
+  applicationStatus:
+    | 'Draft'
+    | 'Submitted'
+    | 'Review'
+    | 'Under Review'
+    | 'Approved'
+    | 'Rejected'
+    | 'Withdrawn';
+
+  // System Fields
+  createdAt?: Date | string; // When the application was created
+  updatedAt?: Date | string; // When the application was last updated
 }
 
 /**

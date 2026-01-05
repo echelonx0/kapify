@@ -18,7 +18,7 @@ import {
   DocumentAnalysis,
   ApplicationAnalysis,
   ActivityRecord,
-} from './report.service';
+} from './services/report.service';
 import { FormatDatePipe, FormatTimePipe } from './format-date.pipes';
 
 @Component({

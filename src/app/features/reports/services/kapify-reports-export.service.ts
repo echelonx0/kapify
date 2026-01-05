@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import {
   KapifyReports,
   KapifyReportsExportOptions,
-} from './kapify-reports.interface';
+} from '../models/kapify-reports.interface';
 import { KapifyReportsTransformerService } from './kapify-reports-transformer.service';
 
 /**
