@@ -24,12 +24,12 @@ export const dashboardRoutes: Routes = [
       },
 
       {
-        path: 'reports',
+        path: 'logs',
         component: ActivityLogsComponent,
       },
 
       {
-        path: 'logs',
+        path: 'reports',
         component: AIReportsComponent,
       },
       // Dashboard routes
