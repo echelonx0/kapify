@@ -1,4 +1,4 @@
-<!-- funder-applications.component.html - UPDATED WITH NEW DESIGN -->
+<!-- funder-applications-overview.component.html -->
 <div class="min-h-screen bg-slate-50">
   <div class="max-w-7xl mx-auto px-4 lg:px-8 py-8">
     <!-- Page Header -->
@@ -13,11 +13,11 @@
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
       <!-- Total Applications -->
       <div
-        class="bg-white rounded-2xl border border-slate-200 p-6 hover:shadow-md hover:border-slate-300 transition-all duration-200 group"
+        class="bg-white rounded-2xl border border-slate-200 p-6 hover:shadow-md hover:border-slate-300 transition-all duration-200"
       >
         <div class="flex items-center gap-3 mb-4">
           <div
-            class="w-10 h-10 rounded-lg bg-teal-100 flex items-center justify-center flex-shrink-0 group-hover:bg-teal-200 transition-colors duration-200"
+            class="w-10 h-10 rounded-lg bg-teal-100 flex items-center justify-center flex-shrink-0"
           >
             <lucide-icon
               [img]="FileTextIcon"
@@ -34,13 +34,17 @@
 
       <!-- Pending Review -->
       <div
-        class="bg-white rounded-2xl border border-slate-200 p-6 hover:shadow-md hover:border-slate-300 transition-all duration-200 group"
+        class="bg-white rounded-2xl border border-slate-200 p-6 hover:shadow-md hover:border-slate-300 transition-all duration-200"
       >
         <div class="flex items-center gap-3 mb-4">
           <div
-            class="w-10 h-10 rounded-lg bg-amber-100 flex items-center justify-center flex-shrink-0 group-hover:bg-amber-200 transition-colors duration-200"
+            class="w-10 h-10 rounded-lg bg-amber-100 flex items-center justify-center flex-shrink-0"
           >
-            <lucide-icon [img]="ClockIcon" [size]="20" class="text-amber-600" />
+            <lucide-icon
+              [img]="ClockIcon"
+              [size]="20"
+              class="text-amber-600"
+            />
           </div>
         </div>
         <p class="text-3xl font-bold text-slate-900 mb-1">
@@ -51,11 +55,11 @@
 
       <!-- Approved -->
       <div
-        class="bg-white rounded-2xl border border-slate-200 p-6 hover:shadow-md hover:border-slate-300 transition-all duration-200 group"
+        class="bg-white rounded-2xl border border-slate-200 p-6 hover:shadow-md hover:border-slate-300 transition-all duration-200"
       >
         <div class="flex items-center gap-3 mb-4">
           <div
-            class="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center flex-shrink-0 group-hover:bg-green-200 transition-colors duration-200"
+            class="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center flex-shrink-0"
           >
             <lucide-icon
               [img]="CheckCircleIcon"
@@ -72,11 +76,11 @@
 
       <!-- Total Requested -->
       <div
-        class="bg-white rounded-2xl border border-slate-200 p-6 hover:shadow-md hover:border-slate-300 transition-all duration-200 group"
+        class="bg-white rounded-2xl border border-slate-200 p-6 hover:shadow-md hover:border-slate-300 transition-all duration-200"
       >
         <div class="flex items-center gap-3 mb-4">
           <div
-            class="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center flex-shrink-0 group-hover:bg-blue-200 transition-colors duration-200"
+            class="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center flex-shrink-0"
           >
             <lucide-icon
               [img]="DollarSignIcon"
@@ -121,22 +125,10 @@
           class="px-4 py-2.5 border border-slate-200 rounded-xl text-slate-900 bg-white focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200"
         >
           <option value="all">All Status</option>
-          <option value="submitted">Submitted</option>
+          <option value="pending">Pending</option>
           <option value="under_review">Under Review</option>
           <option value="approved">Approved</option>
           <option value="rejected">Rejected</option>
-        </select>
-
-        <!-- Opportunity Filter -->
-        <select
-          [value]="filters().opportunityId"
-          (change)="updateOpportunityFilter($any($event.target).value)"
-          class="px-4 py-2.5 border border-slate-200 rounded-xl text-slate-900 bg-white focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200"
-        >
-          <option value="">All Opportunities</option>
-          @for (opp of opportunities(); track opp.id) {
-          <option [value]="opp.id">{{ opp.title }}</option>
-          }
         </select>
       </div>
 
@@ -168,29 +160,6 @@
         ></div>
         <p class="text-sm text-slate-600">Loading applications...</p>
       </div>
-      } @else if (error()) {
-      <!-- Error State -->
-      <div class="p-12 text-center">
-        <div
-          class="w-16 h-16 rounded-2xl bg-red-100 flex items-center justify-center mx-auto mb-4"
-        >
-          <lucide-icon
-            [img]="AlertCircleIcon"
-            [size]="32"
-            class="text-red-600"
-          />
-        </div>
-        <h3 class="text-lg font-bold text-slate-900 mb-2">
-          Failed to Load Applications
-        </h3>
-        <p class="text-sm text-slate-600 mb-6">{{ error() }}</p>
-        <button
-          (click)="refreshApplicationsData()"
-          class="bg-teal-500 text-white font-medium rounded-xl px-6 py-2.5 text-sm hover:bg-teal-600 active:bg-teal-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2"
-        >
-          Try Again
-        </button>
-      </div>
       } @else if (filteredApplications().length === 0) {
       <!-- Empty State -->
       <div class="p-12 text-center">
@@ -207,13 +176,11 @@
           No applications found
         </h3>
         <p class="text-sm text-slate-600 mb-6 max-w-md mx-auto">
-          @if (filters().searchQuery || filters().status !== 'all' ||
-          filters().opportunityId) { Try adjusting your filters to see more
-          results. } @else { Applications will appear here once SMEs start
-          applying to your opportunities. }
+          @if (filters().searchQuery || filters().status !== 'all') { Try
+          adjusting your filters to see more results. } @else { Applications
+          will appear here once SMEs start applying to your opportunities. }
         </p>
-        @if (filters().searchQuery || filters().status !== 'all' ||
-        filters().opportunityId) {
+        @if (filters().searchQuery || filters().status !== 'all') {
         <button
           (click)="clearFilters()"
           class="bg-teal-500 text-white font-medium rounded-xl px-6 py-2.5 text-sm hover:bg-teal-600 active:bg-teal-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2"
@@ -233,7 +200,8 @@
                 (click)="updateSort('date')"
               >
                 <div class="flex items-center gap-2">
-                  Date @if (filters().sortBy === 'date') {
+                  Date
+                  @if (filters().sortBy === 'date') {
                   <span class="text-teal-600">{{
                     filters().sortOrder === "asc" ? "↑" : "↓"
                   }}</span>
@@ -255,7 +223,8 @@
                 (click)="updateSort('amount')"
               >
                 <div class="flex items-center gap-2">
-                  Amount @if (filters().sortBy === 'amount') {
+                  Amount
+                  @if (filters().sortBy === 'amount') {
                   <span class="text-teal-600">{{
                     filters().sortOrder === "asc" ? "↑" : "↓"
                   }}</span>
@@ -267,7 +236,8 @@
                 (click)="updateSort('score')"
               >
                 <div class="flex items-center gap-2">
-                  Score @if (filters().sortBy === 'score') {
+                  Score
+                  @if (filters().sortBy === 'score') {
                   <span class="text-teal-600">{{
                     filters().sortOrder === "asc" ? "↑" : "↓"
                   }}</span>
@@ -293,48 +263,39 @@
               (click)="viewApplication(application)"
             >
               <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-900">
-                {{
-                  formatDate(application.submittedAt || application.createdAt)
-                }}
+                {{ formatDate(application.submittedAt) }}
               </td>
               <td class="px-6 py-4 whitespace-nowrap">
                 <div class="text-sm font-semibold text-slate-900">
-                  {{ getApplicantName(application) }}
+                  {{ application.applicantName }}
                 </div>
                 <div class="text-sm text-slate-600">
-                  {{ getApplicantEmail(application) }}
+                  {{ application.applicantEmail }}
                 </div>
               </td>
               <td class="px-6 py-4">
                 <div class="text-sm text-slate-900 max-w-xs truncate">
-                  {{ getOpportunityTitle(application) }}
+                  {{ application.opportunityTitle }}
                 </div>
               </td>
-              <td
-                class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-slate-900"
-              >
-                {{
-                  formatCurrency(extractRequestedAmount(application.formData))
-                }}
+              <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-slate-900">
+                {{ formatCurrency(application.requestedAmount) }}
               </td>
               <td class="px-6 py-4 whitespace-nowrap">
-                @if (calculateScore(application)) {
+                @if (application.score) {
                 <span
                   class="px-2.5 py-1 rounded-full text-xs font-semibold"
-                  [ngClass]="{
-                    'bg-green-50 text-green-700 border border-green-200/50':
-                      getScoreColor(calculateScore(application)) === 'green',
-                    'bg-blue-50 text-blue-700 border border-blue-200/50':
-                      getScoreColor(calculateScore(application)) === 'blue',
-                    'bg-amber-50 text-amber-700 border border-amber-200/50':
-                      getScoreColor(calculateScore(application)) === 'amber',
-                    'bg-red-50 text-red-700 border border-red-200/50':
-                      getScoreColor(calculateScore(application)) === 'red',
-                    'bg-slate-50 text-slate-700 border border-slate-200/50':
-                      getScoreColor(calculateScore(application)) === 'slate'
-                  }"
+                  [class]="
+                    'bg-' +
+                    getScoreColor(application.score) +
+                    '-50 text-' +
+                    getScoreColor(application.score) +
+                    '-700 border border-' +
+                    getScoreColor(application.score) +
+                    '-200/50'
+                  "
                 >
-                  {{ calculateScore(application) }}%
+                  {{ application.score }}%
                 </span>
                 } @else {
                 <span class="text-sm text-slate-500">-</span>
@@ -343,18 +304,15 @@
               <td class="px-6 py-4 whitespace-nowrap">
                 <span
                   class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold"
-                  [ngClass]="{
-                    'bg-green-50 text-green-700 border border-green-200/50':
-                      getStatusColor(application.status) === 'green',
-                    'bg-blue-50 text-blue-700 border border-blue-200/50':
-                      getStatusColor(application.status) === 'blue',
-                    'bg-amber-50 text-amber-700 border border-amber-200/50':
-                      getStatusColor(application.status) === 'amber',
-                    'bg-red-50 text-red-700 border border-red-200/50':
-                      getStatusColor(application.status) === 'red',
-                    'bg-slate-50 text-slate-700 border border-slate-200/50':
-                      getStatusColor(application.status) === 'slate'
-                  }"
+                  [class]="
+                    'bg-' +
+                    getStatusColor(application.status) +
+                    '-50 text-' +
+                    getStatusColor(application.status) +
+                    '-700 border border-' +
+                    getStatusColor(application.status) +
+                    '-200/50'
+                  "
                 >
                   <lucide-icon
                     [img]="getStatusIcon(application.status)"
@@ -365,10 +323,8 @@
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-right text-sm">
                 <button
-                  (click)="
-                    viewApplication(application); $event.stopPropagation()
-                  "
-                  class="text-teal-600 hover:text-teal-700 font-medium focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 rounded px-2 py-1 transition-colors duration-200"
+                  (click)="viewApplication(application); $event.stopPropagation()"
+                  class="text-teal-600 hover:text-teal-700 font-medium focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 rounded px-2 py-1"
                 >
                   View
                 </button>
@@ -381,23 +337,12 @@
       }
     </div>
 
-    <!-- Pagination Info -->
-    @if (!loading() && !error() && filteredApplications().length > 0) {
+    <!-- Pagination (Future Enhancement) -->
     <div class="mt-6 flex items-center justify-between">
       <p class="text-sm text-slate-600">
         Showing {{ filteredApplications().length }} of {{ analytics().total }}
         applications
       </p>
-
-      @if (analytics().averageProcessingTime > 0) {
-      <p class="text-sm text-slate-600">
-        Average processing time:
-        <span class="font-semibold text-slate-900"
-          >{{ analytics().averageProcessingTime }} days</span
-        >
-      </p>
-      }
     </div>
-    }
   </div>
 </div>

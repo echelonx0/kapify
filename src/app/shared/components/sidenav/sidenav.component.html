@@ -22,14 +22,12 @@
   <!-- Navigation Items -->
   <div class="flex flex-col space-y-1 flex-1 px-2">
     @for (item of visibleNavItems(); track trackByUnique($index, item)) {
-
-    <!-- Funder dashboard special handler -->
     <a
-      *ngIf="item.route === '/dashboard/funder-dashboard'; else normalNav"
-      (click)="goToFunderTabFromLabel(item.label)"
-      class="flex items-center gap-2 px-3 py-2.5 text-sm font-medium rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-all duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2"
+      [routerLink]="item.route"
+      routerLinkActive="bg-teal-50 text-teal-700 border-r-2 border-teal-500"
+      [routerLinkActiveOptions]="{ exact: true }"
+      class="flex items-center gap-2 px-3 py-2.5 text-sm font-medium rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2"
       [title]="item.label"
-      tabindex="0"
     >
       <div class="w-6 h-6 flex items-center justify-center flex-shrink-0">
         <lucide-icon
@@ -43,38 +41,14 @@
       >
         {{ item.label }}
       </span>
-    </a>
-
-    <!-- Regular navigation items -->
-    <ng-template #normalNav>
-      <a
-        [routerLink]="item.route"
-        routerLinkActive="bg-teal-50 text-teal-700 border-r-2 border-teal-500"
-        [routerLinkActiveOptions]="{ exact: true }"
-        class="flex items-center gap-2 px-3 py-2.5 text-sm font-medium rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2"
-        [title]="item.label"
+      @if (item.badge && item.badge > 0) {
+      <span
+        class="ml-auto opacity-0 group-hover:opacity-100 transition-opacity duration-300 px-2 py-1 bg-red-50 text-red-700 text-xs font-semibold rounded-full border border-red-200/50 min-w-[1.5rem] text-center"
       >
-        <div class="w-6 h-6 flex items-center justify-center flex-shrink-0">
-          <lucide-icon
-            [img]="item.icon"
-            [size]="20"
-            class="text-slate-600"
-          ></lucide-icon>
-        </div>
-        <span
-          class="opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap"
-        >
-          {{ item.label }}
-        </span>
-        @if (item.badge && item.badge > 0) {
-        <span
-          class="ml-auto opacity-0 group-hover:opacity-100 transition-opacity duration-300 px-2 py-1 bg-red-50 text-red-700 text-xs font-semibold rounded-full border border-red-200/50 min-w-[1.5rem] text-center"
-        >
-          {{ item.badge > 99 ? "99+" : item.badge }}
-        </span>
-        }
-      </a>
-    </ng-template>
+        {{ item.badge > 99 ? "99+" : item.badge }}
+      </span>
+      }
+    </a>
     }
   </div>
 
@@ -111,7 +85,7 @@
         </span>
       </button>
 
-      <!-- Settings Link -->
+      <!-- Reports Link -->
       <a
         routerLink="/dashboard/reports"
         routerLinkActive="bg-teal-50 text-teal-700"
@@ -247,14 +221,13 @@
   <!-- Mobile Navigation Items -->
   <div class="flex flex-col space-y-1 flex-1 p-4">
     @for (item of visibleNavItems(); track trackByUnique($index, item)) {
-
-    <!-- Funder dashboard special handler -->
     <a
-      *ngIf="item.route === '/dashboard/funder-dashboard'; else mobileNormalNav"
-      (click)="goToFunderTabFromLabel(item.label); closeMobileMenu()"
-      class="flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-all duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-teal-500"
+      [routerLink]="item.route"
+      (click)="closeMobileMenu()"
+      routerLinkActive="bg-teal-50 text-teal-700 border-l-2 border-teal-500"
+      [routerLinkActiveOptions]="{ exact: item.route === '/dashboard/home' }"
+      class="flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-teal-500"
       [title]="item.label"
-      tabindex="0"
     >
       <div class="w-6 h-6 flex items-center justify-center flex-shrink-0">
         <lucide-icon
@@ -264,35 +237,14 @@
         ></lucide-icon>
       </div>
       <span class="whitespace-nowrap flex-1">{{ item.label }}</span>
-    </a>
-
-    <!-- Regular mobile navigation -->
-    <ng-template #mobileNormalNav>
-      <a
-        [routerLink]="item.route"
-        (click)="closeMobileMenu()"
-        routerLinkActive="bg-teal-50 text-teal-700 border-l-2 border-teal-500"
-        [routerLinkActiveOptions]="{ exact: item.route === '/dashboard/home' }"
-        class="flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-teal-500"
-        [title]="item.label"
+      @if (item.badge && item.badge > 0) {
+      <span
+        class="px-2 py-1 bg-red-50 text-red-700 text-xs font-semibold rounded-full border border-red-200/50"
       >
-        <div class="w-6 h-6 flex items-center justify-center flex-shrink-0">
-          <lucide-icon
-            [img]="item.icon"
-            [size]="20"
-            class="text-slate-600"
-          ></lucide-icon>
-        </div>
-        <span class="whitespace-nowrap flex-1">{{ item.label }}</span>
-        @if (item.badge && item.badge > 0) {
-        <span
-          class="px-2 py-1 bg-red-50 text-red-700 text-xs font-semibold rounded-full border border-red-200/50"
-        >
-          {{ item.badge > 99 ? "99+" : item.badge }}
-        </span>
-        }
-      </a>
-    </ng-template>
+        {{ item.badge > 99 ? "99+" : item.badge }}
+      </span>
+      }
+    </a>
     }
   </div>
 

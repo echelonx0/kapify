@@ -24,6 +24,7 @@ import {
   House,
   Axis3d,
   BinaryIcon,
+  FolderOpen,
 } from 'lucide-angular';
 import { AuthService } from 'src/app/auth/services/production.auth.service';
 import { ProfileManagementService } from '../../services/profile-management.service';
@@ -64,6 +65,7 @@ export class SidebarNavComponent implements OnInit {
   CloseIcon = X;
   Axis3dIcon = Axis3d;
   BinaryIcon = BinaryIcon;
+  FolderOpenIcon = FolderOpen;
 
   // State - Mobile Menu
   showMobileMenu = signal(false);
@@ -119,20 +121,18 @@ export class SidebarNavComponent implements OnInit {
       route: '/funding/opportunities',
       userTypes: ['sme'],
     },
-
+    {
+      id: 'funder-opportunities',
+      label: 'Opportunities',
+      icon: FolderOpen,
+      route: '/funder/dashboard',
+      userTypes: ['funder'],
+    },
     {
       id: 'funder-applications',
       label: 'Applications',
       icon: BinaryIcon,
-      route: '/dashboard/funder-dashboard',
-      userTypes: ['funder'],
-    },
-
-    {
-      id: 'funder-applications',
-      label: 'Opportunities',
-      icon: BookOpen,
-      route: '/dashboard/funder-dashboard',
+      route: '/funder/applications',
       userTypes: ['funder'],
     },
     {
@@ -221,28 +221,20 @@ export class SidebarNavComponent implements OnInit {
 
   // Navigation Actions
   goToDashboard(): void {
-    this.router.navigate(['/dashboard']);
-    this.closeMobileMenu();
-  }
+    const user = this.authService.user();
+    const userType = user?.userType || 'sme';
 
-  goToFunderTabFromLabel(label: string): void {
-    const labelMap: Record<
-      string,
-      'overview' | 'opportunities' | 'applications'
-    > = {
-      Manage: 'overview',
-      Opportunities: 'opportunities',
-      Applications: 'applications',
-    };
-
-    const tabId = labelMap[label];
-    if (tabId) {
-      this.router.navigate(['/funder/dashboard'], {
-        queryParams: { tab: tabId },
-      });
-    } else {
+    // Route based on user type
+    if (
+      userType === 'funder' ||
+      userType === 'admin' ||
+      userType === 'consultant'
+    ) {
       this.router.navigate(['/funder/dashboard']);
+    } else {
+      this.router.navigate(['/profile']);
     }
+    this.closeMobileMenu();
   }
 
   // Mobile Menu Management
