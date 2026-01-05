@@ -18,6 +18,7 @@ import {
   Shield,
   User,
   Sticker,
+  Lock,
 } from 'lucide-angular';
 
 import { GeneralInfoComponent } from './components/general-info/general-info.component';
@@ -25,11 +26,11 @@ import { LegalInfoComponent } from './components/legal/legal-info.component';
 import { OrganizationSettingsService } from '../services/organization-settings.service';
 import { ContactDetailsComponent } from './components/contact-details/contact-details.component';
 import { TeamManagementComponent } from './components/team-management/team-management.component';
-// import { BillingCreditsComponent } from '../finance/billing/billing-credits.component';
 import { AuthService } from 'src/app/auth/services/production.auth.service';
 import { Router } from '@angular/router';
 import { FundingProfileSetupService } from 'src/app/SMEs/services/funding-profile-setup.service';
 import { AccountComponent } from './components/account/account.component';
+import { ChangePasswordComponent } from './components/change-password/change-password.component';
 import { CreditsComponent } from '../finance/billing/credits.component';
 
 type SettingsSection =
@@ -40,6 +41,7 @@ type SettingsSection =
   | 'billing'
   | 'profile'
   | 'account'
+  | 'password'
   | 'team';
 
 interface SettingsTab {
@@ -61,6 +63,7 @@ interface SettingsTab {
     TeamManagementComponent,
     CreditsComponent,
     AccountComponent,
+    ChangePasswordComponent,
   ],
   templateUrl: 'settings.component.html',
   styles: [
@@ -121,6 +124,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
   ShieldIcon = Shield;
   UserIcon = User;
   ProfileIcon = Sticker;
+  LockIcon = Lock;
 
   // State
   activeSection = signal<SettingsSection>('billing');
@@ -131,6 +135,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
   error = this.settingsService.error;
   organization = this.settingsService.organization;
   userType = computed(() => this.authService.user()?.userType || 'sme');
+
   // Settings tabs configuration - computed to filter by organization type
   get settingsTabs(): SettingsTab[] {
     const isSME = this.userType() === 'sme';
@@ -160,7 +165,6 @@ export class SettingsComponent implements OnInit, OnDestroy {
         icon: this.CreditCardIcon,
         enabled: true,
       },
-
       {
         id: 'team',
         label: 'Team Members',
@@ -171,6 +175,12 @@ export class SettingsComponent implements OnInit, OnDestroy {
         id: 'account',
         label: 'Your Account',
         icon: this.ProfileIcon,
+        enabled: true,
+      },
+      {
+        id: 'password',
+        label: 'Change Password',
+        icon: this.LockIcon,
         enabled: true,
       },
       {
@@ -225,6 +235,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
       this.activeSection.set(section);
     }
   }
+
   private navigateToProfile() {
     const orgType = this.organization()?.organizationType;
     const userType = this.authService.user()?.userType;
@@ -250,6 +261,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
   trackByTabId(index: number, tab: SettingsTab) {
     return tab.id;
   }
+
   get isSME() {
     return this.userType() === 'sme';
   }
@@ -276,7 +288,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
 
   getTabIconColor(tabId: SettingsSection): string {
     const isActive = this.activeSection() === tabId;
-    return isActive ? 'text-orange-500' : 'text-slate-400';
+    return isActive ? 'text-teal-500' : 'text-slate-400';
   }
 
   getStatusLabel(status: string | undefined): string {

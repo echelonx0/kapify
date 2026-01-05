@@ -33,7 +33,6 @@ interface AccountData {
   phone?: string;
   emailNotifications: boolean;
   marketingCommunications: boolean;
-  lastPasswordChanged?: Date;
 }
 
 @Component({
@@ -62,10 +61,10 @@ interface AccountData {
 
       @keyframes focusPulse {
         from {
-          box-shadow: 0 0 0 0 rgba(255, 107, 53, 0.1);
+          box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.1);
         }
         to {
-          box-shadow: 0 0 0 4px rgba(255, 107, 53, 0.1);
+          box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1);
         }
       }
 
@@ -102,7 +101,6 @@ export class AccountComponent implements OnInit {
   error = signal<string | null>(null);
   successMessage = signal<string | null>(null);
   lastSaved = signal<Date | null>(null);
-  lastPasswordChanged = signal<Date | null>(null);
   initialFormValue: any = null;
 
   constructor() {
@@ -115,11 +113,6 @@ export class AccountComponent implements OnInit {
   ngOnInit() {
     this.initializeForm();
     this.populateForm();
-    if (this.accountData?.lastPasswordChanged) {
-      this.lastPasswordChanged.set(
-        new Date(this.accountData.lastPasswordChanged)
-      );
-    }
   }
 
   private initializeForm() {
@@ -187,26 +180,6 @@ export class AccountComponent implements OnInit {
     return date.toLocaleDateString();
   }
 
-  formatLastChanged(date: Date | null): string {
-    if (!date) return 'never';
-
-    const now = new Date();
-    const diffDays = Math.floor(
-      (now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24)
-    );
-
-    if (diffDays === 0) return 'today';
-    if (diffDays === 1) return 'yesterday';
-    if (diffDays < 30) return `${diffDays} days ago`;
-    if (diffDays < 365) {
-      const months = Math.floor(diffDays / 30);
-      return `${months} month${months > 1 ? 's' : ''} ago`;
-    }
-
-    const years = Math.floor(diffDays / 365);
-    return `${years} year${years > 1 ? 's' : ''} ago`;
-  }
-
   onSave() {
     if (this.accountForm.invalid) {
       this.accountForm.markAllAsTouched();
@@ -251,16 +224,6 @@ export class AccountComponent implements OnInit {
       this.accountForm.patchValue(this.initialFormValue);
     }
     this.error.set(null);
-  }
-
-  openPasswordModal() {
-    // Emit event or open modal via service
-    this.accountService.openPasswordChangeModal();
-  }
-
-  openTwoFactorModal() {
-    // Emit event or open modal via service
-    this.accountService.openTwoFactorModal();
   }
 
   logoutAllDevices() {

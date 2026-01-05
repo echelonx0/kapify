@@ -106,10 +106,10 @@
       <div
         class="bg-white rounded-2xl border border-slate-200 p-6 hover:shadow-md hover:border-slate-300 transition-all duration-200"
       >
-        <div class="flex items-start justify-between">
+        <div class="flex items-start justify-between gap-4">
           <!-- Invoice Details -->
-          <div class="flex-1">
-            <div class="flex items-center gap-3 mb-3">
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-3 mb-3 flex-wrap">
               <!-- Invoice Number -->
               <h3 class="text-lg font-semibold text-slate-900">
                 @if (invoice.zohoInvoiceNumber) {
@@ -136,7 +136,7 @@
             </div>
 
             <!-- Invoice Details Grid -->
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mt-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
               <div>
                 <p class="text-xs text-slate-500 mb-1">Date</p>
                 <p class="text-sm font-medium text-slate-900">
@@ -144,7 +144,7 @@
                 </p>
               </div>
               <div>
-                <p class="text-xs text-slate-500 mb-1">Credits Purchased</p>
+                <p class="text-xs text-slate-500 mb-1">Credits</p>
                 <p class="text-sm font-medium text-slate-900">
                   {{ formatCredits(invoice.creditAmount) }}
                 </p>
@@ -155,72 +155,57 @@
                   {{ formatAmount(invoice.amountZar) }}
                 </p>
               </div>
-              <div>
-                <p class="text-xs text-slate-500 mb-1">Payment Reference</p>
-                <p class="text-xs font-mono text-slate-600">
-                  {{ getPaymentReference(invoice) }}
-                </p>
-              </div>
             </div>
           </div>
 
-          <!-- Actions -->
-          <div class="flex items-center gap-2 ml-4">
-            @if (invoice.zohoInvoiceId) {
-            <!-- View Invoice -->
-            <button
-              (click)="viewInvoice(invoice)"
-              class="text-slate-600 hover:bg-slate-100 active:bg-slate-200 rounded-lg p-2 transition-colors duration-200"
-              title="View Invoice"
-              [disabled]="loading()"
+          <!-- Download Button -->
+          <button
+            (click)="downloadInvoice(invoice)"
+            [disabled]="isDownloading(invoice.id)"
+            class="flex items-center justify-center gap-2 px-4 py-2.5 bg-teal-500 text-white font-medium rounded-xl hover:bg-teal-600 active:bg-teal-700 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
+            [title]="
+              isDownloading(invoice.id) ? 'Downloading...' : 'Download PDF'
+            "
+          >
+            @if (isDownloading(invoice.id)) {
+            <svg
+              class="w-4 h-4 animate-spin"
+              fill="currentColor"
+              viewBox="0 0 24 24"
             >
-              <svg
-                class="w-5 h-5"
-                fill="none"
+              <circle
+                class="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
                 stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                />
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                />
-              </svg>
-            </button>
-
-            <!-- Download Invoice -->
-            <button
-              (click)="downloadInvoice(invoice)"
-              class="text-slate-600 hover:bg-slate-100 active:bg-slate-200 rounded-lg p-2 transition-colors duration-200"
-              title="Download Invoice"
-              [disabled]="loading()"
-            >
-              <svg
-                class="w-5 h-5"
+                stroke-width="4"
                 fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
-                />
-              </svg>
-            </button>
+              ></circle>
+              <path
+                class="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+              ></path>
+            </svg>
+            <span>Downloading...</span>
             } @else {
-            <!-- Processing -->
-            <span class="text-xs text-slate-400 italic">Processing...</span>
+            <svg
+              class="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+              />
+            </svg>
+            <span>Download</span>
             }
-          </div>
+          </button>
         </div>
       </div>
       }

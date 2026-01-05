@@ -72,7 +72,7 @@ type LoadingState = 'idle' | 'initializing' | 'parsing' | 'uploading' | 'ready';
   ],
   templateUrl: 'financial-analysis.component.html',
 })
-export class FinancialAnalysisComponent implements OnInit, OnDestroy {
+export class SMEFinancialprofileComponent implements OnInit, OnDestroy {
   private profileService = inject(SMEProfileStepsService);
   private documentService = inject(SupabaseDocumentService);
   private excelParser = inject(ExcelFinancialParserService);

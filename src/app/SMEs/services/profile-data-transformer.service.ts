@@ -120,21 +120,6 @@ export class ProfileDataTransformerService {
   // TRANSFORM TO BACKEND METHODS
   // ===============================
 
-  //   transformFromFundingProfile(
-  //   fundingProfile: FundingApplicationProfile
-  // ): Partial<ProfileData> {
-  //   const result = {
-  //     // ... existing fields ...
-  //     managementGovernance: this.extractManagementGovernance(
-  //       fundingProfile.managementStructure
-  //     ),
-  //     // ✅ NEW: Extract shareholders from companyInfo
-  //     businessInfo: {
-  //       ...this.extractBusinessInfo(fundingProfile.companyInfo),
-  //       // ✅ Add shareholders as a field if needed for UI
-  //     },
-  //   };
-
   //   return result;
   // }
   private transformBusinessAssessment(

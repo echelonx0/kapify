@@ -74,14 +74,6 @@ export class FinancialAnalysisViewerComponent implements OnInit {
     return this.financialAnalysis?.columnHeaders || [];
   });
 
-  // Reset selectedPeriodIndex to latest when financialAnalysis changes
-  // private resetPeriodSelection = effect(() => {
-  //   const headers = this.columnHeaders();
-  //   if (headers.length > 0) {
-  //     this.selectedPeriodIndex.set(headers.length - 1);
-  //   }
-  // });
-
   // Transformed table data
   incomeStatementSections = computed(() => {
     const data = this.financialAnalysis;

@@ -8,7 +8,7 @@ import {
 } from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { Subject, takeUntil } from 'rxjs';
+import { Subject } from 'rxjs';
 import {
   LucideAngularModule,
   Search,

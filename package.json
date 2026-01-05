@@ -25,6 +25,7 @@
     "html2canvas": "^1.4.1",
     "jsonwebtoken": "^9.0.2",
     "jspdf": "^3.0.4",
+    "jspdf-autotable": "^5.0.7",
     "lottie-web": "^5.13.0",
     "lucide-angular": "^0.536.0",
     "marked": "^17.0.1",

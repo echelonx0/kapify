@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 
 import { AIReportsComponent } from '../features/reports/ai-reports.component';
+import { ActivityLogsComponent } from '../features/activity-logs/activity-logs.component';
 
 export const dashboardRoutes: Routes = [
   {
@@ -28,7 +29,7 @@ export const dashboardRoutes: Routes = [
 
       {
         path: 'logs',
-        component: AIReportsComponent,
+        component: ActivityLogsComponent,
       },
       // Dashboard routes
       {

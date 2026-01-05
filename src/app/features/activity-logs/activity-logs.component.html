@@ -1,0 +1,474 @@
+<div class="min-h-screen bg-slate-50">
+  <!-- Header -->
+  <div class="sticky top-0 z-30 bg-white border-b border-slate-200">
+    <div class="px-4 lg:px-8 py-6 flex items-center justify-between">
+      <div>
+        <h1 class="text-3xl font-bold text-slate-900">Activity Log</h1>
+        <p class="text-sm text-slate-600 mt-1">
+          Track all your account actions and changes
+        </p>
+      </div>
+      <button
+        (click)="refresh()"
+        class="p-2 hover:bg-slate-100 rounded-lg transition-colors duration-200"
+        title="Refresh activities"
+      >
+        <svg
+          class="w-5 h-5 text-slate-600"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+          ></path>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="px-4 lg:px-8 py-6 max-w-7xl mx-auto">
+    <!-- Error State -->
+    @if (error()) {
+    <div
+      class="mb-6 bg-red-50 border border-red-200/50 rounded-xl p-4 flex items-start gap-3"
+    >
+      <svg
+        class="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5"
+        fill="currentColor"
+        viewBox="0 0 20 20"
+      >
+        <path
+          fill-rule="evenodd"
+          d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+          clip-rule="evenodd"
+        ></path>
+      </svg>
+      <div class="flex-1">
+        <p class="text-sm font-medium text-red-700">{{ error() }}</p>
+      </div>
+      <button
+        (click)="error.set(null)"
+        class="text-red-600 hover:text-red-700 text-sm"
+      >
+        Dismiss
+      </button>
+    </div>
+    }
+
+    <!-- Filters Card -->
+    <div class="bg-white rounded-2xl border border-slate-200 mb-6">
+      <!-- Filter Header (Always Visible) -->
+      <div
+        class="px-6 py-4 border-b border-slate-200 flex items-center justify-between"
+      >
+        <div class="flex items-center gap-3">
+          <svg
+            class="w-5 h-5 text-slate-600"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"
+            ></path>
+          </svg>
+          <h3 class="text-base font-semibold text-slate-900">Filters</h3>
+          @if (activeFiltersCount() > 0) {
+          <span
+            class="ml-2 px-2.5 py-1 bg-teal-50 text-teal-700 rounded-full text-xs font-semibold"
+          >
+            {{ activeFiltersCount() }} active
+          </span>
+          }
+        </div>
+        <button
+          (click)="showFilters.set(!showFilters())"
+          class="text-slate-600 hover:text-slate-900 text-sm font-medium transition-colors duration-200"
+        >
+          {{ showFilters() ? "Hide" : "Show" }}
+        </button>
+      </div>
+
+      <!-- Filter Content (Collapsible) -->
+      @if (showFilters()) {
+      <div class="px-6 py-4 space-y-4">
+        <!-- Search -->
+        <div>
+          <label class="block text-sm font-semibold text-slate-900 mb-2">
+            Search
+          </label>
+          <input
+            type="text"
+            [value]="searchQuery()"
+            (input)="onSearchInput($event)"
+            placeholder="Search activities..."
+            class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200"
+          />
+        </div>
+
+        <!-- Date Range -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-semibold text-slate-900 mb-2">
+              From Date
+            </label>
+            <input
+              type="date"
+              [value]="dateRangeStart()"
+              (change)="onDateRangeStartChange($event)"
+              class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200"
+            />
+          </div>
+          <div>
+            <label class="block text-sm font-semibold text-slate-900 mb-2">
+              To Date
+            </label>
+            <input
+              type="date"
+              [value]="dateRangeEnd()"
+              (change)="onDateRangeEndChange($event)"
+              class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200"
+            />
+          </div>
+        </div>
+
+        <!-- Activity Types -->
+        <div>
+          <label class="block text-sm font-semibold text-slate-900 mb-2">
+            Activity Type
+          </label>
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
+            @for (type of activityTypes; track type) {
+            <button
+              (click)="toggleType(type)"
+              [class.bg-teal-50]="selectedTypes().includes(type)"
+              [class.border-teal-50]="selectedTypes().includes(type)"
+              [class.border-slate-200]="!selectedTypes().includes(type)"
+              [class.text-teal-700]="selectedTypes().includes(type)"
+              [class.text-slate-600]="!selectedTypes().includes(type)"
+              class="px-3 py-2 border rounded-lg text-xs font-medium transition-all duration-200 hover:border-slate-300"
+            >
+              {{ capitalizeText(type) }}
+            </button>
+            }
+          </div>
+        </div>
+
+        <!-- Status -->
+        <div>
+          <label class="block text-sm font-semibold text-slate-900 mb-2">
+            Status
+          </label>
+          <div class="grid grid-cols-3 gap-2">
+            @for (status of activityStatuses; track status) {
+            <button
+              (click)="toggleStatus(status)"
+              [class.bg-teal-50]="selectedStatus().includes(status)"
+              [class.border-teal-50]="selectedStatus().includes(status)"
+              [class.border-slate-200]="!selectedStatus().includes(status)"
+              [class.text-teal-700]="selectedStatus().includes(status)"
+              [class.text-slate-600]="!selectedStatus().includes(status)"
+              class="px-3 py-2 border rounded-lg text-xs font-medium transition-all duration-200 hover:border-slate-300"
+            >
+              {{ capitalizeText(status) }}
+            </button>
+            }
+          </div>
+        </div>
+
+        <!-- Clear Filters -->
+        @if (activeFiltersCount() > 0) {
+        <button
+          (click)="clearFilters()"
+          class="w-full px-4 py-2.5 bg-slate-100 text-slate-700 rounded-lg text-sm font-medium hover:bg-slate-200 transition-colors duration-200"
+        >
+          Clear All Filters
+        </button>
+        }
+      </div>
+      }
+    </div>
+
+    <!-- Export Buttons -->
+    <div class="flex gap-3 mb-6 flex-col sm:flex-row">
+      <button
+        (click)="exportExcel()"
+        [disabled]="exporting() || loading()"
+        class="flex-1 sm:flex-none px-6 py-2.5 bg-teal-500 text-white font-medium rounded-xl hover:bg-teal-600 active:bg-teal-700 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+      >
+        @if (exporting()) {
+        <svg
+          class="w-4 h-4 animate-spin"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <circle
+            class="opacity-25"
+            cx="12"
+            cy="12"
+            r="10"
+            stroke="currentColor"
+            stroke-width="4"
+          ></circle>
+          <path
+            class="opacity-75"
+            fill="currentColor"
+            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+          ></path>
+        </svg>
+        } @else {
+        <svg
+          class="w-4 h-4"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M12 4v16m8-8H4"
+          ></path>
+        </svg>
+        } Export to Excel
+      </button>
+      <button
+        (click)="exportPdf()"
+        [disabled]="exporting() || loading()"
+        class="flex-1 sm:flex-none px-6 py-2.5 bg-red-600 text-white font-medium rounded-xl hover:bg-red-700 active:bg-red-800 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+      >
+        @if (exporting()) {
+        <svg
+          class="w-4 h-4 animate-spin"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <circle
+            class="opacity-25"
+            cx="12"
+            cy="12"
+            r="10"
+            stroke="currentColor"
+            stroke-width="4"
+          ></circle>
+          <path
+            class="opacity-75"
+            fill="currentColor"
+            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+          ></path>
+        </svg>
+        } @else {
+        <svg
+          class="w-4 h-4"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M12 4v16m8-8H4"
+          ></path>
+        </svg>
+        } Export to PDF
+      </button>
+    </div>
+
+    <!-- Loading State -->
+    @if (loading()) {
+    <div class="bg-white rounded-2xl border border-slate-200 p-8">
+      <div class="flex flex-col items-center justify-center py-12">
+        <svg
+          class="w-8 h-8 animate-spin text-teal-500 mb-3"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <circle
+            class="opacity-25"
+            cx="12"
+            cy="12"
+            r="10"
+            stroke="currentColor"
+            stroke-width="4"
+          ></circle>
+          <path
+            class="opacity-75"
+            fill="currentColor"
+            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+          ></path>
+        </svg>
+        <p class="text-slate-600 font-medium">Loading activities...</p>
+      </div>
+    </div>
+    }
+
+    <!-- Empty State -->
+    @if (!loading() && activities().length === 0) {
+    <div class="bg-white rounded-2xl border border-slate-200 p-8">
+      <div class="flex flex-col items-center justify-center py-12">
+        <svg
+          class="w-12 h-12 text-slate-300 mb-4"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="1.5"
+            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+          ></path>
+        </svg>
+        <h3 class="text-lg font-bold text-slate-900 mb-1">No activities yet</h3>
+        <p class="text-sm text-slate-600 text-center max-w-sm">
+          @if (activeFiltersCount() > 0) { No activities match your filters. Try
+          adjusting them to see more results. } @else { Start using the platform
+          to see your activity log here. }
+        </p>
+        @if (activeFiltersCount() > 0) {
+        <button
+          (click)="clearFilters()"
+          class="mt-4 px-6 py-2.5 bg-teal-500 text-white text-sm font-medium rounded-xl hover:bg-teal-600 transition-colors duration-200"
+        >
+          Clear Filters
+        </button>
+        }
+      </div>
+    </div>
+    }
+
+    <!-- Activities -->
+    @if (!loading() && activities().length > 0) {
+    <!-- Grouped Activities -->
+    <div class="space-y-6">
+      @for (group of groupedActivities(); track group.label) {
+      <div>
+        <!-- Date Group Header -->
+        <h3 class="text-sm font-semibold text-slate-600 px-4 mb-3">
+          {{ group.label }}
+        </h3>
+
+        <!-- Activities in Group -->
+        <div class="space-y-2">
+          @for (activity of group.activities; track activity.id) {
+          <!-- Activity Item -->
+          <div
+            class="bg-white rounded-2xl border border-slate-200 hover:shadow-md hover:border-slate-300 transition-all duration-200 overflow-hidden"
+          >
+            <div class="px-6 py-4 flex gap-4">
+              <!-- Icon -->
+              <div
+                [class]="
+                  'w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ' +
+                  getActivityColor(activity.type)
+                "
+              >
+                <svg
+                  class="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                  ></path>
+                </svg>
+              </div>
+
+              <!-- Content -->
+              <div class="flex-1 min-w-0">
+                <div
+                  class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-2"
+                >
+                  <div>
+                    <p class="text-sm font-semibold text-slate-900">
+                      {{ activity.message }}
+                    </p>
+                    <p class="text-xs text-slate-500 mt-0.5">
+                      {{ capitalizeText(activity.action) }}
+                    </p>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <!-- Status Badge -->
+                    <span
+                      [class]="
+                        'px-2.5 py-1 rounded-full text-xs font-semibold ' +
+                        getStatusBadgeColor(activity.status)
+                      "
+                    >
+                      {{ capitalizeText(activity.status) }}
+                    </span>
+                    <!-- Time -->
+                    <span class="text-xs text-slate-500 whitespace-nowrap">
+                      {{ formatDateTime(activity.created_at) }}
+                    </span>
+                  </div>
+                </div>
+
+                <!-- Metadata -->
+                <div class="flex flex-wrap gap-4 text-xs text-slate-600">
+                  <span>Type: {{ capitalizeText(activity.type) }}</span>
+                  @if (activity.amount) {
+                  <span>Amount: {{ formatCurrency(activity.amount) }}</span>
+                  } @if (activity.entity_type) {
+                  <span
+                    >Entity: {{ capitalizeText(activity.entity_type) }}</span
+                  >
+                  }
+                </div>
+              </div>
+            </div>
+          </div>
+          }
+        </div>
+      </div>
+      }
+    </div>
+
+    <!-- Pagination -->
+    <div class="mt-8 flex items-center justify-between">
+      <p class="text-sm text-slate-600">
+        Showing {{ (currentPage() - 1) * 50 + 1 }} to
+        {{ Math.min(currentPage() * 50, totalCount()) }} of
+        {{ totalCount() }} activities
+      </p>
+      <div class="flex gap-2">
+        <button
+          (click)="prevPage()"
+          [disabled]="currentPage() === 1"
+          class="px-4 py-2.5 bg-slate-100 text-slate-700 font-medium rounded-xl hover:bg-slate-200 active:bg-slate-300 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-slate-100"
+        >
+          Previous
+        </button>
+        <div
+          class="px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm font-medium text-slate-900"
+        >
+          Page {{ currentPage() }}
+        </div>
+        <button
+          (click)="nextPage()"
+          [disabled]="!hasMore()"
+          class="px-4 py-2.5 bg-teal-500 text-white font-medium rounded-xl hover:bg-teal-600 active:bg-teal-700 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-teal-500"
+        >
+          Next
+        </button>
+      </div>
+    </div>
+    }
+  </div>
+</div>
