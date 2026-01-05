@@ -308,7 +308,7 @@ export class KapifyDashboard implements OnInit, OnDestroy {
         // Add verification request logic here
         break;
       case 'manage_public_profile':
-        this.router.navigate(['/funder/profile']);
+        this.router.navigate(['/funder/create-profile']);
         break;
       case 'share_profile':
         console.log('Share profile clicked');
@@ -366,6 +366,16 @@ export class KapifyDashboard implements OnInit, OnDestroy {
   }
   viewGuides(): void {
     this.router.navigate(['/dashboard/guides']);
+  }
+
+  goToProfile(): void {
+    if (this.userType() === 'funder') {
+      this.router.navigate(['/funder/onboarding'], {
+        queryParams: { tab: 'opportunities' },
+      });
+    } else {
+      this.router.navigate(['/profile']);
+    }
   }
 
   openHelpCenter(): void {

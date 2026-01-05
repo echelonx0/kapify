@@ -97,15 +97,15 @@ export class SidebarNavComponent implements OnInit {
       label: 'Home',
       icon: House,
       route: '/dashboard/home',
-      userTypes: ['funder'],
+      userTypes: ['funder', 'sme'],
     },
-    {
-      id: 'profile',
-      label: 'Home',
-      icon: User,
-      route: '/profile',
-      userTypes: ['sme'],
-    },
+    // {
+    //   id: 'profile',
+    //   label: 'Home',
+    //   icon: User,
+    //   route: '/profile',
+    //   userTypes: ['sme'],
+    // },
     {
       id: 'review',
       label: 'Review',
