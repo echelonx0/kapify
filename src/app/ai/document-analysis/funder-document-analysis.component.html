@@ -90,7 +90,23 @@
     </div>
   </div>
   }
-
+  <!-- Error State -->
+  @if (hasError()) {
+  <div class="p-8 text-center">
+    <div
+      class="w-16 h-16 bg-red-100 rounded-2xl mx-auto mb-4 flex items-center justify-center"
+    >
+      <lucide-icon [img]="XCircleIcon" [size]="32" class="text-red-600" />
+    </div>
+    <h4 class="text-lg font-semibold text-gray-900 mb-2">Analysis Failed</h4>
+    <p class="text-gray-600 mb-6">{{ errorMessage() }}</p>
+    <div class="space-x-4">
+      <ui-button variant="outline" (click)="resetAnalysis()"
+        >Try Again</ui-button
+      >
+    </div>
+  </div>
+  }
   <!-- Main Card -->
   <div class="bg-white border border-gray-200 shadow-sm overflow-hidden">
     <!-- Header -->
@@ -150,11 +166,11 @@
               Evaluate a Business Proposal
             </h4>
             <p class="text-gray-600 text-sm mb-4">
-              Drop your PDF here or click to browse. Get instant AI analysis
-              with market intelligence. How does it work? We take your profile
-              and evaluate it alongside the global benchmark for your sector.
-              And we generate a report for you that is tailored to your profile.
-              and whenever you udate your profile, you can reevaluate your
+              Drop a file here or click to browse. Get instant AI analysis with
+              market intelligence. How does it work? We take your profile and
+              evaluate it alongside the global benchmark for your sector. And we
+              generate a report for you that is tailored to your profile. and
+              whenever you udate your profile, you can reevaluate your
               fundability profile
             </p>
             <div class="text-sm text-gray-500">
@@ -234,24 +250,6 @@
     </div>
     }
 
-    <!-- Error State -->
-    @if (hasError()) {
-    <div class="p-8 text-center">
-      <div
-        class="w-16 h-16 bg-red-100 rounded-2xl mx-auto mb-4 flex items-center justify-center"
-      >
-        <lucide-icon [img]="XCircleIcon" [size]="32" class="text-red-600" />
-      </div>
-      <h4 class="text-lg font-semibold text-gray-900 mb-2">Analysis Failed</h4>
-      <p class="text-gray-600 mb-6">{{ errorMessage() }}</p>
-      <div class="space-x-4">
-        <ui-button variant="outline" (click)="resetAnalysis()"
-          >Try Again</ui-button
-        >
-      </div>
-    </div>
-    }
-
     <!-- Analysis Results -->
     @if (analysisResult() && !isProcessing()) {
     <div class="divide-y divide-gray-100">
@@ -277,7 +275,7 @@
               {{ analysisResult()!.matchScore }}%
             </div>
             <div class="text-sm font-medium text-blue-900">
-              Investment Score
+              Investability Score
             </div>
           </div>
 

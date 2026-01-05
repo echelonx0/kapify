@@ -1,5 +1,4 @@
 // src/app/ai/ai-analysis/kapify-ai-analysis.component.ts
-
 import {
   Component,
   Input,
