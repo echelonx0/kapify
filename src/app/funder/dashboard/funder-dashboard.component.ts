@@ -594,7 +594,7 @@ import {
 } from '../services/funder-onboarding.service';
 import { OpportunityManagementService } from '../services/opportunity-management.service';
 import { FunderDocumentAnalysisComponent } from 'src/app/ai/document-analysis/funder-document-analysis.component';
-import { OrganizationStatusSidebarComponent } from '../components/status-sidebar/status-sidebar.component';
+
 import { PublicProfile } from '../models/public-profile.models';
 import { PublicProfileService } from '../services/public-profile.service';
 import { DraftManagementService } from '../services/draft-management.service';
@@ -618,7 +618,7 @@ interface Tab {
     UiButtonComponent,
     LucideAngularModule,
     FunderDocumentAnalysisComponent,
-    OrganizationStatusSidebarComponent,
+    // OrganizationStatusSidebarComponent,
     OpportunityActionModalComponent,
   ],
   templateUrl: 'dashboard.component.html',

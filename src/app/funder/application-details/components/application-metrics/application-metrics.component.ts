@@ -29,6 +29,13 @@ import { FinancialAnalysisViewerComponent } from '../financial-analysis-viewer/f
 import { BusinessInfoComponent } from '../business-info/business-info.component';
 import { FundingOpportunity } from 'src/app/funder/create-opportunity/shared/funding.interfaces';
 import { FundingApplicationProfile } from 'src/app/SMEs/applications/models/funding-application.models';
+import {
+  FinancialDataTableComponent,
+  FinancialTableSection,
+} from 'src/app/SMEs/profile/steps/financial-analysis/financial-table/financial-data-table.component';
+import { FinancialRatioData } from 'src/app/SMEs/profile/steps/financial-analysis/utils/excel-parser.service';
+import { FinancialDataTransformer } from 'src/app/SMEs/profile/steps/financial-analysis/utils/financial-data.transformer';
+import { Subject } from 'rxjs';
 
 interface Tab {
   id: string;
@@ -45,6 +52,7 @@ interface Tab {
     FinancialAnalysisViewerComponent,
     BusinessAssessmentViewerComponent,
     BusinessInfoComponent,
+    FinancialDataTableComponent,
   ],
   templateUrl: './application-metrics.component.html',
 })
@@ -54,7 +62,8 @@ export class ApplicationMetricsComponent implements OnInit {
   @Input({ required: true }) profileData!: Partial<ProfileData>;
   @Input({ required: true })
   rawProfileData!: Partial<FundingApplicationProfile>;
-
+  private dataChangeSubject = new Subject<void>();
+  columnHeaders = signal<string[]>([]);
   // Icons
   FileTextIcon = FileText;
   DollarSignIcon = DollarSign;
@@ -77,7 +86,7 @@ export class ApplicationMetricsComponent implements OnInit {
 
   // Tab management
   activeTab = signal<string>('overview');
-
+  financialRatiosData = signal<FinancialRatioData[]>([]);
   tabs: Tab[] = [
     { id: 'overview', label: 'Request Summary', icon: Activity },
     { id: 'business', label: 'Business', icon: Building },
@@ -147,6 +156,38 @@ export class ApplicationMetricsComponent implements OnInit {
     // );
   }
 
+  financialRatiosSections = computed(() => {
+    const incomeRatios = this.financialRatiosData().filter((r) =>
+      [
+        'Sales Growth',
+        'Gross profit margin',
+        'Cost to Income ratio',
+        'Operating margin (EBITDA)',
+        'Interest Cover Ratio',
+        'Net Operating Profit Margin',
+      ].some((label) => r.label.toLowerCase().includes(label.toLowerCase()))
+    );
+
+    const balanceRatios = this.financialRatiosData().filter((r) =>
+      [
+        'Return on Equity',
+        'Return on Assets',
+        'Current Ratio',
+        'Acid Test Ratio',
+        'Debt Equity Ratio',
+        'Debtors Days',
+        'Creditors Days',
+        'Equity Investment Value',
+        'Return on Investment',
+      ].some((label) => r.label.toLowerCase().includes(label.toLowerCase()))
+    );
+
+    return FinancialDataTransformer.transformFinancialRatios(
+      incomeRatios, // ✅ INCOME RATIOS AT TOP
+      balanceRatios // ✅ BALANCE RATIOS AT BOTTOM WITH SPACING
+    );
+  });
+
   setActiveTab(tabId: string) {
     this.activeTab.set(tabId);
   }
@@ -172,5 +213,53 @@ export class ApplicationMetricsComponent implements OnInit {
     ].filter(Boolean);
 
     return parts.length > 0 ? parts.join(', ') : null;
+  }
+
+  onFinancialRatiosCellChanged(event: {
+    sectionIndex: number;
+    rowIndex: number;
+    colIndex: number;
+    value: number;
+  }) {
+    const sections = this.financialRatiosSections();
+    const flatIndex = this.getFlatIndex(
+      sections,
+      event.sectionIndex,
+      event.rowIndex
+    );
+
+    this.financialRatiosData.update((data) => {
+      const newData = [...data];
+      if (flatIndex >= 0 && flatIndex < newData.length) {
+        newData[flatIndex] = {
+          ...newData[flatIndex],
+          values: [...newData[flatIndex].values],
+        };
+        newData[flatIndex].values[event.colIndex] = event.value;
+      }
+      return newData;
+    });
+
+    this.triggerDataChange();
+  }
+
+  // ===============================
+  // INDEX MAPPING HELPERS
+  // ===============================
+
+  private getFlatIndex(
+    sections: FinancialTableSection[],
+    sectionIndex: number,
+    rowIndex: number
+  ): number {
+    let flatIndex = 0;
+    for (let i = 0; i < sectionIndex; i++) {
+      flatIndex += sections[i]?.rows.length || 0;
+    }
+    return flatIndex + rowIndex;
+  }
+
+  private triggerDataChange() {
+    this.dataChangeSubject.next();
   }
 }

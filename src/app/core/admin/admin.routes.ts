@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { AuthGuard } from 'src/app/core/guards/auth.guard';
+import { ReportsComponent } from 'src/app/features/reports/reports.component';
 
 export const adminRoutes: Routes = [
   {
@@ -142,7 +143,10 @@ export const adminRoutes: Routes = [
         },
         title: 'Guides Management - Kapify Admin',
       },
-
+      {
+        path: 'reports',
+        component: ReportsComponent,
+      },
       // ============================================================================
       // AI MANAGEMENT ROUTES
       // ============================================================================

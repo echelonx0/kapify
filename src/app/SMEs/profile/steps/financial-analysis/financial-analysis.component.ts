@@ -39,7 +39,7 @@ import {
   FinancialTableSection,
 } from './financial-table/financial-data-table.component';
 import { FinancialUploadComponent } from './components/financial-upload/financial-upload.component';
-import { FinancialSummaryComponent } from './components/financial-summary/financial-summary.component';
+
 import { FinancialNotesComponent } from './components/financial-notes/financial-notes.component';
 import { FinancialDataTransformer } from './utils/financial-data.transformer';
 import { FinancialRatioCalculatorService } from './services/financial-ratio-calculator.service';
@@ -66,7 +66,7 @@ type LoadingState = 'idle' | 'initializing' | 'parsing' | 'uploading' | 'ready';
     LucideAngularModule,
     FinancialDataTableComponent,
     FinancialUploadComponent,
-    FinancialSummaryComponent,
+
     FinancialNotesComponent,
     FinancialTableSkeletonComponent,
   ],

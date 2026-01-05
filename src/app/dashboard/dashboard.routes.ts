@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
-import { ReportsComponent } from '../features/reports/reports.component';
+
+import { AIReportsComponent } from '../features/reports/ai-reports.component';
 
 export const dashboardRoutes: Routes = [
   {
@@ -15,9 +16,19 @@ export const dashboardRoutes: Routes = [
         redirectTo: 'home',
         pathMatch: 'full',
       },
+      // {
+      //   path: 'reports',
+      //   component: ReportsComponent,
+      // },
+
       {
         path: 'reports',
-        component: ReportsComponent,
+        component: AIReportsComponent,
+      },
+
+      {
+        path: 'logs',
+        component: AIReportsComponent,
       },
       // Dashboard routes
       {
