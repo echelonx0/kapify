@@ -1,9 +1,10 @@
 import { Injectable, inject } from '@angular/core';
 import {
   KapifyReports,
-  KapifyReportsExportOptions,
+  // KapifyReportsExportOptions,
 } from '../models/kapify-reports.interface';
 import { KapifyReportsTransformerService } from './kapify-reports-transformer.service';
+import { SharedSupabaseService } from 'src/app/shared/services/shared-supabase.service';
 
 /**
  * KapifyReports Export Service
@@ -14,6 +15,7 @@ import { KapifyReportsTransformerService } from './kapify-reports-transformer.se
 })
 export class KapifyReportsExportService {
   private transformer = inject(KapifyReportsTransformerService);
+  private supabase = inject(SharedSupabaseService);
 
   /**
    * Export reports to Excel
@@ -490,5 +492,105 @@ export class KapifyReportsExportService {
         `Missing dependency: ${moduleName}. Install with: npm install ${moduleName}`
       );
     }
+  }
+
+  /**
+   * Filter reports to only include user's own + organization's applications
+   */
+  async filterReportsByUserAndOrg(
+    reports: KapifyReports[]
+  ): Promise<KapifyReports[]> {
+    try {
+      const userId = this.supabase.getCurrentUserId();
+      if (!userId) {
+        throw new Error('User not authenticated');
+      }
+
+      // Get organization user IDs
+      const orgUserIds = await this.getOrganizationUserIds(userId);
+
+      // Filter reports - match on email (since KapifyReports has email field)
+      // OR match on applicantId if we add it to the interface
+      const userEmails = await this.getUserEmails(orgUserIds);
+
+      const filtered = reports.filter((report) =>
+        userEmails.includes(report.email)
+      );
+
+      console.log(
+        `🔒 [EXPORT] Filtered ${reports.length} → ${filtered.length} reports (user + org only)`
+      );
+
+      return filtered;
+    } catch (error) {
+      console.error('❌ [EXPORT] Error filtering reports:', error);
+      // Fallback: return empty to prevent leaking data
+      return [];
+    }
+  }
+
+  /**
+   * Get organization user IDs (including current user)
+   */
+  private async getOrganizationUserIds(userId: string): Promise<string[]> {
+    try {
+      // Get user's organizations
+      const { data: orgUsers, error: orgError } = await this.supabase
+        .from('organization_users')
+        .select('organization_id')
+        .eq('user_id', userId)
+        .eq('status', 'active');
+
+      if (orgError) {
+        console.warn('⚠️ [EXPORT] Error fetching org membership:', orgError);
+        return [userId]; // Fallback to just current user
+      }
+
+      if (!orgUsers || orgUsers.length === 0) {
+        return [userId]; // User not in any org
+      }
+
+      const orgIds = orgUsers.map((ou) => ou.organization_id);
+
+      // Get all users in these organizations
+      const { data: allOrgUsers, error: allUsersError } = await this.supabase
+        .from('organization_users')
+        .select('user_id')
+        .in('organization_id', orgIds)
+        .eq('status', 'active');
+
+      if (allUsersError) {
+        console.warn('⚠️ [EXPORT] Error fetching org users:', allUsersError);
+        return [userId];
+      }
+
+      const userIds = [
+        ...new Set(allOrgUsers?.map((ou) => ou.user_id).filter(Boolean) || []),
+      ];
+
+      // Always include current user
+      if (!userIds.includes(userId)) {
+        userIds.push(userId);
+      }
+
+      console.log('👥 [EXPORT] Organization user IDs:', userIds.length);
+
+      return userIds;
+    } catch (error) {
+      console.error('❌ [EXPORT] Error getting org user IDs:', error);
+      return [userId]; // Fallback to current user only
+    }
+  }
+
+  /**
+   * Get user emails from user IDs
+   */
+  private async getUserEmails(userIds: string[]): Promise<string[]> {
+    const { data } = await this.supabase
+      .from('users')
+      .select('email')
+      .in('id', userIds);
+
+    return data?.map((u) => u.email) || [];
   }
 }

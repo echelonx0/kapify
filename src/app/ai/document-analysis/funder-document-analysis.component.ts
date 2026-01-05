@@ -524,7 +524,7 @@ export class FunderDocumentAnalysisComponent implements OnInit, OnDestroy {
       case 'strong':
         return 'bg-gradient-to-br from-green-50 to-emerald-50 border-green-100 text-green-600';
       case 'moderate':
-        return 'bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-100 text-blue-600';
+        return 'bg-gradient-to-br from-stone-50 to-slate-50 border-stone-100 text-stone-600';
       case 'weak':
         return 'bg-gradient-to-br from-orange-50 to-amber-50 border-orange-100 text-orange-600';
       default:
