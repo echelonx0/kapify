@@ -34,94 +34,6 @@
         <!-- Overview Tab -->
         @if (activeTab() === 'overview') {
         <div id="overview-panel" role="tabpanel" class="space-y-6">
-          <!-- Analytics Cards -->
-          <!-- @if (analytics()) {
-          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-         
-            <div
-              class="bg-white rounded-2xl border border-slate-200 p-6 hover:shadow-md hover:border-slate-300 transition-all duration-200 group"
-            >
-              <div class="flex items-center gap-3 mb-4">
-                <div
-                  class="w-10 h-10 rounded-lg bg-teal-100 flex items-center justify-center flex-shrink-0 group-hover:bg-teal-200 transition-colors duration-200"
-                >
-                  <lucide-icon
-                    [img]="TrendingUpIcon"
-                    [size]="20"
-                    class="text-teal-600"
-                  />
-                </div>
-              </div>
-              <p class="text-3xl font-bold text-slate-900 mb-1">
-                {{ getActiveOpportunitiesCount() }}
-              </p>
-              <p class="text-sm text-slate-600">Active Opportunities</p>
-            </div>
- 
-            <div
-              class="bg-white rounded-2xl border border-slate-200 p-6 hover:shadow-md hover:border-slate-300 transition-all duration-200 group"
-            >
-              <div class="flex items-center gap-3 mb-4">
-                <div
-                  class="w-10 h-10 rounded-lg bg-teal-100 flex items-center justify-center flex-shrink-0 group-hover:bg-teal-200 transition-colors duration-200"
-                >
-                  <lucide-icon
-                    [img]="UsersIcon"
-                    [size]="20"
-                    class="text-teal-600"
-                  />
-                </div>
-              </div>
-              <p class="text-3xl font-bold text-slate-900 mb-1">
-                {{ formatNumber(analytics()!.totalApplications) }}
-              </p>
-              <p class="text-sm text-slate-600">Total Applications</p>
-            </div>
-
-           
-            <div
-              class="bg-white rounded-2xl border border-slate-200 p-6 hover:shadow-md hover:border-slate-300 transition-all duration-200 group"
-            >
-              <div class="flex items-center gap-3 mb-4">
-                <div
-                  class="w-10 h-10 rounded-lg bg-teal-100 flex items-center justify-center flex-shrink-0 group-hover:bg-teal-200 transition-colors duration-200"
-                >
-                  <lucide-icon
-                    [img]="DollarSignIcon"
-                    [size]="20"
-                    class="text-teal-600"
-                  />
-                </div>
-              </div>
-              <p class="text-3xl font-bold text-slate-900 mb-1">
-                {{ analytics()!.averageConversionRate.toFixed(1) }}%
-              </p>
-              <p class="text-sm text-slate-600">Conversion Rate</p>
-            </div>
-
-         
-            <div
-              class="bg-white rounded-2xl border border-slate-200 p-6 hover:shadow-md hover:border-slate-300 transition-all duration-200 group"
-            >
-              <div class="flex items-center gap-3 mb-4">
-                <div
-                  class="w-10 h-10 rounded-lg bg-teal-100 flex items-center justify-center flex-shrink-0 group-hover:bg-teal-200 transition-colors duration-200"
-                >
-                  <lucide-icon
-                    [img]="BarChart3Icon"
-                    [size]="20"
-                    class="text-teal-600"
-                  />
-                </div>
-              </div>
-              <p class="text-3xl font-bold text-slate-900 mb-1">
-                {{ formatNumber(analytics()!.totalViews) }}
-              </p>
-              <p class="text-sm text-slate-600">Total Views</p>
-            </div>
-          </div>
-          } -->
-
           <!-- Document Analysis Section -->
           <div
             class="bg-white rounded-2xl border border-slate-200 overflow-hidden"
@@ -178,34 +90,6 @@
                 <app-funder-document-analysis></app-funder-document-analysis>
               </div>
             </div>
-          </div>
-
-          <!-- Quick Actions -->
-          <div class="bg-white rounded-2xl border border-slate-200 p-6">
-            <h3 class="text-lg font-bold text-slate-900 mb-1">Quick Actions</h3>
-            <p class="text-sm text-slate-600 mb-4">
-              Get started with key tasks
-            </p>
-
-            @if (onboardingState()?.canCreateOpportunities) {
-            <div class="flex flex-col sm:flex-row gap-3">
-              <button
-                class="flex items-center justify-center gap-2 bg-teal-500 text-white font-medium rounded-xl px-6 py-2.5 text-sm hover:bg-teal-600 active:bg-teal-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2"
-                (click)="createOpportunity()"
-              >
-                <lucide-icon [img]="PlusIcon" [size]="16" />
-                <span>Create Opportunity</span>
-              </button>
-
-              <button
-                class="flex items-center justify-center gap-2 bg-slate-100 text-slate-700 font-medium rounded-xl px-6 py-2.5 text-sm hover:bg-slate-200 active:bg-slate-300 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2"
-                (click)="importOpportunity()"
-              >
-                <lucide-icon [img]="FileTextIcon" [size]="16" />
-                <span>Import Opportunity</span>
-              </button>
-            </div>
-            }
           </div>
         </div>
         }
@@ -494,10 +378,120 @@
       </div>
 
       <!-- Right Sidebar - 2 columns (40%) -->
-      <!-- <div class="xl:col-span-2 space-y-6">
-  
-        <app-organization-status-sidebar></app-organization-status-sidebar>
-      </div> -->
+      <div class="xl:col-span-2 space-y-6">
+        <!-- Analytics Cards -->
+        @if (analytics()) {
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div
+            class="bg-white rounded-2xl border border-slate-200 p-6 hover:shadow-md hover:border-slate-300 transition-all duration-200 group"
+          >
+            <div class="flex items-center gap-3 mb-4">
+              <div
+                class="w-10 h-10 rounded-lg bg-teal-100 flex items-center justify-center flex-shrink-0 group-hover:bg-teal-200 transition-colors duration-200"
+              >
+                <lucide-icon
+                  [img]="TrendingUpIcon"
+                  [size]="20"
+                  class="text-teal-600"
+                />
+              </div>
+            </div>
+            <p class="text-2xl font-bold text-slate-900 mb-1">
+              {{ getActiveOpportunitiesCount() }}
+            </p>
+            <p class="text-xs text-slate-600">Active Opportunities</p>
+          </div>
+
+          <div
+            class="bg-white rounded-2xl border border-slate-200 p-6 hover:shadow-md hover:border-slate-300 transition-all duration-200 group"
+          >
+            <div class="flex items-center gap-3 mb-4">
+              <div
+                class="w-10 h-10 rounded-lg bg-teal-100 flex items-center justify-center flex-shrink-0 group-hover:bg-teal-200 transition-colors duration-200"
+              >
+                <lucide-icon
+                  [img]="UsersIcon"
+                  [size]="20"
+                  class="text-teal-600"
+                />
+              </div>
+            </div>
+            <p class="text-2xl font-bold text-slate-900 mb-1">
+              {{ formatNumber(analytics()!.totalApplications) }}
+            </p>
+            <p class="text-xs text-slate-600">No of Applications</p>
+          </div>
+
+          <div
+            class="bg-white rounded-2xl border border-slate-200 p-6 hover:shadow-md hover:border-slate-300 transition-all duration-200 group"
+          >
+            <div class="flex items-center gap-3 mb-4">
+              <div
+                class="w-10 h-10 rounded-lg bg-teal-100 flex items-center justify-center flex-shrink-0 group-hover:bg-teal-200 transition-colors duration-200"
+              >
+                <lucide-icon
+                  [img]="DollarSignIcon"
+                  [size]="20"
+                  class="text-teal-600"
+                />
+              </div>
+            </div>
+            <p class="text-2xl font-bold text-slate-900 mb-1">
+              {{ analytics()!.averageConversionRate.toFixed(1) }}%
+            </p>
+            <p class="text-xs text-slate-600">Conversion Rate</p>
+          </div>
+
+          <div
+            class="bg-white rounded-2xl border border-slate-200 p-6 hover:shadow-md hover:border-slate-300 transition-all duration-200 group"
+          >
+            <div class="flex items-center gap-3 mb-4">
+              <div
+                class="w-10 h-10 rounded-lg bg-teal-100 flex items-center justify-center flex-shrink-0 group-hover:bg-teal-200 transition-colors duration-200"
+              >
+                <lucide-icon
+                  [img]="BarChart3Icon"
+                  [size]="20"
+                  class="text-teal-600"
+                />
+              </div>
+            </div>
+            <p class="text-2xl font-bold text-slate-900 mb-1">
+              {{ formatNumber(analytics()!.totalViews) }}
+            </p>
+            <p class="text-xs text-slate-600">Total Views</p>
+          </div>
+        </div>
+        }
+
+        <!-- Quick Actions -->
+        <div class="bg-white rounded-2xl border border-slate-200 p-6">
+          <h3 class="text-lg font-bold text-slate-900 mb-1">Quick Actions</h3>
+          <p class="text-sm text-slate-600 mb-4">Get started with key tasks</p>
+
+          @if (onboardingState()?.canCreateOpportunities) {
+          <div class="flex flex-col sm:flex-row gap-3">
+            <button
+              class="flex items-center justify-center gap-2 bg-teal-500 text-white font-medium rounded-xl px-6 py-2.5 text-sm hover:bg-teal-600 active:bg-teal-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2"
+              (click)="createOpportunity()"
+            >
+              <lucide-icon [img]="PlusIcon" [size]="16" />
+              <span>Create Opportunity</span>
+            </button>
+
+            <button
+              class="flex items-center justify-center gap-2 bg-slate-100 text-slate-700 font-medium rounded-xl px-6 py-2.5 text-sm hover:bg-slate-200 active:bg-slate-300 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2"
+              (click)="importOpportunity()"
+            >
+              <lucide-icon [img]="FileTextIcon" [size]="16" />
+              <span>Import Opportunity</span>
+            </button>
+          </div>
+          }
+        </div>
+
+        <!-- <app-organization-status-sidebar></app-organization-status-sidebar> -->
+      </div>
     </div>
   </div>
 </div>

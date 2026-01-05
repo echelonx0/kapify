@@ -6,9 +6,7 @@
       <!-- Header -->
       <div class="flex items-center justify-between mb-6">
         <div class="flex items-center gap-3">
-          <div
-            class="w-10 h-10 rounded-lg bg-amber-100 flex items-center justify-center"
-          >
+          <div class="w-10 h-10 bg-amber-100 flex items-center justify-center">
             <lucide-icon [img]="AlertIcon" [size]="20" class="text-amber-600" />
           </div>
           <h2 class="text-xl font-bold text-slate-900">Confirm Analysis</h2>
@@ -93,48 +91,26 @@
   </div>
   }
 
-  <!-- Credits Header -->
-  <div
-    class="mb-6 flex items-center justify-between p-4 bg-white rounded-xl border border-slate-200"
-  >
-    <div class="flex items-center gap-2">
-      <lucide-icon [img]="ZapIcon" [size]="20" class="text-amber-600" />
-      <span class="text-sm text-slate-600">Available Balance:</span>
-      <span class="font-bold text-lg text-slate-900">{{
-        creditsFormatted()
-      }}</span>
-    </div>
-    <span class="text-xs text-slate-500"
-      >{{ formatCurrency(ANALYSIS_COST_ZAR) }} per analysis</span
-    >
-  </div>
-
   <!-- Main Card -->
-  <div
-    class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden"
-  >
+  <div class="bg-white border border-gray-200 shadow-sm overflow-hidden">
     <!-- Header -->
     <div
-      class="px-6 py-4 bg-gradient-to-r from-purple-50 to-indigo-50 border-b border-gray-200"
+      class="mt-1 p-4 bg-slate-900 text-slate-100 border border-slate-700/60 bg-[radial-gradient(circle_at_1px_1px,rgba(255,255,255,0.04)_1px,transparent_0)] bg-[length:16px_16px]"
     >
-      <div class="flex items-center justify-between">
-        <div class="flex items-center space-x-3">
-          <div>
-            <h3 class="text-lg font-semibold text-gray-900">
-              Rapid Proposal Evaluator
-            </h3>
-            <p class="text-sm text-gray-600">
-              Upload and analyze business proposals with market intelligence
-            </p>
-          </div>
-        </div>
-        @if (analysisResult()) {
-        <ui-button variant="outline" size="sm" (click)="resetAnalysis()">
-          <lucide-icon [img]="UploadIcon" [size]="16" class="mr-2" />
-          New Analysis
-        </ui-button>
-        }
-      </div>
+      <p class="mt-3 text-sm text-slate-300">
+        This is a pay-as-you-go service.
+        <span class="text-white font-semibold">
+          {{ creditsFormatted() }}
+        </span>
+        available.
+        <span class="text-slate-400">
+          {{ formatCurrency(ANALYSIS_COST_ZAR) }} per analysis.
+        </span>
+      </p>
+
+      <p class="mt-2 text-xs text-slate-400">
+        Additional credits can be purchased at any time.
+      </p>
     </div>
 
     <!-- Upload Section -->
@@ -170,72 +146,21 @@
           </div>
 
           <div>
-            <h4 class="text-lg font-semibold text-gray-900 mb-2">
-              Upload Business Proposal
+            <h4 class="text-sm font-semibold text-gray-900 mb-2">
+              Evaluate a Business Proposal
             </h4>
-            <p class="text-gray-600 mb-4">
+            <p class="text-gray-600 text-sm mb-4">
               Drop your PDF here or click to browse. Get instant AI analysis
-              with market intelligence.
+              with market intelligence. How does it work? We take your profile
+              and evaluate it alongside the global benchmark for your sector.
+              And we generate a report for you that is tailored to your profile.
+              and whenever you udate your profile, you can reevaluate your
+              fundability profile
             </p>
             <div class="text-sm text-gray-500">
               Supported format: PDF (max 10MB)
             </div>
           </div>
-        </div>
-      </div>
-
-      <!-- Analysis Features Grid -->
-      <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-8">
-        <div class="text-center p-4 bg-gray-50 rounded-lg">
-          <div
-            class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center mx-auto mb-2"
-          >
-            <lucide-icon [img]="TargetIcon" [size]="16" class="text-blue-600" />
-          </div>
-          <div class="text-sm font-medium text-gray-900">Investment Score</div>
-          <div class="text-xs text-gray-600">AI-powered assessment</div>
-        </div>
-
-        <div class="text-center p-4 bg-gray-50 rounded-lg">
-          <div
-            class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center mx-auto mb-2"
-          >
-            <lucide-icon [img]="GlobeIcon" [size]="16" class="text-green-600" />
-          </div>
-          <div class="text-sm font-medium text-gray-900">
-            Market Intelligence
-          </div>
-          <div class="text-xs text-gray-600">Real-time research</div>
-        </div>
-
-        <div class="text-center p-4 bg-gray-50 rounded-lg">
-          <div
-            class="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center mx-auto mb-2"
-          >
-            <lucide-icon
-              [img]="TrendingUpIcon"
-              [size]="16"
-              class="text-purple-600"
-            />
-          </div>
-          <div class="text-sm font-medium text-gray-900">
-            Competitive Analysis
-          </div>
-          <div class="text-xs text-gray-600">Position assessment</div>
-        </div>
-
-        <div class="text-center p-4 bg-gray-50 rounded-lg">
-          <div
-            class="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center mx-auto mb-2"
-          >
-            <lucide-icon
-              [img]="AlertTriangleIcon"
-              [size]="16"
-              class="text-orange-600"
-            />
-          </div>
-          <div class="text-sm font-medium text-gray-900">Risk Assessment</div>
-          <div class="text-xs text-gray-600">Comprehensive flags</div>
         </div>
       </div>
     </div>
