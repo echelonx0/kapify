@@ -2,11 +2,9 @@ import { Injectable, inject } from '@angular/core';
 import { Observable, from, throwError, of } from 'rxjs';
 import { tap, catchError, map } from 'rxjs/operators';
 
-import {
-  AuthService,
-  UserProfile,
-} from '../../../../../auth/production.auth.service';
+import { AuthService } from '../../../../../auth/services/production.auth.service';
 import { SharedSupabaseService } from '../../../../../shared/services/shared-supabase.service';
+import { UserProfile } from 'src/app/auth/models/auth.models';
 
 export interface InvitationDetails {
   id: string;

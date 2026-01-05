@@ -1,9 +1,23 @@
- 
 // src/app/shared/services/funding-permissions.service.ts
 import { Injectable, signal, computed, inject, effect } from '@angular/core';
-import { Observable, from, throwError, BehaviorSubject, combineLatest, of, EMPTY } from 'rxjs';
-import { tap, catchError, map, switchMap, shareReplay, distinctUntilChanged } from 'rxjs/operators';
-import { AuthService } from '../../auth/production.auth.service';
+import {
+  Observable,
+  from,
+  throwError,
+  BehaviorSubject,
+  combineLatest,
+  of,
+  EMPTY,
+} from 'rxjs';
+import {
+  tap,
+  catchError,
+  map,
+  switchMap,
+  shareReplay,
+  distinctUntilChanged,
+} from 'rxjs/operators';
+import { AuthService } from '../../auth/services/production.auth.service';
 import { SharedSupabaseService } from './shared-supabase.service';
 import { FundingOpportunity } from '../models/funder.models';
 
@@ -20,7 +34,13 @@ export interface UserContext {
 export interface UserApplicationStatus {
   opportunityId: string;
   applicationId: string;
-  status: 'draft' | 'submitted' | 'under_review' | 'approved' | 'rejected' | 'withdrawn';
+  status:
+    | 'draft'
+    | 'submitted'
+    | 'under_review'
+    | 'approved'
+    | 'rejected'
+    | 'withdrawn';
   appliedAt: Date;
 }
 
@@ -37,13 +57,19 @@ export interface OpportunityPermissions {
   canEdit: boolean;
   hasExistingApplication: boolean;
   applicationStatus?: string;
-  actionButtonType: 'apply' | 'view-application' | 'manage' | 'edit' | 'login' | 'none';
+  actionButtonType:
+    | 'apply'
+    | 'view-application'
+    | 'manage'
+    | 'edit'
+    | 'login'
+    | 'none';
   actionButtonText: string;
   disabledReason?: string;
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class FundingPermissionsService {
   private authService = inject(AuthService);
@@ -52,7 +78,7 @@ export class FundingPermissionsService {
   // Core state
   isLoading = signal(false);
   error = signal<string | null>(null);
-  
+
   // User context - reactive to auth changes
   private userContextSubject = new BehaviorSubject<UserContext | null>(null);
   userContext$ = this.userContextSubject.asObservable().pipe(
@@ -61,19 +87,25 @@ export class FundingPermissionsService {
   );
 
   // User applications cache
-  private userApplicationsSubject = new BehaviorSubject<UserApplicationStatus[]>([]);
-  userApplications$ = this.userApplicationsSubject.asObservable().pipe(shareReplay(1));
+  private userApplicationsSubject = new BehaviorSubject<
+    UserApplicationStatus[]
+  >([]);
+  userApplications$ = this.userApplicationsSubject
+    .asObservable()
+    .pipe(shareReplay(1));
 
   // Derived state
   currentUserContext = signal<UserContext | null>(null);
   userApplications = signal<UserApplicationStatus[]>([]);
   isAuthenticated = computed(() => !!this.currentUserContext());
   userType = computed(() => this.currentUserContext()?.userType || null);
-  userOrganizationId = computed(() => this.currentUserContext()?.organizationId || null);
+  userOrganizationId = computed(
+    () => this.currentUserContext()?.organizationId || null
+  );
 
   constructor() {
     console.log('🚀 FundingPermissionsService initialized');
-    
+
     // Initialize effects only if in browser environment
     if (typeof window !== 'undefined') {
       this.initializeService();
@@ -86,15 +118,15 @@ export class FundingPermissionsService {
 
   private initializeService() {
     console.log('🔧 Initializing permissions service...');
-    
+
     try {
       // React to auth state changes with error handling
       effect(() => {
         const user = this.authService.user();
         console.log('👤 Auth state changed:', user ? user.email : 'No user');
-        
+
         if (user) {
-          this.loadUserContext(user).catch(error => {
+          this.loadUserContext(user).catch((error) => {
             console.error('Failed to load user context in effect:', error);
           });
         } else {
@@ -110,7 +142,7 @@ export class FundingPermissionsService {
         },
         error: (error) => {
           console.error('User context subscription error:', error);
-        }
+        },
       });
 
       this.userApplications$.subscribe({
@@ -120,11 +152,10 @@ export class FundingPermissionsService {
         },
         error: (error) => {
           console.error('User applications subscription error:', error);
-        }
+        },
       });
 
       console.log('✅ Permissions service initialized successfully');
-      
     } catch (error) {
       console.error('❌ Failed to initialize permissions service:', error);
       this.error.set('Failed to initialize permissions service');
@@ -141,7 +172,7 @@ export class FundingPermissionsService {
         userType: user.userType,
         email: user.email,
         firstName: user.firstName,
-        lastName: user.lastName
+        lastName: user.lastName,
       };
 
       // If user is a funder, get their organization
@@ -168,21 +199,19 @@ export class FundingPermissionsService {
           // Continue without applications - user can still view opportunities
         }
       }
-
     } catch (error) {
       console.error('Failed to load user context:', error);
       this.error.set('Failed to load user permissions');
-      
+
       // Set a basic user context even if there are errors
       const basicContext: UserContext = {
         id: user.id,
         userType: user.userType || 'sme',
         email: user.email,
         firstName: user.firstName || 'User',
-        lastName: user.lastName || ''
+        lastName: user.lastName || '',
       };
       this.userContextSubject.next(basicContext);
-      
     } finally {
       this.isLoading.set(false);
     }
@@ -201,16 +230,18 @@ export class FundingPermissionsService {
   /**
    * Get comprehensive permissions for a specific opportunity
    */
-  getOpportunityPermissions(opportunity: FundingOpportunity): Observable<OpportunityPermissions> {
+  getOpportunityPermissions(
+    opportunity: FundingOpportunity
+  ): Observable<OpportunityPermissions> {
     return this.userContext$.pipe(
-      switchMap(context => {
+      switchMap((context) => {
         if (!context) {
           return of(this.getUnauthenticatedPermissions());
         }
 
         return this.calculatePermissions(opportunity, context);
       }),
-      catchError(error => {
+      catchError((error) => {
         console.error('Error calculating permissions:', error);
         return of(this.getErrorPermissions());
       })
@@ -220,11 +251,17 @@ export class FundingPermissionsService {
   /**
    * Check if user can apply to a specific opportunity
    */
-  canApplyToOpportunity(opportunity: FundingOpportunity): Observable<PermissionResult> {
+  canApplyToOpportunity(
+    opportunity: FundingOpportunity
+  ): Observable<PermissionResult> {
     return this.userContext$.pipe(
-      switchMap(context => {
+      switchMap((context) => {
         if (!context) {
-          return of({ allowed: false, reason: 'Please log in to apply', requiresLogin: true });
+          return of({
+            allowed: false,
+            reason: 'Please log in to apply',
+            requiresLogin: true,
+          });
         }
 
         return this.checkApplicationPermission(opportunity, context);
@@ -235,11 +272,17 @@ export class FundingPermissionsService {
   /**
    * Check if user can manage/edit a specific opportunity
    */
-  canManageOpportunity(opportunity: FundingOpportunity): Observable<PermissionResult> {
+  canManageOpportunity(
+    opportunity: FundingOpportunity
+  ): Observable<PermissionResult> {
     return this.userContext$.pipe(
-      map(context => {
+      map((context) => {
         if (!context) {
-          return { allowed: false, reason: 'Authentication required', requiresLogin: true };
+          return {
+            allowed: false,
+            reason: 'Authentication required',
+            requiresLogin: true,
+          };
         }
 
         return this.checkManagementPermission(opportunity, context);
@@ -252,16 +295,24 @@ export class FundingPermissionsService {
    */
   hasExistingApplication(opportunityId: string): Observable<boolean> {
     return this.userApplications$.pipe(
-      map(applications => applications.some(app => app.opportunityId === opportunityId))
+      map((applications) =>
+        applications.some((app) => app.opportunityId === opportunityId)
+      )
     );
   }
 
   /**
    * Get user's application status for opportunity
    */
-  getApplicationStatus(opportunityId: string): Observable<UserApplicationStatus | null> {
+  getApplicationStatus(
+    opportunityId: string
+  ): Observable<UserApplicationStatus | null> {
     return this.userApplications$.pipe(
-      map(applications => applications.find(app => app.opportunityId === opportunityId) || null)
+      map(
+        (applications) =>
+          applications.find((app) => app.opportunityId === opportunityId) ||
+          null
+      )
     );
   }
 
@@ -274,7 +325,10 @@ export class FundingPermissionsService {
     context: UserContext
   ): Observable<OpportunityPermissions> {
     // Check if user can manage this opportunity
-    const canManage = this.checkManagementPermission(opportunity, context).allowed;
+    const canManage = this.checkManagementPermission(
+      opportunity,
+      context
+    ).allowed;
 
     if (canManage) {
       return of({
@@ -284,15 +338,15 @@ export class FundingPermissionsService {
         canEdit: true,
         hasExistingApplication: false,
         actionButtonType: 'manage',
-        actionButtonText: 'Manage Applications'
+        actionButtonText: 'Manage Applications',
       });
     }
 
     // For non-managers, check application permissions
     return this.checkApplicationPermission(opportunity, context).pipe(
-      switchMap(applicationResult => {
+      switchMap((applicationResult) => {
         return this.hasExistingApplication(opportunity.id).pipe(
-          map(hasApplication => {
+          map((hasApplication) => {
             if (context.userType !== 'sme') {
               return {
                 canView: true,
@@ -302,7 +356,7 @@ export class FundingPermissionsService {
                 hasExistingApplication: false,
                 actionButtonType: 'none' as const,
                 actionButtonText: 'View Details',
-                disabledReason: 'Only SME users can apply for funding'
+                disabledReason: 'Only SME users can apply for funding',
               };
             }
 
@@ -314,7 +368,7 @@ export class FundingPermissionsService {
                 canEdit: false,
                 hasExistingApplication: true,
                 actionButtonType: 'view-application' as const,
-                actionButtonText: 'View Application'
+                actionButtonText: 'View Application',
               };
             }
 
@@ -326,7 +380,7 @@ export class FundingPermissionsService {
                 canEdit: false,
                 hasExistingApplication: false,
                 actionButtonType: 'apply' as const,
-                actionButtonText: 'Apply Now'
+                actionButtonText: 'Apply Now',
               };
             }
 
@@ -338,7 +392,7 @@ export class FundingPermissionsService {
               hasExistingApplication: false,
               actionButtonType: 'none' as const,
               actionButtonText: 'Not Eligible',
-              disabledReason: applicationResult.reason
+              disabledReason: applicationResult.reason,
             };
           })
         );
@@ -352,7 +406,10 @@ export class FundingPermissionsService {
   ): PermissionResult {
     // Only funders can manage opportunities
     if (context.userType !== 'funder') {
-      return { allowed: false, reason: 'Only funders can manage opportunities' };
+      return {
+        allowed: false,
+        reason: 'Only funders can manage opportunities',
+      };
     }
 
     // Check if user created the opportunity
@@ -361,7 +418,10 @@ export class FundingPermissionsService {
     }
 
     // Check if user belongs to the same organization
-    if (context.organizationId && opportunity.organizationId === context.organizationId) {
+    if (
+      context.organizationId &&
+      opportunity.organizationId === context.organizationId
+    ) {
       return { allowed: true };
     }
 
@@ -372,7 +432,10 @@ export class FundingPermissionsService {
       }
     }
 
-    return { allowed: false, reason: 'You do not have permission to manage this opportunity' };
+    return {
+      allowed: false,
+      reason: 'You do not have permission to manage this opportunity',
+    };
   }
 
   private checkApplicationPermission(
@@ -381,27 +444,47 @@ export class FundingPermissionsService {
   ): Observable<PermissionResult> {
     // Only SMEs can apply
     if (context.userType !== 'sme') {
-      return of({ allowed: false, reason: 'Only SME users can apply for funding' });
+      return of({
+        allowed: false,
+        reason: 'Only SME users can apply for funding',
+      });
     }
 
     // Users cannot apply to their own organization's opportunities
-    if (context.organizationId && opportunity.organizationId === context.organizationId) {
-      return of({ allowed: false, reason: 'You cannot apply to your own organization\'s opportunities' });
+    if (
+      context.organizationId &&
+      opportunity.organizationId === context.organizationId
+    ) {
+      return of({
+        allowed: false,
+        reason: "You cannot apply to your own organization's opportunities",
+      });
     }
 
     // Check if opportunity is still active and accepting applications
     if (opportunity.status !== 'active') {
-      return of({ allowed: false, reason: 'This opportunity is no longer active' });
+      return of({
+        allowed: false,
+        reason: 'This opportunity is no longer active',
+      });
     }
 
     // Check application limits
-    if (opportunity.maxApplications && 
-        opportunity.currentApplications >= opportunity.maxApplications) {
-      return of({ allowed: false, reason: 'This opportunity has reached its application limit' });
+    if (
+      opportunity.maxApplications &&
+      opportunity.currentApplications >= opportunity.maxApplications
+    ) {
+      return of({
+        allowed: false,
+        reason: 'This opportunity has reached its application limit',
+      });
     }
 
     // Check application deadline
-    if (opportunity.applicationDeadline && new Date() > opportunity.applicationDeadline) {
+    if (
+      opportunity.applicationDeadline &&
+      new Date() > opportunity.applicationDeadline
+    ) {
       return of({ allowed: false, reason: 'Application deadline has passed' });
     }
 
@@ -416,7 +499,7 @@ export class FundingPermissionsService {
       canEdit: false,
       hasExistingApplication: false,
       actionButtonType: 'login',
-      actionButtonText: 'Login to Apply'
+      actionButtonText: 'Login to Apply',
     };
   }
 
@@ -429,7 +512,7 @@ export class FundingPermissionsService {
       hasExistingApplication: false,
       actionButtonType: 'none',
       actionButtonText: 'Error',
-      disabledReason: 'Unable to determine permissions'
+      disabledReason: 'Unable to determine permissions',
     };
   }
 
@@ -448,10 +531,10 @@ export class FundingPermissionsService {
     }
 
     return from(this.loadUserApplicationsFromDatabase(context.id)).pipe(
-      tap(applications => {
+      tap((applications) => {
         this.userApplicationsSubject.next(applications);
       }),
-      catchError(error => {
+      catchError((error) => {
         console.error('Failed to refresh user applications:', error);
         return of([]);
       })
@@ -463,7 +546,12 @@ export class FundingPermissionsService {
    */
   addUserApplication(application: UserApplicationStatus) {
     const current = this.userApplicationsSubject.value;
-    const updated = [...current.filter(app => app.opportunityId !== application.opportunityId), application];
+    const updated = [
+      ...current.filter(
+        (app) => app.opportunityId !== application.opportunityId
+      ),
+      application,
+    ];
     this.userApplicationsSubject.next(updated);
   }
 
@@ -472,8 +560,8 @@ export class FundingPermissionsService {
    */
   updateApplicationStatus(opportunityId: string, status: string) {
     const current = this.userApplicationsSubject.value;
-    const updated = current.map(app => 
-      app.opportunityId === opportunityId 
+    const updated = current.map((app) =>
+      app.opportunityId === opportunityId
         ? { ...app, status: status as any }
         : app
     );
@@ -494,7 +582,8 @@ export class FundingPermissionsService {
         .single();
 
       if (error) {
-        if (error.code === 'PGRST116') { // No rows found
+        if (error.code === 'PGRST116') {
+          // No rows found
           return null;
         }
         throw error;
@@ -507,19 +596,23 @@ export class FundingPermissionsService {
     }
   }
 
-  private async loadUserApplicationsFromDatabase(userId: string): Promise<UserApplicationStatus[]> {
+  private async loadUserApplicationsFromDatabase(
+    userId: string
+  ): Promise<UserApplicationStatus[]> {
     try {
       // Check if applications table exists and user can access it
       console.log('Loading applications for user:', userId);
-      
+
       const { data, error } = await this.supabaseService
         .from('applications')
-        .select(`
+        .select(
+          `
           id,
           opportunity_id,
           status,
           created_at
-        `)
+        `
+        )
         .eq('applicant_id', userId)
         .limit(10); // Add limit to prevent large queries
 
@@ -529,15 +622,17 @@ export class FundingPermissionsService {
         return [];
       }
 
-      return (data || []).map(app => ({
+      return (data || []).map((app) => ({
         opportunityId: app.opportunity_id,
         applicationId: app.id,
         status: app.status,
-        appliedAt: new Date(app.created_at)
+        appliedAt: new Date(app.created_at),
       }));
-
     } catch (error) {
-      console.warn('Error loading user applications (table might not exist):', error);
+      console.warn(
+        'Error loading user applications (table might not exist):',
+        error
+      );
       // Return empty array for graceful degradation
       return [];
     }
@@ -571,14 +666,21 @@ export class FundingPermissionsService {
   /**
    * Check if user has permission for a specific action
    */
-  hasPermission(action: 'apply' | 'manage' | 'view', opportunity: FundingOpportunity): Observable<boolean> {
+  hasPermission(
+    action: 'apply' | 'manage' | 'view',
+    opportunity: FundingOpportunity
+  ): Observable<boolean> {
     return this.getOpportunityPermissions(opportunity).pipe(
-      map(permissions => {
+      map((permissions) => {
         switch (action) {
-          case 'apply': return permissions.canApply;
-          case 'manage': return permissions.canManage;
-          case 'view': return permissions.canView;
-          default: return false;
+          case 'apply':
+            return permissions.canApply;
+          case 'manage':
+            return permissions.canManage;
+          case 'view':
+            return permissions.canView;
+          default:
+            return false;
         }
       })
     );
@@ -616,7 +718,7 @@ export class FundingPermissionsService {
       isSME: this.isUserType('sme'),
       isFunder: this.isUserType('funder'),
       userOrganizationId: this.userOrganizationId(),
-      applicationCount: this.userApplications().length
+      applicationCount: this.userApplications().length,
     };
   }
 }

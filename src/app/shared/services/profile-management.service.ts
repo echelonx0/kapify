@@ -14,7 +14,7 @@ import {
   OrganizationUser,
 } from '../models/user.models';
 
-import { AuthService } from '../../auth/production.auth.service';
+import { AuthService } from '../../auth/services/production.auth.service';
 import { SharedSupabaseService } from './shared-supabase.service';
 
 export interface UserProfileData {

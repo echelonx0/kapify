@@ -12,7 +12,7 @@ import {
 } from '../services/admin.service';
 
 import { OrganizationVerificationComponent } from '../organization-verification/organization-verification.component';
-import { AuthService } from 'src/app/auth/production.auth.service';
+import { AuthService } from 'src/app/auth/services/production.auth.service';
 import { UiButtonComponent, UiCardComponent } from 'src/app/shared/components';
 import {
   DropdownComponent,

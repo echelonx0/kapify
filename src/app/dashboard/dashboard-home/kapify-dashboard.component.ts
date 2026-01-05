@@ -42,7 +42,7 @@ import {
 } from '../components/right-panel.component';
 
 import { ProfileManagementService } from 'src/app/shared/services/profile-management.service';
-import { AuthService } from 'src/app/auth/production.auth.service';
+import { AuthService } from 'src/app/auth/services/production.auth.service';
 import { FunderOnboardingService } from 'src/app/funder/services/funder-onboarding.service';
 import { OpportunityManagementService } from 'src/app/funder/services/opportunity-management.service';
 import {

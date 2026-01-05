@@ -1,6 +1,6 @@
 // src/app/profile/services/sme-profile-steps.service.ts - UPDATED: business-strategy excluded from completion
 import { Injectable, signal, computed, inject } from '@angular/core';
-import { AuthService } from 'src/app/auth/production.auth.service';
+import { AuthService } from 'src/app/auth/services/production.auth.service';
 import { ProfileStep } from '../../applications/models/profile.models';
 import { FundingProfileBackendService } from '../../services/funding-profile-backend.service';
 import { ProfileDataTransformerService } from '../../services/profile-data-transformer.service';

@@ -42,7 +42,7 @@ import {
   OrgCreditService,
   OrgWallet,
 } from 'src/app/shared/services/credit.service';
-import { AuthService } from 'src/app/auth/production.auth.service';
+import { AuthService } from 'src/app/auth/services/production.auth.service';
 
 // Cost model
 const ANALYSIS_COST_CREDITS = 5000;

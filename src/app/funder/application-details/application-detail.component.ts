@@ -19,7 +19,7 @@ import { FundingProfileBackendService } from 'src/app/SMEs/services/funding-prof
 import { ProfileDataTransformerService } from 'src/app/SMEs/services/profile-data-transformer.service';
 import { ProfileData } from 'src/app/SMEs/profile/models/funding.models';
 import { FundingApplication } from 'src/app/SMEs/models/application.models';
-import { AuthService } from 'src/app/auth/production.auth.service';
+import { AuthService } from 'src/app/auth/services/production.auth.service';
 
 import { ApplicationMetricsComponent } from './components/application-metrics/application-metrics.component';
 import { ApplicationHeaderComponent } from '../components/application-header/application-header.component';

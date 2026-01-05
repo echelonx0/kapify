@@ -10,7 +10,7 @@ import {
 } from '@angular/router';
 
 import { Observable } from 'rxjs';
-import { AuthService } from 'src/app/auth/production.auth.service';
+import { AuthService } from 'src/app/auth/services/production.auth.service';
 import {
   GlobalProfileValidationService,
   CompletionRequirement,

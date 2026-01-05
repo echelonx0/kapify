@@ -2,7 +2,7 @@
 import { Component, input } from '@angular/core';
 import { Router } from '@angular/router';
 import { UiButtonComponent } from './ui-button.component';
-import { AuthService } from 'src/app/auth/production.auth.service';
+import { AuthService } from 'src/app/auth/services/production.auth.service';
 
 @Component({
   selector: 'app-navigation',

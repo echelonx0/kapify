@@ -16,7 +16,7 @@ import {
   Clock,
   DollarSign,
 } from 'lucide-angular';
-import { AuthService } from 'src/app/auth/production.auth.service';
+import { AuthService } from 'src/app/auth/services/production.auth.service';
 import {
   OrgCreditService,
   OrgWallet,

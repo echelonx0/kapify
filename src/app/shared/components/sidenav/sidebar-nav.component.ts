@@ -25,7 +25,7 @@ import {
   Axis3d,
   BinaryIcon,
 } from 'lucide-angular';
-import { AuthService } from 'src/app/auth/production.auth.service';
+import { AuthService } from 'src/app/auth/services/production.auth.service';
 import { ProfileManagementService } from '../../services/profile-management.service';
 
 interface NavItem {
@@ -117,7 +117,7 @@ export class SidebarNavComponent implements OnInit {
       label: 'Funding Opportunities',
       icon: DollarSign,
       route: '/funding/opportunities',
-      userTypes: ['sme', 'funder'],
+      userTypes: ['sme'],
     },
 
     {

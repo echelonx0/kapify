@@ -2,8 +2,8 @@
 import { Injectable, signal, inject } from '@angular/core';
 import { Observable, from, throwError, BehaviorSubject } from 'rxjs';
 import { tap, catchError, map } from 'rxjs/operators';
-import { v4 as uuidv4 } from 'uuid';  // ADD THIS IMPORT at top
-import { AuthService } from '../../auth/production.auth.service'; 
+import { v4 as uuidv4 } from 'uuid'; // ADD THIS IMPORT at top
+import { AuthService } from '../../auth/services/production.auth.service';
 import { SharedSupabaseService } from '../../shared/services/shared-supabase.service';
 
 // Management-specific interfaces
@@ -57,26 +57,26 @@ interface StatusUpdateRequest {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class OpportunityManagementService {
-   private supabaseService = inject(SharedSupabaseService); // Use shared service
+  private supabaseService = inject(SharedSupabaseService); // Use shared service
   private authService = inject(AuthService);
 
   // State management
   isLoading = signal(false);
   error = signal<string | null>(null);
-  
+
   // Reactive data streams
   private opportunitiesSubject = new BehaviorSubject<OpportunityListItem[]>([]);
   opportunities$ = this.opportunitiesSubject.asObservable();
-  
-  private analyticsSubject = new BehaviorSubject<OpportunityAnalytics | null>(null);
+
+  private analyticsSubject = new BehaviorSubject<OpportunityAnalytics | null>(
+    null
+  );
   analytics$ = this.analyticsSubject.asObservable();
 
-  constructor() {
-  
-  }
+  constructor() {}
 
   // ===============================
   // OPPORTUNITY LIST MANAGEMENT
@@ -85,7 +85,7 @@ export class OpportunityManagementService {
   loadUserOpportunities(): Observable<OpportunityListItem[]> {
     this.isLoading.set(true);
     this.error.set(null);
-    
+
     const currentAuth = this.authService.user();
     if (!currentAuth) {
       this.isLoading.set(false);
@@ -93,11 +93,11 @@ export class OpportunityManagementService {
     }
 
     return from(this.fetchUserOpportunities(currentAuth.id)).pipe(
-      tap(opportunities => {
+      tap((opportunities) => {
         this.opportunitiesSubject.next(opportunities);
         this.isLoading.set(false);
       }),
-      catchError(error => {
+      catchError((error) => {
         this.error.set('Failed to load opportunities');
         this.isLoading.set(false);
         console.error('Load opportunities error:', error);
@@ -106,15 +106,19 @@ export class OpportunityManagementService {
     );
   }
 
-  private async fetchUserOpportunities(userId: string): Promise<OpportunityListItem[]> {
+  private async fetchUserOpportunities(
+    userId: string
+  ): Promise<OpportunityListItem[]> {
     try {
       const { data, error } = await this.supabaseService
         .from('funding_opportunities')
-        .select(`
+        .select(
+          `
           id, title, status, funding_type, total_available, amount_deployed,
           current_applications, max_applications, view_count, application_count,
           conversion_rate, published_at, updated_at
-        `)
+        `
+        )
         .eq('created_by', userId)
         .order('updated_at', { ascending: false });
 
@@ -122,7 +126,7 @@ export class OpportunityManagementService {
         throw new Error(`Failed to fetch opportunities: ${error.message}`);
       }
 
-      return (data || []).map(item => ({
+      return (data || []).map((item) => ({
         id: item.id,
         title: item.title,
         status: item.status,
@@ -134,8 +138,10 @@ export class OpportunityManagementService {
         viewCount: item.view_count,
         applicationCount: item.application_count,
         conversionRate: item.conversion_rate || 0,
-        publishedAt: item.published_at ? new Date(item.published_at) : undefined,
-        updatedAt: new Date(item.updated_at)
+        publishedAt: item.published_at
+          ? new Date(item.published_at)
+          : undefined,
+        updatedAt: new Date(item.updated_at),
       }));
     } catch (error) {
       console.error('Error fetching user opportunities:', error);
@@ -146,157 +152,160 @@ export class OpportunityManagementService {
   // ===============================
   // STATUS MANAGEMENT
   // ===============================
- 
 
-deleteOpportunity(opportunityId: string): Observable<{success: boolean, message: string}> {
-  const currentAuth = this.authService.user();
-  if (!currentAuth) {
-    return throwError(() => new Error('User not authenticated'));
-  }
+  deleteOpportunity(
+    opportunityId: string
+  ): Observable<{ success: boolean; message: string }> {
+    const currentAuth = this.authService.user();
+    if (!currentAuth) {
+      return throwError(() => new Error('User not authenticated'));
+    }
 
-  return from(this.performDeletion(opportunityId, currentAuth.id)).pipe(
-    tap(result => {
-      if (result.success) {
-        this.loadUserOpportunities().subscribe();
-      }
-    }),
-    catchError(error => {
-      this.error.set('Failed to delete opportunity');
-      console.error('Deletion error:', error);
-      return throwError(() => error);
-    })
-  );
-}
-
-private async performDeletion(
-  opportunityId: string, 
-  userId: string
-): Promise<{success: boolean, message: string}> {
-  try {
-    // Soft delete - maintains audit trail
-    const { error } = await this.supabaseService
-      .from('funding_opportunities')
-      .delete({ 
-       
+    return from(this.performDeletion(opportunityId, currentAuth.id)).pipe(
+      tap((result) => {
+        if (result.success) {
+          this.loadUserOpportunities().subscribe();
+        }
+      }),
+      catchError((error) => {
+        this.error.set('Failed to delete opportunity');
+        console.error('Deletion error:', error);
+        return throwError(() => error);
       })
-      .eq('id', opportunityId)
-      .eq('created_by', userId);
-
-    if (error) {
-      throw new Error(`Failed to delete opportunity: ${error.message}`);
-    }
-
-    await this.logActivity({
-      id: `activity_${opportunityId}_delete`,
-      type: 'status_change',
-      opportunityId,
-      opportunityTitle: opportunityId,
-      description: 'Opportunity was deleted',
-      timestamp: new Date()
-    });
-
-    return {
-      success: true,
-      message: 'Opportunity deleted successfully'
-    };
-  } catch (error) {
-    console.error('Error deleting opportunity:', error);
-    throw error;
-  }
-}
-
-// REPLACE the existing duplicateOpportunity method with this:
-
-duplicateOpportunity(opportunityId: string): Observable<{success: boolean, newOpportunityId: string}> {
-  const currentAuth = this.authService.user();
-  if (!currentAuth) {
-    return throwError(() => new Error('User not authenticated'));
+    );
   }
 
-  return from(this.performDuplication(opportunityId, currentAuth.id)).pipe(
-    tap(result => {
-      if (result.success) {
-        this.loadUserOpportunities().subscribe();
+  private async performDeletion(
+    opportunityId: string,
+    userId: string
+  ): Promise<{ success: boolean; message: string }> {
+    try {
+      // Soft delete - maintains audit trail
+      const { error } = await this.supabaseService
+        .from('funding_opportunities')
+        .delete({})
+        .eq('id', opportunityId)
+        .eq('created_by', userId);
+
+      if (error) {
+        throw new Error(`Failed to delete opportunity: ${error.message}`);
       }
-    }),
-    catchError(error => {
-      this.error.set('Failed to duplicate opportunity');
-      console.error('Duplication error:', error);
-      return throwError(() => error);
-    })
-  );
-}
 
-private async performDuplication(
-  opportunityId: string, 
-  userId: string
-): Promise<{success: boolean, newOpportunityId: string}> {
-  try {
-    // Fetch original opportunity
-    const { data: original, error: fetchError } = await this.supabaseService
-      .from('funding_opportunities')
-      .select('*')
-      .eq('id', opportunityId)
-      .eq('created_by', userId)
-      .single();
+      await this.logActivity({
+        id: `activity_${opportunityId}_delete`,
+        type: 'status_change',
+        opportunityId,
+        opportunityTitle: opportunityId,
+        description: 'Opportunity was deleted',
+        timestamp: new Date(),
+      });
 
-    if (fetchError || !original) {
-      throw new Error('Opportunity not found or access denied');
+      return {
+        success: true,
+        message: 'Opportunity deleted successfully',
+      };
+    } catch (error) {
+      console.error('Error deleting opportunity:', error);
+      throw error;
     }
-
-    // Create duplicate with proper UUID
-    const newId = uuidv4();  // Use proper UUID generation
-    const duplicateData = {
-      ...original,
-      id: newId,
-      title: `${original.title} (Copy)`,
-      status: 'draft',
-      published_at: null,
-      closed_at: null,
-      current_applications: 0,
-      view_count: 0,
-      application_count: 0,
-      conversion_rate: 0,
-      amount_committed: 0,
-      amount_deployed: 0,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
-    };
-
-    const { error: insertError } = await this.supabaseService
-      .from('funding_opportunities')
-      .insert(duplicateData);
-
-    if (insertError) {
-      throw new Error(`Failed to create duplicate: ${insertError.message}`);
-    }
-
-    return {
-      success: true,
-      newOpportunityId: newId
-    };
-  } catch (error) {
-    console.error('Error duplicating opportunity:', error);
-    throw error;
   }
-}
 
-  updateOpportunityStatus(request: StatusUpdateRequest): Observable<{success: boolean, message: string}> {
+  // REPLACE the existing duplicateOpportunity method with this:
+
+  duplicateOpportunity(
+    opportunityId: string
+  ): Observable<{ success: boolean; newOpportunityId: string }> {
+    const currentAuth = this.authService.user();
+    if (!currentAuth) {
+      return throwError(() => new Error('User not authenticated'));
+    }
+
+    return from(this.performDuplication(opportunityId, currentAuth.id)).pipe(
+      tap((result) => {
+        if (result.success) {
+          this.loadUserOpportunities().subscribe();
+        }
+      }),
+      catchError((error) => {
+        this.error.set('Failed to duplicate opportunity');
+        console.error('Duplication error:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  private async performDuplication(
+    opportunityId: string,
+    userId: string
+  ): Promise<{ success: boolean; newOpportunityId: string }> {
+    try {
+      // Fetch original opportunity
+      const { data: original, error: fetchError } = await this.supabaseService
+        .from('funding_opportunities')
+        .select('*')
+        .eq('id', opportunityId)
+        .eq('created_by', userId)
+        .single();
+
+      if (fetchError || !original) {
+        throw new Error('Opportunity not found or access denied');
+      }
+
+      // Create duplicate with proper UUID
+      const newId = uuidv4(); // Use proper UUID generation
+      const duplicateData = {
+        ...original,
+        id: newId,
+        title: `${original.title} (Copy)`,
+        status: 'draft',
+        published_at: null,
+        closed_at: null,
+        current_applications: 0,
+        view_count: 0,
+        application_count: 0,
+        conversion_rate: 0,
+        amount_committed: 0,
+        amount_deployed: 0,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      };
+
+      const { error: insertError } = await this.supabaseService
+        .from('funding_opportunities')
+        .insert(duplicateData);
+
+      if (insertError) {
+        throw new Error(`Failed to create duplicate: ${insertError.message}`);
+      }
+
+      return {
+        success: true,
+        newOpportunityId: newId,
+      };
+    } catch (error) {
+      console.error('Error duplicating opportunity:', error);
+      throw error;
+    }
+  }
+
+  updateOpportunityStatus(
+    request: StatusUpdateRequest
+  ): Observable<{ success: boolean; message: string }> {
     this.error.set(null);
-    
+
     const currentAuth = this.authService.user();
     if (!currentAuth) {
       return throwError(() => new Error('User not authenticated'));
     }
 
     return from(this.performStatusUpdate(request, currentAuth.id)).pipe(
-      tap(response => {
+      tap((response) => {
         if (response.success) {
           // Refresh opportunities list
           this.loadUserOpportunities().subscribe();
         }
       }),
-      catchError(error => {
+      catchError((error) => {
         this.error.set('Failed to update opportunity status');
         console.error('Status update error:', error);
         return throwError(() => error);
@@ -305,17 +314,20 @@ private async performDuplication(
   }
 
   private async performStatusUpdate(
-    request: StatusUpdateRequest, 
+    request: StatusUpdateRequest,
     userId: string
-  ): Promise<{success: boolean, message: string}> {
+  ): Promise<{ success: boolean; message: string }> {
     try {
       const updateData: any = {
         status: request.newStatus,
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
       };
 
       // Set appropriate timestamps based on status
-      if (request.newStatus === 'active' && !await this.isAlreadyPublished(request.opportunityId)) {
+      if (
+        request.newStatus === 'active' &&
+        !(await this.isAlreadyPublished(request.opportunityId))
+      ) {
         updateData.published_at = new Date().toISOString();
       } else if (request.newStatus === 'closed') {
         updateData.closed_at = new Date().toISOString();
@@ -340,19 +352,24 @@ private async performDuplication(
         opportunityTitle: data.title,
         description: `Status changed to ${request.newStatus}`,
         timestamp: new Date(),
-        metadata: { oldStatus: data.status, newStatus: request.newStatus, reason: request.reason },
-        id: ''
+        metadata: {
+          oldStatus: data.status,
+          newStatus: request.newStatus,
+          reason: request.reason,
+        },
+        id: '',
       });
 
       const statusMessages = {
         active: 'Opportunity is now active and visible to SMEs',
-        paused: 'Opportunity has been paused and is no longer accepting applications',
-        closed: 'Opportunity has been closed permanently'
+        paused:
+          'Opportunity has been paused and is no longer accepting applications',
+        closed: 'Opportunity has been closed permanently',
       };
 
       return {
         success: true,
-        message: statusMessages[request.newStatus]
+        message: statusMessages[request.newStatus],
       };
     } catch (error) {
       console.error('Error updating opportunity status:', error);
@@ -366,7 +383,7 @@ private async performDuplication(
       .select('published_at')
       .eq('id', opportunityId)
       .single();
-    
+
     return !!data?.published_at;
   }
 
@@ -374,10 +391,12 @@ private async performDuplication(
   // ANALYTICS & REPORTING
   // ===============================
 
-  loadAnalytics(timeframe: 'week' | 'month' | 'quarter' | 'year' = 'month'): Observable<OpportunityAnalytics> {
+  loadAnalytics(
+    timeframe: 'week' | 'month' | 'quarter' | 'year' = 'month'
+  ): Observable<OpportunityAnalytics> {
     this.isLoading.set(true);
     this.error.set(null);
-    
+
     const currentAuth = this.authService.user();
     if (!currentAuth) {
       this.isLoading.set(false);
@@ -385,11 +404,11 @@ private async performDuplication(
     }
 
     return from(this.fetchAnalytics(currentAuth.id, timeframe)).pipe(
-      tap(analytics => {
+      tap((analytics) => {
         this.analyticsSubject.next(analytics);
         this.isLoading.set(false);
       }),
-      catchError(error => {
+      catchError((error) => {
         this.error.set('Failed to load analytics');
         this.isLoading.set(false);
         console.error('Analytics load error:', error);
@@ -398,12 +417,15 @@ private async performDuplication(
     );
   }
 
-  private async fetchAnalytics(userId: string, timeframe: string): Promise<OpportunityAnalytics> {
+  private async fetchAnalytics(
+    userId: string,
+    timeframe: string
+  ): Promise<OpportunityAnalytics> {
     try {
       // Calculate date range
       const endDate = new Date();
       const startDate = new Date();
-      
+
       switch (timeframe) {
         case 'week':
           startDate.setDate(endDate.getDate() - 7);
@@ -420,44 +442,62 @@ private async performDuplication(
       }
 
       // Fetch opportunity summary data
-      const { data: opportunities, error: oppsError } = await this.supabaseService
-        .from('funding_opportunities')
-        .select('*')
-        .eq('created_by', userId)
-        .gte('created_at', startDate.toISOString());
+      const { data: opportunities, error: oppsError } =
+        await this.supabaseService
+          .from('funding_opportunities')
+          .select('*')
+          .eq('created_by', userId)
+          .gte('created_at', startDate.toISOString());
 
       if (oppsError) {
         throw new Error(`Failed to fetch analytics: ${oppsError.message}`);
       }
 
-      const totalViews = opportunities?.reduce((sum, opp) => sum + (opp.view_count || 0), 0) || 0;
-      const totalApplications = opportunities?.reduce((sum, opp) => sum + (opp.application_count || 0), 0) || 0;
-      const averageConversionRate = opportunities?.length > 0 
-        ? opportunities.reduce((sum, opp) => sum + (opp.conversion_rate || 0), 0) / opportunities.length 
-        : 0;
+      const totalViews =
+        opportunities?.reduce((sum, opp) => sum + (opp.view_count || 0), 0) ||
+        0;
+      const totalApplications =
+        opportunities?.reduce(
+          (sum, opp) => sum + (opp.application_count || 0),
+          0
+        ) || 0;
+      const averageConversionRate =
+        opportunities?.length > 0
+          ? opportunities.reduce(
+              (sum, opp) => sum + (opp.conversion_rate || 0),
+              0
+            ) / opportunities.length
+          : 0;
 
       // Get top performing opportunities
-      const topPerforming = opportunities
-        ?.sort((a, b) => (b.conversion_rate || 0) - (a.conversion_rate || 0))
-        .slice(0, 5)
-        .map(opp => ({
-          id: opp.id,
-          title: opp.title,
-          status: opp.status,
-          fundingType: opp.funding_type,
-          totalAvailable: opp.total_available,
-          amountDeployed: opp.amount_deployed,
-          currentApplications: opp.current_applications,
-          maxApplications: opp.max_applications,
-          viewCount: opp.view_count,
-          applicationCount: opp.application_count,
-          conversionRate: opp.conversion_rate || 0,
-          publishedAt: opp.published_at ? new Date(opp.published_at) : undefined,
-          updatedAt: new Date(opp.updated_at)
-        })) || [];
+      const topPerforming =
+        opportunities
+          ?.sort((a, b) => (b.conversion_rate || 0) - (a.conversion_rate || 0))
+          .slice(0, 5)
+          .map((opp) => ({
+            id: opp.id,
+            title: opp.title,
+            status: opp.status,
+            fundingType: opp.funding_type,
+            totalAvailable: opp.total_available,
+            amountDeployed: opp.amount_deployed,
+            currentApplications: opp.current_applications,
+            maxApplications: opp.max_applications,
+            viewCount: opp.view_count,
+            applicationCount: opp.application_count,
+            conversionRate: opp.conversion_rate || 0,
+            publishedAt: opp.published_at
+              ? new Date(opp.published_at)
+              : undefined,
+            updatedAt: new Date(opp.updated_at),
+          })) || [];
 
       // Generate monthly stats (simplified for now)
-      const monthlyStats = await this.generateMonthlyStats(userId, startDate, endDate);
+      const monthlyStats = await this.generateMonthlyStats(
+        userId,
+        startDate,
+        endDate
+      );
 
       // Fetch recent activity
       const recentActivity = await this.fetchRecentActivity(userId);
@@ -468,7 +508,7 @@ private async performDuplication(
         averageConversionRate,
         topPerformingOpportunities: topPerforming,
         recentActivity,
-        monthlyStats
+        monthlyStats,
       };
     } catch (error) {
       console.error('Error fetching analytics:', error);
@@ -476,16 +516,24 @@ private async performDuplication(
     }
   }
 
-  private async generateMonthlyStats(userId: string, startDate: Date, endDate: Date): Promise<MonthlyStats[]> {
+  private async generateMonthlyStats(
+    userId: string,
+    startDate: Date,
+    endDate: Date
+  ): Promise<MonthlyStats[]> {
     // This is a simplified implementation
     // In a real application, you might want to use a separate analytics table
     const months = [];
     const current = new Date(startDate);
-    
+
     while (current <= endDate) {
       const monthStart = new Date(current.getFullYear(), current.getMonth(), 1);
-      const monthEnd = new Date(current.getFullYear(), current.getMonth() + 1, 0);
-      
+      const monthEnd = new Date(
+        current.getFullYear(),
+        current.getMonth() + 1,
+        0
+      );
+
       const { data } = await this.supabaseService
         .from('funding_opportunities')
         .select('view_count, application_count, amount_deployed')
@@ -494,16 +542,28 @@ private async performDuplication(
         .lte('created_at', monthEnd.toISOString());
 
       const monthData = data || [];
-      const views = monthData.reduce((sum, item) => sum + (item.view_count || 0), 0);
-      const applications = monthData.reduce((sum, item) => sum + (item.application_count || 0), 0);
-      const revenue = monthData.reduce((sum, item) => sum + (item.amount_deployed || 0), 0);
+      const views = monthData.reduce(
+        (sum, item) => sum + (item.view_count || 0),
+        0
+      );
+      const applications = monthData.reduce(
+        (sum, item) => sum + (item.application_count || 0),
+        0
+      );
+      const revenue = monthData.reduce(
+        (sum, item) => sum + (item.amount_deployed || 0),
+        0
+      );
 
       months.push({
-        month: current.toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
+        month: current.toLocaleDateString('en-US', {
+          month: 'short',
+          year: 'numeric',
+        }),
         views,
         applications,
         conversions: Math.floor(applications * 0.15), // Simplified conversion calculation
-        revenue
+        revenue,
       });
 
       current.setMonth(current.getMonth() + 1);
@@ -522,14 +582,14 @@ private async performDuplication(
       .order('updated_at', { ascending: false })
       .limit(10);
 
-    return (data || []).map(opp => ({
+    return (data || []).map((opp) => ({
       id: `activity_${opp.id}`,
       type: 'status_change' as const,
       opportunityId: opp.id,
       opportunityTitle: opp.title,
       description: `Opportunity "${opp.title}" was updated`,
       timestamp: new Date(opp.updated_at),
-      metadata: { status: opp.status }
+      metadata: { status: opp.status },
     }));
   }
 
@@ -538,22 +598,24 @@ private async performDuplication(
   // ===============================
 
   bulkUpdateStatus(
-    opportunityIds: string[], 
+    opportunityIds: string[],
     newStatus: 'active' | 'paused' | 'closed'
-  ): Observable<{success: boolean, updated: number, failed: number}> {
+  ): Observable<{ success: boolean; updated: number; failed: number }> {
     const currentAuth = this.authService.user();
     if (!currentAuth) {
       return throwError(() => new Error('User not authenticated'));
     }
 
-    return from(this.performBulkStatusUpdate(opportunityIds, newStatus, currentAuth.id)).pipe(
-      tap(result => {
+    return from(
+      this.performBulkStatusUpdate(opportunityIds, newStatus, currentAuth.id)
+    ).pipe(
+      tap((result) => {
         if (result.success) {
           // Refresh opportunities list
           this.loadUserOpportunities().subscribe();
         }
       }),
-      catchError(error => {
+      catchError((error) => {
         this.error.set('Failed to update opportunities');
         console.error('Bulk update error:', error);
         return throwError(() => error);
@@ -562,16 +624,16 @@ private async performDuplication(
   }
 
   private async performBulkStatusUpdate(
-    opportunityIds: string[], 
-    newStatus: string, 
+    opportunityIds: string[],
+    newStatus: string,
     userId: string
-  ): Promise<{success: boolean, updated: number, failed: number}> {
+  ): Promise<{ success: boolean; updated: number; failed: number }> {
     try {
       const { data, error } = await this.supabaseService
         .from('funding_opportunities')
-        .update({ 
-          status: newStatus, 
-          updated_at: new Date().toISOString() 
+        .update({
+          status: newStatus,
+          updated_at: new Date().toISOString(),
         })
         .in('id', opportunityIds)
         .eq('created_by', userId)
@@ -587,7 +649,7 @@ private async performDuplication(
       return {
         success: true,
         updated,
-        failed
+        failed,
       };
     } catch (error) {
       console.error('Error in bulk status update:', error);
@@ -605,11 +667,13 @@ private async performDuplication(
   }
 
   incrementViewCount(opportunityId: string): Observable<void> {
-    return from(this.supabaseService.rpc('increment_opportunity_views', { 
-      opportunity_id: opportunityId 
-    })).pipe(
+    return from(
+      this.supabaseService.rpc('increment_opportunity_views', {
+        opportunity_id: opportunityId,
+      })
+    ).pipe(
       map(() => void 0),
-      catchError(error => {
+      catchError((error) => {
         console.error('Failed to increment view count:', error);
         return throwError(() => error);
       })

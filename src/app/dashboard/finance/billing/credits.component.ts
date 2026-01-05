@@ -25,7 +25,7 @@ import {
   OrgTransaction,
 } from 'src/app/shared/services/credit.service';
 import { SharedSupabaseService } from 'src/app/shared/services/shared-supabase.service';
-import { AuthService } from 'src/app/auth/production.auth.service';
+import { AuthService } from 'src/app/auth/services/production.auth.service';
 import { PurchaseCreditsModalComponent } from './purchase-credits-modal.component';
 
 @Component({

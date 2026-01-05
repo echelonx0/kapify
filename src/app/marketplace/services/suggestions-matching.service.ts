@@ -1,9 +1,9 @@
 // src/app/marketplace/services/suggestions-matching.service.ts
 import { Injectable, inject } from '@angular/core';
-import { Observable, from, map, catchError, of } from 'rxjs'; 
+import { Observable, from, map, catchError, of } from 'rxjs';
 import { SMEOpportunitiesService } from '../../funding/services/opportunities.service';
 import { FundingProfileSetupService } from '../../SMEs/services/funding-profile-setup.service';
-import { AuthService } from '../../auth/production.auth.service';
+import { AuthService } from '../../auth/services/production.auth.service';
 import { SharedSupabaseService } from '../../shared/services/shared-supabase.service';
 import { FundingOpportunity } from 'src/app/funder/create-opportunity/shared/funding.interfaces';
 
@@ -14,7 +14,7 @@ export interface MatchScore {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class SuggestionsMatchingService {
   private opportunitiesService = inject(SMEOpportunitiesService);
@@ -32,7 +32,7 @@ export class SuggestionsMatchingService {
     excludeApplied: boolean = true
   ): Observable<MatchScore[]> {
     return this.opportunitiesService.opportunities$.pipe(
-      map(opportunities => {
+      map((opportunities) => {
         if (!opportunities || opportunities.length === 0) {
           return [];
         }
@@ -47,7 +47,7 @@ export class SuggestionsMatchingService {
         }
 
         // Score all opportunities
-        const scoredOpportunities = opportunities.map(opp => 
+        const scoredOpportunities = opportunities.map((opp) =>
           this.scoreOpportunity(opp, profileData)
         );
 
@@ -57,7 +57,7 @@ export class SuggestionsMatchingService {
         // Return top N
         return scoredOpportunities.slice(0, maxSuggestions);
       }),
-      catchError(error => {
+      catchError((error) => {
         console.error('Error getting suggestions:', error);
         return of([]);
       })
@@ -85,7 +85,7 @@ export class SuggestionsMatchingService {
             console.error('Error fetching applied opportunities:', error);
             return [];
           }
-          return (data || []).map(app => app.opportunity_id).filter(Boolean);
+          return (data || []).map((app) => app.opportunity_id).filter(Boolean);
         })
     );
   }
@@ -109,29 +109,37 @@ export class SuggestionsMatchingService {
 
     // 1. INDUSTRY MATCH (40 points)
     const userIndustry = companyInfo.industryType?.toLowerCase();
-    const eligibleIndustries = opportunity.eligibilityCriteria?.industries || [];
-    
+    const eligibleIndustries =
+      opportunity.eligibilityCriteria?.industries || [];
+
     if (userIndustry && eligibleIndustries.length > 0) {
       const industryMatch = eligibleIndustries.some(
-        ind => ind.toLowerCase() === userIndustry
+        (ind) => ind.toLowerCase() === userIndustry
       );
-      
+
       if (industryMatch) {
         score += 40;
-        matchReasons.push(`Matches your industry: ${this.formatIndustry(userIndustry)}`);
+        matchReasons.push(
+          `Matches your industry: ${this.formatIndustry(userIndustry)}`
+        );
       }
     }
 
     // 2. FUNDING AMOUNT MATCH (30 points)
-    const requestedAmount = businessStrategy?.fundingRequirements?.totalAmountRequired ||
-                           financialProfile?.monthlyRevenue * 12 || // Annual revenue estimate
-                           0;
+    const requestedAmount =
+      businessStrategy?.fundingRequirements?.totalAmountRequired ||
+      financialProfile?.monthlyRevenue * 12 || // Annual revenue estimate
+      0;
 
     if (requestedAmount > 0) {
       const minInvestment = opportunity.minInvestment || 0;
-      const maxInvestment = opportunity.maxInvestment || Number.MAX_SAFE_INTEGER;
+      const maxInvestment =
+        opportunity.maxInvestment || Number.MAX_SAFE_INTEGER;
 
-      if (requestedAmount >= minInvestment && requestedAmount <= maxInvestment) {
+      if (
+        requestedAmount >= minInvestment &&
+        requestedAmount <= maxInvestment
+      ) {
         score += 30;
         matchReasons.push('Funding amount matches your needs');
       } else if (requestedAmount < minInvestment) {
@@ -146,7 +154,8 @@ export class SuggestionsMatchingService {
 
     // 3. BUSINESS STAGE MATCH (20 points)
     const userYearsOperation = parseInt(companyInfo.operationalYears) || 0;
-    const eligibleStages = opportunity.eligibilityCriteria?.businessStages || [];
+    const eligibleStages =
+      opportunity.eligibilityCriteria?.businessStages || [];
 
     if (eligibleStages.length > 0) {
       let userStage = 'mature';
@@ -161,16 +170,17 @@ export class SuggestionsMatchingService {
 
     // 4. LOCATION MATCH (10 points)
     const userProvince = companyInfo.registeredAddress?.province?.toLowerCase();
-    const geoRestrictions = opportunity.eligibilityCriteria?.geographicRestrictions || [];
+    const geoRestrictions =
+      opportunity.eligibilityCriteria?.geographicRestrictions || [];
 
     if (geoRestrictions.length === 0) {
       // No restrictions = automatic match
       score += 10;
     } else if (userProvince) {
-      const locationMatch = geoRestrictions.some(
-        loc => loc.toLowerCase().includes(userProvince)
+      const locationMatch = geoRestrictions.some((loc) =>
+        loc.toLowerCase().includes(userProvince)
       );
-      
+
       if (locationMatch) {
         score += 10;
         matchReasons.push('Available in your location');
@@ -179,8 +189,9 @@ export class SuggestionsMatchingService {
 
     // BONUS: New opportunity (recent)
     const createdAt = new Date(opportunity.createdAt);
-    const daysSinceCreated = (Date.now() - createdAt.getTime()) / (1000 * 60 * 60 * 24);
-    
+    const daysSinceCreated =
+      (Date.now() - createdAt.getTime()) / (1000 * 60 * 60 * 24);
+
     if (daysSinceCreated <= 7) {
       score += 5;
       matchReasons.push('Recently published');
@@ -200,7 +211,7 @@ export class SuggestionsMatchingService {
     return {
       opportunity,
       score: Math.min(score, 100),
-      matchReasons
+      matchReasons,
     };
   }
 
@@ -213,13 +224,16 @@ export class SuggestionsMatchingService {
     count: number
   ): MatchScore[] {
     return opportunities
-      .sort((a, b) => new Date(b.publishedAt || b.createdAt).getTime() - 
-                      new Date(a.publishedAt || a.createdAt).getTime())
+      .sort(
+        (a, b) =>
+          new Date(b.publishedAt || b.createdAt).getTime() -
+          new Date(a.publishedAt || a.createdAt).getTime()
+      )
       .slice(0, count)
-      .map(opp => ({
+      .map((opp) => ({
         opportunity: opp,
         score: 50, // Neutral score
-        matchReasons: ['Recently published']
+        matchReasons: ['Recently published'],
       }));
   }
 
@@ -227,8 +241,6 @@ export class SuggestionsMatchingService {
    * Format industry name for display
    */
   private formatIndustry(industry: string): string {
-    return industry
-      .replace(/_/g, ' ')
-      .replace(/\b\w/g, l => l.toUpperCase());
+    return industry.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
   }
 }

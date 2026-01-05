@@ -646,7 +646,8 @@ import {
 import { Router, RouterModule, ActivatedRoute } from '@angular/router';
 import { LucideAngularModule } from 'lucide-angular';
 import { Subscription } from 'rxjs';
-import { AuthService, RegisterRequest } from '../production.auth.service';
+import { AuthService } from '../services/production.auth.service';
+import { RegisterRequest } from '../models/auth.models';
 
 interface Slide {
   image: string;

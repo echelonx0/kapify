@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Observable, of, throwError, from } from 'rxjs';
 import { map, catchError, switchMap } from 'rxjs/operators';
-import { AuthService } from 'src/app/auth/production.auth.service';
+import { AuthService } from 'src/app/auth/services/production.auth.service';
 import { SharedSupabaseService } from './shared-supabase.service';
 
 @Injectable({ providedIn: 'root' })

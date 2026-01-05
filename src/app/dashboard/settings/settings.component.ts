@@ -26,7 +26,7 @@ import { OrganizationSettingsService } from '../services/organization-settings.s
 import { ContactDetailsComponent } from './components/contact-details/contact-details.component';
 import { TeamManagementComponent } from './components/team-management/team-management.component';
 // import { BillingCreditsComponent } from '../finance/billing/billing-credits.component';
-import { AuthService } from 'src/app/auth/production.auth.service';
+import { AuthService } from 'src/app/auth/services/production.auth.service';
 import { Router } from '@angular/router';
 import { FundingProfileSetupService } from 'src/app/SMEs/services/funding-profile-setup.service';
 import { AccountComponent } from './components/account/account.component';

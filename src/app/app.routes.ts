@@ -17,6 +17,7 @@ import { AuthGuard } from './core/guards/auth.guard';
 import { GuestGuard } from './core/guards/guest.guard';
 import { ProfileCompletionGuard } from './core/guards/profile-completion.guard';
 import { RoleGuard } from './core/guards/role.guard';
+import { PasswordResetComponent } from './auth/password-reset/password-reset.component';
 
 export const routes: Routes = [
   // Public routes
@@ -68,7 +69,12 @@ export const routes: Routes = [
     title: 'FAQs - Kapify',
   },
 
-  // In your auth routes array:
+  {
+    path: 'passwordreset',
+    component: PasswordResetComponent,
+    canActivate: [GuestGuard], // Allow only unauthenticated users
+    title: 'Reset Password - Kapify',
+  },
   {
     path: 'auth/accept-invitation',
     component: AcceptInvitationComponent,

@@ -4,7 +4,7 @@ import { Observable, from, throwError, of } from 'rxjs';
 import { tap, catchError, switchMap } from 'rxjs/operators';
 import * as XLSX from 'xlsx';
 import Papa from 'papaparse';
-import { AuthService } from 'src/app/auth/production.auth.service';
+import { AuthService } from 'src/app/auth/services/production.auth.service';
 import { SharedSupabaseService } from 'src/app/shared/services/shared-supabase.service';
 import { FunderOnboardingService } from '../../services/funder-onboarding.service';
 

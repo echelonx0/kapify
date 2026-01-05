@@ -12,7 +12,7 @@
           class="w-12 h-12 bg-stone-600 rounded-lg flex items-center justify-center"
         >
           <lucide-icon
-            [img]="FileSpreadsheetIcon"
+            [img]="ViewIcon"
             [size]="24"
             class="text-white"
           ></lucide-icon>
@@ -30,16 +30,20 @@
           (click)="downloadTemplate()"
           class="inline-flex items-center px-6 py-2.5 text-sm font-medium text-white bg-stone-600 rounded-xl hover:bg-stone-700 active:bg-stone-800 transition-colors duration-200"
         >
-          <lucide-icon [img]="ViewIcon" [size]="16" class="mr-2"></lucide-icon>
+          <lucide-icon
+            [img]="DownloadIcon"
+            [size]="16"
+            class="mr-2"
+          ></lucide-icon>
           Download
         </button>
-        <button
+        <!-- <button
           (click)="openExpandedView()"
           class="inline-flex items-center px-6 py-2.5 text-sm font-medium text-white bg-teal-500 rounded-xl hover:bg-teal-600 active:bg-teal-700 transition-colors duration-200"
         >
           <lucide-icon [img]="ViewIcon" [size]="16" class="mr-2"></lucide-icon>
           Explore
-        </button>
+        </button> -->
       </div>
     </div>
   </div>

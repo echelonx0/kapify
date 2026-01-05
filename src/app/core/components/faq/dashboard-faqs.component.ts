@@ -9,7 +9,7 @@ import {
   ArrowLeft,
 } from 'lucide-angular';
 import { Router } from '@angular/router';
-import { AuthService } from 'src/app/auth/production.auth.service';
+import { AuthService } from 'src/app/auth/services/production.auth.service';
 import { FAQService, FAQ } from '../../services/faq.service';
 
 @Component({

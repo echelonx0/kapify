@@ -11,7 +11,7 @@ import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { of, Subject } from 'rxjs';
 import { takeUntil, catchError } from 'rxjs/operators';
-import { AuthService } from 'src/app/auth/production.auth.service';
+import { AuthService } from 'src/app/auth/services/production.auth.service';
 import { SMEOpportunitiesService } from '../../funding/services/opportunities.service';
 import { AdvancedFiltersComponent } from '../components/filters.component';
 import { OpportunitiesGridComponent } from '../components/opportuniy-grid/opportunities-grid.component';

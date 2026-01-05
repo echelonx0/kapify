@@ -22,7 +22,7 @@ import {
 import { UiButtonComponent } from '../../../shared/components/ui-button.component';
 import { UiStatusBadgeComponent } from '../../../shared/components/ui-status-badge.component';
 
-import { AuthService } from '../../../auth/production.auth.service';
+import { AuthService } from '../../../auth/services/production.auth.service';
 import { FundingProfileSetupService } from '../../services/funding-profile-setup.service';
 import { Activity } from '../../../shared/services/database-activity.service';
 

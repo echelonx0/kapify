@@ -19,6 +19,7 @@ import {
   ChartColumn,
   ViewIcon,
   X,
+  DownloadIcon,
 } from 'lucide-angular';
 import { ParsedFinancialData } from 'src/app/SMEs/profile/steps/financial-analysis/utils/excel-parser.service';
 import { FinancialDataTableComponent } from 'src/app/SMEs/profile/steps/financial-analysis/financial-table/financial-data-table.component';
@@ -52,6 +53,7 @@ export class FinancialAnalysisViewerComponent implements OnInit {
   AlertCircleIcon = CircleAlert;
   CheckCircleIcon = CircleCheckBig;
   CloseIcon = X;
+  DownloadIcon = DownloadIcon;
 
   // Computed properties
   hasData = computed(() => {
@@ -73,12 +75,12 @@ export class FinancialAnalysisViewerComponent implements OnInit {
   });
 
   // Reset selectedPeriodIndex to latest when financialAnalysis changes
-  private resetPeriodSelection = effect(() => {
-    const headers = this.columnHeaders();
-    if (headers.length > 0) {
-      this.selectedPeriodIndex.set(headers.length - 1);
-    }
-  });
+  // private resetPeriodSelection = effect(() => {
+  //   const headers = this.columnHeaders();
+  //   if (headers.length > 0) {
+  //     this.selectedPeriodIndex.set(headers.length - 1);
+  //   }
+  // });
 
   // Transformed table data
   incomeStatementSections = computed(() => {
