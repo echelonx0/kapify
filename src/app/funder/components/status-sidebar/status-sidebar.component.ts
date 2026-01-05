@@ -22,7 +22,7 @@ import {
   Check,
 } from 'lucide-angular';
 
-import { AuthService } from '../../../auth/production.auth.service';
+import { AuthService } from '../../../auth/services/production.auth.service';
 
 import { PurchaseCreditsModalComponent } from 'src/app/dashboard/finance/billing/purchase-credits-modal.component';
 import {

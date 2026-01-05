@@ -3,8 +3,8 @@ import { Injectable, inject, signal } from '@angular/core';
 import { Observable, from, throwError, BehaviorSubject } from 'rxjs';
 import { tap, catchError } from 'rxjs/operators';
 
-import { AuthService } from '../../auth/production.auth.service';
 import { SharedSupabaseService } from './shared-supabase.service';
+import { AuthService } from 'src/app/auth/services/production.auth.service';
 
 // Updated Activity interface to match database schema
 export interface Activity {
@@ -19,7 +19,8 @@ export interface Activity {
     | 'application'
     | 'profile'
     | 'document'
-    | 'verification';
+    | 'verification'
+    | 'auth'; // Added auth type
   action: string; // More specific action like 'created', 'updated', 'submitted'
   message: string;
   entityType?: string; // What was acted upon: 'application', 'opportunity', 'profile'
@@ -287,6 +288,36 @@ export class DatabaseActivityService {
       // next: () => console.log(`System activity tracked: ${action}`),
       error: (error) =>
         console.error('Failed to track system activity:', error),
+    });
+  }
+
+  /**
+   * Track authentication-related activities (password reset, login, etc.)
+   * ✅ NEW METHOD - Required by auth-password.service.ts
+   */
+  trackAuthActivity(
+    action:
+      | 'password_reset_requested'
+      | 'password_reset_completed'
+      | 'login'
+      | 'logout'
+      | 'register',
+    message: string,
+    status: 'success' | 'failed' = 'success',
+    metadata?: Record<string, any>
+  ): void {
+    this.createActivity({
+      type: 'system',
+      action,
+      message,
+      status: status === 'success' ? 'completed' : 'failed',
+      metadata: {
+        authAction: action,
+        ...metadata,
+      },
+    }).subscribe({
+      // next: () => console.log(`Auth activity tracked: ${action}`),
+      error: (error) => console.error('Failed to track auth activity:', error),
     });
   }
 
@@ -596,6 +627,7 @@ export class DatabaseActivityService {
       profile: 'Profile',
       document: 'Document',
       verification: 'Verification',
+      auth: 'Authentication',
     };
 
     return typeMap[type] || 'Activity';
@@ -614,6 +646,7 @@ export class DatabaseActivityService {
       profile: 'cyan',
       document: 'yellow',
       verification: 'teal',
+      auth: 'indigo',
     };
 
     return colorMap[type] || 'gray';

@@ -1,21 +1,34 @@
-import { Component, computed } from '@angular/core';
+import { Component, computed, inject } from '@angular/core';
 import { RouterOutlet, Router } from '@angular/router';
 import { SidebarNavComponent } from '../shared/components/sidenav/sidebar-nav.component';
 import { DashboardHeaderComponent } from '../shared/components/header/dashboard-header.component';
+import { OpportunitiesHeaderComponent } from '../marketplace/components/opportunity-header/opportunities-header.component';
 
 @Component({
   selector: 'app-funding',
   standalone: true,
-  imports: [RouterOutlet, SidebarNavComponent, DashboardHeaderComponent],
+  imports: [
+    RouterOutlet,
+    SidebarNavComponent,
+    DashboardHeaderComponent,
+    OpportunitiesHeaderComponent,
+  ],
   template: `
-    <div class="min-h-screen bg-neutral-50">
+    <div class="min-h-screen bg-slate-50">
       <sidebar-nav />
 
       <div class="ml-16">
-        <!-- Sticky Header (hidden on certain routes) -->
-        @if (!isHiddenHeaderRoute()) {
+        <!-- Dashboard Header (hidden on opportunities & create routes) -->
+        @if (!isHiddenDashboardHeader()) {
         <div class="sticky top-0 z-40">
           <dashboard-header />
+        </div>
+        }
+
+        <!-- Opportunities Header (shown ONLY on /opportunities route) -->
+        @if (isOpportunitiesRoute()) {
+        <div class=" top-0 z-40 bg-white mt-4">
+          <app-opportunities-header />
         </div>
         }
 
@@ -28,70 +41,27 @@ import { DashboardHeaderComponent } from '../shared/components/header/dashboard-
   `,
 })
 export class FundingComponent {
-  constructor(private router: Router) {}
+  private router = inject(Router);
 
   /**
-   * Hide header on create-opportunity and onboarding routes
+   * Determine if we're on opportunities route (show opportunities header)
    */
-  isHiddenHeaderRoute = computed(() => {
+  isOpportunitiesRoute = computed(() => {
+    const url = this.router.url;
+    return url.startsWith('/funding/opportunities') && !url.includes('/edit');
+  });
+
+  /**
+   * Hide dashboard header on create-opportunity, opportunities, and onboarding routes
+   */
+  isHiddenDashboardHeader = computed(() => {
     const url = this.router.url;
 
     return (
       url.startsWith('/funding/create-opportunity') ||
+      url.startsWith('/funding/opportunities') ||
       (url.startsWith('/funding/opportunities/') && url.includes('/edit')) ||
       url.startsWith('/funder/onboarding')
     );
   });
 }
-
-// import { Component, computed, inject } from '@angular/core';
-// import { RouterOutlet, Router } from '@angular/router';
-// import { SidebarNavComponent } from '../shared/components/sidenav/sidebar-nav.component';
-// import { DashboardHeaderComponent } from '../shared/components/header/dashboard-header.component';
-// import { ResponsiveLayoutComponent } from '../shared/responsive-layout.component';
-
-// @Component({
-//   selector: 'app-funding',
-//   standalone: true,
-//   imports: [
-//     RouterOutlet,
-//     SidebarNavComponent,
-//     DashboardHeaderComponent,
-//     ResponsiveLayoutComponent,
-//   ],
-//   template: `
-//     <app-responsive-layout [showHeader]="!isHiddenHeaderRoute()">
-//       <!-- SIDEBAR SLOT -->
-//       <div app-sidebar>
-//         <sidebar-nav />
-//       </div>
-
-//       <!-- HEADER SLOT -->
-//       <div app-header>
-//         <dashboard-header />
-//       </div>
-
-//       <!-- CONTENT SLOT -->
-//       <div app-content>
-//         <router-outlet />
-//       </div>
-//     </app-responsive-layout>
-//   `,
-// })
-// export class FundingComponent {
-//   private router = inject(Router);
-
-//   /**
-//    * Hide header on create-opportunity and onboarding routes
-//    * These routes use full-height forms with their own headers
-//    */
-//   isHiddenHeaderRoute = computed(() => {
-//     const url = this.router.url;
-
-//     return (
-//       url.startsWith('/funding/create-opportunity') ||
-//       (url.startsWith('/funding/opportunities/') && url.includes('/edit')) ||
-//       url.startsWith('/funder/onboarding')
-//     );
-//   });
-// }

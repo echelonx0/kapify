@@ -7,7 +7,7 @@ import {
   Validators,
 } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
-import { AuthService } from '../production.auth.service';
+import { AuthService } from '../services/production.auth.service';
 
 @Component({
   selector: 'app-login',

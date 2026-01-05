@@ -1,7 +1,7 @@
 import { Injectable, signal, inject, computed } from '@angular/core';
 import { Observable, from, throwError, BehaviorSubject, of } from 'rxjs';
 import { tap, catchError, map } from 'rxjs/operators';
-import { AuthService } from 'src/app/auth/production.auth.service';
+import { AuthService } from 'src/app/auth/services/production.auth.service';
 import { SharedSupabaseService } from 'src/app/shared/services/shared-supabase.service';
 
 interface UserRecord {

@@ -44,8 +44,6 @@ export class ApplicationHeaderComponent implements OnInit, OnChanges {
   @Output() back = new EventEmitter<void>();
   @Output() manageStatus = new EventEmitter<void>();
 
-  @Output() showContactModal = new EventEmitter<void>();
-
   private router = inject(Router);
   private analysisResultsService = inject(AnalysisResultsService);
 
@@ -156,17 +154,11 @@ export class ApplicationHeaderComponent implements OnInit, OnChanges {
   }
 
   allApplications() {
-    this.router.navigate(['/funder/dashboard'], {
-      queryParams: { tab: 'applications' },
-    });
+    this.router.navigate(['/funder/applications']);
   }
 
   onManageStatus() {
     this.manageStatus.emit();
-  }
-
-  onShowContact() {
-    this.showContactModal.emit();
   }
 
   /**

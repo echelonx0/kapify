@@ -1,144 +1,77 @@
 <div class="space-y-6">
+  <!-- How Analysis Works Modal -->
+  @if (showHowItWorks()) {
+
+  <app-how-analysis-works
+    (closed)="showHowItWorks.set(false)"
+  ></app-how-analysis-works>
+
+  }
+
   <!-- Cost Confirmation Modal -->
   @if (costConfirmation().isOpen) {
-  <div class="cost-modal">
-    <div class="cost-modal-content">
-      <!-- Header -->
-      <div class="flex items-center justify-between mb-6">
-        <div class="flex items-center gap-3">
-          <div
-            class="w-10 h-10 rounded-lg bg-amber-100 flex items-center justify-center"
-          >
-            <lucide-icon [img]="AlertIcon" [size]="20" class="text-amber-600" />
-          </div>
-          <h2 class="text-xl font-bold text-slate-900">Confirm Analysis</h2>
-        </div>
-        <button
-          (click)="closeCostModal()"
-          class="text-slate-400 hover:text-slate-600 transition-colors"
-        >
-          <lucide-icon [img]="XIcon" [size]="20" />
-        </button>
-      </div>
+  <app-cost-confirmation-modal
+    [wallet]="wallet()!"
+    [costInCents]="5000"
+    [costFormatted]="'R50.00'"
+    (onConfirm)="confirmAnalysis()"
+    (onCancel)="closeCostModal()"
+  ></app-cost-confirmation-modal>
+  }
 
-      <!-- Balance Info -->
-      <div class="p-4 bg-slate-50 rounded-xl mb-6">
-        <div class="text-sm text-slate-600 mb-2">Available Balance</div>
-        <div class="text-3xl font-bold text-slate-900">
-          {{ creditsFormatted() }}
-        </div>
-      </div>
-
-      <!-- Cost Breakdown -->
-      <div class="mb-6 p-4 bg-orange-50 border border-orange-200 rounded-xl">
-        <div class="flex items-start gap-3">
-          <div
-            class="w-8 h-8 rounded-lg bg-orange-100 flex items-center justify-center flex-shrink-0"
-          >
-            <lucide-icon [img]="ZapIcon" [size]="16" class="text-orange-600" />
-          </div>
-          <div>
-            <div class="text-sm font-semibold text-slate-900">
-              Document Analysis
-            </div>
-            <div class="text-2xl font-bold text-orange-600 mt-1">
-              {{ formatCurrency(ANALYSIS_COST_ZAR) }}
-            </div>
-            <div class="text-xs text-slate-600 mt-2">
-              AI-powered analysis with market intelligence
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- What's Included -->
-      <div class="mb-6 space-y-2">
-        <div class="text-sm font-semibold text-slate-900">What's Included:</div>
-        <div class="space-y-2">
-          <div class="flex items-center gap-2 text-sm text-slate-700">
-            <div class="w-1.5 h-1.5 bg-green-500 rounded-full"></div>
-            Investment score & success probability
-          </div>
-          <div class="flex items-center gap-2 text-sm text-slate-700">
-            <div class="w-1.5 h-1.5 bg-green-500 rounded-full"></div>
-            Real-time market intelligence
-          </div>
-          <div class="flex items-center gap-2 text-sm text-slate-700">
-            <div class="w-1.5 h-1.5 bg-green-500 rounded-full"></div>
-            Risk assessment & recommendations
-          </div>
-          <div class="flex items-center gap-2 text-sm text-slate-700">
-            <div class="w-1.5 h-1.5 bg-green-500 rounded-full"></div>
-            Downloadable report
-          </div>
-        </div>
-      </div>
-
-      <!-- Buttons -->
-      <div class="flex gap-3">
-        <button
-          (click)="closeCostModal()"
-          class="flex-1 px-4 py-2.5 bg-slate-100 text-slate-900 rounded-xl font-medium hover:bg-slate-200 transition-colors"
-        >
-          Cancel
-        </button>
-        <button
-          (click)="confirmAnalysis()"
-          class="flex-1 px-4 py-2.5 bg-teal-500 text-white rounded-xl font-medium hover:bg-teal-600 transition-colors"
-        >
-          Proceed to Analysis
-        </button>
-      </div>
+  <!-- Error State -->
+  @if (hasError()) {
+  <div class="p-8 text-center">
+    <div
+      class="w-16 h-16 bg-red-100 rounded-2xl mx-auto mb-4 flex items-center justify-center"
+    >
+      <lucide-icon [img]="XCircleIcon" [size]="32" class="text-red-600" />
+    </div>
+    <h4 class="text-lg font-semibold text-slate-900 mb-2">Analysis Failed</h4>
+    <p class="text-slate-600 mb-6">{{ errorMessage() }}</p>
+    <div class="space-x-4">
+      <ui-button variant="outline" (click)="resetAnalysis()">
+        Try Again
+      </ui-button>
     </div>
   </div>
   }
 
-  <!-- Credits Header -->
-  <div
-    class="mb-6 flex items-center justify-between p-4 bg-white rounded-xl border border-slate-200"
-  >
-    <div class="flex items-center gap-2">
-      <lucide-icon [img]="ZapIcon" [size]="20" class="text-amber-600" />
-      <span class="text-sm text-slate-600">Available Balance:</span>
-      <span class="font-bold text-lg text-slate-900">{{
-        creditsFormatted()
-      }}</span>
-    </div>
-    <span class="text-xs text-slate-500"
-      >{{ formatCurrency(ANALYSIS_COST_ZAR) }} per analysis</span
-    >
-  </div>
-
   <!-- Main Card -->
-  <div
-    class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden"
-  >
-    <!-- Header -->
+  <div class="bg-white border border-slate-200 rounded-2xl overflow-hidden">
+    <!-- Header with "How It Works" Button -->
     <div
-      class="px-6 py-4 bg-gradient-to-r from-purple-50 to-indigo-50 border-b border-gray-200"
+      class="p-4 bg-slate-900 text-slate-100 border border-slate-700/60 bg-[radial-gradient(circle_at_1px_1px,rgba(255,255,255,0.04)_1px,transparent_0)] bg-[length:16px_16px]"
     >
-      <div class="flex items-center justify-between">
-        <div class="flex items-center space-x-3">
-          <div
-            class="w-10 h-10 bg-gradient-to-br from-purple-600 to-indigo-600 rounded-xl flex items-center justify-center"
-          >
-            <lucide-icon [img]="SparklesIcon" [size]="20" class="text-white" />
-          </div>
-          <div>
-            <h3 class="text-lg font-semibold text-gray-900">
-              Rapid Proposal Evaluator
-            </h3>
-            <p class="text-sm text-gray-600">
-              Upload and analyze business proposals with market intelligence
-            </p>
-          </div>
+      <div class="flex items-start justify-between gap-4">
+        <div>
+          <p class="mt-3 text-sm text-slate-300">
+            This is a pay-as-you-go service.
+            <span class="text-white font-semibold">
+              {{ creditsFormatted() }}
+            </span>
+            available.
+            <span class="text-slate-400">
+              {{ formatCurrency(ANALYSIS_COST_ZAR) }} per analysis.
+            </span>
+          </p>
+          <p class="mt-2 text-xs text-slate-400">
+            Additional credits can be purchased at any time.
+          </p>
         </div>
-        @if (analysisResult()) {
-        <ui-button variant="outline" size="sm" (click)="resetAnalysis()">
-          <lucide-icon [img]="UploadIcon" [size]="16" class="mr-2" />
-          New Analysis
-        </ui-button>
-        }
+        <!-- Info Button -->
+        <button
+          (click)="showHowItWorks.set(true)"
+          class="flex items-center gap-2 px-3 py-2 rounded-lg bg-slate-800/50 hover:bg-slate-700/50 transition-colors duration-200 flex-shrink-0"
+          title="Learn how the analysis works"
+        >
+          <lucide-icon
+            [img]="InfoIcon"
+            [size]="16"
+            class="text-slate-300"
+          ></lucide-icon>
+          <span class="text-xs font-medium text-slate-300">How it works</span>
+        </button>
       </div>
     </div>
 
@@ -147,9 +80,11 @@
     <div class="p-8">
       <!-- Drag & Drop Area -->
       <div
-        class="relative border-2 border-dashed border-gray-300 rounded-xl p-8 text-center hover:border-purple-400 transition-colors cursor-pointer"
-        [class.border-purple-400]="isDragOver()"
-        [class.bg-purple-50]="isDragOver()"
+        class="relative border-2 border-dashed rounded-2xl p-8 text-center transition-all duration-200 cursor-pointer"
+        [class.border-teal-400]="isDragOver()"
+        [class.bg-teal-30]="isDragOver()"
+        [class.border-slate-300]="!isDragOver()"
+        [class.bg-slate-30]="!isDragOver()"
         (dragover)="onDragOver($event)"
         (dragleave)="onDragLeave($event)"
         (drop)="onDrop($event)"
@@ -165,82 +100,28 @@
 
         <div class="space-y-4">
           <div
-            class="w-16 h-16 bg-gray-100 rounded-2xl mx-auto flex items-center justify-center"
+            class="w-16 h-16 bg-teal-100 rounded-2xl mx-auto flex items-center justify-center"
           >
             <lucide-icon
               [img]="FileTextIcon"
               [size]="32"
-              class="text-gray-400"
+              class="text-teal-600"
             />
           </div>
 
           <div>
-            <h4 class="text-lg font-semibold text-gray-900 mb-2">
-              Upload Business Proposal
+            <h4 class="text-base font-semibold text-slate-900 mb-2">
+              Evaluate a Business Proposal
             </h4>
-            <p class="text-gray-600 mb-4">
-              Drop your PDF here or click to browse. Get instant AI analysis
-              with market intelligence.
+            <p class="text-slate-600 text-sm mb-4 leading-relaxed">
+              Drop a file here or click to browse. Get instant AI analysis with
+              market intelligence. We take your profile and evaluate it
+              alongside the global benchmark for your sector.
             </p>
-            <div class="text-sm text-gray-500">
-              Supported format: PDF (max 10MB)
+            <div class="text-sm text-slate-500">
+              Supported format: PDF (max 15MB)
             </div>
           </div>
-        </div>
-      </div>
-
-      <!-- Analysis Features Grid -->
-      <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-8">
-        <div class="text-center p-4 bg-gray-50 rounded-lg">
-          <div
-            class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center mx-auto mb-2"
-          >
-            <lucide-icon [img]="TargetIcon" [size]="16" class="text-blue-600" />
-          </div>
-          <div class="text-sm font-medium text-gray-900">Investment Score</div>
-          <div class="text-xs text-gray-600">AI-powered assessment</div>
-        </div>
-
-        <div class="text-center p-4 bg-gray-50 rounded-lg">
-          <div
-            class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center mx-auto mb-2"
-          >
-            <lucide-icon [img]="GlobeIcon" [size]="16" class="text-green-600" />
-          </div>
-          <div class="text-sm font-medium text-gray-900">
-            Market Intelligence
-          </div>
-          <div class="text-xs text-gray-600">Real-time research</div>
-        </div>
-
-        <div class="text-center p-4 bg-gray-50 rounded-lg">
-          <div
-            class="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center mx-auto mb-2"
-          >
-            <lucide-icon
-              [img]="TrendingUpIcon"
-              [size]="16"
-              class="text-purple-600"
-            />
-          </div>
-          <div class="text-sm font-medium text-gray-900">
-            Competitive Analysis
-          </div>
-          <div class="text-xs text-gray-600">Position assessment</div>
-        </div>
-
-        <div class="text-center p-4 bg-gray-50 rounded-lg">
-          <div
-            class="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center mx-auto mb-2"
-          >
-            <lucide-icon
-              [img]="AlertTriangleIcon"
-              [size]="16"
-              class="text-orange-600"
-            />
-          </div>
-          <div class="text-sm font-medium text-gray-900">Risk Assessment</div>
-          <div class="text-xs text-gray-600">Comprehensive flags</div>
         </div>
       </div>
     </div>
@@ -251,156 +132,100 @@
     <div class="p-8">
       <div class="text-center mb-8">
         <div
-          class="w-16 h-16 bg-purple-100 rounded-2xl mx-auto mb-4 flex items-center justify-center"
+          class="w-16 h-16 bg-teal-100 rounded-2xl mx-auto mb-4 flex items-center justify-center"
         >
           <lucide-icon
             [img]="Loader2Icon"
             [size]="32"
-            class="text-purple-600 animate-spin"
+            class="text-teal-600 animate-spin"
           />
         </div>
-        <h4 class="text-lg font-semibold text-gray-900 mb-2">
+        <h4 class="text-lg font-semibold text-slate-900 mb-2">
           Analyzing Document
         </h4>
-        <p class="text-gray-600">
+        <p class="text-slate-600">
           AI is processing your document and gathering market intelligence...
         </p>
       </div>
 
-      <!-- Processing Timeline -->
-      <div class="space-y-4 max-w-md mx-auto">
-        @for (status of processingStatuses(); track status.stage) {
-        <div class="flex items-center space-x-3">
-          <div class="flex-shrink-0">
-            @if (status.completed) {
-            <div
-              class="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center"
-            >
-              <lucide-icon
-                [img]="CheckCircleIcon"
-                [size]="14"
-                class="text-white"
-              />
-            </div>
-            } @else if (status.active) {
-            <div
-              class="w-6 h-6 bg-purple-500 rounded-full flex items-center justify-center"
-            >
-              <lucide-icon
-                [img]="Loader2Icon"
-                [size]="14"
-                class="text-white animate-spin"
-              />
-            </div>
-            } @else {
-            <div class="w-6 h-6 bg-gray-300 rounded-full"></div>
-            }
-          </div>
-          <div class="flex-1">
-            <div
-              class="text-sm font-medium"
-              [class.text-gray-900]="status.completed || status.active"
-              [class.text-gray-500]="!status.completed && !status.active"
-            >
-              {{ status.label }}
-            </div>
-            @if (status.active && status.details) {
-            <div class="text-xs text-gray-600">{{ status.details }}</div>
-            }
-          </div>
-        </div>
-        }
-      </div>
-    </div>
-    }
-
-    <!-- Error State -->
-    @if (hasError()) {
-    <div class="p-8 text-center">
-      <div
-        class="w-16 h-16 bg-red-100 rounded-2xl mx-auto mb-4 flex items-center justify-center"
-      >
-        <lucide-icon [img]="XCircleIcon" [size]="32" class="text-red-600" />
-      </div>
-      <h4 class="text-lg font-semibold text-gray-900 mb-2">Analysis Failed</h4>
-      <p class="text-gray-600 mb-6">{{ errorMessage() }}</p>
-      <div class="space-x-4">
-        <ui-button variant="outline" (click)="resetAnalysis()"
-          >Try Again</ui-button
-        >
-      </div>
+      <!-- Processing Timeline Component -->
+      <app-processing-timeline
+        [stages]="processingStatuses()"
+      ></app-processing-timeline>
     </div>
     }
 
     <!-- Analysis Results -->
     @if (analysisResult() && !isProcessing()) {
-    <div class="divide-y divide-gray-100">
+    <div class="divide-y divide-slate-100">
       <!-- Executive Summary -->
       <div class="p-6">
         <div class="flex items-center justify-between mb-6">
-          <h4 class="text-lg font-semibold text-gray-900">Executive Summary</h4>
+          <h4 class="text-lg font-bold text-slate-900">Executive Summary</h4>
           <div class="flex items-center space-x-2">
-            <div class="text-sm text-gray-500">Confidence:</div>
-            <div class="text-sm font-semibold text-gray-900">
+            <div class="text-sm text-slate-600">Confidence:</div>
+            <div class="text-sm font-semibold text-slate-900">
               {{ analysisResult()!.confidence }}%
             </div>
           </div>
         </div>
 
         <!-- Key Metrics Grid -->
-        <div class="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
           <!-- Investment Score -->
           <div
-            class="text-center p-4 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg border border-blue-100"
+            class="text-center p-4 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl border border-blue-200/50"
           >
             <div class="text-3xl font-bold text-blue-600 mb-1">
               {{ analysisResult()!.matchScore }}%
             </div>
-            <div class="text-sm font-medium text-blue-900">
-              Investment Score
+            <div class="text-xs font-semibold text-blue-900">
+              Investability Score
             </div>
           </div>
 
           <!-- Success Probability -->
           <div
-            class="text-center p-4 bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg border border-green-100"
+            class="text-center p-4 bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl border border-green-200/50"
           >
             <div class="text-3xl font-bold text-green-600 mb-1">
               {{ analysisResult()!.successProbability }}%
             </div>
-            <div class="text-sm font-medium text-green-900">
+            <div class="text-xs font-semibold text-green-900">
               Success Probability
             </div>
           </div>
 
           <!-- Market Timing -->
           <div
-            class="text-center p-4 rounded-lg border"
+            class="text-center p-4 rounded-2xl border"
             [class]="getTimingClasses(analysisResult()!.marketTimingInsight)"
           >
-            <div class="text-sm font-bold uppercase tracking-wide mb-1">
+            <div class="text-xs font-bold uppercase tracking-wide mb-1">
               {{ analysisResult()!.marketTimingInsight }}
             </div>
-            <div class="text-sm font-medium">Market Timing</div>
+            <div class="text-xs font-semibold">Market Timing</div>
           </div>
 
           <!-- Competitive Position -->
           <div
-            class="text-center p-4 rounded-lg border"
+            class="text-center p-4 rounded-2xl border"
             [class]="
               getPositionClasses(analysisResult()!.competitivePositioning)
             "
           >
-            <div class="text-sm font-bold uppercase tracking-wide mb-1">
+            <div class="text-xs font-bold uppercase tracking-wide mb-1">
               {{ analysisResult()!.competitivePositioning }}
             </div>
-            <div class="text-sm font-medium">Competitive Position</div>
+            <div class="text-xs font-semibold">Competitive Position</div>
           </div>
         </div>
 
         <!-- Market Intelligence Summary -->
         @if (analysisResult()!.marketIntelligence) {
-        <div class="bg-purple-50 border border-purple-200 rounded-lg p-4 mb-6">
+        <div
+          class="bg-gradient-to-br from-purple-50 to-pink-50 border border-purple-200/50 rounded-2xl p-4 mb-6"
+        >
           <div class="flex items-center space-x-2 mb-3">
             <lucide-icon
               [img]="GlobeIcon"
@@ -450,12 +275,14 @@
       @if (analysisResult()!.hiddenGemIndicators.length ||
       analysisResult()!.contrarianSignals.length) {
       <div class="p-6">
-        <h4 class="text-lg font-semibold text-gray-900 mb-4">
+        <h4 class="text-lg font-bold text-slate-900 mb-4">
           Investment Intelligence
         </h4>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           @if (analysisResult()!.hiddenGemIndicators.length) {
-          <div class="bg-emerald-50 border border-emerald-200 rounded-lg p-4">
+          <div
+            class="bg-emerald-50 border border-emerald-200/50 rounded-2xl p-4"
+          >
             <div class="flex items-center space-x-2 mb-3">
               <lucide-icon
                 [img]="EyeIcon"
@@ -479,7 +306,7 @@
             </div>
           </div>
           } @if (analysisResult()!.contrarianSignals.length) {
-          <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <div class="bg-blue-50 border border-blue-200/50 rounded-2xl p-4">
             <div class="flex items-center space-x-2 mb-3">
               <lucide-icon
                 [img]="TrendingUpIcon"
@@ -509,7 +336,9 @@
       <div class="p-6">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <!-- Strengths -->
-          <div class="bg-green-50 border-l-4 border-green-400 p-4 rounded-r-lg">
+          <div
+            class="bg-green-50 border-l-4 border-green-400 rounded-r-2xl p-4"
+          >
             <div class="flex items-center space-x-2 mb-3">
               <lucide-icon
                 [img]="CheckCircleIcon"
@@ -532,7 +361,7 @@
 
           <!-- Improvement Areas -->
           <div
-            class="bg-orange-50 border-l-4 border-orange-400 p-4 rounded-r-lg"
+            class="bg-orange-50 border-l-4 border-orange-400 rounded-r-2xl p-4"
           >
             <div class="flex items-center space-x-2 mb-3">
               <lucide-icon
@@ -559,13 +388,11 @@
       <!-- Risk Factors -->
       @if (analysisResult()!.riskFactors.length) {
       <div class="p-6">
-        <h4 class="text-lg font-semibold text-gray-900 mb-4">
-          Risk Assessment
-        </h4>
+        <h4 class="text-lg font-bold text-slate-900 mb-4">Risk Assessment</h4>
         <div class="space-y-3">
           @for (risk of analysisResult()!.riskFactors; track risk.factor) {
           <div
-            class="flex items-start space-x-3 p-4 bg-gray-50 rounded-lg border border-gray-200"
+            class="flex items-start space-x-3 p-4 bg-slate-50 rounded-2xl border border-slate-200/50"
           >
             <div class="flex-shrink-0 mt-0.5">
               <div [class]="getRiskSeverityBadge(risk.severity)">
@@ -573,10 +400,10 @@
               </div>
             </div>
             <div class="flex-1">
-              <div class="font-semibold text-gray-900 mb-1">
+              <div class="font-semibold text-slate-900 mb-1">
                 {{ risk.factor }}
               </div>
-              <div class="text-sm text-gray-700">{{ risk.impact }}</div>
+              <div class="text-sm text-slate-700">{{ risk.impact }}</div>
             </div>
           </div>
           }
@@ -587,7 +414,7 @@
       <!-- Market Intelligence Details -->
       @if (analysisResult()!.marketIntelligence) {
       <div class="p-6">
-        <h4 class="text-lg font-semibold text-gray-900 mb-4">
+        <h4 class="text-lg font-bold text-slate-900 mb-4">
           Market Intelligence
         </h4>
 
@@ -595,7 +422,7 @@
           <!-- Market Trends -->
           @if (analysisResult()!.marketIntelligence.trends.length) {
           <div>
-            <h5 class="font-semibold text-gray-900 mb-3">Current Trends</h5>
+            <h5 class="font-semibold text-slate-900 mb-3">Current Trends</h5>
             <div class="space-y-2">
               @for (trend of analysisResult()!.marketIntelligence.trends; track
               trend) {
@@ -605,7 +432,7 @@
                   [size]="14"
                   class="text-blue-500 mt-0.5 flex-shrink-0"
                 />
-                <span class="text-gray-700">{{ trend }}</span>
+                <span class="text-slate-700">{{ trend }}</span>
               </div>
               }
             </div>
@@ -615,7 +442,7 @@
           <!-- Competitor Activity -->
           @if (analysisResult()!.marketIntelligence.competitorActivity.length) {
           <div>
-            <h5 class="font-semibold text-gray-900 mb-3">
+            <h5 class="font-semibold text-slate-900 mb-3">
               Competitor Activity
             </h5>
             <div class="space-y-2">
@@ -628,7 +455,7 @@
                   [size]="14"
                   class="text-purple-500 mt-0.5 flex-shrink-0"
                 />
-                <span class="text-gray-700">{{ activity }}</span>
+                <span class="text-slate-700">{{ activity }}</span>
               </div>
               }
             </div>
@@ -638,7 +465,7 @@
           <!-- Timing Insights -->
           @if (analysisResult()!.marketIntelligence.timingInsights.length) {
           <div>
-            <h5 class="font-semibold text-gray-900 mb-3">Market Timing</h5>
+            <h5 class="font-semibold text-slate-900 mb-3">Market Timing</h5>
             <div class="space-y-2">
               @for (insight of
               analysisResult()!.marketIntelligence.timingInsights; track
@@ -649,7 +476,7 @@
                   [size]="14"
                   class="text-green-500 mt-0.5 flex-shrink-0"
                 />
-                <span class="text-gray-700">{{ insight }}</span>
+                <span class="text-slate-700">{{ insight }}</span>
               </div>
               }
             </div>
@@ -659,7 +486,7 @@
           <!-- Investment Opportunities -->
           @if (analysisResult()!.marketIntelligence.opportunities.length) {
           <div>
-            <h5 class="font-semibold text-gray-900 mb-3">
+            <h5 class="font-semibold text-slate-900 mb-3">
               Investment Opportunities
             </h5>
             <div class="space-y-3">
@@ -667,7 +494,7 @@
               analysisResult()!.marketIntelligence.opportunities; track
               opportunity.opportunity) {
               <div
-                class="bg-emerald-50 border border-emerald-200 rounded-lg p-3"
+                class="bg-emerald-50 border border-emerald-200/50 rounded-2xl p-3"
               >
                 <div class="font-medium text-emerald-900 mb-1">
                   {{ opportunity.opportunity }}
@@ -689,23 +516,21 @@
 
       <!-- Recommendations -->
       <div class="p-6">
-        <h4 class="text-lg font-semibold text-gray-900 mb-4">
+        <h4 class="text-lg font-bold text-slate-900 mb-4">
           Strategic Recommendations
         </h4>
         <div class="space-y-3">
           @for (recommendation of analysisResult()!.recommendations; track
-          recommendation) {
+          recommendation; let i = $index) {
           <div
-            class="flex items-start space-x-3 p-4 bg-blue-50 border border-blue-200 rounded-lg"
+            class="flex items-start space-x-3 p-4 bg-teal-50 border border-teal-200/50 rounded-2xl"
           >
             <div
-              class="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5"
+              class="w-6 h-6 bg-teal-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5"
             >
-              <span class="text-xs font-bold text-blue-600">{{
-                $index + 1
-              }}</span>
+              <span class="text-xs font-bold text-teal-600">{{ i + 1 }}</span>
             </div>
-            <span class="text-blue-800 font-medium">{{ recommendation }}</span>
+            <span class="text-teal-900 font-medium">{{ recommendation }}</span>
           </div>
           }
         </div>
@@ -714,18 +539,16 @@
       <!-- Sources & Research -->
       @if (analysisResult()!.sources.length ||
       analysisResult()!.searchQueries.length) {
-      <div class="p-6 bg-gray-50">
-        <h4 class="text-lg font-semibold text-gray-900 mb-4">
-          Research Sources
-        </h4>
+      <div class="p-6 bg-slate-50/50">
+        <h4 class="text-lg font-bold text-slate-900 mb-4">Research Sources</h4>
 
         @if (analysisResult()!.searchQueries.length) {
         <div class="mb-4">
-          <h5 class="font-medium text-gray-700 mb-2">Search Queries Used</h5>
+          <h5 class="font-medium text-slate-900 mb-2">Search Queries Used</h5>
           <div class="flex flex-wrap gap-2">
             @for (query of analysisResult()!.searchQueries; track query) {
             <span
-              class="px-2 py-1 bg-gray-200 text-gray-700 text-xs rounded-md"
+              class="px-2.5 py-1 bg-slate-200 text-slate-700 text-xs rounded-lg font-medium"
               >{{ query }}</span
             >
             }
@@ -733,7 +556,7 @@
         </div>
         } @if (analysisResult()!.sources.length) {
         <div>
-          <h5 class="font-medium text-gray-700 mb-2">Information Sources</h5>
+          <h5 class="font-medium text-slate-900 mb-2">Information Sources</h5>
           <div class="space-y-2">
             @for (source of analysisResult()!.sources.slice(0, 5); track
             source.title) {
@@ -741,14 +564,14 @@
               <lucide-icon
                 [img]="GlobeIcon"
                 [size]="12"
-                class="text-gray-400 flex-shrink-0"
+                class="text-slate-400 flex-shrink-0"
               />
-              <span class="text-gray-700 truncate">{{ source.title }}</span>
+              <span class="text-slate-700 truncate">{{ source.title }}</span>
               @if (source.url) {
               <a
                 [href]="source.url"
                 target="_blank"
-                class="text-blue-600 hover:text-blue-800 flex-shrink-0"
+                class="text-teal-600 hover:text-teal-700 flex-shrink-0"
               >
                 <lucide-icon [img]="EyeIcon" [size]="12" />
               </a>
@@ -762,8 +585,10 @@
       }
 
       <!-- Action Footer -->
-      <div class="px-6 py-4 bg-gray-50 flex items-center justify-between">
-        <div class="text-sm text-gray-600">
+      <div
+        class="px-6 py-4 bg-slate-50/50 flex items-center justify-between border-t border-slate-200"
+      >
+        <div class="text-sm text-slate-600">
           Generated {{ getTimeAgo(analysisResult()!.generatedAt) }} with
           {{ analysisResult()!.confidence }}% confidence
         </div>

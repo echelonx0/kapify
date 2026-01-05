@@ -107,7 +107,7 @@ export const profileRoutes: Routes = [
             loadComponent: () =>
               import(
                 './steps/financial-analysis/financial-analysis.component'
-              ).then((c) => c.FinancialAnalysisComponent),
+              ).then((c) => c.SMEFinancialprofileComponent),
             title: 'Financial Profile - Funding Application',
           },
           {

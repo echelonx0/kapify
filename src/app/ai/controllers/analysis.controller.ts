@@ -21,7 +21,7 @@ import {
   InvestmentScore,
   ApplicationIntelligenceService,
 } from '../services/application-intelligence.service';
-import { AuthService } from 'src/app/auth/production.auth.service';
+import { AuthService } from 'src/app/auth/services/production.auth.service';
 
 export interface AnalysisRequest {
   id: string;

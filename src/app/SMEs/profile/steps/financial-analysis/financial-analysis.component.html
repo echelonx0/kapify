@@ -151,18 +151,6 @@
       >
         Notes
       </button>
-
-      <button
-        (click)="switchTab('health-score')"
-        [class]="
-          activeTab() === 'health-score'
-            ? 'border-b-2 border-teal-500 text-teal-600'
-            : 'border-b-2 border-transparent text-slate-600 hover:text-slate-900 hover:border-slate-300'
-        "
-        class="whitespace-nowrap py-4 px-1 font-medium text-sm"
-      >
-        Health Score
-      </button>
     </nav>
   </div>
 
@@ -313,18 +301,7 @@
       (notesSaved)="onNotesSaved($event)"
     />
     }
-
-    <!-- Health Score Tab -->
-    @if (activeTab() === 'health-score') {
-    <app-financial-summary
-      [completionPercentage]="getCompletionPercentage()"
-      [incomeStatementCount]="incomeStatementData().length"
-      [financialRatiosCount]="financialRatiosData().length"
-      [isValidTemplate]="hasValidTemplate()"
-    />
-    }
   </div>
 
   }
-  <!-- End of @else if (hasFinancialData()) -->
 </div>

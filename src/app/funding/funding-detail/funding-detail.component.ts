@@ -20,7 +20,7 @@ import {
 import { Subject, takeUntil } from 'rxjs';
 import { SidebarNavComponent } from 'src/app/shared/components';
 import { SMEOpportunitiesService } from '../services/opportunities.service';
-import { AuthService } from 'src/app/auth/production.auth.service';
+import { AuthService } from 'src/app/auth/services/production.auth.service';
 import { PublicProfileService } from 'src/app/funder/services/public-profile.service';
 import { FundingOpportunity } from 'src/app/funder/create-opportunity/shared/funding.interfaces';
 

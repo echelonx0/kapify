@@ -18,7 +18,7 @@ import {
   DocumentAnalysis,
   ApplicationAnalysis,
   ActivityRecord,
-} from './report.service';
+} from './services/report.service';
 import { FormatDatePipe, FormatTimePipe } from './format-date.pipes';
 
 @Component({
@@ -413,7 +413,9 @@ export class ReportsComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (stats) => this.stats.set(stats),
-        error: () => {}, // Silently fail on stats
+        error: (error) => {
+          console.error(error);
+        },
       });
   }
 

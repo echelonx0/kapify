@@ -23,11 +23,11 @@ import { LucideAngularModule, Zap, TrendingUp, Users } from 'lucide-angular';
           <h1
             class="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 tracking-tight"
           >
-            Kapify Funding
+            Funding
             <span
               class="bg-gradient-to-r from-yellow-300 to-orange-300 bg-clip-text text-transparent"
             >
-              Marketplace
+              Opportunities
             </span>
           </h1>
 

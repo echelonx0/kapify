@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { Observable, from, throwError, of } from 'rxjs';
 import { tap, catchError, map } from 'rxjs/operators';
 import { SharedSupabaseService } from '../../shared/services/shared-supabase.service';
-import { AuthService } from '../../auth/production.auth.service';
+import { AuthService } from '../../auth/services/production.auth.service';
 
 export interface FundingOpportunity {
   id: string;

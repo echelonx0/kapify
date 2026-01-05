@@ -26,7 +26,7 @@ import {
   LinkIcon,
 } from 'lucide-angular';
 import { FundingOpportunity } from 'src/app/funder/create-opportunity/shared/funding.interfaces';
-import { AuthService } from 'src/app/auth/production.auth.service';
+import { AuthService } from 'src/app/auth/services/production.auth.service';
 import { finalize } from 'rxjs';
 import { ShareService } from 'src/app/shared/services/share.service';
 import { BookmarkService } from 'src/app/shared/services/bookmark.service';

@@ -11,7 +11,7 @@ import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { Subject, takeUntil } from 'rxjs';
 import { LucideAngularModule, AlertCircle } from 'lucide-angular';
-import { AuthService } from '../../auth/production.auth.service';
+import { AuthService } from '../../auth/services/production.auth.service';
 import {
   FunderOnboardingService,
   OnboardingState,

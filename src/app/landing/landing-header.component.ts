@@ -10,7 +10,7 @@ import {
   ArrowRight,
 } from 'lucide-angular';
 
-import { AuthService } from 'src/app/auth/production.auth.service';
+import { AuthService } from 'src/app/auth/services/production.auth.service';
 
 interface NavItem {
   label: string;
@@ -292,10 +292,10 @@ export class LandingHeaderComponent {
       label: 'FAQs',
       action: () => this.gotoFAQS(),
     },
-    {
-      label: 'Funding',
-      action: () => this.goToMarketplace(),
-    },
+    // {
+    //   label: 'Funding',
+    //   action: () => this.goToMarketplace(),
+    // },
     // {
     //   label: 'Resources',
     //   action: () => this.scrollToSection('resources'),

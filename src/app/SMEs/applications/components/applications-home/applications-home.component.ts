@@ -634,7 +634,7 @@ import {
   RefreshCw,
   AlertCircle,
 } from 'lucide-angular';
-import { AuthService } from 'src/app/auth/production.auth.service';
+import { AuthService } from 'src/app/auth/services/production.auth.service';
 import { ActivityInboxComponent } from 'src/app/messaging/messaging/messaging.component';
 import { OpportunityApplicationService } from 'src/app/SMEs/services/opportunity-application.service';
 import { SharedSupabaseService } from 'src/app/shared/services/shared-supabase.service';
@@ -642,7 +642,7 @@ import { SharedSupabaseService } from 'src/app/shared/services/shared-supabase.s
 import {
   ApplicationListCardComponent,
   BaseApplicationCard,
-} from 'src/app/shared/components/application-list-card/application-list-card.component';
+} from 'src/app/funder/application-details/components/application-list-card/application-list-card.component';
 import { UserType } from 'src/app/shared/models/user.models';
 import { FundingApplication } from 'src/app/SMEs/models/application.models';
 import { ApplicationManagementService } from 'src/app/SMEs/services/application-management.service';

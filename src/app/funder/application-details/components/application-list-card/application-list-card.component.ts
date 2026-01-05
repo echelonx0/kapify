@@ -20,9 +20,9 @@ import {
   CircleAlert,
   CircleCheckBig,
 } from 'lucide-angular';
-import { UserType } from '../../models/user.models';
+import { UserType } from '../../../../shared/models/user.models';
 import { ApplicationManagementService } from 'src/app/SMEs/services/application-management.service';
-import { ActionModalService } from '../modal/modal.service';
+import { ActionModalService } from '../../../../shared/components/modal/modal.service';
 
 export interface BaseApplicationCard {
   id: string;

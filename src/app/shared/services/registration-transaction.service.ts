@@ -5,8 +5,8 @@ import { tap, catchError } from 'rxjs/operators';
 
 import { SharedSupabaseService } from './shared-supabase.service';
 import { OrganizationSetupService } from './organization-setup.service';
-import { RegisterRequest } from '../../auth/production.auth.service';
 import { User } from '@supabase/supabase-js';
+import { RegisterRequest } from 'src/app/auth/models/auth.models';
 
 export interface RegistrationTransactionState {
   phase:

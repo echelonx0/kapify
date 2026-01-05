@@ -39,7 +39,7 @@ import {
   FinancialTableSection,
 } from './financial-table/financial-data-table.component';
 import { FinancialUploadComponent } from './components/financial-upload/financial-upload.component';
-import { FinancialSummaryComponent } from './components/financial-summary/financial-summary.component';
+
 import { FinancialNotesComponent } from './components/financial-notes/financial-notes.component';
 import { FinancialDataTransformer } from './utils/financial-data.transformer';
 import { FinancialRatioCalculatorService } from './services/financial-ratio-calculator.service';
@@ -66,13 +66,13 @@ type LoadingState = 'idle' | 'initializing' | 'parsing' | 'uploading' | 'ready';
     LucideAngularModule,
     FinancialDataTableComponent,
     FinancialUploadComponent,
-    FinancialSummaryComponent,
+
     FinancialNotesComponent,
     FinancialTableSkeletonComponent,
   ],
   templateUrl: 'financial-analysis.component.html',
 })
-export class FinancialAnalysisComponent implements OnInit, OnDestroy {
+export class SMEFinancialprofileComponent implements OnInit, OnDestroy {
   private profileService = inject(SMEProfileStepsService);
   private documentService = inject(SupabaseDocumentService);
   private excelParser = inject(ExcelFinancialParserService);

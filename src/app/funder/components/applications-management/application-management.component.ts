@@ -24,13 +24,13 @@ import {
 import { UiButtonComponent } from '../../../shared/components';
 import { SidebarNavComponent } from '../../../shared/components/sidenav/sidebar-nav.component';
 import { AIAssistantModalComponent } from '../../../ai/ai-assistant/ai-assistant-modal.component';
-import { AuthService } from '../../../auth/production.auth.service';
+import { AuthService } from '../../../auth/services/production.auth.service';
 import { SMEOpportunitiesService } from '../../../funding/services/opportunities.service';
 import { ApplicationManagementService } from 'src/app/SMEs/services/application-management.service';
 import {
   ApplicationListCardComponent,
   BaseApplicationCard,
-} from 'src/app/shared/components/application-list-card/application-list-card.component';
+} from 'src/app/funder/application-details/components/application-list-card/application-list-card.component';
 import {
   FundingApplication,
   ApplicationStats,

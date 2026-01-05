@@ -1,7 +1,7 @@
 import { Injectable, signal, inject } from '@angular/core';
 import { Observable, from, throwError, BehaviorSubject } from 'rxjs';
 import { tap, catchError, map } from 'rxjs/operators';
-import { AuthService } from '../../auth/production.auth.service';
+import { AuthService } from '../../auth/services/production.auth.service';
 import { SharedSupabaseService } from '../../shared/services/shared-supabase.service';
 import { FundingOpportunity } from 'src/app/funder/create-opportunity/shared/funding.interfaces';
 

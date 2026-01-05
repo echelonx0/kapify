@@ -18,7 +18,7 @@ import {
 } from 'lucide-angular';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
-import { AuthService } from 'src/app/auth/production.auth.service';
+import { AuthService } from 'src/app/auth/services/production.auth.service';
 import {
   SuggestionsMatchingService,
   MatchScore,

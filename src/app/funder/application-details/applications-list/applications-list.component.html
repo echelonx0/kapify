@@ -1,0 +1,613 @@
+<!-- funder-applications.component.html - TABBED INTERFACE WITH EXPANDABLE ROWS -->
+<div class="min-h-screen bg-slate-50">
+  <div class="max-w-7xl mx-auto px-4 lg:px-8 py-8">
+    <!-- Page Header -->
+    <div class="mb-8">
+      <h1 class="text-3xl font-bold text-slate-900 mb-2">
+        Applications Management
+      </h1>
+      <p class="text-sm text-slate-600">
+        Review and manage applications across all funding opportunities
+      </p>
+    </div>
+
+    <!-- Tab Navigation -->
+    <div class="mb-6">
+      <nav
+        class="flex gap-2 bg-white rounded-2xl border border-slate-200 p-2"
+        aria-label="Application Status Tabs"
+      >
+        @for (tab of tabs; track tab.id) {
+        <button
+          type="button"
+          class="flex-1 flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 relative"
+          [class.bg-teal-500]="activeTab() === tab.id && tab.color === 'teal'"
+          [class.text-white]="activeTab() === tab.id"
+          [class.bg-amber-500]="activeTab() === tab.id && tab.color === 'amber'"
+          [class.bg-green-500]="activeTab() === tab.id && tab.color === 'green'"
+          [class.bg-red-500]="activeTab() === tab.id && tab.color === 'red'"
+          [class.text-slate-600]="activeTab() !== tab.id"
+          [class.hover:bg-slate-100]="activeTab() !== tab.id"
+          (click)="switchTab(tab.id)"
+          [attr.aria-selected]="activeTab() === tab.id"
+        >
+          <lucide-icon [img]="tab.icon" [size]="16" />
+          <span class="hidden sm:inline">{{ tab.label }}</span>
+          <span
+            class="inline-flex items-center justify-center w-5 h-5 text-xs font-bold rounded-full"
+            [class.bg-white]="activeTab() === tab.id"
+            [class.text-teal-600]="
+              activeTab() === tab.id && tab.color === 'teal'
+            "
+            [class.text-amber-600]="
+              activeTab() === tab.id && tab.color === 'amber'
+            "
+            [class.text-green-600]="
+              activeTab() === tab.id && tab.color === 'green'
+            "
+            [class.text-red-600]="activeTab() === tab.id && tab.color === 'red'"
+            [class.bg-slate-100]="activeTab() !== tab.id"
+            [class.text-slate-600]="activeTab() !== tab.id"
+          >
+            {{ tabCounts()[tab.id] }}
+          </span>
+        </button>
+        }
+      </nav>
+    </div>
+
+    <!-- Filters and Actions -->
+    <div
+      class="bg-white rounded-2xl border border-slate-200 p-4 mb-6 flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between"
+    >
+      <!-- Left: Search and Filters -->
+      <div class="flex flex-col sm:flex-row gap-3 flex-1 w-full lg:w-auto">
+        <!-- Opportunity Filter -->
+        <select
+          [value]="filters().opportunityId"
+          (change)="updateOpportunityFilter($any($event.target).value)"
+          class="px-4 py-2.5 border border-slate-200 rounded-xl text-slate-900 bg-white focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200"
+        >
+          <option value="">All Opportunities</option>
+          @for (opp of opportunities(); track opp.id) {
+          <option [value]="opp.id">{{ opp.title }}</option>
+          }
+        </select>
+      </div>
+
+      <!-- Right: Actions -->
+      <div class="flex gap-2">
+        <button
+          (click)="clearFilters()"
+          class="bg-slate-100 text-slate-700 font-medium rounded-xl px-4 py-2.5 text-sm hover:bg-slate-200 active:bg-slate-300 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2"
+        >
+          Clear Filters
+        </button>
+        <button
+          (click)="exportApplications()"
+          class="flex items-center gap-2 bg-teal-500 text-white font-medium rounded-xl px-4 py-2.5 text-sm hover:bg-teal-600 active:bg-teal-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2"
+        >
+          <lucide-icon [img]="DownloadIcon" [size]="16" />
+          Export
+        </button>
+      </div>
+    </div>
+
+    <!-- Applications List -->
+    <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden">
+      @if (loading()) {
+      <!-- Loading State -->
+      <div class="p-12 text-center">
+        <div
+          class="animate-spin w-8 h-8 border-2 border-teal-500 border-t-transparent rounded-full mx-auto mb-4"
+        ></div>
+        <p class="text-sm text-slate-600">Loading applications...</p>
+      </div>
+      } @else if (error()) {
+      <!-- Error State -->
+      <div class="p-12 text-center">
+        <div
+          class="w-16 h-16 rounded-2xl bg-red-100 flex items-center justify-center mx-auto mb-4"
+        >
+          <lucide-icon
+            [img]="AlertCircleIcon"
+            [size]="32"
+            class="text-red-600"
+          />
+        </div>
+        <h3 class="text-lg font-bold text-slate-900 mb-2">
+          Failed to Load Applications
+        </h3>
+        <p class="text-sm text-slate-600 mb-6">{{ error() }}</p>
+        <button
+          (click)="refreshApplicationsData()"
+          class="bg-teal-500 text-white font-medium rounded-xl px-6 py-2.5 text-sm hover:bg-teal-600 active:bg-teal-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2"
+        >
+          Try Again
+        </button>
+      </div>
+      } @else if (filteredApplications().length === 0) {
+      <!-- Empty State -->
+      <div class="p-12 text-center">
+        <div
+          class="w-16 h-16 rounded-2xl bg-slate-100 flex items-center justify-center mx-auto mb-4"
+        >
+          <lucide-icon
+            [img]="FileTextIcon"
+            [size]="32"
+            class="text-slate-400"
+          />
+        </div>
+        <h3 class="text-lg font-bold text-slate-900 mb-2">
+          No applications found
+        </h3>
+        <p class="text-sm text-slate-600 mb-6 max-w-md mx-auto">
+          @if (filters().searchQuery || filters().opportunityId) { Try adjusting
+          your filters to see more results. } @else { No applications in this
+          category yet. }
+        </p>
+        @if (filters().searchQuery || filters().opportunityId) {
+        <button
+          (click)="clearFilters()"
+          class="bg-teal-500 text-white font-medium rounded-xl px-6 py-2.5 text-sm hover:bg-teal-600 active:bg-teal-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2"
+        >
+          Clear Filters
+        </button>
+        }
+      </div>
+      } @else {
+      <!-- Applications Table with Expandable Rows -->
+      <div class="overflow-x-auto">
+        <table class="w-full">
+          <thead class="bg-slate-50 border-b border-slate-200">
+            <tr>
+              <th
+                class="px-6 py-3 text-left text-xs font-semibold text-slate-900 uppercase tracking-wider w-12"
+              >
+                <!-- Expand column -->
+              </th>
+              <th
+                class="px-6 py-3 text-left text-xs font-semibold text-slate-900 uppercase tracking-wider cursor-pointer hover:bg-slate-100 transition-colors duration-200"
+                (click)="updateSort('date')"
+              >
+                <div class="flex items-center gap-2">
+                  Date @if (filters().sortBy === 'date') {
+                  <span class="text-teal-600">{{
+                    filters().sortOrder === "asc" ? "↑" : "↓"
+                  }}</span>
+                  }
+                </div>
+              </th>
+              <th
+                class="px-6 py-3 text-left text-xs font-semibold text-slate-900 uppercase tracking-wider cursor-pointer hover:bg-slate-100 transition-colors duration-200"
+                (click)="updateSort('applicant')"
+              >
+                <div class="flex items-center gap-2">
+                  Applicant @if (filters().sortBy === 'applicant') {
+                  <span class="text-teal-600">{{
+                    filters().sortOrder === "asc" ? "↑" : "↓"
+                  }}</span>
+                  }
+                </div>
+              </th>
+              <th
+                class="px-6 py-3 text-left text-xs font-semibold text-slate-900 uppercase tracking-wider"
+              >
+                Opportunity
+              </th>
+              <th
+                class="px-6 py-3 text-left text-xs font-semibold text-slate-900 uppercase tracking-wider cursor-pointer hover:bg-slate-100 transition-colors duration-200"
+                (click)="updateSort('amount')"
+              >
+                <div class="flex items-center gap-2">
+                  Amount @if (filters().sortBy === 'amount') {
+                  <span class="text-teal-600">{{
+                    filters().sortOrder === "asc" ? "↑" : "↓"
+                  }}</span>
+                  }
+                </div>
+              </th>
+              <th
+                class="px-6 py-3 text-left text-xs font-semibold text-slate-900 uppercase tracking-wider"
+              >
+                Stage
+              </th>
+              <th
+                class="px-6 py-3 text-right text-xs font-semibold text-slate-900 uppercase tracking-wider"
+              >
+                Actions
+              </th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-200">
+            @for (application of filteredApplications(); track application.id) {
+            <!-- Main Row -->
+            <tr
+              class="hover:bg-slate-50 transition-colors duration-200"
+              [class.bg-teal-50]="isRowExpanded(application.id)"
+            >
+              <!-- Expand Button -->
+              <td class="px-6 py-4">
+                <button
+                  (click)="toggleRow(application.id); $event.stopPropagation()"
+                  class="p-1 rounded-lg hover:bg-slate-200 transition-colors duration-200"
+                >
+                  <lucide-icon
+                    [img]="ChevronDownIcon"
+                    [size]="20"
+                    class="text-slate-600 transition-transform duration-200"
+                    [class.rotate-180]="isRowExpanded(application.id)"
+                  />
+                </button>
+              </td>
+
+              <!-- Date -->
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-900">
+                {{
+                  formatDate(application.submittedAt || application.createdAt)
+                }}
+              </td>
+
+              <!-- Applicant -->
+              <td class="px-6 py-4">
+                <div class="text-sm font-semibold text-slate-900">
+                  {{ getApplicantName(application) }}
+                </div>
+                <div class="text-sm text-slate-600">
+                  {{ getApplicantCompany(application) }}
+                </div>
+              </td>
+
+              <!-- Opportunity -->
+              <td class="px-6 py-4">
+                <div class="text-sm text-slate-900 max-w-xs truncate">
+                  {{ getOpportunityTitle(application) }}
+                </div>
+              </td>
+
+              <!-- Amount -->
+              <td
+                class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-slate-900"
+              >
+                {{
+                  formatCurrency(extractRequestedAmount(application.formData))
+                }}
+              </td>
+
+              <!-- Stage -->
+              <td class="px-6 py-4 whitespace-nowrap">
+                <span class="text-sm text-slate-600">
+                  {{ formatStage(application.stage) }}
+                </span>
+              </td>
+
+              <!-- Actions -->
+              <td class="px-6 py-4 whitespace-nowrap text-right">
+                <div class="flex items-center justify-end gap-2">
+                  <button
+                    (click)="
+                      viewApplication(application); $event.stopPropagation()
+                    "
+                    class="px-3 py-1.5 bg-teal-500 text-white text-xs font-medium rounded-lg hover:bg-teal-600 active:bg-teal-700 transition-colors duration-200"
+                  >
+                    View
+                  </button>
+
+                  @if (canMoveToReview(application)) {
+                  <button
+                    (click)="
+                      moveToReview(application.id); $event.stopPropagation()
+                    "
+                    class="px-3 py-1.5 bg-amber-50 text-amber-700 text-xs font-medium rounded-lg hover:bg-amber-100 active:bg-amber-200 transition-colors duration-200"
+                  >
+                    Review
+                  </button>
+                  } @if (canApprove(application)) {
+                  <button
+                    (click)="
+                      approveApplication(application.id);
+                      $event.stopPropagation()
+                    "
+                    class="px-3 py-1.5 bg-green-50 text-green-700 text-xs font-medium rounded-lg hover:bg-green-100 active:bg-green-200 transition-colors duration-200"
+                  >
+                    Approve
+                  </button>
+                  } @if (canReject(application)) {
+                  <button
+                    (click)="
+                      rejectApplication(application.id);
+                      $event.stopPropagation()
+                    "
+                    class="px-3 py-1.5 bg-red-50 text-red-700 text-xs font-medium rounded-lg hover:bg-red-100 active:bg-red-200 transition-colors duration-200"
+                  >
+                    Reject
+                  </button>
+                  }
+                </div>
+              </td>
+            </tr>
+
+            <!-- Expanded Details Row -->
+            @if (isRowExpanded(application.id)) {
+            <tr class="bg-slate-50">
+              <td colspan="7" class="px-6 py-6">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <!-- Column 1: Basic Info -->
+                  <div class="space-y-4">
+                    <h4 class="text-sm font-semibold text-slate-900 mb-3">
+                      Application Details
+                    </h4>
+
+                    <!-- Application Number -->
+                    <div class="flex items-start gap-3">
+                      <div
+                        class="w-10 h-10 rounded-lg bg-slate-100 flex items-center justify-center flex-shrink-0"
+                      >
+                        <lucide-icon
+                          [img]="FileTextIcon"
+                          [size]="20"
+                          class="text-slate-600"
+                        />
+                      </div>
+                      <div class="min-w-0 flex-1">
+                        <p
+                          class="text-xs font-semibold text-slate-600 uppercase tracking-wide mb-1"
+                        >
+                          Application #
+                        </p>
+                        <p class="text-sm font-bold text-slate-900 font-mono">
+                          {{ getApplicationNumber(application) }}
+                        </p>
+                      </div>
+                    </div>
+
+                    <!-- Status Badge -->
+                    <div class="flex items-start gap-3">
+                      <div
+                        class="w-10 h-10 rounded-lg bg-slate-100 flex items-center justify-center flex-shrink-0"
+                      >
+                        <lucide-icon
+                          [img]="getStatusIcon(application.status)"
+                          [size]="20"
+                          class="text-slate-600"
+                        />
+                      </div>
+                      <div class="min-w-0 flex-1">
+                        <p
+                          class="text-xs font-semibold text-slate-600 uppercase tracking-wide mb-1"
+                        >
+                          Status
+                        </p>
+                        <span
+                          class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold"
+                          [ngClass]="{
+                            'bg-teal-50 text-teal-700 border border-teal-200/50':
+                              getStatusColor(application.status) === 'teal',
+                            'bg-amber-50 text-amber-700 border border-amber-200/50':
+                              getStatusColor(application.status) === 'amber',
+                            'bg-green-50 text-green-700 border border-green-200/50':
+                              getStatusColor(application.status) === 'green',
+                            'bg-red-50 text-red-700 border border-red-200/50':
+                              getStatusColor(application.status) === 'red',
+                            'bg-slate-50 text-slate-700 border border-slate-200/50':
+                              getStatusColor(application.status) === 'slate'
+                          }"
+                        >
+                          {{ formatStatus(application.status) }}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Column 2: Applicant Info -->
+                  <div class="space-y-4">
+                    <h4 class="text-sm font-semibold text-slate-900 mb-3">
+                      Applicant Information
+                    </h4>
+
+                    <!-- Full Name -->
+                    <div class="flex items-start gap-3">
+                      <div
+                        class="w-10 h-10 rounded-lg bg-teal-100 flex items-center justify-center flex-shrink-0"
+                      >
+                        <lucide-icon
+                          [img]="UserIcon"
+                          [size]="20"
+                          class="text-teal-600"
+                        />
+                      </div>
+                      <div class="min-w-0 flex-1">
+                        <p
+                          class="text-xs font-semibold text-slate-600 uppercase tracking-wide mb-1"
+                        >
+                          Contact Person
+                        </p>
+                        <p class="text-sm font-bold text-slate-900">
+                          {{ getApplicantName(application) }}
+                        </p>
+                        <p class="text-sm text-slate-600">
+                          {{ getApplicantEmail(application) }}
+                        </p>
+                      </div>
+                    </div>
+
+                    <!-- Company -->
+                    <div class="flex items-start gap-3">
+                      <div
+                        class="w-10 h-10 rounded-lg bg-teal-100 flex items-center justify-center flex-shrink-0"
+                      >
+                        <lucide-icon
+                          [img]="BuildingIcon"
+                          [size]="20"
+                          class="text-teal-600"
+                        />
+                      </div>
+                      <div class="min-w-0 flex-1">
+                        <p
+                          class="text-xs font-semibold text-slate-600 uppercase tracking-wide mb-1"
+                        >
+                          Company
+                        </p>
+                        <p class="text-sm font-bold text-slate-900">
+                          {{ getApplicantCompany(application) }}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Column 3: Funding Details -->
+                  <div class="space-y-4">
+                    <h4 class="text-sm font-semibold text-slate-900 mb-3">
+                      Funding Details
+                    </h4>
+
+                    <!-- Requested Amount -->
+                    <div class="flex items-start gap-3">
+                      <div
+                        class="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center flex-shrink-0"
+                      >
+                        <lucide-icon
+                          [img]="DollarSignIcon"
+                          [size]="20"
+                          class="text-green-600"
+                        />
+                      </div>
+                      <div class="min-w-0 flex-1">
+                        <p
+                          class="text-xs font-semibold text-slate-600 uppercase tracking-wide mb-1"
+                        >
+                          Requested Amount
+                        </p>
+                        <p class="text-sm font-bold text-slate-900">
+                          {{
+                            formatCurrency(
+                              extractRequestedAmount(application.formData)
+                            )
+                          }}
+                        </p>
+                      </div>
+                    </div>
+
+                    <!-- Funding Types -->
+                    @if (getFundingTypes(application).length > 0) {
+                    <div class="flex items-start gap-3">
+                      <div
+                        class="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center flex-shrink-0"
+                      >
+                        <lucide-icon
+                          [img]="TrendingUpIcon"
+                          [size]="20"
+                          class="text-blue-600"
+                        />
+                      </div>
+                      <div class="min-w-0 flex-1">
+                        <p
+                          class="text-xs font-semibold text-slate-600 uppercase tracking-wide mb-1"
+                        >
+                          Funding Type
+                        </p>
+                        <div class="flex flex-wrap gap-2 mt-2">
+                          @for (type of getFundingTypes(application); track
+                          type) {
+                          <span
+                            class="px-2 py-1 rounded-lg text-xs font-semibold border"
+                            [ngClass]="{
+                              'bg-teal-50 text-teal-700 border-teal-200':
+                                getFundingTypeColor(type) === 'teal',
+                              'bg-purple-50 text-purple-700 border-purple-200':
+                                getFundingTypeColor(type) === 'purple',
+                              'bg-indigo-50 text-indigo-700 border-indigo-200':
+                                getFundingTypeColor(type) === 'indigo',
+                              'bg-amber-50 text-amber-700 border-amber-200':
+                                getFundingTypeColor(type) === 'amber',
+                              'bg-green-50 text-green-700 border-green-200':
+                                getFundingTypeColor(type) === 'green',
+                              'bg-cyan-50 text-cyan-700 border-cyan-200':
+                                getFundingTypeColor(type) === 'cyan',
+                              'bg-slate-50 text-slate-700 border-slate-200':
+                                getFundingTypeColor(type) === 'slate'
+                            }"
+                          >
+                            {{ type }}
+                          </span>
+                          }
+                        </div>
+                      </div>
+                    </div>
+                    }
+
+                    <!-- Dates -->
+                    <div class="flex items-start gap-3">
+                      <div
+                        class="w-10 h-10 rounded-lg bg-slate-100 flex items-center justify-center flex-shrink-0"
+                      >
+                        <lucide-icon
+                          [img]="CalendarIcon"
+                          [size]="20"
+                          class="text-slate-600"
+                        />
+                      </div>
+                      <div class="min-w-0 flex-1">
+                        <p
+                          class="text-xs font-semibold text-slate-600 uppercase tracking-wide mb-1"
+                        >
+                          Timeline
+                        </p>
+                        <p class="text-sm text-slate-900">
+                          <span class="font-semibold">Submitted:</span>
+                          {{
+                            formatDate(
+                              application.submittedAt || application.createdAt
+                            )
+                          }}
+                        </p>
+                        <p class="text-sm text-slate-900">
+                          <span class="font-semibold">Updated:</span>
+                          {{ formatDate(application.updatedAt) }}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Description (Full Width) -->
+                @if (application.description) {
+                <div class="mt-6 pt-6 border-t border-slate-200">
+                  <h4 class="text-sm font-semibold text-slate-900 mb-2">
+                    Description
+                  </h4>
+                  <p class="text-sm text-slate-600 leading-relaxed">
+                    {{ application.description }}
+                  </p>
+                </div>
+                }
+              </td>
+            </tr>
+            } }
+          </tbody>
+        </table>
+      </div>
+      }
+    </div>
+
+    <!-- Pagination Info -->
+    @if (!loading() && !error() && filteredApplications().length > 0) {
+    <div class="mt-6 flex items-center justify-between">
+      <p class="text-sm text-slate-600">
+        Showing {{ filteredApplications().length }} of
+        {{ tabCounts()[activeTab()] }}
+        applications
+      </p>
+
+      @if (analytics().averageProcessingTime > 0) {
+      <p class="text-sm text-slate-600">
+        Average processing time:
+        <span class="font-semibold text-slate-900"
+          >{{ analytics().averageProcessingTime }} days</span
+        >
+      </p>
+      }
+    </div>
+    }
+  </div>
+</div>

@@ -120,6 +120,14 @@
       [companyCompliance]="companyCompliance()"
     />
   </div>
+  } @if (financialRatiosSections().length > 0) {
+  <app-financial-data-table
+    [sections]="financialRatiosSections()"
+    [columnHeaders]="columnHeaders()"
+    [editMode]="false"
+    itemLabel=""
+    (cellValueChanged)="onFinancialRatiosCellChanged($event)"
+  />
   }
 
   <!-- SWOT TAB -->

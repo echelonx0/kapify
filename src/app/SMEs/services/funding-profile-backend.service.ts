@@ -3,7 +3,7 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { Observable, throwError, from } from 'rxjs';
 import { tap, catchError, switchMap } from 'rxjs/operators';
-import { AuthService } from '../../auth/production.auth.service';
+import { AuthService } from '../../auth/services/production.auth.service';
 import { SharedSupabaseService } from '../../shared/services/shared-supabase.service';
 import { ActivityService } from '../../shared/services/activity.service';
 import { FundingApplicationProfile } from '../applications/models/funding-application.models';

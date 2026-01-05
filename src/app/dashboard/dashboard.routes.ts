@@ -1,5 +1,8 @@
 import { Routes } from '@angular/router';
-import { ReportsComponent } from '../features/reports/reports.component';
+
+import { AIReportsComponent } from '../features/reports/ai-reports.component';
+import { ActivityLogsComponent } from '../features/activity-logs/activity-logs.component';
+import { NotificationsInboxComponent } from '../features/notifications/notifications-inbox.component';
 
 export const dashboardRoutes: Routes = [
   {
@@ -16,8 +19,18 @@ export const dashboardRoutes: Routes = [
         pathMatch: 'full',
       },
       {
+        path: 'notifications',
+        component: NotificationsInboxComponent,
+      },
+
+      {
+        path: 'logs',
+        component: ActivityLogsComponent,
+      },
+
+      {
         path: 'reports',
-        component: ReportsComponent,
+        component: AIReportsComponent,
       },
       // Dashboard routes
       {
@@ -44,7 +57,7 @@ export const dashboardRoutes: Routes = [
           ),
         title: 'FAQs - Kapify',
       },
-      // ============================================================================
+      // ===============================rev=============================================
       // 🆕 GUIDES ROUTE
       // ============================================================================
       {

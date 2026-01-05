@@ -25,7 +25,7 @@ import {
   Feedback,
   FeedbackPriority,
   FeedbackStatus,
-} from 'src/app/admin/services/feedback.service';
+} from '../../../services/feedback.service';
 
 @Component({
   selector: 'app-admin-feedback',

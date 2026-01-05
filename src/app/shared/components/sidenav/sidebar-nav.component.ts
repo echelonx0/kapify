@@ -24,8 +24,9 @@ import {
   House,
   Axis3d,
   BinaryIcon,
+  FolderOpen,
 } from 'lucide-angular';
-import { AuthService } from 'src/app/auth/production.auth.service';
+import { AuthService } from 'src/app/auth/services/production.auth.service';
 import { ProfileManagementService } from '../../services/profile-management.service';
 
 interface NavItem {
@@ -64,12 +65,12 @@ export class SidebarNavComponent implements OnInit {
   CloseIcon = X;
   Axis3dIcon = Axis3d;
   BinaryIcon = BinaryIcon;
+  FolderOpenIcon = FolderOpen;
 
   // State - Mobile Menu
   showMobileMenu = signal(false);
 
   // State - Notifications
-  showNotifications = signal(false);
   isOnline = signal(true);
   unreadNotifications = signal(1);
 
@@ -96,15 +97,15 @@ export class SidebarNavComponent implements OnInit {
       label: 'Home',
       icon: House,
       route: '/dashboard/home',
-      userTypes: ['funder'],
+      userTypes: ['funder', 'sme'],
     },
-    {
-      id: 'profile',
-      label: 'Home',
-      icon: User,
-      route: '/profile',
-      userTypes: ['sme'],
-    },
+    // {
+    //   id: 'profile',
+    //   label: 'Home',
+    //   icon: User,
+    //   route: '/profile',
+    //   userTypes: ['sme'],
+    // },
     {
       id: 'review',
       label: 'Review',
@@ -114,25 +115,23 @@ export class SidebarNavComponent implements OnInit {
     },
     {
       id: 'funding',
-      label: 'Funds Marketplace',
+      label: 'Funding Opportunities',
       icon: DollarSign,
       route: '/funding/opportunities',
-      userTypes: ['sme', 'funder'],
+      userTypes: ['sme'],
     },
-
+    {
+      id: 'funder-opportunities',
+      label: 'Opportunities',
+      icon: FolderOpen,
+      route: '/funder/dashboard',
+      userTypes: ['funder'],
+    },
     {
       id: 'funder-applications',
       label: 'Applications',
       icon: BinaryIcon,
-      route: '/dashboard/funder-dashboard',
-      userTypes: ['funder'],
-    },
-
-    {
-      id: 'funder-applications',
-      label: 'Opportunities',
-      icon: BookOpen,
-      route: '/dashboard/funder-dashboard',
+      route: '/funder/applications',
       userTypes: ['funder'],
     },
     {
@@ -221,28 +220,20 @@ export class SidebarNavComponent implements OnInit {
 
   // Navigation Actions
   goToDashboard(): void {
-    this.router.navigate(['/dashboard']);
-    this.closeMobileMenu();
-  }
+    const user = this.authService.user();
+    const userType = user?.userType || 'sme';
 
-  goToFunderTabFromLabel(label: string): void {
-    const labelMap: Record<
-      string,
-      'overview' | 'opportunities' | 'applications'
-    > = {
-      Manage: 'overview',
-      Opportunities: 'opportunities',
-      Applications: 'applications',
-    };
-
-    const tabId = labelMap[label];
-    if (tabId) {
-      this.router.navigate(['/funder/dashboard'], {
-        queryParams: { tab: tabId },
-      });
-    } else {
+    // Route based on user type
+    if (
+      userType === 'funder' ||
+      userType === 'admin' ||
+      userType === 'consultant'
+    ) {
       this.router.navigate(['/funder/dashboard']);
+    } else {
+      this.router.navigate(['/profile']);
     }
+    this.closeMobileMenu();
   }
 
   // Mobile Menu Management
@@ -252,11 +243,6 @@ export class SidebarNavComponent implements OnInit {
 
   closeMobileMenu(): void {
     this.showMobileMenu.set(false);
-  }
-
-  // Notifications
-  toggleNotifications(): void {
-    this.showNotifications.update((v) => !v);
   }
 
   // Auth Actions

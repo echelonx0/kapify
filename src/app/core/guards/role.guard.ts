@@ -1,24 +1,18 @@
-
 // src/app/auth/guards/role.guard.ts
 import { Injectable } from '@angular/core';
 import { CanActivate, ActivatedRouteSnapshot, Router } from '@angular/router';
-import { AuthService } from '../auth/production.auth.service';
- 
- 
+import { AuthService } from 'src/app/auth/services/production.auth.service';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class RoleGuard implements CanActivate {
-  constructor(
-    private authService: AuthService,
-    private router: Router
-  ) {}
+  constructor(private authService: AuthService, private router: Router) {}
 
   canActivate(route: ActivatedRouteSnapshot): boolean {
     const user = this.authService.user();
     const requiredRoles = route.data['roles'] as string[];
-    
+
     if (!user) {
       this.router.navigate(['/login']);
       return false;
@@ -29,7 +23,7 @@ export class RoleGuard implements CanActivate {
     }
 
     const hasRole = requiredRoles.includes(user.userType);
-    
+
     if (!hasRole) {
       // Redirect based on user type
       if (user.userType === 'sme') {

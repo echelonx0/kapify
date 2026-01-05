@@ -10,13 +10,13 @@ import {
 } from '@angular/router';
 
 import { Observable } from 'rxjs';
+import { AuthService } from 'src/app/auth/services/production.auth.service';
 import {
   GlobalProfileValidationService,
-  COMPLETION_REQUIREMENTS,
   CompletionRequirement,
-} from '../shared/services/global-profile-validation.service';
-import { AuthService } from '../auth/production.auth.service';
-import { ToastService } from '../shared/services/toast.service';
+  COMPLETION_REQUIREMENTS,
+} from 'src/app/shared/services/global-profile-validation.service';
+import { ToastService } from 'src/app/shared/services/toast.service';
 
 @Injectable({
   providedIn: 'root',

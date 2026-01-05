@@ -3,7 +3,7 @@ import { Component, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
-import { AuthService } from 'src/app/auth/production.auth.service';
+import { AuthService } from 'src/app/auth/services/production.auth.service';
 
 interface NavItem {
   path: string;
@@ -82,6 +82,11 @@ export class AdminLayoutComponent {
       label: 'FAQs Manager',
       icon: 'fas fa-chart-bar',
     },
+    {
+      path: 'support',
+      label: 'Support Tickets',
+      icon: 'fas fa-headset',
+    },
   ];
 
   // Main app routes for quick navigation
@@ -156,6 +161,7 @@ export class AdminLayoutComponent {
     const titleMap: Record<string, string> = {
       '/admin/dashboard': 'Dashboard',
       '/admin/verification': 'Organization Verification',
+      '/admin/support': 'Support Tickets',
     };
 
     // Find matching title

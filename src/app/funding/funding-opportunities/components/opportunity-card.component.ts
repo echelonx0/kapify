@@ -16,16 +16,16 @@
 //   ],
 //   template: `
 // <div class="group relative overflow-hidden rounded-2xl bg-white shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:shadow-[0_20px_60px_rgb(0,0,0,0.15)] transition-all duration-500 border border-slate-200/60">
-  
+
 //   <!-- Subtle header -->
 //   <div class="h-1.5 bg-gradient-to-r from-slate-300 to-slate-400"></div>
 
 //   <div class="p-8">
 //     <div class="flex items-start justify-between">
-      
+
 //       <!-- Left content -->
 //       <div class="flex-1 pr-8">
-        
+
 //         <!-- Header section -->
 //         <div class="flex items-center gap-4 mb-6">
 //           <div class="w-16 h-16 rounded-xl bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center border border-slate-200 shadow-sm">
@@ -33,7 +33,7 @@
 //               {{ getInitials() }}
 //             </span>
 //           </div>
-          
+
 //           <div class="flex-1">
 //             <h3 class="text-2xl font-bold text-slate-900 mb-2 group-hover:text-slate-700 transition-colors duration-300">
 //               {{ opportunity.title }}
@@ -71,7 +71,7 @@
 //               </div>
 //             </div>
 //           </div>
-          
+
 //           <div class="rounded-xl bg-slate-50 p-4 border border-slate-200/60">
 //             <div class="flex items-center gap-3">
 //               <div class="w-9 h-9 rounded-lg bg-slate-700 flex items-center justify-center">
@@ -83,7 +83,7 @@
 //               </div>
 //             </div>
 //           </div>
-          
+
 //           <div class="rounded-xl bg-slate-50 p-4 border border-slate-200/60">
 //             <div class="flex items-center gap-3">
 //               <div class="w-9 h-9 rounded-lg bg-slate-700 flex items-center justify-center">
@@ -104,7 +104,7 @@
 //             <span class="text-sm text-slate-500">{{ progressPercentage() }}%</span>
 //           </div>
 //           <div class="h-2 bg-slate-200 rounded-full overflow-hidden">
-//             <div 
+//             <div
 //               class="h-full bg-slate-600 rounded-full transition-all duration-500"
 //               [style.width.%]="progressPercentage()">
 //             </div>
@@ -120,13 +120,13 @@
 //             Apply Now
 //           </ui-button>
 //         }
-        
+
 //         <ui-button variant="outline" (clicked)="onViewDetails()"
 //                   class="bg-white hover:bg-slate-50 text-slate-700 px-4 py-2.5 rounded-lg font-medium border border-slate-200 hover:border-slate-300 transition-all duration-200 flex items-center justify-center gap-2 text-sm">
 //           <lucide-icon [img]="EyeIcon" [size]="14" />
 //           View Details
 //         </ui-button>
-        
+
 //         @if (canManage()) {
 //           <ui-button variant="outline" (clicked)="onManage()"
 //                     class="bg-white hover:bg-slate-50 text-slate-600 px-4 py-2.5 rounded-lg font-medium border border-slate-200 hover:border-slate-300 transition-all duration-200 text-sm">
@@ -147,7 +147,7 @@
 // })
 // export class OpportunityCardComponent {
 //   @Input({ required: true }) opportunity!: FundingOpportunity;
-  
+
 //   @Output() apply = new EventEmitter<string>();
 //   @Output() viewDetails = new EventEmitter<string>();
 //   @Output() manage = new EventEmitter<string>();
@@ -163,8 +163,8 @@
 
 //   // Computed properties
 //   currentUser = computed(() => this.authService.user());
-  
-//   visibleIndustries = computed(() => 
+
+//   visibleIndustries = computed(() =>
 //     this.opportunity.eligibilityCriteria.industries.slice(0, 2)
 //   );
 
@@ -213,7 +213,7 @@
 
 //   getFundingTypeClasses(): string {
 //     const baseClasses = 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium';
-    
+
 //     switch (this.opportunity.fundingType) {
 //       case 'equity': return `${baseClasses} bg-purple-100 text-purple-800`;
 //       case 'debt': return `${baseClasses} bg-blue-100 text-blue-800`;
@@ -272,142 +272,182 @@
 // }
 
 // src/app/funding/components/opportunity-card.component.ts
-import { Component, Input, Output, EventEmitter, computed, inject } from '@angular/core';
+import {
+  Component,
+  Input,
+  Output,
+  EventEmitter,
+  computed,
+  inject,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { LucideAngularModule, DollarSign, Calendar, Users, Eye } from 'lucide-angular';
-import { AuthService } from '../../../auth/production.auth.service';
+import {
+  LucideAngularModule,
+  DollarSign,
+  Calendar,
+  Users,
+  Eye,
+} from 'lucide-angular';
+import { AuthService } from '../../../auth/services/production.auth.service';
 import { UiButtonComponent } from '../../../shared/components';
 import { FundingOpportunity } from '../../../shared/models/funder.models';
 
 @Component({
   selector: 'app-opportunity-card',
   standalone: true,
-  imports: [
-    CommonModule,
-    LucideAngularModule,
-    UiButtonComponent
-  ],
+  imports: [CommonModule, LucideAngularModule, UiButtonComponent],
   template: `
-<div class="card group relative overflow-hidden">
-  
-  <!-- Header with funding type color -->
-  <div class="h-1.5 bg-gradient-to-r" [class]="getHeaderGradient()"></div>
+    <div class="card group relative overflow-hidden">
+      <!-- Header with funding type color -->
+      <div class="h-1.5 bg-gradient-to-r" [class]="getHeaderGradient()"></div>
 
-  <div class="p-6">
-    <!-- Header section with better layout -->
-    <div class="flex items-start justify-between mb-6">
-      <div class="flex items-center gap-4 flex-1">
-        <div class="icon-container neutral w-14 h-14 rounded-xl shadow-sm">
-          <span class="text-lg font-bold text-neutral-700">
-            {{ getInitials() }}
-          </span>
-        </div>
-        
-        <div class="flex-1 min-w-0">
-          <h3 class="text-xl font-bold text-neutral-900 mb-2 group-hover:text-neutral-700 transition-colors">
-            {{ opportunity.title }}
-          </h3>
-          <div class="flex items-center gap-2 flex-wrap">
-            <span class="status-badge" [class]="getFundingTypeBadgeClass()">
-              {{ formatFundingType() }}
-            </span>
-            @for (industry of visibleIndustries(); track industry) {
-              <span class="status-badge status-draft">
-                {{ formatIndustry(industry) }}
+      <div class="p-6">
+        <!-- Header section with better layout -->
+        <div class="flex items-start justify-between mb-6">
+          <div class="flex items-center gap-4 flex-1">
+            <div class="icon-container neutral w-14 h-14 rounded-xl shadow-sm">
+              <span class="text-lg font-bold text-neutral-700">
+                {{ getInitials() }}
               </span>
+            </div>
+
+            <div class="flex-1 min-w-0">
+              <h3
+                class="text-xl font-bold text-neutral-900 mb-2 group-hover:text-neutral-700 transition-colors"
+              >
+                {{ opportunity.title }}
+              </h3>
+              <div class="flex items-center gap-2 flex-wrap">
+                <span class="status-badge" [class]="getFundingTypeBadgeClass()">
+                  {{ formatFundingType() }}
+                </span>
+                @for (industry of visibleIndustries(); track industry) {
+                <span class="status-badge status-draft">
+                  {{ formatIndustry(industry) }}
+                </span>
+                }
+              </div>
+            </div>
+          </div>
+
+          <!-- Right-aligned action buttons with proper spacing -->
+          <div class="flex items-start gap-2 ml-4 flex-shrink-0">
+            @if (canApply()) {
+            <ui-button
+              variant="primary"
+              (clicked)="onApply()"
+              class="whitespace-nowrap"
+            >
+              Apply Now
+            </ui-button>
+            }
+
+            <ui-button
+              variant="outline"
+              (clicked)="onViewDetails()"
+              class="whitespace-nowrap"
+            >
+              <lucide-icon [img]="EyeIcon" [size]="16" class="mr-1" />
+              View Details
+            </ui-button>
+
+            @if (canManage()) {
+            <ui-button
+              variant="outline"
+              (clicked)="onManage()"
+              class="whitespace-nowrap"
+            >
+              Manage
+            </ui-button>
             }
           </div>
         </div>
-      </div>
 
-      <!-- Right-aligned action buttons with proper spacing -->
-      <div class="flex items-start gap-2 ml-4 flex-shrink-0">
-        @if (canApply()) {
-          <ui-button variant="primary" (clicked)="onApply()" class="whitespace-nowrap">
-            Apply Now
-          </ui-button>
-        }
-        
-        <ui-button variant="outline" (clicked)="onViewDetails()" class="whitespace-nowrap">
-          <lucide-icon [img]="EyeIcon" [size]="16" class="mr-1" />
-          View Details
-        </ui-button>
-        
-        @if (canManage()) {
-          <ui-button variant="outline" (clicked)="onManage()" class="whitespace-nowrap">
-            Manage
-          </ui-button>
-        }
-      </div>
-    </div>
+        <!-- Description -->
+        <p class="text-neutral-600 leading-relaxed mb-6">
+          {{ opportunity.shortDescription }}
+        </p>
 
-    <!-- Description -->
-    <p class="text-neutral-600 leading-relaxed mb-6">
-      {{ opportunity.shortDescription }}
-    </p>
-
-    <!-- Metrics grid using design system -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-      <div class="card !shadow-none bg-neutral-50 border-neutral-200/60 p-4">
-        <div class="flex items-center gap-3">
-          <div class="icon-container neutral w-9 h-9">
-            <lucide-icon [img]="DollarSignIcon" [size]="16" />
-          </div>
-          <div>
-            <div class="text-sm font-semibold text-neutral-900">
-              {{ opportunity.currency }} {{ formatAmount(opportunity.minInvestment) }} - {{ formatAmount(opportunity.maxInvestment) }}
+        <!-- Metrics grid using design system -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          <div
+            class="card !shadow-none bg-neutral-50 border-neutral-200/60 p-4"
+          >
+            <div class="flex items-center gap-3">
+              <div class="icon-container neutral w-9 h-9">
+                <lucide-icon [img]="DollarSignIcon" [size]="16" />
+              </div>
+              <div>
+                <div class="text-sm font-semibold text-neutral-900">
+                  {{ opportunity.currency }}
+                  {{ formatAmount(opportunity.minInvestment) }} -
+                  {{ formatAmount(opportunity.maxInvestment) }}
+                </div>
+                <div class="text-xs text-neutral-500">Investment Range</div>
+              </div>
             </div>
-            <div class="text-xs text-neutral-500">Investment Range</div>
           </div>
-        </div>
-      </div>
-      
-      <div class="card !shadow-none bg-neutral-50 border-neutral-200/60 p-4">
-        <div class="flex items-center gap-3">
-          <div class="icon-container neutral w-9 h-9">
-            <lucide-icon [img]="CalendarIcon" [size]="16" />
-          </div>
-          <div>
-            <div class="text-sm font-semibold text-neutral-900">{{ opportunity.decisionTimeframe }} days</div>
-            <div class="text-xs text-neutral-500">Decision Timeline</div>
-          </div>
-        </div>
-      </div>
-      
-      <div class="card !shadow-none bg-neutral-50 border-neutral-200/60 p-4">
-        <div class="flex items-center gap-3">
-          <div class="icon-container neutral w-9 h-9">
-            <lucide-icon [img]="UsersIcon" [size]="16" />
-          </div>
-          <div>
-            <div class="text-sm font-semibold text-neutral-900">{{ opportunity.currentApplications }}/{{ opportunity.maxApplications || '∞' }}</div>
-            <div class="text-xs text-neutral-500">Applications</div>
-          </div>
-        </div>
-      </div>
-    </div>
 
-    <!-- Progress section -->
-    <div>
-      <div class="flex justify-between items-center mb-2">
-        <span class="text-sm font-medium text-neutral-700">Funding Progress</span>
-        <span class="text-sm text-neutral-500">{{ progressPercentage() }}%</span>
-      </div>
-      <div class="h-2 bg-neutral-200 rounded-full overflow-hidden">
-        <div 
-          class="h-full rounded-full transition-all duration-500 bg-gradient-to-r"
-          [class]="getProgressGradient()"
-          [style.width.%]="progressPercentage()">
+          <div
+            class="card !shadow-none bg-neutral-50 border-neutral-200/60 p-4"
+          >
+            <div class="flex items-center gap-3">
+              <div class="icon-container neutral w-9 h-9">
+                <lucide-icon [img]="CalendarIcon" [size]="16" />
+              </div>
+              <div>
+                <div class="text-sm font-semibold text-neutral-900">
+                  {{ opportunity.decisionTimeframe }} days
+                </div>
+                <div class="text-xs text-neutral-500">Decision Timeline</div>
+              </div>
+            </div>
+          </div>
+
+          <div
+            class="card !shadow-none bg-neutral-50 border-neutral-200/60 p-4"
+          >
+            <div class="flex items-center gap-3">
+              <div class="icon-container neutral w-9 h-9">
+                <lucide-icon [img]="UsersIcon" [size]="16" />
+              </div>
+              <div>
+                <div class="text-sm font-semibold text-neutral-900">
+                  {{ opportunity.currentApplications }}/{{
+                    opportunity.maxApplications || '∞'
+                  }}
+                </div>
+                <div class="text-xs text-neutral-500">Applications</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Progress section -->
+        <div>
+          <div class="flex justify-between items-center mb-2">
+            <span class="text-sm font-medium text-neutral-700"
+              >Funding Progress</span
+            >
+            <span class="text-sm text-neutral-500"
+              >{{ progressPercentage() }}%</span
+            >
+          </div>
+          <div class="h-2 bg-neutral-200 rounded-full overflow-hidden">
+            <div
+              class="h-full rounded-full transition-all duration-500 bg-gradient-to-r"
+              [class]="getProgressGradient()"
+              [style.width.%]="progressPercentage()"
+            ></div>
+          </div>
         </div>
       </div>
     </div>
-  </div>
-</div>
-  `
+  `,
 })
 export class OpportunityCardComponent {
   @Input({ required: true }) opportunity!: FundingOpportunity;
-  
+
   @Output() apply = new EventEmitter<string>();
   @Output() viewDetails = new EventEmitter<string>();
   @Output() manage = new EventEmitter<string>();
@@ -423,14 +463,17 @@ export class OpportunityCardComponent {
 
   // Computed properties
   currentUser = computed(() => this.authService.user());
-  
-  visibleIndustries = computed(() => 
+
+  visibleIndustries = computed(() =>
     this.opportunity.eligibilityCriteria.industries.slice(0, 2)
   );
 
   progressPercentage = computed(() => {
     if (this.opportunity.totalAvailable === 0) return 0;
-    return Math.min((this.opportunity.amountDeployed / this.opportunity.totalAvailable) * 100, 100);
+    return Math.min(
+      (this.opportunity.amountDeployed / this.opportunity.totalAvailable) * 100,
+      100
+    );
   });
 
   canApply = computed(() => {
@@ -465,7 +508,7 @@ export class OpportunityCardComponent {
   getInitials(): string {
     return this.opportunity.title
       .split(' ')
-      .map(word => word.charAt(0))
+      .map((word) => word.charAt(0))
       .join('')
       .substring(0, 2)
       .toUpperCase();
@@ -473,34 +516,52 @@ export class OpportunityCardComponent {
 
   getFundingTypeBadgeClass(): string {
     switch (this.opportunity.fundingType) {
-      case 'equity': return 'status-badge bg-purple-100 text-purple-800';
-      case 'debt': return 'status-badge bg-blue-100 text-blue-800';
-      case 'mezzanine': return 'status-badge bg-orange-100 text-orange-800';
-      case 'grant': return 'status-badge bg-green-100 text-green-800';
-      case 'convertible': return 'status-badge bg-indigo-100 text-indigo-800';
-      default: return 'status-badge status-draft';
+      case 'equity':
+        return 'status-badge bg-purple-100 text-purple-800';
+      case 'debt':
+        return 'status-badge bg-blue-100 text-blue-800';
+      case 'mezzanine':
+        return 'status-badge bg-orange-100 text-orange-800';
+      case 'grant':
+        return 'status-badge bg-green-100 text-green-800';
+      case 'convertible':
+        return 'status-badge bg-indigo-100 text-indigo-800';
+      default:
+        return 'status-badge status-draft';
     }
   }
 
   getHeaderGradient(): string {
     switch (this.opportunity.fundingType) {
-      case 'equity': return 'from-purple-400 to-purple-600';
-      case 'debt': return 'from-blue-400 to-blue-600';
-      case 'grant': return 'from-green-400 to-green-600';
-      case 'mezzanine': return 'from-orange-400 to-orange-600';
-      case 'convertible': return 'from-indigo-400 to-indigo-600';
-      default: return 'from-neutral-400 to-neutral-600';
+      case 'equity':
+        return 'from-purple-400 to-purple-600';
+      case 'debt':
+        return 'from-blue-400 to-blue-600';
+      case 'grant':
+        return 'from-green-400 to-green-600';
+      case 'mezzanine':
+        return 'from-orange-400 to-orange-600';
+      case 'convertible':
+        return 'from-indigo-400 to-indigo-600';
+      default:
+        return 'from-neutral-400 to-neutral-600';
     }
   }
 
   getProgressGradient(): string {
     switch (this.opportunity.fundingType) {
-      case 'equity': return 'from-purple-400 to-purple-600';
-      case 'debt': return 'from-blue-400 to-blue-600';
-      case 'grant': return 'from-green-400 to-green-600';
-      case 'mezzanine': return 'from-orange-400 to-orange-600';
-      case 'convertible': return 'from-indigo-400 to-indigo-600';
-      default: return 'from-neutral-400 to-neutral-600';
+      case 'equity':
+        return 'from-purple-400 to-purple-600';
+      case 'debt':
+        return 'from-blue-400 to-blue-600';
+      case 'grant':
+        return 'from-green-400 to-green-600';
+      case 'mezzanine':
+        return 'from-orange-400 to-orange-600';
+      case 'convertible':
+        return 'from-indigo-400 to-indigo-600';
+      default:
+        return 'from-neutral-400 to-neutral-600';
     }
   }
 
@@ -510,13 +571,13 @@ export class OpportunityCardComponent {
       debt: 'Debt',
       mezzanine: 'Mezzanine',
       grant: 'Grant',
-      convertible: 'Convertible'
+      convertible: 'Convertible',
     };
     return types[this.opportunity.fundingType] || this.opportunity.fundingType;
   }
 
   formatIndustry(industry: string): string {
-    return industry.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+    return industry.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
   }
 
   formatAmount(amount: number): string {

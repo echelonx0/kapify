@@ -1,11 +1,9 @@
 import { Routes } from '@angular/router';
 import { LandingComponent } from './landing/landing.component';
 import { LoginComponent } from './auth/login/login.component';
-import { AuthGuard } from './guards/auth.guard';
-import { GuestGuard } from './guards/guest.guard';
+
 import { RegisterComponent } from './auth/register/register.component';
-import { ProfileCompletionGuard } from './guards/profile-completion.guard';
-import { RoleGuard } from './guards/role.guard';
+
 import { FundingOpportunitiesComponent } from './marketplace/opportunities-list/funding-opportunities.component';
 import { NotFoundComponent } from './shared/components/not-found/not-found.component';
 import { SuccessPageComponent } from './shared/components/success-page/success-page.component';
@@ -15,6 +13,11 @@ import { PublicProfileViewComponent } from './SMEs/profile/public-page/public-pr
 import { AcceptInvitationComponent } from './auth/accept-invitation/accept-invitation.component';
 import { CreditsComponent } from './credit-system/credit-component/credit.component';
 import { InvoiceComponent } from './features/invoice/invoice.component';
+import { AuthGuard } from './core/guards/auth.guard';
+import { GuestGuard } from './core/guards/guest.guard';
+import { ProfileCompletionGuard } from './core/guards/profile-completion.guard';
+import { RoleGuard } from './core/guards/role.guard';
+import { PasswordResetComponent } from './auth/password-reset/password-reset.component';
 
 export const routes: Routes = [
   // Public routes
@@ -66,7 +69,12 @@ export const routes: Routes = [
     title: 'FAQs - Kapify',
   },
 
-  // In your auth routes array:
+  {
+    path: 'passwordreset',
+    component: PasswordResetComponent,
+    canActivate: [GuestGuard], // Allow only unauthenticated users
+    title: 'Reset Password - Kapify',
+  },
   {
     path: 'auth/accept-invitation',
     component: AcceptInvitationComponent,

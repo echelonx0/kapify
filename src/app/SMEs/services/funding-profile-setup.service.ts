@@ -1,6 +1,6 @@
 import { Injectable, signal, computed, inject, OnDestroy } from '@angular/core';
 import { FundingProfileBackendService } from './funding-profile-backend.service';
-import { AuthService } from '../../auth/production.auth.service';
+import { AuthService } from '../../auth/services/production.auth.service';
 import { SharedSupabaseService } from '../../shared/services/shared-supabase.service';
 import { Subscription, Subject } from 'rxjs';
 import { debounceTime, takeUntil } from 'rxjs/operators';

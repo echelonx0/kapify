@@ -2,7 +2,7 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { Observable, from, of, throwError } from 'rxjs';
 import { tap, catchError } from 'rxjs/operators';
-import { AuthService } from '../../auth/production.auth.service';
+import { AuthService } from '../../auth/services/production.auth.service';
 import { SharedSupabaseService } from '../../shared/services/shared-supabase.service';
 import {
   DocumentMetadata,
