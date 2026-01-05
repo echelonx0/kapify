@@ -1067,7 +1067,6 @@ import { ConstantsService } from 'src/app/shared/services/constants.service';
             (click)="applyFilters.emit()"
             class="inline-flex items-center justify-center gap-2 px-6 py-2.5 bg-teal-500 text-white font-medium rounded-xl hover:bg-teal-600 active:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 transition-all duration-200 whitespace-nowrap"
           >
-            <lucide-icon [img]="SearchIcon" [size]="16" />
             Apply Filters
           </button>
         </div>
