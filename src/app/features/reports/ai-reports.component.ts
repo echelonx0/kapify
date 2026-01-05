@@ -21,7 +21,7 @@ import {
   X,
   RefreshCcw,
   Loader2,
-  AlertTriangle,
+  TriangleAlert,
   Table,
   File,
   ChevronRight,
@@ -66,7 +66,7 @@ export class AIReportsComponent implements OnInit, OnDestroy {
   readonly ApprovedIcon = CheckCircle2;
   readonly RejectedIcon = XCircle;
   readonly PendingIcon = Clock;
-  readonly AlertIcon = AlertTriangle;
+  readonly AlertIcon = TriangleAlert;
   readonly TableIcon = Table;
   readonly PdfIcon = File;
   readonly ChevronRightIcon = ChevronRight;

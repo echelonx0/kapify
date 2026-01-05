@@ -1,4 +1,3 @@
-// src/app/ai/document-analysis/funder-document-analysis.component.ts
 import {
   Component,
   signal,
@@ -29,6 +28,7 @@ import {
   AlertCircle,
   Zap,
   X,
+  Info,
 } from 'lucide-angular';
 import { Subject, takeUntil } from 'rxjs';
 
@@ -43,6 +43,14 @@ import {
   OrgWallet,
 } from 'src/app/shared/services/credit.service';
 import { AuthService } from 'src/app/auth/services/production.auth.service';
+import {
+  ProcessingStageStatus,
+  ProcessingTimelineComponent,
+} from './components/processing-timeline.component';
+import { CostConfirmationModalComponent } from './components/cost-confirmation-modal.component';
+import { HowAnalysisWorksComponent } from './components/how-analysis-works.component';
+
+// Extracted components
 
 // Cost model
 const ANALYSIS_COST_CREDITS = 5000;
@@ -55,31 +63,17 @@ interface CostConfirmation {
 @Component({
   selector: 'app-funder-document-analysis',
   standalone: true,
-  imports: [CommonModule, FormsModule, LucideAngularModule, UiButtonComponent],
-  templateUrl: 'funder-document-analysis.component.html',
-  styles: [
-    `
-      .cost-modal {
-        position: fixed;
-        inset: 0;
-        background: rgba(0, 0, 0, 0.5);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        z-index: 50;
-        padding: 1rem;
-      }
-
-      .cost-modal-content {
-        background: white;
-        border-radius: 16px;
-        padding: 2rem;
-        max-width: 400px;
-        width: 100%;
-        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
-      }
-    `,
+  imports: [
+    CommonModule,
+    FormsModule,
+    LucideAngularModule,
+    UiButtonComponent,
+    HowAnalysisWorksComponent,
+    CostConfirmationModalComponent,
+    ProcessingTimelineComponent,
   ],
+  templateUrl: 'funder-document-analysis.component.html',
+  styles: [],
 })
 export class FunderDocumentAnalysisComponent implements OnInit, OnDestroy {
   private analysisService = inject(FunderDocumentAnalysisService);
@@ -106,6 +100,7 @@ export class FunderDocumentAnalysisComponent implements OnInit, OnDestroy {
   AlertIcon = AlertCircle;
   ZapIcon = Zap;
   XIcon = X;
+  InfoIcon = Info;
 
   // State
   isDragOver = signal(false);
@@ -114,21 +109,16 @@ export class FunderDocumentAnalysisComponent implements OnInit, OnDestroy {
   errorMessage = signal<string | null>(null);
   uploadedFile = signal<File | null>(null);
 
+  // UI State
+  showHowItWorks = signal(false);
+
   // Credits
   wallet = signal<OrgWallet | null>(null);
   isLoadingWallet = signal(false);
   costConfirmation = signal<CostConfirmation>({ isOpen: false });
   pendingFile = signal<File | null>(null);
 
-  processingStatuses = signal<
-    Array<{
-      stage: string;
-      label: string;
-      details?: string;
-      completed: boolean;
-      active: boolean;
-    }>
-  >([
+  processingStatuses = signal<ProcessingStageStatus[]>([
     {
       stage: 'upload',
       label: 'Processing Document',
@@ -203,7 +193,7 @@ export class FunderDocumentAnalysisComponent implements OnInit, OnDestroy {
       });
   }
 
-  // File Handling Methods
+  // ===== FILE HANDLING =====
   onDragOver(event: DragEvent) {
     event.preventDefault();
     this.isDragOver.set(true);
@@ -466,7 +456,7 @@ export class FunderDocumentAnalysisComponent implements OnInit, OnDestroy {
     }
   }
 
-  // Reset and Actions
+  // ===== RESET AND ACTIONS =====
   resetAnalysis() {
     this.isProcessing.set(false);
     this.analysisResult.set(null);
@@ -515,7 +505,7 @@ export class FunderDocumentAnalysisComponent implements OnInit, OnDestroy {
     console.log('Share analysis functionality to be implemented');
   }
 
-  // UI Helper Methods
+  // ===== UI HELPER METHODS =====
   getTimingClasses(timing: string): string {
     switch (timing) {
       case 'favorable':
