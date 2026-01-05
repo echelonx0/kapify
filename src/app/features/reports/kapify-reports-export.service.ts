@@ -1,6 +1,9 @@
 import { Injectable, inject } from '@angular/core';
-import { KapifyReports, KapifyReportsExportOptions } from './kapify-reports.interface';
-import { KapifyReportsTransformerService } from './2-kapify-reports-transformer.service';
+import {
+  KapifyReports,
+  KapifyReportsExportOptions,
+} from './kapify-reports.interface';
+import { KapifyReportsTransformerService } from './kapify-reports-transformer.service';
 
 /**
  * KapifyReports Export Service
@@ -264,9 +267,10 @@ export class KapifyReportsExportService {
   /**
    * Prepare data for PDF export
    */
-  private preparePDFData(
-    reports: KapifyReports[]
-  ): { headers: string[]; rows: any[][] } {
+  private preparePDFData(reports: KapifyReports[]): {
+    headers: string[];
+    rows: any[][];
+  } {
     const headers = [
       'No.',
       'Business',

@@ -2,9 +2,8 @@ import { Injectable } from '@angular/core';
 import { KapifyReports } from './kapify-reports.interface';
 import {
   EnrichedApplication,
-  CompanyInfoData,
   FinancialProfileData,
-} from './1-kapify-reports-repository.service';
+} from './kapify-reports-repository.service';
 
 @Injectable({
   providedIn: 'root',
@@ -13,7 +12,10 @@ export class KapifyReportsTransformerService {
   /**
    * Transform enriched application to KapifyReports format
    */
-  transformToReport(enriched: EnrichedApplication, rowIndex: number): KapifyReports {
+  transformToReport(
+    enriched: EnrichedApplication,
+    rowIndex: number
+  ): KapifyReports {
     const app = enriched.application;
     const user = enriched.user;
     const companyInfo = enriched.companyInfo;
@@ -33,7 +35,7 @@ export class KapifyReportsTransformerService {
         industry: companyInfo?.industryType || '',
         physicalAddress: this.formatAddress(companyInfo?.registeredAddress),
         businessDetails:
-          formData.purposeStatement ||
+          formData['purposeStatement'] ||
           companyInfo?.businessActivity ||
           app.description ||
           '',
@@ -56,14 +58,16 @@ export class KapifyReportsTransformerService {
         role: companyInfo?.contactPerson?.position || '',
 
         // Funding Details Section
-        amountRequested: this.parseNumber(formData.requestedAmount) || 0,
+        amountRequested: this.parseNumber(formData['requestedAmount']) || 0,
         fundingType: this.mapFundingType(opportunity?.funding_type),
         fundingOpportunity: opportunity?.title || '',
-        useOfFunds: formData.useOfFunds || '',
+        useOfFunds: formData['useOfFunds'] || '',
         applicationStatus: this.mapApplicationStatus(app.status),
       };
 
-      console.log(`✅ [TRANSFORM] Application transformed: ${report.nameOfBusiness}`);
+      console.log(
+        `✅ [TRANSFORM] Application transformed: ${report.nameOfBusiness}`
+      );
       return report;
     } catch (error) {
       console.error(`❌ [TRANSFORM] Error transforming application:`, error);
@@ -119,7 +123,13 @@ export class KapifyReportsTransformerService {
    */
   private mapBusinessStage(
     companyType?: string
-  ): 'Pre-Launch' | 'Startup' | 'Early Growth' | 'Growth' | 'Mature' | 'Expansion' {
+  ):
+    | 'Pre-Launch'
+    | 'Startup'
+    | 'Early Growth'
+    | 'Growth'
+    | 'Mature'
+    | 'Expansion' {
     const stageMap: Record<string, any> = {
       pty_ltd: 'Growth',
       close_corporation: 'Growth',
@@ -151,7 +161,9 @@ export class KapifyReportsTransformerService {
   /**
    * Calculate annual revenue from monthly
    */
-  private calculateAnnualRevenue(financialProfile?: FinancialProfileData): number {
+  private calculateAnnualRevenue(
+    financialProfile?: FinancialProfileData | null
+  ): number {
     if (!financialProfile?.monthlyRevenue) return 0;
 
     const monthly = this.parseNumber(financialProfile.monthlyRevenue);
@@ -191,7 +203,9 @@ export class KapifyReportsTransformerService {
   /**
    * Map funding type array to first type string
    */
-  private mapFundingType(fundingTypes?: string[]): 'Equity' | 'Debt' | 'Grant' | 'Hybrid' {
+  private mapFundingType(
+    fundingTypes?: string[]
+  ): 'Equity' | 'Debt' | 'Grant' | 'Hybrid' {
     if (!fundingTypes || fundingTypes.length === 0) {
       return 'Hybrid';
     }
@@ -202,9 +216,9 @@ export class KapifyReportsTransformerService {
       grant: 'Grant',
       convertible: 'Hybrid',
       mezzanine: 'Hybrid',
-      'revenue_share': 'Hybrid',
-      'invoice_financing': 'Debt',
-      'purchase_order': 'Debt',
+      revenue_share: 'Hybrid',
+      invoice_financing: 'Debt',
+      purchase_order: 'Debt',
     };
 
     // Map first funding type, default to Hybrid if multiple
@@ -217,7 +231,14 @@ export class KapifyReportsTransformerService {
    */
   private mapApplicationStatus(
     status?: string
-  ): 'Draft' | 'Submitted' | 'Review' | 'Under Review' | 'Approved' | 'Rejected' | 'Withdrawn' {
+  ):
+    | 'Draft'
+    | 'Submitted'
+    | 'Review'
+    | 'Under Review'
+    | 'Approved'
+    | 'Rejected'
+    | 'Withdrawn' {
     const statusMap: Record<string, any> = {
       draft: 'Draft',
       submitted: 'Submitted',

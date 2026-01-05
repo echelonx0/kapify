@@ -35,6 +35,7 @@ import {
   ChartColumn,
   CircleCheckBig,
   Funnel,
+  MessageSquare,
 } from 'lucide-angular';
 import {
   RightPanelContent,
@@ -48,11 +49,13 @@ import { OpportunityManagementService } from 'src/app/funder/services/opportunit
 import {
   // PrimaryCTACardComponent,
   CTAContent,
+  PrimaryCTACardComponent,
 } from '../components/cta-card/cta-card.component';
 import {
   OrganizationStatusOverviewComponent,
   ActionEvent,
 } from '../components/status-overview/status-overview.component';
+import { SupportModalComponent } from 'src/app/features/support/support.modal';
 
 interface OnboardingCard {
   id: string;
@@ -75,8 +78,9 @@ interface OnboardingCard {
     FormsModule,
     LucideAngularModule,
     RightPanelComponent,
-    // PrimaryCTACardComponent,
+    PrimaryCTACardComponent,
     OrganizationStatusOverviewComponent,
+    SupportModalComponent,
   ],
   templateUrl: './kapify-dashboard.component.html',
   styleUrl: './kapify-dashboard.component.css',
@@ -89,7 +93,7 @@ export class KapifyDashboard implements OnInit, OnDestroy {
   private onboardingService = inject(FunderOnboardingService);
   private managementService = inject(OpportunityManagementService);
   private destroy$ = new Subject<void>();
-
+  showSupportModal = signal(false);
   // Icons
   FileTextIcon = FileText;
   ClockIcon = Clock;
@@ -113,7 +117,7 @@ export class KapifyDashboard implements OnInit, OnDestroy {
   HomeIcon = Home;
   ChevronDownIcon = ChevronDown;
   HelpCircleIcon = CircleQuestionMark;
-
+  MessageSquareIcon = MessageSquare;
   // State Signals
   isLoading = signal(false);
   rightPanelContent = signal<RightPanelContent>('activity-inbox');
@@ -211,12 +215,12 @@ export class KapifyDashboard implements OnInit, OnDestroy {
   ctaContent = computed<CTAContent>(() => {
     if (this.userType() === 'funder') {
       return {
-        title: 'Credit-Based Platform Access',
+        title: 'Business valuation',
         description:
-          'Kapify uses a flexible credit system. Purchase credits as you need them and use them to unlock premium features, post opportunities, and access detailed analytics. No subscriptions, no commitments.',
-        buttonText: 'Learn About Credits',
+          'Kapify can help you get a professional eveluation of your business.',
+        buttonText: 'Learn About Kapify Valuation service',
         icon: Zap,
-        gradient: 'amber',
+        gradient: 'slate',
       };
     }
     return {
@@ -228,7 +232,11 @@ export class KapifyDashboard implements OnInit, OnDestroy {
       gradient: 'teal',
     };
   });
-
+  constructor() {
+    window.addEventListener('closeSupport', () => {
+      this.showSupportModal.set(false);
+    });
+  }
   ngOnInit(): void {
     this.loadProfileData();
     this.loadOrgID();
@@ -239,10 +247,15 @@ export class KapifyDashboard implements OnInit, OnDestroy {
   loadOrgID() {
     this.authService.getCurrentUserOrganizationId();
   }
+  // ADD THIS METHOD
+  openSupport(): void {
+    this.showSupportModal.set(true);
+  }
 
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
+    window.removeEventListener('closeSupport', () => {}); // Clean up
   }
 
   private loadProfileData(): void {
@@ -327,11 +340,11 @@ export class KapifyDashboard implements OnInit, OnDestroy {
 
   // CTA Card action handler
   handleCTAClick(): void {
-    const route =
-      this.userType() === 'funder'
-        ? '/finance/credit-info'
-        : '/executive-application-form';
-    this.router.navigate([route]);
+    // const route =
+    //   this.userType() === 'funder'
+    //     ? '/finance/credit-info'
+    //     : '/executive-application-form';
+    // this.router.navigate([route]);
   }
 
   onRightPanelContentChange(content: RightPanelContent): void {
@@ -360,10 +373,6 @@ export class KapifyDashboard implements OnInit, OnDestroy {
     if (window.innerWidth < 1024) {
       this.isMobilePanelOpen.set(true);
     }
-  }
-
-  contactSupport(): void {
-    console.log('Contact support clicked');
   }
 
   // Greeting message based on time of day

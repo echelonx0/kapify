@@ -1,8 +1,9 @@
 import { Injectable, inject } from '@angular/core';
 import { Observable, from, throwError } from 'rxjs';
 import { SharedSupabaseService } from '../../shared/services/shared-supabase.service';
-import { FundingApplication } from '../models/application.models';
+
 import { KapifyReportsFilter } from './kapify-reports.interface';
+import { FundingApplication } from 'src/app/SMEs/models/application.models';
 
 /**
  * Internal enriched application type with all related data
@@ -98,12 +99,12 @@ export class KapifyReportsRepositoryService {
 
       // Step 2: Extract unique IDs for batch queries
       const applicantIds = [
-        ...new Set(applications.map((app) => app.applicant_id)),
+        ...new Set(applications.map((app) => app.applicantId)),
       ];
       const opportunityIds = [
         ...new Set(
           applications
-            .map((app) => app.opportunity_id)
+            .map((app) => app.opportunityId)
             .filter((id) => id !== null)
         ),
       ];
@@ -118,10 +119,7 @@ export class KapifyReportsRepositoryService {
           opportunityIds.length > 0
             ? this.fetchOpportunitiesByIds(opportunityIds)
             : Promise.resolve([]),
-          this.fetchBusinessPlanSectionsByUserIds(
-            applicantIds,
-            'company-info'
-          ),
+          this.fetchBusinessPlanSectionsByUserIds(applicantIds, 'company-info'),
           this.fetchBusinessPlanSectionsByUserIds(
             applicantIds,
             'financial-profile'
@@ -151,13 +149,16 @@ export class KapifyReportsRepositoryService {
       // Step 5: Enrich applications with related data
       const enrichedApplications = applications.map((app) => ({
         application: app,
-        user: userMap.get(app.applicant_id) || null,
-        opportunity: opportunityMap.get(app.opportunity_id) || null,
-        companyInfo: companyInfoMap.get(app.applicant_id) || null,
-        financialProfile: financialProfileMap.get(app.applicant_id) || null,
+        user: userMap.get(app.opportunityId) || null,
+        opportunity: opportunityMap.get(app.opportunityId) || null,
+        companyInfo: companyInfoMap.get(app.applicantId) || null,
+        financialProfile: financialProfileMap.get(app.applicantId) || null,
       }));
 
-      console.log('✅ [REPO] Applications enriched:', enrichedApplications.length);
+      console.log(
+        '✅ [REPO] Applications enriched:',
+        enrichedApplications.length
+      );
 
       return enrichedApplications;
     } catch (error) {
@@ -174,9 +175,7 @@ export class KapifyReportsRepositoryService {
     excludeStatuses: string[] = ['draft', 'withdrawn']
   ): Promise<FundingApplication[]> {
     try {
-      let query = this.supabase
-        .from('applications')
-        .select('*');
+      let query = this.supabase.from('applications').select('*');
 
       // Filter by opportunity
       if (filters?.searchQuery) {
@@ -253,7 +252,9 @@ export class KapifyReportsRepositoryService {
   /**
    * Batch fetch opportunities by IDs
    */
-  private async fetchOpportunitiesByIds(opportunityIds: string[]): Promise<any[]> {
+  private async fetchOpportunitiesByIds(
+    opportunityIds: string[]
+  ): Promise<any[]> {
     if (opportunityIds.length === 0) return [];
 
     try {
@@ -297,10 +298,7 @@ export class KapifyReportsRepositoryService {
 
       return data || [];
     } catch (error) {
-      console.warn(
-        `⚠️ [REPO] Error fetching ${sectionType} sections:`,
-        error
-      );
+      console.warn(`⚠️ [REPO] Error fetching ${sectionType} sections:`, error);
       return [];
     }
   }
@@ -423,7 +421,9 @@ export class KapifyReportsRepositoryService {
       }
 
       // Extract applicant IDs
-      const applicantIds = [...new Set(applications.map((app) => app.applicant_id))];
+      const applicantIds = [
+        ...new Set(applications.map((app) => app.applicant_id)),
+      ];
 
       // Batch fetch related data
       const [users, companyInfos, financialProfiles, opportunity] =
@@ -459,7 +459,10 @@ export class KapifyReportsRepositoryService {
         financialProfile: financialProfileMap.get(app.applicant_id) || null,
       }));
     } catch (error) {
-      console.error('❌ [REPO] Error fetching applications by opportunity:', error);
+      console.error(
+        '❌ [REPO] Error fetching applications by opportunity:',
+        error
+      );
       throw error;
     }
   }

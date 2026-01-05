@@ -55,9 +55,10 @@
   <!-- Quick Actions Divider -->
   <div class="px-2 mb-4">
     <div class="border-t border-slate-200/50 pt-4">
-      <!-- Notifications Button -->
-      <button
-        (click)="toggleNotifications()"
+      <!-- Notifications Link -->
+      <a
+        routerLink="/dashboard/notifications"
+        routerLinkActive="bg-teal-50 text-teal-700 border-r-2 border-teal-500"
         class="flex items-center w-full gap-2 px-3 py-2.5 text-sm font-medium rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-all duration-200 relative focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2"
         title="Notifications"
         aria-label="Notifications"
@@ -83,12 +84,12 @@
         >
           Notifications
         </span>
-      </button>
+      </a>
 
       <!-- Business Reports Link -->
       <a
         routerLink="/dashboard/reports"
-        routerLinkActive="bg-teal-50 text-teal-700"
+        routerLinkActive="bg-teal-50 text-teal-700 border-r-2 border-teal-500"
         class="flex items-center gap-2 px-3 py-2.5 text-sm font-medium rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2"
         title="Reports"
       >
@@ -108,7 +109,7 @@
       <!-- Reports Link -->
       <a
         routerLink="/dashboard/logs"
-        routerLinkActive="bg-teal-50 text-teal-700"
+        routerLinkActive="bg-teal-50 text-teal-700 border-r-2 border-teal-500"
         class="flex items-center gap-2 px-3 py-2.5 text-sm font-medium rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2"
         title="Logs"
       >
@@ -128,7 +129,7 @@
       <!-- Settings Link -->
       <a
         routerLink="/dashboard/settings"
-        routerLinkActive="bg-teal-50 text-teal-700"
+        routerLinkActive="bg-teal-50 text-teal-700 border-r-2 border-teal-500"
         class="flex items-center gap-2 px-3 py-2.5 text-sm font-medium rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2"
         title="Settings"
       >
@@ -206,8 +207,8 @@
   <!-- Right Actions -->
   <div class="flex items-center gap-2">
     <!-- Notifications -->
-    <button
-      (click)="toggleNotifications()"
+    <a
+      routerLink="/dashboard/notifications"
       class="p-2 relative rounded-xl text-slate-600 hover:bg-slate-100 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-teal-500"
       title="Notifications"
       aria-label="Notifications"
@@ -220,7 +221,7 @@
         {{ unreadNotifications() > 9 ? "9+" : unreadNotifications() }}
       </span>
       }
-    </button>
+    </a>
   </div>
 </header>
 
@@ -270,11 +271,36 @@
   <!-- Mobile Quick Actions -->
   <div class="px-4 pb-4">
     <div class="border-t border-slate-200/50 pt-4 space-y-1">
+      <!-- Notifications Mobile -->
+      <a
+        routerLink="/dashboard/notifications"
+        (click)="closeMobileMenu()"
+        routerLinkActive="bg-teal-50 text-teal-700 border-l-2 border-teal-500"
+        class="flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-teal-500"
+        title="Notifications"
+      >
+        <div class="relative">
+          <lucide-icon
+            [img]="BellIcon"
+            [size]="20"
+            class="text-slate-600"
+          ></lucide-icon>
+          @if (unreadNotifications() > 0) {
+          <span
+            class="absolute -top-2 -right-2 w-4 h-4 bg-red-600 text-white text-xs font-semibold rounded-full flex items-center justify-center"
+          >
+            {{ unreadNotifications() > 9 ? "9+" : unreadNotifications() }}
+          </span>
+          }
+        </div>
+        <span>Notifications</span>
+      </a>
+
       <!-- Settings -->
       <a
         routerLink="/dashboard/settings"
         (click)="closeMobileMenu()"
-        routerLinkActive="bg-teal-50 text-teal-700"
+        routerLinkActive="bg-teal-50 text-teal-700 border-l-2 border-teal-500"
         class="flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-teal-500"
         title="Settings"
       >

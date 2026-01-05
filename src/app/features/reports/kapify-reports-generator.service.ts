@@ -1,9 +1,13 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { Observable, from, throwError } from 'rxjs';
 import { tap, catchError } from 'rxjs/operators';
-import { KapifyReports, KapifyReportsFilter, KapifyReportsBulkUpload } from './kapify-reports.interface';
-import { KapifyReportsRepositoryService, EnrichedApplication } from './1-kapify-reports-repository.service';
-import { KapifyReportsTransformerService } from './2-kapify-reports-transformer.service';
+import {
+  KapifyReports,
+  KapifyReportsFilter,
+  KapifyReportsBulkUpload,
+} from './kapify-reports.interface';
+import { KapifyReportsRepositoryService } from './kapify-reports-repository.service';
+import { KapifyReportsTransformerService } from './kapify-reports-transformer.service';
 
 /**
  * Cached report data with metadata
@@ -70,7 +74,9 @@ export class KapifyReportsGeneratorService {
    * Generate reports for specific opportunity with caching
    */
   generateByOpportunity(opportunityId: string): Observable<KapifyReports[]> {
-    console.log(`🎯 [GENERATOR] Generating reports for opportunity: ${opportunityId}`);
+    console.log(
+      `🎯 [GENERATOR] Generating reports for opportunity: ${opportunityId}`
+    );
 
     // Check cache first
     const cached = this.getFromCache(opportunityId);
@@ -109,7 +115,9 @@ export class KapifyReportsGeneratorService {
    * Refresh reports (bypass cache, generate fresh)
    */
   refreshReports(opportunityId: string): Observable<KapifyReports[]> {
-    console.log(`🔄 [GENERATOR] Refreshing reports for opportunity: ${opportunityId}`);
+    console.log(
+      `🔄 [GENERATOR] Refreshing reports for opportunity: ${opportunityId}`
+    );
 
     // Clear cache
     this.clearCache(opportunityId);
@@ -128,7 +136,9 @@ export class KapifyReportsGeneratorService {
     return from(this.performSingleGeneration(applicationId)).pipe(
       tap((report) => {
         this.isGenerating.set(false);
-        console.log(`✅ [GENERATOR] Generated single report for ${applicationId}`);
+        console.log(
+          `✅ [GENERATOR] Generated single report for ${applicationId}`
+        );
       }),
       catchError((error) => {
         this.isGenerating.set(false);
@@ -152,7 +162,9 @@ export class KapifyReportsGeneratorService {
       const reports = await this.performGeneration(filters);
 
       const bulkUpload: KapifyReportsBulkUpload = {
-        fileName: `KapifyReports_${new Date().toISOString().split('T')[0]}.xlsx`,
+        fileName: `KapifyReports_${
+          new Date().toISOString().split('T')[0]
+        }.xlsx`,
         totalRecords: reports.length,
         successCount: reports.length,
         failureCount: 0,
@@ -161,7 +173,9 @@ export class KapifyReportsGeneratorService {
         uploadedBy: 'system',
       };
 
-      console.log(`✅ [GENERATOR] Bulk reports generated: ${reports.length} records`);
+      console.log(
+        `✅ [GENERATOR] Bulk reports generated: ${reports.length} records`
+      );
       return bulkUpload;
     } catch (error) {
       console.error('❌ [GENERATOR] Error generating bulk reports:', error);
@@ -174,7 +188,9 @@ export class KapifyReportsGeneratorService {
    * Called when application status changes
    */
   invalidateCache(opportunityId: string): void {
-    console.log(`🗑️  [GENERATOR] Invalidating cache for opportunity: ${opportunityId}`);
+    console.log(
+      `🗑️  [GENERATOR] Invalidating cache for opportunity: ${opportunityId}`
+    );
     this.clearCache(opportunityId);
   }
 
@@ -187,7 +203,8 @@ export class KapifyReportsGeneratorService {
     oldestEntry: Date | null;
   } {
     const timestamps = Array.from(this.cacheTimestamps.values());
-    const oldestTimestamp = timestamps.length > 0 ? Math.min(...timestamps) : null;
+    const oldestTimestamp =
+      timestamps.length > 0 ? Math.min(...timestamps) : null;
 
     return {
       size: this.reportCache.size,
@@ -216,8 +233,9 @@ export class KapifyReportsGeneratorService {
     filters?: KapifyReportsFilter
   ): Promise<KapifyReports[]> {
     try {
-      const enrichedApps =
-        await this.repository.getApplicationsWithData(filters);
+      const enrichedApps = await this.repository.getApplicationsWithData(
+        filters
+      );
 
       if (enrichedApps.length === 0) {
         return [];
@@ -238,8 +256,9 @@ export class KapifyReportsGeneratorService {
     opportunityId: string
   ): Promise<KapifyReports[]> {
     try {
-      const enrichedApps =
-        await this.repository.getApplicationsByOpportunity(opportunityId);
+      const enrichedApps = await this.repository.getApplicationsByOpportunity(
+        opportunityId
+      );
 
       if (enrichedApps.length === 0) {
         return [];
@@ -259,7 +278,9 @@ export class KapifyReportsGeneratorService {
   /**
    * Generate single report
    */
-  private async performSingleGeneration(applicationId: string): Promise<KapifyReports> {
+  private async performSingleGeneration(
+    applicationId: string
+  ): Promise<KapifyReports> {
     try {
       const enriched = await this.repository.getSingleApplicationWithData(
         applicationId
@@ -340,9 +361,10 @@ export class KapifyReportsGeneratorService {
    * Generate simple ETag for cache validation
    */
   private generateETag(reports: KapifyReports[]): string {
-    const hash = reports.length.toString() +
+    const hash =
+      reports.length.toString() +
       reports
-        .map((r) => `${r.id || r.nameOfBusiness}`)
+        .map((r) => `${r.no || r.nameOfBusiness}`)
         .join('|')
         .substring(0, 50);
 

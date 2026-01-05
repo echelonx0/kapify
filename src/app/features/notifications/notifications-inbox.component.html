@@ -1,0 +1,191 @@
+<div class="flex h-screen bg-slate-50">
+  <!-- LEFT PANE: Thread List -->
+  <div
+    class="flex flex-col w-full lg:w-96 bg-white border-r border-slate-200 overflow-hidden"
+    [class.hidden]="selectedThreadId() && isMobile()"
+  >
+    <!-- Header -->
+    <div class="flex-shrink-0 px-6 py-4 border-b border-slate-200">
+      <div class="flex items-center justify-between mb-4">
+        <h1 class="text-xl font-bold text-slate-900">Notifications</h1>
+        @if (totalUnreadCount() > 0) {
+        <span
+          class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-teal-50 text-teal-700 border border-teal-200/50"
+        >
+          {{ totalUnreadCount() }}
+        </span>
+        }
+      </div>
+
+      <!-- Search -->
+      <div class="relative">
+        <input
+          type="text"
+          placeholder="Search threads..."
+          [value]="searchQuery()"
+          (input)="searchQuery.set($any($event.target).value)"
+          class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200"
+        />
+        @if (searchQuery()) {
+        <button
+          (click)="searchQuery.set('')"
+          class="absolute right-3 top-2.5 text-slate-400 hover:text-slate-600 transition-colors"
+        >
+          <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+            <path
+              fill-rule="evenodd"
+              d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+              clip-rule="evenodd"
+            />
+          </svg>
+        </button>
+        }
+      </div>
+    </div>
+
+    <!-- Thread List -->
+    <div class="flex-1 overflow-y-auto">
+      @if (isLoadingThreads()) {
+      <div class="flex items-center justify-center h-full">
+        <div class="text-center">
+          <div
+            class="w-8 h-8 border-2 border-teal-500 border-t-transparent rounded-full animate-spin mx-auto mb-3"
+          ></div>
+          <p class="text-sm text-slate-500">Loading Notifications...</p>
+        </div>
+      </div>
+      } @else if (filteredThreads().length === 0) {
+      <div class="flex items-center justify-center h-full">
+        <div class="text-center px-6">
+          <svg
+            class="w-12 h-12 text-slate-300 mx-auto mb-3"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="1.5"
+              d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+            />
+          </svg>
+          <p class="text-sm font-medium text-slate-900">No Notifications yet</p>
+          <p class="text-xs text-slate-500 mt-1">
+            Your conversations will appear here
+          </p>
+        </div>
+      </div>
+      } @else { @for (thread of filteredThreads(); track trackByThreadId($index,
+      thread)) {
+      <button
+        (click)="selectThread(thread.id)"
+        [class.bg-teal-50]="selectedThreadId() === thread.id"
+        [class.border-l-4]="selectedThreadId() === thread.id"
+        [class.border-l-teal-500]="selectedThreadId() === thread.id"
+        class="w-full px-6 py-4 border-b border-slate-200 text-left hover:bg-slate-50 transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-teal-500 relative"
+      >
+        <!-- Unread indicator -->
+        @if (thread.unreadCount > 0) {
+        <div
+          class="absolute left-0 top-0 h-full w-1 bg-teal-500 rounded-r-lg"
+        ></div>
+        }
+
+        <div class="flex items-start gap-3">
+          <!-- Avatar -->
+          <div
+            class="flex-shrink-0 w-10 h-10 rounded-full bg-gradient-to-br from-teal-400 to-teal-600 flex items-center justify-center text-white text-sm font-semibold"
+          >
+            {{ thread.participants[0].initials || "M" }}
+          </div>
+
+          <div class="flex-1 min-w-0">
+            <!-- Subject & Unread Badge -->
+            <div class="flex items-center justify-between gap-2 mb-1">
+              <h3
+                [class.font-semibold]="thread.unreadCount > 0"
+                [class.font-medium]="thread.unreadCount === 0"
+                class="text-sm text-slate-900 truncate"
+              >
+                {{ thread.subject }}
+              </h3>
+              @if (thread.unreadCount > 0) {
+              <span
+                class="flex-shrink-0 inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-teal-50 text-teal-700 border border-teal-200/50"
+              >
+                {{ thread.unreadCount }}
+              </span>
+              }
+            </div>
+
+            <!-- Last message preview -->
+            @if (thread.lastMessage) {
+            <p
+              [class.text-slate-600]="thread.unreadCount === 0"
+              [class.text-slate-900]="thread.unreadCount > 0"
+              class="text-xs truncate"
+            >
+              {{ thread.lastMessage.content }}
+            </p>
+            }
+
+            <!-- Date & Participant Count -->
+            <div class="flex items-center justify-between gap-2 mt-2">
+              <p class="text-xs text-slate-500">
+                {{ formatDate(thread.updated_at) }}
+              </p>
+              @if (thread.participants.length > 1) {
+              <span class="text-xs text-slate-400">
+                +{{ thread.participants.length - 1 }}
+              </span>
+              }
+            </div>
+          </div>
+        </div>
+      </button>
+      } }
+    </div>
+  </div>
+
+  <!-- RIGHT PANE: Detail View -->
+  @if (selectedThread(); as thread) {
+  <div
+    *ngIf="!isMobile() || selectedThreadId()"
+    [@slideIn]
+    class="flex-1 flex flex-col bg-white lg:border-r-0 border-l border-slate-200 overflow-hidden"
+  >
+    <app-notifications-detail
+      [thread]="thread"
+      (onClose)="closeDetail()"
+      [@fadeIn]
+    />
+  </div>
+  } @else {
+  <!-- Empty state for desktop -->
+  @if (!isMobile()) {
+  <div class="flex-1 flex items-center justify-center bg-white">
+    <div class="text-center">
+      <svg
+        class="w-16 h-16 text-slate-200 mx-auto mb-4"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="1.5"
+          d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+        />
+      </svg>
+      <h2 class="text-lg font-semibold text-slate-900 mb-2">
+        No conversation selected
+      </h2>
+      <p class="text-sm text-slate-500">
+        Choose a message to start communicating
+      </p>
+    </div>
+  </div>
+  } }
+</div>

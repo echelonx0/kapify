@@ -1,5 +1,5 @@
 <!-- Primary CTA Card with Animations -->
-<div class="cta-card-wrapper" [class.animate-in]="isAnimating()">
+<div class="mt-2 cta-card-wrapper" [class.animate-in]="isAnimating()">
   <div
     [class]="
       'bg-gradient-to-r ' +
@@ -28,19 +28,8 @@
         class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6"
       >
         <div class="flex-1">
-          <!-- Icon Badge with Pulse Animation -->
-          <div
-            class="inline-flex items-center justify-center w-14 h-14 rounded-xl bg-white/20 backdrop-blur-sm mb-4 icon-badge"
-          >
-            <lucide-icon
-              [img]="ctaContent().icon"
-              [size]="28"
-              class="text-white"
-            />
-          </div>
-
           <!-- Title with Slide-in Animation -->
-          <h2 class="text-2xl lg:text-3xl font-bold mb-3 cta-title">
+          <h2 class="text-1xl lg:text-2xl font-bold mb-3 cta-title">
             {{ ctaContent().title }}
           </h2>
 

@@ -147,6 +147,24 @@ export const adminRoutes: Routes = [
         path: 'reports',
         component: ReportsComponent,
       },
+
+      // ============================================================================
+      // SUPPORT MANAGEMENT ROUTE
+      // ============================================================================
+      {
+        path: 'support',
+        loadComponent: () => {
+          console.log('Loading AdminSupportComponent...');
+          return import('./support/admin-support.component').then((m) => {
+            console.log(
+              'AdminSupportComponent loaded:',
+              m.AdminSupportComponent
+            );
+            return m.AdminSupportComponent;
+          });
+        },
+        title: 'Support Tickets - Kapify Admin',
+      },
       // ============================================================================
       // AI MANAGEMENT ROUTES
       // ============================================================================

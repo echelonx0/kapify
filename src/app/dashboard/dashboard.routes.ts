@@ -2,6 +2,7 @@ import { Routes } from '@angular/router';
 
 import { AIReportsComponent } from '../features/reports/ai-reports.component';
 import { ActivityLogsComponent } from '../features/activity-logs/activity-logs.component';
+import { NotificationsInboxComponent } from '../features/notifications/notifications-inbox.component';
 
 export const dashboardRoutes: Routes = [
   {
@@ -17,10 +18,10 @@ export const dashboardRoutes: Routes = [
         redirectTo: 'home',
         pathMatch: 'full',
       },
-      // {
-      //   path: 'reports',
-      //   component: ReportsComponent,
-      // },
+      {
+        path: 'notifications',
+        component: NotificationsInboxComponent,
+      },
 
       {
         path: 'reports',
@@ -29,7 +30,7 @@ export const dashboardRoutes: Routes = [
 
       {
         path: 'logs',
-        component: ActivityLogsComponent,
+        component: AIReportsComponent,
       },
       // Dashboard routes
       {

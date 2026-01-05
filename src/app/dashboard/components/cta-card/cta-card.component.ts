@@ -21,7 +21,7 @@ export interface CTAContent {
   description: string;
   buttonText: string;
   icon: any;
-  gradient: 'teal' | 'amber' | 'blue' | 'green';
+  gradient: 'teal' | 'amber' | 'blue' | 'green' | 'slate';
 }
 
 @Component({
@@ -66,6 +66,7 @@ export class PrimaryCTACardComponent implements OnInit {
       amber: 'from-amber-500 to-amber-600',
       blue: 'from-blue-500 to-blue-600',
       green: 'from-green-500 to-green-600',
+      slate: 'from-slate-500 to slate-600',
     };
     return gradientMap[gradient] || gradientMap.teal;
   });

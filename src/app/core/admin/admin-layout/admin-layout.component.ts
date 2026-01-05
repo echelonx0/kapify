@@ -82,6 +82,11 @@ export class AdminLayoutComponent {
       label: 'FAQs Manager',
       icon: 'fas fa-chart-bar',
     },
+    {
+      path: 'support',
+      label: 'Support Tickets',
+      icon: 'fas fa-headset',
+    },
   ];
 
   // Main app routes for quick navigation
@@ -156,6 +161,7 @@ export class AdminLayoutComponent {
     const titleMap: Record<string, string> = {
       '/admin/dashboard': 'Dashboard',
       '/admin/verification': 'Organization Verification',
+      '/admin/support': 'Support Tickets',
     };
 
     // Find matching title

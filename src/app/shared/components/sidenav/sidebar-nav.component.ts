@@ -71,7 +71,6 @@ export class SidebarNavComponent implements OnInit {
   showMobileMenu = signal(false);
 
   // State - Notifications
-  showNotifications = signal(false);
   isOnline = signal(true);
   unreadNotifications = signal(1);
 
@@ -244,11 +243,6 @@ export class SidebarNavComponent implements OnInit {
 
   closeMobileMenu(): void {
     this.showMobileMenu.set(false);
-  }
-
-  // Notifications
-  toggleNotifications(): void {
-    this.showNotifications.update((v) => !v);
   }
 
   // Auth Actions
