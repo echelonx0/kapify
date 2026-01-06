@@ -5,7 +5,7 @@ import { Observable, from, throwError } from 'rxjs';
 import { tap, catchError } from 'rxjs/operators';
 import { AuthService } from 'src/app/auth/services/production.auth.service';
 import { SharedSupabaseService } from 'src/app/shared/services/shared-supabase.service';
-import { MessagingService } from 'src/app/messaging/services/messaging.service';
+import { MessagingService } from 'src/app/features/messaging/services/messaging.service';
 import {
   FundingApplication,
   ReviewNote,

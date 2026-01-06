@@ -2,7 +2,7 @@ import { Injectable, inject, signal, OnDestroy } from '@angular/core';
 import { Observable, from, throwError, BehaviorSubject, Subject } from 'rxjs';
 import { tap, catchError, takeUntil } from 'rxjs/operators';
 
-import { MessagingService } from 'src/app/messaging/services/messaging.service';
+import { MessagingService } from 'src/app/features/messaging/services/messaging.service';
 import { ActivityService } from 'src/app/shared/services/activity.service';
 import { SharedSupabaseService } from 'src/app/shared/services/shared-supabase.service';
 

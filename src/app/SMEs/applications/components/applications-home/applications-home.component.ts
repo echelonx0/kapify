@@ -635,7 +635,7 @@ import {
   AlertCircle,
 } from 'lucide-angular';
 import { AuthService } from 'src/app/auth/services/production.auth.service';
-import { ActivityInboxComponent } from 'src/app/messaging/messaging/messaging.component';
+import { ActivityInboxComponent } from 'src/app/features/messaging/messaging/messaging.component';
 import { OpportunityApplicationService } from 'src/app/SMEs/services/opportunity-application.service';
 import { SharedSupabaseService } from 'src/app/shared/services/shared-supabase.service';
 

@@ -19,7 +19,7 @@ import { Subject, takeUntil } from 'rxjs';
 import {
   MessagingService,
   MessageThread,
-} from 'src/app/messaging/services/messaging.service';
+} from 'src/app/features/messaging/services/messaging.service';
 import { DocumentMetadata } from 'src/app/shared/services/supabase-document.service';
 import {
   OrganizationVerificationService,
