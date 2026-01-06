@@ -1,4 +1,4 @@
-// src/app/ai/ai-assistant/ai-assistant.component.ts - REFACTORED WITH CONTROLLER
+// src/app/ai/ai-assistant/ai-assistant.component.ts
 import {
   Component,
   inject,
@@ -359,12 +359,10 @@ export class AiAssistantComponent implements OnInit, OnDestroy {
       );
       // If paid, show modal; if free, execute immediately
       if (!isFree) {
-        console.log('💳 [AI-ASSISTANT] Showing credit gating modal');
         this.showCreditGatingModal.set(true);
         return;
       }
 
-      console.log('🎁 [AI-ASSISTANT] Running FREE analysis');
       await this.executeAnalysis();
     } catch (error) {
       console.error('❌ [AI-ASSISTANT] Error in generateAnalysis():', error);

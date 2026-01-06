@@ -1,4 +1,4 @@
-<!-- Shareholder Manager Template -->
+<!-- Shareholder Manager -->
 <div class="space-y-4">
   <!-- Add Button -->
   <ui-button
@@ -8,7 +8,7 @@
     class="mb-6"
   >
     <lucide-icon [img]="PlusIcon" [size]="16" class="mr-2" />
-    Add a Shareholder
+    Add Shareholder Info
   </ui-button>
 
   <!-- Shareholders List -->
@@ -88,6 +88,20 @@
         </h3>
       </div>
       <form [formGroup]="shareholderForm" class="p-6 space-y-4">
+        <div>
+          <label class="block text-sm font-semibold text-slate-900 mb-2">
+            Is this a juristic person?
+            <span class="text-red-600">*</span>
+          </label>
+          <select
+            formControlName="isJuristicPerson"
+            class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200"
+          >
+            <option value="" disabled selected>Select an option</option>
+            <option value="false">No</option>
+            <option value="true">Yes</option>
+          </select>
+        </div>
         <ui-input
           label="Full Name of Shareholder"
           placeholder="Elizabeth Swan"

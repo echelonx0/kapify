@@ -137,11 +137,11 @@
                 </div>
 
                 <!-- Estimated Time (if not completed) -->
-                @if (step.estimatedTime && !step.completed) {
+                <!-- @if (step.estimatedTime && !step.completed) {
                 <p class="text-xs text-teal-600 font-medium mt-3">
                   ⏱ {{ step.estimatedTime }}
                 </p>
-                }
+                } -->
 
                 <!-- Progress Bar (in progress only) -->
                 @if (isStepInProgress(step)) {
@@ -248,12 +248,12 @@
               </div>
             </div>
             <div class="pt-2">
-              <p class="text-xs text-slate-600">
+              <!-- <p class="text-xs text-slate-600">
                 <span class="font-semibold text-slate-900"
                   >{{ estimatedHours() }}h</span
                 >
                 estimated to complete
-              </p>
+              </p> -->
             </div>
           </div>
         </div>

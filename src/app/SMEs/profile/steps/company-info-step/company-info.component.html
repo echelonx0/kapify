@@ -110,14 +110,14 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
           <ui-input
             label="First name"
-            placeholder="Bash"
+            placeholder="John"
             [error]="getFieldError('firstName')"
             formControlName="firstName"
             [required]="true"
           />
           <ui-input
             label="Last name"
-            placeholder="Cele"
+            placeholder="Doe"
             [error]="getFieldError('lastName')"
             formControlName="lastName"
             [required]="true"
@@ -125,7 +125,7 @@
           <ui-input
             label="Email"
             type="email"
-            placeholder="bashcele@gmail.com"
+            placeholder="user@company.com"
             [error]="getFieldError('email')"
             formControlName="email"
             [required]="true"
@@ -163,6 +163,11 @@
             [error]="getFieldError('role')"
             formControlName="role"
             [required]="true"
+          />
+          <ui-input
+            label="Alternate No (Optional)"
+            placeholder="Alternate Number"
+            [required]="false"
           />
         </div>
       </div>
