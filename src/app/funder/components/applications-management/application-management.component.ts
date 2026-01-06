@@ -30,7 +30,7 @@ import { ApplicationManagementService } from 'src/app/fund-seeking-orgs/services
 import {
   ApplicationListCardComponent,
   BaseApplicationCard,
-} from 'src/app/funder/application-details/components/application-list-card/application-list-card.component';
+} from 'src/app/funder/application-details/funder-applications/application-list-card/application-list-card.component';
 import {
   FundingApplication,
   ApplicationStats,

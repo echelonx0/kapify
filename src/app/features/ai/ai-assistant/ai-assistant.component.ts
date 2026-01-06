@@ -1,4 +1,4 @@
-// src/app/ai/ai-assistant/ai-assistant.component.ts
+// src/app/features/ai/ai-assistant/ai-assistant.component.ts
 import {
   Component,
   inject,

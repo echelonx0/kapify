@@ -642,7 +642,7 @@ import { SharedSupabaseService } from 'src/app/shared/services/shared-supabase.s
 import {
   ApplicationListCardComponent,
   BaseApplicationCard,
-} from 'src/app/funder/application-details/components/application-list-card/application-list-card.component';
+} from 'src/app/funder/application-details/funder-applications/application-list-card/application-list-card.component';
 import { UserType } from 'src/app/shared/models/user.models';
 
 import { ActionModalComponent } from 'src/app/shared/components/modal/action-modal.component';

@@ -27,6 +27,13 @@
 
       <div class="flex gap-3">
         <button
+          (click)="openExpandedView()"
+          class="inline-flex items-center px-6 py-2.5 text-sm font-medium text-white bg-teal-500 rounded-xl hover:bg-teal-600 active:bg-teal-700 transition-colors duration-200"
+        >
+          <lucide-icon [img]="ViewIcon" [size]="16" class="mr-2"></lucide-icon>
+          View financials
+        </button>
+        <button
           (click)="downloadTemplate()"
           class="inline-flex items-center px-6 py-2.5 text-sm font-medium text-white bg-stone-600 rounded-xl hover:bg-stone-700 active:bg-stone-800 transition-colors duration-200"
         >
@@ -36,13 +43,6 @@
             class="mr-2"
           ></lucide-icon>
           Download
-        </button>
-        <button
-          (click)="openExpandedView()"
-          class="inline-flex items-center px-6 py-2.5 text-sm font-medium text-white bg-teal-500 rounded-xl hover:bg-teal-600 active:bg-teal-700 transition-colors duration-200"
-        >
-          <lucide-icon [img]="ViewIcon" [size]="16" class="mr-2"></lucide-icon>
-          View
         </button>
       </div>
     </div>

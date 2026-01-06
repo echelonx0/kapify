@@ -1,4 +1,4 @@
-// src/app/applications/components/submitted/application-submitted.component.ts
+// src/app/fund-seeking-orgs/applications/components/submitted/application-submitted.component.ts
 
 import {
   Component,
@@ -12,8 +12,6 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import {
   LucideAngularModule,
-  CheckCircle2,
-  AlertTriangle,
   Clock,
   FileText,
   Mail,
@@ -23,6 +21,8 @@ import {
   Calendar,
   User,
   Building2,
+  TriangleAlert,
+  CircleCheck,
 } from 'lucide-angular';
 import { UiButtonComponent, UiCardComponent } from 'src/app/shared/components';
 import { takeUntil } from 'rxjs';
@@ -69,7 +69,7 @@ interface SubmissionResult {
             Processing Submission
           </h2>
           <p class="text-gray-600">
-            Please wait while we verify your application details...
+            Please wait while the funder verifies your application details...
           </p>
         </div>
         } @else if (submissionResult()?.success) {
@@ -91,7 +91,7 @@ interface SubmissionResult {
             </h1>
             <p class="text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed">
               Your funding application has been submitted and is now under
-              review. We'll keep you updated on its progress.
+              review. The funder will keep you updated on its progress.
             </p>
           </div>
 
@@ -262,8 +262,8 @@ interface SubmissionResult {
                         class="w-1.5 h-1.5 bg-amber-600 rounded-full mt-2 flex-shrink-0"
                       ></div>
                       <span
-                        >Keep your contact information up to date in case we
-                        need additional documents</span
+                        >Keep your contact information up to date in case the
+                        funder need additional documents</span
                       >
                     </li>
                     <li class="flex items-start space-x-2">
@@ -365,8 +365,8 @@ export class ApplicationSubmittedComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
 
   // Icons
-  CheckCircle2Icon = CheckCircle2;
-  AlertTriangleIcon = AlertTriangle;
+  CheckCircle2Icon = CircleCheck;
+  AlertTriangleIcon = TriangleAlert;
   ClockIcon = Clock;
   FileTextIcon = FileText;
   MailIcon = Mail;
@@ -589,7 +589,7 @@ ${
 }
 
 Your application has been successfully submitted and is now under review.
-You will be notified of any updates via email.
+You will be notified of any updates by the Funder.
 
 Thank you for your application.
     `.trim();

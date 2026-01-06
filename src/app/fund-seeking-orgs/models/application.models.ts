@@ -4,11 +4,23 @@
 export interface FundingApplication {
   id: string;
   applicantId: string;
+  applicantOrganizationName?: string; // 🔴 ADD THIS LINE
   opportunityId: string;
   title: string;
   description?: string;
-  status: 'draft' | 'submitted' | 'under_review' | 'approved' | 'rejected' | 'withdrawn';
-  stage: 'initial_review' | 'due_diligence' | 'investment_committee' | 'documentation' | 'completed';
+  status:
+    | 'draft'
+    | 'submitted'
+    | 'under_review'
+    | 'approved'
+    | 'rejected'
+    | 'withdrawn';
+  stage:
+    | 'initial_review'
+    | 'due_diligence'
+    | 'investment_committee'
+    | 'documentation'
+    | 'completed';
   formData: Record<string, any>;
   documents: Record<string, any>;
   reviewNotes: ReviewNote[];
@@ -31,19 +43,23 @@ export interface FundingApplication {
  */
 export interface ApplicationMetadata {
   // Internal status tracking
-  internalStatus?: 'committee_review' | 'pending_documents' | 'pending_amendments' 
-                  | 'flagged_review' | 'peer_review';
+  internalStatus?:
+    | 'committee_review'
+    | 'pending_documents'
+    | 'pending_amendments'
+    | 'flagged_review'
+    | 'peer_review';
   internalStatusUpdatedAt?: string;
   internalStatusUpdatedBy?: string;
-  
+
   // Priority management
   priority?: 'low' | 'medium' | 'high' | 'urgent';
   priorityUpdatedAt?: string;
   priorityUpdatedBy?: string;
-  
+
   // Internal notes (visible only to review team)
   internalNotes?: InternalNote[];
-  
+
   // Committee review tracking
   committeeReview?: {
     referredAt?: string;
@@ -53,7 +69,7 @@ export interface ApplicationMetadata {
     reviewDecision?: string;
     reviewComments?: string;
   };
-  
+
   // Peer review tracking
   peerReview?: {
     requestedAt?: string;
@@ -63,13 +79,13 @@ export interface ApplicationMetadata {
     recommendation?: string;
     comments?: string;
   };
-  
+
   // Document request tracking
   documentRequests?: DocumentRequest[];
-  
+
   // Amendment requests
   amendmentRequests?: AmendmentRequest[];
-  
+
   // Additional flags
   flags?: {
     requiresLegalReview?: boolean;
@@ -77,7 +93,7 @@ export interface ApplicationMetadata {
     requiresTechnicalReview?: boolean;
     customFlags?: string[];
   };
-  
+
   // Any other custom metadata
   [key: string]: any;
 }
@@ -214,13 +230,22 @@ export interface DocumentSection {
 /**
  * Type guards for internal status checking
  */
-export const isInternalStatus = (status?: string): status is NonNullable<ApplicationMetadata['internalStatus']> => {
+export const isInternalStatus = (
+  status?: string
+): status is NonNullable<ApplicationMetadata['internalStatus']> => {
   if (!status) return false;
-  return ['committee_review', 'pending_documents', 'pending_amendments', 'flagged_review', 'peer_review']
-    .includes(status);
+  return [
+    'committee_review',
+    'pending_documents',
+    'pending_amendments',
+    'flagged_review',
+    'peer_review',
+  ].includes(status);
 };
 
-export const isPriorityLevel = (priority?: string): priority is NonNullable<ApplicationMetadata['priority']> => {
+export const isPriorityLevel = (
+  priority?: string
+): priority is NonNullable<ApplicationMetadata['priority']> => {
   if (!priority) return false;
   return ['low', 'medium', 'high', 'urgent'].includes(priority);
 };
@@ -230,11 +255,11 @@ export const isPriorityLevel = (priority?: string): priority is NonNullable<Appl
  */
 export const getInternalStatusLabel = (status?: string): string => {
   const labels: Record<string, string> = {
-    'committee_review': 'Committee Review',
-    'pending_documents': 'Pending Documents',
-    'pending_amendments': 'Pending Amendments',
-    'flagged_review': 'Flagged for Review',
-    'peer_review': 'Peer Review'
+    committee_review: 'Committee Review',
+    pending_documents: 'Pending Documents',
+    pending_amendments: 'Pending Amendments',
+    flagged_review: 'Flagged for Review',
+    peer_review: 'Peer Review',
   };
   return status ? labels[status] || status : '';
 };
@@ -242,13 +267,25 @@ export const getInternalStatusLabel = (status?: string): string => {
 /**
  * Helper to get priority display info
  */
-export const getPriorityInfo = (priority?: string): { label: string; colorClass: string } => {
+export const getPriorityInfo = (
+  priority?: string
+): { label: string; colorClass: string } => {
   const info: Record<string, { label: string; colorClass: string }> = {
-    'urgent': { label: 'Urgent', colorClass: 'bg-red-100 text-red-700' },
-    'high': { label: 'High Priority', colorClass: 'bg-orange-100 text-orange-700' },
-    'medium': { label: 'Medium Priority', colorClass: 'bg-yellow-100 text-yellow-700' },
-    'low': { label: 'Low Priority', colorClass: 'bg-blue-100 text-blue-700' }
+    urgent: { label: 'Urgent', colorClass: 'bg-red-100 text-red-700' },
+    high: {
+      label: 'High Priority',
+      colorClass: 'bg-orange-100 text-orange-700',
+    },
+    medium: {
+      label: 'Medium Priority',
+      colorClass: 'bg-yellow-100 text-yellow-700',
+    },
+    low: { label: 'Low Priority', colorClass: 'bg-blue-100 text-blue-700' },
   };
-  return priority ? info[priority] || { label: priority, colorClass: 'bg-gray-100 text-gray-700' } 
-                  : { label: '', colorClass: '' };
+  return priority
+    ? info[priority] || {
+        label: priority,
+        colorClass: 'bg-gray-100 text-gray-700',
+      }
+    : { label: '', colorClass: '' };
 };

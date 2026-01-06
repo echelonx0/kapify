@@ -21,9 +21,9 @@ import {
   CircleCheckBig,
 } from 'lucide-angular';
 import { UserType } from '../../../../shared/models/user.models';
-
 import { ActionModalService } from '../../../../shared/components/modal/modal.service';
 import { ApplicationManagementService as FundingApplicationsManagerService } from 'src/app/fund-seeking-orgs/services/application-management.service';
+import { FundingApplication } from 'src/app/fund-seeking-orgs/models/application.models';
 
 export interface BaseApplicationCard {
   id: string;
@@ -91,6 +91,7 @@ export class ApplicationListCardComponent {
   @Input({ required: true }) application!: BaseApplicationCard;
   @Input() userType: UserType = 'sme';
   @Input() showProgress: boolean = true;
+  @Input() applicant: FundingApplication | undefined;
   @Input() funderOrganisationName: string = 'Funder Org';
 
   @Output() primaryAction = new EventEmitter<BaseApplicationCard>();
