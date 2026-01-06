@@ -216,43 +216,13 @@ export interface ApplicationDetailModalData {
         }
 
         <!-- Funding Details -->
-        @if (getCurrentData()?.opportunity) {
-        <div class="space-y-3">
-          <p class="text-sm font-semibold text-slate-900">
-            Funding Opportunity
-          </p>
-          <div
-            class="bg-gradient-to-br from-teal-50 to-slate-50 rounded-xl border border-teal-200/50 p-4 space-y-3"
-          >
-            @if (getCurrentData()?.opportunity?.title) {
-            <div>
-              <p
-                class="text-xs font-semibold text-teal-600 uppercase tracking-wide"
-              >
-                Opportunity
-              </p>
-              <p class="text-sm font-bold text-teal-700 mt-1">
-                {{ getCurrentData()?.opportunity?.title }}
-              </p>
-            </div>
-            } @if (getCurrentData()?.opportunity?.fundingType) {
-            <div class="flex gap-2 flex-wrap">
-              <span
-                *ngFor="let type of getCurrentData()?.opportunity?.fundingType"
-                class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-teal-100 text-teal-700 border border-teal-200/50"
-              >
-                {{ type }}
-              </span>
-            </div>
-            }
-          </div>
-        </div>
-        }
 
-        <!-- Description -->
+        <!-- Funding type -->
         @if (getCurrentData()?.description) {
         <div class="space-y-3">
-          <p class="text-sm font-semibold text-slate-900">Description</p>
+          <p class="text-sm font-semibold text-slate-900">
+            Funding request type
+          </p>
           <p class="text-sm text-slate-600 leading-relaxed">
             {{ getCurrentData()?.description }}
           </p>

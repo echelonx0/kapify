@@ -1,9 +1,4 @@
-// import {
-//   BoardMember,
-//   ManagementMember,
-// } from '../../applications/models/funding-application.models';
-// import { CommitteeMember } from '../../applications/models/profile.models';
-
+// src/app/profiles/SME-Profiles/models/funding.models.ts
 import { CommitteeMember } from 'src/app/shared/models/application.models';
 import {
   ManagementMember,

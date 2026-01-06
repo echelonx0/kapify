@@ -245,7 +245,6 @@ export class ApplicationListCardComponent {
   }
 
   withdrawApplication(): void {
-    console.log('Starting');
     this.modalService.showWithdrawConfirm(
       this.application.title,
       this.application.applicationNumber

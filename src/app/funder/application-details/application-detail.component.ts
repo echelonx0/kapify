@@ -221,7 +221,7 @@ export class ApplicationDetailComponent implements OnInit, OnDestroy {
 
       if (fundingProfile) {
         this.rawProfileData.set(fundingProfile);
-        console.log(fundingProfile.companyInfo?.companyName);
+        //  console.log(fundingProfile.companyInfo?.companyName);
       }
 
       if (fundingProfile) {

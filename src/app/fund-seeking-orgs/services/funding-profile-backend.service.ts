@@ -109,21 +109,11 @@ export class FundingProfileBackendService {
         throw new Error(`Supabase error: ${error.message}`);
       }
 
-      // console.log('📂 [BACKEND] Sections found:', sections?.length || 0);
-      // console.log(
-      //   '📂 [BACKEND] Section types:',
-      //   sections?.map((s) => s.section_type) || []
-      // );
-
       const applicationData: FundingApplicationProfile = {};
 
       sections?.forEach((section: any) => {
-        // console.log(`📂 [BACKEND] Processing section: ${section.section_type}`);
-
         switch (section.section_type) {
           case 'company-info':
-            // console.log('🏢 [LOAD] company-info data:', section.data);
-            // console.log('🏢 [LOAD] ownership field:', section.data?.ownership);
             applicationData.companyInfo = section.data;
             break;
 
@@ -146,28 +136,14 @@ export class FundingProfileBackendService {
             applicationData.financialProfile = section.data;
             break;
           case 'financial-analysis':
-            // console.log('💰 [BACKEND] Found financial-analysis section!');
-            // console.log(
-            //   '💰 [BACKEND] Data keys:',
-            //   Object.keys(section.data || {})
-            // );
             applicationData.financialAnalysis = section.data;
             break;
         }
       });
 
-      // console.log(
-      //   '✅ [BACKEND] Final applicationData keys:',
-      //   Object.keys(applicationData)
-      // );
-      // console.log(
-      //   '💰 [BACKEND] Has financialAnalysis:',
-      //   !!applicationData.financialAnalysis
-      // );
-
       return applicationData;
     } catch (error) {
-      console.error('❌ [BACKEND] Error loading from Supabase:', error);
+      //   console.error('❌ [BACKEND] Error loading from Supabase:', error);
       throw error;
     }
   }
