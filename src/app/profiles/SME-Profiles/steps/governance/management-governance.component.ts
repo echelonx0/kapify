@@ -683,6 +683,7 @@
 
 // src/app/profile/steps/governance/management-governance.component.ts
 
+// src/app/profile/steps/governance/management-governance.component.ts
 import {
   Component,
   signal,
@@ -705,8 +706,6 @@ import {
   Trash2,
   ChevronDown,
   ChevronUp,
-  Search,
-  MoreHorizontal,
   Save,
   Clock,
 } from 'lucide-angular';
@@ -716,13 +715,15 @@ import {
 } from '../../../../shared/components';
 import { interval, Subscription } from 'rxjs';
 import { takeWhile } from 'rxjs/operators';
-import { FundingProfileSetupService } from '../../../../fund-seeking-orgs/services/funding-profile-setup.service';
+
 import {
-  BusinessAssessment,
   ManagementStructure,
+  BusinessAssessment,
 } from 'src/app/fund-seeking-orgs/applications/models/funding-application.models';
-import { ManpowerComponent } from './manpower/manpower.component';
 import { StepSaveService } from '../../services/step-save.service';
+import { ManagementTeamTableComponent } from './components/management-table/management-team-table.component';
+import { ManpowerComponent } from './components/manpower/manpower.component';
+import { FundingProfileSetupService } from 'src/app/fund-seeking-orgs/services/funding-profile-setup.service';
 
 interface LocalManagementMember {
   id: string;
@@ -762,6 +763,7 @@ type SectionStates = Record<SectionKey, boolean>;
     UiButtonComponent,
     FormsModule,
     ManpowerComponent,
+    ManagementTeamTableComponent,
   ],
   templateUrl: 'management-governance.component.html',
 })
@@ -776,7 +778,6 @@ export class ManagementGovernanceComponent implements OnInit, OnDestroy {
   showMemberModal = signal(false);
   editingMemberType = signal<SectionKey>('management');
   editingMemberId = signal<string | null>(null);
-  managementSearchTerm = '';
 
   // Yes/No question states
   hasBoard = signal(true);
@@ -803,7 +804,6 @@ export class ManagementGovernanceComponent implements OnInit, OnDestroy {
   // ======================================
   // 🔥 SIGNAL-BASED DIRTY TRACKING
   // ======================================
-  // Computed: Check if data has changed from initial state
   isDirty = computed(() => {
     const mgmtChanged =
       JSON.stringify(this.managementTeam()) !==
@@ -828,8 +828,6 @@ export class ManagementGovernanceComponent implements OnInit, OnDestroy {
   PlusIcon = Plus;
   EditIcon = Edit;
   Trash2Icon = Trash2;
-  SearchIcon = Search;
-  MoreHorizontalIcon = MoreHorizontal;
   SaveIcon = Save;
   ClockIcon = Clock;
 
@@ -903,33 +901,44 @@ export class ManagementGovernanceComponent implements OnInit, OnDestroy {
     }
   }
 
+  /**
+   * 🔥 FIX: Deduplicate members using Map to prevent duplicate key errors
+   */
   private populateFromManagementStructure(data: ManagementStructure) {
+    const memberMap = new Map<string, LocalManagementMember>();
+
+    // Add executive team
     if (data.executiveTeam) {
-      const managementData: LocalManagementMember[] = data.executiveTeam.map(
-        (exec) => ({
+      data.executiveTeam.forEach((exec) => {
+        memberMap.set(exec.id, {
           id: exec.id,
           fullName: exec.fullName,
           role: exec.position,
           qualification: exec.qualifications,
           yearsOfExperience: exec.experience,
-        })
-      );
-      this.managementTeam.set(managementData);
+        });
+      });
     }
 
+    // Add management team (don't duplicate if already in executive team)
     if (data.managementTeam) {
-      const managementData: LocalManagementMember[] = data.managementTeam.map(
-        (mgmt) => ({
-          id: mgmt.id,
-          fullName: mgmt.fullName,
-          role: mgmt.role,
-          qualification: mgmt.qualification,
-          yearsOfExperience: mgmt.yearsOfExperience,
-        })
-      );
-      this.managementTeam.update((current) => [...current, ...managementData]);
+      data.managementTeam.forEach((mgmt) => {
+        if (!memberMap.has(mgmt.id)) {
+          memberMap.set(mgmt.id, {
+            id: mgmt.id,
+            fullName: mgmt.fullName,
+            role: mgmt.role,
+            qualification: mgmt.qualification,
+            yearsOfExperience: mgmt.yearsOfExperience,
+          });
+        }
+      });
     }
 
+    // 🔥 Set all at once to prevent duplication
+    this.managementTeam.set(Array.from(memberMap.values()));
+
+    // Board of Directors
     if (data.boardOfDirectors) {
       const boardData: LocalBoardMember[] = data.boardOfDirectors.map(
         (board) => ({
@@ -943,6 +952,7 @@ export class ManagementGovernanceComponent implements OnInit, OnDestroy {
       this.boardOfDirectors.set(boardData);
     }
 
+    // Advisory/Committee
     if (data.advisors) {
       const committeeData: LocalCommitteeMember[] = data.advisors.map(
         (advisor) => ({
@@ -1173,21 +1183,6 @@ export class ManagementGovernanceComponent implements OnInit, OnDestroy {
     }));
   }
 
-  filteredManagementTeam() {
-    if (!this.managementSearchTerm) {
-      return this.managementTeam();
-    }
-    return this.managementTeam().filter(
-      (member) =>
-        member.fullName
-          .toLowerCase()
-          .includes(this.managementSearchTerm.toLowerCase()) ||
-        member.role
-          .toLowerCase()
-          .includes(this.managementSearchTerm.toLowerCase())
-    );
-  }
-
   hasData(): boolean {
     return (
       this.managementTeam().length > 0 ||
@@ -1224,13 +1219,9 @@ export class ManagementGovernanceComponent implements OnInit, OnDestroy {
   }
 
   // ===============================
-  // UNIQUE ID GENERATION (🔥 FIX)
+  // UNIQUE ID GENERATION
   // ===============================
 
-  /**
-   * Generate globally unique ID
-   * Combines timestamp + random string to prevent collisions
-   */
   private generateUniqueId(): string {
     const timestamp = Date.now();
     const random = Math.random().toString(36).substring(2, 9);
@@ -1349,7 +1340,7 @@ export class ManagementGovernanceComponent implements OnInit, OnDestroy {
     if (this.memberForm.valid) {
       const formValue = this.memberForm.value;
       const memberData = {
-        id: this.editingMemberId() || this.generateUniqueId(), // 🔥 Use unique ID
+        id: this.editingMemberId() || this.generateUniqueId(),
         ...formValue,
       };
 
