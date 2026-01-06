@@ -12,15 +12,16 @@ import { CommonModule } from '@angular/common';
 import { Subject, takeUntil } from 'rxjs';
 import { LucideAngularModule, AlertCircle } from 'lucide-angular';
 import { AuthService } from '../../auth/services/production.auth.service';
-import {
-  FunderOnboardingService,
-  OnboardingState,
-} from '../services/funder-onboarding.service';
+
 import { MobileHeaderComponent } from './components/mobile-header.component';
 import { PendingVerificationStateComponent } from './components/pending-verification.component';
 import { SetupStateComponent } from './components/setup-state.component';
 import { VerificationReadyStateComponent } from './components/verification-ready-state.component';
 import { VerifiedStateComponent } from './components/verified.component';
+import {
+  FunderOnboardingService,
+  OnboardingState,
+} from 'src/app/funder/services/funder-onboarding.service';
 
 // Import child components
 

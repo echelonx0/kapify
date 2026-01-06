@@ -10,7 +10,7 @@ import {
   ArrowRight,
   Sparkles,
 } from 'lucide-angular';
-import { OnboardingState } from '../../services/funder-onboarding.service';
+import { OnboardingState } from 'src/app/funder/services/funder-onboarding.service';
 
 @Component({
   selector: 'app-verification-ready-state',

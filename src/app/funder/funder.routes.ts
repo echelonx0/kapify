@@ -1,4 +1,3 @@
-// src/app/funder/funder.routes.ts - UPDATED WITH SEPARATE APPLICATIONS ROUTE
 import { Routes } from '@angular/router';
 
 export const funderRoutes: Routes = [
@@ -56,7 +55,7 @@ export const funderRoutes: Routes = [
             path: 'welcome',
             loadComponent: () =>
               import(
-                './onboarding-welcome/funder-organization-onboarding.component'
+                '../profiles/Funder-Profile/funder-organization-onboarding.component'
               ).then((m) => m.OrganizationOnboardingComponent),
           },
           {
