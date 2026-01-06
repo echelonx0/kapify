@@ -4,13 +4,13 @@ import { Observable, from, throwError, BehaviorSubject } from 'rxjs';
 import { tap, catchError } from 'rxjs/operators';
 import { AuthService } from '../../auth/services/production.auth.service';
 import { SharedSupabaseService } from '../../shared/services/shared-supabase.service';
-import { ProfileData } from '../profile/models/funding.models';
-import { SMEProfileStepsService } from '../profile/services/sme-profile-steps.service';
+import { ProfileData } from '../../profiles/SME-Profiles/models/funding.models';
+import { SMEProfileStepsService } from '../../profiles/SME-Profiles/services/sme-profile-steps.service';
 import {
   OpportunityApplication,
   ApplicationDraft,
   CoverInformation,
-} from '../profile/models/sme-profile.models';
+} from '../../profiles/SME-Profiles/models/sme-profile.models';
 
 @Injectable({
   providedIn: 'root',

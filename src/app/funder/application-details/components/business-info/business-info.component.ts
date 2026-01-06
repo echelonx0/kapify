@@ -15,9 +15,9 @@ import {
   Phone,
 } from 'lucide-angular';
 
-import { ProfileData } from 'src/app/SMEs/profile/models/funding.models';
 import { TeamMemberComponent } from '../team-member/team-member.component';
 import { FundingApplicationProfile } from 'src/app/SMEs/applications/models/funding-application.models';
+import { ProfileData } from 'src/app/profiles/SME-Profiles/models/funding.models';
 
 interface TeamMember {
   id: string;

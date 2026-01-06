@@ -1,4 +1,4 @@
-import { ParsedFinancialData } from '../../profile/steps/financial-analysis/utils/excel-parser.service';
+import { ParsedFinancialData } from 'src/app/profiles/SME-Profiles/steps/financial-analysis/utils/excel-parser.service';
 
 // src/app/profile/models/funding-application.models.ts
 export interface FundingApplicationProfile {

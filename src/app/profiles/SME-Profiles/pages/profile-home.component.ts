@@ -23,7 +23,7 @@ import { UiButtonComponent } from '../../../shared/components/ui-button.componen
 import { UiStatusBadgeComponent } from '../../../shared/components/ui-status-badge.component';
 
 import { AuthService } from '../../../auth/services/production.auth.service';
-import { FundingProfileSetupService } from '../../services/funding-profile-setup.service';
+import { FundingProfileSetupService } from '../../../SMEs/services/funding-profile-setup.service';
 import { Activity } from '../../../shared/services/database-activity.service';
 
 @Component({

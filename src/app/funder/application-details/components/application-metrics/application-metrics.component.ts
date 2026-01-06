@@ -23,19 +23,20 @@ import {
   Cpu,
 } from 'lucide-angular';
 import { FundingApplication } from 'src/app/SMEs/models/application.models';
-import { ProfileData } from 'src/app/SMEs/profile/models/funding.models';
 import { BusinessAssessmentViewerComponent } from '../business-operations/business-operations.component';
 import { FinancialAnalysisViewerComponent } from '../financial-analysis-viewer/financial-analysis-viewer.component';
 import { BusinessInfoComponent } from '../business-info/business-info.component';
 import { FundingOpportunity } from 'src/app/funder/create-opportunity/shared/funding.interfaces';
 import { FundingApplicationProfile } from 'src/app/SMEs/applications/models/funding-application.models';
+
+import { Subject } from 'rxjs';
+import { ProfileData } from 'src/app/profiles/SME-Profiles/models/funding.models';
 import {
   FinancialDataTableComponent,
   FinancialTableSection,
-} from 'src/app/SMEs/profile/steps/financial-analysis/financial-table/financial-data-table.component';
-import { FinancialRatioData } from 'src/app/SMEs/profile/steps/financial-analysis/utils/excel-parser.service';
-import { FinancialDataTransformer } from 'src/app/SMEs/profile/steps/financial-analysis/utils/financial-data.transformer';
-import { Subject } from 'rxjs';
+} from 'src/app/profiles/SME-Profiles/steps/financial-analysis/financial-table/financial-data-table.component';
+import { FinancialRatioData } from 'src/app/profiles/SME-Profiles/steps/financial-analysis/utils/excel-parser.service';
+import { FinancialDataTransformer } from 'src/app/profiles/SME-Profiles/steps/financial-analysis/utils/financial-data.transformer';
 
 interface Tab {
   id: string;

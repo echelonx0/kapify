@@ -646,9 +646,10 @@ import {
 import { UserType } from 'src/app/shared/models/user.models';
 import { FundingApplication } from 'src/app/SMEs/models/application.models';
 import { ApplicationManagementService } from 'src/app/SMEs/services/application-management.service';
-import { OpportunityApplication } from 'src/app/SMEs/profile/models/sme-profile.models';
+
 import { ActionModalComponent } from 'src/app/shared/components/modal/action-modal.component';
 import { ApplicationTransformService } from '../../services/application-transform.service';
+import { OpportunityApplication } from 'src/app/profiles/SME-Profiles/models/sme-profile.models';
 
 interface ApplicationData {
   id: string;

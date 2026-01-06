@@ -292,9 +292,9 @@ import {
   X,
   DownloadIcon,
 } from 'lucide-angular';
-import { ParsedFinancialData } from 'src/app/SMEs/profile/steps/financial-analysis/utils/excel-parser.service';
-import { FinancialDataTableComponent } from 'src/app/SMEs/profile/steps/financial-analysis/financial-table/financial-data-table.component';
-import { FinancialDataTransformer } from 'src/app/SMEs/profile/steps/financial-analysis/utils/financial-data.transformer';
+import { FinancialDataTableComponent } from 'src/app/profiles/SME-Profiles/steps/financial-analysis/financial-table/financial-data-table.component';
+import { ParsedFinancialData } from 'src/app/profiles/SME-Profiles/steps/financial-analysis/utils/excel-parser.service';
+import { FinancialDataTransformer } from 'src/app/profiles/SME-Profiles/steps/financial-analysis/utils/financial-data.transformer';
 
 @Component({
   selector: 'app-financial-analysis-viewer',

@@ -1,10 +1,12 @@
-// src/app/profile/services/sme-profile-steps.service.ts - UPDATED: business-strategy excluded from completion
+// src/app/profile/services/sme-profile-steps.service.ts
+//  business-strategy excluded from completion calculation
 import { Injectable, signal, computed, inject } from '@angular/core';
 import { AuthService } from 'src/app/auth/services/production.auth.service';
-import { ProfileStep } from '../../applications/models/profile.models';
-import { FundingProfileBackendService } from '../../services/funding-profile-backend.service';
-import { ProfileDataTransformerService } from '../../services/profile-data-transformer.service';
+
+import { FundingProfileBackendService } from '../../../SMEs/services/funding-profile-backend.service';
+import { ProfileDataTransformerService } from '../../../SMEs/services/profile-data-transformer.service';
 import { ProfileData } from '../models/funding.models';
+import { ProfileStep } from 'src/app/SMEs/applications/models/profile.models';
 
 @Injectable({
   providedIn: 'root',

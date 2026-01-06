@@ -11,14 +11,14 @@ import {
   LucideAngularModule,
   ArrowLeft,
   Check,
-  Home,
   Clock,
-  AlertCircle,
-  CheckCircle,
   Menu,
   X,
   Maximize2,
   Minimize2,
+  CircleAlert,
+  CircleCheckBig,
+  House,
 } from 'lucide-angular';
 
 import { CommonModule } from '@angular/common';
@@ -36,7 +36,6 @@ import {
 import { FundingApplicationUtilityService } from 'src/app/SMEs/services/utility.service';
 import { FullscreenDarkModeService } from '../financial-analysis/services/fullscreen-dark-mode.service';
 import { StepSaveService } from '../../services/step-save.service';
-import { ToastService } from '../../../../shared/services/toast.service';
 
 @Component({
   selector: 'app-profile-steps-layout',
@@ -300,7 +299,6 @@ export class ProfileStepsLayoutComponent implements OnInit {
   private utilityService = inject(FundingApplicationUtilityService);
   private darkMode = inject(FullscreenDarkModeService);
   private stepSaveService = inject(StepSaveService);
-  private toastService = inject(ToastService);
 
   // Fullscreen state
   isFullscreen = signal(false);
@@ -315,10 +313,10 @@ export class ProfileStepsLayoutComponent implements OnInit {
   // Icons
   CheckIcon = Check;
   ArrowLeftIcon = ArrowLeft;
-  HomeIcon = Home;
+  HomeIcon = House;
   ClockIcon = Clock;
-  AlertCircleIcon = AlertCircle;
-  CheckCircleIcon = CheckCircle;
+  AlertCircleIcon = CircleAlert;
+  CheckCircleIcon = CircleCheckBig;
   MenuIcon = Menu;
   XIcon = X;
   Maximize2Icon = Maximize2;

@@ -73,7 +73,7 @@ export const dashboardRoutes: Routes = [
       {
         path: 'profile',
         loadChildren: () =>
-          import('../../SMEs/profile/profile.routes').then(
+          import('../../profiles/SME-Profiles/profile.routes').then(
             (m) => m.profileRoutes
           ),
       },

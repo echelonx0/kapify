@@ -37,7 +37,7 @@ import {
 
 import { UiTextareaComponent } from '../../../../shared/components/ui-textarea.component';
 
-import { FundingProfileSetupService } from '../../../services/funding-profile-setup.service';
+import { FundingProfileSetupService } from '../../../../SMEs/services/funding-profile-setup.service';
 import { SWOTAnalysis } from 'src/app/SMEs/applications/models/funding-application.models';
 
 type SWOTCategory = 'strengths' | 'weaknesses' | 'opportunities' | 'threats';

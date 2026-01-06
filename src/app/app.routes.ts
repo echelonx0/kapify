@@ -9,7 +9,7 @@ import { NotFoundComponent } from './shared/components/not-found/not-found.compo
 import { SuccessPageComponent } from './shared/components/success-page/success-page.component';
 import { VersionInfoComponent } from './shared/components/version-info.component';
 import { PricingPageComponent } from './core/dashboard/finance/pricing-page/pricing-page.component';
-import { PublicProfileViewComponent } from './SMEs/profile/public-page/public-profile.component';
+
 import { AcceptInvitationComponent } from './auth/accept-invitation/accept-invitation.component';
 import { CreditsComponent } from './credit-system/credit-component/credit.component';
 import { InvoiceComponent } from './features/invoice/invoice.component';
@@ -18,6 +18,7 @@ import { GuestGuard } from './core/guards/guest.guard';
 import { ProfileCompletionGuard } from './core/guards/profile-completion.guard';
 import { RoleGuard } from './core/guards/role.guard';
 import { PasswordResetComponent } from './auth/password-reset/password-reset.component';
+import { PublicProfileViewComponent } from './profiles/SME-Profiles/public-page/public-profile.component';
 
 export const routes: Routes = [
   // Public routes
@@ -141,7 +142,9 @@ export const routes: Routes = [
     path: 'profile',
     canActivate: [AuthGuard],
     loadChildren: () =>
-      import('./SMEs/profile/profile.routes').then((m) => m.profileRoutes),
+      import('./profiles/SME-Profiles/profile.routes').then(
+        (m) => m.profileRoutes
+      ),
     title: 'Profile Setup - Kapify',
   },
 

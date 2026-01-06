@@ -24,7 +24,7 @@ import {
   UiCardComponent,
   UiButtonComponent,
 } from '../../../../shared/components';
-import { ProfileDataTransformerService } from '../../../services/profile-data-transformer.service';
+import { ProfileDataTransformerService } from '../../../../SMEs/services/profile-data-transformer.service';
 import { FundingProfileSetupService } from 'src/app/SMEs/services/funding-profile-setup.service';
 
 import { SMEProfileStepsService } from '../../services/sme-profile-steps.service';

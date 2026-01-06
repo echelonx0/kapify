@@ -1681,7 +1681,7 @@ import {
   UiButtonComponent,
 } from '../../../../shared/components';
 
-import { FundingProfileSetupService } from '../../../services/funding-profile-setup.service';
+import { FundingProfileSetupService } from '../../../../SMEs/services/funding-profile-setup.service';
 import { CompanyInformation } from 'src/app/SMEs/applications/models/funding-application.models';
 import {
   ShareholderManagerComponent,

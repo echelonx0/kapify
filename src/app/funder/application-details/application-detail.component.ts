@@ -17,7 +17,6 @@ import { AiAssistantComponent } from 'src/app/features/ai/ai-assistant/ai-assist
 import { ApplicationTabsComponent } from './components/application-tabs/application-tabs.component';
 import { FundingProfileBackendService } from 'src/app/SMEs/services/funding-profile-backend.service';
 import { ProfileDataTransformerService } from 'src/app/SMEs/services/profile-data-transformer.service';
-import { ProfileData } from 'src/app/SMEs/profile/models/funding.models';
 import { FundingApplication } from 'src/app/SMEs/models/application.models';
 import { AuthService } from 'src/app/auth/services/production.auth.service';
 
@@ -26,6 +25,7 @@ import { ApplicationHeaderComponent } from '../components/application-header/app
 import { StatusManagementModalComponent } from '../components/status-management-modal/status-management-modal.component';
 import { FundingOpportunity } from '../create-opportunity/shared/funding.interfaces';
 import { FundingApplicationProfile } from 'src/app/SMEs/applications/models/funding-application.models';
+import { ProfileData } from 'src/app/profiles/SME-Profiles/models/funding.models';
 
 interface ApplicationFormData {
   fundingType: string;

@@ -1,9 +1,14 @@
-import {
-  BoardMember,
-  ManagementMember,
-} from '../../applications/models/funding-application.models';
-import { CommitteeMember } from '../../applications/models/profile.models';
+// import {
+//   BoardMember,
+//   ManagementMember,
+// } from '../../applications/models/funding-application.models';
+// import { CommitteeMember } from '../../applications/models/profile.models';
 
+import { CommitteeMember } from 'src/app/shared/models/application.models';
+import {
+  ManagementMember,
+  BoardMember,
+} from 'src/app/SMEs/applications/models/funding-application.models';
 import { ParsedFinancialData } from '../steps/financial-analysis/utils/excel-parser.service';
 
 export interface ApplicationProfileData {

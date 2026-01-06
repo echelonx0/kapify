@@ -1,15 +1,18 @@
- 
-
 import { Component, signal, OnInit, OnDestroy, inject } from '@angular/core';
-import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import {
+  ReactiveFormsModule,
+  FormBuilder,
+  FormGroup,
+  Validators,
+} from '@angular/forms';
 import { LucideAngularModule, Save, Clock } from 'lucide-angular';
 import { interval, Subscription } from 'rxjs';
-import { takeWhile } from 'rxjs/operators'; 
-import { FundingProfileSetupService } from '../../../services/funding-profile-setup.service';
- 
+import { takeWhile } from 'rxjs/operators';
+import { FundingProfileSetupService } from '../../../../SMEs/services/funding-profile-setup.service';
 import { BusinessBackOfficeComponent } from './business-back-office.component';
-import { BusinessFinancialStatementsComponent } from './business-financial-statements.component'; 
-import { BusinessAssessmentMapper } from './business-assessment.mapper'; 
+import { BusinessFinancialStatementsComponent } from './business-financial-statements.component';
+import { BusinessAssessmentMapper } from './business-assessment.mapper';
+import { StepSaveService } from '../../services/step-save.service';
 @Component({
   selector: 'app-business-review',
   standalone: true,
@@ -17,20 +20,22 @@ import { BusinessAssessmentMapper } from './business-assessment.mapper';
     ReactiveFormsModule,
     LucideAngularModule,
     BusinessBackOfficeComponent,
-    BusinessFinancialStatementsComponent
+    BusinessFinancialStatementsComponent,
   ],
-templateUrl: 'business-review.component.html',
-  styles: [`
-    :host {
-      display: block;
-    }
-  `]
+  templateUrl: 'business-review.component.html',
+  styles: [
+    `
+      :host {
+        display: block;
+      }
+    `,
+  ],
 })
 export class BusinessReviewComponent implements OnInit, OnDestroy {
   private fundingApplicationService = inject(FundingProfileSetupService);
   private fb = inject(FormBuilder);
   private mapper = inject(BusinessAssessmentMapper);
-
+  private stepSaveService = inject(StepSaveService);
   businessAssessmentForm: FormGroup;
 
   // State signals
@@ -68,7 +73,7 @@ export class BusinessReviewComponent implements OnInit, OnDestroy {
       longTermContracts: ['', [Validators.required]],
       offBalanceSheetFunding: ['', [Validators.required]],
       assetRegisterAvailable: ['', [Validators.required]],
-      lenderPermissionsRequired: ['', [Validators.required]]
+      lenderPermissionsRequired: ['', [Validators.required]],
     });
 
     this.setupConditionalValidation();
@@ -77,6 +82,9 @@ export class BusinessReviewComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.loadExistingData();
     this.setupAutoSave();
+
+    // Register form-based dirty tracking (existing pattern)
+    this.stepSaveService.registerForm(this.businessAssessmentForm);
   }
 
   ngOnDestroy() {
@@ -84,6 +92,9 @@ export class BusinessReviewComponent implements OnInit, OnDestroy {
     if (this.debounceTimer) {
       clearTimeout(this.debounceTimer);
     }
+
+    // Clean up form registration
+    this.stepSaveService.clearForm();
   }
 
   // ===============================
@@ -91,7 +102,8 @@ export class BusinessReviewComponent implements OnInit, OnDestroy {
   // ===============================
 
   private loadExistingData() {
-    const existingData = this.fundingApplicationService.data().businessAssessment;
+    const existingData =
+      this.fundingApplicationService.data().businessAssessment;
     if (existingData) {
       const formValues = this.mapper.toFormValue(existingData);
       this.businessAssessmentForm.patchValue(formValues, { emitEvent: false });
@@ -99,15 +111,17 @@ export class BusinessReviewComponent implements OnInit, OnDestroy {
   }
 
   private setupAutoSave() {
-    this.autoSaveSubscription = interval(30000).pipe(
-      takeWhile(() => true)
-    ).subscribe(() => {
-      if (this.hasFormData() && !this.isSaving()) {
-        this.saveData(false);
-      }
-    });
+    this.autoSaveSubscription = interval(30000)
+      .pipe(takeWhile(() => true))
+      .subscribe(() => {
+        if (this.hasFormData() && !this.isSaving()) {
+          this.saveData(false);
+        }
+      });
 
-    this.businessAssessmentForm.valueChanges.subscribe(() => this.debouncedSave());
+    this.businessAssessmentForm.valueChanges.subscribe(() =>
+      this.debouncedSave()
+    );
   }
 
   private debouncedSave() {
@@ -131,7 +145,9 @@ export class BusinessReviewComponent implements OnInit, OnDestroy {
     this.isSaving.set(true);
 
     try {
-      const assessmentData = this.mapper.toModel(this.businessAssessmentForm.value);
+      const assessmentData = this.mapper.toModel(
+        this.businessAssessmentForm.value
+      );
       this.fundingApplicationService.updateBusinessAssessment(assessmentData);
 
       if (isManual) {
@@ -151,21 +167,26 @@ export class BusinessReviewComponent implements OnInit, OnDestroy {
   // ===============================
 
   private setupConditionalValidation() {
-    this.businessAssessmentForm.get('hasPoliciesAndProcedures')?.valueChanges.subscribe(value => {
-      const policyReviewControl = this.businessAssessmentForm.get('policyReviewFrequency');
-      if (value === 'yes') {
-        policyReviewControl?.setValidators([Validators.required]);
-      } else {
-        policyReviewControl?.clearValidators();
-      }
-      policyReviewControl?.updateValueAndValidity();
-    });
+    this.businessAssessmentForm
+      .get('hasPoliciesAndProcedures')
+      ?.valueChanges.subscribe((value) => {
+        const policyReviewControl = this.businessAssessmentForm.get(
+          'policyReviewFrequency'
+        );
+        if (value === 'yes') {
+          policyReviewControl?.setValidators([Validators.required]);
+        } else {
+          policyReviewControl?.clearValidators();
+        }
+        policyReviewControl?.updateValueAndValidity();
+      });
   }
 
   getFieldError(fieldName: string): string | undefined {
     const field = this.businessAssessmentForm.get(fieldName);
     if (field?.errors && field?.touched) {
-      if (field.errors['required']) return `${this.getFieldDisplayName(fieldName)} is required`;
+      if (field.errors['required'])
+        return `${this.getFieldDisplayName(fieldName)} is required`;
       if (field.errors['min']) return 'Value must be greater than 0';
     }
     return undefined;
@@ -188,15 +209,15 @@ export class BusinessReviewComponent implements OnInit, OnDestroy {
       longTermContracts: 'Long term contracts',
       offBalanceSheetFunding: 'Off balance sheet funding',
       assetRegisterAvailable: 'Asset register',
-      lenderPermissionsRequired: 'Lender permissions'
+      lenderPermissionsRequired: 'Lender permissions',
     };
     return displayNames[fieldName] || fieldName;
   }
 
   hasFormData(): boolean {
     const values = this.businessAssessmentForm.value;
-    return Object.values(values).some(value =>
-      value !== null && value !== undefined && value !== ''
+    return Object.values(values).some(
+      (value) => value !== null && value !== undefined && value !== ''
     );
   }
 
@@ -209,10 +230,12 @@ export class BusinessReviewComponent implements OnInit, OnDestroy {
     const diffMins = Math.floor(diffMs / 60000);
 
     if (diffMins < 1) return 'just now';
-    if (diffMins < 60) return `${diffMins} minute${diffMins === 1 ? '' : 's'} ago`;
+    if (diffMins < 60)
+      return `${diffMins} minute${diffMins === 1 ? '' : 's'} ago`;
 
     const diffHours = Math.floor(diffMins / 60);
-    if (diffHours < 24) return `${diffHours} hour${diffHours === 1 ? '' : 's'} ago`;
+    if (diffHours < 24)
+      return `${diffHours} hour${diffHours === 1 ? '' : 's'} ago`;
 
     return saved.toLocaleDateString();
   }
@@ -223,12 +246,18 @@ export class BusinessReviewComponent implements OnInit, OnDestroy {
 
   isBackOfficeComplete(): boolean {
     const backOfficeFields = [
-      'accountingSystem', 'payrollSystem', 'financeFunction', 'financeStaffCount',
-      'hasFinancialManager', 'totalStaffCount', 'hrFunctions', 'hasPoliciesAndProcedures',
-      'assetsInsured'
+      'accountingSystem',
+      'payrollSystem',
+      'financeFunction',
+      'financeStaffCount',
+      'hasFinancialManager',
+      'totalStaffCount',
+      'hrFunctions',
+      'hasPoliciesAndProcedures',
+      'assetsInsured',
     ];
 
-    return backOfficeFields.every(field => {
+    return backOfficeFields.every((field) => {
       const control = this.businessAssessmentForm.get(field);
       return control?.valid && control?.value;
     });
@@ -236,11 +265,15 @@ export class BusinessReviewComponent implements OnInit, OnDestroy {
 
   isFinancialStatementsComplete(): boolean {
     const financialFields = [
-      'financialStatementsAudited', 'budgetAvailable', 'longTermContracts',
-      'offBalanceSheetFunding', 'assetRegisterAvailable', 'lenderPermissionsRequired'
+      'financialStatementsAudited',
+      'budgetAvailable',
+      'longTermContracts',
+      'offBalanceSheetFunding',
+      'assetRegisterAvailable',
+      'lenderPermissionsRequired',
     ];
 
-    return financialFields.every(field => {
+    return financialFields.every((field) => {
       const control = this.businessAssessmentForm.get(field);
       return control?.valid && control?.value;
     });

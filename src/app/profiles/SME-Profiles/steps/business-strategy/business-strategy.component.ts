@@ -37,7 +37,7 @@ import { UiTextareaComponent } from '../../../../shared/components/ui-textarea.c
 import { interval, Subscription } from 'rxjs';
 import { takeWhile } from 'rxjs/operators';
 
-import { FundingProfileSetupService } from '../../../services/funding-profile-setup.service';
+import { FundingProfileSetupService } from '../../../../SMEs/services/funding-profile-setup.service';
 import {
   BusinessStrategy,
   FinancialProjection,
