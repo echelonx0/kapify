@@ -13,7 +13,7 @@ import { LucideAngularModule, Bot, AlertCircle, Loader2 } from 'lucide-angular';
 import { Subject, takeUntil, forkJoin } from 'rxjs';
 import { ApplicationManagementService } from 'src/app/SMEs/services/application-management.service';
 import { SMEOpportunitiesService } from 'src/app/funding/services/opportunities.service';
-import { AiAssistantComponent } from 'src/app/ai/ai-assistant/ai-assistant.component';
+import { AiAssistantComponent } from 'src/app/features/ai/ai-assistant/ai-assistant.component';
 import { ApplicationTabsComponent } from './components/application-tabs/application-tabs.component';
 import { FundingProfileBackendService } from 'src/app/SMEs/services/funding-profile-backend.service';
 import { ProfileDataTransformerService } from 'src/app/SMEs/services/profile-data-transformer.service';

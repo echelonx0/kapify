@@ -281,8 +281,8 @@ import { SearchStatsBarComponent } from './search-stats-bar.component';
 import { EmptyStateComponent } from '../components/empty-state.component';
 import { LoadingStateComponent } from './loading-state.component';
 
-import { LandingHeaderComponent } from '../../landing/landing-header.component';
-import { LandingFooterComponent } from '../../landing/footer/landing-footer.component';
+import { LandingHeaderComponent } from '../../core/landing/landing-header.component';
+import { LandingFooterComponent } from '../../core/landing/footer/landing-footer.component';
 import { FundingOpportunity } from 'src/app/funder/create-opportunity/shared/funding.interfaces';
 import { OpportunitiesHeaderComponent } from '../components/opportunity-header/opportunities-header.component';
 import { SmartSuggestionsModalComponent } from '../components/smart-suggestions/modal/smart-suggestions-modal.component';

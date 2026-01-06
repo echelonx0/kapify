@@ -260,7 +260,6 @@ export class MessagingService implements OnDestroy {
       );
 
       this.threadsSubject.next(enrichedThreads);
-      console.log('✅ Loaded', enrichedThreads.length, 'threads');
     } catch (error) {
       console.error('❌ Error loading threads:', error);
     }

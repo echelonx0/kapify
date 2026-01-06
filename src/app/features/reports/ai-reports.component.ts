@@ -42,11 +42,11 @@ import {
 import { KapifyReports } from './models/kapify-reports.interface';
 import { KapifyReportsGeneratorService } from './services/kapify-reports-generator.service';
 import { KapifyReportsExportService } from './services/kapify-reports-export.service';
-import { AIAnalysisHistoryService } from 'src/app/ai/services/ai-analysis-history.service';
+import { AIAnalysisHistoryService } from 'src/app/features/ai/services/ai-analysis-history.service';
 import {
   AnalysisHistoryItem,
   AIAnalysisSummary,
-} from 'src/app/ai/document-analysis/analysis-interface.component';
+} from 'src/app/features/ai/document-analysis/analysis-interface.component';
 
 interface ActivityReport extends KapifyReports {
   matchScore?: number;

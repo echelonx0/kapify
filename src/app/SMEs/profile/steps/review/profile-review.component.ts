@@ -26,8 +26,9 @@ import {
 } from '../../../../shared/components';
 import { ProfileDataTransformerService } from '../../../services/profile-data-transformer.service';
 import { FundingProfileSetupService } from 'src/app/SMEs/services/funding-profile-setup.service';
-import { KapifyAIAnalysisComponent } from 'src/app/ai/ai-analysis/kapify-ai-analysis.component';
+
 import { SMEProfileStepsService } from '../../services/sme-profile-steps.service';
+import { KapifyAIAnalysisComponent } from 'src/app/features/ai/ai-analysis/kapify-ai-analysis.component';
 
 interface SectionSummary {
   stepId: string;
