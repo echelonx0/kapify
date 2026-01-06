@@ -1,11 +1,12 @@
 // src/app/marketplace/services/suggestions-matching.service.ts
 import { Injectable, inject } from '@angular/core';
 import { Observable, from, map, catchError, of } from 'rxjs';
-import { SMEOpportunitiesService } from '../../funding/services/opportunities.service';
-import { FundingProfileSetupService } from '../../SMEs/services/funding-profile-setup.service';
-import { AuthService } from '../../auth/services/production.auth.service';
-import { SharedSupabaseService } from '../../shared/services/shared-supabase.service';
+import { AuthService } from 'src/app/auth/services/production.auth.service';
+
 import { FundingOpportunity } from 'src/app/funder/create-opportunity/shared/funding.interfaces';
+import { SharedSupabaseService } from 'src/app/shared/services/shared-supabase.service';
+import { FundingProfileSetupService } from 'src/app/SMEs/services/funding-profile-setup.service';
+import { SMEOpportunitiesService } from '../../services/opportunities.service';
 
 export interface MatchScore {
   opportunity: FundingOpportunity;

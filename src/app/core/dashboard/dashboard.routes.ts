@@ -81,7 +81,7 @@ export const dashboardRoutes: Routes = [
         path: 'funding-opportunities',
         loadComponent: () =>
           import(
-            '../../marketplace/opportunities-list/funding-opportunities.component'
+            '../../funding/marketplace/opportunities-list/funding-opportunities.component'
           ).then((c) => c.FundingOpportunitiesComponent),
         title: 'Funding Opportunities - Kapify',
       },

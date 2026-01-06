@@ -4,7 +4,6 @@ import { LoginComponent } from './auth/login/login.component';
 
 import { RegisterComponent } from './auth/register/register.component';
 
-import { FundingOpportunitiesComponent } from './marketplace/opportunities-list/funding-opportunities.component';
 import { NotFoundComponent } from './shared/components/not-found/not-found.component';
 import { SuccessPageComponent } from './shared/components/success-page/success-page.component';
 import { VersionInfoComponent } from './shared/components/version-info.component';
@@ -20,6 +19,7 @@ import { RoleGuard } from './core/guards/role.guard';
 import { PasswordResetComponent } from './auth/password-reset/password-reset.component';
 import { PublicProfileViewComponent } from './profiles/SME-Profiles/public-page/public-profile.component';
 import { CreditsComponent } from './features/credit-system/credit-component/credit.component';
+import { FundingOpportunitiesComponent } from './funding/marketplace/opportunities-list/funding-opportunities.component';
 
 export const routes: Routes = [
   // Public routes

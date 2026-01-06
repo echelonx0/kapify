@@ -15,11 +15,12 @@ import { takeUntil } from 'rxjs/operators';
 import { AuthService } from 'src/app/auth/services/production.auth.service';
 
 import { trigger, transition, style, animate } from '@angular/animations';
+
+import { SuggestionCardComponent } from './suggestion-card.component';
 import {
   SuggestionsMatchingService,
   MatchScore,
-} from 'src/app/marketplace/services/suggestions-matching.service';
-import { SuggestionCardComponent } from './suggestion-card.component';
+} from '../../../services/suggestions-matching.service';
 
 @Component({
   selector: 'app-smart-suggestions-modal',

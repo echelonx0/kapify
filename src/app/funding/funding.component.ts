@@ -2,7 +2,7 @@ import { Component, computed, inject } from '@angular/core';
 import { RouterOutlet, Router } from '@angular/router';
 import { SidebarNavComponent } from '../shared/components/sidenav/sidebar-nav.component';
 import { DashboardHeaderComponent } from '../shared/components/header/dashboard-header.component';
-import { OpportunitiesHeaderComponent } from '../marketplace/components/opportunity-header/opportunities-header.component';
+import { OpportunitiesHeaderComponent } from './marketplace/components/opportunity-header/opportunities-header.component';
 
 @Component({
   selector: 'app-funding',
