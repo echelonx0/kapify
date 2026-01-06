@@ -45,30 +45,6 @@ export class AIAnalysisHistoryService {
   }
 
   /**
-   * Get analysis history for user + organization
-   */
-  getAnalysisHistory(
-    filters?: AnalysisHistoryFilter
-  ): Observable<AnalysisHistoryItem[]> {
-    this.isLoading.set(true);
-    this.error.set(null);
-
-    return from(this.fetchAnalysisHistory(filters)).pipe(
-      tap((history) => {
-        this.analysisHistorySubject.next(history);
-        this.isLoading.set(false);
-      }),
-      catchError((error) => {
-        this.isLoading.set(false);
-        const message = error?.message || 'Failed to load analysis history';
-        this.error.set(message);
-        console.error('❌ [ANALYSIS] Error fetching history:', error);
-        return throwError(() => error);
-      })
-    );
-  }
-
-  /**
    * Get single analysis by ID
    */
   getAnalysisById(analysisId: string): Observable<AIAnalysisRequest> {
@@ -94,55 +70,50 @@ export class AIAnalysisHistoryService {
         throw new Error('User not authenticated');
       }
 
-      // Get organization user IDs
       const orgUserIds = await this.getOrganizationUserIds(userId);
 
-      console.log('📊 [ANALYSIS] Fetching summary for:', {
-        userId,
-        orgUserIds,
-      });
-
-      // Fetch all analyses for user + org
-      const { data: analyses, error } = await this.supabase
+      // Fetch ai_analysis_requests
+      const { data: analyses } = await this.supabase
         .from('ai_analysis_requests')
         .select('*')
         .in('user_id', orgUserIds);
 
-      if (error) {
-        throw new Error(`Failed to fetch analyses: ${error.message}`);
-      }
+      // Fetch document_analysis_results
+      const { data: docAnalyses } = await this.supabase
+        .from('document_analysis_results')
+        .select('*')
+        .in('user_id', orgUserIds);
 
-      if (!analyses || analyses.length === 0) {
-        return this.getEmptySummary();
-      }
+      // Combine counts
+      const aiCount = analyses?.length || 0;
+      const docCount = docAnalyses?.length || 0;
+      const totalAnalyses = aiCount + docCount;
 
-      // Calculate metrics
-      const totalAnalyses = analyses.length;
-      const freeAnalyses = analyses.filter((a) => a.was_free).length;
+      const freeAnalyses =
+        (analyses?.filter((a) => a.was_free).length || 0) + docCount; // All doc analyses are free
+
       const paidAnalyses = totalAnalyses - freeAnalyses;
-      const totalCreditsSpent = analyses.reduce(
-        (sum, a) => sum + (a.cost_credits || 0),
-        0
-      );
+
+      const totalCreditsSpent =
+        analyses?.reduce((sum, a) => sum + (a.cost_credits || 0), 0) || 0;
+
       const averageCostPerAnalysis =
         paidAnalyses > 0 ? Math.round(totalCreditsSpent / paidAnalyses) : 0;
-      const pendingAnalyses = analyses.filter(
-        (a) => a.status === 'pending'
-      ).length;
-      const failedAnalyses = analyses.filter(
-        (a) => a.status === 'failed'
-      ).length;
 
-      // Get most recent analysis date
-      const sortedAnalyses = [...analyses].sort(
-        (a, b) =>
-          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-      );
-      const lastAnalysisDate = sortedAnalyses[0]
-        ? new Date(sortedAnalyses[0].created_at)
-        : undefined;
+      // Get most recent date from both tables
+      const allDates = [
+        ...(analyses?.map((a) => new Date(a.created_at)) || []),
+        ...(docAnalyses?.map((d) => new Date(d.created_at)) || []),
+      ].sort((a, b) => b.getTime() - a.getTime());
 
-      const summary: AIAnalysisSummary = {
+      const lastAnalysisDate = allDates[0];
+
+      const pendingAnalyses =
+        analyses?.filter((a) => a.status === 'pending').length || 0;
+      const failedAnalyses =
+        analyses?.filter((a) => a.status === 'failed').length || 0;
+
+      return {
         totalAnalyses,
         freeAnalyses,
         paidAnalyses,
@@ -152,10 +123,6 @@ export class AIAnalysisHistoryService {
         pendingAnalyses,
         failedAnalyses,
       };
-
-      console.log('✅ [ANALYSIS] Summary calculated:', summary);
-
-      return summary;
     } catch (error) {
       console.error('❌ [ANALYSIS] Error in fetchAnalysisSummary:', error);
       throw error;
@@ -483,5 +450,80 @@ export class AIAnalysisHistoryService {
       pendingAnalyses: 0,
       failedAnalyses: 0,
     };
+  }
+
+  /**
+   * Fetch from both ai_analysis_requests AND document_analysis_results
+   */
+  private async fetchAnalysisHistoryCombined(
+    filters?: AnalysisHistoryFilter
+  ): Promise<AnalysisHistoryItem[]> {
+    const userId = this.supabase.getCurrentUserId();
+    if (!userId) {
+      throw new Error('User not authenticated');
+    }
+
+    const orgUserIds = await this.getOrganizationUserIds(userId);
+
+    // Fetch from ai_analysis_requests (existing)
+    const aiAnalyses = await this.fetchAnalysisHistory(filters);
+
+    // Fetch from document_analysis_results
+    const { data: docAnalysesRaw } = await this.supabase
+      .from('document_analysis_results')
+      .select('*')
+      .in('user_id', orgUserIds)
+      .order('created_at', { ascending: false });
+
+    // Transform document analyses to match interface
+    const docAnalyses: AnalysisHistoryItem[] = (docAnalysesRaw || []).map(
+      (doc) => ({
+        id: doc.id,
+        orgId: '', // We'll need to fetch this
+        userId: doc.user_id,
+        requestType: 'document_review',
+        status: 'executed_free',
+        costCredits: 0,
+        wasFree: true,
+        analysisResults: doc.result_data,
+        createdAt: new Date(doc.created_at),
+        executedAt: new Date(doc.created_at),
+        hasResults: !!doc.result_data,
+        canDownload: true,
+        applicationTitle: doc.file_name, // Use file_name as title
+      })
+    );
+
+    // Combine and sort by date
+    const combined = [...aiAnalyses, ...docAnalyses].sort(
+      (a, b) => b.createdAt.getTime() - a.createdAt.getTime()
+    );
+
+    return combined;
+  }
+  /**
+   * Get analysis history for user + organization
+   */
+
+  getAnalysisHistory(
+    filters?: AnalysisHistoryFilter
+  ): Observable<AnalysisHistoryItem[]> {
+    this.isLoading.set(true);
+    this.error.set(null);
+
+    // Change this line:
+    return from(this.fetchAnalysisHistoryCombined(filters)).pipe(
+      tap((history) => {
+        this.analysisHistorySubject.next(history);
+        this.isLoading.set(false);
+      }),
+      catchError((error) => {
+        this.isLoading.set(false);
+        const message = error?.message || 'Failed to load analysis history';
+        this.error.set(message);
+        console.error('❌ [ANALYSIS] Error fetching history:', error);
+        return throwError(() => error);
+      })
+    );
   }
 }

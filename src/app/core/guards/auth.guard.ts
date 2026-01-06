@@ -21,16 +21,12 @@ export class AuthGuard implements CanActivate {
     route: ActivatedRouteSnapshot,
     state: RouterStateSnapshot
   ): Observable<boolean> {
-    console.log('AuthGuard: Checking access to:', state.url);
-
     return this.authService.canActivateRoute().pipe(
       map((isAuthenticated) => {
         if (isAuthenticated) {
-          console.log('AuthGuard: Access granted');
           return true;
         }
 
-        console.log('AuthGuard: Access denied, redirecting to login');
         this.router.navigate(['/login'], {
           queryParams: { returnUrl: state.url },
         });
