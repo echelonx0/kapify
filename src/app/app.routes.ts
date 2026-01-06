@@ -111,7 +111,7 @@ export const routes: Routes = [
     canActivate: [AuthGuard],
     loadComponent: () =>
       import(
-        './shared/executive-applications/executive-application-form.component'
+        './core/admin/executive-applications/executive-application-form.component'
       ).then((m) => m.ExecutiveApplicationFormComponent),
   },
   // Protected routes (require authentication)

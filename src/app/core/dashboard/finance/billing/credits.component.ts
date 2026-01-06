@@ -34,18 +34,8 @@ import { PurchaseCreditsModalComponent } from './purchase-credits-modal.componen
   imports: [CommonModule, LucideAngularModule, PurchaseCreditsModalComponent],
   template: `
     <div class="min-h-screen bg-slate-50">
-      <!-- Header -->
-      <header class="sticky top-0 z-30 bg-white border-b border-slate-200">
-        <div class="max-w-7xl mx-auto px-4 lg:px-8 py-6">
-          <h1 class="text-3xl font-bold text-slate-900">Buy Credits</h1>
-          <p class="text-sm text-slate-600 mt-1">
-            Purchase credits for funding applications
-          </p>
-        </div>
-      </header>
-
       <!-- Main Content -->
-      <main class="max-w-7xl mx-auto px-4 lg:px-8 py-8">
+      <main class="max-w-7xl mx-auto px-4 lg:px-8 py-2">
         <!-- Success Banner -->
         @if (status() === 'success') {
         <div
@@ -229,7 +219,7 @@ import { PurchaseCreditsModalComponent } from './purchase-credits-modal.componen
                   class="text-slate-600"
                 />
                 <h2 class="text-lg font-semibold text-slate-900">
-                  Recent Transactions
+                  Transactions History
                 </h2>
               </div>
             </div>
