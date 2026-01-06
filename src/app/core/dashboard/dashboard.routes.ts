@@ -1,8 +1,8 @@
 import { Routes } from '@angular/router';
 
-import { AIReportsComponent } from '../features/reports/ai-reports.component';
-import { ActivityLogsComponent } from '../features/activity-logs/activity-logs.component';
-import { NotificationsInboxComponent } from '../features/notifications/notifications-inbox.component';
+import { AIReportsComponent } from '../../features/reports/ai-reports.component';
+import { ActivityLogsComponent } from '../../features/activity-logs/activity-logs.component';
+import { NotificationsInboxComponent } from '../../features/notifications/notifications-inbox.component';
 
 export const dashboardRoutes: Routes = [
   {
@@ -52,7 +52,7 @@ export const dashboardRoutes: Routes = [
       {
         path: 'faqs',
         loadComponent: () =>
-          import('../core/components/faq/dashboard-faqs.component').then(
+          import('../components/faq/dashboard-faqs.component').then(
             (c) => c.DashboardFAQsComponent
           ),
         title: 'FAQs - Kapify',
@@ -63,7 +63,7 @@ export const dashboardRoutes: Routes = [
       {
         path: 'guides',
         loadComponent: () =>
-          import('../shared/user-guides/user-guides.component').then(
+          import('../../shared/user-guides/user-guides.component').then(
             (c) => c.UserGuidesComponent
           ),
         title: 'Funding Readiness Guide - Kapify',
@@ -73,20 +73,22 @@ export const dashboardRoutes: Routes = [
       {
         path: 'profile',
         loadChildren: () =>
-          import('../SMEs/profile/profile.routes').then((m) => m.profileRoutes),
+          import('../../SMEs/profile/profile.routes').then(
+            (m) => m.profileRoutes
+          ),
       },
       {
         path: 'funding-opportunities',
         loadComponent: () =>
           import(
-            '../marketplace/opportunities-list/funding-opportunities.component'
+            '../../marketplace/opportunities-list/funding-opportunities.component'
           ).then((c) => c.FundingOpportunitiesComponent),
         title: 'Funding Opportunities - Kapify',
       },
       {
         path: 'funder-dashboard',
         loadComponent: () =>
-          import('../funder/dashboard/funder-dashboard.component').then(
+          import('../../funder/dashboard/funder-dashboard.component').then(
             (c) => c.FunderDashboardComponent
           ),
         title: 'Funder Dashboard - Kapify',
@@ -96,14 +98,14 @@ export const dashboardRoutes: Routes = [
         path: 'resources',
         loadComponent: () =>
           import(
-            '../shared/components/learning-resources/learning-resources.component'
+            '../../shared/components/learning-resources/learning-resources.component'
           ).then((m) => m.LearningResourcesComponent),
         title: 'Resources - Kapify',
       },
       {
         path: 'kapify-academy',
         loadComponent: () =>
-          import('../shared/kapify-academy/kapify-academy.component').then(
+          import('../../features/kapify-academy/kapify-academy.component').then(
             (m) => m.KapifyAcademyComponent
           ),
         title: 'Resources - Kapify',

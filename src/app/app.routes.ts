@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { LandingComponent } from './landing/landing.component';
+import { LandingComponent } from './core/landing/landing.component';
 import { LoginComponent } from './auth/login/login.component';
 
 import { RegisterComponent } from './auth/register/register.component';
@@ -8,7 +8,7 @@ import { FundingOpportunitiesComponent } from './marketplace/opportunities-list/
 import { NotFoundComponent } from './shared/components/not-found/not-found.component';
 import { SuccessPageComponent } from './shared/components/success-page/success-page.component';
 import { VersionInfoComponent } from './shared/components/version-info.component';
-import { PricingPageComponent } from './dashboard/finance/pricing-page/pricing-page.component';
+import { PricingPageComponent } from './core/dashboard/finance/pricing-page/pricing-page.component';
 import { PublicProfileViewComponent } from './SMEs/profile/public-page/public-profile.component';
 import { AcceptInvitationComponent } from './auth/accept-invitation/accept-invitation.component';
 import { CreditsComponent } from './credit-system/credit-component/credit.component';
@@ -119,7 +119,9 @@ export const routes: Routes = [
     path: 'dashboard',
     canActivate: [AuthGuard],
     loadChildren: () =>
-      import('./dashboard/dashboard.routes').then((m) => m.dashboardRoutes),
+      import('./core/dashboard/dashboard.routes').then(
+        (m) => m.dashboardRoutes
+      ),
   },
 
   // Success pages for major actions
@@ -157,7 +159,9 @@ export const routes: Routes = [
     path: 'finance',
     canActivate: [AuthGuard],
     loadChildren: () =>
-      import('./dashboard/finance/finance.routes').then((m) => m.financeRoutes),
+      import('./core/dashboard/finance/finance.routes').then(
+        (m) => m.financeRoutes
+      ),
   },
 
   {

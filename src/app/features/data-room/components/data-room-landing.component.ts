@@ -40,8 +40,8 @@ import {
   DocumentMetadata,
   SupabaseDocumentService,
 } from 'src/app/shared/services/supabase-document.service';
-import { PurchaseCreditsModalComponent } from 'src/app/dashboard/finance/billing/purchase-credits-modal.component';
-import { CostConfirmationModalComponent } from 'src/app/dashboard/finance/cost-confirmation-modal.component';
+import { PurchaseCreditsModalComponent } from 'src/app/core/dashboard/finance/billing/purchase-credits-modal.component';
+import { CostConfirmationModalComponent } from 'src/app/core/dashboard/finance/cost-confirmation-modal.component';
 
 // Cost model for data room actions
 const ACTION_COSTS: Record<string, number> = {

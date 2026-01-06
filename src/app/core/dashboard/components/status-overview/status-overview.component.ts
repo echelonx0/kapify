@@ -28,7 +28,7 @@ import { Subject, takeUntil } from 'rxjs';
 import {
   FunderOnboardingService,
   OnboardingState,
-} from '../../../funder/services/funder-onboarding.service';
+} from '../../../../funder/services/funder-onboarding.service';
 
 export interface ActionEvent {
   type:

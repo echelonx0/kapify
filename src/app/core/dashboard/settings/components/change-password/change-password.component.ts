@@ -1,9 +1,4 @@
-import {
-  Component,
-  signal,
-  inject,
-  OnInit,
-} from '@angular/core';
+import { Component, signal, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   ReactiveFormsModule,
@@ -21,7 +16,7 @@ import {
   Eye,
   EyeOff,
 } from 'lucide-angular';
-import { AccountService } from 'src/app/dashboard/services/account.service';
+import { AccountService } from 'src/app/core/dashboard/services/account.service';
 
 @Component({
   selector: 'app-change-password',
@@ -130,12 +125,9 @@ export class ChangePasswordComponent implements OnInit {
     const hasUpperCase = /[A-Z]/.test(value);
     const hasLowerCase = /[a-z]/.test(value);
     const hasNumber = /\d/.test(value);
-    const hasSpecialChar = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(
-      value
-    );
+    const hasSpecialChar = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(value);
 
-    const valid =
-      hasUpperCase && hasLowerCase && hasNumber && hasSpecialChar;
+    const valid = hasUpperCase && hasLowerCase && hasNumber && hasSpecialChar;
 
     return !valid ? { weakPassword: true } : null;
   }
@@ -219,27 +211,25 @@ export class ChangePasswordComponent implements OnInit {
 
     const { currentPassword, newPassword } = this.passwordForm.value;
 
-    this.accountService
-      .changePassword(currentPassword, newPassword)
-      .subscribe({
-        next: () => {
-          this.successMessage.set('Password changed successfully');
-          this.passwordForm.reset();
-          this.passwordStrength.set('weak');
-          this.isLoading.set(false);
+    this.accountService.changePassword(currentPassword, newPassword).subscribe({
+      next: () => {
+        this.successMessage.set('Password changed successfully');
+        this.passwordForm.reset();
+        this.passwordStrength.set('weak');
+        this.isLoading.set(false);
 
-          setTimeout(() => {
-            this.successMessage.set(null);
-          }, 3000);
-        },
-        error: (error) => {
-          console.error('Password change failed:', error);
-          this.error.set(
-            error.message || 'Failed to change password. Please try again.'
-          );
-          this.isLoading.set(false);
-        },
-      });
+        setTimeout(() => {
+          this.successMessage.set(null);
+        }, 3000);
+      },
+      error: (error) => {
+        console.error('Password change failed:', error);
+        this.error.set(
+          error.message || 'Failed to change password. Please try again.'
+        );
+        this.isLoading.set(false);
+      },
+    });
   }
 
   onCancel() {
@@ -260,7 +250,9 @@ export class ChangePasswordComponent implements OnInit {
 
     if (field.hasError('required')) return 'This field is required';
     if (field.hasError('minlength'))
-      return `Minimum ${field.getError('minlength').requiredLength} characters required`;
+      return `Minimum ${
+        field.getError('minlength').requiredLength
+      } characters required`;
     if (field.hasError('weakPassword'))
       return 'Password must include uppercase, lowercase, number, and special character';
 

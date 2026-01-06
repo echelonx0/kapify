@@ -17,7 +17,7 @@ import {
   Copy,
 } from 'lucide-angular';
 import { InviteModalComponent } from './invite-modal/invite-modal.component';
-import { AuthService } from '../../../../auth/services/production.auth.service';
+import { AuthService } from '../../../../../auth/services/production.auth.service';
 import {
   OrganizationInvitationService,
   PendingInvitation,

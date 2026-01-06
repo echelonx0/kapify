@@ -24,7 +24,7 @@ import {
   Download,
   Trash2,
 } from 'lucide-angular';
-import { AccountService } from 'src/app/dashboard/services/account.service';
+import { AccountService } from 'src/app/core/dashboard/services/account.service';
 
 interface AccountData {
   email: string;

@@ -2,12 +2,12 @@
 import { Injectable, signal, inject, effect } from '@angular/core';
 import { Observable, from, throwError, of, BehaviorSubject } from 'rxjs';
 import { tap, catchError, switchMap, map } from 'rxjs/operators';
-import { AuthService } from '../../auth/services/production.auth.service';
-import { SharedSupabaseService } from '../../shared/services/shared-supabase.service';
+import { AuthService } from '../../../auth/services/production.auth.service';
+import { SharedSupabaseService } from '../../../shared/services/shared-supabase.service';
 import {
   Organization,
   OrganizationType,
-} from '../../shared/models/user.models';
+} from '../../../shared/models/user.models';
 
 export interface OrganizationSettings extends Organization {
   // Additional settings-specific fields can go here

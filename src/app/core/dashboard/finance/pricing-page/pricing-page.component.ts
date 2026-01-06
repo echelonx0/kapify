@@ -16,7 +16,7 @@ import {
   Clock,
   DollarSign,
 } from 'lucide-angular';
-import { LandingHeaderComponent } from 'src/app/landing/landing-header.component';
+import { LandingHeaderComponent } from 'src/app/core/landing/landing-header.component';
 import { UseCasesComponent } from './use-cases.component';
 
 interface PricingTier {

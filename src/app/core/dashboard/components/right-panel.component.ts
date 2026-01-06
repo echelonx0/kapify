@@ -18,7 +18,7 @@ import {
   AlertCircle,
   Info,
 } from 'lucide-angular';
-import { ActivityInboxComponent } from '../../messaging/messaging/messaging.component';
+import { ActivityInboxComponent } from '../../../messaging/messaging/messaging.component';
 import { VersionService } from 'src/app/shared/services/version.service';
 
 export type RightPanelContent =
