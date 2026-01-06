@@ -300,52 +300,15 @@
                 <h3 class="text-lg font-bold text-slate-900 mb-4">
                   Platform Introduction
                 </h3>
-                <div class="video-container" (click)="toggleVideo()">
-                  <video
-                    id="platform-video"
-                    class="w-full h-32 object-cover"
-                    [poster]="'assets/images/welcome-cover.png'"
-                    (ended)="onVideoEnded()"
-                    preload="none"
-                  >
-                    <source
-                      src="assets/videos/platform-intro.mp4"
-                      type="video/mp4"
-                    />
-                    Your browser does not support the video tag.
-                  </video>
 
-                  <div class="video-overlay" *ngIf="!isVideoPlaying()">
-                    <div class="play-button">
-                      <lucide-icon
-                        [name]="icons.play"
-                        [size]="24"
-                        class="text-primary-600 ml-1"
-                      ></lucide-icon>
-                    </div>
-                  </div>
-
-                  <div class="video-controls" *ngIf="isVideoPlaying()">
-                    <div class="flex items-center justify-between">
-                      <div>
-                        <h4 class="font-medium text-white text-sm">
-                          Getting Started with Kapify
-                        </h4>
-                        <p class="text-white/80 text-xs">
-                          A quick overview of the platform
-                        </p>
-                      </div>
-                      <button
-                        (click)="toggleVideo(); $event.stopPropagation()"
-                        class="text-white/80 hover:text-white"
-                      >
-                        <lucide-icon
-                          [name]="icons.pause"
-                          [size]="18"
-                        ></lucide-icon>
-                      </button>
-                    </div>
-                  </div>
+                <div class="rounded-xl overflow-hidden shadow-lg">
+                  <iframe
+                    class="w-full aspect-video rounded-xl"
+                    src="https://www.youtube.com/embed/ybkhNejL3eQ?rel=0&modestbranding=1&showinfo=0&autohide=1&color=white"
+                    title="Kapify Welcome Video"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowfullscreen
+                  ></iframe>
                 </div>
               </div>
 

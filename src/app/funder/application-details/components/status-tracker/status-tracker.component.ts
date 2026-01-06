@@ -24,7 +24,7 @@ import {
 import {
   FundingApplication,
   ReviewNote,
-} from 'src/app/SMEs/models/application.models';
+} from 'src/app/fund-seeking-orgs/models/application.models';
 
 interface TimelineAction {
   id: string;

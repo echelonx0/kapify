@@ -20,7 +20,7 @@ import {
   BarChart3,
 } from 'lucide-angular';
 
-import { FundingApplication } from 'src/app/SMEs/models/application.models';
+import { FundingApplication } from 'src/app/fund-seeking-orgs/models/application.models';
 import { Router } from '@angular/router';
 import { AnalysisResultsModalComponent } from '../../application-details/components/results-modal/analysis-results.modal.component';
 import {

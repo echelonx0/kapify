@@ -1,0 +1,494 @@
+<!-- src/app/profile/steps/governance/management-governance.component.html -->
+<div class="space-y-6">
+  <!-- Auto-save Status Header -->
+  <div class="bg-white rounded-2xl border border-slate-200 p-4">
+    <div class="flex items-center justify-between">
+      <div class="text-sm text-slate-600">
+        Management structure and governance information
+      </div>
+      <div class="flex items-center space-x-4">
+        <!-- Auto-save status -->
+        <div class="flex items-center space-x-2 text-sm">
+          @if (isSaving()) {
+          <lucide-icon
+            [img]="ClockIcon"
+            [size]="16"
+            class="text-amber-500 animate-spin"
+          />
+          <span class="text-amber-600">Saving...</span>
+          } @else if (lastSaved()) {
+          <lucide-icon [img]="SaveIcon" [size]="16" class="text-green-600" />
+          <span class="text-green-700">Saved {{ getLastSavedText() }}</span>
+          } @else {
+          <span class="text-slate-500">Not saved</span>
+          }
+        </div>
+        <!-- Manual save button -->
+        <ui-button
+          variant="outline"
+          size="sm"
+          (clicked)="saveManually()"
+          [disabled]="isSaving()"
+        >
+          @if (isSaving()) {
+          <lucide-icon
+            [img]="ClockIcon"
+            [size]="16"
+            class="mr-2 animate-spin"
+          />
+          Saving... } @else { Save Now }
+        </ui-button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Management Team Section -->
+  <div class="bg-white rounded-2xl border border-slate-200">
+    <button
+      type="button"
+      (click)="toggleSection('management')"
+      class="w-full px-6 py-4 text-left flex items-center justify-between hover:bg-slate-50 transition-colors duration-200"
+    >
+      <div>
+        <h3 class="text-lg font-bold text-slate-900">Management Team</h3>
+        <p class="text-sm text-slate-600 mt-1">
+          Describe your management team's structure and key roles.
+        </p>
+      </div>
+      <lucide-icon
+        [img]="
+          getSectionExpanded('management') ? ChevronUpIcon : ChevronDownIcon
+        "
+        [size]="20"
+        class="text-slate-400"
+      />
+    </button>
+
+    @if (getSectionExpanded('management')) {
+    <div class="px-6 pb-6 border-t border-slate-200">
+      <div class="mt-4 space-y-4">
+        <!-- Add Button -->
+        <div class="flex justify-end mb-2">
+          <ui-button
+            variant="primary"
+            size="sm"
+            (clicked)="addManagementMember()"
+          >
+            <lucide-icon [img]="PlusIcon" [size]="16" class="mr-2" />
+            Add Member
+          </ui-button>
+        </div>
+
+        <!-- Table Component -->
+        <app-management-team-table
+          [members]="managementTeam()"
+          (edit)="editManagementMember($event)"
+          (delete)="deleteManagementMember($event)"
+        />
+      </div>
+    </div>
+    }
+  </div>
+
+  <!-- Board of Directors Question & Section -->
+  <div class="bg-white rounded-2xl border border-slate-200">
+    <!-- Question Header -->
+    <div class="px-6 py-4 border-b border-slate-200">
+      <h3 class="text-lg font-bold text-slate-900 mb-3">
+        Does the company have a Board of Directors?
+      </h3>
+      <div class="flex space-x-4">
+        <label class="flex items-center">
+          <input
+            type="radio"
+            name="hasBoard"
+            [value]="true"
+            [checked]="hasBoard()"
+            (change)="setHasBoard(true)"
+            class="w-4 h-4 text-teal-600 border-slate-300 focus:ring-teal-500"
+          />
+          <span class="ml-2 text-sm text-slate-700">Yes</span>
+        </label>
+        <label class="flex items-center">
+          <input
+            type="radio"
+            name="hasBoard"
+            [value]="false"
+            [checked]="!hasBoard()"
+            (change)="setHasBoard(false)"
+            class="w-4 h-4 text-teal-600 border-slate-300 focus:ring-teal-500"
+          />
+          <span class="ml-2 text-sm text-slate-700">No</span>
+        </label>
+      </div>
+    </div>
+
+    <!-- Board Details Section -->
+    @if (hasBoard()) {
+    <button
+      type="button"
+      (click)="toggleSection('board')"
+      class="w-full px-6 py-4 text-left flex items-center justify-between hover:bg-slate-50 transition-colors duration-200"
+    >
+      <div>
+        <h4 class="text-base font-semibold text-slate-900">
+          Board of Directors Details
+        </h4>
+        <p class="text-sm text-slate-600 mt-1">
+          Detail the composition of your board of directors.
+        </p>
+      </div>
+      <lucide-icon
+        [img]="getSectionExpanded('board') ? ChevronUpIcon : ChevronDownIcon"
+        [size]="20"
+        class="text-slate-400"
+      />
+    </button>
+
+    @if (getSectionExpanded('board')) {
+    <div class="px-6 pb-6 border-t border-slate-200">
+      <div class="mt-4 space-y-4">
+        <div class="flex justify-end">
+          <ui-button variant="primary" size="sm" (clicked)="addBoardMember()">
+            <lucide-icon [img]="PlusIcon" [size]="16" class="mr-2" />
+            Add Director
+          </ui-button>
+        </div>
+
+        @for (member of boardOfDirectors(); track member.id) {
+        <div
+          class="border border-slate-200 rounded-xl p-4 hover:shadow-sm transition-shadow duration-200"
+        >
+          <div class="flex justify-between items-start">
+            <div class="flex-1">
+              <h4 class="font-semibold text-slate-900">
+                {{ member.fullName }}
+              </h4>
+              <p class="text-sm text-slate-600">{{ member.role }}</p>
+              <div
+                class="mt-2 flex items-center space-x-4 text-xs text-slate-500"
+              >
+                <span>Appointed: {{ member.appointmentDate }}</span>
+                @if (member.independent) {
+                <span
+                  class="bg-green-50 text-green-700 px-2.5 py-1 rounded-full font-medium"
+                  >Independent</span
+                >
+                }
+              </div>
+            </div>
+            <div class="flex gap-2">
+              <button
+                (click)="editBoardMember(member.id)"
+                class="p-2 text-teal-600 hover:bg-teal-50 rounded-lg transition-colors duration-200"
+                title="Edit director"
+              >
+                <lucide-icon [img]="EditIcon" [size]="16" />
+              </button>
+              <button
+                (click)="deleteBoardMember(member.id)"
+                class="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors duration-200"
+                title="Delete director"
+              >
+                <lucide-icon [img]="Trash2Icon" [size]="16" />
+              </button>
+            </div>
+          </div>
+        </div>
+        } @empty {
+        <div class="text-center py-8 text-slate-500">
+          <p class="text-sm">No board members added yet.</p>
+        </div>
+        }
+      </div>
+    </div>
+    } } @else {
+    <div class="px-6 py-4 bg-slate-50 text-sm text-slate-500">
+      Board of Directors section is not applicable for this company.
+    </div>
+    }
+  </div>
+
+  <!-- Management Committee Question & Section -->
+  <div class="bg-white rounded-2xl border border-slate-200">
+    <!-- Question Header -->
+    <div class="px-6 py-4 border-b border-slate-200">
+      <h3 class="text-lg font-bold text-slate-900 mb-3">
+        Does the company have a Management Committee?
+      </h3>
+      <div class="flex space-x-4">
+        <label class="flex items-center">
+          <input
+            type="radio"
+            name="hasCommittee"
+            [value]="true"
+            [checked]="hasManagementCommittee()"
+            (change)="setHasManagementCommittee(true)"
+            class="w-4 h-4 text-teal-600 border-slate-300 focus:ring-teal-500"
+          />
+          <span class="ml-2 text-sm text-slate-700">Yes</span>
+        </label>
+        <label class="flex items-center">
+          <input
+            type="radio"
+            name="hasCommittee"
+            [value]="false"
+            [checked]="!hasManagementCommittee()"
+            (change)="setHasManagementCommittee(false)"
+            class="w-4 h-4 text-teal-600 border-slate-300 focus:ring-teal-500"
+          />
+          <span class="ml-2 text-sm text-slate-700">No</span>
+        </label>
+      </div>
+    </div>
+
+    <!-- Committee Details Section -->
+    @if (hasManagementCommittee()) {
+    <button
+      type="button"
+      (click)="toggleSection('committee')"
+      class="w-full px-6 py-4 text-left flex items-center justify-between hover:bg-slate-50 transition-colors duration-200"
+    >
+      <div>
+        <h4 class="text-base font-semibold text-slate-900">
+          Management Committee Details
+        </h4>
+        <p class="text-sm text-slate-600 mt-1">
+          Outline any management committee within your organization.
+        </p>
+      </div>
+      <lucide-icon
+        [img]="
+          getSectionExpanded('committee') ? ChevronUpIcon : ChevronDownIcon
+        "
+        [size]="20"
+        class="text-slate-400"
+      />
+    </button>
+
+    @if (getSectionExpanded('committee')) {
+    <div class="px-6 pb-6 border-t border-slate-200">
+      <div class="mt-4 space-y-4">
+        <div class="flex justify-end">
+          <ui-button
+            variant="primary"
+            size="sm"
+            (clicked)="addCommitteeMember()"
+          >
+            <lucide-icon [img]="PlusIcon" [size]="16" class="mr-2" />
+            Add Committee Member
+          </ui-button>
+        </div>
+
+        @for (member of managementCommittee(); track member.id) {
+        <div
+          class="border border-slate-200 rounded-xl p-4 hover:shadow-sm transition-shadow duration-200"
+        >
+          <div class="flex justify-between items-start">
+            <div class="flex-1">
+              <h4 class="font-semibold text-slate-900">
+                {{ member.fullName }}
+              </h4>
+              <p class="text-sm text-slate-600">
+                {{ member.role }} - {{ member.committee }}
+              </p>
+              @if (member.description) {
+              <p class="text-xs text-slate-500 mt-1">
+                {{ member.description }}
+              </p>
+              }
+            </div>
+            <div class="flex gap-2">
+              <button
+                (click)="editCommitteeMember(member.id)"
+                class="p-2 text-teal-600 hover:bg-teal-50 rounded-lg transition-colors duration-200"
+                title="Edit member"
+              >
+                <lucide-icon [img]="EditIcon" [size]="16" />
+              </button>
+              <button
+                (click)="deleteCommitteeMember(member.id)"
+                class="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors duration-200"
+                title="Delete member"
+              >
+                <lucide-icon [img]="Trash2Icon" [size]="16" />
+              </button>
+            </div>
+          </div>
+        </div>
+        } @empty {
+        <div class="text-center py-8 text-slate-500">
+          <p class="text-sm">No committee members added yet.</p>
+        </div>
+        }
+      </div>
+    </div>
+    } } @else {
+    <div class="px-6 py-4 bg-slate-50 text-sm text-slate-500">
+      Management Committee section is not applicable for this company.
+    </div>
+    }
+  </div>
+
+  <!-- Manpower Section -->
+  <div class="mt-4">
+    <app-manpower
+      [initialData]="getManpowerData()"
+      (dataChanged)="onManpowerDataChanged($event)"
+    />
+  </div>
+
+  <!-- Progress Summary -->
+  <div class="bg-white rounded-2xl border border-slate-200 p-6">
+    <div class="flex items-center justify-between">
+      <div>
+        <h3 class="font-bold text-slate-900">
+          Leadership & Governance Progress
+        </h3>
+        <p class="text-sm text-slate-600 mt-1">
+          Data auto-saves every 30 seconds.
+        </p>
+      </div>
+
+      <div class="flex items-center space-x-4">
+        @if (hasData()) {
+        <div class="flex items-center space-x-2 text-green-700">
+          <div class="w-2.5 h-2.5 bg-green-600 rounded-full"></div>
+          <span class="font-semibold text-sm"
+            >{{ getTotalMembersCount() }} members added</span
+          >
+        </div>
+        } @else {
+        <div
+          class="bg-amber-50 text-amber-800 px-4 py-2 rounded-lg text-sm font-medium"
+        >
+          No members added
+        </div>
+        }
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Member Modal -->
+@if (showMemberModal()) {
+<div class="fixed inset-0 z-50 overflow-y-auto">
+  <div class="flex items-center justify-center min-h-screen px-4">
+    <div
+      class="fixed inset-0 bg-black/25 backdrop-blur-sm"
+      (click)="closeMemberModal()"
+    ></div>
+    <div class="bg-white rounded-2xl shadow-xl z-50 w-full max-w-md">
+      <div class="px-6 py-4 border-b border-slate-200">
+        <h3 class="text-lg font-bold text-slate-900">
+          {{
+            editingMemberType() === "management"
+              ? "Management Team Member"
+              : editingMemberType() === "board"
+              ? "Board Director"
+              : "Committee Member"
+          }}
+        </h3>
+      </div>
+      <form [formGroup]="memberForm" class="p-6 space-y-4">
+        <ui-input
+          label="Full Name"
+          placeholder="John Doe"
+          formControlName="fullName"
+          [required]="true"
+        />
+        <ui-input
+          label="Role/Position"
+          placeholder="Financial Director"
+          formControlName="role"
+          [required]="true"
+        />
+
+        @if (editingMemberType() === 'management') {
+        <div>
+          <label class="block text-sm font-semibold text-slate-900 mb-2"
+            >Qualification</label
+          >
+          <select
+            formControlName="qualification"
+            class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200"
+            required
+          >
+            <option value="">Select qualification</option>
+            <option value="High School Diploma">High School Diploma</option>
+            <option value="Honors">Honors</option>
+            <option value="Bachelors Degree">Bachelor's Degree</option>
+            <option value="Masters Degree">Master's Degree</option>
+            <option value="Doctorate (PhD)">Doctorate (PhD)</option>
+            <option value="Professional Certification">
+              Professional Certification
+            </option>
+          </select>
+        </div>
+        <ui-input
+          label="Field of Study"
+          placeholder="e.g., Finance, Engineering, Business Administration"
+          formControlName="fieldOfStudy"
+        />
+        <ui-input
+          label="Years of Experience"
+          type="number"
+          placeholder="10"
+          formControlName="yearsOfExperience"
+          [required]="true"
+        />
+        } @if (editingMemberType() === 'board') {
+        <ui-input
+          label="Appointment Date"
+          type="date"
+          formControlName="appointmentDate"
+          [required]="true"
+        />
+        <div class="flex items-center">
+          <input
+            type="checkbox"
+            formControlName="independent"
+            class="w-4 h-4 text-teal-600 border-slate-300 rounded focus:ring-teal-500"
+          />
+          <label class="ml-2 text-sm text-slate-700">
+            Independent Director
+          </label>
+        </div>
+        } @if (editingMemberType() === 'committee') {
+        <ui-input
+          label="Committee"
+          placeholder="Audit Committee"
+          formControlName="committee"
+          [required]="true"
+        />
+        <div>
+          <label class="block text-sm font-semibold text-slate-900 mb-2"
+            >Description</label
+          >
+          <textarea
+            formControlName="description"
+            rows="3"
+            placeholder="Brief description of responsibilities..."
+            class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200"
+          ></textarea>
+        </div>
+        }
+      </form>
+      <div
+        class="px-6 py-4 border-t border-slate-200 flex justify-end space-x-3"
+      >
+        <ui-button variant="outline" (clicked)="closeMemberModal()">
+          Cancel
+        </ui-button>
+        <ui-button
+          variant="primary"
+          (clicked)="saveMember()"
+          [disabled]="memberForm.invalid"
+        >
+          {{ editingMemberId() ? "Update" : "Add" }}
+        </ui-button>
+      </div>
+    </div>
+  </div>
+</div>
+}

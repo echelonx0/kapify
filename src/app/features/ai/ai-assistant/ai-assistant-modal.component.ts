@@ -25,8 +25,9 @@ import {
   AIAssistantService,
   AIAnalysisRequest,
 } from '../services/ai-assistant.service';
-import { FundingApplication } from 'src/app/SMEs/models/application.models';
+
 import { AIAnalysisResult } from '../services/ai-analysis.service';
+import { FundingApplication } from 'src/app/fund-seeking-orgs/models/application.models';
 
 interface AIAction {
   id: string;

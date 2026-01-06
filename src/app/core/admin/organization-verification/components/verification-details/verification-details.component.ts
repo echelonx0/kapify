@@ -1,11 +1,14 @@
 // src/app/admin/components/verification-details/verification-details.component.ts
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { UiButtonComponent, UiCardComponent } from '../../../../shared/components';
+import {
+  UiButtonComponent,
+  UiCardComponent,
+} from '../../../../shared/components';
 import { VerificationOrganization } from '../../../services/organization-verification.service';
 import { DocumentMetadata } from '../../../../shared/services/supabase-document.service';
-import { MessageThread } from 'src/app/messaging/services/messaging.service';
- 
+import { MessageThread } from 'src/app/features/messaging/services/messaging.service';
+
 type ActiveTab = 'details' | 'documents' | 'messaging' | 'activity';
 
 @Component({
@@ -29,7 +32,12 @@ export class VerificationDetailsComponent {
   @Output() documentDownloaded = new EventEmitter<DocumentMetadata>();
 
   // Define tabs array with proper typing
-  readonly tabs: ActiveTab[] = ['details', 'documents', 'messaging', 'activity'];
+  readonly tabs: ActiveTab[] = [
+    'details',
+    'documents',
+    'messaging',
+    'activity',
+  ];
 
   getTabClasses(tab: ActiveTab): string {
     const isActive = this.activeTab === tab;
@@ -42,11 +50,15 @@ export class VerificationDetailsComponent {
 
   getOrganizationStatusBadge(status: string): string {
     const badges = {
-      'pending_verification': 'bg-warning/20 text-warning border border-warning/30',
-      'active': 'bg-primary-100 text-primary-800 border border-primary-200',
-      'rejected': 'bg-red-100 text-red-800 border border-red-200'
+      pending_verification:
+        'bg-warning/20 text-warning border border-warning/30',
+      active: 'bg-primary-100 text-primary-800 border border-primary-200',
+      rejected: 'bg-red-100 text-red-800 border border-red-200',
     };
-    return badges[status as keyof typeof badges] || 'bg-neutral-100 text-neutral-700 border border-neutral-200';
+    return (
+      badges[status as keyof typeof badges] ||
+      'bg-neutral-100 text-neutral-700 border border-neutral-200'
+    );
   }
 
   formatDate(date: string): string {
@@ -55,7 +67,7 @@ export class VerificationDetailsComponent {
       month: 'short',
       year: 'numeric',
       hour: '2-digit',
-      minute: '2-digit'
+      minute: '2-digit',
     });
   }
 

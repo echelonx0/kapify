@@ -1,13 +1,13 @@
- 
 // src/app/ai/services/ai-analysis.service.ts - UPDATED FOR QUEUE INTEGRATION
 import { Injectable, inject, signal } from '@angular/core';
 import { Observable, from, BehaviorSubject, throwError } from 'rxjs';
-import { map, catchError } from 'rxjs/operators'; 
-import { FundingApplicationProfile } from 'src/app/SMEs/applications/models/funding-application.models';
+import { map, catchError } from 'rxjs/operators';
+
 import { AIAnalysisQueueService } from './ai-analysis-queue.service';
 import { SharedSupabaseService } from 'src/app/shared/services/shared-supabase.service';
 import { FundingOpportunity } from 'src/app/funder/create-opportunity/shared/funding.interfaces';
- 
+import { FundingApplicationProfile } from 'src/app/fund-seeking-orgs/applications/models/funding-application.models';
+
 export interface AIAnalysisRequest {
   opportunity: FundingOpportunity | null;
   applicationData: {
@@ -39,7 +39,7 @@ export interface AIAnalysisResult {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class AIAnalysisService {
   private supabase = inject(SharedSupabaseService);
@@ -54,11 +54,9 @@ export class AIAnalysisService {
   public error = signal<string | null>(null);
 
   constructor() {
-    
-
     // Keep signals in sync with subjects
-    this.isAnalyzingSubject.subscribe(value => this.isAnalyzing.set(value));
-    this.errorSubject.subscribe(value => this.error.set(value));
+    this.isAnalyzingSubject.subscribe((value) => this.isAnalyzing.set(value));
+    this.errorSubject.subscribe((value) => this.error.set(value));
   }
 
   // =======================
@@ -68,7 +66,9 @@ export class AIAnalysisService {
   /**
    * Analyze application - supports both immediate and background modes
    */
-  analyzeApplication(request: AIAnalysisRequest): Observable<AIAnalysisResult | { jobId: string; status: string }> {
+  analyzeApplication(
+    request: AIAnalysisRequest
+  ): Observable<AIAnalysisResult | { jobId: string; status: string }> {
     // Clear previous error
     this.clearError();
 
@@ -82,16 +82,20 @@ export class AIAnalysisService {
   /**
    * Queue analysis for background processing (email delivery)
    */
-  private queueBackgroundAnalysis(request: AIAnalysisRequest): Observable<{ jobId: string; status: string }> {
+  private queueBackgroundAnalysis(
+    request: AIAnalysisRequest
+  ): Observable<{ jobId: string; status: string }> {
     const queueRequest = {
-      analysisMode: request.opportunity ? 'opportunity' as const : 'profile' as const,
+      analysisMode: request.opportunity
+        ? ('opportunity' as const)
+        : ('profile' as const),
       businessProfile: request.businessProfile,
       opportunity: request.opportunity,
-      applicationData: request.applicationData
+      applicationData: request.applicationData,
     };
 
     return this.queueService.queueAnalysisJob(queueRequest).pipe(
-      catchError(error => {
+      catchError((error) => {
         this.setError(`Failed to queue AI analysis: ${error.message || error}`);
         return throwError(() => error);
       })
@@ -101,18 +105,20 @@ export class AIAnalysisService {
   /**
    * Perform immediate AI analysis (synchronous)
    */
-  private performImmediateAnalysis(request: AIAnalysisRequest): Observable<AIAnalysisResult> {
+  private performImmediateAnalysis(
+    request: AIAnalysisRequest
+  ): Observable<AIAnalysisResult> {
     this.setAnalyzing(true);
 
     return from(this.callAIAnalysisEdgeFunction(request)).pipe(
-      map(result => this.transformAnalysisResult(result)),
-      catchError(error => {
+      map((result) => this.transformAnalysisResult(result)),
+      catchError((error) => {
         const errorMessage = this.getErrorMessage(error);
         this.setError(errorMessage);
         return throwError(() => new Error(errorMessage));
       }),
       // Always clear analyzing state
-      map(result => {
+      map((result) => {
         this.setAnalyzing(false);
         return result;
       })
@@ -122,21 +128,26 @@ export class AIAnalysisService {
   /**
    * Call the Supabase Edge Function for AI analysis
    */
-  private async callAIAnalysisEdgeFunction(request: AIAnalysisRequest): Promise<any> {
+  private async callAIAnalysisEdgeFunction(
+    request: AIAnalysisRequest
+  ): Promise<any> {
     try {
-      const { data, error } = await this.supabase.functions.invoke('analyze-application', {
-        body: {
-          analysisMode: request.opportunity ? 'opportunity' : 'profile',
-          businessProfile: request.businessProfile,
-          opportunityData: request.opportunity,
-          applicationData: request.applicationData,
-          applicantProfile: request.businessProfile, // Backward compatibility
-          applicationId: this.generateApplicationId()
-        },
-        headers: {
-          'Content-Type': 'application/json'
+      const { data, error } = await this.supabase.functions.invoke(
+        'analyze-application',
+        {
+          body: {
+            analysisMode: request.opportunity ? 'opportunity' : 'profile',
+            businessProfile: request.businessProfile,
+            opportunityData: request.opportunity,
+            applicationData: request.applicationData,
+            applicantProfile: request.businessProfile, // Backward compatibility
+            applicationId: this.generateApplicationId(),
+          },
+          headers: {
+            'Content-Type': 'application/json',
+          },
         }
-      });
+      );
 
       if (error) {
         console.error('Edge Function error:', error);
@@ -148,7 +159,6 @@ export class AIAnalysisService {
       }
 
       return data;
-
     } catch (error) {
       console.error('AI Analysis service error:', error);
       throw error;
@@ -164,11 +174,12 @@ export class AIAnalysisService {
    */
   getSavedAnalysisResults(): Observable<AIAnalysisResult[]> {
     return this.queueService.getUserAnalysisJobs(20).pipe(
-      map(jobs => jobs
-        .filter(job => job.status === 'completed' && job.result)
-        .map(job => this.transformAnalysisResult(job.result))
+      map((jobs) =>
+        jobs
+          .filter((job) => job.status === 'completed' && job.result)
+          .map((job) => this.transformAnalysisResult(job.result))
       ),
-      catchError(error => {
+      catchError((error) => {
         console.error('Error fetching saved results:', error);
         return throwError(() => error);
       })
@@ -180,13 +191,13 @@ export class AIAnalysisService {
    */
   getAnalysisResult(jobId: string): Observable<AIAnalysisResult | null> {
     return this.queueService.getJobStatus(jobId).pipe(
-      map(job => {
+      map((job) => {
         if (job && job.status === 'completed' && job.result) {
           return this.transformAnalysisResult(job.result);
         }
         return null;
       }),
-      catchError(error => {
+      catchError((error) => {
         console.error('Error fetching analysis result:', error);
         return throwError(() => error);
       })
@@ -200,7 +211,9 @@ export class AIAnalysisService {
   /**
    * Subscribe to AI analysis job updates
    */
-  subscribeToJobUpdates(callback: (result: AIAnalysisResult) => void): () => void {
+  subscribeToJobUpdates(
+    callback: (result: AIAnalysisResult) => void
+  ): () => void {
     return this.queueService.subscribeToJobUpdates((job) => {
       if (job.status === 'completed' && job.result) {
         const analysisResult = this.transformAnalysisResult(job.result);
@@ -238,12 +251,16 @@ export class AIAnalysisService {
       successProbability: data.successProbability || 0,
       competitivePositioning: data.competitivePositioning || 'weak',
       strengths: Array.isArray(data.strengths) ? data.strengths : [],
-      improvementAreas: Array.isArray(data.improvementAreas) ? data.improvementAreas : [],
+      improvementAreas: Array.isArray(data.improvementAreas)
+        ? data.improvementAreas
+        : [],
       riskFactors: Array.isArray(data.riskFactors) ? data.riskFactors : [],
       keyInsights: Array.isArray(data.keyInsights) ? data.keyInsights : [],
-      recommendations: Array.isArray(data.recommendations) ? data.recommendations : [],
+      recommendations: Array.isArray(data.recommendations)
+        ? data.recommendations
+        : [],
       generatedAt: data.generatedAt || new Date().toISOString(),
-      modelVersion: data.modelVersion
+      modelVersion: data.modelVersion,
     };
   }
 
@@ -276,13 +293,13 @@ export class AIAnalysisService {
 
   getActivityTypeColor(type: string): string {
     const colors: Record<string, string> = {
-      'application': 'blue',
-      'funding': 'green',
-      'profile': 'purple',
-      'document': 'orange',
-      'system': 'gray',
-      'partnership': 'indigo',
-      'milestone': 'pink'
+      application: 'blue',
+      funding: 'green',
+      profile: 'purple',
+      document: 'orange',
+      system: 'gray',
+      partnership: 'indigo',
+      milestone: 'pink',
     };
     return colors[type] || 'gray';
   }
@@ -291,16 +308,16 @@ export class AIAnalysisService {
     const now = new Date();
     const diffMs = now.getTime() - date.getTime();
     const diffMins = Math.floor(diffMs / 60000);
-    
+
     if (diffMins < 1) return 'just now';
     if (diffMins < 60) return `${diffMins}m ago`;
-    
+
     const diffHours = Math.floor(diffMins / 60);
     if (diffHours < 24) return `${diffHours}h ago`;
-    
+
     const diffDays = Math.floor(diffHours / 24);
     if (diffDays < 7) return `${diffDays}d ago`;
-    
+
     const diffWeeks = Math.floor(diffDays / 7);
     return `${diffWeeks}w ago`;
   }
@@ -310,7 +327,7 @@ export class AIAnalysisService {
       style: 'currency',
       currency: 'ZAR',
       minimumFractionDigits: 0,
-      maximumFractionDigits: 0
+      maximumFractionDigits: 0,
     }).format(amount);
   }
 }

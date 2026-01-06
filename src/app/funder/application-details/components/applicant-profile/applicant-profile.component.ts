@@ -1,40 +1,46 @@
 // src/app/funder/components/applicant-profile/applicant-profile.component.ts - FIXED
 import { Component, Input, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { 
-  LucideAngularModule, 
-  Building, 
-  Mail, 
-  Award, 
-  TrendingUp, 
-  BarChart3
-} from 'lucide-angular'; 
- 
-import { FundingApplication, ApplicantInfo } from 'src/app/SMEs/models/application.models';
+import {
+  LucideAngularModule,
+  Building,
+  Mail,
+  Award,
+  TrendingUp,
+  BarChart3,
+} from 'lucide-angular';
+
+import {
+  FundingApplication,
+  ApplicantInfo,
+} from 'src/app/SMEs/models/application.models';
 import { FundingProfileBackendService } from 'src/app/SMEs/services/funding-profile-backend.service';
-import { ProfileData } from 'src/app/SMEs/profile/models/funding.models';
+import { ProfileData } from 'src/app/SMEs/SME-Profiles/models/funding.models';
 import { ProfileDataTransformerService } from 'src/app/SMEs/services/profile-data-transformer.service';
 
 @Component({
   selector: 'app-applicant-profile',
   standalone: true,
-  imports: [
-    CommonModule,
-    LucideAngularModule
-  ],
+  imports: [CommonModule, LucideAngularModule],
   templateUrl: 'applicant-profile.component.html',
-  styles: [`
-    .insight-card {
-      background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(147, 51, 234, 0.1));
-      border: 1px solid rgba(59, 130, 246, 0.2);
-      transition: all 0.2s ease;
-    }
-    
-    .insight-card:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    }
-  `]
+  styles: [
+    `
+      .insight-card {
+        background: linear-gradient(
+          135deg,
+          rgba(59, 130, 246, 0.1),
+          rgba(147, 51, 234, 0.1)
+        );
+        border: 1px solid rgba(59, 130, 246, 0.2);
+        transition: all 0.2s ease;
+      }
+
+      .insight-card:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      }
+    `,
+  ],
 })
 export class ApplicantProfileComponent implements OnInit {
   @Input() application!: FundingApplication;
@@ -76,8 +82,11 @@ export class ApplicantProfileComponent implements OnInit {
     this.profileError = null;
 
     try {
-      console.log('🔄 Loading profile for applicant:', this.application.applicantId);
-      
+      console.log(
+        '🔄 Loading profile for applicant:',
+        this.application.applicantId
+      );
+
       // Load the full profile using the backend service
       const fundingProfile = await this.backendService
         .loadSavedProfileForUser(this.application.applicantId)
@@ -85,12 +94,12 @@ export class ApplicantProfileComponent implements OnInit {
 
       if (fundingProfile) {
         // Transform to UI format
-        this.profileData = this.transformer.transformFromFundingProfile(fundingProfile);
+        this.profileData =
+          this.transformer.transformFromFundingProfile(fundingProfile);
         console.log('✅ Profile loaded successfully:', this.profileData);
       } else {
         throw new Error('No profile data found');
       }
-
     } catch (error) {
       console.error('❌ Failed to load applicant profile:', error);
       this.profileError = 'Unable to load applicant profile';
@@ -153,7 +162,7 @@ export class ApplicantProfileComponent implements OnInit {
     // Fallback logic
     const applicant = this.applicant || this.application?.applicant;
     const formData = this.application?.formData || {};
-    
+
     if (formData['applicantTitle']) return formData['applicantTitle'];
     if (formData['position']) return formData['position'];
     if (applicant?.companyName) return `CEO, ${applicant.companyName}`;
@@ -184,7 +193,8 @@ export class ApplicantProfileComponent implements OnInit {
     // Fallback logic
     const formData = this.application?.formData || {};
     if (formData['businessLocation']) return formData['businessLocation'];
-    if (formData['city'] && formData['province']) return `${formData['city']}, ${formData['province']}`;
+    if (formData['city'] && formData['province'])
+      return `${formData['city']}, ${formData['province']}`;
     if (formData['city']) return formData['city'];
     return 'Cape Town, SA';
   }
@@ -201,41 +211,45 @@ export class ApplicantProfileComponent implements OnInit {
   getVerificationStatus(): string {
     // Check if we have registration number
     const hasRegistration = !!(
-      this.profileData?.businessInfo?.registrationNumber || 
+      this.profileData?.businessInfo?.registrationNumber ||
       this.applicant?.registrationNumber
     );
-    
+
     // Check if we have documents
-    const hasDocuments = this.application?.documents && Object.keys(this.application.documents).length > 0;
-    
-    return (hasRegistration && hasDocuments) ? 'Verified' : 'Pending';
+    const hasDocuments =
+      this.application?.documents &&
+      Object.keys(this.application.documents).length > 0;
+
+    return hasRegistration && hasDocuments ? 'Verified' : 'Pending';
   }
 
   getProfileScore(): number {
     let score = 0;
-    
+
     // Personal info (20 points)
     if (this.profileData?.personalInfo?.firstName) score += 5;
     if (this.profileData?.personalInfo?.lastName) score += 5;
     if (this.profileData?.personalInfo?.email) score += 5;
     if (this.profileData?.personalInfo?.position) score += 5;
-    
+
     // Business info (30 points)
     if (this.profileData?.businessInfo?.companyName) score += 10;
     if (this.profileData?.businessInfo?.registrationNumber) score += 10;
     if (this.profileData?.businessInfo?.industry) score += 10;
-    
+
     // Financial info (25 points)
     if (this.profileData?.financialInfo?.monthlyRevenue) score += 10;
     if (this.profileData?.financialInfo?.annualRevenue) score += 10;
     if (this.profileData?.financialInfo?.profitMargin) score += 5;
-    
+
     // Documents (25 points)
-    const docCount = this.application?.documents ? Object.keys(this.application.documents).length : 0;
+    const docCount = this.application?.documents
+      ? Object.keys(this.application.documents).length
+      : 0;
     if (docCount >= 3) score += 25;
     else if (docCount >= 2) score += 15;
     else if (docCount >= 1) score += 10;
-    
+
     return Math.min(100, score);
   }
 
@@ -261,7 +275,7 @@ export class ApplicantProfileComponent implements OnInit {
     if (formData['businessAge']) {
       return parseInt(formData['businessAge'].toString()) || 0;
     }
-    
+
     return 5; // Default
   }
 
@@ -272,8 +286,13 @@ export class ApplicantProfileComponent implements OnInit {
 
     const applicant = this.applicant || this.application?.applicant;
     const formData = this.application?.formData || {};
-    
-    return applicant?.industry || formData['industry'] || formData['businessType'] || 'Technology';
+
+    return (
+      applicant?.industry ||
+      formData['industry'] ||
+      formData['businessType'] ||
+      'Technology'
+    );
   }
 
   getExperienceLevel(): string {
@@ -313,45 +332,51 @@ export class ApplicantProfileComponent implements OnInit {
       const amount = parseFloat(formData['previousFunding'].toString());
       return this.formatCurrency(amount);
     }
-    
+
     return 'R45K'; // Default
   }
 
   getFundingStatus(): string {
     const formData = this.application?.formData || {};
-    
+
     if (formData['fundingHistory'] === 'successful') {
       return 'Successfully repaid';
     }
-    
+
     if (formData['fundingHistory'] === 'some') {
       return 'Previous funding';
     }
-    
+
     return 'First-time applicant';
   }
 
   getFundingRecord(): string {
     const formData = this.application?.formData || {};
-    
-    if (formData['creditHistory'] === 'excellent' || formData['fundingHistory'] === 'successful') {
+
+    if (
+      formData['creditHistory'] === 'excellent' ||
+      formData['fundingHistory'] === 'successful'
+    ) {
       return 'Excellent history';
     }
-    
+
     if (formData['creditHistory'] === 'good') {
       return 'Good history';
     }
-    
+
     return 'New business'; // Default for first-time applicants
   }
 
   getGrowthRate(): string {
     // Try to calculate from financial data
-    if (this.profileData?.financialInfo?.annualRevenue && this.profileData?.financialInfo?.monthlyRevenue) {
+    if (
+      this.profileData?.financialInfo?.annualRevenue &&
+      this.profileData?.financialInfo?.monthlyRevenue
+    ) {
       const annual = parseFloat(this.profileData.financialInfo.annualRevenue);
       const monthly = parseFloat(this.profileData.financialInfo.monthlyRevenue);
       const currentAnnual = monthly * 12;
-      
+
       if (annual > 0 && currentAnnual > annual) {
         const growth = ((currentAnnual - annual) / annual) * 100;
         return `+${Math.round(growth)}%`;
@@ -363,7 +388,7 @@ export class ApplicantProfileComponent implements OnInit {
     if (formData['growthRate']) {
       return `+${Math.round(parseFloat(formData['growthRate'].toString()))}%`;
     }
-    
+
     return '+23%'; // Default realistic growth
   }
 
@@ -374,7 +399,7 @@ export class ApplicantProfileComponent implements OnInit {
   getGrowthDescription(): string {
     const growthStr = this.getGrowthRate();
     const growth = parseInt(growthStr.replace(/[+%]/g, ''));
-    
+
     if (growth >= 25) return 'Excellent growth';
     if (growth >= 15) return 'Above industry avg';
     if (growth >= 5) return 'Steady growth';

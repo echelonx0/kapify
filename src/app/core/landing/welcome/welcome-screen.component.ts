@@ -306,12 +306,6 @@ export class WelcomeScreenComponent implements OnInit {
     return user?.firstName || 'there';
   }
 
-  calculateProfileCompletion(): void {
-    const user = this.authService.user();
-    let completion = 25; // Base for having account created
-    this.profileCompletion.set(completion);
-  }
-
   handleCardAction(card: OnboardingCard): void {
     switch (card.id) {
       case 'comprehensive-database':

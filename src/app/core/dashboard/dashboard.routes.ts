@@ -1,5 +1,4 @@
 import { Routes } from '@angular/router';
-
 import { AIReportsComponent } from '../../features/reports/ai-reports.component';
 import { ActivityLogsComponent } from '../../features/activity-logs/activity-logs.component';
 import { NotificationsInboxComponent } from '../../features/notifications/notifications-inbox.component';
@@ -73,7 +72,7 @@ export const dashboardRoutes: Routes = [
       {
         path: 'profile',
         loadChildren: () =>
-          import('../../SMEs/profile/profile.routes').then(
+          import('../../profiles/SME-Profiles/profile.routes').then(
             (m) => m.profileRoutes
           ),
       },
@@ -81,7 +80,7 @@ export const dashboardRoutes: Routes = [
         path: 'funding-opportunities',
         loadComponent: () =>
           import(
-            '../../marketplace/opportunities-list/funding-opportunities.component'
+            '../../funding/marketplace/opportunities-list/funding-opportunities.component'
           ).then((c) => c.FundingOpportunitiesComponent),
         title: 'Funding Opportunities - Kapify',
       },

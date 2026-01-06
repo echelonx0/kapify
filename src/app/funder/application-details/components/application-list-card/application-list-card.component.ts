@@ -21,8 +21,9 @@ import {
   CircleCheckBig,
 } from 'lucide-angular';
 import { UserType } from '../../../../shared/models/user.models';
-import { ApplicationManagementService } from 'src/app/SMEs/services/application-management.service';
+
 import { ActionModalService } from '../../../../shared/components/modal/modal.service';
+import { ApplicationManagementService as FundingApplicationsManagerService } from 'src/app/fund-seeking-orgs/services/application-management.service';
 
 export interface BaseApplicationCard {
   id: string;
@@ -96,7 +97,7 @@ export class ApplicationListCardComponent {
   @Output() secondaryAction = new EventEmitter<BaseApplicationCard>();
   @Output() viewDetails = new EventEmitter<BaseApplicationCard>();
 
-  appManagementService = inject(ApplicationManagementService);
+  appManagementService = inject(FundingApplicationsManagerService);
   modalService = inject(ActionModalService);
   canWithdraw = computed(() => {
     // Only SMEs can withdraw their own applications

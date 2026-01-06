@@ -22,7 +22,7 @@ import {
   FinancialInsight,
   FinancialHealthScore,
 } from '../../services/financial-intelligence.service';
-import { ParsedFinancialData } from 'src/app/SMEs/profile/steps/financial-analysis/utils/excel-parser.service';
+import { ParsedFinancialData } from 'src/app/SMEs/SME-Profiles/steps/financial-analysis/utils/excel-parser.service';
 
 @Component({
   selector: 'app-financial-analysis-modal',

@@ -4,20 +4,22 @@ import { LoginComponent } from './auth/login/login.component';
 
 import { RegisterComponent } from './auth/register/register.component';
 
-import { FundingOpportunitiesComponent } from './marketplace/opportunities-list/funding-opportunities.component';
 import { NotFoundComponent } from './shared/components/not-found/not-found.component';
 import { SuccessPageComponent } from './shared/components/success-page/success-page.component';
 import { VersionInfoComponent } from './shared/components/version-info.component';
 import { PricingPageComponent } from './core/dashboard/finance/pricing-page/pricing-page.component';
-import { PublicProfileViewComponent } from './SMEs/profile/public-page/public-profile.component';
+
 import { AcceptInvitationComponent } from './auth/accept-invitation/accept-invitation.component';
-import { CreditsComponent } from './credit-system/credit-component/credit.component';
+
 import { InvoiceComponent } from './features/invoice/invoice.component';
 import { AuthGuard } from './core/guards/auth.guard';
 import { GuestGuard } from './core/guards/guest.guard';
 import { ProfileCompletionGuard } from './core/guards/profile-completion.guard';
 import { RoleGuard } from './core/guards/role.guard';
 import { PasswordResetComponent } from './auth/password-reset/password-reset.component';
+import { PublicProfileViewComponent } from './profiles/SME-Profiles/public-page/public-profile.component';
+import { CreditsComponent } from './features/credit-system/credit-component/credit.component';
+import { FundingOpportunitiesComponent } from './funding/marketplace/opportunities-list/funding-opportunities.component';
 
 export const routes: Routes = [
   // Public routes
@@ -141,7 +143,9 @@ export const routes: Routes = [
     path: 'profile',
     canActivate: [AuthGuard],
     loadChildren: () =>
-      import('./SMEs/profile/profile.routes').then((m) => m.profileRoutes),
+      import('./profiles/SME-Profiles/profile.routes').then(
+        (m) => m.profileRoutes
+      ),
     title: 'Profile Setup - Kapify',
   },
 
@@ -150,7 +154,7 @@ export const routes: Routes = [
     path: 'applications',
     canActivate: [AuthGuard],
     loadChildren: () =>
-      import('./SMEs/applications/applications.routes').then(
+      import('./fund-seeking-orgs/applications/applications.routes').then(
         (m) => m.applicationRoutes
       ),
   },

@@ -1,18 +1,18 @@
 // src/app/ai/services/modular-ai-analysis.service.ts (Updated for SME + Investor modes)
 import { Injectable, inject, signal } from '@angular/core';
-import { Observable, from, forkJoin, of } from 'rxjs';
+import { Observable, from } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
 
 import { MarketIntelligenceService } from './market-intelligence.service';
 
+import { SharedSupabaseService } from 'src/app/shared/services/shared-supabase.service';
 import {
   FundingApplicationProfile,
   FinancialProfile,
   BusinessAssessment,
   ManagementStructure,
-} from 'src/app/SMEs/applications/models/funding-application.models';
-import { DocumentSection } from 'src/app/SMEs/models/application.models';
-import { SharedSupabaseService } from 'src/app/shared/services/shared-supabase.service';
+} from 'src/app/fund-seeking-orgs/applications/models/funding-application.models';
+import { DocumentSection } from 'src/app/fund-seeking-orgs/models/application.models';
 
 // Enhanced Analysis Result Interfaces for Both Modes
 export interface FinancialHealthAnalysis {

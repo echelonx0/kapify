@@ -29,17 +29,17 @@ export class BackOfficeFormQuestionsService {
 
   async loadAllQuestions(): Promise<BackOfficeFormQuestion[]> {
     this.isLoading.set(true);
-    console.log('🟢 Service: loadAllQuestions() started');
+    // console.log('🟢 Service: loadAllQuestions() started');
     try {
-      console.log('🟢 Service: Querying back_office_form_questions table');
+      // console.log('🟢 Service: Querying back_office_form_questions table');
       const { data, error } = await this.supabase
         .from('back_office_form_questions')
         .select('*')
         .eq('is_active', true)
         .order('order_index', { ascending: true });
 
-      console.log('🟢 Service: Query response - error:', error);
-      console.log('🟢 Service: Query response - data:', data);
+      // console.log('🟢 Service: Query response - error:', error);
+      // console.log('🟢 Service: Query response - data:', data);
 
       if (error) {
         console.error('🟢 Service: Query error details:', error);
@@ -47,20 +47,20 @@ export class BackOfficeFormQuestionsService {
       }
 
       const questions = (data || []) as BackOfficeFormQuestion[];
-      console.log('🟢 Service: Parsed questions:', questions);
-      console.log('🟢 Service: Questions count:', questions.length);
+      // console.log('🟢 Service: Parsed questions:', questions);
+      // console.log('🟢 Service: Questions count:', questions.length);
 
       this.allQuestions.set(questions);
-      console.log(
-        '🟢 Service: Signal updated with',
-        questions.length,
-        'questions'
-      );
-      console.log('🟢 Service: Signal value after set:', this.allQuestions());
+      // console.log(
+      //   '🟢 Service: Signal updated with',
+      //   questions.length,
+      //   'questions'
+      // );
+      // console.log('🟢 Service: Signal value after set:', this.allQuestions());
 
       return questions;
     } catch (err) {
-      console.error('❌ Service: Failed to load back office questions:', err);
+      //   console.error('❌ Service: Failed to load back office questions:', err);
       this.error.set('Failed to load form questions');
       return [];
     } finally {

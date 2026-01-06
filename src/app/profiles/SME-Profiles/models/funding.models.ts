@@ -1,0 +1,134 @@
+// import {
+//   BoardMember,
+//   ManagementMember,
+// } from '../../applications/models/funding-application.models';
+// import { CommitteeMember } from '../../applications/models/profile.models';
+
+import { CommitteeMember } from 'src/app/shared/models/application.models';
+import {
+  ManagementMember,
+  BoardMember,
+} from 'src/app/fund-seeking-orgs/applications/models/funding-application.models';
+import { ParsedFinancialData } from '../steps/financial-analysis/utils/excel-parser.service';
+
+export interface ApplicationProfileData {
+  adminInformation?: Record<string, any>;
+  documents?: Record<string, any>;
+  businessReview?: Record<string, any>;
+  swotAnalysis?: {
+    strengths: string[];
+    weaknesses: string[];
+    opportunities: string[];
+    threats: string[];
+  };
+  managementGovernance?: {
+    managementTeam: any[];
+    boardOfDirectors: any[];
+    managementCommittee: any[];
+  };
+  businessPlan?: Record<string, any>;
+
+  financialAnalysis?: ParsedFinancialData;
+}
+
+export interface ProfileData {
+  // Personal Info
+  personalInfo: {
+    firstName: string;
+    lastName: string;
+    email: string;
+    phone: string;
+    idNumber: string;
+    position: string;
+  };
+
+  // Business Info
+  businessInfo: {
+    companyName: string;
+    registrationNumber: string;
+    vatNumber?: string;
+    industry: string;
+    yearsInOperation: number;
+    numberOfEmployees: string;
+    businessPhone?: string;
+    physicalAddress: {
+      street: string;
+      city: string;
+      province: string;
+      postalCode: string;
+    };
+    businessDescription?: string;
+    ownership?: Array<{
+      ownerName: string;
+      ownershipPercentage: number | string;
+      role: string;
+      idNumber?: string;
+    }>;
+  };
+
+  // Financial Info
+  financialInfo: {
+    monthlyRevenue: string;
+    annualRevenue: string;
+    profitMargin: string;
+    existingDebt: string;
+    creditRating: string;
+    bankingDetails: {
+      bankName: string;
+      accountType: string;
+      yearsWithBank: number;
+    };
+  };
+
+  // Funding Requirements
+  fundingInfo: {
+    amountRequired: string;
+    purposeOfFunding: string;
+    timelineRequired: string;
+    repaymentPeriod: string;
+    collateralAvailable: boolean;
+    collateralDescription?: string;
+  };
+
+  // Documents
+  documents: {
+    cipDocument?: File;
+    financialStatements?: File;
+    bankStatements?: File;
+    managementAccounts?: File;
+    businessPlan?: File;
+    taxClearance?: File;
+  };
+
+  // New sections
+  managementGovernance?: {
+    managementTeam: ManagementMember[];
+    boardOfDirectors: BoardMember[];
+    managementCommittee: CommitteeMember[];
+    shareholderOwnership?: {
+      shareholderName: string;
+      ownershipPercentage: number;
+    }[];
+  };
+
+  businessReview?: {
+    // Business review fields
+  };
+
+  swotAnalysis?: {
+    strengths: string[];
+    weaknesses: string[];
+    opportunities: string[];
+    threats: string[];
+  };
+
+  businessPlan?: {
+    // Business plan fields
+  };
+
+  // ✅ REPLACE WITH THIS
+  financialAnalysis?: ParsedFinancialData;
+
+  supportingDocuments?: Record<string, any>;
+  businessDescription?: string;
+}

@@ -1,4 +1,4 @@
-// src/app/ai/ai-assistant/ai-assistant.component.ts - REFACTORED WITH CONTROLLER
+// src/app/ai/ai-assistant/ai-assistant.component.ts
 import {
   Component,
   inject,
@@ -39,13 +39,15 @@ import {
   ApplicationInsight,
   InvestmentScore,
 } from '../services/application-intelligence.service';
-import { CreditGatingService } from 'src/app/credit-system/services/credit-gating.service';
+
 import {
   AiAssistantUiService,
   IntelligenceInsight,
 } from '../services/ai-assistant-ui.service';
-import { CreditGatingModalComponent } from 'src/app/credit-system/credit-gating-modal.component';
+
 import { AiAnalysisController } from '../controllers/analysis.controller';
+import { CreditGatingModalComponent } from '../../credit-system/credit-gating-modal.component';
+import { CreditGatingService } from '../../credit-system/services/credit-gating.service';
 
 interface FormData {
   fundingType: string;
@@ -359,12 +361,10 @@ export class AiAssistantComponent implements OnInit, OnDestroy {
       );
       // If paid, show modal; if free, execute immediately
       if (!isFree) {
-        console.log('💳 [AI-ASSISTANT] Showing credit gating modal');
         this.showCreditGatingModal.set(true);
         return;
       }
 
-      console.log('🎁 [AI-ASSISTANT] Running FREE analysis');
       await this.executeAnalysis();
     } catch (error) {
       console.error('❌ [AI-ASSISTANT] Error in generateAnalysis():', error);

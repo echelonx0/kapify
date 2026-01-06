@@ -12,13 +12,9 @@ import { Subject } from 'rxjs';
 import {
   LucideAngularModule,
   Search,
-  Filter,
   Download,
   FileText,
   Clock,
-  CheckCircle,
-  XCircle,
-  AlertCircle,
   TrendingUp,
   Users,
   DollarSign,
@@ -30,13 +26,17 @@ import {
   Calendar,
   User,
   LogOut,
+  CircleCheckBig,
+  CircleX,
+  Funnel,
+  CircleAlert,
 } from 'lucide-angular';
 import { FormsModule } from '@angular/forms';
-import { ApplicationManagementService } from 'src/app/SMEs/services/application-management.service';
+import { ApplicationManagementService } from 'src/app/fund-seeking-orgs/services/application-management.service';
 import {
   FundingApplication,
   ApplicationStats,
-} from 'src/app/SMEs/models/application.models';
+} from 'src/app/fund-seeking-orgs/models/application.models';
 import { SMEOpportunitiesService } from 'src/app/funding/services/opportunities.service';
 import { ActionModalService } from 'src/app/shared/components/modal/modal.service';
 
@@ -85,13 +85,13 @@ export class FunderApplicationsListComponent implements OnInit, OnDestroy {
 
   // Icons
   SearchIcon = Search;
-  FilterIcon = Filter;
+  FilterIcon = Funnel;
   DownloadIcon = Download;
   FileTextIcon = FileText;
   ClockIcon = Clock;
-  CheckCircleIcon = CheckCircle;
-  XCircleIcon = XCircle;
-  AlertCircleIcon = AlertCircle;
+  CheckCircleIcon = CircleCheckBig;
+  XCircleIcon = CircleX;
+  AlertCircleIcon = CircleAlert;
   TrendingUpIcon = TrendingUp;
   UsersIcon = Users;
   DollarSignIcon = DollarSign;
@@ -123,14 +123,14 @@ export class FunderApplicationsListComponent implements OnInit, OnDestroy {
     {
       id: 'approved',
       label: 'Approved',
-      icon: CheckCircle,
+      icon: CircleCheckBig,
       statuses: ['approved'],
       color: 'green',
     },
     {
       id: 'rejected',
       label: 'Rejected',
-      icon: XCircle,
+      icon: CircleX,
       statuses: ['rejected'],
       color: 'red',
     },

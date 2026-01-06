@@ -5,9 +5,11 @@ import { Observable, from, throwError } from 'rxjs';
 import { tap, catchError } from 'rxjs/operators';
 import { AuthService } from 'src/app/auth/services/production.auth.service';
 import { SharedSupabaseService } from 'src/app/shared/services/shared-supabase.service';
-import { MessagingService } from 'src/app/messaging/services/messaging.service';
-import { FundingApplication } from 'src/app/SMEs/models/application.models';
-import { ReviewNote } from 'src/app/SMEs/profile/models/sme-profile.models';
+import { MessagingService } from 'src/app/features/messaging/services/messaging.service';
+import {
+  FundingApplication,
+  ReviewNote,
+} from 'src/app/fund-seeking-orgs/models/application.models';
 
 export interface StatusAction {
   id: string;

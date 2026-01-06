@@ -26,7 +26,7 @@ import {
   MessageThread,
   MessagingService,
   Message,
-} from 'src/app/messaging/services/messaging.service';
+} from 'src/app/features/messaging/services/messaging.service';
 
 @Component({
   selector: 'app-notifications-detail',
