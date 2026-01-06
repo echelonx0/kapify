@@ -22,12 +22,12 @@ import {
   Activity,
   Cpu,
 } from 'lucide-angular';
-import { FundingApplication } from 'src/app/SMEs/models/application.models';
+import { FundingApplication } from 'src/app/fund-seeking-orgs/models/application.models';
 import { BusinessAssessmentViewerComponent } from '../business-operations/business-operations.component';
 import { FinancialAnalysisViewerComponent } from '../financial-analysis-viewer/financial-analysis-viewer.component';
 import { BusinessInfoComponent } from '../business-info/business-info.component';
 import { FundingOpportunity } from 'src/app/funder/create-opportunity/shared/funding.interfaces';
-import { FundingApplicationProfile } from 'src/app/SMEs/applications/models/funding-application.models';
+import { FundingApplicationProfile } from 'src/app/fund-seeking-orgs/applications/models/funding-application.models';
 
 import { Subject } from 'rxjs';
 import { ProfileData } from 'src/app/profiles/SME-Profiles/models/funding.models';

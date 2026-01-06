@@ -1,3 +1,4 @@
+import { ReviewNote } from 'src/app/fund-seeking-orgs/models/application.models';
 import {
   UseOfFundsBreakdown,
   ProposedTerms,
@@ -10,7 +11,6 @@ import {
   ComplianceCheck,
   AuditEntry,
 } from 'src/app/shared/models/application.models';
-import { ReviewNote } from 'src/app/SMEs/models/application.models';
 
 // Enhanced Application Model with SWOT integration
 export interface Application {

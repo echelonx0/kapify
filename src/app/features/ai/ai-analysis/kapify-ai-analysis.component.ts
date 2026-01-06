@@ -19,7 +19,7 @@ import { BusinessRulesResultsComponent } from './components/business-rules-resul
 import { AiAnalysisProgressComponent } from './components/ai-analysis-progress.component';
 import { ComprehensiveAnalysisResultsComponent } from './components/comprehensive-analysis-results.component';
 import { AnalysisErrorComponent } from './components/analysis-error.component';
-import { FundingApplicationProfile } from 'src/app/SMEs/applications/models/funding-application.models';
+
 import {
   ModularAIAnalysisService,
   ComprehensiveAnalysis,
@@ -28,9 +28,11 @@ import {
   BusinessRulesAnalysisService,
   BusinessRulesResult,
 } from '../services/business-rules.service';
-import { FundingProfileBackendService } from 'src/app/SMEs/services/funding-profile-backend.service';
-import { ApplicationFormData } from 'src/app/SMEs/applications/new-application/models/application-form.model';
+
 import { FundingOpportunity } from 'src/app/funder/create-opportunity/shared/funding.interfaces';
+import { FundingApplicationProfile } from 'src/app/fund-seeking-orgs/applications/models/funding-application.models';
+import { ApplicationFormData } from 'src/app/fund-seeking-orgs/applications/new-application/models/application-form.model';
+import { FundingProfileBackendService } from 'src/app/fund-seeking-orgs/services/funding-profile-backend.service';
 
 type AnalysisState =
   | 'pre-analysis'

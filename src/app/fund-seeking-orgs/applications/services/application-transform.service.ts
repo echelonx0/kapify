@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { OpportunityApplication } from 'src/app/profiles/SME-Profiles/models/sme-profile.models';
-import { FundingApplication } from 'src/app/SMEs/models/application.models';
+import { FundingApplication } from '../../models/application.models';
 
 export interface TransformedApplication {
   id: string;

@@ -3,10 +3,10 @@
 import { Injectable, signal, computed, inject } from '@angular/core';
 import { AuthService } from 'src/app/auth/services/production.auth.service';
 
-import { FundingProfileBackendService } from '../../../SMEs/services/funding-profile-backend.service';
-import { ProfileDataTransformerService } from '../../../SMEs/services/profile-data-transformer.service';
+import { FundingProfileBackendService } from '../../../fund-seeking-orgs/services/funding-profile-backend.service';
+import { ProfileDataTransformerService } from '../../../fund-seeking-orgs/services/profile-data-transformer.service';
 import { ProfileData } from '../models/funding.models';
-import { ProfileStep } from 'src/app/SMEs/applications/models/profile.models';
+import { ProfileStep } from 'src/app/fund-seeking-orgs/applications/models/profile.models';
 
 @Injectable({
   providedIn: 'root',

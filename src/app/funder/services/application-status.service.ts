@@ -9,7 +9,7 @@ import { MessagingService } from 'src/app/features/messaging/services/messaging.
 import {
   FundingApplication,
   ReviewNote,
-} from 'src/app/SMEs/models/application.models';
+} from 'src/app/fund-seeking-orgs/models/application.models';
 
 export interface StatusAction {
   id: string;

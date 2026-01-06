@@ -8,7 +8,7 @@ import {
 import { LucideAngularModule, Save, Clock } from 'lucide-angular';
 import { interval, Subscription } from 'rxjs';
 import { takeWhile } from 'rxjs/operators';
-import { FundingProfileSetupService } from '../../../../SMEs/services/funding-profile-setup.service';
+import { FundingProfileSetupService } from '../../../../fund-seeking-orgs/services/funding-profile-setup.service';
 import { BusinessBackOfficeComponent } from './business-back-office.component';
 import { BusinessFinancialStatementsComponent } from './business-financial-statements.component';
 import { BusinessAssessmentMapper } from './business-assessment.mapper';

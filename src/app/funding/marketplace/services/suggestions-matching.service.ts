@@ -5,7 +5,7 @@ import { AuthService } from 'src/app/auth/services/production.auth.service';
 
 import { FundingOpportunity } from 'src/app/funder/create-opportunity/shared/funding.interfaces';
 import { SharedSupabaseService } from 'src/app/shared/services/shared-supabase.service';
-import { FundingProfileSetupService } from 'src/app/SMEs/services/funding-profile-setup.service';
+import { FundingProfileSetupService } from 'src/app/fund-seeking-orgs/services/funding-profile-setup.service';
 import { SMEOpportunitiesService } from '../../services/opportunities.service';
 
 export interface MatchScore {

@@ -28,10 +28,11 @@ import { ContactDetailsComponent } from './components/contact-details/contact-de
 import { TeamManagementComponent } from './components/team-management/team-management.component';
 import { AuthService } from 'src/app/auth/services/production.auth.service';
 import { Router } from '@angular/router';
-import { FundingProfileSetupService } from 'src/app/SMEs/services/funding-profile-setup.service';
+
 import { AccountComponent } from './components/account/account.component';
 import { ChangePasswordComponent } from './components/change-password/change-password.component';
 import { CreditsComponent } from '../finance/billing/credits.component';
+import { FundingProfileSetupService } from 'src/app/fund-seeking-orgs/services/funding-profile-setup.service';
 
 type SettingsSection =
   | 'general'

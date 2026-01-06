@@ -28,7 +28,7 @@ import { UiButtonComponent, UiCardComponent } from 'src/app/shared/components';
 import { takeUntil } from 'rxjs';
 import { Subject } from 'rxjs';
 import { SMEOpportunitiesService } from 'src/app/funding/services/opportunities.service';
-import { DatabaseApplicationService } from 'src/app/SMEs/services/database-application.service';
+import { DatabaseApplicationService } from 'src/app/fund-seeking-orgs/services/database-application.service';
 import { FundingOpportunity } from 'src/app/funder/create-opportunity/shared/funding.interfaces';
 import { Application } from '../../new-application/models/funding-application.model';
 

@@ -27,7 +27,7 @@ import {
 } from 'lucide-angular';
 import { interval, Subscription } from 'rxjs';
 import { takeWhile } from 'rxjs/operators';
-import { FundingProfileSetupService } from '../../../../SMEs/services/funding-profile-setup.service';
+import { FundingProfileSetupService } from '../../../../fund-seeking-orgs/services/funding-profile-setup.service';
 import {
   SupabaseDocumentService,
   DocumentMetadata,
@@ -1228,9 +1228,7 @@ export class SupportingDocumentsUploadComponent implements OnInit, OnDestroy {
   // DOCUMENT ACTIONS
   // ===============================
 
-  getDocumentActions(
-    doc: DocumentUpload
-  ): Array<{
+  getDocumentActions(doc: DocumentUpload): Array<{
     label: string;
     action: () => void;
     icon: string;

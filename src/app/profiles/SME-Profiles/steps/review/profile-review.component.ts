@@ -24,8 +24,8 @@ import {
   UiCardComponent,
   UiButtonComponent,
 } from '../../../../shared/components';
-import { ProfileDataTransformerService } from '../../../../SMEs/services/profile-data-transformer.service';
-import { FundingProfileSetupService } from 'src/app/SMEs/services/funding-profile-setup.service';
+import { ProfileDataTransformerService } from '../../../../fund-seeking-orgs/services/profile-data-transformer.service';
+import { FundingProfileSetupService } from 'src/app/fund-seeking-orgs/services/funding-profile-setup.service';
 
 import { SMEProfileStepsService } from '../../services/sme-profile-steps.service';
 import { KapifyAIAnalysisComponent } from 'src/app/features/ai/ai-analysis/kapify-ai-analysis.component';

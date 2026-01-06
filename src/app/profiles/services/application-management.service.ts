@@ -8,14 +8,15 @@ import {
   DocumentMetadata,
   SupabaseDocumentService,
 } from 'src/app/shared/services/supabase-document.service';
+
+import { ReviewNote } from '../../profiles/SME-Profiles/models/sme-profile.models';
 import {
   DocumentSection,
   FundingApplication,
   ApplicationFilter,
   ApplicationStats,
   ApplicantDocument,
-} from '../models/application.models';
-import { ReviewNote } from '../../profiles/SME-Profiles/models/sme-profile.models';
+} from 'src/app/fund-seeking-orgs/models/application.models';
 
 @Injectable({
   providedIn: 'root',

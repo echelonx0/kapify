@@ -16,7 +16,7 @@ import {
 } from 'lucide-angular';
 
 import { TeamMemberComponent } from '../team-member/team-member.component';
-import { FundingApplicationProfile } from 'src/app/SMEs/applications/models/funding-application.models';
+import { FundingApplicationProfile } from 'src/app/fund-seeking-orgs/applications/models/funding-application.models';
 import { ProfileData } from 'src/app/profiles/SME-Profiles/models/funding.models';
 
 interface TeamMember {

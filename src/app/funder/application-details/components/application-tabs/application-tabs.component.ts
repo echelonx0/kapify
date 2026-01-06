@@ -29,7 +29,7 @@ import { Subject } from 'rxjs';
 import { ApplicationMessagingComponent } from 'src/app/features/messaging/application-messaging/application-messaging.component';
 import { MessagingService } from 'src/app/features/messaging/services/messaging.service';
 import { StatusTrackerComponent } from '../status-tracker/status-tracker.component';
-import { FundingApplication } from 'src/app/SMEs/models/application.models';
+import { FundingApplication } from 'src/app/fund-seeking-orgs/models/application.models';
 import { FundingOpportunity } from 'src/app/funder/create-opportunity/shared/funding.interfaces';
 
 export type TabId = 'messages' | 'market-research' | 'documents';

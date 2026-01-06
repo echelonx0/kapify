@@ -716,11 +716,11 @@ import {
 } from '../../../../shared/components';
 import { interval, Subscription } from 'rxjs';
 import { takeWhile } from 'rxjs/operators';
-import { FundingProfileSetupService } from '../../../../SMEs/services/funding-profile-setup.service';
+import { FundingProfileSetupService } from '../../../../fund-seeking-orgs/services/funding-profile-setup.service';
 import {
   BusinessAssessment,
   ManagementStructure,
-} from 'src/app/SMEs/applications/models/funding-application.models';
+} from 'src/app/fund-seeking-orgs/applications/models/funding-application.models';
 import { ManpowerComponent } from './manpower/manpower.component';
 import { StepSaveService } from '../../services/step-save.service';
 

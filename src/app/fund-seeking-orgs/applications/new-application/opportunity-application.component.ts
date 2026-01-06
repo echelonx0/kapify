@@ -15,8 +15,6 @@ import { takeUntil } from 'rxjs/operators';
 import { SMEOpportunitiesService } from 'src/app/funding/services/opportunities.service';
 
 import { GlobalProfileValidationService } from 'src/app/shared/services/global-profile-validation.service';
-import { DatabaseApplicationService } from 'src/app/SMEs/services/database-application.service';
-import { FundingProfileBackendService } from 'src/app/SMEs/services/funding-profile-backend.service';
 
 import { ApplicationFormService } from './services/application-form.service';
 import { ApplicationValidationService } from './services/application-validation.service';
@@ -32,6 +30,8 @@ import { FundingApplicationProfile } from '../models/funding-application.models'
 import { FundingOpportunity } from 'src/app/funder/create-opportunity/shared/funding.interfaces';
 import { Application } from './models/funding-application.model';
 import { KapifyAIAnalysisComponent } from 'src/app/features/ai/ai-analysis/kapify-ai-analysis.component';
+import { DatabaseApplicationService } from '../../services/database-application.service';
+import { FundingProfileBackendService } from '../../services/funding-profile-backend.service';
 
 @Component({
   selector: 'app-opportunity-application-form',

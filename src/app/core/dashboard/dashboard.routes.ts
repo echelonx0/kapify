@@ -1,5 +1,4 @@
 import { Routes } from '@angular/router';
-
 import { AIReportsComponent } from '../../features/reports/ai-reports.component';
 import { ActivityLogsComponent } from '../../features/activity-logs/activity-logs.component';
 import { NotificationsInboxComponent } from '../../features/notifications/notifications-inbox.component';

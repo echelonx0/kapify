@@ -3,7 +3,7 @@ import { Observable, from, throwError } from 'rxjs';
 import { SharedSupabaseService } from '../../../shared/services/shared-supabase.service';
 
 import { KapifyReportsFilter } from '../models/kapify-reports.interface';
-import { FundingApplication } from 'src/app/SMEs/models/application.models';
+import { FundingApplication } from 'src/app/fund-seeking-orgs/models/application.models';
 
 /**
  * Internal enriched application type with all related data

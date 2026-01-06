@@ -32,11 +32,11 @@ import {
   CircleAlert,
 } from 'lucide-angular';
 import { FormsModule } from '@angular/forms';
-import { ApplicationManagementService } from 'src/app/SMEs/services/application-management.service';
+import { ApplicationManagementService } from 'src/app/fund-seeking-orgs/services/application-management.service';
 import {
   FundingApplication,
   ApplicationStats,
-} from 'src/app/SMEs/models/application.models';
+} from 'src/app/fund-seeking-orgs/models/application.models';
 import { SMEOpportunitiesService } from 'src/app/funding/services/opportunities.service';
 import { ActionModalService } from 'src/app/shared/components/modal/modal.service';
 

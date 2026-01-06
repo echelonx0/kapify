@@ -11,20 +11,20 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { LucideAngularModule, Bot, AlertCircle, Loader2 } from 'lucide-angular';
 import { Subject, takeUntil, forkJoin } from 'rxjs';
-import { ApplicationManagementService } from 'src/app/SMEs/services/application-management.service';
+import { ApplicationManagementService } from 'src/app/fund-seeking-orgs/services/application-management.service';
 import { SMEOpportunitiesService } from 'src/app/funding/services/opportunities.service';
 import { AiAssistantComponent } from 'src/app/features/ai/ai-assistant/ai-assistant.component';
 import { ApplicationTabsComponent } from './components/application-tabs/application-tabs.component';
-import { FundingProfileBackendService } from 'src/app/SMEs/services/funding-profile-backend.service';
-import { ProfileDataTransformerService } from 'src/app/SMEs/services/profile-data-transformer.service';
-import { FundingApplication } from 'src/app/SMEs/models/application.models';
+import { FundingProfileBackendService } from 'src/app/fund-seeking-orgs/services/funding-profile-backend.service';
+import { ProfileDataTransformerService } from 'src/app/fund-seeking-orgs/services/profile-data-transformer.service';
+import { FundingApplication } from 'src/app/fund-seeking-orgs/models/application.models';
 import { AuthService } from 'src/app/auth/services/production.auth.service';
 
 import { ApplicationMetricsComponent } from './components/application-metrics/application-metrics.component';
 import { ApplicationHeaderComponent } from '../components/application-header/application-header.component';
 import { StatusManagementModalComponent } from '../components/status-management-modal/status-management-modal.component';
 import { FundingOpportunity } from '../create-opportunity/shared/funding.interfaces';
-import { FundingApplicationProfile } from 'src/app/SMEs/applications/models/funding-application.models';
+import { FundingApplicationProfile } from 'src/app/fund-seeking-orgs/applications/models/funding-application.models';
 import { ProfileData } from 'src/app/profiles/SME-Profiles/models/funding.models';
 
 interface ApplicationFormData {

@@ -636,7 +636,7 @@ import {
 } from 'lucide-angular';
 import { AuthService } from 'src/app/auth/services/production.auth.service';
 import { ActivityInboxComponent } from 'src/app/features/messaging/messaging/messaging.component';
-import { OpportunityApplicationService } from 'src/app/SMEs/services/opportunity-application.service';
+
 import { SharedSupabaseService } from 'src/app/shared/services/shared-supabase.service';
 
 import {
@@ -644,12 +644,13 @@ import {
   BaseApplicationCard,
 } from 'src/app/funder/application-details/components/application-list-card/application-list-card.component';
 import { UserType } from 'src/app/shared/models/user.models';
-import { FundingApplication } from 'src/app/SMEs/models/application.models';
-import { ApplicationManagementService } from 'src/app/SMEs/services/application-management.service';
 
 import { ActionModalComponent } from 'src/app/shared/components/modal/action-modal.component';
 import { ApplicationTransformService } from '../../services/application-transform.service';
 import { OpportunityApplication } from 'src/app/profiles/SME-Profiles/models/sme-profile.models';
+import { FundingApplication } from 'src/app/fund-seeking-orgs/models/application.models';
+import { ApplicationManagementService } from 'src/app/fund-seeking-orgs/services/application-management.service';
+import { OpportunityApplicationService } from 'src/app/fund-seeking-orgs/services/opportunity-application.service';
 
 interface ApplicationData {
   id: string;

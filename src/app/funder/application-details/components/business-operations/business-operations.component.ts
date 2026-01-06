@@ -14,7 +14,7 @@ import {
   Cpu,
   BarChart3,
 } from 'lucide-angular';
-import { CompanyInformation } from 'src/app/SMEs/applications/models/funding-application.models';
+import { CompanyInformation } from 'src/app/fund-seeking-orgs/applications/models/funding-application.models';
 
 interface KPI {
   metric: string;

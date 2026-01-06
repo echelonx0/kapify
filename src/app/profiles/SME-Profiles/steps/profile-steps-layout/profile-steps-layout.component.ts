@@ -22,7 +22,7 @@ import {
 } from 'lucide-angular';
 
 import { CommonModule } from '@angular/common';
-import { FundingProfileSetupService } from 'src/app/SMEs/services/funding-profile-setup.service';
+import { FundingProfileSetupService } from 'src/app/fund-seeking-orgs/services/funding-profile-setup.service';
 import { SMEProfileStepsService } from '../../services/sme-profile-steps.service';
 import {
   ProfileStepsSidebarComponent,
@@ -32,8 +32,8 @@ import {
   FUNDING_STEPS,
   STEP_UI_CONFIG,
   STEP_FIELD_LABELS,
-} from 'src/app/SMEs/services/funding-steps.constants';
-import { FundingApplicationUtilityService } from 'src/app/SMEs/services/utility.service';
+} from 'src/app/fund-seeking-orgs/services/funding-steps.constants';
+import { FundingApplicationUtilityService } from 'src/app/fund-seeking-orgs/services/utility.service';
 import { FullscreenDarkModeService } from '../financial-analysis/services/fullscreen-dark-mode.service';
 import { StepSaveService } from '../../services/step-save.service';
 

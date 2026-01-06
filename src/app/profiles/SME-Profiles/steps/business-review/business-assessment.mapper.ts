@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { BusinessAssessment } from 'src/app/SMEs/applications/models/funding-application.models';
+import { BusinessAssessment } from 'src/app/fund-seeking-orgs/applications/models/funding-application.models';
 
 export interface BusinessAssessmentFormValue {
   accountingSystem: string;
@@ -56,14 +56,14 @@ export class BusinessAssessmentMapper {
           metric: 'Finance Staff Count',
           value: financeStaffCount,
           unit: 'people',
-          period: 'current'
+          period: 'current',
         },
         {
           metric: 'Total Staff Count',
           value: totalStaffCount,
           unit: 'people',
-          period: 'current'
-        }
+          period: 'current',
+        },
       ],
 
       salesChannels: ['Direct sales'],
@@ -77,7 +77,7 @@ export class BusinessAssessmentMapper {
       longTermContracts: formValue.longTermContracts || '',
       offBalanceSheetFunding: formValue.offBalanceSheetFunding || '',
       assetRegisterAvailable: formValue.assetRegisterAvailable || '',
-      lenderPermissionsRequired: formValue.lenderPermissionsRequired || ''
+      lenderPermissionsRequired: formValue.lenderPermissionsRequired || '',
     } as BusinessAssessment;
   }
 
@@ -90,20 +90,23 @@ export class BusinessAssessmentMapper {
       accountingSystem: data.operationalCapacity || '',
       payrollSystem: data.supplyChain || '',
       financeFunction: data.technologyUse || '',
-      financeStaffCount: data.keyPerformanceIndicators?.[0]?.value?.toString() || '',
+      financeStaffCount:
+        data.keyPerformanceIndicators?.[0]?.value?.toString() || '',
       hasFinancialManager: data.qualityStandards || '',
-      totalStaffCount: data.keyPerformanceIndicators?.[1]?.value?.toString() || '',
+      totalStaffCount:
+        data.keyPerformanceIndicators?.[1]?.value?.toString() || '',
       hrFunctions: data.customerSegments || '',
       hasPoliciesAndProcedures: (data as any).hasPoliciesAndProcedures || '',
       policyReviewFrequency: data.competitivePosition || '',
       assetsInsured: (data as any).assetsInsured || '',
       criticalSystems: data.businessModel || '',
-      financialStatementsAudited: (data as any).financialStatementsAudited || '',
+      financialStatementsAudited:
+        (data as any).financialStatementsAudited || '',
       budgetAvailable: (data as any).budgetAvailable || '',
       longTermContracts: (data as any).longTermContracts || '',
       offBalanceSheetFunding: (data as any).offBalanceSheetFunding || '',
       assetRegisterAvailable: (data as any).assetRegisterAvailable || '',
-      lenderPermissionsRequired: (data as any).lenderPermissionsRequired || ''
+      lenderPermissionsRequired: (data as any).lenderPermissionsRequired || '',
     };
   }
 }

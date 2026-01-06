@@ -154,7 +154,7 @@ export const routes: Routes = [
     path: 'applications',
     canActivate: [AuthGuard],
     loadChildren: () =>
-      import('./SMEs/applications/applications.routes').then(
+      import('./fund-seeking-orgs/applications/applications.routes').then(
         (m) => m.applicationRoutes
       ),
   },

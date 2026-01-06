@@ -225,8 +225,8 @@ import {
 } from '@angular/core';
 import { FormGroup } from '@angular/forms';
 import { ToastService } from 'src/app/shared/services/toast.service';
-import { FundingProfileSetupService } from '../../../SMEs/services/funding-profile-setup.service';
-import { FundingApplicationUtilityService } from '../../../SMEs/services/utility.service';
+import { FundingProfileSetupService } from '../../../fund-seeking-orgs/services/funding-profile-setup.service';
+import { FundingApplicationUtilityService } from '../../../fund-seeking-orgs/services/utility.service';
 import { Subscription } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })

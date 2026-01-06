@@ -8,7 +8,7 @@ import { CommitteeMember } from 'src/app/shared/models/application.models';
 import {
   ManagementMember,
   BoardMember,
-} from 'src/app/SMEs/applications/models/funding-application.models';
+} from 'src/app/fund-seeking-orgs/applications/models/funding-application.models';
 import { ParsedFinancialData } from '../steps/financial-analysis/utils/excel-parser.service';
 
 export interface ApplicationProfileData {

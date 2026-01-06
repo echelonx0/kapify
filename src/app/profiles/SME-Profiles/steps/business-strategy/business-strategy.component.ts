@@ -37,11 +37,11 @@ import { UiTextareaComponent } from '../../../../shared/components/ui-textarea.c
 import { interval, Subscription } from 'rxjs';
 import { takeWhile } from 'rxjs/operators';
 
-import { FundingProfileSetupService } from '../../../../SMEs/services/funding-profile-setup.service';
+import { FundingProfileSetupService } from '../../../../fund-seeking-orgs/services/funding-profile-setup.service';
 import {
   BusinessStrategy,
   FinancialProjection,
-} from 'src/app/SMEs/applications/models/funding-application.models';
+} from 'src/app/fund-seeking-orgs/applications/models/funding-application.models';
 import { SupabaseDocumentService } from 'src/app/shared/services/supabase-document.service';
 
 interface BusinessPlanSection {

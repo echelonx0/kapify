@@ -22,7 +22,7 @@ import {
   Clock,
   Send,
 } from 'lucide-angular';
-import { FundingApplication } from 'src/app/SMEs/models/application.models';
+import { FundingApplication } from 'src/app/fund-seeking-orgs/models/application.models';
 import {
   ApplicationStatusService,
   StatusAction,
