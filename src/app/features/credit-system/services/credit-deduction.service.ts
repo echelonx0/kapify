@@ -2,8 +2,8 @@
 // UPDATED: Uses spendCredits() from OrgCreditService instead of non-existent deductCredits()
 import { Injectable, inject } from '@angular/core';
 import { Observable, from } from 'rxjs';
+import { CreditCostsService } from 'src/app/core/admin/services/credit-costs.service';
 import { OrgCreditService } from 'src/app/shared/services/credit.service';
-import { CreditCostsService } from '../../core/admin/services/credit-costs.service';
 
 /**
  * Credit action types

@@ -39,13 +39,15 @@ import {
   ApplicationInsight,
   InvestmentScore,
 } from '../services/application-intelligence.service';
-import { CreditGatingService } from 'src/app/credit-system/services/credit-gating.service';
+
 import {
   AiAssistantUiService,
   IntelligenceInsight,
 } from '../services/ai-assistant-ui.service';
-import { CreditGatingModalComponent } from 'src/app/credit-system/credit-gating-modal.component';
+
 import { AiAnalysisController } from '../controllers/analysis.controller';
+import { CreditGatingModalComponent } from '../../credit-system/credit-gating-modal.component';
+import { CreditGatingService } from '../../credit-system/services/credit-gating.service';
 
 interface FormData {
   fundingType: string;

@@ -13,7 +13,7 @@
  */
 
 import { Injectable, inject, signal } from '@angular/core';
-import { CreditGatingService } from 'src/app/credit-system/services/credit-gating.service';
+
 import { AiAnalysisRequestService } from '../services/ai_analysis_request.service';
 
 import {
@@ -22,6 +22,7 @@ import {
   ApplicationIntelligenceService,
 } from '../services/application-intelligence.service';
 import { AuthService } from 'src/app/auth/services/production.auth.service';
+import { CreditGatingService } from '../../credit-system/services/credit-gating.service';
 
 export interface AnalysisRequest {
   id: string;

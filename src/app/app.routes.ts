@@ -11,7 +11,7 @@ import { VersionInfoComponent } from './shared/components/version-info.component
 import { PricingPageComponent } from './core/dashboard/finance/pricing-page/pricing-page.component';
 
 import { AcceptInvitationComponent } from './auth/accept-invitation/accept-invitation.component';
-import { CreditsComponent } from './credit-system/credit-component/credit.component';
+
 import { InvoiceComponent } from './features/invoice/invoice.component';
 import { AuthGuard } from './core/guards/auth.guard';
 import { GuestGuard } from './core/guards/guest.guard';
@@ -19,6 +19,7 @@ import { ProfileCompletionGuard } from './core/guards/profile-completion.guard';
 import { RoleGuard } from './core/guards/role.guard';
 import { PasswordResetComponent } from './auth/password-reset/password-reset.component';
 import { PublicProfileViewComponent } from './profiles/SME-Profiles/public-page/public-profile.component';
+import { CreditsComponent } from './features/credit-system/credit-component/credit.component';
 
 export const routes: Routes = [
   // Public routes
