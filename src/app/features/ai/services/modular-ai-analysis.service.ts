@@ -1,17 +1,23 @@
 // src/app/ai/services/modular-ai-analysis.service.ts (Updated for SME + Investor modes)
 import { Injectable, inject, signal } from '@angular/core';
 import { Observable, from, forkJoin, of } from 'rxjs';
-import { map, catchError, tap } from 'rxjs/operators';
-import { SharedSupabaseService } from '../../shared/services/shared-supabase.service';
+import { catchError, tap } from 'rxjs/operators';
+
 import { MarketIntelligenceService } from './market-intelligence.service';
-  
-import { FundingApplicationProfile, FinancialProfile, BusinessAssessment, ManagementStructure } from 'src/app/SMEs/applications/models/funding-application.models';
+
+import {
+  FundingApplicationProfile,
+  FinancialProfile,
+  BusinessAssessment,
+  ManagementStructure,
+} from 'src/app/SMEs/applications/models/funding-application.models';
 import { DocumentSection } from 'src/app/SMEs/models/application.models';
+import { SharedSupabaseService } from 'src/app/shared/services/shared-supabase.service';
 
 // Enhanced Analysis Result Interfaces for Both Modes
 export interface FinancialHealthAnalysis {
   overallScore: number;
-  
+
   // Investor mode fields
   liquidityRisk?: 'low' | 'medium' | 'high';
   profitabilityTrend?: 'improving' | 'stable' | 'declining';
@@ -19,7 +25,7 @@ export interface FinancialHealthAnalysis {
   cashFlowStability?: 'stable' | 'volatile' | 'concerning';
   redFlags?: string[];
   positiveIndicators?: string[];
-  
+
   // SME mode fields
   readinessLevel?: 'ready_to_apply' | 'nearly_ready' | 'needs_improvement';
   strengthsToHighlight?: string[];
@@ -32,7 +38,7 @@ export interface FinancialHealthAnalysis {
     cashFlowPredictability: 'stable' | 'variable' | 'volatile';
   };
   immediateActions?: string[];
-  
+
   // Common fields
   recommendations: string[];
   confidence: number;
@@ -54,18 +60,25 @@ export interface MarketPositionAnalysis {
     severity: 'high' | 'medium' | 'low';
     probability: 'high' | 'medium' | 'low';
   }>;
-  
+
   // SME mode fields
   marketAppealScore?: number;
-  fundingAttractiveness?: 'highly_attractive' | 'moderately_attractive' | 'limited_appeal';
+  fundingAttractiveness?:
+    | 'highly_attractive'
+    | 'moderately_attractive'
+    | 'limited_appeal';
   competitiveAdvantages?: string[];
   marketOpportunityStory?: string;
   positioningStrategy?: string[];
-  competitivePositioning?: 'market_leader' | 'strong_challenger' | 'niche_player' | 'emerging_competitor';
+  competitivePositioning?:
+    | 'market_leader'
+    | 'strong_challenger'
+    | 'niche_player'
+    | 'emerging_competitor';
   marketValidation?: string[];
   timingAdvantages?: string[];
   applicationTips?: string[];
-  
+
   // Common fields
   recommendations: string[];
   confidence: number;
@@ -83,7 +96,7 @@ export interface ManagementAnalysis {
   weaknesses?: string[];
   criticalGaps?: string[];
   developmentNeeds?: string[];
-  
+
   // SME mode fields
   leadershipReadinessScore?: number;
   teamReadinessLevel?: 'funding_ready' | 'nearly_ready' | 'needs_strengthening';
@@ -93,7 +106,7 @@ export interface ManagementAnalysis {
   governanceRecommendations?: string[];
   advisoryNeeds?: string[];
   applicationStrategy?: string;
-  
+
   // Common fields
   recommendations: string[];
   confidence: number;
@@ -117,7 +130,7 @@ export interface RiskAnalysis {
     mitigation: string;
   }>;
   dealBreakers?: string[];
-  
+
   // SME mode fields
   applicationReadinessScore?: number;
   readinessLevel?: 'application_ready' | 'needs_preparation' | 'requires_work';
@@ -132,7 +145,7 @@ export interface RiskAnalysis {
   preparationActions?: string[];
   positioningAdvice?: string[];
   applicationTips?: string[];
-  
+
   // Common fields
   riskMitigationStrategies: string[];
   monitoringRecommendations: string[];
@@ -158,28 +171,35 @@ export interface ComprehensiveAnalysis {
   applicationId: string;
   overallScore: number; // 0-100
   analysisMode: 'investor' | 'sme';
-  
+
   // Investor mode fields
-  recommendation?: 'approve' | 'conditional_approve' | 'reject' | 'request_more_info';
+  recommendation?:
+    | 'approve'
+    | 'conditional_approve'
+    | 'reject'
+    | 'request_more_info';
   investmentRationale?: string;
   keyStrengths?: string[];
   majorConcerns?: string[];
   conditions?: string[];
-  
+
   // SME mode fields
-  applicationReadiness?: 'ready_to_submit' | 'needs_minor_improvements' | 'requires_major_work';
+  applicationReadiness?:
+    | 'ready_to_submit'
+    | 'needs_minor_improvements'
+    | 'requires_major_work';
   readinessRationale?: string;
   competitiveAdvantages?: string[];
   improvementPriorities?: string[];
   actionPlan?: string[];
-  
+
   // Module results
   financial: FinancialHealthAnalysis;
   market: MarketPositionAnalysis;
   management: ManagementAnalysis;
   compliance: ComplianceAnalysis;
   risk: RiskAnalysis;
-  
+
   // Meta
   analysisDate: Date;
   processingTimeMs: number;
@@ -187,16 +207,16 @@ export interface ComprehensiveAnalysis {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class ModularAIAnalysisService {
   private supabase = inject(SharedSupabaseService);
   private marketIntelligence = inject(MarketIntelligenceService);
-  
+
   isAnalyzing = signal(false);
   analysisProgress = signal(0);
   currentStage = signal<string>('');
-  
+
   /**
    * Main entry point - analyzes complete application using modular approach
    * @param application Application data
@@ -210,13 +230,15 @@ export class ModularAIAnalysisService {
   ): Observable<ComprehensiveAnalysis> {
     this.isAnalyzing.set(true);
     this.analysisProgress.set(0);
-    
-    return from(this.performModularAnalysis(application, profileData, analysisMode)).pipe(
+
+    return from(
+      this.performModularAnalysis(application, profileData, analysisMode)
+    ).pipe(
       tap(() => {
         this.isAnalyzing.set(false);
         this.analysisProgress.set(100);
       }),
-      catchError(error => {
+      catchError((error) => {
         this.isAnalyzing.set(false);
         throw error;
       })
@@ -227,28 +249,34 @@ export class ModularAIAnalysisService {
    * Individual module analysis methods with mode support
    */
   analyzeFinancialHealth(
-    financialProfile: FinancialProfile, 
+    financialProfile: FinancialProfile,
     analysisMode: 'investor' | 'sme' = 'investor'
   ): Observable<FinancialHealthAnalysis> {
     return from(this.performFinancialAnalysis(financialProfile, analysisMode));
   }
 
   analyzeMarketPosition(
-    businessData: BusinessAssessment, 
+    businessData: BusinessAssessment,
     industry: string,
     analysisMode: 'investor' | 'sme' = 'investor'
   ): Observable<MarketPositionAnalysis> {
-    return from(this.performMarketAnalysis(businessData, industry, analysisMode));
+    return from(
+      this.performMarketAnalysis(businessData, industry, analysisMode)
+    );
   }
 
   analyzeManagementCapability(
     managementStructure: ManagementStructure,
     analysisMode: 'investor' | 'sme' = 'investor'
   ): Observable<ManagementAnalysis> {
-    return from(this.performManagementAnalysis(managementStructure, analysisMode));
+    return from(
+      this.performManagementAnalysis(managementStructure, analysisMode)
+    );
   }
 
-  analyzeDocumentCompleteness(documents: DocumentSection): Observable<ComplianceAnalysis> {
+  analyzeDocumentCompleteness(
+    documents: DocumentSection
+  ): Observable<ComplianceAnalysis> {
     return from(this.performComplianceAnalysis(documents));
   }
 
@@ -264,222 +292,272 @@ export class ModularAIAnalysisService {
   // PRIVATE IMPLEMENTATION
   // ===============================
 
-// Update the performModularAnalysis method with better error handling
+  // Update the performModularAnalysis method with better error handling
 
-private async performModularAnalysis(
-  application: any,
-  profileData: FundingApplicationProfile,
-  analysisMode: 'investor' | 'sme'
-): Promise<ComprehensiveAnalysis> {
-  const startTime = Date.now();
-  
-  try {
-    this.currentStage.set(`Initializing ${analysisMode} analysis modules...`);
-    this.analysisProgress.set(10);
+  private async performModularAnalysis(
+    application: any,
+    profileData: FundingApplicationProfile,
+    analysisMode: 'investor' | 'sme'
+  ): Promise<ComprehensiveAnalysis> {
+    const startTime = Date.now();
 
-    // Track which analyses succeed/fail
-    const analysisResults: {
-      financial?: FinancialHealthAnalysis;
-      compliance?: ComplianceAnalysis;
-      management?: ManagementAnalysis;
-      market?: MarketPositionAnalysis;
-      risk?: RiskAnalysis;
-    } = {};
-    
-    const analysisErrors: string[] = [];
-
-    // Financial Analysis with better error handling
-    this.currentStage.set('Analyzing financial health...');
-    this.analysisProgress.set(20);
-    
     try {
-      analysisResults.financial = await this.performFinancialAnalysis(
-        profileData.financialProfile!, 
-        analysisMode
-      );
-    } catch (error) {
-      console.error('Financial analysis failed:', error);
-      analysisErrors.push(`Financial analysis: ${error instanceof Error ? error.message : 'Unknown error'}`);
-      // Use fallback
-      analysisResults.financial = this.generateFallbackFinancialAnalysis(
-        profileData.financialProfile!, 
-        analysisMode
-      );
-    }
+      this.currentStage.set(`Initializing ${analysisMode} analysis modules...`);
+      this.analysisProgress.set(10);
 
-    // Compliance Analysis
-    this.currentStage.set('Checking document compliance...');
-    this.analysisProgress.set(35);
-    
-    try {
-      analysisResults.compliance = await this.performComplianceAnalysis(application.documents || {});
-    } catch (error) {
-      console.error('Compliance analysis failed:', error);
-      analysisErrors.push(`Compliance analysis: ${error instanceof Error ? error.message : 'Unknown error'}`);
-      // Use simple fallback
-      analysisResults.compliance = {
-        completenessScore: 50,
-        criticalDocumentsMissing: [],
-        documentQuality: 'medium',
-        complianceRisk: 'medium',
-        verificationStatus: {
-          companyRegistration: 'missing',
-          financialStatements: 'missing',
-          taxCompliance: 'missing',
-          businessPlan: 'missing'
+      // Track which analyses succeed/fail
+      const analysisResults: {
+        financial?: FinancialHealthAnalysis;
+        compliance?: ComplianceAnalysis;
+        management?: ManagementAnalysis;
+        market?: MarketPositionAnalysis;
+        risk?: RiskAnalysis;
+      } = {};
+
+      const analysisErrors: string[] = [];
+
+      // Financial Analysis with better error handling
+      this.currentStage.set('Analyzing financial health...');
+      this.analysisProgress.set(20);
+
+      try {
+        analysisResults.financial = await this.performFinancialAnalysis(
+          profileData.financialProfile!,
+          analysisMode
+        );
+      } catch (error) {
+        console.error('Financial analysis failed:', error);
+        analysisErrors.push(
+          `Financial analysis: ${
+            error instanceof Error ? error.message : 'Unknown error'
+          }`
+        );
+        // Use fallback
+        analysisResults.financial = this.generateFallbackFinancialAnalysis(
+          profileData.financialProfile!,
+          analysisMode
+        );
+      }
+
+      // Compliance Analysis
+      this.currentStage.set('Checking document compliance...');
+      this.analysisProgress.set(35);
+
+      try {
+        analysisResults.compliance = await this.performComplianceAnalysis(
+          application.documents || {}
+        );
+      } catch (error) {
+        console.error('Compliance analysis failed:', error);
+        analysisErrors.push(
+          `Compliance analysis: ${
+            error instanceof Error ? error.message : 'Unknown error'
+          }`
+        );
+        // Use simple fallback
+        analysisResults.compliance = {
+          completenessScore: 50,
+          criticalDocumentsMissing: [],
+          documentQuality: 'medium',
+          complianceRisk: 'medium',
+          verificationStatus: {
+            companyRegistration: 'missing',
+            financialStatements: 'missing',
+            taxCompliance: 'missing',
+            businessPlan: 'missing',
+          },
+          recommendations: ['Complete document upload'],
+          confidence: 50,
+        };
+      }
+
+      // Management Analysis
+      this.currentStage.set('Evaluating management capability...');
+      this.analysisProgress.set(50);
+
+      try {
+        analysisResults.management = await this.performManagementAnalysis(
+          profileData.managementStructure!,
+          analysisMode
+        );
+      } catch (error) {
+        console.error('Management analysis failed:', error);
+        analysisErrors.push(
+          `Management analysis: ${
+            error instanceof Error ? error.message : 'Unknown error'
+          }`
+        );
+        analysisResults.management = this.generateFallbackManagementAnalysis(
+          profileData.managementStructure!,
+          analysisMode
+        );
+      }
+
+      // Market Analysis
+      this.currentStage.set('Analyzing market position...');
+      this.analysisProgress.set(65);
+
+      try {
+        const industry = profileData.companyInfo?.industryType || 'unknown';
+        analysisResults.market = await this.performMarketAnalysis(
+          profileData.businessAssessment!,
+          industry,
+          analysisMode
+        );
+      } catch (error) {
+        console.error('Market analysis failed:', error);
+        analysisErrors.push(
+          `Market analysis: ${
+            error instanceof Error ? error.message : 'Unknown error'
+          }`
+        );
+        analysisResults.market = this.generateFallbackMarketAnalysis(
+          profileData.businessAssessment!,
+          analysisMode
+        );
+      }
+
+      // Risk Analysis
+      this.currentStage.set(
+        `Performing ${
+          analysisMode === 'sme' ? 'application readiness' : 'risk'
+        } assessment...`
+      );
+      this.analysisProgress.set(80);
+
+      try {
+        const industry = profileData.companyInfo?.industryType || 'unknown';
+        analysisResults.risk = await this.performRiskAnalysis(
+          profileData,
+          industry,
+          analysisMode
+        );
+      } catch (error) {
+        console.error('Risk analysis failed:', error);
+        analysisErrors.push(
+          `Risk analysis: ${
+            error instanceof Error ? error.message : 'Unknown error'
+          }`
+        );
+        analysisResults.risk = this.generateFallbackRiskAnalysis(
+          profileData,
+          analysisMode
+        );
+      }
+
+      // Log errors if any occurred
+      if (analysisErrors.length > 0) {
+        console.warn(
+          `Analysis completed with ${analysisErrors.length} fallbacks:`,
+          analysisErrors
+        );
+      }
+
+      this.currentStage.set('Generating final recommendations...');
+      this.analysisProgress.set(90);
+
+      const synthesis = await this.synthesizeAnalysis(
+        {
+          financial: analysisResults.financial!,
+          market: analysisResults.market!,
+          management: analysisResults.management!,
+          compliance: analysisResults.compliance!,
+          risk: analysisResults.risk!,
         },
-        recommendations: ['Complete document upload'],
-        confidence: 50
-      };
-    }
-
-    // Management Analysis
-    this.currentStage.set('Evaluating management capability...');
-    this.analysisProgress.set(50);
-    
-    try {
-      analysisResults.management = await this.performManagementAnalysis(
-        profileData.managementStructure!, 
         analysisMode
       );
-    } catch (error) {
-      console.error('Management analysis failed:', error);
-      analysisErrors.push(`Management analysis: ${error instanceof Error ? error.message : 'Unknown error'}`);
-      analysisResults.management = this.generateFallbackManagementAnalysis(
-        profileData.managementStructure!, 
-        analysisMode
-      );
-    }
 
-    // Market Analysis
-    this.currentStage.set('Analyzing market position...');
-    this.analysisProgress.set(65);
-    
-    try {
-      const industry = profileData.companyInfo?.industryType || 'unknown';
-      analysisResults.market = await this.performMarketAnalysis(
-        profileData.businessAssessment!, 
-        industry, 
-        analysisMode
-      );
-    } catch (error) {
-      console.error('Market analysis failed:', error);
-      analysisErrors.push(`Market analysis: ${error instanceof Error ? error.message : 'Unknown error'}`);
-      analysisResults.market = this.generateFallbackMarketAnalysis(
-        profileData.businessAssessment!, 
-        analysisMode
-      );
-    }
-
-    // Risk Analysis
-    this.currentStage.set(`Performing ${analysisMode === 'sme' ? 'application readiness' : 'risk'} assessment...`);
-    this.analysisProgress.set(80);
-    
-    try {
-      const industry = profileData.companyInfo?.industryType || 'unknown';
-      analysisResults.risk = await this.performRiskAnalysis(profileData, industry, analysisMode);
-    } catch (error) {
-      console.error('Risk analysis failed:', error);
-      analysisErrors.push(`Risk analysis: ${error instanceof Error ? error.message : 'Unknown error'}`);
-      analysisResults.risk = this.generateFallbackRiskAnalysis(profileData, analysisMode);
-    }
-
-    // Log errors if any occurred
-    if (analysisErrors.length > 0) {
-      console.warn(`Analysis completed with ${analysisErrors.length} fallbacks:`, analysisErrors);
-    }
-
-    this.currentStage.set('Generating final recommendations...');
-    this.analysisProgress.set(90);
-
-    const synthesis = await this.synthesizeAnalysis({
-      financial: analysisResults.financial!,
-      market: analysisResults.market!,
-      management: analysisResults.management!,
-      compliance: analysisResults.compliance!,
-      risk: analysisResults.risk!
-    }, analysisMode);
-
-    return {
-      applicationId: application.id,
-      analysisMode,
-      ...synthesis,
-      financial: analysisResults.financial!,
-      market: analysisResults.market!,
-      management: analysisResults.management!,
-      compliance: analysisResults.compliance!,
-      risk: analysisResults.risk!,
-      analysisDate: new Date(),
-      processingTimeMs: Date.now() - startTime,
-      confidence: this.calculateOverallConfidence([
-        analysisResults.financial!,
-        analysisResults.market!,
-        analysisResults.management!,
-        analysisResults.compliance!,
-        analysisResults.risk!
-      ])
-    };
-
-  } catch (error) {
-    console.error('Modular analysis failed completely:', error);
-    throw new Error(`Analysis failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
-  }
-}
-
-// Update individual analysis methods to handle Supabase errors better
-private async performFinancialAnalysis(
-  financialProfile: FinancialProfile, 
-  analysisMode: 'investor' | 'sme'
-): Promise<FinancialHealthAnalysis> {
-  try {
-    const { data, error } = await this.supabase.functions.invoke('analyze-financials', {
-      body: {
-        analysisType: 'financial_health',
+      return {
+        applicationId: application.id,
         analysisMode,
-        financialData: {
-          monthlyRevenue: financialProfile.monthlyRevenue,
-          historicalFinancials: financialProfile.historicalFinancials,
-          projectedRevenue: financialProfile.projectedRevenue,
-          cashFlowProjections: financialProfile.cashFlowProjections,
-          profitMargin: financialProfile.profitMargin,
-          debtToEquity: financialProfile.debtToEquity,
-          currentRatio: financialProfile.currentRatio,
-          returnOnAssets: financialProfile.returnOnAssets,
-          creditFacilities: financialProfile.creditFacilities
-        }
-      }
-    });
-
-    // Better error handling for Supabase responses
-    if (error) {
-      console.error('Supabase function error:', error);
-      throw new Error(`Financial analysis failed: ${error.message || 'Unknown Supabase error'}`);
+        ...synthesis,
+        financial: analysisResults.financial!,
+        market: analysisResults.market!,
+        management: analysisResults.management!,
+        compliance: analysisResults.compliance!,
+        risk: analysisResults.risk!,
+        analysisDate: new Date(),
+        processingTimeMs: Date.now() - startTime,
+        confidence: this.calculateOverallConfidence([
+          analysisResults.financial!,
+          analysisResults.market!,
+          analysisResults.management!,
+          analysisResults.compliance!,
+          analysisResults.risk!,
+        ]),
+      };
+    } catch (error) {
+      console.error('Modular analysis failed completely:', error);
+      throw new Error(
+        `Analysis failed: ${
+          error instanceof Error ? error.message : 'Unknown error'
+        }`
+      );
     }
-
-    if (!data || !data.analysis) {
-      console.error('Invalid response from financial analysis:', data);
-      throw new Error('Financial analysis returned invalid data');
-    }
-
-    return data.analysis;
-
-  } catch (error) {
-    // Log the full error for debugging
-    console.error('Financial analysis error details:', {
-      error,
-      errorMessage: error instanceof Error ? error.message : 'Unknown error',
-      profileData: {
-        monthlyRevenue: financialProfile.monthlyRevenue,
-        hasHistoricalData: !!financialProfile.historicalFinancials?.length
-      }
-    });
-    
-    // Re-throw with more context
-    throw new Error(`Financial analysis failed: ${error instanceof Error ? error.message : 'Service unavailable'}`);
   }
-}
 
- 
+  // Update individual analysis methods to handle Supabase errors better
+  private async performFinancialAnalysis(
+    financialProfile: FinancialProfile,
+    analysisMode: 'investor' | 'sme'
+  ): Promise<FinancialHealthAnalysis> {
+    try {
+      const { data, error } = await this.supabase.functions.invoke(
+        'analyze-financials',
+        {
+          body: {
+            analysisType: 'financial_health',
+            analysisMode,
+            financialData: {
+              monthlyRevenue: financialProfile.monthlyRevenue,
+              historicalFinancials: financialProfile.historicalFinancials,
+              projectedRevenue: financialProfile.projectedRevenue,
+              cashFlowProjections: financialProfile.cashFlowProjections,
+              profitMargin: financialProfile.profitMargin,
+              debtToEquity: financialProfile.debtToEquity,
+              currentRatio: financialProfile.currentRatio,
+              returnOnAssets: financialProfile.returnOnAssets,
+              creditFacilities: financialProfile.creditFacilities,
+            },
+          },
+        }
+      );
+
+      // Better error handling for Supabase responses
+      if (error) {
+        console.error('Supabase function error:', error);
+        throw new Error(
+          `Financial analysis failed: ${
+            error.message || 'Unknown Supabase error'
+          }`
+        );
+      }
+
+      if (!data || !data.analysis) {
+        console.error('Invalid response from financial analysis:', data);
+        throw new Error('Financial analysis returned invalid data');
+      }
+
+      return data.analysis;
+    } catch (error) {
+      // Log the full error for debugging
+      console.error('Financial analysis error details:', {
+        error,
+        errorMessage: error instanceof Error ? error.message : 'Unknown error',
+        profileData: {
+          monthlyRevenue: financialProfile.monthlyRevenue,
+          hasHistoricalData: !!financialProfile.historicalFinancials?.length,
+        },
+      });
+
+      // Re-throw with more context
+      throw new Error(
+        `Financial analysis failed: ${
+          error instanceof Error ? error.message : 'Service unavailable'
+        }`
+      );
+    }
+  }
 
   private async performMarketAnalysis(
     businessData: BusinessAssessment,
@@ -491,26 +569,28 @@ private async performFinancialAnalysis(
         .getMarketIntelligence(industry, { maxAge: 24 })
         .toPromise();
 
-      const { data, error } = await this.supabase.functions.invoke('analyze-market-position', {
-        body: {
-          analysisType: 'market_position',
-          analysisMode,
-          businessData: {
-            businessModel: businessData.businessModel,
-            valueProposition: businessData.valueProposition,
-            targetMarkets: businessData.targetMarkets,
-            competitivePosition: businessData.competitivePosition,
-            marketSize: businessData.marketSize,
-            keyPerformanceIndicators: businessData.keyPerformanceIndicators
+      const { data, error } = await this.supabase.functions.invoke(
+        'analyze-market-position',
+        {
+          body: {
+            analysisType: 'market_position',
+            analysisMode,
+            businessData: {
+              businessModel: businessData.businessModel,
+              valueProposition: businessData.valueProposition,
+              targetMarkets: businessData.targetMarkets,
+              competitivePosition: businessData.competitivePosition,
+              marketSize: businessData.marketSize,
+              keyPerformanceIndicators: businessData.keyPerformanceIndicators,
+            },
+            marketIntelligence: marketData,
+            industry,
           },
-          marketIntelligence: marketData,
-          industry
         }
-      });
+      );
 
       if (error) throw new Error(`Market analysis failed: ${error.message}`);
       return data.analysis;
-
     } catch (error) {
       console.warn('Market analysis failed, using fallback:', error);
       return this.generateFallbackMarketAnalysis(businessData, analysisMode);
@@ -522,56 +602,85 @@ private async performFinancialAnalysis(
     analysisMode: 'investor' | 'sme'
   ): Promise<ManagementAnalysis> {
     try {
-      const { data, error } = await this.supabase.functions.invoke('analyze-management', {
-        body: {
-          analysisType: 'management_capability',
-          analysisMode,
-          managementData: {
-            executiveTeam: managementStructure.executiveTeam,
-            managementTeam: managementStructure.managementTeam,
-            boardOfDirectors: managementStructure.boardOfDirectors,
-            governanceStructure: managementStructure.governanceStructure,
-            advisors: managementStructure.advisors
-          }
+      const { data, error } = await this.supabase.functions.invoke(
+        'analyze-management',
+        {
+          body: {
+            analysisType: 'management_capability',
+            analysisMode,
+            managementData: {
+              executiveTeam: managementStructure.executiveTeam,
+              managementTeam: managementStructure.managementTeam,
+              boardOfDirectors: managementStructure.boardOfDirectors,
+              governanceStructure: managementStructure.governanceStructure,
+              advisors: managementStructure.advisors,
+            },
+          },
         }
-      });
+      );
 
-      if (error) throw new Error(`Management analysis failed: ${error.message}`);
+      if (error)
+        throw new Error(`Management analysis failed: ${error.message}`);
       return data.analysis;
-
     } catch (error) {
       console.warn('Management analysis failed, using fallback:', error);
-      return this.generateFallbackManagementAnalysis(managementStructure, analysisMode);
+      return this.generateFallbackManagementAnalysis(
+        managementStructure,
+        analysisMode
+      );
     }
   }
 
-  private async performComplianceAnalysis(documents: DocumentSection): Promise<ComplianceAnalysis> {
+  private async performComplianceAnalysis(
+    documents: DocumentSection
+  ): Promise<ComplianceAnalysis> {
     // Document compliance analysis is the same for both modes
     const requiredDocs = [
       'companyRegistration',
-      'taxClearanceCertificate', 
+      'taxClearanceCertificate',
       'auditedFinancials',
-      'businessPlan'
+      'businessPlan',
     ];
 
-    const availableDocs = Object.keys(documents).filter(key => documents[key]);
-    const missingDocs = requiredDocs.filter(doc => !availableDocs.includes(doc));
-    
-    const completenessScore = ((requiredDocs.length - missingDocs.length) / requiredDocs.length) * 100;
-    
+    const availableDocs = Object.keys(documents).filter(
+      (key) => documents[key]
+    );
+    const missingDocs = requiredDocs.filter(
+      (doc) => !availableDocs.includes(doc)
+    );
+
+    const completenessScore =
+      ((requiredDocs.length - missingDocs.length) / requiredDocs.length) * 100;
+
     return {
       completenessScore,
       criticalDocumentsMissing: missingDocs,
-      documentQuality: completenessScore > 80 ? 'high' : completenessScore > 60 ? 'medium' : 'low',
-      complianceRisk: missingDocs.length > 2 ? 'high' : missingDocs.length > 0 ? 'medium' : 'low',
+      documentQuality:
+        completenessScore > 80
+          ? 'high'
+          : completenessScore > 60
+          ? 'medium'
+          : 'low',
+      complianceRisk:
+        missingDocs.length > 2
+          ? 'high'
+          : missingDocs.length > 0
+          ? 'medium'
+          : 'low',
       verificationStatus: {
-        companyRegistration: documents.companyRegistration ? 'verified' : 'missing',
-        financialStatements: documents.auditedFinancials ? 'verified' : 'missing',
-        taxCompliance: documents.taxClearanceCertificate ? 'verified' : 'missing',
-        businessPlan: documents.businessPlan ? 'verified' : 'missing'
+        companyRegistration: documents.companyRegistration
+          ? 'verified'
+          : 'missing',
+        financialStatements: documents.auditedFinancials
+          ? 'verified'
+          : 'missing',
+        taxCompliance: documents.taxClearanceCertificate
+          ? 'verified'
+          : 'missing',
+        businessPlan: documents.businessPlan ? 'verified' : 'missing',
       },
       recommendations: this.generateComplianceRecommendations(missingDocs),
-      confidence: 95
+      confidence: 95,
     };
   }
 
@@ -581,18 +690,20 @@ private async performFinancialAnalysis(
     analysisMode: 'investor' | 'sme'
   ): Promise<RiskAnalysis> {
     try {
-      const { data, error } = await this.supabase.functions.invoke('analyze-risk-profile', {
-        body: {
-          analysisType: 'comprehensive_risk',
-          analysisMode,
-          profileData: profile,
-          industry
+      const { data, error } = await this.supabase.functions.invoke(
+        'analyze-risk-profile',
+        {
+          body: {
+            analysisType: 'comprehensive_risk',
+            analysisMode,
+            profileData: profile,
+            industry,
+          },
         }
-      });
+      );
 
       if (error) throw new Error(`Risk analysis failed: ${error.message}`);
       return data.analysis;
-
     } catch (error) {
       console.warn('Risk analysis failed, using fallback:', error);
       return this.generateFallbackRiskAnalysis(profile, analysisMode);
@@ -603,46 +714,65 @@ private async performFinancialAnalysis(
   // SYNTHESIS AND UTILITIES
   // ===============================
 
-  private async synthesizeAnalysis(modules: {
-    financial: FinancialHealthAnalysis;
-    market: MarketPositionAnalysis;
-    management: ManagementAnalysis;
-    compliance: ComplianceAnalysis;
-    risk: RiskAnalysis;
-  }, analysisMode: 'investor' | 'sme'): Promise<{
+  private async synthesizeAnalysis(
+    modules: {
+      financial: FinancialHealthAnalysis;
+      market: MarketPositionAnalysis;
+      management: ManagementAnalysis;
+      compliance: ComplianceAnalysis;
+      risk: RiskAnalysis;
+    },
+    analysisMode: 'investor' | 'sme'
+  ): Promise<{
     overallScore: number;
-    recommendation?: 'approve' | 'conditional_approve' | 'reject' | 'request_more_info';
+    recommendation?:
+      | 'approve'
+      | 'conditional_approve'
+      | 'reject'
+      | 'request_more_info';
     investmentRationale?: string;
     keyStrengths?: string[];
     majorConcerns?: string[];
     conditions?: string[];
-    applicationReadiness?: 'ready_to_submit' | 'needs_minor_improvements' | 'requires_major_work';
+    applicationReadiness?:
+      | 'ready_to_submit'
+      | 'needs_minor_improvements'
+      | 'requires_major_work';
     readinessRationale?: string;
     competitiveAdvantages?: string[];
     improvementPriorities?: string[];
     actionPlan?: string[];
   }> {
-    
     // Calculate weighted overall score
-    const weights = { financial: 0.3, market: 0.25, management: 0.2, compliance: 0.1, risk: 0.15 };
+    const weights = {
+      financial: 0.3,
+      market: 0.25,
+      management: 0.2,
+      compliance: 0.1,
+      risk: 0.15,
+    };
     const overallScore = Math.round(
       modules.financial.overallScore * weights.financial +
-      this.getMarketScore(modules.market, analysisMode) * weights.market +
-      this.getManagementScore(modules.management, analysisMode) * weights.management +
-      modules.compliance.completenessScore * weights.compliance +
-      this.getRiskScore(modules.risk, analysisMode) * weights.risk
+        this.getMarketScore(modules.market, analysisMode) * weights.market +
+        this.getManagementScore(modules.management, analysisMode) *
+          weights.management +
+        modules.compliance.completenessScore * weights.compliance +
+        this.getRiskScore(modules.risk, analysisMode) * weights.risk
     );
 
     if (analysisMode === 'sme') {
       return this.synthesizeSMEAnalysis(modules, overallScore);
     }
-    
+
     return this.synthesizeInvestorAnalysis(modules, overallScore);
   }
 
   private synthesizeSMEAnalysis(modules: any, overallScore: number) {
-    let applicationReadiness: 'ready_to_submit' | 'needs_minor_improvements' | 'requires_major_work';
-    
+    let applicationReadiness:
+      | 'ready_to_submit'
+      | 'needs_minor_improvements'
+      | 'requires_major_work';
+
     if (modules.compliance.completenessScore < 70) {
       applicationReadiness = 'requires_major_work';
     } else if (overallScore >= 75) {
@@ -656,19 +786,19 @@ private async performFinancialAnalysis(
     const competitiveAdvantages = [
       ...(modules.financial.strengthsToHighlight?.slice(0, 2) || []),
       ...(modules.market.competitiveAdvantages?.slice(0, 2) || []),
-      ...(modules.management.leadershipStrengths?.slice(0, 2) || [])
+      ...(modules.management.leadershipStrengths?.slice(0, 2) || []),
     ].slice(0, 5);
 
     const improvementPriorities = [
       ...(modules.financial.areasToImprove?.slice(0, 2) || []),
       ...(modules.risk.preparationActions?.slice(0, 2) || []),
-      ...(modules.management.teamStrengthening?.slice(0, 1) || [])
+      ...(modules.management.teamStrengthening?.slice(0, 1) || []),
     ].slice(0, 4);
 
     const actionPlan = [
       ...(modules.financial.immediateActions?.slice(0, 2) || []),
-      ...(modules.compliance.recommendations.slice(0, 2)),
-      ...(modules.risk.preparationActions?.slice(0, 2) || [])
+      ...modules.compliance.recommendations.slice(0, 2),
+      ...(modules.risk.preparationActions?.slice(0, 2) || []),
     ].slice(0, 5);
 
     return {
@@ -677,18 +807,28 @@ private async performFinancialAnalysis(
       readinessRationale: this.generateSMERationale(modules, overallScore),
       competitiveAdvantages,
       improvementPriorities,
-      actionPlan
+      actionPlan,
     };
   }
 
   private synthesizeInvestorAnalysis(modules: any, overallScore: number) {
-    let recommendation: 'approve' | 'conditional_approve' | 'reject' | 'request_more_info';
-    
+    let recommendation:
+      | 'approve'
+      | 'conditional_approve'
+      | 'reject'
+      | 'request_more_info';
+
     if (modules.compliance.completenessScore < 70) {
       recommendation = 'request_more_info';
-    } else if (overallScore >= 75 && (modules.risk.overallRiskScore || 100) < 40) {
+    } else if (
+      overallScore >= 75 &&
+      (modules.risk.overallRiskScore || 100) < 40
+    ) {
       recommendation = 'approve';
-    } else if (overallScore >= 60 && (modules.risk.overallRiskScore || 100) < 60) {
+    } else if (
+      overallScore >= 60 &&
+      (modules.risk.overallRiskScore || 100) < 60
+    ) {
       recommendation = 'conditional_approve';
     } else {
       recommendation = 'reject';
@@ -696,28 +836,37 @@ private async performFinancialAnalysis(
 
     const keyStrengths = [
       ...(modules.financial.positiveIndicators?.slice(0, 2) || []),
-      ...(modules.market.opportunities?.slice(0, 2).map((o: any) => o.opportunity) || []),
-      ...(modules.management.strengths?.slice(0, 2) || [])
+      ...(modules.market.opportunities
+        ?.slice(0, 2)
+        .map((o: any) => o.opportunity) || []),
+      ...(modules.management.strengths?.slice(0, 2) || []),
     ].slice(0, 5);
 
     const majorConcerns = [
       ...(modules.financial.redFlags?.slice(0, 2) || []),
-      ...(modules.risk.criticalRisks?.slice(0, 2).map((r: any) => r.risk) || []),
-      ...(modules.management.criticalGaps?.slice(0, 1) || [])
+      ...(modules.risk.criticalRisks?.slice(0, 2).map((r: any) => r.risk) ||
+        []),
+      ...(modules.management.criticalGaps?.slice(0, 1) || []),
     ].slice(0, 4);
 
-    const conditions = recommendation === 'conditional_approve' ? [
-      ...modules.compliance.recommendations.slice(0, 2),
-      ...modules.risk.riskMitigationStrategies.slice(0, 2)
-    ] : [];
+    const conditions =
+      recommendation === 'conditional_approve'
+        ? [
+            ...modules.compliance.recommendations.slice(0, 2),
+            ...modules.risk.riskMitigationStrategies.slice(0, 2),
+          ]
+        : [];
 
     return {
       overallScore,
       recommendation,
-      investmentRationale: this.generateInvestmentRationale(modules, overallScore),
+      investmentRationale: this.generateInvestmentRationale(
+        modules,
+        overallScore
+      ),
       keyStrengths,
       majorConcerns,
-      conditions
+      conditions,
     };
   }
 
@@ -725,7 +874,10 @@ private async performFinancialAnalysis(
   // UTILITY METHODS
   // ===============================
 
-  private getMarketScore(market: MarketPositionAnalysis, analysisMode: 'investor' | 'sme'): number {
+  private getMarketScore(
+    market: MarketPositionAnalysis,
+    analysisMode: 'investor' | 'sme'
+  ): number {
     if (analysisMode === 'sme' && market.marketAppealScore !== undefined) {
       return market.marketAppealScore;
     }
@@ -735,18 +887,33 @@ private async performFinancialAnalysis(
     return 50; // Default
   }
 
-  private getManagementScore(management: ManagementAnalysis, analysisMode: 'investor' | 'sme'): number {
-    if (analysisMode === 'sme' && management.leadershipReadinessScore !== undefined) {
+  private getManagementScore(
+    management: ManagementAnalysis,
+    analysisMode: 'investor' | 'sme'
+  ): number {
+    if (
+      analysisMode === 'sme' &&
+      management.leadershipReadinessScore !== undefined
+    ) {
       return management.leadershipReadinessScore;
     }
-    if (analysisMode === 'investor' && management.leadershipScore !== undefined) {
+    if (
+      analysisMode === 'investor' &&
+      management.leadershipScore !== undefined
+    ) {
       return management.leadershipScore;
     }
     return 50; // Default
   }
 
-  private getRiskScore(risk: RiskAnalysis, analysisMode: 'investor' | 'sme'): number {
-    if (analysisMode === 'sme' && risk.applicationReadinessScore !== undefined) {
+  private getRiskScore(
+    risk: RiskAnalysis,
+    analysisMode: 'investor' | 'sme'
+  ): number {
+    if (
+      analysisMode === 'sme' &&
+      risk.applicationReadinessScore !== undefined
+    ) {
       return risk.applicationReadinessScore;
     }
     if (analysisMode === 'investor' && risk.overallRiskScore !== undefined) {
@@ -757,21 +924,30 @@ private async performFinancialAnalysis(
 
   private marketPositionToScore(position: string): number {
     switch (position) {
-      case 'strong': return 85;
-      case 'moderate': return 65;
-      case 'weak': return 35;
-      default: return 50;
+      case 'strong':
+        return 85;
+      case 'moderate':
+        return 65;
+      case 'weak':
+        return 35;
+      default:
+        return 50;
     }
   }
 
-  private calculateOverallConfidence(analyses: Array<{ confidence: number }>): number {
-    const total = analyses.reduce((sum, analysis) => sum + analysis.confidence, 0);
+  private calculateOverallConfidence(
+    analyses: Array<{ confidence: number }>
+  ): number {
+    const total = analyses.reduce(
+      (sum, analysis) => sum + analysis.confidence,
+      0
+    );
     return Math.round(total / analyses.length);
   }
 
   private generateComplianceRecommendations(missingDocs: string[]): string[] {
     const recommendations: string[] = [];
-    
+
     if (missingDocs.includes('companyRegistration')) {
       recommendations.push('Provide CIPC company registration certificate');
     }
@@ -784,7 +960,7 @@ private async performFinancialAnalysis(
     if (missingDocs.includes('businessPlan')) {
       recommendations.push('Submit comprehensive business plan');
     }
-    
+
     return recommendations;
   }
 
@@ -812,10 +988,14 @@ private async performFinancialAnalysis(
   // FALLBACK IMPLEMENTATIONS (Simplified)
   // ===============================
 
-  private generateFallbackFinancialAnalysis(profile: FinancialProfile, analysisMode: 'investor' | 'sme'): FinancialHealthAnalysis {
-    const baseScore = Math.min(70, Math.max(30, 
-      (profile.monthlyRevenue || 0) > 100000 ? 60 : 40
-    ));
+  private generateFallbackFinancialAnalysis(
+    profile: FinancialProfile,
+    analysisMode: 'investor' | 'sme'
+  ): FinancialHealthAnalysis {
+    const baseScore = Math.min(
+      70,
+      Math.max(30, (profile.monthlyRevenue || 0) > 100000 ? 60 : 40)
+    );
 
     if (analysisMode === 'sme') {
       return {
@@ -826,7 +1006,7 @@ private async performFinancialAnalysis(
         applicationTips: ['Present financials clearly with trend analysis'],
         immediateActions: ['Gather 3 years of financial statements'],
         recommendations: ['Strengthen financial documentation'],
-        confidence: 60
+        confidence: 60,
       };
     }
 
@@ -839,11 +1019,14 @@ private async performFinancialAnalysis(
       redFlags: [],
       positiveIndicators: ['Positive revenue'],
       recommendations: ['Conduct detailed financial due diligence'],
-      confidence: 60
+      confidence: 60,
     };
   }
 
-  private generateFallbackMarketAnalysis(businessData: BusinessAssessment, analysisMode: 'investor' | 'sme'): MarketPositionAnalysis {
+  private generateFallbackMarketAnalysis(
+    businessData: BusinessAssessment,
+    analysisMode: 'investor' | 'sme'
+  ): MarketPositionAnalysis {
     if (analysisMode === 'sme') {
       return {
         marketAppealScore: 60,
@@ -854,7 +1037,7 @@ private async performFinancialAnalysis(
         competitivePositioning: 'emerging_competitor',
         applicationTips: ['Document market size and growth'],
         recommendations: ['Conduct market research'],
-        confidence: 60
+        confidence: 60,
       };
     }
 
@@ -863,26 +1046,40 @@ private async performFinancialAnalysis(
       marketOpportunity: 'medium',
       timingAssessment: 'neutral',
       differentiationScore: 50,
-      opportunities: [{ opportunity: 'Market expansion', potential: 'medium', timeframe: 'medium_term' }],
-      threats: [{ threat: 'Competition', severity: 'medium', probability: 'medium' }],
+      opportunities: [
+        {
+          opportunity: 'Market expansion',
+          potential: 'medium',
+          timeframe: 'medium_term',
+        },
+      ],
+      threats: [
+        { threat: 'Competition', severity: 'medium', probability: 'medium' },
+      ],
       recommendations: ['Conduct market research'],
-      confidence: 60
+      confidence: 60,
     };
   }
 
-  private generateFallbackManagementAnalysis(structure: ManagementStructure, analysisMode: 'investor' | 'sme'): ManagementAnalysis {
-    const teamSize = (structure.executiveTeam?.length || 0) + (structure.managementTeam?.length || 0);
-    
+  private generateFallbackManagementAnalysis(
+    structure: ManagementStructure,
+    analysisMode: 'investor' | 'sme'
+  ): ManagementAnalysis {
+    const teamSize =
+      (structure.executiveTeam?.length || 0) +
+      (structure.managementTeam?.length || 0);
+
     if (analysisMode === 'sme') {
       return {
         leadershipReadinessScore: Math.min(70, teamSize * 20),
-        teamReadinessLevel: teamSize > 2 ? 'nearly_ready' : 'needs_strengthening',
+        teamReadinessLevel:
+          teamSize > 2 ? 'nearly_ready' : 'needs_strengthening',
         leadershipStrengths: ['Committed founding team'],
         presentationTips: ['Highlight team experience'],
         teamStrengthening: ['Consider adding experienced advisors'],
         applicationStrategy: 'Focus on team commitment and vision',
         recommendations: ['Strengthen team profile'],
-        confidence: 70
+        confidence: 70,
       };
     }
 
@@ -895,11 +1092,14 @@ private async performFinancialAnalysis(
       strengths: ['Team commitment'],
       weaknesses: ['Limited governance'],
       recommendations: ['Strengthen management team'],
-      confidence: 70
+      confidence: 70,
     };
   }
 
-  private generateFallbackRiskAnalysis(profile: FundingApplicationProfile, analysisMode: 'investor' | 'sme'): RiskAnalysis {
+  private generateFallbackRiskAnalysis(
+    profile: FundingApplicationProfile,
+    analysisMode: 'investor' | 'sme'
+  ): RiskAnalysis {
     if (analysisMode === 'sme') {
       return {
         applicationReadinessScore: 65,
@@ -910,7 +1110,7 @@ private async performFinancialAnalysis(
         applicationTips: ['Be transparent about challenges'],
         riskMitigationStrategies: ['Regular monitoring'],
         monitoringRecommendations: ['Monthly reviews'],
-        confidence: 65
+        confidence: 65,
       };
     }
 
@@ -921,12 +1121,12 @@ private async performFinancialAnalysis(
         market: 'medium',
         operational: 'medium',
         management: 'medium',
-        regulatory: 'low'
+        regulatory: 'low',
       },
       criticalRisks: [],
       riskMitigationStrategies: ['Regular assessment'],
       monitoringRecommendations: ['Monthly reviews'],
-      confidence: 65
+      confidence: 65,
     };
   }
 }

@@ -2,9 +2,10 @@ import { Component, signal, inject, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Subject } from 'rxjs';
 import { LucideAngularModule, ChevronDown, FileText } from 'lucide-angular';
-import { FunderDocumentAnalysisComponent } from 'src/app/ai/document-analysis/funder-document-analysis.component';
-import { KapifyAIAnalysisComponent } from 'src/app/ai/ai-analysis/kapify-ai-analysis.component';
+
 import { PublicProfileService } from 'src/app/funder/services/public-profile.service';
+import { KapifyAIAnalysisComponent } from 'src/app/features/ai/ai-analysis/kapify-ai-analysis.component';
+import { FunderDocumentAnalysisComponent } from 'src/app/features/ai/document-analysis/funder-document-analysis.component';
 
 type ReviewTabId = 'evaluator' | 'analysis';
 

@@ -23,7 +23,7 @@ import {
 
 import { UiButtonComponent } from '../../../shared/components';
 import { SidebarNavComponent } from '../../../shared/components/sidenav/sidebar-nav.component';
-import { AIAssistantModalComponent } from '../../../ai/ai-assistant/ai-assistant-modal.component';
+import { AIAssistantModalComponent } from '../../../features/ai/ai-assistant/ai-assistant-modal.component';
 import { AuthService } from '../../../auth/services/production.auth.service';
 import { SMEOpportunitiesService } from '../../../funding/services/opportunities.service';
 import { ApplicationManagementService } from 'src/app/SMEs/services/application-management.service';

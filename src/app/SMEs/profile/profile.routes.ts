@@ -36,7 +36,7 @@ export const profileRoutes: Routes = [
         path: 'data-room',
         loadComponent: () =>
           import(
-            'src/app/data-room/components/data-room-landing.component'
+            'src/app/features/data-room/components/data-room-landing.component'
           ).then((c) => c.DataRoomLandingComponent),
         title: 'Profile Overview - Kapify',
       },

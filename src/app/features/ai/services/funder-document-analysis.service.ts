@@ -2,7 +2,7 @@
 import { Injectable, inject } from '@angular/core';
 import { Observable, BehaviorSubject, from, throwError } from 'rxjs';
 import { tap, catchError } from 'rxjs/operators';
-import { SharedSupabaseService } from '../../shared/services/shared-supabase.service';
+import { SharedSupabaseService } from 'src/app/shared/services/shared-supabase.service';
 
 export interface ProcessingStatus {
   stage:
