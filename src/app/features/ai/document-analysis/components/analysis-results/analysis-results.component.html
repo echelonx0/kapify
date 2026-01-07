@@ -338,6 +338,164 @@
           }
         </div>
       </div>
+      } @if (result.keyInsights?.length) {
+      <div class="p-6 opacity-0 animate-fadeIn" style="animation-delay: 325ms">
+        <h4
+          class="text-lg font-bold text-slate-900 mb-4 flex items-center space-x-2"
+        >
+          <lucide-icon
+            [img]="LightbulbIcon"
+            [size]="18"
+            class="text-teal-600"
+          ></lucide-icon>
+          <span>Key Investment Insights</span>
+        </h4>
+
+        <div class="space-y-3">
+          @for (insight of result.keyInsights; let i = $index; track
+          insight.title) {
+
+          <!-- Insight Header -->
+          <button
+            (click)="toggleInsight(i)"
+            class="w-full flex items-center justify-between p-4 bg-white hover:bg-slate-50 rounded-xl border border-slate-200 shadow-sm transition-all duration-200"
+          >
+            <div class="flex items-start space-x-3 text-left">
+              <div
+                class="w-8 h-8 rounded-lg bg-teal-100 flex items-center justify-center flex-shrink-0"
+              >
+                <span class="text-sm font-bold text-teal-700">
+                  {{ i + 1 }}
+                </span>
+              </div>
+
+              <div>
+                <div class="font-semibold text-slate-900 text-sm">
+                  {{ insight.title }}
+                </div>
+                <div class="text-xs text-slate-600 mt-1 line-clamp-2">
+                  {{ insight.executiveSummary }}
+                </div>
+              </div>
+            </div>
+
+            <lucide-icon
+              [img]="ChevronDownIcon"
+              [size]="18"
+              class="text-slate-600 transition-transform duration-300"
+              [style.transform]="
+                expandedInsight() === i ? 'rotate(180deg)' : ''
+              "
+            ></lucide-icon>
+          </button>
+
+          <!-- Insight Body -->
+          @if (expandedInsight() === i) {
+          <div class="pl-4 space-y-4 animate-fadeIn">
+            <!-- Core Insight -->
+            <div class="p-4 bg-slate-50 rounded-xl border border-slate-200/50">
+              <div class="font-semibold text-slate-900 text-sm mb-2">
+                Core Insight
+              </div>
+              <p
+                class="text-sm text-slate-700 leading-relaxed whitespace-pre-line"
+              >
+                {{ insight.coreInsight }}
+              </p>
+            </div>
+
+            <!-- Reasoning Chain -->
+            @if (insight.reasoningChain.length) {
+            <div class="p-4 bg-blue-50 rounded-xl border border-blue-200/50">
+              <div class="font-semibold text-blue-900 text-sm mb-3">
+                Reasoning Chain
+              </div>
+
+              <div class="space-y-3">
+                @for (step of insight.reasoningChain; track step.step) {
+                <div class="flex items-start space-x-3 text-sm">
+                  <div
+                    class="w-6 h-6 rounded-full bg-blue-500 text-white flex items-center justify-center flex-shrink-0 text-xs font-semibold"
+                  >
+                    {{ step.step }}
+                  </div>
+                  <div>
+                    <div class="text-blue-900">
+                      {{ step.reasoning }}
+                    </div>
+                    @if (step.evidenceReference) {
+                    <div class="text-xs text-blue-700 mt-1">
+                      Evidence: {{ step.evidenceReference }}
+                    </div>
+                    }
+                  </div>
+                </div>
+                }
+              </div>
+            </div>
+            }
+
+            <!-- Implications -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <div
+                class="p-4 bg-green-50 rounded-xl border border-green-200/50"
+              >
+                <div class="font-semibold text-green-900 text-sm mb-2">
+                  Upside
+                </div>
+                <p class="text-sm text-green-800">
+                  {{ insight.implications.upside }}
+                </p>
+              </div>
+
+              <div
+                class="p-4 bg-orange-50 rounded-xl border border-orange-200/50"
+              >
+                <div class="font-semibold text-orange-900 text-sm mb-2">
+                  Downside
+                </div>
+                <p class="text-sm text-orange-800">
+                  {{ insight.implications.downside }}
+                </p>
+              </div>
+
+              <div class="p-4 bg-red-50 rounded-xl border border-red-200/50">
+                <div class="font-semibold text-red-900 text-sm mb-2">
+                  Execution Risks
+                </div>
+                <p class="text-sm text-red-800">
+                  {{ insight.implications.executionRisks }}
+                </p>
+              </div>
+            </div>
+
+            <!-- Contrarian Angle -->
+            @if (insight.contrarianAngle) {
+            <div
+              class="p-4 bg-purple-50 rounded-xl border border-purple-200/50"
+            >
+              <div class="font-semibold text-purple-900 text-sm mb-2">
+                Contrarian Angle
+              </div>
+              <p class="text-sm text-purple-800">
+                {{ insight.contrarianAngle }}
+              </p>
+            </div>
+            }
+
+            <!-- Investor Takeaway -->
+            <div class="p-4 bg-teal-50 rounded-xl border border-teal-200/50">
+              <div class="font-semibold text-teal-900 text-sm mb-2">
+                Investor Takeaway
+              </div>
+              <p class="text-sm text-teal-800 font-medium">
+                {{ insight.investorTakeaway }}
+              </p>
+            </div>
+          </div>
+          } }
+        </div>
+      </div>
       }
 
       <!-- Market Intelligence Accordion -->
