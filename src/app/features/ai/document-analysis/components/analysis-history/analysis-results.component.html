@@ -1,0 +1,185 @@
+<div class="divide-y divide-slate-100">
+  <!-- Executive Summary -->
+  <div class="p-6">
+    <div class="flex items-center justify-between mb-6">
+      <h4 class="text-lg font-bold text-slate-900">Executive Summary</h4>
+      <div class="flex items-center space-x-2">
+        <div class="text-sm text-slate-600">Kapify Logic:</div>
+        <div class="text-sm font-semibold text-slate-900">
+          How do we derive this analysis?
+        </div>
+      </div>
+    </div>
+
+    <!-- Key Metrics Grid -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      <div
+        class="text-center p-4 bg-gradient-to-br from-blue-50 to-teal-50 rounded-2xl border border-blue-200/50"
+      >
+        <div class="text-3xl font-bold text-blue-600 mb-1">
+          {{ result.matchScore }}%
+        </div>
+        <div class="text-xs font-semibold text-blue-900">
+          Investability Score
+        </div>
+      </div>
+
+      <div
+        class="text-center p-4 bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl border border-green-200/50"
+      >
+        <div class="text-3xl font-bold text-green-600 mb-1">
+          {{ result.successProbability }}%
+        </div>
+        <div class="text-xs font-semibold text-green-900">
+          Success Probability
+        </div>
+      </div>
+
+      <div
+        class="text-center p-4 rounded-2xl border"
+        [class]="getTimingClasses(result.marketTimingInsight)"
+      >
+        <div class="text-xs font-bold uppercase tracking-wide mb-1">
+          {{ result.marketTimingInsight }}
+        </div>
+        <div class="text-xs font-semibold">Market Timing</div>
+      </div>
+
+      <div
+        class="text-center p-4 rounded-2xl border"
+        [class]="getPositionClasses(result.competitivePositioning)"
+      >
+        <div class="text-xs font-bold uppercase tracking-wide mb-1">
+          {{ result.competitivePositioning }}
+        </div>
+        <div class="text-xs font-semibold">Competitive Position</div>
+      </div>
+    </div>
+
+    <!-- Market Intelligence Summary -->
+    @if (result.marketIntelligence) {
+    <div
+      class="bg-gradient-to-br from-slate-50 to-pink-50 border border-slate-200/50 rounded-2xl p-4 mb-6"
+    >
+      <div class="flex items-center space-x-2 mb-3">
+        <lucide-icon [img]="GlobeIcon" [size]="16" class="text-slate-600" />
+        <div class="font-semibold text-slate-900">Live Market Intelligence</div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+        <div>
+          <div class="font-medium text-slate-900">Funding Activity</div>
+          <div class="text-slate-700">
+            {{ result.marketIntelligence.fundingTrends.dealCount }}
+            deals last quarter
+          </div>
+        </div>
+
+        <div>
+          <div class="font-medium text-slate-900">Average Round</div>
+          <div class="text-slate-700">
+            {{ result.marketIntelligence.fundingTrends.averageRoundSize }}
+          </div>
+        </div>
+
+        <div>
+          <div class="font-medium text-slate-900">Valuation Trend</div>
+          <div class="text-slate-700 capitalize">
+            {{ result.marketIntelligence.fundingTrends.valuationTrend }}
+          </div>
+        </div>
+      </div>
+    </div>
+    }
+  </div>
+
+  <!-- Strengths & Improvement Areas -->
+  <div class="p-6">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div class="bg-green-50 border-l-4 border-green-400 rounded-r-2xl p-4">
+        <div class="flex items-center space-x-2 mb-3">
+          <lucide-icon
+            [img]="CheckCircleIcon"
+            [size]="16"
+            class="text-green-600"
+          />
+          <div class="font-semibold text-green-900">Key Strengths</div>
+        </div>
+
+        <div class="space-y-2">
+          @for (strength of result.strengths; track strength) {
+          <div class="flex items-start space-x-2 text-sm text-green-800">
+            <div class="w-1.5 h-1.5 bg-green-500 rounded-full mt-2"></div>
+            <span>{{ strength }}</span>
+          </div>
+          }
+        </div>
+      </div>
+
+      <div class="bg-orange-50 border-l-4 border-orange-400 rounded-r-2xl p-4">
+        <div class="flex items-center space-x-2 mb-3">
+          <lucide-icon
+            [img]="TrendingUpIcon"
+            [size]="16"
+            class="text-orange-600"
+          />
+          <div class="font-semibold text-orange-900">Improvement Areas</div>
+        </div>
+
+        <div class="space-y-2">
+          @for (area of result.improvementAreas; track area) {
+          <div class="flex items-start space-x-2 text-sm text-orange-800">
+            <div class="w-1.5 h-1.5 bg-orange-500 rounded-full mt-2"></div>
+            <span>{{ area }}</span>
+          </div>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Risk Factors -->
+  @if (result.riskFactors.length) {
+  <div class="p-6">
+    <h4 class="text-lg font-bold text-slate-900 mb-4">Risk Assessment</h4>
+
+    <div class="space-y-3">
+      @for (risk of result.riskFactors; track risk.factor) {
+      <div
+        class="flex items-start space-x-3 p-4 bg-slate-50 rounded-2xl border border-slate-200/50"
+      >
+        <div [class]="getRiskSeverityBadge(risk.severity)">
+          {{ risk.severity.toUpperCase() }}
+        </div>
+
+        <div>
+          <div class="font-semibold text-slate-900 mb-1">
+            {{ risk.factor }}
+          </div>
+          <div class="text-sm text-slate-700">
+            {{ risk.impact }}
+          </div>
+        </div>
+      </div>
+      }
+    </div>
+  </div>
+  }
+
+  <!-- Footer -->
+  <div
+    class="px-6 py-4 bg-slate-50/50 flex items-center justify-between border-t border-slate-200"
+  >
+    <div class="text-sm text-slate-600">
+      Generated {{ getTimeAgo(result.generatedAt) }} with
+      {{ result.confidence }}% confidence
+    </div>
+
+    <div class="flex space-x-3">
+      <ui-button variant="outline">
+        <lucide-icon [img]="DownloadIcon" [size]="16" class="mr-2" />
+        Download Report
+      </ui-button>
+    </div>
+  </div>
+</div>

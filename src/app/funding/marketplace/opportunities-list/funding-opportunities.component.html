@@ -40,7 +40,7 @@
       <app-opportunities-grid
         *ngIf="!isLoading() && filteredOpportunities().length > 0"
         #opportunitiesGrid
-        [opportunities]="filteredOpportunities()"
+        [opportunities]="paginatedOpportunities()"
         [userType]="getUserTypeLabel()"
         [canApply]="canApplyToOpportunity()"
         (apply)="applyToOpportunity($event)"
@@ -49,6 +49,74 @@
         (signInToApply)="redirectToLogin()"
       >
       </app-opportunities-grid>
+
+      <!-- Pagination Controls -->
+      <div
+        *ngIf="!isLoading() && filteredOpportunities().length > 0"
+        class="mt-12 flex flex-col items-center gap-6"
+      >
+        <!-- Pagination Text -->
+        <p class="text-sm font-medium text-slate-600">
+          {{ getPaginationText() }}
+        </p>
+
+        <!-- Pagination Controls -->
+        <div class="flex flex-wrap items-center justify-center gap-2">
+          <!-- Previous Button -->
+          <button
+            (click)="previousPage()"
+            [disabled]="currentPage() === 1"
+            class="px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200"
+            [class.bg-white]="currentPage() !== 1"
+            [class.border]="currentPage() !== 1"
+            [class.border-slate-200]="currentPage() !== 1"
+            [class.text-slate-700]="currentPage() !== 1"
+            [class.hover:border-teal-300]="currentPage() !== 1"
+            [class.hover:bg-teal-50]="currentPage() !== 1"
+            [class.bg-slate-100]="currentPage() === 1"
+            [class.text-slate-400]="currentPage() === 1"
+            [class.cursor-not-allowed]="currentPage() === 1"
+          >
+            Previous
+          </button>
+
+          <!-- Page Numbers -->
+          @for (page of pageRange(); track page) {
+          <button
+            (click)="goToPage(page)"
+            class="w-10 h-10 rounded-lg text-sm font-medium transition-all duration-200"
+            [class.bg-teal-500]="currentPage() === page"
+            [class.text-white]="currentPage() === page"
+            [class.bg-white]="currentPage() !== page"
+            [class.border]="currentPage() !== page"
+            [class.border-slate-200]="currentPage() !== page"
+            [class.text-slate-700]="currentPage() !== page"
+            [class.hover:border-teal-300]="currentPage() !== page"
+            [class.hover:bg-teal-50]="currentPage() !== page"
+          >
+            {{ page }}
+          </button>
+          }
+
+          <!-- Next Button -->
+          <button
+            (click)="nextPage()"
+            [disabled]="currentPage() === totalPages()"
+            class="px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200"
+            [class.bg-white]="currentPage() !== totalPages()"
+            [class.border]="currentPage() !== totalPages()"
+            [class.border-slate-200]="currentPage() !== totalPages()"
+            [class.text-slate-700]="currentPage() !== totalPages()"
+            [class.hover:border-teal-300]="currentPage() !== totalPages()"
+            [class.hover:bg-teal-50]="currentPage() !== totalPages()"
+            [class.bg-slate-100]="currentPage() === totalPages()"
+            [class.text-slate-400]="currentPage() === totalPages()"
+            [class.cursor-not-allowed]="currentPage() === totalPages()"
+          >
+            Next
+          </button>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -106,7 +174,7 @@
     <app-opportunities-grid
       *ngIf="!isLoading() && filteredOpportunities().length > 0"
       #opportunitiesGrid
-      [opportunities]="filteredOpportunities()"
+      [opportunities]="paginatedOpportunities()"
       [userType]="getUserTypeLabel()"
       [canApply]="canApplyToOpportunity()"
       (apply)="applyToOpportunity($event)"
@@ -115,6 +183,74 @@
       (signInToApply)="redirectToLogin()"
     >
     </app-opportunities-grid>
+
+    <!-- Pagination Controls -->
+    <div
+      *ngIf="!isLoading() && filteredOpportunities().length > 0"
+      class="mt-12 flex flex-col items-center gap-6"
+    >
+      <!-- Pagination Text -->
+      <p class="text-sm font-medium text-slate-600">
+        {{ getPaginationText() }}
+      </p>
+
+      <!-- Pagination Controls -->
+      <div class="flex flex-wrap items-center justify-center gap-2">
+        <!-- Previous Button -->
+        <button
+          (click)="previousPage()"
+          [disabled]="currentPage() === 1"
+          class="px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200"
+          [class.bg-white]="currentPage() !== 1"
+          [class.border]="currentPage() !== 1"
+          [class.border-slate-200]="currentPage() !== 1"
+          [class.text-slate-700]="currentPage() !== 1"
+          [class.hover:border-teal-300]="currentPage() !== 1"
+          [class.hover:bg-teal-50]="currentPage() !== 1"
+          [class.bg-slate-100]="currentPage() === 1"
+          [class.text-slate-400]="currentPage() === 1"
+          [class.cursor-not-allowed]="currentPage() === 1"
+        >
+          Previous
+        </button>
+
+        <!-- Page Numbers -->
+        @for (page of pageRange(); track page) {
+        <button
+          (click)="goToPage(page)"
+          class="w-10 h-10 rounded-lg text-sm font-medium transition-all duration-200"
+          [class.bg-teal-500]="currentPage() === page"
+          [class.text-white]="currentPage() === page"
+          [class.bg-white]="currentPage() !== page"
+          [class.border]="currentPage() !== page"
+          [class.border-slate-200]="currentPage() !== page"
+          [class.text-slate-700]="currentPage() !== page"
+          [class.hover:border-teal-300]="currentPage() !== page"
+          [class.hover:bg-teal-50]="currentPage() !== page"
+        >
+          {{ page }}
+        </button>
+        }
+
+        <!-- Next Button -->
+        <button
+          (click)="nextPage()"
+          [disabled]="currentPage() === totalPages()"
+          class="px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200"
+          [class.bg-white]="currentPage() !== totalPages()"
+          [class.border]="currentPage() !== totalPages()"
+          [class.border-slate-200]="currentPage() !== totalPages()"
+          [class.text-slate-700]="currentPage() !== totalPages()"
+          [class.hover:border-teal-300]="currentPage() !== totalPages()"
+          [class.hover:bg-teal-50]="currentPage() !== totalPages()"
+          [class.bg-slate-100]="currentPage() === totalPages()"
+          [class.text-slate-400]="currentPage() === totalPages()"
+          [class.cursor-not-allowed]="currentPage() === totalPages()"
+        >
+          Next
+        </button>
+      </div>
+    </div>
   </div>
 </div>
 }

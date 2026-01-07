@@ -49,6 +49,7 @@ import {
 } from './components/processing-timeline.component';
 import { CostConfirmationModalComponent } from './components/cost-confirmation-modal.component';
 import { HowAnalysisWorksComponent } from './components/how-analysis-works.component';
+import { AnalysisResultsComponent } from './components/analysis-history/analysis-results.component';
 
 // Extracted components
 
@@ -71,6 +72,7 @@ interface CostConfirmation {
     HowAnalysisWorksComponent,
     CostConfirmationModalComponent,
     ProcessingTimelineComponent,
+    AnalysisResultsComponent,
   ],
   templateUrl: 'funder-document-analysis.component.html',
   styles: [],

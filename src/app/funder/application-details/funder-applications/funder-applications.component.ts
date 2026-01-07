@@ -1,411 +1,3 @@
-// import {
-//   Component,
-//   signal,
-//   computed,
-//   OnInit,
-//   OnDestroy,
-//   inject,
-// } from '@angular/core';
-// import { Router } from '@angular/router';
-// import { CommonModule } from '@angular/common';
-// import { Subject, takeUntil } from 'rxjs';
-// import {
-//   LucideAngularModule,
-//   FileText,
-//   Eye,
-//   ArrowRight,
-//   CircleAlert,
-// } from 'lucide-angular';
-// import { ApplicationManagementService } from 'src/app/fund-seeking-orgs/services/application-management.service';
-
-// import {
-//   FundingApplication,
-//   ApplicationStats,
-// } from 'src/app/fund-seeking-orgs/models/application.models';
-// import { FormsModule } from '@angular/forms';
-// import { SMEOpportunitiesService } from 'src/app/funding/services/opportunities.service';
-// import {
-//   UiSelectComponent,
-//   SelectOption,
-// } from 'src/app/shared/components/ui-select/ui-select.component';
-// import {
-//   ApplicationListCardComponent,
-//   BaseApplicationCard,
-// } from './application-list-card/application-list-card.component';
-// import { ApplicationDetailModalComponent } from '../components/application-detail-modal/application-detail-modal.component';
-// import { FundingApplicationProfile } from 'src/app/fund-seeking-orgs/applications/models/funding-application.models';
-// import { FundingProfileBackendService } from 'src/app/fund-seeking-orgs/services/funding-profile-backend.service';
-// import { ProfileDataTransformerService } from 'src/app/fund-seeking-orgs/services/profile-data-transformer.service';
-// import { ProfileData } from 'src/app/profiles/SME-Profiles/models/funding.models';
-
-// @Component({
-//   selector: 'app-funder-applications',
-//   standalone: true,
-//   imports: [
-//     CommonModule,
-//     LucideAngularModule,
-//     ApplicationListCardComponent,
-//     FormsModule,
-//     UiSelectComponent,
-//     ApplicationDetailModalComponent,
-//   ],
-//   templateUrl: './funder-applications.component.html',
-// })
-// export class FunderApplicationsComponent implements OnInit, OnDestroy {
-//   private router = inject(Router);
-//   private applicationService = inject(ApplicationManagementService);
-//   private opportunitiesService = inject(SMEOpportunitiesService);
-//   private destroy$ = new Subject<void>();
-//   rawProfileData = signal<Partial<FundingApplicationProfile> | null>(null);
-//   // Modal state
-//   selectedApplicationForModal = signal<any>(null);
-
-//   // Icons
-//   AlertCircleIcon = CircleAlert;
-//   FileTextIcon = FileText;
-//   EyeIcon = Eye;
-//   ArrowRightIcon = ArrowRight;
-
-//   // Tab configuration
-//   tabs = [
-//     { id: 'new', label: 'New Applications', statuses: ['submitted'] },
-//     { id: 'review', label: 'Under Review', statuses: ['under_review'] },
-//     { id: 'approved', label: 'Approved', statuses: ['approved'] },
-//     { id: 'rejected', label: 'Rejected', statuses: ['rejected'] },
-//   ];
-
-//   // State
-//   allApplications = signal<FundingApplication[]>([]);
-//   opportunities = signal<any[]>([]);
-//   applicationStats = signal<ApplicationStats | null | undefined>(null);
-//   applicationsLoading = signal(false);
-//   opportunitiesLoading = signal(false);
-//   applicationsError = signal<string | null>(null);
-//   selectedOpportunityFilter = signal<string>('');
-//   organizationId = signal<string | null>(null);
-//   activeTab = signal<string>('new'); // Default tab
-
-//   profileData = signal<Partial<ProfileData> | null>(null);
-//   private backendService = inject(FundingProfileBackendService);
-//   private transformer = inject(ProfileDataTransformerService);
-
-//   // Loading & Error States
-//   isLoading = signal(true);
-//   profileLoading = signal(false);
-//   error = signal<string | null>(null);
-//   profileError = signal<string | null>(null);
-//   // Computed properties
-//   filteredApplications = computed(() => {
-//     const apps = this.allApplications();
-//     const opportunityFilter = this.selectedOpportunityFilter();
-//     return !opportunityFilter
-//       ? apps
-//       : apps.filter((app) => app.opportunityId === opportunityFilter);
-//   });
-
-//   // Applications filtered by active tab + opportunity
-//   filteredApplicationsByTab = computed(() => {
-//     const apps = this.filteredApplications();
-//     const tab = this.activeTab();
-//     const currentTab = this.tabs.find((t) => t.id === tab);
-//     if (!currentTab) return apps;
-
-//     return apps.filter((app) => currentTab.statuses.includes(app.status));
-//   });
-
-//   // Tab counts (for badges)
-//   tabCounts = computed(() => {
-//     const apps = this.filteredApplications();
-//     return {
-//       new: apps.filter((app) => app.status === 'submitted').length,
-//       review: apps.filter((app) => app.status === 'under_review').length,
-//       approved: apps.filter((app) => app.status === 'approved').length,
-//       rejected: apps.filter((app) => app.status === 'rejected').length,
-//     };
-//   });
-
-//   // Helper methods for template
-//   getTabCount(tabId: string): number {
-//     const counts = this.tabCounts();
-//     return counts[tabId as keyof typeof counts] || 0;
-//   }
-
-//   getActiveTabLabel(): string {
-//     const tab = this.tabs.find((t) => t.id === this.activeTab());
-//     return tab?.label || '';
-//   }
-
-//   recentApplicationsComputed = computed(() =>
-//     this.allApplications()
-//       .slice()
-//       .sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime())
-//       .slice(0, 10)
-//   );
-
-//   uniqueOpportunities = computed(() => this.opportunities());
-
-//   applicationsInReview = computed(() =>
-//     this.allApplications().filter(
-//       (app) => app.status === 'submitted' || app.status === 'under_review'
-//     )
-//   );
-
-//   async ngOnInit() {
-//     await Promise.all([
-//       this.loadApplicationsData(),
-//       this.loadOpportunitiesData(),
-//     ]);
-
-//     // Set smart default tab after data loads
-//     this.setSmartDefaultTab();
-//   }
-
-//   ngOnDestroy() {
-//     this.destroy$.next();
-//     this.destroy$.complete();
-//   }
-
-//   private async loadApplicationsData() {
-//     try {
-//       this.applicationsLoading.set(true);
-//       this.applicationsError.set(null);
-
-//       const applications = await this.applicationService
-//         .getAllManageableApplications()
-//         .toPromise();
-
-//       this.allApplications.set(applications || []);
-//       // console.log(this.allApplications);
-//       this.loadApplicationStats();
-//     } catch (error) {
-//       console.error('Failed to load applications:', error);
-//       this.applicationsError.set('Failed to load applications');
-//     } finally {
-//       this.applicationsLoading.set(false);
-//     }
-//   }
-
-//   private async loadOpportunitiesData() {
-//     try {
-//       this.opportunitiesLoading.set(true);
-
-//       // Load opportunities from SMEOpportunitiesService
-//       const opps = await this.opportunitiesService
-//         .loadActiveOpportunities()
-//         .toPromise();
-//       this.opportunities.set(opps || []);
-//     } catch (error) {
-//       console.error('Failed to load opportunities:', error);
-//       this.opportunities.set([]);
-//     } finally {
-//       this.opportunitiesLoading.set(false);
-//     }
-//   }
-
-//   private async loadApplicationStats() {
-//     try {
-//       const stats = await this.applicationService
-//         .getApplicationStats()
-//         .toPromise();
-//       this.applicationStats.set(stats ?? null);
-//     } catch (error) {
-//       console.error('Failed to load stats:', error);
-//     }
-//   }
-
-//   // Smart default tab - show tab with most actionable items
-//   private setSmartDefaultTab() {
-//     const counts = this.tabCounts();
-//     if (counts.new > 0) {
-//       this.activeTab.set('new');
-//     } else if (counts.review > 0) {
-//       this.activeTab.set('review');
-//     } else {
-//       this.activeTab.set('new');
-//     }
-//   }
-
-//   /**
-//    * Convert opportunities to SelectOption format for ui-select component
-//    */
-//   getOpportunityOptions(): SelectOption[] {
-//     return this.opportunities().map((opp) => ({
-//       label: opp.title,
-//       value: opp.id,
-//     }));
-//   }
-
-//   // Tab navigation
-//   setActiveTab(tabId: string) {
-//     this.activeTab.set(tabId);
-//   }
-
-//   // Event handlers
-//   clearFilter() {
-//     this.selectedOpportunityFilter.set('');
-//   }
-
-//   refreshApplicationsData() {
-//     this.loadApplicationsData();
-//   }
-
-//   // Get empty state message based on active tab
-//   getEmptyStateMessage(): string {
-//     const tab = this.activeTab();
-//     const messages: Record<string, string> = {
-//       new: this.selectedOpportunityFilter()
-//         ? 'No new applications for the selected opportunity.'
-//         : 'No new applications yet. Applications appear here when SMEs submit them.',
-//       review: this.selectedOpportunityFilter()
-//         ? 'No applications under review for the selected opportunity.'
-//         : 'No applications under review. Move applications here to start the review process.',
-//       approved: this.selectedOpportunityFilter()
-//         ? 'No approved applications for the selected opportunity.'
-//         : 'No approved applications yet. Approved applications will appear here.',
-//       rejected: this.selectedOpportunityFilter()
-//         ? 'No rejected applications for the selected opportunity.'
-//         : 'No rejected applications yet.',
-//     };
-//     return messages[tab] || 'No applications found.';
-//   }
-
-//   // Transform & display
-//   transformToApplicationCard(app: FundingApplication): BaseApplicationCard {
-//     console.log(app.opportunity?.fundingType);
-//     return {
-//       id: app.id,
-//       title: app.title,
-//       applicationNumber: `APP-${app.id.slice(-6).toUpperCase()}`,
-//       status: app.status,
-//       fundingType: app.opportunity?.fundingType,
-//       requestedAmount: this.extractRequestedAmount(app.formData),
-//       currency: app.opportunity?.currency || 'ZAR',
-//       currentStage: this.formatStage(app.stage),
-//       description: app.description,
-//       createdAt: app.createdAt,
-//       updatedAt: app.updatedAt,
-//       submittedAt: app.submittedAt,
-//       applicantName: `${app.applicant?.firstName || ''} ${
-//         app.applicant?.lastName || ''
-//       }`.trim(),
-//       applicantCompany: app.applicant?.companyName,
-//       opportunityTitle: app.opportunity?.title,
-//       opportunityId: app.opportunityId,
-//     };
-//   }
-
-//   private extractRequestedAmount(formData: Record<string, any>): number {
-//     return (
-//       formData?.['coverInformation']?.requestedAmount ??
-//       formData?.['requestedAmount'] ??
-//       formData?.['fundingInformation']?.requestedAmount ??
-//       0
-//     );
-//   }
-
-//   private formatStage(stage: string): string {
-//     return stage.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
-//   }
-
-//   viewApplication(applicationId: string) {
-//     this.router.navigate(['/funder/applications', applicationId]);
-//   }
-
-//   async updateApplicationStatus(applicationId: string, status: string) {
-//     try {
-//       await this.applicationService
-//         .updateApplicationStatus(applicationId, status as any)
-//         .toPromise();
-//       this.refreshApplicationsData();
-//     } catch (error) {
-//       console.error('Error updating application status:', error);
-//     }
-//   }
-
-//   // 🔴 MODAL METHODS
-//   viewApplicationDetails(application: FundingApplication): void {
-//     const modalData = {
-//       id: application.id,
-//       title: application.title,
-//       applicantOrganizationName: application.applicantOrganizationName,
-//       applicantName: `${application.applicant?.firstName || ''} ${
-//         application.applicant?.lastName || ''
-//       }`.trim(),
-//       status: application.status,
-//       stage: application.stage,
-//       requestedAmount: this.extractRequestedAmount(application.formData),
-//       currency: application.opportunity?.currency || 'ZAR',
-//       description: application.description,
-//       formData: application.formData,
-//       submittedAt: application.submittedAt,
-//       createdAt: application.createdAt,
-//       matchScore: application.aiMatchScore,
-//       completionScore: 80,
-//       applicant: {
-//         firstName: application.applicant?.firstName,
-//         lastName: application.applicant?.lastName,
-//         email: application.applicant?.email,
-//         companyName: application.applicant?.companyName,
-//       },
-//       opportunity: {
-//         title: application.opportunity?.title,
-//         fundingType: application.opportunity?.fundingType,
-//         currency: application.opportunity?.currency,
-//       },
-//     };
-
-//     this.selectedApplicationForModal.set(modalData);
-//   }
-
-//   downloadApplicationDocuments(application: any): void {
-//     console.log('Downloading documents for application:', application.id);
-//     // TODO: Implement document download logic
-//   }
-
-//   /**
-//    * Load applicant profile data
-//    */
-//   private async loadApplicantProfile(applicantId: string): Promise<void> {
-//     this.profileLoading.set(true);
-//     this.profileError.set(null);
-
-//     try {
-//       const fundingProfile = await this.backendService
-//         .loadSavedProfileForUser(applicantId)
-//         .pipe(takeUntil(this.destroy$))
-//         .toPromise();
-
-//       if (fundingProfile) {
-//         this.rawProfileData.set(fundingProfile);
-//         //  console.log(fundingProfile.companyInfo?.companyName);
-//       }
-
-//       if (fundingProfile) {
-//         const profileData =
-//           this.transformer.transformFromFundingProfile(fundingProfile);
-
-//         this.profileData.set(profileData);
-//       } else {
-//         throw new Error('No profile data returned');
-//       }
-//     } catch (error) {
-//       console.error('❌ [APP-DETAIL] Failed to load applicant profile:', error);
-
-//       let errorMessage = 'Unable to load applicant profile data.';
-//       if (error instanceof Error) {
-//         if (error.message.includes('No profile data found')) {
-//           errorMessage = 'Applicant has not completed their business profile.';
-//         } else if (error.message.includes('User ID is required')) {
-//           errorMessage = 'Invalid applicant information.';
-//         }
-//       }
-
-//       this.profileError.set(errorMessage);
-//     } finally {
-//       this.profileLoading.set(false);
-//     }
-//   }
-// }
 import {
   Component,
   signal,
@@ -413,10 +5,11 @@ import {
   OnInit,
   OnDestroy,
   inject,
+  ViewChild,
 } from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { Subject, takeUntil } from 'rxjs';
+import { Subject } from 'rxjs';
 import { LucideAngularModule } from 'lucide-angular';
 import { ApplicationManagementService } from 'src/app/fund-seeking-orgs/services/application-management.service';
 import {
@@ -437,6 +30,11 @@ import { ApplicationsStatsComponent } from 'src/app/features/reports/analysis-hi
 import { KapifyReportsExportService } from 'src/app/features/reports/services/kapify-reports-export.service';
 import { ApplicationDetailModalComponent } from '../components/application-detail-modal/application-detail-modal.component';
 import { ApplicationsReviewHeaderComponent } from './components/applications-review-header.component';
+import {
+  ReportBuilderComponent,
+  ApplicationReportRecord,
+  ReportExportEvent,
+} from 'src/app/features/reports/analysis-history/report-builder-modal-premium.component';
 
 @Component({
   selector: 'app-funder-applications',
@@ -450,6 +48,7 @@ import { ApplicationsReviewHeaderComponent } from './components/applications-rev
     ApplicationDetailModalComponent,
     ApplicationsReviewHeaderComponent,
     ApplicationsStatsComponent,
+    ReportBuilderComponent,
   ],
   template: `
     <div class="space-y-8 pb-20 m-8">
@@ -457,6 +56,7 @@ import { ApplicationsReviewHeaderComponent } from './components/applications-rev
       <app-applications-review-header
         (refresh)="refreshApplicationsData()"
         (export)="onExport($event)"
+        (openReportBuilder)="openReportBuilder()"
       ></app-applications-review-header>
 
       <!-- Applications Stats -->
@@ -688,9 +288,18 @@ import { ApplicationsReviewHeaderComponent } from './components/applications-rev
       (onClose)="selectedApplicationForModal.set(null)"
       (onDownload)="downloadApplicationDocuments($event)"
     />
+
+    <!-- Report Builder Modal -->
+    <app-report-builder
+      [data]="{ allRecords: transformToReportData(allApplications()) }"
+      (onExport)="onReportExport($event)"
+      (onClose)="onReportBuilderClose()"
+    ></app-report-builder>
   `,
 })
 export class FunderApplicationsComponent implements OnInit, OnDestroy {
+  @ViewChild(ReportBuilderComponent) reportBuilder!: ReportBuilderComponent;
+
   private router = inject(Router);
   private applicationService = inject(ApplicationManagementService);
   private opportunitiesService = inject(SMEOpportunitiesService);
@@ -989,6 +598,80 @@ export class FunderApplicationsComponent implements OnInit, OnDestroy {
 
   downloadApplicationDocuments(application: any): void {
     console.log('Downloading documents for application:', application.id);
-    // TODO: Implement document download logic
+  }
+
+  /**
+   * Transform FundingApplication to ApplicationReportRecord for report builder
+   * Safely handles all optional and union-typed fields
+   */
+  transformToReportData(apps: FundingApplication[]): ApplicationReportRecord[] {
+    return apps.map((app, idx) => ({
+      id: app.id,
+      no: idx + 1,
+      nameOfBusiness: app.applicant?.companyName || '',
+      industry: (app.formData?.['businessDetails']?.industry as string) || '',
+      businessStage:
+        (app.formData?.['businessDetails']?.stage as string) || 'Startup',
+      yearsInOperation:
+        (app.formData?.['businessDetails']?.yearsInOperation as number) || 0,
+      numberOfEmployees:
+        (app.formData?.['businessDetails']?.numberOfEmployees as number) || 0,
+      province: (app.formData?.['businessDetails']?.province as string) || '',
+      priorYearAnnualRevenue:
+        (app.formData?.['financialInfo']?.priorYearRevenue as number) || 0,
+      firstName: app.applicant?.firstName || '',
+      surname: app.applicant?.lastName || '',
+      email: app.applicant?.email || '',
+      phoneNumber: '',
+      amountRequested: this.extractRequestedAmount(app.formData),
+      fundingType: this.normalizeFundingType(app.opportunity?.fundingType),
+      applicationStatus: app.status,
+      createdAt: app.createdAt,
+      updatedAt: app.updatedAt,
+    }));
+  }
+
+  /**
+   * Normalize fundingType to always be a string
+   * Handles both string and string[] values
+   */
+  private normalizeFundingType(
+    fundingType: string | string[] | undefined
+  ): string {
+    if (!fundingType) return '';
+    if (Array.isArray(fundingType)) {
+      return fundingType[0] || '';
+    }
+    return fundingType;
+  }
+
+  /**
+   * Open the report builder modal
+   */
+  openReportBuilder(): void {
+    this.reportBuilder.open();
+  }
+
+  /**
+   * Handle report export from modal
+   */
+  async onReportExport(event: ReportExportEvent): Promise<void> {
+    try {
+      console.log(
+        'Report exported:',
+        event.title,
+        event.format,
+        `(${event.data.length} records)`
+      );
+    } catch (error) {
+      console.error('Error handling export:', error);
+    }
+  }
+
+  /**
+   * Handle report builder close
+   */
+  onReportBuilderClose(): void {
+    // Optional cleanup
   }
 }

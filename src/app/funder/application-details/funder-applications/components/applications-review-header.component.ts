@@ -218,6 +218,8 @@ export type ExportFormat = 'excel' | 'pdf' | 'csv';
               ></lucide-angular>
               {{ exporting() ? 'Exporting...' : 'Export' }}
             </button>
+
+            <button (click)="openReportBuilder.emit()">Download Reports</button>
             <button
               (click)="closeExportModal()"
               [disabled]="exporting()"
@@ -240,7 +242,7 @@ export class ApplicationsReviewHeaderComponent {
   }>();
 
   private exportService = inject(KapifyReportsExportService);
-
+  @Output() openReportBuilder = new EventEmitter<void>();
   modalOpen = signal(false);
   exporting = signal(false);
   refreshing = signal(false);
