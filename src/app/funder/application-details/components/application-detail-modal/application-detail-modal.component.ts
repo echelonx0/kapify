@@ -220,9 +220,7 @@ export interface ApplicationDetailModalData {
         <!-- Funding type -->
         @if (getCurrentData()?.description) {
         <div class="space-y-3">
-          <p class="text-sm font-semibold text-slate-900">
-            Funding request type
-          </p>
+          <p class="text-sm font-semibold text-slate-900">Use of Funds</p>
           <p class="text-sm text-slate-600 leading-relaxed">
             {{ getCurrentData()?.description }}
           </p>

@@ -320,7 +320,6 @@ export class OpportunityDetailsComponent implements OnInit {
   getEligibilityCriteria(): string[] {
     const opp = this.opportunity();
 
-    console.log(`Eligibility Criteria: `, opp?.eligibilityCriteria);
     return opp?.investmentCriteria || [];
   }
 
