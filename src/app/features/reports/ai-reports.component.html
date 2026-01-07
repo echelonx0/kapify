@@ -23,10 +23,14 @@
             </h1>
           </div>
           <p class="text-slate-600">
-            Overview of your platform activities and funding applications
+            @if (isFunder()) { Overview of your funding applications and
+            activities } @else if (isSME()) { Track your application submissions
+            and funding progress }
           </p>
         </div>
 
+        <!-- Refresh Button (Only for Funders) -->
+        @if (isFunder()) {
         <button
           (click)="refreshReports()"
           [disabled]="loading()"
@@ -45,54 +49,43 @@
           ></lucide-angular>
           {{ loading() ? "Refreshing..." : "Refresh" }}
         </button>
+        }
       </div>
     </div>
   </div>
 
   <!-- Tab Navigation -->
+  @if (isFunder()) {
   <div class="max-w-7xl mx-auto px-4 lg:px-8 py-4 border-b border-slate-200">
     <div class="flex items-center gap-4">
+      <!-- Funder sees: Applications Reports only -->
       <button
-        (click)="switchTab('applications')"
-        [class]="
-          activeTab() === 'applications'
-            ? 'bg-teal-50 text-teal-700 border-teal-300'
-            : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
-        "
-        class="px-6 py-3 rounded-xl border font-medium transition-colors duration-200"
-      >
-        Applications Reports
-      </button>
-      <button
-        (click)="switchTab('analysis')"
-        [class]="
-          activeTab() === 'analysis'
-            ? 'bg-teal-50 text-teal-700 border-teal-300'
-            : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
-        "
-        class="px-6 py-3 rounded-xl border font-medium transition-colors duration-200"
-      >
-        Analysis History
-      </button>
-
-      <button
-        [class]="
-          activeTab() === 'analysis'
-            ? 'bg-teal-50 text-teal-700 border-teal-300'
-            : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
-        "
-        class="px-6 py-3 rounded-xl border font-medium transition-colors duration-200"
+        (click)="generateReports()"
+        class="px-6 py-3 rounded-xl border bg-teal-50 text-teal-700 border-teal-300 font-medium"
       >
         Generate Reports
       </button>
     </div>
   </div>
+  } @else if (isSME()) {
+  <div class="max-w-7xl mx-auto px-4 lg:px-8 py-4 border-b border-slate-200">
+    <div class="flex items-center gap-4">
+      <!-- SME sees: Analysis History only -->
+      <button
+        (click)="switchTab('analysis')"
+        class="px-6 py-3 rounded-xl border bg-teal-50 text-teal-700 border-teal-300 font-medium"
+      >
+        Analysis History
+      </button>
+    </div>
+  </div>
+  }
 
   <div class="max-w-7xl mx-auto px-4 lg:px-8 py-8">
     <!-- ============================================ -->
-    <!-- TAB 1: APPLICATIONS OVERVIEW -->
+    <!-- TAB: APPLICATIONS (FUNDERS ONLY) -->
     <!-- ============================================ -->
-    @if (activeTab() === 'applications') {
+    @if (activeTab() === 'applications' && isFunder()) {
     <div class="space-y-8">
       <!-- Activity Summary Cards -->
       <app-applications-stats
@@ -168,7 +161,7 @@
         ></lucide-angular>
         <h3 class="text-lg font-bold text-slate-900 mb-2">No activities yet</h3>
         <p class="text-slate-600">
-          Activities will appear here as you submit applications
+          Activities will appear here as you receive applications
         </p>
       </div>
       }
@@ -176,17 +169,17 @@
     }
 
     <!-- ============================================ -->
-    <!-- TAB 2: ANALYSIS HISTORY -->
+    <!-- TAB: ANALYSIS HISTORY (SMEs ONLY) -->
     <!-- ============================================ -->
-    @if (activeTab() === 'analysis') {
+    @if (activeTab() === 'analysis' && isSME()) {
     <app-analysis-history></app-analysis-history>
     }
   </div>
 
   <!-- ============================================ -->
-  <!-- APPLICATION DETAIL SHEET (TAB 1) -->
+  <!-- APPLICATION DETAIL SHEET (FUNDERS ONLY) -->
   <!-- ============================================ -->
-  @if (sheetOpen() && selectedReport()) {
+  @if (sheetOpen() && selectedReport() && isFunder()) {
   <div
     (click)="closeSheet()"
     class="fixed inset-0 bg-black/25 backdrop-blur-sm z-40 transition-opacity duration-300"

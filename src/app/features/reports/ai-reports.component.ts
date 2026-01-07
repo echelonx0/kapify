@@ -6,6 +6,7 @@ import {
   signal,
   computed,
   ViewChild,
+  effect,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -28,6 +29,7 @@ import { KapifyReportsGeneratorService } from './services/kapify-reports-generat
 import { KapifyReportsExportService } from './services/kapify-reports-export.service';
 import { AnalysisHistoryComponent } from './analysis-history/analysis-history.component';
 import { ApplicationsStatsComponent } from './analysis-history/applications-stats.component';
+import { AuthService } from '../../auth/services/production.auth.service';
 
 interface ActivityReport extends KapifyReports {
   matchScore?: number;
@@ -55,10 +57,16 @@ interface ActivityReport extends KapifyReports {
 export class AIReportsComponent implements OnInit, OnDestroy {
   private generator = inject(KapifyReportsGeneratorService);
   private exporter = inject(KapifyReportsExportService);
+  private authService = inject(AuthService);
   private destroy$ = new Subject<void>();
 
   @ViewChild(AnalysisHistoryComponent)
   analysisHistoryComponent!: AnalysisHistoryComponent;
+
+  // User context
+  userType = computed(() => this.authService.user()?.userType || null);
+  isFunder = computed(() => this.userType() === 'funder');
+  isSME = computed(() => this.userType() === 'sme');
 
   // Tab management
   activeTab = signal<'applications' | 'analysis'>('applications');
@@ -138,6 +146,21 @@ export class AIReportsComponent implements OnInit, OnDestroy {
   readonly InboxIcon = Inbox;
   readonly ChevronRightIcon = ChevronRight;
 
+  constructor() {
+    console.log('I am firing here');
+
+    // Auto-switch tab based on user type
+    effect(() => {
+      if (this.isSME()) {
+        console.log('The user is an SME');
+        this.activeTab.set('analysis');
+      } else if (this.isFunder()) {
+        console.log('The user is a Funder');
+        this.activeTab.set('applications');
+      }
+    });
+  }
+
   ngOnInit(): void {
     this.loadReports();
   }
@@ -148,9 +171,24 @@ export class AIReportsComponent implements OnInit, OnDestroy {
   }
 
   loadReports(): void {
+    // SMEs don't need to load application reports
+    if (this.isSME()) {
+      this.loading.set(false);
+      return;
+    }
+
+    // Get funderId from auth service (for funders)
+    const funderId = this.authService.getCurrentUserOrganizationId();
+
+    if (!funderId) {
+      this.error.set('Organization ID not found. Please log in again.');
+      this.loading.set(false);
+      return;
+    }
+
     this.loading.set(true);
     this.generator
-      .generateReports()
+      .generateReports(funderId)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (data) => {
@@ -158,7 +196,8 @@ export class AIReportsComponent implements OnInit, OnDestroy {
           this.applyFilters();
           this.loading.set(false);
         },
-        error: () => {
+        error: (err) => {
+          console.error('Error loading reports:', err);
           this.error.set('Failed to load reports');
           this.loading.set(false);
         },
@@ -364,4 +403,6 @@ export class AIReportsComponent implements OnInit, OnDestroy {
     if (daysAgo < 30) return 'This month';
     return 'Older';
   }
+
+  generateReports() {}
 }

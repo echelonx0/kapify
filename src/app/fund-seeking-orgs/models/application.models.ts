@@ -4,7 +4,7 @@
 export interface FundingApplication {
   id: string;
   applicantId: string;
-  applicantOrganizationName?: string; // 🔴 ADD THIS LINE
+  applicantOrganizationName?: string;
   opportunityId: string;
   title: string;
   description?: string;
