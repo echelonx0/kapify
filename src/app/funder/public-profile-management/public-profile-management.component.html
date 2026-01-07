@@ -117,7 +117,7 @@
               <!-- Tagline -->
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">
-                  Tagline *
+                  What is your Fund Mission/Vision?
                 </label>
                 <input
                   type="text"
@@ -352,88 +352,80 @@
                 Help SMEs understand if they're a fit
               </p>
             </div>
-            <div class="p-6 space-y-6">
+            <div class="p-6 space-y-8">
               <!-- Investment Range -->
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">
+                <label class="block text-sm font-semibold text-slate-900 mb-3">
                   Investment Range *
                 </label>
                 <div
-                  class="grid grid-cols-1 md:grid-cols-3 gap-3"
+                  class="grid grid-cols-1 md:grid-cols-3 gap-4"
                   formGroupName="investmentRange"
                 >
                   <div>
-                    <label class="block text-xs text-gray-500 mb-1"
+                    <label class="block text-xs text-slate-500 mb-2"
                       >Minimum (R)</label
                     >
                     <input
                       type="number"
                       formControlName="min"
                       placeholder="100000"
-                      class="form-input"
-                      [class.error]="hasFieldError('investmentMin')"
+                      class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200"
+                      [class.border-red-300]="hasFieldError('investmentMin')"
                     />
                     @if (hasFieldError('investmentMin')) {
-                    <div class="form-error">
-                      <lucide-icon
-                        [img]="AlertCircleIcon"
-                        [size]="14"
-                        class="mr-1"
-                      />
-                      {{ getFieldError("investmentMin") }}
+                    <div
+                      class="flex items-center gap-2 mt-2 text-sm text-red-700"
+                    >
+                      <lucide-icon [img]="AlertCircleIcon" [size]="14" />
+                      <span>{{ getFieldError("investmentMin") }}</span>
                     </div>
                     }
                   </div>
                   <div>
-                    <label class="block text-xs text-gray-500 mb-1"
+                    <label class="block text-xs text-slate-500 mb-2"
                       >Maximum (R)</label
                     >
                     <input
                       type="number"
                       formControlName="max"
                       placeholder="5000000"
-                      class="form-input"
-                      [class.error]="hasFieldError('investmentMax')"
+                      class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200"
+                      [class.border-red-300]="hasFieldError('investmentMax')"
                     />
                     @if (hasFieldError('investmentMax')) {
-                    <div class="form-error">
-                      <lucide-icon
-                        [img]="AlertCircleIcon"
-                        [size]="14"
-                        class="mr-1"
-                      />
-                      {{ getFieldError("investmentMax") }}
+                    <div
+                      class="flex items-center gap-2 mt-2 text-sm text-red-700"
+                    >
+                      <lucide-icon [img]="AlertCircleIcon" [size]="14" />
+                      <span>{{ getFieldError("investmentMax") }}</span>
                     </div>
                     }
                   </div>
                   <div>
-                    <label class="block text-xs text-gray-500 mb-1"
+                    <label class="block text-xs text-slate-500 mb-2"
                       >Typical (R)</label
                     >
                     <input
                       type="number"
                       formControlName="typical"
                       placeholder="500000"
-                      class="form-input"
+                      class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200"
                     />
                   </div>
                 </div>
                 @if (hasFieldError('investmentRange')) {
-                <div class="form-error mt-2">
-                  <lucide-icon
-                    [img]="AlertCircleIcon"
-                    [size]="14"
-                    class="mr-1"
-                  />
-                  {{ getFieldError("investmentRange") }}
+                <div class="flex items-center gap-2 mt-3 text-sm text-red-700">
+                  <lucide-icon [img]="AlertCircleIcon" [size]="14" />
+                  <span>{{ getFieldError("investmentRange") }}</span>
                 </div>
                 }
               </div>
 
-              <!-- Funding Areas -->
-              <div>
-                <div class="flex items-center justify-between mb-2">
-                  <label class="block text-sm font-medium text-gray-700">
+              <!-- Funding Areas & Industries (Full Width, Stacked) -->
+              <div class="border-t border-slate-200/50 pt-8">
+                <div class="flex items-center justify-between mb-4">
+                  <label class="block text-sm font-semibold text-slate-900">
                     Funding Areas & Industries
                   </label>
                   <ui-button
@@ -441,81 +433,56 @@
                     variant="outline"
                     size="sm"
                     (clicked)="addFundingArea()"
+                    class="gap-1.5"
                   >
-                    <lucide-icon [img]="PlusIcon" [size]="14" class="mr-1" />
-                    Add Area
+                    <lucide-icon [img]="PlusIcon" [size]="16" />
+                    <span>Add Area</span>
                   </ui-button>
                 </div>
+
                 <div class="space-y-3" formArrayName="fundingAreas">
                   @for (areaGroup of fundingAreasArray.controls; track $index) {
-                  <div [formGroupName]="$index" class="funding-area-card">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
-                      <div>
-                        <input
-                          type="text"
-                          formControlName="name"
-                          placeholder="e.g., Technology, Healthcare"
-                          class="form-input"
-                        />
-                      </div>
-                      <div class="flex gap-2">
-                        <input
-                          type="text"
-                          formControlName="description"
-                          placeholder="Brief description (optional)"
-                          class="form-input flex-1"
-                        />
-                        <ui-button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          (clicked)="removeFundingArea($index)"
-                        >
-                          <lucide-icon
-                            [img]="Trash2Icon"
-                            [size]="14"
-                            class="text-red-500"
-                          />
-                        </ui-button>
-                      </div>
-                    </div>
-                    <div>
-                      <input
-                        type="text"
-                        formControlName="tagsInput"
-                        placeholder="Tags (comma-separated): fintech, saas, mobile apps"
-                        class="form-input"
-                      />
-                    </div>
+                  <div [formGroupName]="$index" class="flex gap-3 items-start">
+                    <input
+                      type="text"
+                      formControlName="name"
+                      placeholder="e.g., Technology, Healthcare, Agriculture"
+                      class="flex-1 px-4 py-2.5 border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200"
+                    />
+                    <ui-button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      (clicked)="removeFundingArea($index)"
+                      class="mt-0.5 text-slate-400 hover:text-red-600 transition-colors"
+                    >
+                      <lucide-icon [img]="Trash2Icon" [size]="18" />
+                    </ui-button>
                   </div>
                   }
                 </div>
+
+                @if (fundingAreasArray.length === 0) {
+                <p class="text-sm text-slate-500 italic mt-2">
+                  No areas added yet. Click "Add Area" to get started.
+                </p>
+                }
               </div>
 
-              <!-- Application Process -->
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-2">
-                    Application Process
-                  </label>
-                  <input
-                    type="text"
-                    formControlName="applicationProcess"
-                    placeholder="e.g., Apply in 10 minutes"
-                    class="form-input"
-                  />
-                </div>
-                <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-2">
-                    Response Time Promise
-                  </label>
-                  <input
-                    type="text"
-                    formControlName="responseTimePromise"
-                    placeholder="e.g., We respond within 48 hours"
-                    class="form-input"
-                  />
-                </div>
+              <!-- Response Time Promise (Full Width, Separate Section) -->
+              <div class="border-t border-slate-200/50 pt-8">
+                <label class="block text-sm font-semibold text-slate-900 mb-3">
+                  Response Time Promise
+                </label>
+                <input
+                  type="text"
+                  formControlName="responseTimePromise"
+                  placeholder="e.g., We respond within 48 hours"
+                  class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200"
+                />
+                <p class="text-xs text-slate-500 mt-2">
+                  Set clear expectations to build trust with applicants
+                </p>
               </div>
             </div>
           </div>
@@ -598,7 +565,7 @@
               <!-- Investment Approach -->
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">
-                  Investment Approach
+                  Value Proposition
                 </label>
                 <textarea
                   formControlName="investmentApproach"
@@ -606,77 +573,6 @@
                   class="form-textarea"
                   rows="4"
                 ></textarea>
-              </div>
-
-              <!-- Team Members -->
-              <div>
-                <div class="flex items-center justify-between mb-2">
-                  <label class="block text-sm font-medium text-gray-700">
-                    Team Members
-                  </label>
-                  <ui-button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    (clicked)="addTeamMember()"
-                  >
-                    <lucide-icon [img]="UsersIcon" [size]="14" class="mr-1" />
-                    Add Member
-                  </ui-button>
-                </div>
-                <div class="space-y-4" formArrayName="teamMembers">
-                  @for (memberGroup of teamMembersArray.controls; track $index)
-                  {
-                  <div [formGroupName]="$index" class="team-member-card">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
-                      <div>
-                        <input
-                          type="text"
-                          formControlName="name"
-                          placeholder="Full name"
-                          class="form-input"
-                        />
-                      </div>
-                      <div>
-                        <input
-                          type="text"
-                          formControlName="title"
-                          placeholder="Title/Role"
-                          class="form-input"
-                        />
-                      </div>
-                    </div>
-                    <div class="mb-3">
-                      <textarea
-                        formControlName="bio"
-                        placeholder="Brief bio (optional)"
-                        class="form-textarea"
-                        rows="2"
-                      ></textarea>
-                    </div>
-                    <div class="flex gap-3">
-                      <input
-                        type="url"
-                        formControlName="linkedinUrl"
-                        placeholder="LinkedIn URL (optional)"
-                        class="form-input flex-1"
-                      />
-                      <ui-button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        (clicked)="removeTeamMember($index)"
-                      >
-                        <lucide-icon
-                          [img]="Trash2Icon"
-                          [size]="14"
-                          class="text-red-500"
-                        />
-                      </ui-button>
-                    </div>
-                  </div>
-                  }
-                </div>
               </div>
             </div>
           </div>

@@ -255,11 +255,11 @@ export class DatabaseApplicationService {
 
       const dbApplication: Partial<DatabaseApplication> = {
         applicant_id: currentUser.id,
-        applicant_organization_name: organizationName, // 🔴 STORE ORG NAME
+        applicant_organization_name: organizationName,
         title: applicationData.title,
         description: applicationData.description || '',
         status: 'draft',
-        stage: 'initial_review',
+        stage: 'submitted',
         form_data: applicationData.formData || {},
         documents: applicationData.documents || {},
         review_notes: {},

@@ -13,9 +13,7 @@ import { LucideAngularModule, ArrowLeft, Clock } from 'lucide-angular';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { SMEOpportunitiesService } from 'src/app/funding/services/opportunities.service';
-
 import { GlobalProfileValidationService } from 'src/app/shared/services/global-profile-validation.service';
-
 import { ApplicationFormService } from './services/application-form.service';
 import { ApplicationValidationService } from './services/application-validation.service';
 import { OpportunitySelectorComponent } from './components/opportunity-selector/opportunity-selector.component';
@@ -32,6 +30,7 @@ import { Application } from './models/funding-application.model';
 import { KapifyAIAnalysisComponent } from 'src/app/features/ai/ai-analysis/kapify-ai-analysis.component';
 import { DatabaseApplicationService } from '../../services/database-application.service';
 import { FundingProfileBackendService } from '../../services/funding-profile-backend.service';
+import { ToastService } from 'src/app/shared/services/toast.service';
 
 @Component({
   selector: 'app-opportunity-application-form',
@@ -39,7 +38,6 @@ import { FundingProfileBackendService } from '../../services/funding-profile-bac
   imports: [
     CommonModule,
     LucideAngularModule,
-
     KapifyAIAnalysisComponent,
     OpportunitySelectorComponent,
     ApplicationFormComponent,
@@ -112,6 +110,7 @@ export class OpportunityApplicationFormComponent implements OnInit, OnDestroy {
   draftApplication = signal<Application | null>(null);
   fullFundingProfile = signal<FundingApplicationProfile | undefined>(undefined);
   aiAnalysisResult = signal<any | null>(null);
+  toastservice = inject(ToastService);
 
   // Track if opportunityId came from route params
   opportunityIdFromRoute = signal<string | null>(null);
@@ -221,7 +220,7 @@ export class OpportunityApplicationFormComponent implements OnInit, OnDestroy {
 
         if (opportunityId) {
           // Load specific opportunity and skip selector
-          console.log('📍 Opportunity ID found in route, skipping selector');
+
           this.loadSpecificOpportunity(opportunityId);
         } else {
           // No opportunityId: show selector and load available opportunities
@@ -248,7 +247,7 @@ export class OpportunityApplicationFormComponent implements OnInit, OnDestroy {
     this.fundingProfileService.loadSavedProfile().subscribe({
       next: (profile) => {
         this.fullFundingProfile.set(profile);
-        console.log('✓ Funding profile loaded for AI analysis');
+        // console.log('✓ Funding profile loaded for AI analysis');
       },
       error: (error) => {
         console.warn('Funding profile not available:', error);
@@ -269,7 +268,7 @@ export class OpportunityApplicationFormComponent implements OnInit, OnDestroy {
         error: (error) => {
           this.error.set('Failed to load opportunities');
           this.isLoading.set(false);
-          console.error('Load opportunities error:', error);
+          // console.error('Load opportunities error:', error);
         },
       });
   }
@@ -511,7 +510,7 @@ export class OpportunityApplicationFormComponent implements OnInit, OnDestroy {
         }
       }
 
-      console.log('✓ Draft saved successfully');
+      // console.log('✓ Draft saved successfully');
     } catch (error) {
       console.error('Failed to save draft:', error);
       this.error.set('Failed to save draft');

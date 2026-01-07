@@ -62,7 +62,7 @@ export class OpportunityApplicationService {
       catchError((error) => {
         this.error.set('Failed to load applications');
         this.isLoading.set(false);
-        console.error('Load applications error:', error);
+        // console.error('Load applications error:', error);
         return throwError(() => error);
       })
     );
@@ -71,7 +71,7 @@ export class OpportunityApplicationService {
   private async fetchUserApplications(
     userId: string
   ): Promise<OpportunityApplication[]> {
-    console.log('Fetching applications for user:', userId);
+    // console.log('Fetching applications for user:', userId);
     try {
       const { data, error } = await this.supabase
         .from('applications')
@@ -96,7 +96,7 @@ export class OpportunityApplicationService {
       if (error) {
         throw new Error(`Failed to fetch applications: ${error.message}`);
       }
-      console.log('Fetched applications data:', data);
+      // console.log('Fetched applications data:', data);
       return (data || []).map((item: any) =>
         this.transformDatabaseToLocal(item)
       );
