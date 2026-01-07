@@ -271,7 +271,7 @@ export class InvitationAuthService {
           data: {
             first_name: data.firstName,
             last_name: data.lastName,
-            user_type: 'sme',
+            user_type: 'sme', //TODO: MAKE DYNAMIC
           },
         },
       });
@@ -306,7 +306,7 @@ export class InvitationAuthService {
         email: data.email,
         first_name: data.firstName,
         last_name: data.lastName,
-        user_type: 'sme',
+        user_type: 'sme', //TODO: MAKE DYNAMIC
         status: 'active',
         email_verified: true,
         created_at: new Date().toISOString(),

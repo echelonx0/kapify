@@ -36,11 +36,49 @@
 
       <!-- Action Button Group (Top Right) -->
       <div class="flex items-center gap-2 flex-shrink-0">
+        <!-- Apply/Pending Button -->
+        <button
+          *ngIf="canApply"
+          (click)="onApply()"
+          [class.bg-teal-500]="!opportunity.userHasApplied"
+          [class.hover:bg-teal-600]="!opportunity.userHasApplied"
+          [class.bg-green-50]="opportunity.userHasApplied"
+          [class.hover:bg-green-100]="opportunity.userHasApplied"
+          class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg transition-all duration-200"
+        >
+          <lucide-icon
+            *ngIf="opportunity.userHasApplied"
+            [img]="CheckCircleIcon"
+            [size]="14"
+            class="text-green-600"
+          />
+          <span
+            [class.text-white]="!opportunity.userHasApplied"
+            [class.text-green-700]="opportunity.userHasApplied"
+          >
+            {{
+              opportunity.userHasApplied
+                ? "You have a pending application to this opportunity"
+                : "Apply"
+            }}
+          </span>
+        </button>
+
+        <!-- View Details Button -->
+        <button
+          (click)="onViewDetails()"
+          class="inline-flex items-center justify-center gap-1 px-3 py-1.5 text-xs font-semibold bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition-all duration-200"
+          [attr.title]="'View full details'"
+        >
+          <lucide-icon [img]="EyeIcon" [size]="14" />
+          <span>View</span>
+        </button>
+
         <!-- Bookmark Button -->
         <button
           (click)="onBookmark()"
           [disabled]="isBookmarkLoading()"
-          class="relative inline-flex items-center justify-center w-10 h-10 rounded-lg transition-all duration-200"
+          class="relative inline-flex items-center justify-center w-9 h-9 rounded-lg transition-all duration-200"
           [class.bg-slate-100]="!isBookmarked() && !isBookmarkLoading()"
           [class.hover:bg-slate-200]="!isBookmarked() && !isBookmarkLoading()"
           [class.bg-teal-50]="isBookmarked()"
@@ -53,7 +91,7 @@
         >
           <lucide-icon
             [img]="BookmarkIcon"
-            [size]="18"
+            [size]="16"
             [class.text-slate-600]="!isBookmarked()"
             [class.text-teal-600]="isBookmarked()"
             [class.fill-current]="isBookmarked()"
@@ -64,11 +102,11 @@
         <div class="relative">
           <button
             (click)="onShare()"
-            class="inline-flex items-center justify-center w-10 h-10 rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 transition-all duration-200"
+            class="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 transition-all duration-200"
             [attr.aria-label]="'Share opportunity'"
             [attr.title]="'Share opportunity'"
           >
-            <lucide-icon [img]="ShareIcon" [size]="18" />
+            <lucide-icon [img]="ShareIcon" [size]="16" />
           </button>
 
           <!-- Share Dropdown Menu -->
@@ -82,11 +120,6 @@
               class="w-full flex items-center gap-3 px-4 py-3 text-slate-900 hover:bg-slate-50 transition-colors duration-200 text-sm font-medium border-b border-slate-200/50"
               [attr.title]="linkCopied() ? 'Copied!' : 'Copy link to clipboard'"
             >
-              <!-- <lucide-icon
-                [img]="linkCopied() ? 'check' : 'link'"
-                [size]="16"
-                [class.text-green-600]="linkCopied()"
-              /> -->
               <span [class.text-green-600]="linkCopied()">
                 {{ linkCopied() ? "Copied!" : "Copy link" }}
               </span>
@@ -120,7 +153,7 @@
                 viewBox="0 0 24 24"
               >
                 <path
-                  d="M23 3a10.9 10.9 0 01-3.14 1.53 4.48 4.48 0 00-7.86 3v1A10.66 10.66 0 013 4s-4 9 5 13a11.64 11.64 0 01-7 2s9 5 20 5a9.5 9.5 0 00-9-5.5c4.75 2.25 7-7 7-11.5a4.5 4.5 0 00-.08-.83A7.72 7.72 0 0323 3z"
+                  d="M23 3a10.9 10.9 0 01-3.14 1.53 4.48 4.48 0 00-7.86 3v1A10.66 10.66 0 013 4s-4 9 5 13a11.64 11.64 0 01-7 2s9 5 20 5a9.5 9.5 0 00-9-5.5c4.75 2.25 7-7 7-11.5a4.5 4.5 0 00-.08-.83A7.72 7.72 0 0723 3z"
                 />
               </svg>
               <span>Share on X</span>
@@ -131,7 +164,6 @@
               (click)="onShareEmail()"
               class="w-full flex items-center gap-3 px-4 py-3 text-slate-900 hover:bg-slate-50 transition-colors duration-200 text-sm font-medium"
             >
-              <!-- <lucide-icon [img]="'mail'" [size]="16" class="text-slate-600" /> -->
               <span>Share via Email</span>
             </button>
           </div>
@@ -267,45 +299,6 @@
         ></div>
       </div>
       <p class="text-xs text-slate-500 mt-2">{{ formatProgress() }}</p>
-    </div>
-
-    <!-- Action Buttons (Bottom) -->
-    <div class="flex items-center gap-3">
-      <!-- Primary CTA: Apply / Manage / Join -->
-      <button
-        *ngIf="canApply"
-        (click)="onApply()"
-        class="flex-1 inline-flex items-center justify-center gap-2 px-6 py-2.5 bg-teal-500 text-white text-sm font-medium rounded-xl hover:bg-teal-600 active:bg-teal-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2"
-      >
-        <span>Apply Now</span>
-        <lucide-icon [img]="ExternalLinkIcon" [size]="14" />
-      </button>
-
-      <button
-        *ngIf="canManage"
-        (click)="onManage()"
-        class="flex-1 inline-flex items-center justify-center gap-2 px-6 py-2.5 bg-indigo-600 text-white text-sm font-medium rounded-xl hover:bg-indigo-700 active:bg-indigo-800 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-      >
-        <span>Manage</span>
-      </button>
-
-      <button
-        *ngIf="!canApply && !canManage"
-        (click)="onSignInToApply()"
-        class="flex-1 inline-flex items-center justify-center gap-2 px-6 py-2.5 bg-teal-500 text-white text-sm font-medium rounded-xl hover:bg-teal-600 active:bg-teal-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2"
-      >
-        <span>You cannot apply. Create new account </span>
-      </button>
-
-      <!-- Secondary: View Details -->
-      <button
-        (click)="onViewDetails()"
-        class="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-slate-100 text-slate-700 text-sm font-medium rounded-xl hover:bg-slate-200 active:bg-slate-300 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-slate-300 focus:ring-offset-2"
-        [attr.title]="'View full details'"
-      >
-        <lucide-icon [img]="EyeIcon" [size]="14" />
-        <span>View</span>
-      </button>
     </div>
   </div>
 </div>

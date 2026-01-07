@@ -5,8 +5,10 @@ import {
   EventEmitter,
   signal,
   inject,
+  OnInit,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 import {
   LucideAngularModule,
   DollarSign,
@@ -24,6 +26,7 @@ import {
   MailIcon,
   CheckCheckIcon,
   LinkIcon,
+  CheckCircle,
 } from 'lucide-angular';
 import { FundingOpportunity } from 'src/app/funder/create-opportunity/shared/funding.interfaces';
 import { AuthService } from 'src/app/auth/services/production.auth.service';
@@ -45,8 +48,8 @@ import { ToastService } from 'src/app/shared/services/toast.service';
     `,
   ],
 })
-export class KapifyOpportunityCardComponent {
-  @Input() opportunity!: FundingOpportunity;
+export class KapifyOpportunityCardComponent implements OnInit {
+  @Input() opportunity!: FundingOpportunity & { userHasApplied?: boolean };
   @Input() canApply: boolean = false;
   @Input() canManage: boolean = false;
   @Output() apply = new EventEmitter<string>();
@@ -59,6 +62,7 @@ export class KapifyOpportunityCardComponent {
   private shareService = inject(ShareService);
   private authService = inject(AuthService);
   private toastService = inject(ToastService);
+  private router = inject(Router);
 
   // Icons
   DollarSignIcon = DollarSign;
@@ -76,6 +80,8 @@ export class KapifyOpportunityCardComponent {
   mail = MailIcon;
   check = CheckCheckIcon;
   link = LinkIcon;
+  CheckCircleIcon = CheckCircle;
+
   // State
   isBookmarked = signal(false);
   isBookmarkLoading = signal(false);
@@ -84,6 +90,16 @@ export class KapifyOpportunityCardComponent {
 
   ngOnInit() {
     this.checkBookmarkStatus();
+    this.logApplicationStatus();
+  }
+
+  private logApplicationStatus() {
+    console.log('📋 Opportunity Card Data:', {
+      opportunityId: this.opportunity.id,
+      opportunityTitle: this.opportunity.title,
+      userHasApplied: this.opportunity.userHasApplied,
+      timestamp: new Date().toISOString(),
+    });
   }
 
   private checkBookmarkStatus() {
@@ -163,6 +179,23 @@ export class KapifyOpportunityCardComponent {
       });
   }
 
+  // --- Application Methods ---
+
+  onApply() {
+    if (this.opportunity.userHasApplied) {
+      this.viewMyApplication();
+      return;
+    }
+    this.apply.emit(this.opportunity.id);
+  }
+
+  private viewMyApplication() {
+    // Navigate to the application - using the opportunity ID to find the draft/submitted application
+    this.router.navigate(['/applications'], {
+      queryParams: { opportunityId: this.opportunity.id },
+    });
+  }
+
   // --- Existing Methods ---
 
   private getPrimaryFundingType(): string | undefined {
@@ -173,10 +206,6 @@ export class KapifyOpportunityCardComponent {
   private getAllFundingTypes(): string[] {
     const ft = this.opportunity.fundingType;
     return Array.isArray(ft) ? ft : ft ? [ft] : [];
-  }
-
-  onApply() {
-    this.apply.emit(this.opportunity.id);
   }
 
   onViewDetails() {

@@ -174,7 +174,7 @@
     <app-opportunities-grid
       *ngIf="!isLoading() && filteredOpportunities().length > 0"
       #opportunitiesGrid
-      [opportunities]="paginatedOpportunities()"
+      [opportunities]="paginatedOpportunitiesWithStatus()"
       [userType]="getUserTypeLabel()"
       [canApply]="canApplyToOpportunity()"
       (apply)="applyToOpportunity($event)"
