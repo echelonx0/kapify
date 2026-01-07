@@ -29,30 +29,6 @@ interface ReviewTab {
       class="bg-white rounded-2xl border border-slate-200 overflow-hidden ml-24 mr-24 mt-4"
     >
       <!-- Tab Navigation -->
-      <div class="px-6 py-4 border-b border-slate-200 bg-slate-50/50">
-        <nav class="flex gap-2" aria-label="Profile Review Navigation">
-          @for (tab of tabs; track tab.id) {
-          <button
-            type="button"
-            class="px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 border"
-            [class.bg-teal-500]="isActiveTab(tab.id)"
-            [class.text-white]="isActiveTab(tab.id)"
-            [class.border-teal-500]="isActiveTab(tab.id)"
-            [class.text-slate-700]="!isActiveTab(tab.id)"
-            [class.border-slate-200]="!isActiveTab(tab.id)"
-            [class.hover:border-slate-300]="!isActiveTab(tab.id)"
-            (click)="switchTab(tab.id)"
-            [attr.aria-selected]="isActiveTab(tab.id)"
-            [attr.aria-controls]="tab.id + '-panel'"
-          >
-            {{ tab.label }}
-          </button>
-          }
-        </nav>
-        <p class="text-sm text-slate-600 mt-3">
-          {{ getActiveTabDescription() }}
-        </p>
-      </div>
 
       <!-- Tab Content -->
       <div class="p-6">
@@ -94,7 +70,7 @@ export class ProfileReviewComponent implements OnInit, OnDestroy {
     },
     {
       id: 'evaluator',
-      label: 'Quick Evaluator',
+      label: 'Business Plan Evaluation Tool',
       description:
         'Upload your business plan or proposal for an AI-powered evaluation. The Quick Evaluator analyzes your content, identifies strengths and gaps, and provides clear, actionable guidance to help you refine and strengthen your plan.',
     },
@@ -105,7 +81,7 @@ export class ProfileReviewComponent implements OnInit, OnDestroy {
   FileTextIcon = FileText;
 
   ngOnInit() {
-    this.loadPreferences();
+    // this.loadPreferences();
   }
 
   ngOnDestroy() {

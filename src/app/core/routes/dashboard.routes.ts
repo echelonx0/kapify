@@ -7,7 +7,7 @@ export const dashboardRoutes: Routes = [
   {
     path: '',
     loadComponent: () =>
-      import('./dashboard-layout.component').then(
+      import('../dashboard/dashboard-layout.component').then(
         (c) => c.DashboardLayoutComponent
       ),
     children: [
@@ -35,9 +35,9 @@ export const dashboardRoutes: Routes = [
       {
         path: 'home',
         loadComponent: () =>
-          import('./kapify-dashboard/kapify-dashboard.component').then(
-            (c) => c.KapifyDashboard
-          ),
+          import(
+            '../dashboard/kapify-dashboard/kapify-dashboard.component'
+          ).then((c) => c.KapifyDashboard),
         title: 'Dashboard - Kapify',
       },
       {
@@ -113,7 +113,7 @@ export const dashboardRoutes: Routes = [
       {
         path: 'settings',
         loadComponent: () =>
-          import('./settings/settings.component').then(
+          import('../dashboard/settings/settings.component').then(
             (c) => c.SettingsComponent
           ),
         title: 'Organization Settings',

@@ -523,8 +523,8 @@ export class InvoiceComponent implements OnInit {
   /**
    * Navigate to credits page
    */
-  goToCredits() {
-    this.router.navigate(['/credits']);
+  goBack() {
+    window.history.back();
   }
 
   /**

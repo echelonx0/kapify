@@ -22,7 +22,7 @@ import {
   OrgWallet,
 } from 'src/app/shared/services/credit.service';
 
-import { PurchaseCreditsModalComponent } from 'src/app/core/dashboard/finance/billing/purchase-credits-modal.component';
+import { PurchaseCreditsModalComponent } from 'src/app/core/dashboard/finance/credits/purchase-credits-modal.component';
 import { PricingPackagesComponent } from '../pricing-packages/pricing-packages.component';
 
 interface CreditAction {

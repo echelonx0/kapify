@@ -121,9 +121,7 @@ export const routes: Routes = [
     path: 'dashboard',
     canActivate: [AuthGuard],
     loadChildren: () =>
-      import('./core/dashboard/dashboard.routes').then(
-        (m) => m.dashboardRoutes
-      ),
+      import('./core/routes/dashboard.routes').then((m) => m.dashboardRoutes),
   },
 
   // Success pages for major actions
@@ -180,7 +178,7 @@ export const routes: Routes = [
     path: 'funding',
     canActivate: [AuthGuard, ProfileCompletionGuard],
     loadChildren: () =>
-      import('./funding/funding.routes').then((m) => m.fundingRoutes),
+      import('./core/routes/funding.routes').then((m) => m.fundingRoutes),
   },
 
   //  Funder routes (SPECIFIC) come FIRST
@@ -188,7 +186,7 @@ export const routes: Routes = [
     path: 'funder',
     canActivate: [AuthGuard, RoleGuard],
     loadChildren: () =>
-      import('./funder/funder.routes').then((m) => m.funderRoutes),
+      import('./core/routes/funder.routes').then((m) => m.funderRoutes),
   },
 
   //  Public funder profile (PARAMETERIZED)

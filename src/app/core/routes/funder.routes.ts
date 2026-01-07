@@ -4,13 +4,13 @@ export const funderRoutes: Routes = [
   {
     path: '',
     loadComponent: () =>
-      import('./funder.component').then((m) => m.FunderComponent),
+      import('../../funder/funder.component').then((m) => m.FunderComponent),
     children: [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' as const },
       {
         path: 'dashboard',
         loadComponent: () =>
-          import('./dashboard/funder-dashboard.component').then(
+          import('../../funder/dashboard/funder-dashboard.component').then(
             (m) => m.FunderDashboardComponent
           ),
         title: 'Dashboard - Kapify',
@@ -31,7 +31,7 @@ export const funderRoutes: Routes = [
         path: 'allapplications',
         loadComponent: () =>
           import(
-            './application-details/applications-list/applications-list.component'
+            '../../funder/application-details/applications-list/applications-list.component'
           ).then((m) => m.FunderApplicationsListComponent),
         title: 'All Applications - Kapify',
       },
@@ -39,7 +39,7 @@ export const funderRoutes: Routes = [
         path: 'applications',
         loadComponent: () =>
           import(
-            './application-details/funder-applications/funder-applications.component'
+            '../../funder/application-details/funder-applications/funder-applications.component'
           ).then((m) => m.FunderApplicationsComponent),
         title: 'All Applications - Kapify',
       },
@@ -47,7 +47,7 @@ export const funderRoutes: Routes = [
         path: 'onboarding',
         loadComponent: () =>
           import(
-            './components/org-onboarding-layout/org-onboarding-layout.component'
+            '../../funder/components/org-onboarding-layout/org-onboarding-layout.component'
           ).then((m) => m.OrganizationOnboardingLayoutComponent),
         children: [
           { path: '', redirectTo: 'welcome', pathMatch: 'full' as const },
@@ -55,29 +55,29 @@ export const funderRoutes: Routes = [
             path: 'welcome',
             loadComponent: () =>
               import(
-                '../profiles/Funder-Profile/funder-organization-onboarding.component'
+                '../../profiles/Funder-Profile/funder-organization-onboarding.component'
               ).then((m) => m.OrganizationOnboardingComponent),
           },
           {
             path: 'organization-info',
             loadComponent: () =>
-              import('./components/basic-info/basic-info-form.component').then(
-                (m) => m.BasicInfoFormComponent
-              ),
+              import(
+                '../../funder/components/basic-info/basic-info-form.component'
+              ).then((m) => m.BasicInfoFormComponent),
           },
           {
             path: 'legal-compliance',
             loadComponent: () =>
-              import('./components/legal-info/legal-info.component').then(
-                (m) => m.LegalInfoFormComponent
-              ),
+              import(
+                '../../funder/components/legal-info/legal-info.component'
+              ).then((m) => m.LegalInfoFormComponent),
           },
           {
             path: 'verification',
             loadComponent: () =>
-              import('./components/verification/verification.component').then(
-                (m) => m.VerificationFormComponent
-              ),
+              import(
+                '../../funder/components/verification/verification.component'
+              ).then((m) => m.VerificationFormComponent),
           },
         ],
       },
@@ -85,7 +85,7 @@ export const funderRoutes: Routes = [
         path: 'create-profile',
         loadComponent: () =>
           import(
-            './public-profile-management/public-profile-management.component'
+            '../../funder/public-profile-management/public-profile-management.component'
           ).then((m) => m.PublicProfileManagementComponent),
         title: 'Public Profile - Kapify',
       },
@@ -93,29 +93,29 @@ export const funderRoutes: Routes = [
         path: 'opportunities/import',
         loadComponent: () =>
           import(
-            './create-opportunity/import-opportunity/import-container.component'
+            '../../funder/create-opportunity/import-opportunity/import-container.component'
           ).then((m) => m.ImportOpportunityContainerComponent),
       },
       {
         path: 'opportunities/create',
         loadComponent: () =>
-          import('./create-opportunity/create-opportunity.component').then(
-            (m) => m.CreateOpportunityComponent
-          ),
+          import(
+            '../../funder/create-opportunity/create-opportunity.component'
+          ).then((m) => m.CreateOpportunityComponent),
       },
       {
         path: 'opportunities/edit/:id',
         loadComponent: () =>
-          import('./create-opportunity/create-opportunity.component').then(
-            (m) => m.CreateOpportunityComponent
-          ),
+          import(
+            '../../funder/create-opportunity/create-opportunity.component'
+          ).then((m) => m.CreateOpportunityComponent),
       },
       // Per-opportunity applications management
       {
         path: 'opportunities/:opportunityId/applications',
         loadComponent: () =>
           import(
-            './components/applications-management/application-management.component'
+            '../../funder/components/applications-management/application-management.component'
           ).then((m) => m.ApplicationManagementComponent),
         title: 'Manage Applications - Kapify',
       },
@@ -123,9 +123,9 @@ export const funderRoutes: Routes = [
       {
         path: 'applications/:applicationId',
         loadComponent: () =>
-          import('./application-details/application-detail.component').then(
-            (m) => m.ApplicationDetailComponent
-          ),
+          import(
+            '../../funder/application-details/application-detail.component'
+          ).then((m) => m.ApplicationDetailComponent),
         title: 'Application Details - Kapify',
       },
     ],

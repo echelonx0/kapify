@@ -46,31 +46,6 @@ import { GuideReaderComponent } from './guide-reader.component';
               </p>
             </div>
           </div>
-
-          <!-- Stats -->
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            @for (stat of stats(); track stat.label) {
-            <div class="bg-slate-50 rounded-2xl p-6">
-              <div class="flex items-center justify-between">
-                <div>
-                  <div class="text-3xl font-bold text-slate-900 mb-1">
-                    {{ stat.value }}
-                  </div>
-                  <div class="text-sm text-slate-600">{{ stat.label }}</div>
-                </div>
-                <div
-                  class="w-12 h-12 rounded-xl bg-teal-100 flex items-center justify-center"
-                >
-                  <lucide-angular
-                    [img]="stat.icon"
-                    [size]="24"
-                    class="text-teal-600"
-                  />
-                </div>
-              </div>
-            </div>
-            }
-          </div>
         </div>
       </div>
 
