@@ -206,7 +206,7 @@ export class OpportunityApplicationFormComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe((params) => {
         const opportunityId = params.get('opportunityId');
-        console.log('🚀 opportunityId from query:', opportunityId);
+        // console.log('🚀 opportunityId from query:', opportunityId);
 
         // Store the route param value
         this.opportunityIdFromRoute.set(opportunityId);

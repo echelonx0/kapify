@@ -9,11 +9,13 @@ import {
 } from '../../shared/models/application.models';
 import { SharedSupabaseService } from '../../shared/services/shared-supabase.service';
 import { Application } from '../applications/new-application/models/funding-application.model';
+import { ProfileManagementService } from 'src/app/shared/services/profile-management.service';
 
 // Database
 interface DatabaseApplication {
   id: string;
   applicant_id: string;
+  applicant_organization_name?: string;
   title: string;
   description?: string;
   status: string;
@@ -38,6 +40,7 @@ interface DatabaseApplication {
 export class DatabaseApplicationService {
   private supabase = inject(SharedSupabaseService);
   private authService = inject(AuthService);
+  private profileManagement = inject(ProfileManagementService);
 
   // State management
   isLoading = signal(false);
@@ -223,8 +226,36 @@ export class DatabaseApplicationService {
         throw new Error('User not authenticated');
       }
 
+      // 🔴 CRITICAL: Fetch organization name from ProfileManagementService
+      let organizationName = '';
+
+      const currentOrganization = this.profileManagement.currentOrganization();
+      if (currentOrganization?.name) {
+        organizationName = currentOrganization.name;
+        console.log('✓ Fetched organization name:', organizationName);
+      } else {
+        // Fallback: load organization data if not available
+        console.log('⚠️ Organization not in profile, loading...');
+        await new Promise<void>((resolve) => {
+          this.profileManagement.loadOrganizationData().subscribe({
+            next: (org) => {
+              if (org?.name) {
+                organizationName = org.name;
+                console.log('✓ Loaded organization name:', organizationName);
+              }
+              resolve();
+            },
+            error: (error) => {
+              console.warn('Could not load organization:', error);
+              resolve(); // Continue anyway with empty name
+            },
+          });
+        });
+      }
+
       const dbApplication: Partial<DatabaseApplication> = {
         applicant_id: currentUser.id,
+        applicant_organization_name: organizationName, // 🔴 STORE ORG NAME
         title: applicationData.title,
         description: applicationData.description || '',
         status: 'draft',
@@ -239,19 +270,19 @@ export class DatabaseApplicationService {
       const { data, error } = await this.supabase
         .from('applications')
         .insert(dbApplication)
-        .select('*'); // Only select from applications, no joins
+        .select('*');
 
       if (error) {
         throw new Error(`Failed to create application: ${error.message}`);
       }
 
-      // Don't transform here, just return minimal data
       return this.transformDatabaseToLocal(data[0]);
     } catch (error) {
       console.error('Error creating application:', error);
       throw error;
     }
   }
+
   private async updateApplicationInDatabase(
     id: string,
     updates: any,
@@ -269,18 +300,61 @@ export class DatabaseApplicationService {
       if (updates.documents) dbUpdates.documents = updates.documents;
       if (updates.terms) dbUpdates.terms = updates.terms;
 
+      // 🔴 CRITICAL: On submission, ensure applicant organization name is saved
       if (isSubmission && updates.status === 'submitted') {
+        // Get organization name from ProfileManagementService
+        let organizationName = '';
+
+        const currentOrganization =
+          this.profileManagement.currentOrganization();
+        if (currentOrganization?.name) {
+          organizationName = currentOrganization.name;
+          console.log(
+            '✓ Saved organization name on submission:',
+            organizationName
+          );
+        } else {
+          // Fallback: load organization data if not available
+          console.log(
+            '⚠️ Organization not in profile, loading for submission...'
+          );
+          await new Promise<void>((resolve) => {
+            this.profileManagement.loadOrganizationData().subscribe({
+              next: (org) => {
+                if (org?.name) {
+                  organizationName = org.name;
+                  console.log(
+                    '✓ Loaded organization name for submission:',
+                    organizationName
+                  );
+                }
+                resolve();
+              },
+              error: (error) => {
+                console.warn(
+                  'Could not load organization for submission:',
+                  error
+                );
+                resolve();
+              },
+            });
+          });
+        }
+
+        if (organizationName) {
+          dbUpdates.applicant_organization_name = organizationName;
+        }
+
         dbUpdates.submitted_at = new Date().toISOString();
       }
 
       dbUpdates.updated_at = new Date().toISOString();
 
-      // CRITICAL: No nested select
       const { data, error } = await this.supabase
         .from('applications')
         .update(dbUpdates)
         .eq('id', id)
-        .select('*'); // Only select from applications
+        .select('*');
 
       if (error) {
         throw new Error(`Failed to update application: ${error.message}`);

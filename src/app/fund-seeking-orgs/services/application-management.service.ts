@@ -323,119 +323,6 @@ export class ApplicationManagementService {
     }
   }
 
-  private transformServiceDocumentsToSection(
-    documentsMap: Map<string, DocumentMetadata>
-  ): DocumentSection {
-    const documents: DocumentSection = {};
-
-    documentsMap.forEach((metadata, documentKey) => {
-      const document: ApplicantDocument = {
-        id: metadata.id,
-        fileName: metadata.originalName,
-        fileType: metadata.mimeType,
-        fileSize: metadata.fileSize,
-        uploadDate: new Date(metadata.uploadedAt),
-        documentType: metadata.documentKey,
-        status: metadata.status === 'uploaded' ? 'verified' : 'pending',
-        downloadUrl: metadata.publicUrl,
-        metadata: {
-          userId: metadata.userId,
-          filePath: metadata.filePath,
-          category: metadata.category,
-          originalName: metadata.originalName,
-          uploadedAt: metadata.uploadedAt,
-          updatedAt: metadata.updatedAt,
-        },
-      };
-
-      documents[documentKey] = document;
-    });
-
-    return documents;
-  }
-
-  private transformRawDocumentData(rawDocData: any): DocumentSection {
-    console.log('🔄 [DEBUG] Transforming raw document data:', rawDocData);
-
-    const documents: DocumentSection = {};
-
-    // Expected document types from the profile system
-    const documentTypes = [
-      'companyRegistration',
-      'taxClearanceCertificate',
-      'auditedFinancials',
-      'businessPlan',
-      'bankStatements',
-    ];
-
-    let foundDocuments = 0;
-
-    documentTypes.forEach((docType) => {
-      const docData = rawDocData[docType];
-      // console.log(`📄 [DEBUG] Processing document type '${docType}':`, docData);
-
-      if (docData) {
-        foundDocuments++;
-        // Handle different document data structures
-        if (typeof docData === 'string') {
-          // Simple filename/URL
-          // console.log(
-          //   `📄 [DEBUG] Document '${docType}' is string type:`,
-          //   docData
-          // );
-          documents[docType] = {
-            id: `${docType}_${Date.now()}`,
-            fileName: docData,
-            fileType: this.extractFileType(docData),
-            fileSize: 0, // Unknown from current data
-            uploadDate: new Date(), // Default to now
-            documentType: docType,
-            status: 'verified', // Assume verified if present
-            downloadUrl: docData.startsWith('http') ? docData : undefined,
-            metadata: {},
-          };
-        } else if (typeof docData === 'object' && docData !== null) {
-          // Structured document object
-          console.log(
-            `📄 [DEBUG] Document '${docType}' is object type:`,
-            docData
-          );
-          documents[docType] = {
-            id: docData.id || `${docType}_${Date.now()}`,
-            fileName: docData.fileName || docData.name || `${docType} document`,
-            fileType:
-              docData.fileType ||
-              docData.type ||
-              this.extractFileType(docData.fileName || ''),
-            fileSize: docData.fileSize || docData.size || 0,
-            uploadDate: docData.uploadDate
-              ? new Date(docData.uploadDate)
-              : new Date(),
-            documentType: docType,
-            status: docData.status || 'verified',
-            downloadUrl: docData.downloadUrl || docData.url,
-            metadata: docData.metadata || {},
-          };
-        } else {
-          console.log(
-            `⚠️ [DEBUG] Document '${docType}' has unexpected data type:`,
-            typeof docData,
-            docData
-          );
-        }
-      } else {
-        console.log(`📭 [DEBUG] Document '${docType}' not found or empty`);
-      }
-    });
-
-    // console.log(
-    //   `✅ [DEBUG] Document transformation complete. Found ${foundDocuments} documents out of ${documentTypes.length} expected types`
-    // );
-    // console.log('📋 [DEBUG] Final document types:', Object.keys(documents));
-
-    return documents;
-  }
-
   /**
    * Extract file type from filename - NEW METHOD
    */
@@ -700,57 +587,6 @@ export class ApplicationManagementService {
       return transformed;
     } catch (error) {
       console.error('💥 [DEBUG] Error in transformApplicationsData:', error);
-      throw error;
-    }
-  }
-
-  private transformApplicationData(rawData: any): FundingApplication {
-    console.log('🔄 [DEBUG] Transforming single application:', rawData.id);
-
-    try {
-      const transformed = {
-        id: rawData.id,
-        applicantId: rawData.applicant_id,
-        opportunityId: rawData.opportunity_id,
-        title: rawData.title,
-        description: rawData.description,
-        status: rawData.status,
-        stage: rawData.stage,
-        formData: rawData.form_data || {},
-        documents: rawData.documents || {}, // Will be enriched with actual documents later
-        reviewNotes: rawData.review_notes || [],
-        terms: rawData.terms || {},
-        submittedAt: rawData.submitted_at
-          ? new Date(rawData.submitted_at)
-          : undefined,
-        reviewStartedAt: rawData.review_started_at
-          ? new Date(rawData.review_started_at)
-          : undefined,
-        reviewedAt: rawData.reviewed_at
-          ? new Date(rawData.reviewed_at)
-          : undefined,
-        decidedAt: rawData.decided_at
-          ? new Date(rawData.decided_at)
-          : undefined,
-        createdAt: new Date(rawData.created_at),
-        updatedAt: new Date(rawData.updated_at),
-        aiAnalysisStatus: rawData.ai_analysis_status,
-        aiMatchScore: rawData.ai_match_score,
-        applicant: {
-          id: rawData.applicant_id,
-          firstName: 'Loading...',
-          lastName: '',
-          email: '',
-        },
-      };
-
-      console.log(
-        '✅ [DEBUG] Successfully transformed application:',
-        transformed.id
-      );
-      return transformed;
-    } catch (error) {
-      console.error('💥 [DEBUG] Error transforming single application:', error);
       throw error;
     }
   }
@@ -1384,6 +1220,58 @@ export class ApplicationManagementService {
     } catch (error) {
       console.error('💥 [DOCS] Error fetching documents:', error);
       return {};
+    }
+  }
+
+  private transformApplicationData(rawData: any): FundingApplication {
+    console.log('🔄 [DEBUG] Transforming single application:', rawData.id);
+
+    try {
+      const transformed = {
+        id: rawData.id,
+        applicantId: rawData.applicant_id,
+        applicantOrganizationName: rawData.applicant_organization_name || '', // 🔴 ADD THIS
+        opportunityId: rawData.opportunity_id,
+        title: rawData.title,
+        description: rawData.description,
+        status: rawData.status,
+        stage: rawData.stage,
+        formData: rawData.form_data || {},
+        documents: rawData.documents || {},
+        reviewNotes: rawData.review_notes || [],
+        terms: rawData.terms || {},
+        submittedAt: rawData.submitted_at
+          ? new Date(rawData.submitted_at)
+          : undefined,
+        reviewStartedAt: rawData.review_started_at
+          ? new Date(rawData.review_started_at)
+          : undefined,
+        reviewedAt: rawData.reviewed_at
+          ? new Date(rawData.reviewed_at)
+          : undefined,
+        decidedAt: rawData.decided_at
+          ? new Date(rawData.decided_at)
+          : undefined,
+        createdAt: new Date(rawData.created_at),
+        updatedAt: new Date(rawData.updated_at),
+        aiAnalysisStatus: rawData.ai_analysis_status,
+        aiMatchScore: rawData.ai_match_score,
+        applicant: {
+          id: rawData.applicant_id,
+          firstName: 'Loading...',
+          lastName: '',
+          email: '',
+        },
+      };
+
+      console.log(
+        '✅ [DEBUG] Successfully transformed application:',
+        transformed.id
+      );
+      return transformed;
+    } catch (error) {
+      console.error('💥 [DEBUG] Error transforming single application:', error);
+      throw error;
     }
   }
 }

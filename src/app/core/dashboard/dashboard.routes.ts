@@ -35,7 +35,7 @@ export const dashboardRoutes: Routes = [
       {
         path: 'home',
         loadComponent: () =>
-          import('./dashboard-home/kapify-dashboard.component').then(
+          import('./kapify-dashboard/kapify-dashboard.component').then(
             (c) => c.KapifyDashboard
           ),
         title: 'Dashboard - Kapify',

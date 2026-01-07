@@ -107,12 +107,6 @@ export class ProfileDataTransformerService {
       businessInfo: this.extractBusinessInfo(fundingProfile.companyInfo),
     };
 
-    // console.log('✅ [TRANSFORMER FROM BACKEND] Output result:', result);
-    // console.log(
-    //   '✅ [TRANSFORMER FROM BACKEND] Result has financialAnalysis:',
-    //   !!result.financialAnalysis
-    // );
-
     return result;
   }
 

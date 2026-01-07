@@ -4,9 +4,9 @@ import {
   LucideAngularModule,
   FileText,
   DollarSign,
-  CheckCircle,
-  AlertCircle,
   Building,
+  CircleCheckBig,
+  CircleAlert,
 } from 'lucide-angular';
 
 import { ApplicationFormData } from '../../models/application-form.model';
@@ -207,8 +207,8 @@ export class ReviewSummaryComponent {
   // Icons
   FileTextIcon = FileText;
   DollarSignIcon = DollarSign;
-  CheckCircleIcon = CheckCircle;
-  AlertCircleIcon = AlertCircle;
+  CheckCircleIcon = CircleCheckBig;
+  AlertCircleIcon = CircleAlert;
   BuildingIcon = Building;
 
   // Computed

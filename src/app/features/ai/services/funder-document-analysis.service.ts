@@ -54,7 +54,26 @@ export interface DocumentAnalysisResult {
       timeframe: string;
     }>;
   };
-  keyInsights: string[];
+  // keyInsights: string[];
+  keyInsights: Array<{
+    title: string;
+    executiveSummary: string;
+    coreInsight: string;
+    supportingEvidence: string[];
+    contrarianAngle: string;
+    implications: {
+      upside: string;
+      downside: string;
+      executionRisks: string;
+    };
+    reasoningChain: Array<{
+      step: number;
+      reasoning: string;
+      evidenceReference?: string;
+    }>;
+    investorTakeaway: string;
+  }>;
+
   recommendations: string[];
   sources: Array<{
     type: string;
@@ -194,7 +213,8 @@ export class FunderDocumentAnalysisService {
 
     try {
       const { data, error } = await this.supabase.functions.invoke(
-        'analyze-document',
+        // 'analyze-document',
+        'analyse-investment-proposal',
         {
           body: {
             pdfData: base64Pdf,

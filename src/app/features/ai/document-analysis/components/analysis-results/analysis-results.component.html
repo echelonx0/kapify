@@ -1,0 +1,836 @@
+<div class="min-h-screen bg-slate-50">
+  <!-- METHODOLOGY MODAL -->
+  @if (showMethodologyModal()) {
+  <div
+    class="fixed inset-0 z-50 flex items-center justify-center"
+    (click)="showMethodologyModal.set(false)"
+  >
+    <!-- Backdrop with fade animation -->
+    <div
+      class="absolute inset-0 bg-black/25 backdrop-blur-sm transition-opacity duration-300"
+      [class.opacity-0]="!showMethodologyModal()"
+    ></div>
+
+    <!-- Modal with fade animation -->
+    <div
+      class="relative bg-white rounded-2xl shadow-md max-w-2xl w-full mx-4 max-h-[80vh] overflow-y-auto transition-all duration-300"
+      [class.opacity-0]="!showMethodologyModal()"
+      [class.scale-95]="!showMethodologyModal()"
+      (click)="$event.stopPropagation()"
+    >
+      <!-- Modal Header -->
+      <div
+        class="sticky top-0 px-6 py-4 border-b border-slate-200 bg-white rounded-t-2xl flex items-center justify-between"
+      >
+        <div class="flex items-center space-x-2">
+          <div
+            class="w-10 h-10 rounded-lg bg-teal-100 flex items-center justify-center"
+          >
+            <lucide-icon
+              [img]="LightbulbIcon"
+              [size]="20"
+              class="text-teal-600"
+            ></lucide-icon>
+          </div>
+          <h3 class="text-lg font-bold text-slate-900">
+            How We Arrived at This Analysis
+          </h3>
+        </div>
+        <button
+          (click)="showMethodologyModal.set(false)"
+          class="p-2 hover:bg-slate-100 rounded-lg transition-colors duration-200"
+        >
+          <lucide-icon
+            [img]="XIcon"
+            [size]="20"
+            class="text-slate-600"
+          ></lucide-icon>
+        </button>
+      </div>
+
+      <!-- Modal Content -->
+      <div class="p-6 space-y-6">
+        <!-- Methodology Overview -->
+        <div class="space-y-4">
+          <h4 class="text-base font-semibold text-slate-900">
+            Analysis Framework
+          </h4>
+          <p class="text-sm text-slate-600 leading-relaxed">
+            We employ a contrarian investment methodology that prioritizes
+            sustainable competitive advantages over capital intensity. Our
+            analysis evaluates opportunities through four core dimensions:
+          </p>
+        </div>
+
+        <!-- Framework Points -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="bg-teal-50 border border-teal-200/50 rounded-xl p-4">
+            <div class="font-semibold text-teal-900 text-sm mb-2">
+              Resourcefulness First
+            </div>
+            <p class="text-xs text-teal-800">
+              How effectively does this team achieve results with constrained
+              resources?
+            </p>
+          </div>
+
+          <div class="bg-slate-50 border border-slate-200/50 rounded-xl p-4">
+            <div class="font-semibold text-slate-900 text-sm mb-2">
+              Competitive Moats
+            </div>
+            <p class="text-xs text-slate-700">
+              What non-obvious advantages create long-term defensibility?
+            </p>
+          </div>
+
+          <div class="bg-blue-50 border border-blue-200/50 rounded-xl p-4">
+            <div class="font-semibold text-blue-900 text-sm mb-2">
+              Anti-Fragility
+            </div>
+            <p class="text-xs text-blue-800">
+              Does this business strengthen during market downturns or
+              disruption?
+            </p>
+          </div>
+
+          <div class="bg-green-50 border border-green-200/50 rounded-xl p-4">
+            <div class="font-semibold text-green-900 text-sm mb-2">
+              Adaptive Management
+            </div>
+            <p class="text-xs text-green-800">
+              How quickly and effectively does leadership respond to change?
+            </p>
+          </div>
+        </div>
+
+        <!-- Process Steps -->
+        <div class="space-y-3">
+          <h4 class="text-base font-semibold text-slate-900">
+            Analysis Process
+          </h4>
+          <div class="space-y-2">
+            <div class="flex items-start space-x-3 text-sm">
+              <div
+                class="w-6 h-6 rounded-full bg-teal-500 text-white flex items-center justify-center flex-shrink-0 text-xs font-semibold"
+              >
+                1
+              </div>
+              <div>
+                <div class="font-medium text-slate-900">
+                  Document Extraction
+                </div>
+                <div class="text-slate-600">
+                  PDF converted and processed for text analysis
+                </div>
+              </div>
+            </div>
+
+            <div class="flex items-start space-x-3 text-sm">
+              <div
+                class="w-6 h-6 rounded-full bg-teal-500 text-white flex items-center justify-center flex-shrink-0 text-xs font-semibold"
+              >
+                2
+              </div>
+              <div>
+                <div class="font-medium text-slate-900">
+                  AI-Powered Evaluation
+                </div>
+                <div class="text-slate-600">
+                  Advanced language model scores against framework
+                </div>
+              </div>
+            </div>
+
+            <div class="flex items-start space-x-3 text-sm">
+              <div
+                class="w-6 h-6 rounded-full bg-teal-500 text-white flex items-center justify-center flex-shrink-0 text-xs font-semibold"
+              >
+                3
+              </div>
+              <div>
+                <div class="font-medium text-slate-900">
+                  Market Intelligence
+                </div>
+                <div class="text-slate-600">
+                  Real-time funding data and trend analysis
+                </div>
+              </div>
+            </div>
+
+            <div class="flex items-start space-x-3 text-sm">
+              <div
+                class="w-6 h-6 rounded-full bg-teal-500 text-white flex items-center justify-center flex-shrink-0 text-xs font-semibold"
+              >
+                4
+              </div>
+              <div>
+                <div class="font-medium text-slate-900">Insight Synthesis</div>
+                <div class="text-slate-600">
+                  Structured recommendations and risk assessment
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Confidence Note -->
+        <div class="bg-amber-50 border border-amber-200/50 rounded-xl p-4">
+          <div class="flex items-start space-x-3">
+            <div class="text-amber-600 mt-0.5">⚠️</div>
+            <div>
+              <div class="font-semibold text-amber-900 text-sm mb-1">
+                Confidence Context
+              </div>
+              <p class="text-xs text-amber-800">
+                Analysis confidence reflects document completeness. Higher
+                scores indicate richer information for evaluation. This is a
+                decision support tool, not investment advice.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  }
+
+  <!-- MAIN CONTENT -->
+  <div class="max-w-4xl mx-auto px-4 lg:px-8 py-8">
+    <!-- Executive Summary Section -->
+    <div
+      class="divide-y divide-slate-100 rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden opacity-0 animate-fadeIn"
+      style="animation-delay: 50ms"
+    >
+      <div class="p-6">
+        <div class="flex items-center justify-between mb-6">
+          <h4 class="text-lg font-bold text-slate-900">Executive Summary</h4>
+          <button
+            (click)="showMethodologyModal.set(true)"
+            class="flex items-center space-x-1 text-sm text-slate-600 hover:text-slate-900 transition-colors duration-200"
+          >
+            <lucide-icon [img]="LightbulbIcon" [size]="16"></lucide-icon>
+            <span class="underline">How we arrived at this</span>
+          </button>
+        </div>
+
+        <!-- Key Metrics Grid -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          <div
+            class="text-center p-4 bg-blue-50 rounded-2xl border border-blue-200/50 opacity-0 animate-fadeIn"
+            style="animation-delay: 100ms"
+          >
+            <div class="text-3xl font-bold text-blue-600 mb-1">
+              {{ result.matchScore }}%
+            </div>
+            <div class="text-xs font-semibold text-blue-900">
+              Investability Score
+            </div>
+          </div>
+
+          <div
+            class="text-center p-4 bg-green-50 rounded-2xl border border-green-200/50 opacity-0 animate-fadeIn"
+            style="animation-delay: 150ms"
+          >
+            <div class="text-3xl font-bold text-green-600 mb-1">
+              {{ result.successProbability }}%
+            </div>
+            <div class="text-xs font-semibold text-green-900">
+              Success Probability
+            </div>
+          </div>
+
+          <div
+            class="text-center p-4 rounded-2xl border opacity-0 animate-fadeIn"
+            [class]="getTimingClasses(result.marketTimingInsight)"
+            style="animation-delay: 200ms"
+          >
+            <div class="text-xs font-bold uppercase tracking-wide mb-1">
+              {{ result.marketTimingInsight }}
+            </div>
+            <div class="text-xs font-semibold">Market Timing</div>
+          </div>
+
+          <div
+            class="text-center p-4 rounded-2xl border opacity-0 animate-fadeIn"
+            [class]="getPositionClasses(result.competitivePositioning)"
+            style="animation-delay: 250ms"
+          >
+            <div class="text-xs font-bold uppercase tracking-wide mb-1">
+              {{ result.competitivePositioning }}
+            </div>
+            <div class="text-xs font-semibold">Competitive Position</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Strengths & Improvement Areas -->
+      <div class="p-6 opacity-0 animate-fadeIn" style="animation-delay: 300ms">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div
+            class="bg-green-50 border-l-4 border-green-400 rounded-r-2xl p-4"
+          >
+            <div class="flex items-center space-x-2 mb-3">
+              <lucide-icon
+                [img]="CheckCircleIcon"
+                [size]="16"
+                class="text-green-600"
+              ></lucide-icon>
+              <div class="font-semibold text-green-900">Key Strengths</div>
+            </div>
+
+            <div class="space-y-2">
+              @for (strength of result.strengths; track strength) {
+              <div class="flex items-start space-x-2 text-sm text-green-800">
+                <div class="w-1.5 h-1.5 bg-green-500 rounded-full mt-2"></div>
+                <span>{{ strength }}</span>
+              </div>
+              }
+            </div>
+          </div>
+
+          <div
+            class="bg-orange-50 border-l-4 border-orange-400 rounded-r-2xl p-4"
+          >
+            <div class="flex items-center space-x-2 mb-3">
+              <lucide-icon
+                [img]="TrendingUpIcon"
+                [size]="16"
+                class="text-orange-600"
+              ></lucide-icon>
+              <div class="font-semibold text-orange-900">Improvement Areas</div>
+            </div>
+
+            <div class="space-y-2">
+              @for (area of result.improvementAreas; track area) {
+              <div class="flex items-start space-x-2 text-sm text-orange-800">
+                <div class="w-1.5 h-1.5 bg-orange-500 rounded-full mt-2"></div>
+                <span>{{ area }}</span>
+              </div>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Risk Factors -->
+      @if (result.riskFactors.length) {
+      <div class="p-6 opacity-0 animate-fadeIn" style="animation-delay: 350ms">
+        <h4 class="text-lg font-bold text-slate-900 mb-4">Risk Assessment</h4>
+
+        <div class="space-y-3">
+          @for (risk of result.riskFactors; track risk.factor) {
+          <div
+            class="flex items-start space-x-3 p-4 bg-slate-50 rounded-2xl border border-slate-200/50"
+          >
+            <div [class]="getRiskSeverityBadge(risk.severity)">
+              {{ risk.severity.toUpperCase() }}
+            </div>
+
+            <div>
+              <div class="font-semibold text-slate-900 mb-1">
+                {{ risk.factor }}
+              </div>
+              <div class="text-sm text-slate-700">
+                {{ risk.impact }}
+              </div>
+            </div>
+          </div>
+          }
+        </div>
+      </div>
+      } @if (result.keyInsights?.length) {
+      <div class="p-6 opacity-0 animate-fadeIn" style="animation-delay: 325ms">
+        <h4
+          class="text-lg font-bold text-slate-900 mb-4 flex items-center space-x-2"
+        >
+          <lucide-icon
+            [img]="LightbulbIcon"
+            [size]="18"
+            class="text-teal-600"
+          ></lucide-icon>
+          <span>Key Investment Insights</span>
+        </h4>
+
+        <div class="space-y-3">
+          @for (insight of result.keyInsights; let i = $index; track
+          insight.title) {
+
+          <!-- Insight Header -->
+          <button
+            (click)="toggleInsight(i)"
+            class="w-full flex items-center justify-between p-4 bg-white hover:bg-slate-50 rounded-xl border border-slate-200 shadow-sm transition-all duration-200"
+          >
+            <div class="flex items-start space-x-3 text-left">
+              <div
+                class="w-8 h-8 rounded-lg bg-teal-100 flex items-center justify-center flex-shrink-0"
+              >
+                <span class="text-sm font-bold text-teal-700">
+                  {{ i + 1 }}
+                </span>
+              </div>
+
+              <div>
+                <div class="font-semibold text-slate-900 text-sm">
+                  {{ insight.title }}
+                </div>
+                <div class="text-xs text-slate-600 mt-1 line-clamp-2">
+                  {{ insight.executiveSummary }}
+                </div>
+              </div>
+            </div>
+
+            <lucide-icon
+              [img]="ChevronDownIcon"
+              [size]="18"
+              class="text-slate-600 transition-transform duration-300"
+              [style.transform]="
+                expandedInsight() === i ? 'rotate(180deg)' : ''
+              "
+            ></lucide-icon>
+          </button>
+
+          <!-- Insight Body -->
+          @if (expandedInsight() === i) {
+          <div class="pl-4 space-y-4 animate-fadeIn">
+            <!-- Core Insight -->
+            <div class="p-4 bg-slate-50 rounded-xl border border-slate-200/50">
+              <div class="font-semibold text-slate-900 text-sm mb-2">
+                Core Insight
+              </div>
+              <p
+                class="text-sm text-slate-700 leading-relaxed whitespace-pre-line"
+              >
+                {{ insight.coreInsight }}
+              </p>
+            </div>
+
+            <!-- Reasoning Chain -->
+            @if (insight.reasoningChain.length) {
+            <div class="p-4 bg-blue-50 rounded-xl border border-blue-200/50">
+              <div class="font-semibold text-blue-900 text-sm mb-3">
+                Reasoning Chain
+              </div>
+
+              <div class="space-y-3">
+                @for (step of insight.reasoningChain; track step.step) {
+                <div class="flex items-start space-x-3 text-sm">
+                  <div
+                    class="w-6 h-6 rounded-full bg-blue-500 text-white flex items-center justify-center flex-shrink-0 text-xs font-semibold"
+                  >
+                    {{ step.step }}
+                  </div>
+                  <div>
+                    <div class="text-blue-900">
+                      {{ step.reasoning }}
+                    </div>
+                    @if (step.evidenceReference) {
+                    <div class="text-xs text-blue-700 mt-1">
+                      Evidence: {{ step.evidenceReference }}
+                    </div>
+                    }
+                  </div>
+                </div>
+                }
+              </div>
+            </div>
+            }
+
+            <!-- Implications -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <div
+                class="p-4 bg-green-50 rounded-xl border border-green-200/50"
+              >
+                <div class="font-semibold text-green-900 text-sm mb-2">
+                  Upside
+                </div>
+                <p class="text-sm text-green-800">
+                  {{ insight.implications.upside }}
+                </p>
+              </div>
+
+              <div
+                class="p-4 bg-orange-50 rounded-xl border border-orange-200/50"
+              >
+                <div class="font-semibold text-orange-900 text-sm mb-2">
+                  Downside
+                </div>
+                <p class="text-sm text-orange-800">
+                  {{ insight.implications.downside }}
+                </p>
+              </div>
+
+              <div class="p-4 bg-red-50 rounded-xl border border-red-200/50">
+                <div class="font-semibold text-red-900 text-sm mb-2">
+                  Execution Risks
+                </div>
+                <p class="text-sm text-red-800">
+                  {{ insight.implications.executionRisks }}
+                </p>
+              </div>
+            </div>
+
+            <!-- Contrarian Angle -->
+            @if (insight.contrarianAngle) {
+            <div
+              class="p-4 bg-purple-50 rounded-xl border border-purple-200/50"
+            >
+              <div class="font-semibold text-purple-900 text-sm mb-2">
+                Contrarian Angle
+              </div>
+              <p class="text-sm text-purple-800">
+                {{ insight.contrarianAngle }}
+              </p>
+            </div>
+            }
+
+            <!-- Investor Takeaway -->
+            <div class="p-4 bg-teal-50 rounded-xl border border-teal-200/50">
+              <div class="font-semibold text-teal-900 text-sm mb-2">
+                Investor Takeaway
+              </div>
+              <p class="text-sm text-teal-800 font-medium">
+                {{ insight.investorTakeaway }}
+              </p>
+            </div>
+          </div>
+          } }
+        </div>
+      </div>
+      }
+
+      <!-- Market Intelligence Accordion -->
+      @if (result.marketIntelligence) {
+      <div class="p-6 opacity-0 animate-fadeIn" style="animation-delay: 400ms">
+        <h4 class="text-lg font-bold text-slate-900 mb-4">
+          Market Intelligence
+        </h4>
+
+        <div class="space-y-3">
+          <!-- Sector & Trends -->
+          <button
+            (click)="toggleAccordion('sector')"
+            class="w-full flex items-center justify-between p-4 bg-slate-50 hover:bg-slate-100 rounded-xl border border-slate-200/50 transition-all duration-200"
+          >
+            <div class="flex items-center space-x-3 text-left">
+              <lucide-icon
+                [img]="BuildingIcon"
+                [size]="18"
+                class="text-slate-600"
+              ></lucide-icon>
+              <div>
+                <div class="font-semibold text-slate-900 text-sm">
+                  Sector & Market Trends
+                </div>
+                <div class="text-xs text-slate-600 mt-0.5">
+                  {{ result.marketIntelligence.sector }} •
+                  {{ result.marketIntelligence.trends.length }} active trends
+                </div>
+              </div>
+            </div>
+            <lucide-icon
+              [img]="ChevronDownIcon"
+              [size]="18"
+              class="text-slate-600 transition-transform duration-300"
+              [style.transform]="
+                expandedAccordion() === 'sector' ? 'rotate(180deg)' : ''
+              "
+            ></lucide-icon>
+          </button>
+
+          @if (expandedAccordion() === 'sector') {
+          <div class="pl-4 space-y-3 animate-fadeIn">
+            <div class="p-4 bg-teal-50 rounded-xl border border-teal-200/50">
+              <div class="font-semibold text-teal-900 text-sm mb-2">Sector</div>
+              <p class="text-sm text-teal-800">
+                {{ result.marketIntelligence.sector }}
+              </p>
+            </div>
+
+            @if (result.marketIntelligence.trends.length) {
+            <div class="p-4 bg-slate-50 rounded-xl border border-slate-200/50">
+              <div class="font-semibold text-slate-900 text-sm mb-3">
+                Active Trends
+              </div>
+              <div class="space-y-2">
+                @for (trend of result.marketIntelligence.trends; track trend) {
+                <div class="flex items-start space-x-2 text-sm">
+                  <div class="w-1.5 h-1.5 bg-slate-400 rounded-full mt-2"></div>
+                  <span class="text-slate-700">{{ trend }}</span>
+                </div>
+                }
+              </div>
+            </div>
+            } @if (result.marketIntelligence.competitorActivity.length) {
+            <div
+              class="p-4 bg-orange-50 rounded-xl border border-orange-200/50"
+            >
+              <div class="font-semibold text-orange-900 text-sm mb-3">
+                Competitor Activity
+              </div>
+              <div class="space-y-2">
+                @for (activity of result.marketIntelligence.competitorActivity;
+                track activity) {
+                <div class="flex items-start space-x-2 text-sm">
+                  <div
+                    class="w-1.5 h-1.5 bg-orange-400 rounded-full mt-2"
+                  ></div>
+                  <span class="text-orange-800">{{ activity }}</span>
+                </div>
+                }
+              </div>
+            </div>
+            }
+          </div>
+          }
+
+          <!-- Funding Trends -->
+          <button
+            (click)="toggleAccordion('funding')"
+            class="w-full flex items-center justify-between p-4 bg-slate-50 hover:bg-slate-100 rounded-xl border border-slate-200/50 transition-all duration-200"
+          >
+            <div class="flex items-center space-x-3 text-left">
+              <lucide-icon
+                [img]="TrendingUpIcon"
+                [size]="18"
+                class="text-slate-600"
+              ></lucide-icon>
+              <div>
+                <div class="font-semibold text-slate-900 text-sm">
+                  Funding Activity
+                </div>
+                <div class="text-xs text-slate-600 mt-0.5">
+                  {{ result.marketIntelligence.fundingTrends.dealCount }} deals
+                  •
+                  {{ result.marketIntelligence.fundingTrends.valuationTrend }}
+                  trend
+                </div>
+              </div>
+            </div>
+            <lucide-icon
+              [img]="ChevronDownIcon"
+              [size]="18"
+              class="text-slate-600 transition-transform duration-300"
+              [style.transform]="
+                expandedAccordion() === 'funding' ? 'rotate(180deg)' : ''
+              "
+            ></lucide-icon>
+          </button>
+
+          @if (expandedAccordion() === 'funding') {
+          <div class="pl-4 space-y-3 animate-fadeIn">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <div class="p-4 bg-blue-50 rounded-xl border border-blue-200/50">
+                <div
+                  class="text-xs font-semibold text-blue-900 uppercase tracking-wide mb-2"
+                >
+                  Avg Round Size
+                </div>
+                <div class="text-2xl font-bold text-blue-600">
+                  {{
+                    formatAmount(
+                      result.marketIntelligence.fundingTrends.averageRoundSize
+                    )
+                  }}
+                </div>
+              </div>
+
+              <div
+                class="p-4 bg-green-50 rounded-xl border border-green-200/50"
+              >
+                <div
+                  class="text-xs font-semibold text-green-900 uppercase tracking-wide mb-2"
+                >
+                  Total Funding
+                </div>
+                <div class="text-2xl font-bold text-green-600">
+                  {{
+                    formatAmount(
+                      result.marketIntelligence.fundingTrends.totalFunding
+                    )
+                  }}
+                </div>
+              </div>
+
+              <div
+                class="p-4 bg-slate-100 rounded-xl border border-slate-200/50"
+              >
+                <div
+                  class="text-xs font-semibold text-slate-700 uppercase tracking-wide mb-2"
+                >
+                  Recent Deals
+                </div>
+                <div class="text-2xl font-bold text-slate-600">
+                  {{ result.marketIntelligence.fundingTrends.dealCount }}
+                </div>
+              </div>
+            </div>
+
+            <div class="p-4 bg-slate-50 rounded-xl border border-slate-200/50">
+              <div class="font-semibold text-slate-900 text-sm mb-2">
+                Valuation Trend
+              </div>
+              <div
+                class="inline-block px-3 py-1 rounded-full text-xs font-semibold capitalize"
+                [class]="
+                  result.marketIntelligence.fundingTrends.valuationTrend ===
+                  'up'
+                    ? 'bg-green-100 text-green-700'
+                    : result.marketIntelligence.fundingTrends.valuationTrend ===
+                      'down'
+                    ? 'bg-red-100 text-red-700'
+                    : 'bg-slate-100 text-slate-700'
+                "
+              >
+                {{ result.marketIntelligence.fundingTrends.valuationTrend }}
+              </div>
+            </div>
+          </div>
+          }
+
+          <!-- Opportunities -->
+          @if (result.marketIntelligence.opportunities.length) {
+          <button
+            (click)="toggleAccordion('opportunities')"
+            class="w-full flex items-center justify-between p-4 bg-slate-50 hover:bg-slate-100 rounded-xl border border-slate-200/50 transition-all duration-200"
+          >
+            <div class="flex items-center space-x-3 text-left">
+              <div>
+                <div class="font-semibold text-slate-900 text-sm">
+                  Market Opportunities
+                </div>
+                <div class="text-xs text-slate-600 mt-0.5">
+                  {{ result.marketIntelligence.opportunities.length }}
+                  identified
+                </div>
+              </div>
+            </div>
+            <lucide-icon
+              [img]="ChevronDownIcon"
+              [size]="18"
+              class="text-slate-600 transition-transform duration-300"
+              [style.transform]="
+                expandedAccordion() === 'opportunities' ? 'rotate(180deg)' : ''
+              "
+            ></lucide-icon>
+          </button>
+
+          @if (expandedAccordion() === 'opportunities') {
+          <div class="pl-4 space-y-3 animate-fadeIn">
+            @for (opp of result.marketIntelligence.opportunities; track
+            opp.opportunity) {
+            <div class="p-4 bg-teal-50 rounded-xl border border-teal-200/50">
+              <div class="font-semibold text-teal-900 text-sm mb-2">
+                {{ opp.opportunity }}
+              </div>
+              <p class="text-sm text-teal-800 mb-3">
+                {{ opp.rationale }}
+              </p>
+              <div
+                class="inline-block px-2.5 py-1 bg-teal-100 rounded-lg text-xs font-medium text-teal-700"
+              >
+                {{ opp.timeframe }}
+              </div>
+            </div>
+            }
+          </div>
+          } }
+
+          <!-- Sources -->
+          @if (result.sources && result.sources.length) {
+          <button
+            (click)="toggleAccordion('sources')"
+            class="w-full flex items-center justify-between p-4 bg-slate-50 hover:bg-slate-100 rounded-xl border border-slate-200/50 transition-all duration-200"
+          >
+            <div class="flex items-center space-x-3 text-left">
+              <lucide-icon
+                [img]="ExternalLinkIcon"
+                [size]="18"
+                class="text-slate-600"
+              ></lucide-icon>
+              <div>
+                <div class="font-semibold text-slate-900 text-sm">
+                  Sources & References
+                </div>
+                <div class="text-xs text-slate-600 mt-0.5">
+                  {{ result.sources.length }} sources
+                </div>
+              </div>
+            </div>
+            <lucide-icon
+              [img]="ChevronDownIcon"
+              [size]="18"
+              class="text-slate-600 transition-transform duration-300"
+              [style.transform]="
+                expandedAccordion() === 'sources' ? 'rotate(180deg)' : ''
+              "
+            ></lucide-icon>
+          </button>
+
+          @if (expandedAccordion() === 'sources') {
+          <div class="pl-4 space-y-3 animate-fadeIn">
+            @for (source of result.sources; track source.title) {
+            <div
+              class="p-4 bg-slate-50 rounded-xl border border-slate-200/50 hover:border-slate-300 hover:bg-slate-100/50 transition-all duration-200 cursor-pointer"
+              [style.cursor]="source.url ? 'pointer' : 'default'"
+              (click)="source.url ? openLink(source.url) : null"
+            >
+              <div class="flex items-start justify-between gap-4">
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center gap-2 mb-2">
+                    <span [class]="getSourceTypeColor(source.type)">
+                      {{ source.type }}
+                    </span>
+                    @if (source.relevance) {
+                    <span class="text-xs text-slate-600">
+                      Relevance: {{ source.relevance }}
+                    </span>
+                    }
+                  </div>
+                  <div class="font-semibold text-slate-900 text-sm break-words">
+                    {{ source.title }}
+                  </div>
+                  @if (source.url) {
+                  <div class="text-xs text-teal-600 mt-2 break-all">
+                    {{ source.url }}
+                  </div>
+                  }
+                </div>
+                @if (source.url) {
+                <lucide-icon
+                  [img]="ExternalLinkIcon"
+                  [size]="16"
+                  class="text-slate-400 flex-shrink-0 mt-1"
+                ></lucide-icon>
+                }
+              </div>
+            </div>
+            }
+          </div>
+          } }
+        </div>
+      </div>
+      }
+
+      <!-- Footer -->
+      <div
+        class="px-6 py-4 bg-slate-50/50 flex items-center justify-between border-t border-slate-200 opacity-0 animate-fadeIn"
+        style="animation-delay: 450ms"
+      >
+        <div class="flex items-center space-x-2 text-sm text-slate-600">
+          <lucide-icon [img]="ClockIcon" [size]="16"></lucide-icon>
+          <span>
+            Generated {{ getTimeAgo(result.generatedAt) }} with
+            {{ result.confidence }}% confidence
+          </span>
+        </div>
+
+        <button
+          class="flex items-center space-x-2 px-4 py-2 text-sm font-medium bg-teal-500 text-white rounded-xl hover:bg-teal-600 active:bg-teal-700 transition-colors duration-200"
+        >
+          <lucide-icon [img]="DownloadIcon" [size]="16"></lucide-icon>
+          <span>Download Report</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
