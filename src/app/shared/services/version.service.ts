@@ -15,7 +15,7 @@ export interface VersionInfo {
 export class VersionService {
   // Global version signal accessible throughout the app
   private versionInfo = signal<VersionInfo>({
-    version: '0.0.7 beta',
+    version: '0.0.8 beta',
     buildDate: '22nd December, 2025',
     environment: 'production',
     buildNumber: '1',

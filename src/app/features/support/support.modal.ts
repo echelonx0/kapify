@@ -15,7 +15,7 @@ import {
   Mail,
   Calendar,
   Send,
-  CheckCircle,
+  CircleCheckBig,
 } from 'lucide-angular';
 
 import { AuthService } from 'src/app/auth/services/production.auth.service';
@@ -357,7 +357,7 @@ export class SupportModalComponent implements OnInit {
   MailIcon = Mail;
   CalendarIcon = Calendar;
   SendIcon = Send;
-  CheckCircleIcon = CheckCircle;
+  CheckCircleIcon = CircleCheckBig;
   supportEmail = 'support@kapify.africa';
   // State
   isLoading = signal(false);
