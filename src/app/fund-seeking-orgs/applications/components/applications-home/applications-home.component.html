@@ -1,13 +1,26 @@
 <!-- src/app/dashboard/components/applications/applications-home.component.html -->
 <div class="min-h-screen bg-slate-50">
-  <div class="max-w-7xl mx-auto py-8">
-    <!-- Header -->
-    <div class="mb-8">
-      <h1 class="text-3xl font-bold text-slate-900">Applications</h1>
-      <p class="text-slate-600 mt-1">
-        @if (isFunder()) { Manage and review funding applications from SMEs }
-        @else { Track your funding applications }
-      </p>
+  <div class="max-w-7xl mx-auto px-4 lg:px-8 py-8">
+    <!-- Header with Archive Button -->
+    <div class="flex items-start justify-between mb-8">
+      <div>
+        <h1 class="text-3xl font-bold text-slate-900">Applications</h1>
+        <p class="text-slate-600 mt-1">
+          @if (isFunder()) { Manage and review funding applications from SMEs }
+          @else { Track your funding applications }
+        </p>
+      </div>
+
+      <!-- View Archived Button -->
+      @if (stats().archived > 0) {
+      <button
+        (click)="openArchivedModal()"
+        class="px-4 py-2.5 text-sm font-medium bg-slate-100 text-slate-700 rounded-xl hover:bg-slate-200 active:bg-slate-300 transition-colors duration-200 flex items-center gap-2 flex-shrink-0"
+      >
+        <lucide-icon [img]="ArchiveIcon" [size]="16" />
+        <span>Archived ({{ stats().archived }})</span>
+      </button>
+      }
     </div>
 
     <!-- Search & Filter Bar -->
@@ -44,7 +57,7 @@
             (click)="toggleFilters()"
             [class]="
               showFilters()
-                ? 'bg-teal-50 border-teal-200 text-teal-700'
+                ? 'bg-teal-50 border-teal-300/50 text-teal-700'
                 : 'bg-white border-slate-200 text-slate-600'
             "
             class="px-4 py-2.5 text-sm font-medium border rounded-xl hover:bg-slate-50 transition-colors duration-200 flex items-center gap-2"
@@ -77,8 +90,6 @@
               <option value="draft">Draft</option>
               <option value="submitted">Submitted</option>
               <option value="under_review">Under Review</option>
-              <option value="approved">Approved</option>
-              <option value="rejected">Rejected</option>
             </select>
           </div>
 
@@ -152,7 +163,7 @@
         <p class="text-sm font-medium text-red-900">{{ error() }}</p>
       </div>
       <button
-        (click)="loadApplications()"
+        (click)="refreshData()"
         class="text-sm font-medium text-red-700 hover:text-red-900 flex-shrink-0"
       >
         Try Again
@@ -161,9 +172,9 @@
     }
 
     <!-- Applications Container -->
-    <div class="grid grid-cols-3 gap-8">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
       <!-- Main Content -->
-      <div class="col-span-2 space-y-4">
+      <div class="lg:col-span-2 space-y-4">
         <!-- Loading State -->
         @if (isLoading()) {
         <div
@@ -176,7 +187,7 @@
         </div>
         }
 
-        <!-- Empty State - No Applications -->
+        <!-- Empty State - No Active Applications -->
         @else if (filteredApplications().length === 0 && !hasActiveFilters()) {
         <div
           class="bg-white rounded-2xl border border-slate-200 shadow-sm p-12 text-center"
@@ -191,12 +202,12 @@
             />
           </div>
           <h3 class="text-lg font-bold text-slate-900 mb-2">
-            No applications yet
+            {{ getEmptyStateMessage() }}
           </h3>
           <p class="text-slate-600 mb-6">
-            @if (isFunder()) { Create opportunities to receive applications from
-            SMEs } @else { Browse available opportunities to start your funding
-            application }
+            @if (isFunder()) { Create funding opportunities to receive
+            applications from SMEs } @else { Find opportunities that match your
+            funding needs }
           </p>
           <button
             (click)="
@@ -217,13 +228,7 @@
         >
           <div
             class="w-16 h-16 bg-slate-100 rounded-xl flex items-center justify-center mx-auto mb-4"
-          >
-            <lucide-icon
-              [img]="SearchIcon"
-              [size]="32"
-              class="text-slate-400"
-            />
-          </div>
+          ></div>
           <h3 class="text-lg font-bold text-slate-900 mb-2">
             No matching applications
           </h3>
@@ -241,7 +246,7 @@
 
         <!-- Applications List -->
         @else {
-        <div class="space-y-4">
+        <div class="space-y-4" #applicationsGrid>
           @for (application of paginatedApplications(); track application.id) {
           @if (userType()) {
           <div
@@ -329,7 +334,7 @@
       </div>
 
       <!-- Activity Sidebar -->
-      <div class="col-span-1">
+      <div class="lg:col-span-1">
         <div
           class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden sticky top-8"
         >
@@ -341,6 +346,141 @@
       </div>
     </div>
   </div>
+
+  <!-- Archived Applications Modal -->
+  @if (showArchivedModal()) {
+  <div
+    class="fixed inset-0 bg-black/25 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+  >
+    <div
+      class="bg-white rounded-2xl shadow-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+    >
+      <!-- Modal Header -->
+      <div
+        class="sticky top-0 px-6 py-4 border-b border-slate-200 bg-white flex items-center justify-between"
+      >
+        <div class="flex items-center gap-3">
+          <lucide-icon [img]="ArchiveIcon" [size]="20" class="text-slate-600" />
+          <h2 class="text-lg font-bold text-slate-900">
+            Archived Applications
+          </h2>
+          <span
+            class="px-2 py-1 bg-slate-100 text-slate-700 text-xs font-semibold rounded-lg"
+            >{{ stats().archived }}</span
+          >
+        </div>
+        <button
+          (click)="closeArchivedModal()"
+          class="p-1 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors duration-200"
+        >
+          <lucide-icon [img]="XIcon" [size]="20" />
+        </button>
+      </div>
+
+      <!-- Modal Content -->
+      <div class="p-6">
+        @if (archivedApplications().length === 0) {
+        <div class="text-center py-8">
+          <lucide-icon
+            [img]="ArchiveIcon"
+            [size]="32"
+            class="text-slate-300 mx-auto mb-3"
+          />
+          <p class="text-slate-600">No archived applications</p>
+        </div>
+        } @else {
+        <div class="space-y-3">
+          @for (app of paginatedArchivedApplications(); track app.id) {
+          <div
+            (click)="openApplicationModal(app)"
+            class="p-4 bg-slate-50 border border-slate-200 rounded-xl hover:bg-slate-100 cursor-pointer transition-colors duration-200"
+          >
+            <div class="flex items-start justify-between mb-2">
+              <div class="flex-1">
+                <h4 class="text-sm font-semibold text-slate-900">
+                  {{ app.title }}
+                </h4>
+                <p class="text-xs text-slate-600 mt-1">
+                  {{ app.applicantCompany || app.opportunityTitle }}
+                </p>
+              </div>
+              <span
+                [class]="
+                  'px-2 py-1 text-xs font-semibold rounded-full ' +
+                  getStatusBadgeClass(app.status)
+                "
+              >
+                {{ getStatusText(app.status) }}
+              </span>
+            </div>
+
+            <div
+              class="flex items-center justify-between text-xs text-slate-600"
+            >
+              <span>{{
+                formatCurrency(app.requestedAmount, app.currency)
+              }}</span>
+              <span>{{ formatDate(app.updatedAt) }}</span>
+            </div>
+          </div>
+          }
+        </div>
+
+        <!-- Archive Pagination -->
+        <div class="mt-6 flex flex-col items-center gap-4">
+          <p class="text-xs font-medium text-slate-600">
+            Showing
+            {{ (archivedPage() - 1) * archivedPageSize() + 1 }} to
+            {{
+              Math.min(
+                archivedPage() * archivedPageSize(),
+                archivedApplications().length
+              )
+            }}
+            of {{ archivedApplications().length }}
+          </p>
+
+          @if (archivedTotalPages() > 1) {
+          <div class="flex items-center gap-2">
+            <button
+              (click)="previousArchivedPage()"
+              [disabled]="archivedPage() === 1"
+              class="px-3 py-1.5 text-xs font-medium rounded-lg border border-slate-200 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+            >
+              Previous
+            </button>
+
+            @for (page of archivedPageRange(); track page) {
+            <button
+              (click)="goToArchivedPage(page)"
+              class="w-8 h-8 text-xs font-medium rounded-lg transition-all duration-200"
+              [class.bg-teal-500]="archivedPage() === page"
+              [class.text-white]="archivedPage() === page"
+              [class.bg-white]="archivedPage() !== page"
+              [class.border]="archivedPage() !== page"
+              [class.border-slate-200]="archivedPage() !== page"
+              [class.text-slate-700]="archivedPage() !== page"
+              [class.hover:bg-slate-50]="archivedPage() !== page"
+            >
+              {{ page }}
+            </button>
+            }
+
+            <button
+              (click)="nextArchivedPage()"
+              [disabled]="archivedPage() === archivedTotalPages()"
+              class="px-3 py-1.5 text-xs font-medium rounded-lg border border-slate-200 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+            >
+              Next
+            </button>
+          </div>
+          }
+        </div>
+        }
+      </div>
+    </div>
+  </div>
+  }
 
   <!-- Application Detail Modal -->
   <app-application-detail-modal

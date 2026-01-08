@@ -4,11 +4,6 @@ import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { DatabaseActivityService, Activity } from './database-activity.service';
 
-/**
- * Activity Service - Updated to use real database instead of dummy data
- * This service now acts as a facade/proxy to the DatabaseActivityService
- * Maintains backward compatibility with existing components
- */
 @Injectable({
   providedIn: 'root',
 })
