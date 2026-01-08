@@ -1,0 +1,259 @@
+<!-- Header Section: Bold, Intentional -->
+<div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+  <div>
+    <h1 class="text-4xl font-black text-slate-900 tracking-tight">
+      Applications
+    </h1>
+    <p class="text-base text-slate-600 mt-2 font-medium">
+      Review, approve, and export your pipeline
+    </p>
+  </div>
+
+  <!-- Action Buttons -->
+  <div class="flex items-center gap-3">
+    <!-- Export Button -->
+    <!-- <button
+      (click)="openExportModal()"
+      [disabled]="exporting()"
+      class="px-6 py-2.5 bg-slate-900 text-white text-sm font-bold rounded-lg border-2 border-slate-950 hover:bg-slate-800 active:bg-slate-950 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2"
+    >
+      <lucide-angular
+        *ngIf="!exporting()"
+        [img]="DownloadIcon"
+        size="16"
+      ></lucide-angular>
+      <lucide-angular
+        *ngIf="exporting()"
+        [img]="LoaderIcon"
+        size="16"
+        class="animate-spin"
+      ></lucide-angular>
+      {{ exporting() ? "Exporting" : "Export" }}
+    </button> -->
+
+    <!-- Refresh Button -->
+    <button
+      (click)="onRefresh()"
+      [disabled]="refreshing()"
+      class="px-6 py-2.5 bg-teal-600 text-white text-sm font-bold rounded-lg border-2 border-teal-700 hover:bg-teal-700 active:bg-teal-800 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2"
+    >
+      <lucide-angular
+        [img]="RefreshIcon"
+        size="16"
+        [class.animate-spin]="refreshing()"
+      ></lucide-angular>
+      {{ refreshing() ? "Syncing" : "Refresh" }}
+    </button>
+  </div>
+</div>
+
+<!-- Export Modal -->
+@if (modalOpen()) {
+<!-- Backdrop with animation -->
+<div
+  (click)="closeExportModal()"
+  class="fixed inset-0 bg-black/40 backdrop-blur-sm z-40 transition-opacity duration-300 ease-out animate-fade-in"
+></div>
+
+<!-- Modal with animation -->
+<div
+  class="fixed inset-0 z-50 flex items-center justify-center p-4 transition-all duration-300 ease-out"
+>
+  <div
+    (click)="$event.stopPropagation()"
+    class="bg-white rounded-xl border-3 border-slate-900 shadow-2xl max-w-md w-full overflow-hidden animate-scale-in"
+  >
+    <!-- Modal Header: Neo-Brutal -->
+    <div
+      class="px-6 py-4 border-b-3 border-slate-900 bg-slate-100 flex items-center justify-between"
+    >
+      <div class="flex items-center gap-3">
+        <div
+          class="w-10 h-10 rounded-lg bg-teal-600 flex items-center justify-center border-2 border-teal-700"
+        >
+          <lucide-angular
+            [img]="ZapIcon"
+            size="20"
+            class="text-white"
+          ></lucide-angular>
+        </div>
+        <h2 class="text-lg font-black text-slate-900">Export Data</h2>
+      </div>
+      <button
+        (click)="closeExportModal()"
+        class="text-slate-600 hover:text-slate-900 transition-colors duration-200 focus:outline-none"
+        title="Close"
+      >
+        <lucide-angular [img]="CloseIcon" size="20"></lucide-angular>
+      </button>
+    </div>
+
+    <!-- Modal Content -->
+    <div class="p-6 space-y-6">
+      <!-- Format Selection -->
+      <div class="space-y-3">
+        <p class="text-xs font-black text-slate-600 uppercase tracking-widest">
+          Export Format
+        </p>
+        <div class="space-y-2">
+          <!-- Excel Option -->
+          <label
+            class="flex items-center p-4 border-2 rounded-lg cursor-pointer transition-all duration-200"
+            [class.border-teal-600]="selectedFormat() === 'excel'"
+            [class.bg-teal-50]="selectedFormat() === 'excel'"
+            [class.border-slate-300]="selectedFormat() !== 'excel'"
+            [class.hover:border-slate-400]="selectedFormat() !== 'excel'"
+          >
+            <input
+              type="radio"
+              [(ngModel)]="selectedFormat"
+              value="excel"
+              class="w-4 h-4 cursor-pointer"
+            />
+            <div class="ml-4 flex-1">
+              <p class="text-sm font-bold text-slate-900">Excel Spreadsheet</p>
+              <p class="text-xs text-slate-600 mt-0.5">
+                Ideal for analysis and data manipulation
+              </p>
+            </div>
+            <lucide-angular
+              [img]="TableIcon"
+              size="20"
+              [class.text-teal-600]="selectedFormat() === 'excel'"
+              [class.text-slate-400]="selectedFormat() !== 'excel'"
+            ></lucide-angular>
+          </label>
+
+          <!-- PDF Option -->
+          <label
+            class="flex items-center p-4 border-2 rounded-lg cursor-pointer transition-all duration-200"
+            [class.border-teal-600]="selectedFormat() === 'pdf'"
+            [class.bg-teal-50]="selectedFormat() === 'pdf'"
+            [class.border-slate-300]="selectedFormat() !== 'pdf'"
+            [class.hover:border-slate-400]="selectedFormat() !== 'pdf'"
+          >
+            <input
+              type="radio"
+              [(ngModel)]="selectedFormat"
+              value="pdf"
+              class="w-4 h-4 cursor-pointer"
+            />
+            <div class="ml-4 flex-1">
+              <p class="text-sm font-bold text-slate-900">PDF Report</p>
+              <p class="text-xs text-slate-600 mt-0.5">
+                Professional format for sharing and printing
+              </p>
+            </div>
+            <lucide-angular
+              [img]="FileIcon"
+              size="20"
+              [class.text-teal-600]="selectedFormat() === 'pdf'"
+              [class.text-slate-400]="selectedFormat() !== 'pdf'"
+            ></lucide-angular>
+          </label>
+
+          <!-- CSV Option -->
+          <label
+            class="flex items-center p-4 border-2 rounded-lg cursor-pointer transition-all duration-200"
+            [class.border-teal-600]="selectedFormat() === 'csv'"
+            [class.bg-teal-50]="selectedFormat() === 'csv'"
+            [class.border-slate-300]="selectedFormat() !== 'csv'"
+            [class.hover:border-slate-400]="selectedFormat() !== 'csv'"
+          >
+            <input
+              type="radio"
+              [(ngModel)]="selectedFormat"
+              value="csv"
+              class="w-4 h-4 cursor-pointer"
+            />
+            <div class="ml-4 flex-1">
+              <p class="text-sm font-bold text-slate-900">CSV File</p>
+              <p class="text-xs text-slate-600 mt-0.5">
+                Lightweight format for any system
+              </p>
+            </div>
+            <lucide-angular
+              [img]="TableIcon"
+              size="20"
+              [class.text-teal-600]="selectedFormat() === 'csv'"
+              [class.text-slate-400]="selectedFormat() !== 'csv'"
+            ></lucide-angular>
+          </label>
+        </div>
+      </div>
+
+      <!-- Divider -->
+      <div class="h-px bg-slate-300"></div>
+
+      <!-- Include Filters Toggle -->
+      <div class="space-y-3">
+        <label
+          class="flex items-center cursor-pointer gap-3 p-3 rounded-lg hover:bg-slate-50 transition-colors duration-200"
+        >
+          <input
+            type="checkbox"
+            [(ngModel)]="includeFiltersInExport"
+            class="w-4 h-4 rounded border-2 border-slate-300 text-teal-600 cursor-pointer"
+          />
+          <div>
+            <p class="text-sm font-bold text-slate-900">
+              Export filtered results only
+            </p>
+            <p class="text-xs text-slate-600 mt-0.5">
+              Include only applications matching current filters
+            </p>
+          </div>
+        </label>
+      </div>
+
+      <!-- Info Box: Neo-Brutal -->
+      <div class="bg-teal-50 border-2 border-teal-600 rounded-lg p-4">
+        <p class="text-sm font-bold text-teal-900">
+          ✓ Includes all details: status, match scores, completion data, and
+          metadata
+        </p>
+      </div>
+
+      <!-- Actions -->
+      <div class="flex items-center gap-3 pt-4 border-t-2 border-slate-300">
+        <!-- Export Button -->
+        <button
+          (click)="executeExport()"
+          [disabled]="exporting()"
+          class="flex-1 bg-teal-600 text-white font-bold py-2.5 rounded-lg border-2 border-teal-700 hover:bg-teal-700 active:bg-teal-800 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2"
+        >
+          <lucide-angular
+            *ngIf="!exporting()"
+            [img]="DownloadIcon"
+            size="16"
+          ></lucide-angular>
+          <lucide-angular
+            *ngIf="exporting()"
+            [img]="LoaderIcon"
+            size="16"
+            class="animate-spin"
+          ></lucide-angular>
+          {{ exporting() ? "Exporting" : "Export Now" }}
+        </button>
+
+        <!-- Cancel Button -->
+        <button
+          (click)="closeExportModal()"
+          [disabled]="exporting()"
+          class="flex-1 bg-slate-100 text-slate-900 font-bold py-2.5 rounded-lg border-2 border-slate-300 hover:bg-slate-200 active:bg-slate-300 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2"
+        >
+          Cancel
+        </button>
+      </div>
+
+      <!-- Alternative Action -->
+      <button
+        (click)="openReportBuilder.emit()"
+        class="w-full text-center text-sm text-teal-600 hover:text-teal-700 font-semibold py-2 transition-colors duration-200"
+      >
+        Or build a custom report →
+      </button>
+    </div>
+  </div>
+</div>
+}

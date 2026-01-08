@@ -1,0 +1,175 @@
+/* opportunity-applications.component.css - NEO-BRUTALIST REDESIGN */
+
+:host {
+  display: block;
+}
+
+/* ============================================
+   TYPOGRAPHY: Bold, Scannable
+   ============================================ */
+
+h1,
+h2,
+h3 {
+  letter-spacing: -0.01em;
+  line-height: 1.1;
+}
+
+/* Uppercase tracking for labels */
+.uppercase {
+  letter-spacing: 0.1em;
+  font-size: 0.7em;
+}
+
+/* ============================================
+   BORDERS: Thick, Structural
+   ============================================ */
+
+.border-2 {
+  border-width: 2px !important;
+}
+
+.border-3 {
+  border-width: 3px !important;
+}
+
+.border-b-2 {
+  border-bottom-width: 2px !important;
+}
+
+.border-b-3 {
+  border-bottom-width: 3px !important;
+}
+
+/* ============================================
+   STATUS BADGE STYLES (High Contrast)
+   ============================================ */
+
+.badge-submitted {
+  @apply bg-slate-100 text-slate-900 border-slate-400;
+}
+
+.badge-under_review {
+  @apply bg-amber-100 text-amber-900 border-amber-400;
+}
+
+.badge-approved {
+  @apply bg-green-100 text-green-900 border-green-400;
+}
+
+.badge-rejected {
+  @apply bg-red-100 text-red-900 border-red-400;
+}
+
+/* ============================================
+   ACTION BUTTONS: Solid, Intentional
+   ============================================ */
+
+button {
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+button:active {
+  transform: translateY(1px);
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ============================================
+   TABLE GRID: Clear Structure
+   ============================================ */
+
+.grid-header {
+  @apply bg-slate-100 font-black text-slate-900 uppercase tracking-widest text-sm;
+}
+
+.grid-row {
+  @apply border-b border-slate-200 hover:bg-teal-50/30 transition-colors duration-200;
+}
+
+/* ============================================
+   INPUT FIELDS: Visible Focus
+   ============================================ */
+
+input[type="text"],
+select {
+  @apply border-2 border-slate-300 focus:border-teal-500 focus:ring-2 focus:ring-teal-500;
+}
+
+/* ============================================
+   RESPONSIVE: Mobile-First
+   ============================================ */
+
+@media (max-width: 1024px) {
+  /* Show cards, hide table */
+  .hidden {
+    display: none !important;
+  }
+
+  /* Larger touch targets */
+  button {
+    padding: 0.5rem 1rem;
+  }
+}
+
+/* ============================================
+   ANIMATIONS: Loading Spinner
+   ============================================ */
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+/* ============================================
+   ACCESSIBILITY: Focus Visible
+   ============================================ */
+
+button:focus-visible {
+  outline: 2px solid rgb(20 184 166); /* teal-500 */
+  outline-offset: 2px;
+}
+
+input:focus-visible,
+select:focus-visible {
+  outline: 2px solid rgb(20 184 166); /* teal-500 */
+  outline-offset: 2px;
+}
+
+/* ============================================
+   UTILITIES: Dividers
+   ============================================ */
+
+.divider-v {
+  @apply h-full w-0.5 bg-slate-300;
+}
+
+.divider-h {
+  @apply h-0.5 w-full bg-slate-300;
+}
+
+/* ============================================
+   PRINT STYLES
+   ============================================ */
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+
+  /* Maintain borders when printing */
+  .border-3 {
+    border-width: 2px;
+  }
+}

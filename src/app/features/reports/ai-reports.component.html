@@ -1,3 +1,5 @@
+<!-- Updated ai-reports.component.html - Integrated with Report Builder -->
+
 <div class="min-h-screen bg-gradient-to-b from-slate-50 to-white">
   <!-- Hero Section -->
   <div
@@ -58,10 +60,10 @@
   @if (isFunder()) {
   <div class="max-w-7xl mx-auto px-4 lg:px-8 py-4 border-b border-slate-200">
     <div class="flex items-center gap-4">
-      <!-- Funder sees: Applications Reports only -->
+      <!-- Generate Reports Button - Opens Report Builder -->
       <button
         (click)="generateReports()"
-        class="px-6 py-3 rounded-xl border bg-teal-50 text-teal-700 border-teal-300 font-medium"
+        class="px-6 py-3 rounded-xl border-2 border-teal-600 bg-teal-50 text-teal-700 font-bold hover:bg-teal-100 active:bg-teal-200 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2"
       >
         Generate Reports
       </button>
@@ -175,6 +177,17 @@
     <app-analysis-history></app-analysis-history>
     }
   </div>
+
+  <!-- ============================================ -->
+  <!-- REPORT BUILDER MODAL -->
+  <!-- ============================================ -->
+  @if (reportBuilderOpen()) {
+  <app-report-builder
+    #reportBuilder
+    [data]="reportBuilderData()"
+    (onClose)="closeReportBuilder()"
+  ></app-report-builder>
+  }
 
   <!-- ============================================ -->
   <!-- APPLICATION DETAIL SHEET (FUNDERS ONLY) -->

@@ -1,8 +1,16 @@
 // src/app/funder/components/application-management.component.ts
-import { Component, signal, computed, OnInit, inject } from '@angular/core';
+import {
+  Component,
+  signal,
+  computed,
+  OnInit,
+  OnDestroy,
+  inject,
+} from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Subject, takeUntil } from 'rxjs';
 import {
   LucideAngularModule,
   ArrowLeft,
@@ -12,19 +20,15 @@ import {
   Building2,
 } from 'lucide-angular';
 
-import { UiButtonComponent } from '../../../shared/components';
-import { SidebarNavComponent } from '../../../shared/components/sidenav/sidebar-nav.component';
-import { AIAssistantModalComponent } from '../../../features/ai/ai-assistant/ai-assistant-modal.component';
-import { AuthService } from '../../../auth/services/production.auth.service';
-import { SMEOpportunitiesService } from '../../../funding/services/opportunities.service';
+import { SidebarNavComponent } from '../../shared/components/sidenav/sidebar-nav.component';
+import { AIAssistantModalComponent } from '../../features/ai/ai-assistant/ai-assistant-modal.component';
+import { AuthService } from '../../auth/services/production.auth.service';
+import { SMEOpportunitiesService } from '../../funding/services/opportunities.service';
 import { ApplicationManagementService } from 'src/app/fund-seeking-orgs/services/application-management.service';
-
 import { FundingApplication } from 'src/app/fund-seeking-orgs/models/application.models';
-import { FundingOpportunity } from '../../create-opportunity/shared/funding.interfaces';
-import {
-  ApplicationListCardComponent,
-  BaseApplicationCard,
-} from '../../application-details/funder-applications/components/application-list-card/application-list-card.component';
+import { FundingOpportunity } from '../create-opportunity/shared/funding.interfaces';
+import { BaseApplicationCard } from '../application-details/funder-applications/components/application-list-card/application-list-card.component';
+import { ApplicationActionsService } from 'src/app/fund-seeking-orgs/services/applications-actions-service';
 
 @Component({
   selector: 'app-application-management',
@@ -33,20 +37,21 @@ import {
     CommonModule,
     FormsModule,
     LucideAngularModule,
-    UiButtonComponent,
     SidebarNavComponent,
     AIAssistantModalComponent,
-    // ApplicationListCardComponent,
   ],
   templateUrl: 'application-management.component.html',
+  styleUrl: './application-management.component.css',
 })
-export class ApplicationManagementComponent implements OnInit {
+export class ApplicationManagementComponent implements OnInit, OnDestroy {
   // Services
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private applicationService = inject(ApplicationManagementService);
+  private actionsService = inject(ApplicationActionsService);
   private authService = inject(AuthService);
   private opportunitiesService = inject(SMEOpportunitiesService);
+  private destroy$ = new Subject<void>();
 
   // Icons
   ArrowLeftIcon = ArrowLeft;
@@ -60,6 +65,7 @@ export class ApplicationManagementComponent implements OnInit {
   opportunity = signal<FundingOpportunity | null>(null);
   applications = signal<FundingApplication[]>([]);
   isLoading = signal(true);
+  updatingApplicationId = signal<string | null>(null);
 
   // UI State
   showAIModal = signal(false);
@@ -115,6 +121,11 @@ export class ApplicationManagementComponent implements OnInit {
     } else {
       this.router.navigate(['/funder/dashboard']);
     }
+  }
+
+  ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   private extractAmount(formData: Record<string, any>): number {
@@ -215,18 +226,49 @@ export class ApplicationManagementComponent implements OnInit {
     this.router.navigate(['/funder/applications', applicationId]);
   }
 
+  /**
+   * Update application status with full side effects
+   * - Activity tracking
+   * - Applicant notifications
+   * - Toast feedback
+   * - UI refresh
+   */
   async updateApplicationStatus(
-    applicationId: string,
-    status: FundingApplication['status']
+    application: FundingApplication,
+    status: 'submitted' | 'under_review' | 'approved' | 'rejected'
   ) {
-    try {
-      await this.applicationService
-        .updateApplicationStatus(applicationId, status)
-        .toPromise();
-      await this.loadData();
-    } catch (error) {
-      console.error('Error updating application status:', error);
+    // Prevent duplicate updates
+    if (this.updatingApplicationId() === application.id) {
+      return;
     }
+
+    this.updatingApplicationId.set(application.id);
+
+    this.actionsService
+      .updateApplicationStatus(application, status)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (updatedApp) => {
+          // Update local state
+          this.applications.update((apps) =>
+            apps.map((app) =>
+              app.id === application.id ? { ...app, status } : app
+            )
+          );
+          this.updatingApplicationId.set(null);
+        },
+        error: () => {
+          this.updatingApplicationId.set(null);
+        },
+      });
+  }
+
+  /**
+   * Check if application can have actions
+   * Final states (approved/rejected) are read-only
+   */
+  canPerformActions(status: string): boolean {
+    return !['approved', 'rejected'].includes(status);
   }
 
   // Utility methods
