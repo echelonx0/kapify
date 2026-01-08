@@ -2,7 +2,7 @@ import { Component, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   LucideAngularModule,
-  CheckCircle,
+  CircleCheckBig,
   Star,
   ArrowRight,
   Menu,
@@ -19,16 +19,17 @@ import {
   ArrowDown,
   Building,
   FileText,
-  Filter,
+  Funnel,
   ShieldCheck,
-  XCircle,
+  CircleX,
   Play,
 } from 'lucide-angular';
 import { LandingFooterComponent } from './footer/landing-footer.component';
-import { LandingHeaderComponent } from './landing-header.component';
+import { LandingHeaderComponent } from './components/landing-header.component';
 import { Router } from '@angular/router';
 import { SafeResourceUrl, DomSanitizer } from '@angular/platform-browser';
 import { KapifyHeroComponent } from './hero/kapify-hero.component';
+import { FunderCarouselComponent } from './funds-list/funder-carousel.component';
 
 interface Statistic {
   value: string;
@@ -78,6 +79,7 @@ interface AudienceView {
     LandingHeaderComponent,
     LandingFooterComponent,
     KapifyHeroComponent,
+    FunderCarouselComponent,
   ],
   templateUrl: 'landing.component.html',
   styleUrl: 'landing.component.css',
@@ -108,14 +110,14 @@ export class LandingComponent {
   ZapIcon = Zap;
   FileTextIcon = FileText;
   TrendingUpIcon = TrendingUp;
-  FilterIcon = Filter;
+  FilterIcon = Funnel;
   ClockIcon = Clock;
   UsersIcon = Users;
 
   // Icons
   MenuIcon = Menu;
   XIcon = X;
-  CheckCircleIcon = CheckCircle;
+  CheckCircleIcon = CircleCheckBig;
 
   MapPinIcon = MapPin;
   PhoneIcon = Phone;
@@ -124,7 +126,7 @@ export class LandingComponent {
 
   ShieldIcon = Shield;
 
-  XCircleIcon = XCircle;
+  XCircleIcon = CircleX;
   ArrowDownIcon = ArrowDown;
 
   // === Audience-Specific Content (Replaces "Why Choose Kapify") ===

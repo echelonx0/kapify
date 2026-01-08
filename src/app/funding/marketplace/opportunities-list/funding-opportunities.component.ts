@@ -25,7 +25,7 @@ import { FundingOpportunity } from 'src/app/funder/create-opportunity/shared/fun
 import { OpportunitiesHeaderComponent } from '../components/opportunity-header/opportunities-header.component';
 import { SmartSuggestionsModalComponent } from '../components/smart-suggestions/modal/smart-suggestions-modal.component';
 import { LandingFooterComponent } from 'src/app/core/landing/footer/landing-footer.component';
-import { LandingHeaderComponent } from 'src/app/core/landing/landing-header.component';
+import { LandingHeaderComponent } from 'src/app/core/landing/components/landing-header.component';
 import { SMEOpportunitiesService } from '../../services/opportunities.service';
 import { OpportunityApplicationService } from 'src/app/fund-seeking-orgs/services/opportunity-application.service';
 

@@ -18,10 +18,9 @@ import {
   MessageSquare,
   Clock,
   Send,
-  CircleAlert,
   CircleCheckBig,
   CircleX,
-  AlertCircle,
+  CircleAlert,
 } from 'lucide-angular';
 import { FundingApplication } from 'src/app/fund-seeking-orgs/models/application.models';
 import {
@@ -54,7 +53,7 @@ export class StatusManagementModalComponent {
   FileTextIcon = FileText;
   UsersIcon = Users;
   FlagIcon = Flag;
-  AlertCircleIcon = AlertCircle;
+  AlertCircleIcon = CircleAlert;
   MessageSquareIcon = MessageSquare;
   ClockIcon = Clock;
   SendIcon = Send;

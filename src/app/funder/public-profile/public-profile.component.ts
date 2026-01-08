@@ -11,11 +11,16 @@ import {
 } from '../models/public-profile.models';
 import { PublicProfileService } from '../services/public-profile.service';
 import { FunderOpportunitiesGridComponent } from './components/fund-opportunities-grid.component';
+import { FunderHeroEnhancedComponent } from 'src/app/core/landing/funds-list/funder-hero-enhanced.component';
 
 @Component({
   selector: 'app-funder-profile',
   standalone: true,
-  imports: [CommonModule, FunderOpportunitiesGridComponent],
+  imports: [
+    CommonModule,
+    FunderOpportunitiesGridComponent,
+    FunderHeroEnhancedComponent,
+  ],
   templateUrl: 'public-profile.component.html',
 })
 export class FunderProfileComponent implements OnInit, OnDestroy {
