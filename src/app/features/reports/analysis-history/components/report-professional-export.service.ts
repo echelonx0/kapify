@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { KapifyReports } from '../models/kapify-reports.interface';
+import { KapifyReports } from '../../models/kapify-reports.interface';
 
 /**
  * Professional Report Export Service

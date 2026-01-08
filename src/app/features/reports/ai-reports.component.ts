@@ -436,13 +436,13 @@ import {
 import { KapifyReports } from './models/kapify-reports.interface';
 import { KapifyReportsGeneratorService } from './services/kapify-reports-generator.service';
 import { KapifyReportsExportService } from './services/kapify-reports-export.service';
-import { ApplicationsStatsComponent } from './analysis-history/applications-stats.component';
+import { ApplicationsStatsComponent } from './analysis-history/components/applications-stats.component';
 import { AuthService } from '../../auth/services/production.auth.service';
 import { AnalysisHistoryComponent } from './analysis-history/analysis-history.component';
 import {
   ReportBuilderComponent,
   ReportBuilderData,
-} from './analysis-history/report-builder-modal-premium.component';
+} from './analysis-history/components/report-builder-modal-premium.component';
 
 interface ActivityReport extends KapifyReports {
   matchScore?: number;
