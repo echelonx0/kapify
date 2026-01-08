@@ -41,11 +41,13 @@
   <div [class]="getSpacingBeforeClasses(section.spacingBefore)"></div>
   }
 
+  <!-- ============================================ -->
   <!-- GROUP CONTAINER (e.g., ASSETS, EQUITIES & LIABILITIES) -->
+  <!-- ============================================ -->
   @if (isGroupContainer(section) && section.children && section.children.length
   > 0) {
   <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden">
-    <!-- Container Header (collapsible) -->
+    <!-- Group Header (collapsible) -->
     <div
       class="px-6 py-4 border-b border-slate-200 bg-slate-50 flex items-center justify-between cursor-pointer hover:bg-slate-100 transition-colors"
       (click)="toggleSection(getSectionKey(section))"
@@ -68,101 +70,93 @@
       </div>
     </div>
 
-    <!-- Child Sections (only show if container is not collapsed) -->
+    <!-- SHARED TABLE FOR ALL CHILD SECTIONS (only render if not collapsed) -->
     @if (!isSectionCollapsed(getSectionKey(section))) {
-    <div class="space-y-0">
-      @for ( childSection of section.children; track trackBySection($index,
-      childSection); let childIndex = $index ) {
-      <!-- Skip header if marked as headerless (for total rows) -->
-      @if (!childSection.isHeaderless) {
-      <!-- Child Section Header -->
-      <div
-        class="px-6 py-3 border-b border-slate-200 bg-slate-50/50 flex items-center gap-2"
-      >
-        <h4 class="text-sm font-semibold text-slate-900">
-          {{ childSection.title }}
-        </h4>
-      </div>
-      }
+    <table class="w-full">
+      <!-- COLUMN HEADERS (render once at the top) -->
+      <thead class="bg-white">
+        <tr class="border-b border-slate-200">
+          <th class="text-left px-6 py-3 font-semibold text-slate-900 text-sm">
+            {{ itemLabel }}
+          </th>
 
-      <!-- Child Section Rows (in table format) -->
-      @if (childSection.rows.length > 0) {
-      <table class="w-full">
-        <!-- Column Headers (only show for first child to save space) -->
-        @if (childIndex === 0 && !childSection.isHeaderless) {
-        <thead class="bg-white">
-          <tr class="border-b border-slate-200">
-            <th
-              class="text-left px-6 py-3 font-semibold text-slate-900 text-sm"
-            >
-              {{ itemLabel }}
-            </th>
+          @for (header of visibleYearHeaders(); track trackByHeader($index,
+          header)) {
+          <th
+            class="text-right px-4 py-3 font-semibold text-slate-900 text-sm min-w-24"
+          >
+            {{ header }}
+          </th>
+          }
+        </tr>
+      </thead>
 
-            @for (header of visibleYearHeaders(); track trackByHeader($index,
-            header)) {
-            <th
-              class="text-right px-4 py-3 font-semibold text-slate-900 text-sm min-w-24"
-            >
-              {{ header }}
-            </th>
-            }
-          </tr>
-        </thead>
+      <!-- CHILD SECTIONS AS TABLE ROWS -->
+      <tbody>
+        @for ( childSection of section.children; track trackBySection($index,
+        childSection); let childIndex = $index ) {
+        <!-- CHILD SECTION HEADER ROW (only if not headerless) -->
+        @if (!childSection.isHeaderless && childSection.title) {
+        <tr
+          class="border-b border-slate-200 bg-slate-50/50 hover:bg-slate-100 transition-colors"
+        >
+          <td colspan="999" class="px-6 py-3">
+            <h4 class="text-sm font-semibold text-slate-900">
+              {{ childSection.title }}
+            </h4>
+          </td>
+        </tr>
         }
 
-        <!-- Child Section Data Rows -->
-        <tbody>
-          @for (row of childSection.rows; track trackByRow($index, row)) {
-          <tr [class]="getRowClasses(row, true)">
-            <!-- Label Cell -->
-            <td [class]="'px-6 py-3 text-left ' + getLabelClasses(row)">
-              <div
-                class="flex items-center gap-2"
-                [class.ml-6]="!childSection.isHeaderless"
-              >
-                <span class="flex-1">{{ row.label }}</span>
+        <!-- DATA ROWS FOR THIS CHILD SECTION -->
+        @for (row of childSection.rows; track trackByRow($index, row)) {
+        <tr [class]="getRowClasses(row, true)">
+          <!-- Label Cell -->
+          <td [class]="'px-6 py-3 text-left ' + getLabelClasses(row)">
+            <div class="flex items-center gap-2">
+              <span class="flex-1">{{ row.label }}</span>
 
-                @if (!row.editable || row.isCalculated) {
-                <lucide-icon
-                  [name]="LockIcon"
-                  [size]="16"
-                  class="text-slate-400 flex-shrink-0"
-                />
-                }
-              </div>
-            </td>
-
-            <!-- Data Cells -->
-            @for ( value of getVisibleRowValues(row.values); track
-            trackByHeader($index, $index.toString()) ) {
-            <td [class]="getCellClasses(row, value)">
-              @if (isRowEditable(row)) {
-              <!-- Editable Input -->
-              <input
-                type="text"
-                [value]="formatNumber(value, row)"
-                (change)="onCellChange($index, $index, $index, $event)"
-                (focus)="onInputFocus($event)"
-                (keydown.enter)="onEnterKey($event)"
-                class="w-full text-right px-2 py-1 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white hover:border-slate-300 transition-colors"
+              @if (!row.editable || row.isCalculated) {
+              <lucide-icon
+                [name]="LockIcon"
+                [size]="16"
+                class="text-slate-400 flex-shrink-0"
               />
-              } @else {
-              <!-- Read-Only Display -->
-              <span>{{ formatNumber(value, row) }}</span>
               }
-            </td>
+            </div>
+          </td>
+
+          <!-- Data Cells -->
+          @for ( value of getVisibleRowValues(row.values); track
+          trackByHeader($index, $index.toString()) ) {
+          <td [class]="getCellClasses(row, value)">
+            @if (isRowEditable(row)) {
+            <!-- Editable Input -->
+            <input
+              type="text"
+              [value]="formatNumber(value, row)"
+              (change)="onCellChange(sectionIndex, $index, $index, $event)"
+              (focus)="onInputFocus($event)"
+              (keydown.enter)="onEnterKey($event)"
+              class="w-full text-right px-2 py-1 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white hover:border-slate-300 transition-colors"
+            />
+            } @else {
+            <!-- Read-Only Display -->
+            <span>{{ formatNumber(value, row) }}</span>
             }
-          </tr>
+          </td>
           }
-        </tbody>
-      </table>
-      } }
-    </div>
+        </tr>
+        } }
+      </tbody>
+    </table>
     }
   </div>
   }
 
+  <!-- ============================================ -->
   <!-- REGULAR SECTION (not a group container) -->
+  <!-- ============================================ -->
   @else if (section.rows && section.rows.length > 0) {
   <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden">
     <!-- Section Header (collapsible if needed) -->
@@ -205,7 +199,7 @@
       <thead class="bg-white">
         <tr class="border-b border-slate-200">
           <th class="text-left px-6 py-3 font-semibold text-slate-900 text-sm">
-            {{ itemLabel }}
+            <!-- {{ itemLabel }} -->
           </th>
 
           @for (header of visibleYearHeaders(); track trackByHeader($index,
@@ -247,7 +241,7 @@
             <input
               type="text"
               [value]="formatNumber(value, row)"
-              (change)="onCellChange($index, $index, $index, $event)"
+              (change)="onCellChange(sectionIndex, $index, $index, $event)"
               (focus)="onInputFocus($event)"
               (keydown.enter)="onEnterKey($event)"
               class="w-full text-right px-2 py-1 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white hover:border-slate-300 transition-colors"

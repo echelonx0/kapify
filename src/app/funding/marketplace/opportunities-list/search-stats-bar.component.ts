@@ -39,8 +39,10 @@ import {
             class="flex items-center gap-2 px-4 py-2.5 bg-teal-50 border border-teal-300/50 rounded-xl text-teal-700 text-sm font-medium hover:bg-teal-100 transition-colors"
             title="Get AI-powered recommendations"
           >
-            <lucide-icon [img]="SparklesIcon" [size]="16" />
-            <span class="hidden sm:inline">Recommended</span>
+            <span class="hidden sm:inline"
+              >Kapify has recommendations based on your profile. Tap to
+              open</span
+            >
           </button>
           }
 
@@ -71,7 +73,6 @@ import {
           <span>Loading opportunities...</span>
           }
         </div>
-        <div class="text-slate-500">Showing latest first</div>
       </div>
     </div>
   `,

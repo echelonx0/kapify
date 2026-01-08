@@ -124,8 +124,6 @@ export class AiAnalysisController {
         opportunityId // ← OPPORTUNITY ID
       );
 
-      console.log('✅ [ANALYSIS-CONTROLLER] Request created:', requestId);
-
       this.currentAnalysisRequestId.set(requestId);
       this.analysisCost.set(cost);
       this.currentAnalysisRequest.set({
@@ -136,7 +134,6 @@ export class AiAnalysisController {
 
       return requestId;
     } catch (error) {
-      console.error('❌ [ANALYSIS-CONTROLLER] Failed to initialize:', error);
       this.analysisError.set(`Failed to initialize analysis: ${error}`);
       throw error;
     }
@@ -150,11 +147,6 @@ export class AiAnalysisController {
    * Process credits for paid analysis
    */
   async processCredits(organizationId: string): Promise<void> {
-    console.log(
-      '💳 [ANALYSIS-CONTROLLER] Processing credits for:',
-      organizationId
-    );
-
     this.isProcessingCredits.set(true);
     this.analysisError.set(null);
 
@@ -163,13 +155,7 @@ export class AiAnalysisController {
         organizationId,
         'generate'
       );
-
-      console.log('✅ [ANALYSIS-CONTROLLER] Credits processed successfully');
     } catch (error) {
-      console.error(
-        '❌ [ANALYSIS-CONTROLLER] Credit processing failed:',
-        error
-      );
       this.analysisError.set(`Failed to process credits: ${error}`);
       throw error;
     } finally {
@@ -336,8 +322,6 @@ export class AiAnalysisController {
   async cancelAnalysis(): Promise<void> {
     const requestId = this.currentAnalysisRequestId();
 
-    console.log('❌ [ANALYSIS-CONTROLLER] Cancelling analysis', { requestId });
-
     if (!requestId) {
       return;
     }
@@ -375,22 +359,13 @@ export class AiAnalysisController {
       return;
     }
 
-    console.log('🔍 [ANALYSIS-CONTROLLER] Checking free analysis availability');
-
     try {
       const hasUsed = await this.analysisRequestService.hasUsedFreeAnalysis(
         organizationId
       );
 
       this.hasFreeAnalysisAvailable.set(!hasUsed);
-      console.log(
-        `✅ [ANALYSIS-CONTROLLER] Free analysis available: ${!hasUsed}`
-      );
     } catch (error) {
-      console.error(
-        '❌ [ANALYSIS-CONTROLLER] Failed to check free analysis:',
-        error
-      );
       this.hasFreeAnalysisAvailable.set(false);
     }
   }
@@ -424,8 +399,6 @@ export class AiAnalysisController {
    * Reset analysis state
    */
   reset(): void {
-    console.log('🔄 [ANALYSIS-CONTROLLER] Resetting state');
-
     this.currentAnalysisRequestId.set(null);
     this.currentAnalysisRequest.set(null);
     this.analysisCost.set(0);

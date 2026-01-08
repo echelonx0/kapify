@@ -1,155 +1,179 @@
-<!-- organization-status-overview.component.html - SLEEK & COMPACT -->
+<!-- organization-status-overview.component.html -->
 
-<div class="status-overview-container" [class.is-animated]="isAnimated()">
+<div class="status-overview" [class.is-animated]="isAnimated()">
   @if (!onboardingState()) {
   <!-- Loading State -->
-  <div class="bg-white rounded-2xl border border-slate-200 p-6">
-    <div class="flex items-center justify-center gap-3">
-      <div
-        class="animate-spin w-5 h-5 border-2 border-teal-500 border-t-transparent rounded-full"
-      ></div>
-      <p class="text-sm text-slate-600">Loading...</p>
-    </div>
+  <div class="bg-white rounded-lg border-3 border-slate-300 p-8 text-center">
+    <div
+      class="inline-flex items-center justify-center w-10 h-10 border-3 border-teal-600 border-t-transparent rounded-full animate-spin mb-3"
+    ></div>
+    <p class="text-sm font-bold text-slate-600 uppercase tracking-wider">
+      Loading...
+    </p>
   </div>
   } @else {
-  <!-- Header Section -->
-  <!-- <div
-    class="flex items-center justify-between mb-4 slide-in-left"
-    style="--delay: 0.05s"
-  >
-    <div class="flex items-center gap-3">
-      @if (getOrganizationLogo()) {
-      <img
-        [src]="getOrganizationLogo()"
-        [alt]="getOrganizationName() + ' logo'"
-        (error)="onLogoLoadError()"
-        class="w-10 h-10 rounded-lg object-cover flex-shrink-0 border border-slate-200 logo-fade-in"
-      />
-      } @else {
-      <div
-        [class]="getStatusIconBg()"
-        class="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 icon-scale"
-      >
-        <lucide-icon
-          [img]="Building2Icon"
-          [size]="20"
-          [class]="getStatusIconColor()"
-        />
-      </div>
-      }
-      <div>
-        <h2 class="text-sm font-bold text-slate-900">
-          {{ getOrganizationName() }}
-        </h2>
-        <p class="text-xs text-slate-600">
-          {{
-            formatOrganizationType(
-              onboardingState()!.organization!.organizationType
-            )
-          }}
-        </p>
-      </div>
-    </div>
 
- 
-    <div
-      [class]="getStatusBadgeClass()"
-      class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border badge-pop-in"
-      style="--delay: 0.1s"
-    >
-      <lucide-icon [img]="getStatusIcon()" [size]="12" />
-      <span>{{ getStatusText() }}</span>
-    </div>
-  </div> -->
-
-  <!-- Compact Status Card -->
+  <!-- Neo-Brutalist Main Card -->
   <div
-    class="bg-white rounded-2xl border border-slate-200 p-6 status-card slide-in-up"
-    style="--delay: 0.15s"
+    [class]="'bg-white rounded-lg ' + borderClass() + ' p-8 scale-in-up'"
+    [style]="'--delay: 0.15s'"
   >
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      <!-- Progress Section -->
-      <div class="lg:col-span-2">
-        <div class="flex items-center justify-between mb-2">
-          <span class="text-sm font-semibold text-slate-900"
-            >Setup Progress</span
-          >
-          <span class="text-sm font-bold text-teal-600"
-            >{{ getCompletionPercentage() }}%</span
-          >
-        </div>
-
-        <div class="h-2 bg-slate-100 rounded-full overflow-hidden mb-3">
+    <!-- Header: Icon + Title + Badge -->
+    <div class="flex items-start justify-between gap-6 mb-8">
+      <div class="flex-1">
+        <!-- Icon + Title -->
+        <div class="flex items-center gap-4 mb-4">
           <div
-            class="h-full rounded-full transition-all duration-700 ease-out progress-bar-fill"
-            [class]="getProgressBarColor()"
-            [style.width.%]="getCompletionPercentage()"
-          ></div>
-        </div>
-
-        <p class="text-sm text-slate-600 mb-4">
-          {{ getMainStatusDescription() }}
-        </p>
-
-        <!-- Urgent Items Inline -->
-        @if (hasUrgentItems() && getTotalMissingItems() > 0) {
-        <div
-          class="flex items-center gap-2 p-3 bg-red-50 border border-red-200/50 rounded-lg"
-        >
-          <lucide-icon
-            [img]="AlertTriangleIcon"
-            [size]="16"
-            class="text-red-600 flex-shrink-0"
-          />
-          <div class="flex-1 min-w-0">
-            <p class="text-sm font-semibold text-red-900">
-              {{ getPrimaryAction()?.item }} needed
-            </p>
-            <p class="text-xs text-red-700">
-              {{ getPrimaryAction()?.description }}
+            [class]="
+              'w-14 h-14 rounded-lg flex items-center justify-center flex-shrink-0 ' +
+              iconBgClass()
+            "
+          >
+            <lucide-icon
+              [img]="statusIcon()"
+              [size]="28"
+              [class]="iconColorClass()"
+            />
+          </div>
+          <div>
+            <h2
+              class="text-3xl font-black text-slate-900 tracking-tight leading-tight"
+            >
+              {{ statusTitle() }}
+            </h2>
+            <p class="text-sm font-semibold text-slate-600 mt-1">
+              {{ statusDescription() }}
             </p>
           </div>
         </div>
-        }
       </div>
 
-      <!-- Actions Section -->
-      <div class="flex flex-col gap-2">
-        @if (!isComplete()) {
-        <button
-          class="w-full bg-teal-500 text-white font-medium rounded-lg px-4 py-2.5 text-sm hover:bg-teal-600 active:bg-teal-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 flex items-center justify-center gap-2 action-button"
-          (click)="completeSetup()"
+      <!-- Completion Badge: Neo-Brutal -->
+      <div
+        class="px-5 py-3 bg-slate-900 text-white rounded-lg border-3 border-slate-950 flex-shrink-0 ml-4"
+      >
+        <p class="text-3xl font-black text-center">
+          {{ completionPercentage() }}%
+        </p>
+        <p
+          class="text-xs font-black text-slate-200 uppercase tracking-widest mt-1 text-center"
         >
-          <lucide-icon [img]="FileTextIcon" [size]="16" />
-          <span>Complete Setup</span>
+          Complete
+        </p>
+      </div>
+    </div>
+
+    <!-- Progress Bar: Thick & Bold -->
+    <div class="mb-8">
+      <div
+        class="h-4 bg-slate-200 rounded-lg overflow-hidden border-3 border-slate-300"
+      >
+        <div
+          [class]="
+            'h-full rounded-lg transition-all duration-700 ease-out ' +
+            progressBarClass()
+          "
+          [style.width.%]="completionPercentage()"
+        ></div>
+      </div>
+    </div>
+
+    <!-- Content Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <!-- Left: Info & Alert -->
+      <div class="lg:col-span-2">
+        <!-- Urgent Item Alert: Bold & Loud -->
+        @if (hasUrgentItems() && primaryAction()) {
+        <div
+          class="bg-red-50 border-3 border-red-600 rounded-lg p-5 mb-6 slide-in-left"
+          [style]="'--delay: 0.3s'"
+        >
+          <div class="flex items-start gap-3">
+            <lucide-icon
+              [img]="AlertTriangleIcon"
+              [size]="24"
+              class="text-red-700 flex-shrink-0 font-bold"
+            />
+            <div class="flex-1">
+              <p
+                class="text-sm font-black text-red-900 uppercase tracking-wide"
+              >
+                {{ primaryAction()!.item }}
+              </p>
+              <p class="text-sm text-red-800 font-semibold mt-1">
+                {{ primaryAction()!.description }}
+              </p>
+            </div>
+          </div>
+        </div>
+        }
+
+        <!-- Status Info -->
+        <div class="text-sm font-semibold text-slate-700">
+          @if (totalMissingItems() > 0) {
+          <p>
+            <span class="text-slate-900 font-black">{{
+              totalMissingItems()
+            }}</span>
+            item{{ totalMissingItems() === 1 ? "" : "s" }} to complete setup
+          </p>
+          } @else {
+          <p class="text-green-700 font-bold">✓ Setup complete</p>
+          }
+        </div>
+      </div>
+
+      <!-- Right: Action Buttons -->
+      <div class="flex flex-col gap-3">
+        @if (!isComplete()) {
+        <!-- Complete Setup Button -->
+        <button
+          (click)="completeSetup()"
+          class="w-full bg-teal-600 text-white font-black rounded-lg px-5 py-3 text-sm border-3 border-teal-700 hover:bg-teal-700 active:bg-teal-800 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 uppercase tracking-wide slide-in-right action-btn"
+          [style]="'--delay: 0.05s'"
+        >
+          <span class="flex items-center justify-center gap-2">
+            <lucide-icon [img]="FileTextIcon" [size]="18" />
+            Complete
+          </span>
         </button>
         } @else if (isComplete() && !isVerified() && canRequestVerification()) {
+        <!-- Request Verification Button -->
         <button
-          class="w-full bg-teal-500 text-white font-medium rounded-lg px-4 py-2.5 text-sm hover:bg-teal-600 active:bg-teal-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 flex items-center justify-center gap-2 action-button"
           (click)="requestVerification()"
+          class="w-full bg-teal-600 text-white font-black rounded-lg px-5 py-3 text-sm border-3 border-teal-700 hover:bg-teal-700 active:bg-teal-800 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 uppercase tracking-wide slide-in-right action-btn"
+          [style]="'--delay: 0.05s'"
         >
-          <lucide-icon [img]="ShieldIcon" [size]="16" />
-          <span>Request Verification</span>
+          <span class="flex items-center justify-center gap-2">
+            <lucide-icon [img]="ShieldIcon" [size]="18" />
+            Verify
+          </span>
         </button>
         }
 
+        <!-- Edit Button -->
         <button
-          class="w-full bg-slate-100 text-slate-700 font-medium rounded-lg px-4 py-2.5 text-sm hover:bg-slate-200 active:bg-slate-300 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 flex items-center justify-center gap-2 action-button"
           (click)="editOrganization()"
-          style="--delay: 0.05s"
+          class="w-full bg-slate-200 text-slate-900 font-black rounded-lg px-5 py-3 text-sm border-3 border-slate-400 hover:bg-slate-300 active:bg-slate-400 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 uppercase tracking-wide slide-in-right action-btn"
+          [style]="'--delay: 0.1s'"
         >
-          <span>Edit Details</span>
-          <lucide-icon [img]="ExternalLinkIcon" [size]="14" />
+          <span class="flex items-center justify-center gap-2">
+            Edit
+            <lucide-icon [img]="ExternalLinkIcon" [size]="16" />
+          </span>
         </button>
 
+        <!-- Profile Button -->
         @if (canCreateOpportunities()) {
         <button
-          class="w-full bg-slate-100 text-slate-700 font-medium rounded-lg px-4 py-2.5 text-sm hover:bg-slate-200 active:bg-slate-300 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 flex items-center justify-center gap-2 action-button"
           (click)="managePublicProfile()"
-          style="--delay: 0.1s"
+          class="w-full bg-slate-200 text-slate-900 font-black rounded-lg px-5 py-3 text-sm border-3 border-slate-400 hover:bg-slate-300 active:bg-slate-400 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 uppercase tracking-wide slide-in-right action-btn"
+          [style]="'--delay: 0.15s'"
         >
-          <span>Manage Profile</span>
-          <lucide-icon [img]="ExternalLinkIcon" [size]="14" />
+          <span class="flex items-center justify-center gap-2">
+            Profile
+            <lucide-icon [img]="ExternalLinkIcon" [size]="16" />
+          </span>
         </button>
         }
       </div>

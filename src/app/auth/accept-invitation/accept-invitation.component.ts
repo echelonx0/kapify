@@ -8,7 +8,7 @@ import {
   Validators,
 } from '@angular/forms';
 
-import { LucideAngularModule } from 'lucide-angular';
+import { AlertCircle, LucideAngularModule } from 'lucide-angular';
 import {
   InvitationAuthService,
   InvitationDetails,
@@ -27,7 +27,7 @@ export class AcceptInvitationComponent implements OnInit {
   private router = inject(Router);
   private invitationAuthService = inject(InvitationAuthService);
   private fb = inject(FormBuilder);
-
+  AlertCircleIcon = AlertCircle;
   // State
   invitationToken = signal<string | null>(null);
   invitationDetails = signal<InvitationDetails | null>(null);

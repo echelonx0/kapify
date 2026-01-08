@@ -31,7 +31,7 @@ import { Router } from '@angular/router';
 
 import { AccountComponent } from './components/account/account.component';
 import { ChangePasswordComponent } from './components/change-password/change-password.component';
-import { CreditsComponent } from '../finance/billing/credits.component';
+import { CreditsComponent } from '../finance/credits/credits.component';
 import { FundingProfileSetupService } from 'src/app/fund-seeking-orgs/services/funding-profile-setup.service';
 
 type SettingsSection =

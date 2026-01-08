@@ -154,7 +154,8 @@ export class ApplicationHeaderComponent implements OnInit, OnChanges {
   }
 
   allApplications() {
-    this.router.navigate(['/funder/applications']);
+    window.history.back();
+    //this.router.navigate(['/funder/applications']);
   }
 
   onManageStatus() {

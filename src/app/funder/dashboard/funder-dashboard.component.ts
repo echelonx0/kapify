@@ -6,7 +6,7 @@ import {
   OnDestroy,
   inject,
 } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { Subject, takeUntil } from 'rxjs';
 import {
@@ -21,19 +21,16 @@ import {
   ArrowRight,
   FileText,
   ClockIcon,
-  FolderOpen,
   ChevronDown,
   ChevronUp,
-  House,
   ChartColumn,
+  Zap,
 } from 'lucide-angular';
-import { UiButtonComponent } from '../../shared/components';
 import {
   FunderOnboardingService,
   OnboardingState,
 } from '../services/funder-onboarding.service';
 import { OpportunityManagementService } from '../services/opportunity-management.service';
-import { FunderDocumentAnalysisComponent } from 'src/app/features/ai/document-analysis/funder-document-analysis.component';
 
 import { PublicProfile } from '../models/public-profile.models';
 import { PublicProfileService } from '../services/public-profile.service';
@@ -41,27 +38,11 @@ import { DraftManagementService } from '../services/draft-management.service';
 import { ActionModalService } from 'src/app/shared/components/modal/modal.service';
 import { OpportunityActionModalComponent } from 'src/app/shared/components/modal/app-modal.component';
 
-type TabId = 'overview' | 'opportunities';
-
-interface Tab {
-  id: TabId;
-  label: string;
-  icon: any;
-  description: string;
-}
-
 @Component({
   selector: 'app-funder-dashboard',
   standalone: true,
-  imports: [
-    CommonModule,
-    UiButtonComponent,
-    LucideAngularModule,
-    FunderDocumentAnalysisComponent,
-    // OrganizationStatusSidebarComponent,
-    OpportunityActionModalComponent,
-  ],
-  templateUrl: 'dashboard.component.html',
+  imports: [CommonModule, LucideAngularModule, OpportunityActionModalComponent],
+  templateUrl: 'funder-dashboard.component.html',
   styleUrl: 'funder-dashboard.component.css',
 })
 export class FunderDashboardComponent implements OnInit, OnDestroy {
@@ -72,27 +53,6 @@ export class FunderDashboardComponent implements OnInit, OnDestroy {
   private publicProfileService = inject(PublicProfileService);
   protected draftService = inject(DraftManagementService);
   private actionModalService = inject(ActionModalService);
-
-  // State
-  activeTab = signal<TabId>('overview');
-  isDocumentAnalysisExpanded = signal(true);
-  isDraftBannerExpanded = signal(false);
-  private route = inject(ActivatedRoute);
-
-  tabs: Tab[] = [
-    {
-      id: 'overview',
-      label: 'Overview',
-      icon: House,
-      description: 'Dashboard overview and key metrics',
-    },
-    {
-      id: 'opportunities',
-      label: 'Opportunities',
-      icon: FolderOpen,
-      description: 'Manage your funding opportunities',
-    },
-  ];
 
   // Icons
   PlusIcon = Plus;
@@ -108,12 +68,12 @@ export class FunderDashboardComponent implements OnInit, OnDestroy {
   BarChart3Icon = ChartColumn;
   ChevronDownIcon = ChevronDown;
   ChevronUpIcon = ChevronUp;
+  ZapIcon = Zap;
 
   // State signals
   onboardingState = signal<OnboardingState | null>(null);
   analytics = signal<any>(null);
   recentOpportunities = signal<any[]>([]);
-  showDocumentAnalysis = signal(false);
   publicProfile = signal<PublicProfile | null>(null);
 
   // Computed properties
@@ -129,66 +89,11 @@ export class FunderDashboardComponent implements OnInit, OnDestroy {
     this.loadDashboardData();
     this.setupSubscriptions();
     this.loadPublicProfile();
-    this.loadDocumentAnalysisPreference();
-    this.loadDraftBannerPreference();
-
-    // Watch for query param "tab"
-    this.route.queryParams.subscribe((params) => {
-      const tab = params['tab'] as TabId | undefined;
-      if (tab && this.tabs.some((t) => t.id === tab)) {
-        this.activeTab.set(tab);
-      }
-    });
   }
 
   ngOnDestroy() {
     this.destroy$.next();
     this.destroy$.complete();
-  }
-
-  // Document Analysis Toggle Methods
-  toggleDocumentAnalysis() {
-    const newState = !this.isDocumentAnalysisExpanded();
-    this.isDocumentAnalysisExpanded.set(newState);
-    this.saveDocumentAnalysisPreference(newState);
-  }
-
-  private loadDocumentAnalysisPreference() {
-    const saved = localStorage.getItem('documentAnalysisExpanded');
-    if (saved !== null) {
-      this.isDocumentAnalysisExpanded.set(saved === 'true');
-    }
-  }
-
-  private saveDocumentAnalysisPreference(expanded: boolean) {
-    localStorage.setItem('documentAnalysisExpanded', expanded.toString());
-  }
-
-  // Draft Banner Toggle Methods
-  toggleDraftBanner() {
-    const newState = !this.isDraftBannerExpanded();
-    this.isDraftBannerExpanded.set(newState);
-    this.saveDraftBannerPreference(newState);
-  }
-
-  private loadDraftBannerPreference() {
-    const saved = localStorage.getItem('draftBannerExpanded');
-    if (saved !== null) {
-      this.isDraftBannerExpanded.set(saved === 'true');
-    }
-  }
-
-  private saveDraftBannerPreference(expanded: boolean) {
-    localStorage.setItem('draftBannerExpanded', expanded.toString());
-  }
-
-  // Tab navigation
-  switchTab(tabId: TabId) {
-    this.activeTab.set(tabId);
-  }
-
-  isActiveTab(tabId: TabId): boolean {
-    return this.activeTab() === tabId;
   }
 
   // Draft management methods
@@ -337,10 +242,6 @@ export class FunderDashboardComponent implements OnInit, OnDestroy {
     }
   }
 
-  openDocumentAnalysis() {
-    this.showDocumentAnalysis.set(true);
-  }
-
   importOpportunity() {
     this.router.navigate(['/funder/opportunities/import']);
   }
@@ -367,7 +268,7 @@ export class FunderDashboardComponent implements OnInit, OnDestroy {
     this.managementService.opportunities$
       .pipe(takeUntil(this.destroy$))
       .subscribe((opportunities) => {
-        this.recentOpportunities.set(opportunities.slice(0, 5));
+        this.recentOpportunities.set(opportunities);
       });
   }
 
@@ -380,7 +281,6 @@ export class FunderDashboardComponent implements OnInit, OnDestroy {
     this.router.navigate(['/funding/opportunities', opportunityId]);
   }
 
-  // UPDATED: Navigate to per-opportunity applications
   manageApplications(opportunityId: string) {
     this.router.navigate([
       '/funder/opportunities',
@@ -501,10 +401,6 @@ export class FunderDashboardComponent implements OnInit, OnDestroy {
     return 'An error occurred. Please try again.';
   }
 
-  viewAnalytics() {
-    // this.router.navigate(['/funder/analytics']);
-  }
-
   improveProfile() {
     this.router.navigate(['/funder/onboarding'], {
       fragment: 'verification',
@@ -515,6 +411,13 @@ export class FunderDashboardComponent implements OnInit, OnDestroy {
   getActiveOpportunitiesCount(): number {
     return this.recentOpportunities().filter((opp) => opp.status === 'active')
       .length;
+  }
+
+  getPendingApplicationsCount(): number {
+    return this.recentOpportunities().reduce(
+      (sum, opp) => sum + (opp.currentApplications || 0),
+      0
+    );
   }
 
   formatStatus(status: string): string {
@@ -546,5 +449,17 @@ export class FunderDashboardComponent implements OnInit, OnDestroy {
 
   editOrganization() {
     this.router.navigate(['/funder/onboarding']);
+  }
+
+  // Get status badge style
+  getStatusBadgeClasses(status: string): string {
+    const baseClasses = 'px-2.5 py-1 rounded-full text-xs font-semibold border';
+    const statusClasses: Record<string, string> = {
+      active: 'bg-green-50 text-green-700 border-green-200/50',
+      draft: 'bg-slate-100 text-slate-700 border-slate-200',
+      paused: 'bg-amber-50 text-amber-700 border-amber-200/50',
+      closed: 'bg-red-50 text-red-700 border-red-200/50',
+    };
+    return `${baseClasses} ${statusClasses[status]}`;
   }
 }

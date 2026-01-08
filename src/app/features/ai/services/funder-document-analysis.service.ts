@@ -2,6 +2,7 @@
 import { Injectable, inject } from '@angular/core';
 import { Observable, BehaviorSubject, from, throwError } from 'rxjs';
 import { tap, catchError } from 'rxjs/operators';
+import { AuthService } from 'src/app/auth/services/production.auth.service';
 import { SharedSupabaseService } from 'src/app/shared/services/shared-supabase.service';
 
 export interface ProcessingStatus {
@@ -92,6 +93,7 @@ export interface DocumentAnalysisResult {
 })
 export class FunderDocumentAnalysisService {
   private supabase = inject(SharedSupabaseService);
+  private authService = inject(AuthService);
 
   private processingStatusSubject =
     new BehaviorSubject<ProcessingStatus | null>(null);
@@ -205,6 +207,11 @@ export class FunderDocumentAnalysisService {
   /**
    * ✅ FIX: Better error handling for API calls
    */
+  // src/app/ai/services/funder-document-analysis.service.ts (updated)
+  // CHANGES:
+  // 1. callAnalysisFunction now extracts and passes orgId
+  // 2. Updated API call body to include orgId
+
   private async callAnalysisFunction(
     base64Pdf: string,
     fileName: string
@@ -212,13 +219,19 @@ export class FunderDocumentAnalysisService {
     console.log('Sending PDF to analysis function...');
 
     try {
+      const orgId = this.authService.getCurrentUserOrganizationId();
+
+      if (!orgId) {
+        throw new Error('Organization ID not found');
+      }
+
       const { data, error } = await this.supabase.functions.invoke(
-        // 'analyze-document',
         'analyse-investment-proposal',
         {
           body: {
             pdfData: base64Pdf,
             fileName,
+            orgId, // ✅ NOW PASSING ORG_ID
             includeMarketIntelligence: true,
           },
         }
@@ -247,7 +260,7 @@ export class FunderDocumentAnalysisService {
       console.error('Analysis function error:', error);
 
       if (error instanceof Error) {
-        // ✅ FIX: Better error categorization
+        // Better error categorization
         if (error.message.includes('429')) {
           throw new Error(
             'API quota exceeded. Please try again in a few moments.'
@@ -273,7 +286,6 @@ export class FunderDocumentAnalysisService {
       throw new Error('Analysis failed unexpectedly');
     }
   }
-
   /**
    * Validate analysis result and ensure all required fields exist
    */

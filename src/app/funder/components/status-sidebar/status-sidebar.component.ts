@@ -24,7 +24,7 @@ import {
 
 import { AuthService } from '../../../auth/services/production.auth.service';
 
-import { PurchaseCreditsModalComponent } from 'src/app/core/dashboard/finance/billing/purchase-credits-modal.component';
+import { PurchaseCreditsModalComponent } from 'src/app/core/dashboard/finance/credits/purchase-credits-modal.component';
 import {
   OrgCreditService,
   OrgWallet,

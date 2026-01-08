@@ -1,7 +1,13 @@
 import { Injectable, inject, signal, computed, OnDestroy } from '@angular/core';
 import { Subject } from 'rxjs';
-import { OrgCreditService, OrgWallet } from 'src/app/shared/services/credit.service';
-import { CreditDeductionService, CreditAction } from './credit-deduction.service';
+import {
+  OrgCreditService,
+  OrgWallet,
+} from 'src/app/shared/services/credit.service';
+import {
+  CreditDeductionService,
+  CreditAction,
+} from './credit-deduction.service';
 
 /**
  * Represents a pending cost confirmation (when user has enough credits)
@@ -104,9 +110,9 @@ export class CreditGatingService implements OnDestroy {
     action: '',
   });
 
-  constructor() {
-    console.log('✅ CreditGatingService initialized');
-  }
+  // constructor() {
+  //   console.log('✅ CreditGatingService initialized');
+  // }
 
   /**
    * Load wallet for an organization
@@ -125,7 +131,6 @@ export class CreditGatingService implements OnDestroy {
     try {
       const wallet = await this.creditService.getOrCreateOrgWallet(orgId);
       this.wallet.set(wallet);
-      console.log(`✅ Wallet loaded: ${wallet.balance} credits`);
     } catch (err) {
       console.error('❌ Failed to load wallet:', err);
       this.wallet.set(null);
@@ -146,7 +151,6 @@ export class CreditGatingService implements OnDestroy {
     try {
       const wallet = await this.creditService.getOrCreateOrgWallet(orgId);
       this.wallet.set(wallet);
-      console.log(`✅ Wallet refreshed: ${wallet.balance} credits`);
     } catch (err) {
       console.error('❌ Failed to refresh wallet:', err);
     }
@@ -214,9 +218,6 @@ export class CreditGatingService implements OnDestroy {
       actionId,
     });
 
-    console.log(
-      `⚠️ Purchase prompt opened: need ${creditsNeeded} more credits for ${action}`
-    );
     return false;
   }
 
@@ -320,7 +321,6 @@ export class CreditGatingService implements OnDestroy {
             });
           }
 
-          console.log(`✅ Credits deducted. New balance: ${result.newBalance}`);
           resolve({ newBalance: result.newBalance });
         },
         error: (err) => {

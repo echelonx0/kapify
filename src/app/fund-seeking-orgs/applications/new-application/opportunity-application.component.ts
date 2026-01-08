@@ -333,28 +333,6 @@ export class OpportunityApplicationFormComponent implements OnInit, OnDestroy {
       });
   }
 
-  private createDraftApplication(opportunity: FundingOpportunity): void {
-    const applicationData = {
-      title: `Application for ${opportunity.title}`,
-      description: `Funding application for ${opportunity.fundingType} opportunity`,
-      opportunityId: opportunity.id,
-      formData: this.formService.getFormDataForSave(),
-    };
-
-    this.applicationService
-      .createApplication(applicationData)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (newApplication) => {
-          this.draftApplication.set(newApplication);
-          console.log('✓ Draft application created:', newApplication.id);
-        },
-        error: (error) => {
-          console.error('Error creating draft application:', error);
-        },
-      });
-  }
-
   // ===============================
   // VALIDATION
   // ===============================
@@ -469,56 +447,6 @@ export class OpportunityApplicationFormComponent implements OnInit, OnDestroy {
     }, 2000);
   }
 
-  async saveDraft(): Promise<void> {
-    if (!this.selectedOpportunity() || this.isSaving()) return;
-
-    this.isSaving.set(true);
-    this.error.set(null);
-
-    try {
-      const formData = this.formService.getFormDataForSave();
-      const savePayload = {
-        formData: {
-          requestedAmount: parseFloat(formData.requestedAmount) || 0,
-          purposeStatement: formData.purposeStatement,
-          useOfFunds: formData.useOfFunds,
-        },
-      };
-
-      if (this.draftApplication()) {
-        const updatedApplication = await this.applicationService
-          .updateApplication(this.draftApplication()!.id, savePayload)
-          .toPromise();
-
-        if (updatedApplication) {
-          this.draftApplication.set(updatedApplication);
-        }
-      } else {
-        const newApplication = await this.applicationService
-          .createApplication({
-            title: `Application for ${this.selectedOpportunity()!.title}`,
-            description: `Funding application for ${
-              this.selectedOpportunity()!.fundingType
-            } opportunity`,
-            opportunityId: this.selectedOpportunity()!.id,
-            formData: savePayload.formData,
-          })
-          .toPromise();
-
-        if (newApplication) {
-          this.draftApplication.set(newApplication);
-        }
-      }
-
-      // console.log('✓ Draft saved successfully');
-    } catch (error) {
-      console.error('Failed to save draft:', error);
-      this.error.set('Failed to save draft');
-    } finally {
-      this.isSaving.set(false);
-    }
-  }
-
   async submitApplication(): Promise<void> {
     if (
       !this.selectedOpportunity() ||
@@ -595,5 +523,105 @@ export class OpportunityApplicationFormComponent implements OnInit, OnDestroy {
           : application.useOfFunds?.[0]?.description || '',
       fundingType: application.fundingType || '',
     });
+  }
+
+  // PASTE THIS INTO YOUR opportunity-application.component.ts - Replace the createDraftApplication() method
+
+  /**
+   * Create draft application with required funderId from opportunity
+   */
+  private createDraftApplication(opportunity: FundingOpportunity): void {
+    // Extract funderId from opportunity.organizationId (required)
+    const funderId = opportunity.organizationId;
+    if (!funderId) {
+      console.error(
+        '❌ Cannot create application: opportunity.organizationId is missing'
+      );
+      this.error.set(
+        'Opportunity is missing funder information. Please try again.'
+      );
+      return;
+    }
+
+    const applicationData = {
+      title: `Application for ${opportunity.title}`,
+      description: `Funding application for ${opportunity.fundingType} opportunity`,
+      opportunityId: opportunity.id,
+      funderId: funderId, // ✅ REQUIRED: Pass funder organization ID
+      formData: this.formService.getFormDataForSave(),
+    };
+
+    this.applicationService
+      .createApplication(applicationData)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (newApplication) => {
+          this.draftApplication.set(newApplication);
+          console.log('✓ Draft application created with funder_id:', funderId);
+        },
+        error: (error) => {
+          console.error('Error creating draft application:', error);
+          this.error.set(error?.message || 'Failed to create application');
+        },
+      });
+  }
+
+  /**
+   * Update saveDraft to include funderId when creating new applications
+   */
+  async saveDraft(): Promise<void> {
+    if (!this.selectedOpportunity() || this.isSaving()) return;
+
+    this.isSaving.set(true);
+    this.error.set(null);
+
+    try {
+      const formData = this.formService.getFormDataForSave();
+      const savePayload = {
+        formData: {
+          requestedAmount: parseFloat(formData.requestedAmount) || 0,
+          purposeStatement: formData.purposeStatement,
+          useOfFunds: formData.useOfFunds,
+        },
+      };
+
+      if (this.draftApplication()) {
+        // Update existing application (funder_id already set during creation)
+        const updatedApplication = await this.applicationService
+          .updateApplication(this.draftApplication()!.id, savePayload)
+          .toPromise();
+
+        if (updatedApplication) {
+          this.draftApplication.set(updatedApplication);
+        }
+      } else {
+        // Create new application with funderId
+        const opportunity = this.selectedOpportunity();
+        if (!opportunity?.organizationId) {
+          throw new Error('Opportunity missing funder information');
+        }
+
+        const newApplication = await this.applicationService
+          .createApplication({
+            title: `Application for ${opportunity.title}`,
+            description: `Funding application for ${opportunity.fundingType} opportunity`,
+            opportunityId: opportunity.id,
+            funderId: opportunity.organizationId, // ✅ REQUIRED
+            formData: savePayload.formData,
+          })
+          .toPromise();
+
+        if (newApplication) {
+          this.draftApplication.set(newApplication);
+        }
+      }
+
+      console.log('✓ Draft saved successfully');
+    } catch (error) {
+      console.error('Failed to save draft:', error);
+      this.error.set('Failed to save draft');
+    } finally {
+      this.isSaving.set(false);
+    }
   }
 }

@@ -798,4 +798,159 @@ export class MessagingService implements OnDestroy {
     this.threadsSubject.complete();
     this.currentUserSubject.complete();
   }
+
+  /**
+   * EXTENSION: MessagingService.sendApplicationSubmissionNotification()
+   *
+   * Add this method to the MessagingService class
+   * Location: After the createApplicationThread() method
+   */
+
+  /**
+   * Send submission confirmation notification to SME
+   * Creates a one-way system message (not a conversation thread)
+   */
+  async sendApplicationSubmissionNotification(
+    applicationId: string,
+    applicationTitle: string,
+    applicationAmount: number,
+    funderName: string,
+    opportunityTitle?: string
+  ): Promise<boolean> {
+    try {
+      const currentUser = this.currentUserSubject.value;
+      if (!currentUser) {
+        console.error('❌ ERROR: No authenticated user for notification');
+        return false;
+      }
+
+      // Build confirmation message
+      const message = this.buildSubmissionConfirmationMessage(
+        applicationTitle,
+        applicationAmount,
+        funderName,
+        opportunityTitle
+      );
+
+      // Create notification thread (one message, not a conversation)
+      const threadSubject = `✓ Application Submitted: ${applicationTitle}`;
+
+      const { data: threadData, error: threadError } = await this.supabase
+        .from('message_threads')
+        .insert([
+          {
+            subject: threadSubject,
+            created_by: 'system',
+            is_broadcast: false,
+            metadata: {
+              application_id: applicationId,
+              notification_type: 'submission_confirmation',
+              created_at: new Date().toISOString(),
+            },
+          },
+        ])
+        .select()
+        .single();
+
+      if (threadError || !threadData) {
+        console.error(
+          '❌ ERROR: Thread creation failed for notification:',
+          threadError
+        );
+        return false;
+      }
+
+      // Add SME as participant
+      const { error: participantError } = await this.supabase
+        .from('thread_participants')
+        .insert([
+          {
+            thread_id: threadData.id,
+            user_id: currentUser.id,
+            can_reply: false, // System notifications are read-only
+          },
+        ]);
+
+      if (participantError) {
+        console.error(
+          '❌ ERROR: Participant insert failed for notification:',
+          participantError
+        );
+        return false;
+      }
+
+      // Create system message
+      const { error: messageError } = await this.supabase
+        .from('messages')
+        .insert([
+          {
+            thread_id: threadData.id,
+            sender_id: null, // System message
+            message_type: 'system',
+            content: message,
+            file_attachments: [],
+            is_system_message: true,
+            metadata: {
+              application_id: applicationId,
+              notification_type: 'submission_confirmation',
+            },
+          },
+        ]);
+
+      if (messageError) {
+        console.error(
+          '❌ ERROR: Message creation failed for notification:',
+          messageError
+        );
+        return false;
+      }
+
+      console.log(
+        '✅ Application submission notification created for:',
+        applicationTitle
+      );
+      return true;
+    } catch (error) {
+      console.error(
+        '❌ Error sending application submission notification:',
+        error
+      );
+      return false;
+    }
+  }
+
+  /**
+   * Build submission confirmation message
+   */
+  private buildSubmissionConfirmationMessage(
+    applicationTitle: string,
+    applicationAmount: number,
+    funderName: string,
+    opportunityTitle?: string
+  ): string {
+    const currency = 'ZAR'; // Default, can be parameterized
+    const formattedAmount = new Intl.NumberFormat('en-ZA', {
+      style: 'currency',
+      currency,
+      minimumFractionDigits: 0,
+    }).format(applicationAmount);
+
+    return `APPLICATION SUBMITTED
+
+Your application has been successfully submitted.
+
+Application: ${applicationTitle}
+Amount Requested: ${formattedAmount}
+Submitted To: ${funderName}
+${opportunityTitle ? `Opportunity: ${opportunityTitle}` : ''}
+
+Status: Under Review
+
+What's Next:
+• The funder will review your application
+• You'll receive updates on the progress
+• We'll notify you of any decisions or required documents
+
+Keep your contact information up to date so the funder can reach you.`;
+  }
 }

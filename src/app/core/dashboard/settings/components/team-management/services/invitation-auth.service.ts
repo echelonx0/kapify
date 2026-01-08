@@ -1,8 +1,6 @@
 import { Injectable, inject } from '@angular/core';
-import { Observable, from, throwError, of } from 'rxjs';
+import { Observable, from, of } from 'rxjs';
 import { tap, catchError, map } from 'rxjs/operators';
-
-import { AuthService } from '../../../../../../auth/services/production.auth.service';
 import { SharedSupabaseService } from '../../../../../../shared/services/shared-supabase.service';
 import { UserProfile } from 'src/app/auth/models/auth.models';
 
@@ -15,6 +13,7 @@ export interface InvitationDetails {
   inviterName: string;
   expiresAt: Date;
   organizationName: string;
+  organizationType: 'sme' | 'funder';
 }
 
 export interface InvitationRegistrationRequest {
@@ -38,11 +37,11 @@ export interface InvitationRegistrationResult {
 })
 export class InvitationAuthService {
   private supabase = inject(SharedSupabaseService);
-  private authService = inject(AuthService);
 
   /**
    * Validate invitation token and get invitation details
    * Called when user clicks invite link
+   *  Fetches denormalized org data
    */
   validateInvitationToken(token: string): Observable<{
     valid: boolean;
@@ -100,8 +99,8 @@ export class InvitationAuthService {
 
   /**
    * Fetch invitation details by token
-   * Private - called by validateInvitationToken
-   * FIX: Handle FK relationships correctly and add detailed logging
+   * ✅ UPDATED: Uses denormalized org_name, org_type, inviter_name from organization_users
+   * No need to join with organizations table anymore
    */
   private async fetchInvitationDetails(
     token: string
@@ -111,7 +110,7 @@ export class InvitationAuthService {
       token.slice(0, 16) + '...'
     );
 
-    // Step 1: Get the raw invitation record
+    // Single query: Get the raw invitation record with denormalized data
     const { data: invitation, error } = await this.supabase
       .from('organization_users')
       .select('*')
@@ -136,7 +135,7 @@ export class InvitationAuthService {
       expiresAt: invitation.invitation_expires_at,
     });
 
-    // Step 2: Check expiry
+    // Check expiry
     const now = new Date();
     const expiresAt = new Date(invitation.invitation_expires_at);
     if (now > expiresAt) {
@@ -144,36 +143,10 @@ export class InvitationAuthService {
       throw new Error('This invitation has expired. Please request a new one.');
     }
 
-    // Step 3: Fetch organization name separately (avoid FK issues)
-    const { data: org, error: orgError } = await this.supabase
-      .from('organizations')
-      .select('name')
-      .eq('id', invitation.organization_id)
-      .single();
-
-    if (orgError) {
-      console.warn('⚠️ Could not fetch org name:', orgError);
-    }
-    const orgName = org?.name || 'Organization';
-
-    // Step 4: Fetch inviter name separately (avoid FK issues)
-    const { data: inviter, error: inviterError } = await this.supabase
-      .from('users')
-      .select('first_name, last_name')
-      .eq('id', invitation.invited_by)
-      .single();
-
-    if (inviterError) {
-      console.warn('⚠️ Could not fetch inviter name:', inviterError);
-    }
-    const inviterName = inviter
-      ? `${inviter.first_name || ''} ${inviter.last_name || ''}`.trim() ||
-        'Team Member'
-      : 'Team Member';
-
     console.log('✅ Invitation details resolved:', {
-      organizationName: orgName,
-      inviterName,
+      organizationName: invitation.org_name || 'Organization',
+      organizationType: invitation.org_type || 'sme',
+      inviterName: invitation.inviter_name || 'Team Member',
     });
 
     return {
@@ -182,9 +155,10 @@ export class InvitationAuthService {
       role: invitation.role,
       organizationId: invitation.organization_id,
       invitedBy: invitation.invited_by,
-      inviterName,
+      inviterName: invitation.inviter_name || 'Team Member',
       expiresAt,
-      organizationName: orgName,
+      organizationName: invitation.org_name || 'Organization',
+      organizationType: (invitation.org_type as 'sme' | 'funder') || 'sme',
     };
   }
 
@@ -196,7 +170,7 @@ export class InvitationAuthService {
     request: InvitationRegistrationRequest
   ): Promise<InvitationRegistrationResult> {
     try {
-      // Fetch invitation details first to validate
+      // Fetch invitation details first to validate and get organization type
       const invitationDetails = await this.fetchInvitationDetails(
         request.invitationToken
       );
@@ -210,21 +184,29 @@ export class InvitationAuthService {
         );
       }
 
-      // Step 1: Create auth user
-      console.log('Step 1: Creating auth user');
+      // Step 1: Create auth user with organization type
+      console.log(
+        'Step 1: Creating auth user with type:',
+        invitationDetails.organizationType
+      );
       const authUser = await this.createAuthUserForInvitation({
         email: request.email,
         password: request.password,
         firstName: request.firstName,
         lastName: request.lastName,
+        userType: invitationDetails.organizationType,
       });
 
-      // Step 2: Create user profile
-      console.log('Step 2: Creating user profile');
+      // Step 2: Create user profile with organization type
+      console.log(
+        'Step 2: Creating user profile with type:',
+        invitationDetails.organizationType
+      );
       await this.createUserProfileForInvitation(authUser.id, {
         email: request.email,
         firstName: request.firstName,
         lastName: request.lastName,
+        userType: invitationDetails.organizationType,
       });
 
       // Step 3: Accept invitation
@@ -234,7 +216,8 @@ export class InvitationAuthService {
       // Step 4: Build and return user profile
       const userProfile = await this.buildInvitedUserProfile(
         authUser.id,
-        invitationDetails.organizationId
+        invitationDetails.organizationId,
+        invitationDetails.organizationType
       );
 
       console.log('✅ Invited user registration complete');
@@ -262,6 +245,7 @@ export class InvitationAuthService {
     password: string;
     firstName: string;
     lastName: string;
+    userType: 'sme' | 'funder';
   }): Promise<{ id: string; email: string }> {
     try {
       const { data: authData, error } = await this.supabase.auth.signUp({
@@ -271,7 +255,7 @@ export class InvitationAuthService {
           data: {
             first_name: data.firstName,
             last_name: data.lastName,
-            user_type: 'sme', //TODO: MAKE DYNAMIC
+            user_type: data.userType,
           },
         },
       });
@@ -297,7 +281,12 @@ export class InvitationAuthService {
    */
   private async createUserProfileForInvitation(
     userId: string,
-    data: { email: string; firstName: string; lastName: string }
+    data: {
+      email: string;
+      firstName: string;
+      lastName: string;
+      userType: 'sme' | 'funder';
+    }
   ): Promise<void> {
     try {
       // Create users table record
@@ -306,7 +295,7 @@ export class InvitationAuthService {
         email: data.email,
         first_name: data.firstName,
         last_name: data.lastName,
-        user_type: 'sme', //TODO: MAKE DYNAMIC
+        user_type: data.userType,
         status: 'active',
         email_verified: true,
         created_at: new Date().toISOString(),
@@ -384,7 +373,8 @@ export class InvitationAuthService {
    */
   private async buildInvitedUserProfile(
     userId: string,
-    organizationId: string
+    organizationId: string,
+    userType: 'sme' | 'funder'
   ): Promise<UserProfile> {
     try {
       const { data: userData, error } = await this.supabase
@@ -413,7 +403,7 @@ export class InvitationAuthService {
         firstName: userData.first_name,
         lastName: userData.last_name,
         phone: userData.phone,
-        userType: userData.user_type,
+        userType: userType,
         profileStep: userData.user_profiles?.[0]?.profile_step || 0,
         completionPercentage:
           userData.user_profiles?.[0]?.completion_percentage || 0,
@@ -463,7 +453,6 @@ export class InvitationAuthService {
 
   /**
    * Cleanup failed registration (best effort)
-   * Attempts to rollback created records
    */
   private async cleanupFailedRegistration(error: any): Promise<void> {
     console.log('Attempting cleanup for failed registration');

@@ -4,10 +4,7 @@ import { Observable, from, of, throwError } from 'rxjs';
 import { tap, catchError } from 'rxjs/operators';
 import { AuthService } from '../../auth/services/production.auth.service';
 import { SharedSupabaseService } from '../../shared/services/shared-supabase.service';
-import {
-  DocumentMetadata,
-  SupabaseDocumentService,
-} from 'src/app/shared/services/supabase-document.service';
+import { SupabaseDocumentService } from 'src/app/shared/services/supabase-document.service';
 import {
   DocumentSection,
   FundingApplication,
@@ -76,7 +73,7 @@ export class ApplicationManagementService {
     this.isLoading.set(true);
     this.error.set(null);
 
-    console.log('Fetching applications for organization:', organizationId);
+    console.log('Fetching applications for funder:', organizationId);
 
     return from(
       this.fetchApplicationsByOrganization(
@@ -86,12 +83,12 @@ export class ApplicationManagementService {
       )
     ).pipe(
       tap((apps) => {
-        console.log('Organization applications loaded:', apps.length);
+        console.log('Funder applications loaded:', apps.length);
         this.isLoading.set(false);
       }),
       catchError((error) => {
-        console.error('Error loading organization applications:', error);
-        this.error.set('Failed to load organization applications');
+        console.error('Error loading funder applications:', error);
+        this.error.set('Failed to load funder applications');
         this.isLoading.set(false);
         return throwError(() => error);
       })
@@ -375,12 +372,6 @@ export class ApplicationManagementService {
     applications: FundingApplication[]
   ): Promise<FundingApplication[]> {
     try {
-      // console.log(
-      //   '📄 [DEBUG] Enriching',
-      //   applications.length,
-      //   'applications with documents'
-      // );
-
       // Get unique applicant IDs
       const applicantIds = [
         ...new Set(applications.map((app) => app.applicantId)),
@@ -414,13 +405,9 @@ export class ApplicationManagementService {
         app.documents = this.transformDocumentsForApplication(documentsData);
       });
 
-      // console.log('✅ [DEBUG] Applications enriched with documents');
       return applications;
     } catch (error) {
-      console.error(
-        '💥 [DEBUG] Error enriching applications with documents:',
-        error
-      );
+      console.error('Error enriching applications with documents:', error);
       // Return applications without documents rather than failing completely
       return applications;
     }
@@ -547,7 +534,6 @@ export class ApplicationManagementService {
       const transformedApp = this.transformApplicationData(data);
 
       // Fetch documents for the application
-
       const documentsData = await this.fetchApplicantDocuments(
         transformedApp.applicantId,
         applicationId
@@ -567,26 +553,14 @@ export class ApplicationManagementService {
   // ===============================
 
   private transformApplicationsData(rawData: any[]): FundingApplication[] {
-    // console.log(
-    //   '🔄 [DEBUG] transformApplicationsData called with:',
-    //   rawData.length,
-    //   'items'
-    // );
-
     try {
-      const transformed = rawData.map((item, index) => {
-        // console.log(`🔄 [DEBUG] Transforming item ${index}:`, item.id);
+      const transformed = rawData.map((item) => {
         return this.transformApplicationData(item);
       });
 
-      // console.log(
-      //   '✅ [DEBUG] Successfully transformed',
-      //   transformed.length,
-      //   'applications'
-      // );
       return transformed;
     } catch (error) {
-      console.error('💥 [DEBUG] Error in transformApplicationsData:', error);
+      console.error('Error in transformApplicationsData:', error);
       throw error;
     }
   }
@@ -668,7 +642,9 @@ export class ApplicationManagementService {
     };
   }
 
-  // from Headers
+  // ===============================
+  // DOCUMENT FETCHING - FALLBACK METHODS
+  // ===============================
 
   /**
    * FALLBACK: Direct query for specific user (when funder views applicant documents)
@@ -861,17 +837,15 @@ export class ApplicationManagementService {
     }
   }
 
+  // ===============================
+  // CORE FETCH METHODS
+  // ===============================
+
   private async fetchApplicationsSimplified(
     opportunityId: string,
     includeDocuments: boolean = false
   ): Promise<FundingApplication[]> {
     try {
-      console.log(
-        '🔍 [DEBUG] Starting fetchApplicationsSimplified with documents:',
-        includeDocuments
-      );
-      console.log('🎯 [DEBUG] Opportunity ID:', opportunityId);
-
       // FIXED: Correct Supabase query syntax
       const { data, error } = await this.supabase
         .from('applications')
@@ -881,16 +855,15 @@ export class ApplicationManagementService {
         .order('created_at', { ascending: false });
 
       if (error) {
-        console.error('🚫 [DEBUG] Supabase error details:', error);
         throw new Error(`Supabase error: ${error.message}`);
       }
 
       if (!data || data.length === 0) {
-        console.log('📭 [DEBUG] No applications found');
+        console.log('📭 No applications found');
         return [];
       }
 
-      console.log('✅ [DEBUG] Raw applications found:', data.length);
+      console.log('✅ Raw applications found:', data.length);
 
       // Transform applications
       let applications = this.transformApplicationsData(data);
@@ -902,46 +875,27 @@ export class ApplicationManagementService {
 
       return applications;
     } catch (error) {
-      console.error('💥 [DEBUG] Error in fetchApplicationsSimplified:', error);
       throw error;
     }
   }
 
-  // ===============================
-  // FIXED: fetchApplicationsByOrganization method
-  // ===============================
+  /**
+   * SIMPLIFIED: Direct query by funder_id
+   */
   private async fetchApplicationsByOrganization(
     organizationId: string,
     filter?: ApplicationFilter,
     includeDocuments: boolean = false
   ): Promise<FundingApplication[]> {
     try {
-      console.log('Querying applications for organization:', organizationId);
+      console.log('Querying applications for funder:', organizationId);
 
-      // First, get opportunities for this organization
-      const { data: opportunities, error: oppError } = await this.supabase
-        .from('funding_opportunities')
-        .select('id')
-        .eq('organization_id', organizationId);
-
-      if (oppError) {
-        throw new Error(`Failed to fetch opportunities: ${oppError.message}`);
-      }
-
-      if (!opportunities || opportunities.length === 0) {
-        console.log('No opportunities found for organization:', organizationId);
-        return [];
-      }
-
-      const opportunityIds = opportunities.map((opp) => opp.id);
-      console.log('Found opportunities:', opportunityIds.length);
-
-      // FIXED: Correct query syntax
+      // Direct query by funder_id (no opportunity lookup needed)
       let query = this.supabase
         .from('applications')
         .select('*')
-        .in('opportunity_id', opportunityIds)
-        .not('status', 'in', '(withdrawn,draft)'); // ✅ FIXED: Correct syntax
+        .eq('funder_id', organizationId)
+        .not('status', 'in', '(withdrawn,draft)');
 
       // Apply filters
       if (filter?.status?.length) {
@@ -968,7 +922,7 @@ export class ApplicationManagementService {
       }
 
       if (!data || data.length === 0) {
-        console.log('No applications found for organization opportunities');
+        console.log('No applications found for funder:', organizationId);
         return [];
       }
 
@@ -997,9 +951,9 @@ export class ApplicationManagementService {
     }
   }
 
-  // ===============================
-  // FIXED: fetchApplicationStats method
-  // ===============================
+  /**
+   * Get application stats: can be by opportunity or by funder (organization)
+   */
   private async fetchApplicationStats(
     opportunityId?: string,
     organizationId?: string
@@ -1011,18 +965,15 @@ export class ApplicationManagementService {
 
       if (opportunityId) {
         query = query.eq('opportunity_id', opportunityId);
+      } else if (organizationId) {
+        // Use funder_id for organization-level stats
+        query = query.eq('funder_id', organizationId);
       }
 
-      // FIXED: Use individual not() calls or alternative approach
-      // Option 1: Use individual not() calls
+      // Exclude withdrawn and draft applications
       query = query
         .not('status', 'eq', 'withdrawn')
         .not('status', 'eq', 'draft');
-
-      // Alternative Option 2: Use neq (not equal) for each
-      // query = query
-      //   .neq('status', 'withdrawn')
-      //   .neq('status', 'draft');
 
       const { data, error } = await query;
 
@@ -1039,7 +990,6 @@ export class ApplicationManagementService {
 
   /**
    * Get all applications a funder can manage
-   * Fetches applications from all active opportunities
    */
   getAllManageableApplications(
     includeDocuments: boolean = false
@@ -1049,7 +999,6 @@ export class ApplicationManagementService {
 
     return from(this.fetchAllManageableApplications(includeDocuments)).pipe(
       tap((apps) => {
-        console.log('✅ All manageable applications loaded:', apps.length);
         this.isLoading.set(false);
       }),
       catchError((error) => {
@@ -1065,32 +1014,18 @@ export class ApplicationManagementService {
     includeDocuments: boolean = false
   ): Promise<FundingApplication[]> {
     try {
-      console.log('🔍 Fetching all manageable applications');
-
-      // Get all active opportunities
-      const { data: opportunities, error: oppError } = await this.supabase
-        .from('funding_opportunities')
-        .select('id')
-        .in('status', ['active', 'paused']);
-
-      if (oppError) {
-        console.error('Failed to fetch opportunities:', oppError);
+      // Get current user's organization
+      const currentUser = this.authService.user();
+      if (!currentUser?.organizationId) {
+        console.log('📭 No organization found for current user');
         return [];
       }
 
-      if (!opportunities?.length) {
-        console.log('📭 No active opportunities found');
-        return [];
-      }
-
-      const opportunityIds = opportunities.map((opp) => opp.id);
-      console.log('✅ Found opportunities:', opportunityIds.length);
-
-      // Get applications for all those opportunities
+      // Query applications for this funder/organization
       const { data, error } = await this.supabase
         .from('applications')
         .select('*')
-        .in('opportunity_id', opportunityIds)
+        .eq('funder_id', currentUser.organizationId)
         .not('status', 'in', '(withdrawn,draft)')
         .order('created_at', { ascending: false });
 
@@ -1100,11 +1035,12 @@ export class ApplicationManagementService {
       }
 
       if (!data?.length) {
-        console.log('📭 No applications found');
+        console.log(
+          '📭 No applications found for user:',
+          currentUser.organizationId
+        );
         return [];
       }
-
-      console.log('✅ Applications found:', data.length);
 
       let applications = this.transformApplicationsData(data);
 
@@ -1115,19 +1051,17 @@ export class ApplicationManagementService {
 
       return applications;
     } catch (error) {
-      console.error('💥 Error in fetchAllManageableApplications:', error);
+      console.error('Error in fetchAllManageableApplications:', error);
       return [];
     }
   }
-
-  // ADD THIS LOGGING TO: fetchSingleApplicationWithDocuments()
 
   private async fetchSingleApplicationWithDocuments(
     applicationId: string
   ): Promise<FundingApplication> {
     try {
       console.log(
-        '🔍 [DEBUG] Fetching single application with documents:',
+        '🔍 Fetching single application with documents:',
         applicationId
       );
 
@@ -1146,44 +1080,18 @@ export class ApplicationManagementService {
       }
 
       const application = this.transformApplicationData(data);
-      console.log('📋 [STEP 1] After transformApplicationData:', {
-        id: application.id,
-        hasDocuments: Object.keys(application.documents).length > 0,
-        documents: application.documents,
-      });
-
-      // ✅ FIXED: Pass applicationId here too
-      console.log('📋 [STEP 2] Calling fetchApplicantDocuments with:', {
-        applicantId: application.applicantId,
-        applicationId: applicationId,
-      });
 
       const documentsData = await this.fetchApplicantDocuments(
         application.applicantId,
-        applicationId // ← PASS THIS
+        applicationId
       );
-
-      console.log('📋 [STEP 3] After fetchApplicantDocuments:', {
-        keys: Object.keys(documentsData),
-        hasData: Object.keys(documentsData).length > 0,
-        documentsData: documentsData,
-      });
 
       application.documents =
         this.transformDocumentsForApplication(documentsData);
 
-      console.log('📋 [STEP 4] After transformDocumentsForApplication:', {
-        keys: Object.keys(application.documents),
-        hasDocuments: Object.keys(application.documents).length > 0,
-        documents: application.documents,
-      });
-
       return application;
     } catch (error) {
-      console.error(
-        '💥 [DEBUG] Error fetching single application with documents:',
-        error
-      );
+      console.error('Error fetching single application with documents:', error);
       throw error;
     }
   }
@@ -1194,43 +1102,36 @@ export class ApplicationManagementService {
   ): Promise<DocumentSection> {
     try {
       console.log(
-        '🔍 [DOCS] Fetching documents for applicant:',
+        '🔍 Fetching documents for applicant:',
         applicantId,
         'application:',
         applicationId
       );
 
-      // ✅ FIXED: Use direct query to bypass RLS filtering issues
-      // The service's getDocumentsByUserId() has RLS issues when filtering by applicationId
-      // The fallback query works perfectly, so use it as primary
+      // Use direct query to bypass RLS filtering issues
       const documents = await this.fetchDocumentsDirectlyForUser(applicantId);
 
-      console.log(
-        '📄 [DOCS] Documents fetched:',
-        Object.keys(documents).length
-      );
+      console.log('📄 Documents fetched:', Object.keys(documents).length);
 
       if (Object.keys(documents).length === 0) {
-        console.log('📭 [DOCS] No documents found');
+        console.log('📭 No documents found');
         return {};
       }
 
-      console.log('✅ [DOCS] Documents retrieved:', Object.keys(documents));
+      console.log('✅ Documents retrieved:', Object.keys(documents));
       return documents;
     } catch (error) {
-      console.error('💥 [DOCS] Error fetching documents:', error);
+      console.error('Error fetching documents:', error);
       return {};
     }
   }
 
   private transformApplicationData(rawData: any): FundingApplication {
-    console.log('🔄 [DEBUG] Transforming single application:', rawData.id);
-
     try {
       const transformed = {
         id: rawData.id,
         applicantId: rawData.applicant_id,
-        applicantOrganizationName: rawData.applicant_organization_name || '', // 🔴 ADD THIS
+        applicantOrganizationName: rawData.applicant_organization_name || '',
         opportunityId: rawData.opportunity_id,
         title: rawData.title,
         description: rawData.description,
@@ -1264,13 +1165,9 @@ export class ApplicationManagementService {
         },
       };
 
-      console.log(
-        '✅ [DEBUG] Successfully transformed application:',
-        transformed.id
-      );
       return transformed;
     } catch (error) {
-      console.error('💥 [DEBUG] Error transforming single application:', error);
+      console.error('Error transforming single application:', error);
       throw error;
     }
   }

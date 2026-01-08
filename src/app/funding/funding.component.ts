@@ -26,7 +26,7 @@ import { OpportunitiesHeaderComponent } from './marketplace/components/opportuni
         }
 
         <!-- Opportunities Header (shown ONLY on /opportunities route) -->
-        @if (isOpportunitiesRoute()) {
+        @if (isOpportunitiesRoute()&& !isHiddenDashboardHeader() ) {
         <div class=" top-0 z-40 bg-white mt-4">
           <app-opportunities-header />
         </div>

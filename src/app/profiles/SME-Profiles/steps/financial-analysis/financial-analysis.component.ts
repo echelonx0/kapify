@@ -66,7 +66,6 @@ type LoadingState = 'idle' | 'initializing' | 'parsing' | 'uploading' | 'ready';
     LucideAngularModule,
     FinancialDataTableComponent,
     FinancialUploadComponent,
-
     FinancialNotesComponent,
     FinancialTableSkeletonComponent,
   ],
@@ -510,35 +509,13 @@ export class SMEFinancialprofileComponent implements OnInit, OnDestroy {
       this.uploadedTemplate.set(file);
       this.recalculateAllRatios();
 
-      // ✅ BUILD COMPLETE PROFILE DATA
       const profileData = this.buildFinancialProfileData();
-      // console.log('📊 [DEBUG] Built financial profile data:', profileData);
-      // console.log(
-      //   '📊 [DEBUG] Has incomeStatement:',
-      //   profileData.incomeStatement.length
-      // );
-      // console.log('📊 [DEBUG] Has uploadedFile:', !!profileData.uploadedFile);
 
-      // ✅ UPDATE PROFILE SERVICE
       this.profileService.updateFinancialAnalysis(profileData);
-      // console.log('✅ [DEBUG] Updated profileService with financial analysis');
 
-      // ✅ VERIFY IT'S IN THE PROFILE DATA
-      // const currentProfileData = this.profileService.data();
-      // console.log(
-      //   '🔍 [DEBUG] Profile service data after update:',
-      //   currentProfileData
-      // );
-      // console.log(
-      //   '🔍 [DEBUG] Has financialAnalysis in profile:',
-      //   !!currentProfileData.financialAnalysis
-      // );
-
-      // // ✅ FORCE IMMEDIATE SAVE TO BACKEND
-      // console.log('💾 [DEBUG] Triggering immediate backend save...');
       try {
         await this.profileService.saveCurrentProgress();
-        //  console.log('✅ [DEBUG] Immediate backend save completed successfully');
+
         this.lastSaved.set(new Date());
       } catch (saveError) {
         console.error('❌ [DEBUG] Backend save failed:', saveError);

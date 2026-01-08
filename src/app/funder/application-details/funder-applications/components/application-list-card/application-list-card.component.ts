@@ -20,10 +20,11 @@ import {
   CircleAlert,
   CircleCheckBig,
 } from 'lucide-angular';
-import { UserType } from '../../../../shared/models/user.models';
-import { ActionModalService } from '../../../../shared/components/modal/modal.service';
+
 import { ApplicationManagementService as FundingApplicationsManagerService } from 'src/app/fund-seeking-orgs/services/application-management.service';
 import { FundingApplication } from 'src/app/fund-seeking-orgs/models/application.models';
+import { ActionModalService } from 'src/app/shared/components/modal/modal.service';
+import { UserType } from 'src/app/shared/models/user.models';
 
 export interface BaseApplicationCard {
   id: string;

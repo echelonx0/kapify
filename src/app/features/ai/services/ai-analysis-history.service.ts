@@ -18,6 +18,7 @@ export class AIAnalysisHistoryService {
   // State
   isLoading = signal(false);
   error = signal<string | null>(null);
+  isDeleting = signal(false);
 
   // Cache
   private analysisHistorySubject = new BehaviorSubject<AnalysisHistoryItem[]>(
@@ -56,10 +57,6 @@ export class AIAnalysisHistoryService {
     );
   }
 
-  // ===============================
-  // PRIVATE METHODS
-  // ===============================
-
   /**
    * Fetch analysis summary from database
    */
@@ -72,25 +69,22 @@ export class AIAnalysisHistoryService {
 
       const orgUserIds = await this.getOrganizationUserIds(userId);
 
-      // Fetch ai_analysis_requests
       const { data: analyses } = await this.supabase
         .from('ai_analysis_requests')
         .select('*')
         .in('user_id', orgUserIds);
 
-      // Fetch document_analysis_results
       const { data: docAnalyses } = await this.supabase
         .from('document_analysis_results')
         .select('*')
         .in('user_id', orgUserIds);
 
-      // Combine counts
       const aiCount = analyses?.length || 0;
       const docCount = docAnalyses?.length || 0;
       const totalAnalyses = aiCount + docCount;
 
       const freeAnalyses =
-        (analyses?.filter((a) => a.was_free).length || 0) + docCount; // All doc analyses are free
+        (analyses?.filter((a) => a.was_free).length || 0) + docCount;
 
       const paidAnalyses = totalAnalyses - freeAnalyses;
 
@@ -100,7 +94,6 @@ export class AIAnalysisHistoryService {
       const averageCostPerAnalysis =
         paidAnalyses > 0 ? Math.round(totalCreditsSpent / paidAnalyses) : 0;
 
-      // Get most recent date from both tables
       const allDates = [
         ...(analyses?.map((a) => new Date(a.created_at)) || []),
         ...(docAnalyses?.map((d) => new Date(d.created_at)) || []),
@@ -141,7 +134,6 @@ export class AIAnalysisHistoryService {
         throw new Error('User not authenticated');
       }
 
-      // Get organization user IDs
       const orgUserIds = await this.getOrganizationUserIds(userId);
 
       console.log('📜 [ANALYSIS] Fetching history for:', {
@@ -150,13 +142,11 @@ export class AIAnalysisHistoryService {
         filters,
       });
 
-      // Build query
       let query = this.supabase
         .from('ai_analysis_requests')
         .select('*')
         .in('user_id', orgUserIds);
 
-      // Apply filters
       if (filters?.requestType && filters.requestType.length > 0) {
         query = query.in('request_type', filters.requestType);
       }
@@ -191,15 +181,12 @@ export class AIAnalysisHistoryService {
         return [];
       }
 
-      // Transform to camelCase
       const analyses = analysesRaw.map((a) =>
         this.transformDatabaseToAnalysis(a)
       );
 
-      // Enrich with application/opportunity names
       const enriched = await this.enrichAnalysisHistory(analyses);
 
-      // Apply search filter (client-side)
       let results = enriched;
       if (filters?.searchQuery) {
         const searchLower = filters.searchQuery.toLowerCase();
@@ -249,7 +236,6 @@ export class AIAnalysisHistoryService {
    */
   private async getOrganizationUserIds(userId: string): Promise<string[]> {
     try {
-      // Get user's organizations
       const { data: orgUsers, error: orgError } = await this.supabase
         .from('organization_users')
         .select('organization_id')
@@ -258,16 +244,15 @@ export class AIAnalysisHistoryService {
 
       if (orgError) {
         console.warn('⚠️ [ANALYSIS] Error fetching org membership:', orgError);
-        return [userId]; // Fallback to just current user
+        return [userId];
       }
 
       if (!orgUsers || orgUsers.length === 0) {
-        return [userId]; // User not in any org
+        return [userId];
       }
 
       const orgIds = orgUsers.map((ou) => ou.organization_id);
 
-      // Get all users in these organizations
       const { data: allOrgUsers, error: allUsersError } = await this.supabase
         .from('organization_users')
         .select('user_id')
@@ -283,7 +268,6 @@ export class AIAnalysisHistoryService {
         ...new Set(allOrgUsers?.map((ou) => ou.user_id).filter(Boolean) || []),
       ];
 
-      // Always include current user
       if (!userIds.includes(userId)) {
         userIds.push(userId);
       }
@@ -293,7 +277,7 @@ export class AIAnalysisHistoryService {
       return userIds;
     } catch (error) {
       console.error('❌ [ANALYSIS] Error getting org user IDs:', error);
-      return [userId]; // Fallback to current user only
+      return [userId];
     }
   }
 
@@ -304,7 +288,6 @@ export class AIAnalysisHistoryService {
     analyses: AIAnalysisRequest[]
   ): Promise<AnalysisHistoryItem[]> {
     try {
-      // Extract unique IDs
       const applicationIds = [
         ...new Set(
           analyses
@@ -323,7 +306,6 @@ export class AIAnalysisHistoryService {
         ...new Set(analyses.map((a) => a.userId).filter(Boolean)),
       ];
 
-      // Batch fetch names
       const [applications, opportunities, users] = await Promise.all([
         applicationIds.length > 0
           ? this.fetchApplicationTitles(applicationIds)
@@ -336,7 +318,6 @@ export class AIAnalysisHistoryService {
           : Promise.resolve(new Map()),
       ]);
 
-      // Enrich analyses
       return analyses.map((analysis) => ({
         ...analysis,
         applicationTitle: analysis.applicationId
@@ -353,7 +334,6 @@ export class AIAnalysisHistoryService {
       }));
     } catch (error) {
       console.warn('⚠️ [ANALYSIS] Error enriching history:', error);
-      // Return un-enriched if enrichment fails
       return analyses.map((analysis) => ({
         ...analysis,
         hasResults: !!(analysis.analysisResults || analysis.investmentScore),
@@ -438,21 +418,6 @@ export class AIAnalysisHistoryService {
   }
 
   /**
-   * Get empty summary (no analyses found)
-   */
-  private getEmptySummary(): AIAnalysisSummary {
-    return {
-      totalAnalyses: 0,
-      freeAnalyses: 0,
-      paidAnalyses: 0,
-      totalCreditsSpent: 0,
-      averageCostPerAnalysis: 0,
-      pendingAnalyses: 0,
-      failedAnalyses: 0,
-    };
-  }
-
-  /**
    * Fetch from both ai_analysis_requests AND document_analysis_results
    */
   private async fetchAnalysisHistoryCombined(
@@ -465,21 +430,18 @@ export class AIAnalysisHistoryService {
 
     const orgUserIds = await this.getOrganizationUserIds(userId);
 
-    // Fetch from ai_analysis_requests (existing)
     const aiAnalyses = await this.fetchAnalysisHistory(filters);
 
-    // Fetch from document_analysis_results
     const { data: docAnalysesRaw } = await this.supabase
       .from('document_analysis_results')
       .select('*')
       .in('user_id', orgUserIds)
       .order('created_at', { ascending: false });
 
-    // Transform document analyses to match interface
     const docAnalyses: AnalysisHistoryItem[] = (docAnalysesRaw || []).map(
       (doc) => ({
         id: doc.id,
-        orgId: '', // We'll need to fetch this
+        orgId: '',
         userId: doc.user_id,
         requestType: 'document_review',
         status: 'executed_free',
@@ -490,28 +452,26 @@ export class AIAnalysisHistoryService {
         executedAt: new Date(doc.created_at),
         hasResults: !!doc.result_data,
         canDownload: true,
-        applicationTitle: doc.file_name, // Use file_name as title
+        applicationTitle: doc.file_name,
       })
     );
 
-    // Combine and sort by date
     const combined = [...aiAnalyses, ...docAnalyses].sort(
       (a, b) => b.createdAt.getTime() - a.createdAt.getTime()
     );
 
     return combined;
   }
+
   /**
    * Get analysis history for user + organization
    */
-
   getAnalysisHistory(
     filters?: AnalysisHistoryFilter
   ): Observable<AnalysisHistoryItem[]> {
     this.isLoading.set(true);
     this.error.set(null);
 
-    // Change this line:
     return from(this.fetchAnalysisHistoryCombined(filters)).pipe(
       tap((history) => {
         this.analysisHistorySubject.next(history);
@@ -525,5 +485,61 @@ export class AIAnalysisHistoryService {
         return throwError(() => error);
       })
     );
+  }
+
+  // new
+  deleteAnalysis(item: AnalysisHistoryItem): Observable<boolean> {
+    this.isDeleting.set(true);
+    this.error.set(null);
+
+    return from(this.performDelete(item)).pipe(
+      map(() => true), // ✅ FIX: convert void → boolean
+      tap(() => {
+        this.isDeleting.set(false);
+
+        const current = this.analysisHistorySubject.value;
+        this.analysisHistorySubject.next(
+          current.filter((a) => a.id !== item.id)
+        );
+
+        console.log('✅ [ANALYSIS] Deleted:', item.id);
+      }),
+      catchError((error) => {
+        this.isDeleting.set(false);
+        const message = error?.message || 'Failed to delete analysis';
+        this.error.set(message);
+        console.error('❌ [ANALYSIS] Delete failed:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  private async performDelete(item: AnalysisHistoryItem): Promise<void> {
+    if (item.requestType === 'document_review') {
+      await this.deleteDocumentAnalysis(item.id);
+    } else {
+      await this.deleteAiAnalysis(item.id);
+    }
+  }
+
+  private async deleteAiAnalysis(analysisId: string): Promise<void> {
+    const { error } = await this.supabase.rpc('delete_ai_analysis_request', {
+      analysis_id_param: analysisId,
+    });
+
+    if (error) {
+      throw new Error(error.message);
+    }
+  }
+
+  private async deleteDocumentAnalysis(documentId: string): Promise<void> {
+    const { error } = await this.supabase.rpc(
+      'delete_document_analysis_result',
+      { doc_id_param: documentId }
+    );
+
+    if (error) {
+      throw new Error(error.message);
+    }
   }
 }

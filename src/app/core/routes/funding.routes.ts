@@ -5,7 +5,7 @@ export const fundingRoutes: Routes = [
   {
     path: '',
     loadComponent: () =>
-      import('./funding.component').then((c) => c.FundingComponent),
+      import('../../funding/funding.component').then((c) => c.FundingComponent),
     children: [
       {
         path: '',
@@ -16,14 +16,14 @@ export const fundingRoutes: Routes = [
         path: 'opportunities',
         loadComponent: () =>
           import(
-            '../funding/marketplace/opportunities-list/funding-opportunities.component'
+            '../../funding/marketplace/opportunities-list/funding-opportunities.component'
           ).then((c) => c.FundingOpportunitiesComponent),
         title: 'Funding Opportunities - Kapify',
       },
       {
         path: 'opportunities/:id',
         loadComponent: () =>
-          import('./funding-detail/funding-detail.component').then(
+          import('../../funding/funding-detail/funding-detail.component').then(
             (c) => c.OpportunityDetailsComponent
           ),
         title: 'Opportunity Details - Kapify',
@@ -32,7 +32,7 @@ export const fundingRoutes: Routes = [
         path: 'create-opportunity',
         loadComponent: () =>
           import(
-            '../funder/create-opportunity/create-opportunity.component'
+            '../../funder/create-opportunity/create-opportunity.component'
           ).then((c) => c.CreateOpportunityComponent),
         title: 'Create Opportunity - Kapify',
       },
@@ -40,7 +40,7 @@ export const fundingRoutes: Routes = [
         path: 'opportunities/:id/edit',
         loadComponent: () =>
           import(
-            '../funder/create-opportunity/create-opportunity.component'
+            '../../funder/create-opportunity/create-opportunity.component'
           ).then((c) => c.CreateOpportunityComponent),
         title: 'Edit Opportunity - Kapify',
       },

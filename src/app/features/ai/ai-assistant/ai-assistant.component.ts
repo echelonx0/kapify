@@ -303,11 +303,10 @@ export class AiAssistantComponent implements OnInit, OnDestroy {
     }
 
     // Load market intelligence (always free, no auto-analysis)
-    this.loadMarketIntelligence();
+    //  this.loadMarketIntelligence();
   }
 
   ngOnDestroy() {
-    console.log('🔄 [AI-ASSISTANT] Component destroyed');
     this.destroy$.next();
     this.destroy$.complete();
   }
@@ -323,8 +322,6 @@ export class AiAssistantComponent implements OnInit, OnDestroy {
    * 3. Shows credit modal if needed or executes immediately
    */
   async generateAnalysis(): Promise<void> {
-    console.log('🎯 [AI-ASSISTANT] generateAnalysis() called');
-
     // ✅ Validate required data
     if (!this.applicationData || !this.currentOpportunity) {
       console.error(

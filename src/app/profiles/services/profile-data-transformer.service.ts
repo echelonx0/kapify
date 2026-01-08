@@ -1,13 +1,14 @@
 // src/app/profile/services/profile-data-transformer.service.ts - FIXED VERSION
 import { Injectable } from '@angular/core';
-import {
-  FundingApplicationProfile,
-  SWOTAnalysis,
-  BusinessAssessment,
-  ManagementStructure,
-} from '../applications/models/funding-application.models';
+
 import { ProfileData } from '../../profiles/SME-Profiles/models/funding.models';
 import { ParsedFinancialData } from '../../profiles/SME-Profiles/steps/financial-analysis/utils/excel-parser.service';
+import {
+  BusinessAssessment,
+  FundingApplicationProfile,
+  ManagementStructure,
+  SWOTAnalysis,
+} from 'src/app/fund-seeking-orgs/applications/models/funding-application.models';
 
 @Injectable({
   providedIn: 'root',
