@@ -1,0 +1,162 @@
+<div *ngIf="showComponent()" class="smart-suggestions-container">
+  <!-- Collapsed Banner State -->
+  @if (isCollapsed()) {
+  <button
+    (click)="toggleCollapse()"
+    class="w-full px-4 py-3 bg-gradient-to-r from-teal-500 to-teal-600 text-white rounded-xl font-medium hover:shadow-lg transition-shadow flex items-center justify-between"
+  >
+    <div class="flex items-center gap-2">
+      <lucide-icon [img]="SparklesIcon" [size]="18" />
+      <span>See Recommended Opportunities For You</span>
+    </div>
+    <lucide-icon [img]="ChevronDownIcon" [size]="18" />
+  </button>
+  }
+
+  <!-- Expanded Content State -->
+  @if (!isCollapsed()) {
+  <div
+    class="smart-suggestions-expanded flex flex-col lg:flex-row gap-0 lg:gap-4"
+  >
+    <!-- Main Suggestions Column (Right on desktop, top on mobile) -->
+    <div class="flex-1 order-2 lg:order-1">
+      <!-- Header with collapse button -->
+      <div class="suggestions-header px-6 py-4 border-b border-slate-200">
+        <div class="flex items-center gap-3 flex-1">
+          <div class="icon-wrapper">
+            <lucide-icon
+              [img]="SparklesIcon"
+              [size]="24"
+              class="text-teal-600"
+            />
+          </div>
+          <div class="flex-1">
+            <h2 class="text-2xl font-bold text-slate-900">
+              Recommended For You
+            </h2>
+            <p class="text-sm text-slate-600 mt-1">
+              {{ getSubheading() }}
+            </p>
+          </div>
+          <button
+            (click)="toggleCollapse()"
+            class="text-slate-600 hover:text-slate-900 transition-colors flex-shrink-0 hidden lg:flex"
+            aria-label="Collapse recommendations"
+          >
+            <lucide-icon [img]="ChevronUpIcon" [size]="20" />
+          </button>
+        </div>
+      </div>
+
+      <!-- Refresh Button -->
+      <div class="px-6 py-3 border-b border-slate-200 flex gap-2">
+        <button
+          (click)="refresh()"
+          [disabled]="isRefreshing()"
+          class="px-4 py-2 bg-slate-100 text-slate-700 text-xs font-medium rounded-lg hover:bg-slate-200 transition-colors disabled:opacity-50 flex items-center gap-2"
+        >
+          <lucide-icon
+            [img]="RefreshIcon"
+            [size]="14"
+            [class.animate-spin]="isRefreshing()"
+          />
+          <span>Refresh</span>
+        </button>
+      </div>
+
+      <!-- Loading State -->
+      <div *ngIf="isLoading()" class="px-6 py-8">
+        <div class="animate-pulse space-y-4">
+          <div class="h-48 bg-slate-200 rounded-xl"></div>
+          <div class="h-48 bg-slate-200 rounded-xl"></div>
+          <div class="h-48 bg-slate-200 rounded-xl"></div>
+        </div>
+      </div>
+
+      <!-- Empty State -->
+      <div
+        *ngIf="!isLoading() && suggestions().length === 0"
+        class="px-6 py-12 text-center"
+      >
+        <lucide-icon
+          [img]="SparklesIcon"
+          [size]="48"
+          class="text-slate-300 mb-4 mx-auto"
+        />
+        <h3 class="text-lg font-semibold text-slate-900 mb-2">
+          {{ getEmptyStateTitle() }}
+        </h3>
+        <p class="text-slate-600 mb-4">
+          {{ getEmptyStateMessage() }}
+        </p>
+        <button
+          (click)="viewAllOpportunities()"
+          class="px-4 py-2 bg-teal-500 text-white rounded-lg hover:bg-teal-600 transition-colors text-sm font-medium"
+        >
+          Browse All Opportunities
+        </button>
+      </div>
+
+      <!-- Suggestions Grid -->
+      <div
+        *ngIf="!isLoading() && suggestions().length > 0"
+        class="px-6 py-4 space-y-4"
+      >
+        <app-suggestion-card
+          *ngFor="let suggestion of suggestions(); trackBy: trackBySuggestion"
+          [opportunity]="suggestion.opportunity"
+          [matchScore]="suggestion.score"
+          [matchReasons]="suggestion.matchReasons"
+          [canApply]="getApplicationEligibility(suggestion).canApply"
+          [reasonMessage]="getApplicationEligibility(suggestion).reason"
+          (apply)="onApply($event)"
+          (viewDetails)="onViewDetails($event)"
+          (signIn)="onSignInToApply()"
+          (viewScoring)="showScoring($event)"
+        >
+        </app-suggestion-card>
+      </div>
+
+      <!-- View All Link -->
+      <div
+        *ngIf="suggestions().length > 0"
+        class="px-6 py-4 border-t border-slate-200"
+      >
+        <button
+          (click)="viewAllOpportunities()"
+          class="w-full px-4 py-2.5 bg-teal-500 text-white text-sm font-medium rounded-lg hover:bg-teal-600 transition-colors"
+        >
+          View All Opportunities
+        </button>
+      </div>
+    </div>
+
+    <!-- Scoring Breakdown Panel (Left on desktop, bottom on mobile) -->
+    @if (selectedScoringMatch()) {
+    <div
+      class="order-1 lg:order-2 lg:w-96 lg:border-l border-t lg:border-t-0 border-slate-200"
+    >
+      <app-scoring-breakdown
+        [matchScore]="selectedScoringMatch()!.score"
+        [opportunity]="selectedScoringMatch()!.opportunity"
+        [matchReasons]="selectedScoringMatch()!.matchReasons"
+        [profileData]="profileData()"
+        (close)="closeScoring()"
+      />
+    </div>
+    }
+
+    <!-- Mobile collapse button in scoring drawer -->
+    @if (selectedScoringMatch()) {
+    <div class="lg:hidden flex-shrink-0 px-6 py-3 border-t border-slate-200">
+      <button
+        (click)="toggleCollapse()"
+        class="w-full px-4 py-2 bg-slate-100 text-slate-700 text-sm font-medium rounded-lg hover:bg-slate-200 transition-colors"
+      >
+        Back to Suggestions
+      </button>
+    </div>
+    }
+  </div>
+  }
+</div>

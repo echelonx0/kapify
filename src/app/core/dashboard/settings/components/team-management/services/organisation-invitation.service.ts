@@ -337,7 +337,7 @@ export class OrganizationInvitationService {
   }
 
   /**
-   * Send invitation email via Edge Function
+   * Send invitation email via Supabase Edge Function
    */
   private async sendInvitationEmail(params: {
     invitationId: string;

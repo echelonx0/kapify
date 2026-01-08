@@ -17,7 +17,7 @@ import { FundingOpportunity } from 'src/app/funder/create-opportunity/shared/fun
     <div
       class="bg-white border border-slate-200 rounded-xl p-5 hover:border-slate-300 transition-all duration-200 hover:shadow-sm"
     >
-      <!-- Header: Match Score & Title -->
+      <!-- Header: Match Grade & Title -->
       <div class="flex items-start justify-between gap-4 mb-4">
         <div class="flex-1 min-w-0">
           <h3 class="text-sm font-semibold text-slate-900 line-clamp-2">
@@ -32,13 +32,10 @@ import { FundingOpportunity } from 'src/app/funder/create-opportunity/shared/fun
           </p>
         </div>
 
-        <!-- Match Score Badge -->
+        <!-- Match Grade Badge -->
         <div class="flex-shrink-0 text-right">
-          <div
-            class="text-2xl font-bold text-teal-600"
-            [class]="'text-' + getMatchColor()"
-          >
-            {{ matchScore }}%
+          <div class="text-lg font-bold" [class]="getMatchColor()">
+            {{ getMatchGrade() }}
           </div>
           <p class="text-xs text-slate-500 mt-0.5">Match</p>
         </div>
@@ -47,7 +44,10 @@ import { FundingOpportunity } from 'src/app/funder/create-opportunity/shared/fun
       <!-- Match Score Bar -->
       <div class="h-1.5 bg-slate-100 rounded-full overflow-hidden mb-4">
         <div
-          class="h-full bg-gradient-to-r from-teal-400 to-teal-500 rounded-full transition-all duration-700"
+          [class]="
+            'h-full rounded-full transition-all duration-700 bg-gradient-to-r ' +
+            getProgressGradient()
+          "
           [style.width.%]="matchScore"
         ></div>
       </div>
@@ -72,20 +72,18 @@ import { FundingOpportunity } from 'src/app/funder/create-opportunity/shared/fun
         </div>
       </div>
 
-      <!-- Match Reasons (Compact) -->
-      @if (matchReasons && matchReasons.length > 0) {
-      <div class="mb-4 p-3 bg-slate-50 rounded-lg border border-slate-100">
-        <p class="text-xs font-medium text-slate-900 mb-2">Why this match:</p>
-        <ul class="space-y-1">
-          @for (reason of matchReasons.slice(0, 2); track $index) {
-          <li class="text-xs text-slate-600 flex items-start gap-2">
-            <span class="text-teal-600 flex-shrink-0">•</span>
-            <span>{{ reason }}</span>
-          </li>
-          }
-        </ul>
-      </div>
-      }
+      <!-- Scoring Breakdown Trigger -->
+      <button
+        (click)="onViewScoring()"
+        class="w-full mb-4 p-3 bg-slate-50 border border-slate-200 rounded-lg hover:bg-slate-100 hover:border-slate-300 transition-colors text-left"
+      >
+        <p class="text-xs font-semibold text-slate-900 mb-1">
+          How we scored this match
+        </p>
+        <p class="text-xs text-slate-600">
+          See breakdown by industry, funding, stage & location →
+        </p>
+      </button>
 
       <!-- Action Buttons -->
       <div class="flex gap-2">
@@ -151,6 +149,7 @@ export class SuggestionCardComponent {
   @Output() apply = new EventEmitter<string>();
   @Output() viewDetails = new EventEmitter<string>();
   @Output() signIn = new EventEmitter<void>();
+  @Output() viewScoring = new EventEmitter<string>();
 
   // Icons
   ArrowRightIcon = ArrowRight;
@@ -158,12 +157,33 @@ export class SuggestionCardComponent {
   LogInIcon = LogIn;
 
   /**
-   * Get color class based on match score
+   * Get grade based on match score
+   */
+  getMatchGrade(): string {
+    if (this.matchScore >= 86) return 'Excellent';
+    if (this.matchScore >= 71) return 'Strong';
+    if (this.matchScore >= 41) return 'Medium';
+    return 'Weak';
+  }
+
+  /**
+   * Get color class based on grade
    */
   getMatchColor(): string {
-    if (this.matchScore >= 85) return '2xl font-bold text-green-600';
-    if (this.matchScore >= 70) return '2xl font-bold text-teal-600';
-    return '2xl font-bold text-amber-600';
+    if (this.matchScore >= 86) return 'text-green-600';
+    if (this.matchScore >= 71) return 'text-teal-600';
+    if (this.matchScore >= 41) return 'text-amber-600';
+    return 'text-red-600';
+  }
+
+  /**
+   * Get gradient color for progress bar based on grade
+   */
+  getProgressGradient(): string {
+    if (this.matchScore >= 86) return 'from-green-400 to-green-500';
+    if (this.matchScore >= 71) return 'from-teal-400 to-teal-500';
+    if (this.matchScore >= 41) return 'from-amber-400 to-amber-500';
+    return 'from-red-400 to-red-500';
   }
 
   /**
@@ -202,5 +222,9 @@ export class SuggestionCardComponent {
 
   onSignInToApply() {
     this.signIn.emit();
+  }
+
+  onViewScoring() {
+    this.viewScoring.emit(this.opportunity.id);
   }
 }

@@ -19,9 +19,9 @@
         stroke-linecap="round"
       />
     </svg>
-    <div class="match-score">
-      <span class="score-number">{{ matchScore }}</span>
-      <span class="score-percent">%</span>
+
+    <div class="match-score" [ngClass]="getMatchQualityClass()">
+      <span class="score-label">{{ getMatchQuality() }}</span>
     </div>
   </div>
 
@@ -83,7 +83,7 @@
     <div class="match-reasons-full">
       <h4 class="reasons-title">
         <lucide-icon [img]="SparklesIcon" [size]="16" />
-        Why this matches
+        Why we gave you this score
       </h4>
       <ul class="reasons-list">
         <li *ngFor="let reason of matchReasons">

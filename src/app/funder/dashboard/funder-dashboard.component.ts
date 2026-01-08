@@ -16,8 +16,6 @@ import {
   Users,
   DollarSign,
   Building2,
-  AlertCircle,
-  CheckCircle,
   ArrowRight,
   FileText,
   ClockIcon,
@@ -25,6 +23,8 @@ import {
   ChevronUp,
   ChartColumn,
   Zap,
+  CircleCheckBig,
+  CircleAlert,
 } from 'lucide-angular';
 import {
   FunderOnboardingService,
@@ -60,8 +60,8 @@ export class FunderDashboardComponent implements OnInit, OnDestroy {
   UsersIcon = Users;
   DollarSignIcon = DollarSign;
   Building2Icon = Building2;
-  AlertCircleIcon = AlertCircle;
-  CheckCircleIcon = CheckCircle;
+  AlertCircleIcon = CircleAlert;
+  CheckCircleIcon = CircleCheckBig;
   ArrowRightIcon = ArrowRight;
   ClockIcon = ClockIcon;
   FileTextIcon = FileText;

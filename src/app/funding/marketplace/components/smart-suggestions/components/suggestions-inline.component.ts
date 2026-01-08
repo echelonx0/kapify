@@ -9,44 +9,41 @@ import {
   EventEmitter,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { LucideAngularModule, X, RefreshCw, Sparkles } from 'lucide-angular';
+import {
+  LucideAngularModule,
+  X,
+  RefreshCw,
+  Sparkles,
+  ChevronDown,
+  ChevronUp,
+} from 'lucide-angular';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { AuthService } from 'src/app/auth/services/production.auth.service';
-import { trigger, transition, style, animate } from '@angular/animations';
 import { SuggestionCardComponent } from './suggestion-card.component';
+
 import {
   SuggestionsMatchingService,
   MatchScore,
 } from '../../../services/suggestions-matching.service';
+import { FundingProfileSetupService } from 'src/app/fund-seeking-orgs/services/funding-profile-setup.service';
+import { ScoringBreakdownComponent } from './scoring-breakdown-component';
 
 @Component({
-  selector: 'app-smart-suggestions-modal',
+  selector: 'app-smart-suggestions-inline',
   standalone: true,
-  imports: [CommonModule, LucideAngularModule, SuggestionCardComponent],
-  templateUrl: './smart-suggestions-modal.component.html',
-  animations: [
-    trigger('fadeInOut', [
-      transition(':enter', [
-        style({ opacity: 0 }),
-        animate('200ms ease-out', style({ opacity: 1 })),
-      ]),
-      transition(':leave', [animate('200ms ease-in', style({ opacity: 0 }))]),
-    ]),
-    trigger('slideInOut', [
-      transition(':enter', [
-        style({ transform: 'translateX(100%)' }),
-        animate('300ms ease-out', style({ transform: 'translateX(0)' })),
-      ]),
-      transition(':leave', [
-        animate('300ms ease-in', style({ transform: 'translateX(100%)' })),
-      ]),
-    ]),
+  imports: [
+    CommonModule,
+    LucideAngularModule,
+    SuggestionCardComponent,
+    ScoringBreakdownComponent,
   ],
+  templateUrl: './suggestions-inline.component.html',
 })
-export class SmartSuggestionsModalComponent implements OnInit, OnDestroy {
+export class SmartSuggestionsInlineComponent implements OnInit, OnDestroy {
   private matchingService = inject(SuggestionsMatchingService);
   private authService = inject(AuthService);
+  private profileService = inject(FundingProfileSetupService);
   private destroy$ = new Subject<void>();
 
   // Output Events
@@ -57,31 +54,33 @@ export class SmartSuggestionsModalComponent implements OnInit, OnDestroy {
 
   // Icons
   SparklesIcon = Sparkles;
-  CloseIcon = X;
   RefreshIcon = RefreshCw;
+  ChevronDownIcon = ChevronDown;
+  ChevronUpIcon = ChevronUp;
 
   // State
-  isOpen = signal(false);
+  isCollapsed = signal(true);
   suggestions = signal<MatchScore[]>([]);
   isLoading = signal(false);
   isRefreshing = signal(false);
   hasProfile = signal(false);
-
-  // State
   selectedScoringId = signal<string | null>(null);
 
+  // Expose profile data to template
+  profileData = () => this.profileService.data();
+
   // Computed
+  isUserFunder = computed(() => this.authService.user()?.userType === 'funder');
+  showComponent = computed(() => !this.isUserFunder());
   selectedScoringMatch = computed(() => {
     const id = this.selectedScoringId();
     if (!id) return null;
     return this.suggestions().find((m) => m.opportunity.id === id) || null;
   });
 
-  // Computed
-  isUserFunder = computed(() => this.authService.user()?.userType === 'funder');
-
   ngOnInit() {
-    // Don't load until modal opens
+    // Load suggestions when component initializes
+    this.loadSuggestions();
   }
 
   ngOnDestroy() {
@@ -90,18 +89,10 @@ export class SmartSuggestionsModalComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Open modal and load suggestions
+   * Toggle expanded/collapsed state
    */
-  open() {
-    this.isOpen.set(true);
-    this.loadSuggestions();
-  }
-
-  /**
-   * Close modal
-   */
-  close() {
-    this.isOpen.set(false);
+  toggleCollapse() {
+    this.isCollapsed.update((val) => !val);
   }
 
   /**
@@ -134,6 +125,20 @@ export class SmartSuggestionsModalComponent implements OnInit, OnDestroy {
   refresh() {
     this.isRefreshing.set(true);
     this.loadSuggestions();
+  }
+
+  /**
+   * Show scoring breakdown for opportunity
+   */
+  showScoring(opportunityId: string) {
+    this.selectedScoringId.set(opportunityId);
+  }
+
+  /**
+   * Close scoring breakdown
+   */
+  closeScoring() {
+    this.selectedScoringId.set(null);
   }
 
   /**
@@ -186,22 +191,22 @@ export class SmartSuggestionsModalComponent implements OnInit, OnDestroy {
    */
   onApply(opportunityId: string) {
     this.apply.emit(opportunityId);
-    this.close();
+    this.isCollapsed.set(true);
   }
 
   onViewDetails(opportunityId: string) {
     this.viewDetails.emit(opportunityId);
-    this.close();
+    this.isCollapsed.set(true);
   }
 
   onSignInToApply() {
     this.signIn.emit();
-    this.close();
+    this.isCollapsed.set(true);
   }
 
   viewAllOpportunities() {
     this.viewAll.emit();
-    this.close();
+    this.isCollapsed.set(true);
   }
 
   /**
@@ -209,19 +214,5 @@ export class SmartSuggestionsModalComponent implements OnInit, OnDestroy {
    */
   trackBySuggestion(index: number, suggestion: MatchScore): string {
     return suggestion.opportunity.id;
-  }
-
-  /**
-   * Show scoring breakdown for opportunity
-   */
-  showScoring(opportunityId: string) {
-    this.selectedScoringId.set(opportunityId);
-  }
-
-  /**
-   * Close scoring breakdown
-   */
-  closeScoring() {
-    this.selectedScoringId.set(null);
   }
 }

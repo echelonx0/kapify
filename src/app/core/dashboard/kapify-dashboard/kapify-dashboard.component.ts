@@ -46,16 +46,13 @@ import { ProfileManagementService } from 'src/app/shared/services/profile-manage
 import { AuthService } from 'src/app/auth/services/production.auth.service';
 import { FunderOnboardingService } from 'src/app/funder/services/funder-onboarding.service';
 import { OpportunityManagementService } from 'src/app/funder/services/opportunity-management.service';
-import {
-  // PrimaryCTACardComponent,
-  CTAContent,
-  PrimaryCTACardComponent,
-} from '../components/cta-card/cta-card.component';
+import { CTAContent } from '../components/cta-card/cta-card.component';
 import {
   OrganizationStatusOverviewComponent,
   ActionEvent,
 } from '../components/status-overview/status-overview.component';
 import { SupportModalComponent } from 'src/app/features/support/support.modal';
+import { AboutUsCardComponent } from '../components/about-us-card/about-us-card.component';
 
 interface OnboardingCard {
   id: string;
@@ -78,7 +75,7 @@ interface OnboardingCard {
     FormsModule,
     LucideAngularModule,
     RightPanelComponent,
-    // PrimaryCTACardComponent,
+    AboutUsCardComponent,
     OrganizationStatusOverviewComponent,
     SupportModalComponent,
   ],
@@ -395,5 +392,9 @@ export class KapifyDashboard implements OnInit, OnDestroy {
     } else {
       return 'Good evening. Measured capital decisions define long-term success.';
     }
+  }
+
+  manageSMEProfile() {
+    this.router.navigate(['/profile/home']);
   }
 }

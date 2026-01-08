@@ -1,69 +1,91 @@
 import {
   Component,
   OnInit,
+  OnDestroy,
   signal,
   inject,
   computed,
-  OnDestroy,
+  Output,
+  EventEmitter,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
-import {
-  LucideAngularModule,
-  Sparkles,
-  TrendingUp,
-  RefreshCw,
-  ChevronDown,
-  ChevronUp,
-} from 'lucide-angular';
+import { LucideAngularModule, X, RefreshCw, Sparkles } from 'lucide-angular';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { AuthService } from 'src/app/auth/services/production.auth.service';
+import { trigger, transition, style, animate } from '@angular/animations';
+
 import {
   SuggestionsMatchingService,
   MatchScore,
 } from '../../services/suggestions-matching.service';
-import { SuggestionCardComponent } from './components/suggestion-card.component';
+import { ScoringBreakdownComponent } from './components/scoring-breakdown-component';
+import { SuggestionCardComponent } from './modal/suggestion-card.component';
 
 @Component({
-  selector: 'app-smart-suggestions',
+  selector: 'app-smart-suggestions-modal',
   standalone: true,
-  imports: [CommonModule, LucideAngularModule, SuggestionCardComponent],
-  templateUrl: 'smart-suggestions.component.html',
-  styleUrl: 'smart-suggestions.component.css',
+  imports: [
+    CommonModule,
+    LucideAngularModule,
+    SuggestionCardComponent,
+    ScoringBreakdownComponent,
+  ],
+  templateUrl: './smart-suggestions-modal.component.html',
+  animations: [
+    trigger('fadeInOut', [
+      transition(':enter', [
+        style({ opacity: 0 }),
+        animate('200ms ease-out', style({ opacity: 1 })),
+      ]),
+      transition(':leave', [animate('200ms ease-in', style({ opacity: 0 }))]),
+    ]),
+    trigger('slideInOut', [
+      transition(':enter', [
+        style({ transform: 'translateX(100%)' }),
+        animate('300ms ease-out', style({ transform: 'translateX(0)' })),
+      ]),
+      transition(':leave', [
+        animate('300ms ease-in', style({ transform: 'translateX(100%)' })),
+      ]),
+    ]),
+  ],
 })
-export class SmartSuggestionsComponent implements OnInit, OnDestroy {
+export class SmartSuggestionsModalComponent implements OnInit, OnDestroy {
   private matchingService = inject(SuggestionsMatchingService);
-  private router = inject(Router);
   private authService = inject(AuthService);
+
   private destroy$ = new Subject<void>();
+
+  // Output Events
+  @Output() apply = new EventEmitter<string>();
+  @Output() viewDetails = new EventEmitter<string>();
+  @Output() signIn = new EventEmitter<void>();
+  @Output() viewAll = new EventEmitter<void>();
 
   // Icons
   SparklesIcon = Sparkles;
-  TrendingUpIcon = TrendingUp;
+  CloseIcon = X;
   RefreshIcon = RefreshCw;
-  ChevronDownIcon = ChevronDown;
-  ChevronUpIcon = ChevronUp;
 
   // State
+  isOpen = signal(false);
   suggestions = signal<MatchScore[]>([]);
-  isLoading = signal(true);
+  isLoading = signal(false);
   isRefreshing = signal(false);
   hasProfile = signal(false);
-  isCollapsed = signal(true); // Start collapsed
+  selectedScoringId = signal<string | null>(null);
 
-  // Computed properties
-  isLoggedIn = computed(() => !!this.authService.user());
+  // Computed
   isUserFunder = computed(() => this.authService.user()?.userType === 'funder');
-
-  // Hide entirely for funders, else show based on login
-  showComponent = computed(() => {
-    if (this.isUserFunder()) return false; // Funders: hide entirely
-    return this.isLoggedIn();
+  selectedScoringMatch = computed(() => {
+    const id = this.selectedScoringId();
+    if (!id) return null;
+    return this.suggestions().find((m) => m.opportunity.id === id) || null;
   });
 
   ngOnInit() {
-    this.loadSuggestions();
+    // Don't load until modal opens
   }
 
   ngOnDestroy() {
@@ -71,11 +93,30 @@ export class SmartSuggestionsComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
+  /**
+   * Open modal and load suggestions
+   */
+  open() {
+    this.isOpen.set(true);
+    this.loadSuggestions();
+  }
+
+  /**
+   * Close modal
+   */
+  close() {
+    this.isOpen.set(false);
+    this.selectedScoringId.set(null);
+  }
+
+  /**
+   * Load suggestions
+   */
   private loadSuggestions() {
     this.isLoading.set(true);
 
     this.matchingService
-      .getSuggestedOpportunities(3, true)
+      .getSuggestedOpportunities(5, true)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (matches) => {
@@ -92,84 +133,99 @@ export class SmartSuggestionsComponent implements OnInit, OnDestroy {
       });
   }
 
-  toggleCollapse() {
-    this.isCollapsed.update((v) => !v);
-  }
-
+  /**
+   * Refresh suggestions
+   */
   refresh() {
     this.isRefreshing.set(true);
     this.loadSuggestions();
   }
 
-  /** Logic for per-suggestion eligibility */
+  /**
+   * Show scoring breakdown for opportunity
+   */
+  showScoring(opportunityId: string) {
+    this.selectedScoringId.set(opportunityId);
+  }
+
+  /**
+   * Close scoring breakdown
+   */
+  closeScoring() {
+    this.selectedScoringId.set(null);
+  }
+
+  /**
+   * Check eligibility for application
+   */
   getApplicationEligibility(match: MatchScore) {
     const user = this.authService.user();
 
     if (!user) {
-      return { canApply: false, reason: 'You need to sign in to apply.' };
+      return { canApply: false, reason: 'Sign in to apply' };
     }
 
     if (user.userType !== 'sme') {
-      return {
-        canApply: false,
-        reason: 'Only SME accounts can apply to funding opportunities.',
-      };
+      return { canApply: false, reason: 'SME accounts only' };
     }
 
     if (match.score < 75) {
       return {
         canApply: false,
-        reason: `Your match score is only ${match.score}%. You need at least 75% to apply.`,
+        reason: `${match.score}% match (75% required)`,
       };
     }
 
     return { canApply: true, reason: '' };
   }
 
+  /**
+   * Helper text for empty states
+   */
   getSubheading(): string {
-    if (this.hasProfile()) {
-      return 'Based on your business profile and preferences';
-    }
-    return 'Recently published opportunities you might be interested in';
+    return this.hasProfile()
+      ? 'Based on your business profile'
+      : 'Recently published opportunities';
   }
 
   getEmptyStateTitle(): string {
-    if (this.hasProfile()) {
-      return 'No matches found right now';
-    }
-    return 'Complete your profile for personalized suggestions';
+    return this.hasProfile()
+      ? 'No matches right now'
+      : 'Complete your profile first';
   }
 
   getEmptyStateMessage(): string {
-    if (this.hasProfile()) {
-      return 'Check back soon for new opportunities, or browse all available funding options.';
-    }
-    return 'Complete your business profile to receive AI-powered opportunity recommendations tailored to your business.';
+    return this.hasProfile()
+      ? 'Check back soon for new opportunities'
+      : 'Build your profile to get personalized recommendations';
   }
 
+  /**
+   * Navigation handlers
+   */
   onApply(opportunityId: string) {
-    this.router.navigate(['/applications/new'], {
-      queryParams: { opportunityId },
-    });
+    this.apply.emit(opportunityId);
+    this.close();
   }
 
   onViewDetails(opportunityId: string) {
-    this.router.navigate(['/funding/opportunities', opportunityId]);
+    this.viewDetails.emit(opportunityId);
+    this.close();
   }
 
   onSignInToApply() {
-    this.router.navigate(['/auth/login'], {
-      queryParams: { returnUrl: this.router.url },
-    });
+    this.signIn.emit();
+    this.close();
   }
 
   viewAllOpportunities() {
-    const element = document.querySelector('app-opportunities-grid');
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
+    this.viewAll.emit();
+    this.close();
   }
 
+  /**
+   * Track function for ngFor
+   */
   trackBySuggestion(index: number, suggestion: MatchScore): string {
     return suggestion.opportunity.id;
   }

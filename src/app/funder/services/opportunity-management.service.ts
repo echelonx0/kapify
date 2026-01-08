@@ -21,6 +21,7 @@ interface OpportunityListItem {
   conversionRate: number;
   publishedAt?: Date;
   updatedAt: Date;
+  description: string;
 }
 
 interface OpportunityAnalytics {
@@ -114,7 +115,7 @@ export class OpportunityManagementService {
         .from('funding_opportunities')
         .select(
           `
-          id, title, status, funding_type, total_available, amount_deployed,
+          id, title, status, funding_type, total_available, amount_deployed,description,
           current_applications, max_applications, view_count, application_count,
           conversion_rate, published_at, updated_at
         `
@@ -138,6 +139,7 @@ export class OpportunityManagementService {
         viewCount: item.view_count,
         applicationCount: item.application_count,
         conversionRate: item.conversion_rate || 0,
+        description: item.description,
         publishedAt: item.published_at
           ? new Date(item.published_at)
           : undefined,
@@ -490,6 +492,7 @@ export class OpportunityManagementService {
               ? new Date(opp.published_at)
               : undefined,
             updatedAt: new Date(opp.updated_at),
+            description: opp.description,
           })) || [];
 
       // Generate monthly stats (simplified for now)
