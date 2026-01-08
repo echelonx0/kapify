@@ -78,7 +78,7 @@ interface OnboardingCard {
     FormsModule,
     LucideAngularModule,
     RightPanelComponent,
-    PrimaryCTACardComponent,
+    // PrimaryCTACardComponent,
     OrganizationStatusOverviewComponent,
     SupportModalComponent,
   ],
@@ -310,8 +310,7 @@ export class KapifyDashboard implements OnInit, OnDestroy {
       case 'manage_public_profile':
         this.router.navigate(['/funder/create-profile']);
         break;
-      case 'share_profile':
-        console.log('Share profile clicked');
+
         // Add share profile logic here
         break;
     }
