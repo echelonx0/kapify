@@ -712,7 +712,7 @@ export class OrganizationStatusOverviewComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (state) => {
           this.onboardingState.set(state);
-          console.log('✅ Organization status loaded:', state);
+          // console.log('✅ Organization status loaded:', state);
         },
         error: (error) => {
           console.error('❌ Failed to load onboarding state:', error);

@@ -37,34 +37,7 @@
   <!-- Content -->
   <div class="p-6 space-y-6">
     <!-- Header -->
-    <div>
-      <!-- <h4 class="text-2xl font-bold text-slate-900 mb-2">
-        {{
-          getCurrentData()?.applicantOrganizationName ||
-            getCurrentData()?.applicantName
-        }}
-      </h4> -->
-      <!-- <div class="flex items-center gap-2">
-        <span
-          [class]="
-            'px-2.5 py-1 rounded-full text-xs font-semibold border ' +
-            getStatusColor(getCurrentData()?.status)
-          "
-        >
-          {{ getCurrentData()?.status }}
-        </span>
-        @if (getCurrentData()?.matchScore) {
-        <span
-          [class]="
-            'px-2.5 py-1 rounded-full text-xs font-semibold ' +
-            getMatchScoreBadgeColor(getCurrentData()?.matchScore || 0)
-          "
-        >
-          {{ getCurrentData()?.matchScore }}% Match
-        </span>
-        }
-      </div> -->
-    </div>
+    <div></div>
 
     <!-- Quick Stats -->
     <div class="grid grid-cols-2 gap-4">
@@ -85,7 +58,6 @@
 
     <!-- Status & Stage -->
     <div class="space-y-3">
-      <!-- <p class="text-sm font-semibold text-slate-900">Application Status</p> -->
       <div class="space-y-2 text-sm">
         <div
           class="flex justify-between items-center py-2 border-b border-slate-100"
@@ -95,14 +67,7 @@
             getCurrentData()?.status
           }}</span>
         </div>
-        <!-- <div
-          class="flex justify-between items-center py-2 border-b border-slate-100"
-        >
-          <span class="text-slate-600">Current Stage</span>
-          <span class="font-medium text-slate-900">{{
-            getCurrentData()?.stage
-          }}</span>
-        </div> -->
+
         @if (getCurrentData()?.submittedAt) {
         <div
           class="flex justify-between items-center py-2 border-b border-slate-100"
@@ -125,7 +90,9 @@
     <!-- Business Info -->
     @if (getCurrentData()?.applicant) {
     <div class="space-y-3">
-      <p class="text-sm font-semibold text-slate-900">Contact Details</p>
+      <p class="text-sm font-semibold text-slate-900">
+        Principal Contact Details
+      </p>
       <div class="space-y-2 text-sm">
         @if (getCurrentData()?.applicant?.firstName) {
         <div
@@ -161,7 +128,72 @@
     <!-- Funding Details -->
 
     <!-- Funding type -->
-    @if (getCurrentData()?.description) {
+    <!-- Funding Requirements Section for Sidebar Modal -->
+    <!-- Replace the "Funding type" / "Use of Funds" section with this -->
+
+    <!-- Funding Requirements -->
+    @if (getCurrentData()?.fundingRequirements) {
+    <div class="space-y-3">
+      <p class="text-sm font-semibold text-slate-900">Funding Requirements</p>
+      <div class="space-y-2 text-sm">
+        @if (getCurrentData()?.fundingRequirements?.fundingPurpose) {
+        <div
+          class="flex justify-between items-start py-2 border-b border-slate-100"
+        >
+          <span class="text-slate-600">Purpose</span>
+          <span class="font-medium text-slate-900 text-right max-w-xs">
+            {{ getCurrentData()?.fundingRequirements?.fundingPurpose }}
+          </span>
+        </div>
+        } @if (getCurrentData()?.fundingRequirements?.fundingType) {
+        <div
+          class="flex justify-between items-center py-2 border-b border-slate-100"
+        >
+          <span class="text-slate-600">Type</span>
+          <span
+            class="inline-block px-2.5 py-1 rounded-lg text-xs font-semibold border"
+            [class]="
+              getFundingTypeColor(
+                getCurrentData()?.fundingRequirements?.fundingType
+              )
+            "
+          >
+            {{
+              formatFundingType(
+                getCurrentData()?.fundingRequirements?.fundingType
+              )
+            }}
+          </span>
+        </div>
+        } @if (getCurrentData()?.fundingRequirements?.timeline) {
+        <div
+          class="flex justify-between items-center py-2 border-b border-slate-100"
+        >
+          <span class="text-slate-600">Timeline</span>
+          <span class="font-medium text-slate-900">
+            {{ getCurrentData()?.fundingRequirements?.timeline }}
+          </span>
+        </div>
+        } @if (getCurrentData()?.fundingRequirements?.repaymentTerms) {
+        <div
+          class="flex justify-between items-start py-2 border-b border-slate-100"
+        >
+          <span class="text-slate-600">Repayment</span>
+          <span class="font-medium text-slate-900 text-right max-w-xs">
+            {{ getCurrentData()?.fundingRequirements?.repaymentTerms }}
+          </span>
+        </div>
+        } @if (getCurrentData()?.fundingRequirements?.collateral) {
+        <div class="flex justify-between items-start py-2">
+          <span class="text-slate-600">Collateral</span>
+          <span class="font-medium text-slate-900 text-right max-w-xs">
+            {{ getCurrentData()?.fundingRequirements?.collateral }}
+          </span>
+        </div>
+        }
+      </div>
+    </div>
+    } @else if (getCurrentData()?.description) {
     <div class="space-y-3">
       <p class="text-sm font-semibold text-slate-900">Use of Funds</p>
       <p class="text-sm text-slate-600 leading-relaxed">
@@ -172,15 +204,6 @@
 
     <!-- Actions -->
     <div class="flex items-center gap-3 pt-6 border-t border-slate-200">
-      <!-- @if (canDownload()) {
-      <button
-        (click)="onDownloadClick()"
-        class="flex-1 bg-teal-500 text-white font-medium py-2.5 rounded-xl hover:bg-teal-600 active:bg-teal-700 transition-colors duration-200 flex items-center justify-center gap-2"
-      >
-        <lucide-angular [img]="DownloadIcon" size="16"></lucide-angular>
-        Download
-      </button>
-      } -->
       <button
         (click)="close()"
         class="flex-1 bg-slate-100 text-slate-700 font-medium py-2.5 rounded-xl hover:bg-slate-200 transition-colors duration-200"

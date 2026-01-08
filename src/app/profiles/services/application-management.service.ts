@@ -43,13 +43,6 @@ export class ApplicationManagementService {
     this.isLoading.set(true);
     this.error.set(null);
 
-    console.log(
-      'Fetching applications for opportunity:',
-      opportunityId,
-      'with documents:',
-      includeDocuments
-    );
-
     return from(
       this.fetchApplicationsSimplified(opportunityId, includeDocuments)
     ).pipe(
@@ -77,8 +70,6 @@ export class ApplicationManagementService {
     this.isLoading.set(true);
     this.error.set(null);
 
-    console.log('Fetching applications for organization:', organizationId);
-
     return from(
       this.fetchApplicationsByOrganization(
         organizationId,
@@ -87,7 +78,6 @@ export class ApplicationManagementService {
       )
     ).pipe(
       tap((apps) => {
-        console.log('Organization applications loaded:', apps.length);
         this.isLoading.set(false);
       }),
       catchError((error) => {
@@ -205,10 +195,7 @@ export class ApplicationManagementService {
       'request_info'
     ).pipe(
       tap(() => {
-        console.log(
-          'Additional information requested for application:',
-          applicationId
-        );
+        console.log('Additional information requested for application:');
       })
     );
   }
@@ -373,17 +360,11 @@ export class ApplicationManagementService {
 
     documentTypes.forEach((docType) => {
       const docData = rawDocData[docType];
-      // console.log(`📄 [DEBUG] Processing document type '${docType}':`, docData);
 
       if (docData) {
         foundDocuments++;
         // Handle different document data structures
         if (typeof docData === 'string') {
-          // Simple filename/URL
-          // console.log(
-          //   `📄 [DEBUG] Document '${docType}' is string type:`,
-          //   docData
-          // );
           documents[docType] = {
             id: `${docType}_${Date.now()}`,
             fileName: docData,
@@ -396,11 +377,6 @@ export class ApplicationManagementService {
             metadata: {},
           };
         } else if (typeof docData === 'object' && docData !== null) {
-          // Structured document object
-          console.log(
-            `📄 [DEBUG] Document '${docType}' is object type:`,
-            docData
-          );
           documents[docType] = {
             id: docData.id || `${docType}_${Date.now()}`,
             fileName: docData.fileName || docData.name || `${docType} document`,
@@ -418,21 +394,11 @@ export class ApplicationManagementService {
             metadata: docData.metadata || {},
           };
         } else {
-          console.log(
-            `⚠️ [DEBUG] Document '${docType}' has unexpected data type:`,
-            typeof docData,
-            docData
-          );
         }
       } else {
         console.log(`📭 [DEBUG] Document '${docType}' not found or empty`);
       }
     });
-
-    // console.log(
-    //   `✅ [DEBUG] Document transformation complete. Found ${foundDocuments} documents out of ${documentTypes.length} expected types`
-    // );
-    // console.log('📋 [DEBUG] Final document types:', Object.keys(documents));
 
     return documents;
   }
@@ -489,12 +455,6 @@ export class ApplicationManagementService {
     applications: FundingApplication[]
   ): Promise<FundingApplication[]> {
     try {
-      // console.log(
-      //   '📄 [DEBUG] Enriching',
-      //   applications.length,
-      //   'applications with documents'
-      // );
-
       // Get unique applicant IDs
       const applicantIds = [
         ...new Set(applications.map((app) => app.applicantId)),
@@ -528,7 +488,6 @@ export class ApplicationManagementService {
         app.documents = this.transformDocumentsForApplication(documentsData);
       });
 
-      // console.log('✅ [DEBUG] Applications enriched with documents');
       return applications;
     } catch (error) {
       console.error(
@@ -1031,18 +990,12 @@ export class ApplicationManagementService {
     includeDocuments: boolean = false
   ): Promise<FundingApplication[]> {
     try {
-      console.log(
-        '🔍 [DEBUG] Starting fetchApplicationsSimplified with documents:',
-        includeDocuments
-      );
-      console.log('🎯 [DEBUG] Opportunity ID:', opportunityId);
-
       // FIXED: Correct Supabase query syntax
       const { data, error } = await this.supabase
         .from('applications')
         .select('*')
         .eq('opportunity_id', opportunityId)
-        .not('status', 'in', '(withdrawn,draft)') // ✅ FIXED: Correct syntax
+        .not('status', 'in', '(withdrawn,draft)')
         .order('created_at', { ascending: false });
 
       if (error) {
@@ -1054,8 +1007,6 @@ export class ApplicationManagementService {
         console.log('📭 [DEBUG] No applications found');
         return [];
       }
-
-      console.log('✅ [DEBUG] Raw applications found:', data.length);
 
       // Transform applications
       let applications = this.transformApplicationsData(data);
@@ -1094,7 +1045,7 @@ export class ApplicationManagementService {
       }
 
       if (!opportunities || opportunities.length === 0) {
-        console.log('No opportunities found for organization:', organizationId);
+        // console.log('No opportunities found for organization:', organizationId);
         return [];
       }
 
@@ -1137,7 +1088,6 @@ export class ApplicationManagementService {
         return [];
       }
 
-      console.log('Raw applications found:', data.length);
       let applications = this.transformApplicationsData(data);
 
       // Apply search filter (client-side)
@@ -1184,11 +1134,6 @@ export class ApplicationManagementService {
         .not('status', 'eq', 'withdrawn')
         .not('status', 'eq', 'draft');
 
-      // Alternative Option 2: Use neq (not equal) for each
-      // query = query
-      //   .neq('status', 'withdrawn')
-      //   .neq('status', 'draft');
-
       const { data, error } = await query;
 
       if (error) {
@@ -1230,8 +1175,6 @@ export class ApplicationManagementService {
     includeDocuments: boolean = false
   ): Promise<FundingApplication[]> {
     try {
-      console.log('🔍 Fetching all manageable applications');
-
       // Get all active opportunities
       const { data: opportunities, error: oppError } = await this.supabase
         .from('funding_opportunities')
@@ -1249,7 +1192,6 @@ export class ApplicationManagementService {
       }
 
       const opportunityIds = opportunities.map((opp) => opp.id);
-      console.log('✅ Found opportunities:', opportunityIds.length);
 
       // Get applications for all those opportunities
       const { data, error } = await this.supabase
@@ -1268,8 +1210,6 @@ export class ApplicationManagementService {
         console.log('📭 No applications found');
         return [];
       }
-
-      console.log('✅ Applications found:', data.length);
 
       let applications = this.transformApplicationsData(data);
 
@@ -1291,11 +1231,6 @@ export class ApplicationManagementService {
     applicationId: string
   ): Promise<FundingApplication> {
     try {
-      console.log(
-        '🔍 [DEBUG] Fetching single application with documents:',
-        applicationId
-      );
-
       const { data, error } = await this.supabase
         .from('applications')
         .select('*')
@@ -1311,37 +1246,14 @@ export class ApplicationManagementService {
       }
 
       const application = this.transformApplicationData(data);
-      console.log('📋 [STEP 1] After transformApplicationData:', {
-        id: application.id,
-        hasDocuments: Object.keys(application.documents).length > 0,
-        documents: application.documents,
-      });
-
-      // ✅ FIXED: Pass applicationId here too
-      console.log('📋 [STEP 2] Calling fetchApplicantDocuments with:', {
-        applicantId: application.applicantId,
-        applicationId: applicationId,
-      });
 
       const documentsData = await this.fetchApplicantDocuments(
         application.applicantId,
         applicationId // ← PASS THIS
       );
 
-      console.log('📋 [STEP 3] After fetchApplicantDocuments:', {
-        keys: Object.keys(documentsData),
-        hasData: Object.keys(documentsData).length > 0,
-        documentsData: documentsData,
-      });
-
       application.documents =
         this.transformDocumentsForApplication(documentsData);
-
-      console.log('📋 [STEP 4] After transformDocumentsForApplication:', {
-        keys: Object.keys(application.documents),
-        hasDocuments: Object.keys(application.documents).length > 0,
-        documents: application.documents,
-      });
 
       return application;
     } catch (error) {
@@ -1358,29 +1270,13 @@ export class ApplicationManagementService {
     applicationId?: string
   ): Promise<DocumentSection> {
     try {
-      console.log(
-        '🔍 [DOCS] Fetching documents for applicant:',
-        applicantId,
-        'application:',
-        applicationId
-      );
-
-      // ✅ FIXED: Use direct query to bypass RLS filtering issues
-      // The service's getDocumentsByUserId() has RLS issues when filtering by applicationId
-      // The fallback query works perfectly, so use it as primary
       const documents = await this.fetchDocumentsDirectlyForUser(applicantId);
-
-      console.log(
-        '📄 [DOCS] Documents fetched:',
-        Object.keys(documents).length
-      );
 
       if (Object.keys(documents).length === 0) {
         console.log('📭 [DOCS] No documents found');
         return {};
       }
 
-      console.log('✅ [DOCS] Documents retrieved:', Object.keys(documents));
       return documents;
     } catch (error) {
       console.error('💥 [DOCS] Error fetching documents:', error);

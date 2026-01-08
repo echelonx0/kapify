@@ -9,7 +9,12 @@ import {
 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { LucideAngularModule, Bot, AlertCircle, Loader2 } from 'lucide-angular';
+import {
+  LucideAngularModule,
+  Bot,
+  CircleAlert,
+  LoaderCircle,
+} from 'lucide-angular';
 import { Subject, takeUntil, forkJoin } from 'rxjs';
 import { ApplicationManagementService } from 'src/app/fund-seeking-orgs/services/application-management.service';
 import { SMEOpportunitiesService } from 'src/app/funding/services/opportunities.service';
@@ -19,7 +24,6 @@ import { FundingProfileBackendService } from 'src/app/fund-seeking-orgs/services
 import { ProfileDataTransformerService } from 'src/app/fund-seeking-orgs/services/profile-data-transformer.service';
 import { FundingApplication } from 'src/app/fund-seeking-orgs/models/application.models';
 import { AuthService } from 'src/app/auth/services/production.auth.service';
-
 import { ApplicationMetricsComponent } from '../../components/application-metrics/application-metrics.component';
 import { ApplicationHeaderComponent } from '../../../components/application-header/application-header.component';
 import { StatusManagementModalComponent } from '../../../components/status-management-modal/status-management-modal.component';
@@ -68,8 +72,8 @@ export class ApplicationDetailComponent implements OnInit, OnDestroy {
 
   // Icons
   BotIcon = Bot;
-  AlertCircleIcon = AlertCircle;
-  Loader2Icon = Loader2;
+  AlertCircleIcon = CircleAlert;
+  Loader2Icon = LoaderCircle;
 
   // State
   applicationId = signal<string>('');
@@ -221,7 +225,7 @@ export class ApplicationDetailComponent implements OnInit, OnDestroy {
 
       if (fundingProfile) {
         this.rawProfileData.set(fundingProfile);
-        //  console.log(fundingProfile.companyInfo?.companyName);
+        console.log(fundingProfile);
       }
 
       if (fundingProfile) {

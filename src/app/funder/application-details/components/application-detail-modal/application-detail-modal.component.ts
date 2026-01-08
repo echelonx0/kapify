@@ -24,7 +24,17 @@ export interface ApplicationDetailModalData {
   submittedAt?: Date;
   createdAt?: Date;
   matchScore?: number;
+  fundingPurpose?: string;
   completionScore?: number;
+  fundingRequirements?: {
+    totalAmountRequired: number;
+    currency: string;
+    fundingType: 'loan' | 'grant' | 'equity' | 'convertible' | 'revenue_share';
+    fundingPurpose: string;
+    timeline: string;
+    repaymentTerms?: string;
+    collateral?: string;
+  };
   applicant?: {
     firstName?: string;
     lastName?: string;
@@ -84,6 +94,11 @@ export class ApplicationDetailModalComponent {
     return app?.status === 'under_review' || app?.status === 'submitted';
   });
 
+  hasFundingRequirements = computed(() => {
+    const app = this.getCurrentData();
+    return !!app?.fundingRequirements;
+  });
+
   getCurrentData(): ApplicationDetailModalData | null {
     return this.data();
   }
@@ -128,6 +143,31 @@ export class ApplicationDetailModalComponent {
     if (score >= 80) return 'bg-green-100 text-green-700';
     if (score >= 60) return 'bg-amber-100 text-amber-700';
     return 'bg-red-100 text-red-700';
+  }
+
+  getFundingTypeColor(fundingType?: string): string {
+    switch (fundingType) {
+      case 'equity':
+        return 'bg-blue-50 text-blue-700 border-blue-200/50';
+      case 'loan':
+        return 'bg-amber-50 text-amber-700 border-amber-200/50';
+      case 'grant':
+        return 'bg-green-50 text-green-700 border-green-200/50';
+      case 'convertible':
+        return 'bg-purple-50 text-purple-700 border-purple-200/50';
+      case 'revenue_share':
+        return 'bg-teal-50 text-teal-700 border-teal-200/50';
+      default:
+        return 'bg-slate-100 text-slate-600 border-slate-200/50';
+    }
+  }
+
+  formatFundingType(fundingType?: string): string {
+    if (!fundingType) return '';
+    return fundingType
+      .split('_')
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
   }
 
   formatCurrency(amount: number, currency?: string): string {

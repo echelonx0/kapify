@@ -47,15 +47,85 @@
       </div>
     </div>
     }
+    <!-- ============================================
+         SECTION 4: METRICS (Bottom, Minimal)
+         ============================================ -->
+    @if (analytics()) {
+    <div class="mb-2 pt-2 border-t-2 border-slate-300">
+      <p
+        class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-4"
+      >
+        Portfolio Overview
+      </p>
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <!-- Active Opportunities -->
+        <div class="bg-white rounded-lg border border-slate-200 p-4">
+          <p class="text-2xl font-black text-teal-600">
+            {{ getActiveOpportunitiesCount() }}
+          </p>
+          <p class="text-xs text-slate-600 font-semibold mt-1">Active</p>
+        </div>
+
+        <!-- Pending Applications -->
+        <div class="bg-white rounded-lg border border-slate-200 p-4">
+          <p class="text-2xl font-black text-slate-900">
+            {{ getPendingApplicationsCount() }}
+          </p>
+          <p class="text-xs text-slate-600 font-semibold mt-1">Pending Apps</p>
+        </div>
+
+        <!-- Conversion Rate -->
+        <div class="bg-white rounded-lg border border-slate-200 p-4">
+          <p class="text-2xl font-black text-slate-900">
+            {{ analytics()!.averageConversionRate.toFixed(1) }}%
+          </p>
+          <p class="text-xs text-slate-600 font-semibold mt-1">Conversion</p>
+        </div>
+
+        <!-- Total Views -->
+        <div class="bg-white rounded-lg border border-slate-200 p-4">
+          <p class="text-2xl font-black text-slate-900">
+            {{ formatNumber(analytics()!.totalViews) }}
+          </p>
+          <p class="text-xs text-slate-600 font-semibold mt-1">Total Views</p>
+        </div>
+      </div>
+    </div>
+    }
+    <!-- ============================================
+         SECTION 3: QUICK ACTIONS (Secondary)
+         ============================================ -->
+    @if (onboardingState()?.canCreateOpportunities) {
+    <div class="mb-4 bg-white rounded-xl border-2 border-slate-200 p-6">
+      <p
+        class="text-sm font-semibold text-slate-600 uppercase tracking-widest mb-4"
+      >
+        Quick Actions
+      </p>
+      <div class="flex flex-col sm:flex-row gap-3">
+        <button
+          class="flex items-center justify-center gap-2 bg-teal-600 text-white font-bold rounded-lg px-6 py-2.5 text-sm hover:bg-teal-700 active:bg-teal-800 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2"
+          (click)="createOpportunity()"
+        >
+          <lucide-icon [img]="PlusIcon" [size]="16" />
+          <span>New</span>
+        </button>
+        <button
+          class="flex items-center justify-center gap-2 bg-slate-100 text-slate-900 font-semibold rounded-lg px-6 py-2.5 text-sm hover:bg-slate-200 active:bg-slate-300 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 border border-slate-300"
+          (click)="importOpportunity()"
+        >
+          <lucide-icon [img]="FileTextIcon" [size]="16" />
+          <span>Import</span>
+        </button>
+      </div>
+    </div>
+    }
 
     <!-- ============================================
          SECTION 2: OPPORTUNITIES MANAGEMENT (HERO)
          ============================================ -->
     <div class="mb-8">
       <div class="mb-6">
-        <h1 class="text-3xl font-black text-slate-900 mb-2 tracking-tight">
-          Your Opportunities
-        </h1>
         <p class="text-base text-slate-600">
           @if (recentOpportunities().length > 0) { Manage
           {{ recentOpportunities().length }}
@@ -200,81 +270,6 @@
       </div>
       }
     </div>
-
-    <!-- ============================================
-         SECTION 3: QUICK ACTIONS (Secondary)
-         ============================================ -->
-    @if (onboardingState()?.canCreateOpportunities) {
-    <div class="mb-8 bg-white rounded-xl border-2 border-slate-200 p-6">
-      <p
-        class="text-sm font-semibold text-slate-600 uppercase tracking-widest mb-4"
-      >
-        Quick Actions
-      </p>
-      <div class="flex flex-col sm:flex-row gap-3">
-        <button
-          class="flex items-center justify-center gap-2 bg-teal-600 text-white font-bold rounded-lg px-6 py-2.5 text-sm hover:bg-teal-700 active:bg-teal-800 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2"
-          (click)="createOpportunity()"
-        >
-          <lucide-icon [img]="PlusIcon" [size]="16" />
-          <span>New</span>
-        </button>
-        <button
-          class="flex items-center justify-center gap-2 bg-slate-100 text-slate-900 font-semibold rounded-lg px-6 py-2.5 text-sm hover:bg-slate-200 active:bg-slate-300 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 border border-slate-300"
-          (click)="importOpportunity()"
-        >
-          <lucide-icon [img]="FileTextIcon" [size]="16" />
-          <span>Import</span>
-        </button>
-      </div>
-    </div>
-    }
-
-    <!-- ============================================
-         SECTION 4: METRICS (Bottom, Minimal)
-         ============================================ -->
-    @if (analytics()) {
-    <div class="mt-12 pt-8 border-t-2 border-slate-300">
-      <p
-        class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-4"
-      >
-        Portfolio Overview
-      </p>
-      <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <!-- Active Opportunities -->
-        <div class="bg-white rounded-lg border border-slate-200 p-4">
-          <p class="text-2xl font-black text-teal-600">
-            {{ getActiveOpportunitiesCount() }}
-          </p>
-          <p class="text-xs text-slate-600 font-semibold mt-1">Active</p>
-        </div>
-
-        <!-- Pending Applications -->
-        <div class="bg-white rounded-lg border border-slate-200 p-4">
-          <p class="text-2xl font-black text-slate-900">
-            {{ getPendingApplicationsCount() }}
-          </p>
-          <p class="text-xs text-slate-600 font-semibold mt-1">Pending Apps</p>
-        </div>
-
-        <!-- Conversion Rate -->
-        <div class="bg-white rounded-lg border border-slate-200 p-4">
-          <p class="text-2xl font-black text-slate-900">
-            {{ analytics()!.averageConversionRate.toFixed(1) }}%
-          </p>
-          <p class="text-xs text-slate-600 font-semibold mt-1">Conversion</p>
-        </div>
-
-        <!-- Total Views -->
-        <div class="bg-white rounded-lg border border-slate-200 p-4">
-          <p class="text-2xl font-black text-slate-900">
-            {{ formatNumber(analytics()!.totalViews) }}
-          </p>
-          <p class="text-xs text-slate-600 font-semibold mt-1">Total Views</p>
-        </div>
-      </div>
-    </div>
-    }
   </div>
 </div>
 

@@ -17,12 +17,8 @@ import {
   ApplicationStats,
 } from 'src/app/fund-seeking-orgs/models/application.models';
 import { FormsModule } from '@angular/forms';
-import {
-  UiSelectComponent,
-  SelectOption,
-} from 'src/app/shared/components/ui-select/ui-select.component';
+import { SelectOption } from 'src/app/shared/components/ui-select/ui-select.component';
 
-import { ApplicationsStatsComponent } from 'src/app/features/reports/analysis-history/applications-stats.component';
 import { KapifyReportsExportService } from 'src/app/features/reports/services/kapify-reports-export.service';
 import { ApplicationDetailModalComponent } from '../components/application-detail-modal/application-detail-modal.component';
 import { ApplicationsReviewHeaderComponent } from './components/applications-review-header/applications-review-header.component';
@@ -36,6 +32,9 @@ import {
   BaseApplicationCard,
 } from './components/application-list-card/application-list-card.component';
 import { ApplicationActionsService } from 'src/app/fund-seeking-orgs/services/applications-actions-service';
+import { FundingApplicationProfile } from 'src/app/fund-seeking-orgs/applications/models/funding-application.models';
+
+import { FundingProfileBackendService } from 'src/app/fund-seeking-orgs/services/funding-profile-backend.service';
 
 @Component({
   selector: 'app-funder-applications',
@@ -45,10 +44,8 @@ import { ApplicationActionsService } from 'src/app/fund-seeking-orgs/services/ap
     LucideAngularModule,
     ApplicationListCardComponent,
     FormsModule,
-    // UiSelectComponent,
     ApplicationDetailModalComponent,
     ApplicationsReviewHeaderComponent,
-    // ApplicationsStatsComponent,
     ReportBuilderComponent,
   ],
   templateUrl: './funder-applications.component.html',
@@ -61,9 +58,14 @@ export class FunderApplicationsComponent implements OnInit, OnDestroy {
   private actionsService = inject(ApplicationActionsService);
   private exportService = inject(KapifyReportsExportService);
   private destroy$ = new Subject<void>();
-
+  rawProfileData = signal<Partial<FundingApplicationProfile> | null>(null);
   // Modal state
   selectedApplicationForModal = signal<any>(null);
+  // Cache for loaded profiles (applicantId -> profile)
+  private profileCache = new Map<string, FundingApplicationProfile>();
+  // Add this to the component class:
+
+  private backendService = inject(FundingProfileBackendService);
 
   // Loading state for status updates
   updatingApplicationId = signal<string | null>(null);
@@ -211,10 +213,6 @@ export class FunderApplicationsComponent implements OnInit, OnDestroy {
     this.selectedOpportunityFilter.set('');
   }
 
-  refreshApplicationsData() {
-    this.loadApplicationsData();
-  }
-
   onExport(event: {
     format: 'excel' | 'pdf' | 'csv';
     includeFilters: boolean;
@@ -339,7 +337,11 @@ export class FunderApplicationsComponent implements OnInit, OnDestroy {
     return !['approved', 'rejected'].includes(status);
   }
 
-  viewApplicationDetails(application: FundingApplication): void {
+  /**
+   * View application details in modal
+   * Loads funding requirements from applicant profile on-demand
+   */
+  async viewApplicationDetails(application: FundingApplication): Promise<void> {
     const modalData = {
       id: application.id,
       title: application.title,
@@ -368,9 +370,77 @@ export class FunderApplicationsComponent implements OnInit, OnDestroy {
         fundingType: application.opportunity?.fundingType,
         currency: application.opportunity?.currency,
       },
-    };
+    } as any;
+
+    // Load funding requirements on-demand if we have an applicant ID
+    if (application.applicantId) {
+      try {
+        const fundingRequirements = await this.loadFundingRequirements(
+          application.applicantId
+        );
+        if (fundingRequirements) {
+          modalData.fundingRequirements = fundingRequirements;
+        }
+      } catch (error) {
+        console.warn('Failed to load funding requirements for modal:', error);
+        // Modal still opens without funding requirements
+      }
+    }
 
     this.selectedApplicationForModal.set(modalData);
+  }
+
+  /**
+   * Load funding requirements from applicant's profile
+   * Uses cache to avoid duplicate requests
+   */
+  private async loadFundingRequirements(applicantId: string): Promise<{
+    totalAmountRequired: number;
+    currency: string;
+    fundingType: 'loan' | 'grant' | 'equity' | 'convertible' | 'revenue_share';
+    fundingPurpose: string;
+    timeline: string;
+    repaymentTerms?: string;
+    collateral?: string;
+  } | null> {
+    // Check cache first
+    if (this.profileCache.has(applicantId)) {
+      const cachedProfile = this.profileCache.get(applicantId);
+      return cachedProfile?.businessStrategy?.fundingRequirements || null;
+    }
+
+    // Load from backend
+    try {
+      const fundingProfile = await this.backendService
+        .loadSavedProfileForUser(applicantId)
+        .toPromise();
+
+      if (fundingProfile) {
+        // Cache it
+        this.profileCache.set(applicantId, fundingProfile);
+        return fundingProfile.businessStrategy?.fundingRequirements || null;
+      }
+
+      return null;
+    } catch (error) {
+      console.error('Error loading funding requirements:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Clear profile cache when component is destroyed or data is refreshed
+   */
+  clearProfileCache(): void {
+    this.profileCache.clear();
+  }
+
+  /**
+   * Override refreshApplicationsData to also clear cache
+   */
+  refreshApplicationsData() {
+    this.clearProfileCache();
+    this.loadApplicationsData();
   }
 
   downloadApplicationDocuments(application: any): void {

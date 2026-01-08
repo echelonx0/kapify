@@ -66,7 +66,6 @@ type LoadingState = 'idle' | 'initializing' | 'parsing' | 'uploading' | 'ready';
     LucideAngularModule,
     FinancialDataTableComponent,
     FinancialUploadComponent,
-
     FinancialNotesComponent,
     FinancialTableSkeletonComponent,
   ],
