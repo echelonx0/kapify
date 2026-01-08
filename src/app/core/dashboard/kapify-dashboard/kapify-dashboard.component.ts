@@ -389,11 +389,11 @@ export class KapifyDashboard implements OnInit, OnDestroy {
     const hour = new Date().getHours();
 
     if (hour < 12) {
-      return `Good morning! Ready to make progress today?`;
+      return 'Good morning. Capitalise on momentum and meaningful opportunity.';
     } else if (hour < 18) {
-      return `Good afternoon! Let's keep the momentum going.`;
+      return 'Good afternoon. Turning capital into impact requires clarity and intent.';
     } else {
-      return `Good evening! Time to review today's achievements.`;
+      return 'Good evening. Measured capital decisions define long-term success.';
     }
   }
 }

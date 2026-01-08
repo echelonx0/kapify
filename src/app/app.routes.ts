@@ -8,9 +8,7 @@ import { NotFoundComponent } from './shared/components/not-found/not-found.compo
 import { SuccessPageComponent } from './shared/components/success-page/success-page.component';
 import { VersionInfoComponent } from './shared/components/version-info.component';
 import { PricingPageComponent } from './core/dashboard/finance/pricing-page/pricing-page.component';
-
 import { AcceptInvitationComponent } from './auth/accept-invitation/accept-invitation.component';
-
 import { InvoiceComponent } from './features/invoice/invoice.component';
 import { AuthGuard } from './core/guards/auth.guard';
 import { GuestGuard } from './core/guards/guest.guard';

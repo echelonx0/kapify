@@ -18,7 +18,7 @@ import {
   AlertCircle,
   Info,
 } from 'lucide-angular';
-import { ActivityInboxComponent } from '../../../features/messaging/messaging/messaging.component';
+import { KapifyMessagingComponent } from '../../../features/messaging/messaging/messaging.component';
 import { VersionService } from 'src/app/shared/services/version.service';
 
 export type RightPanelContent =
@@ -64,7 +64,7 @@ interface SecurityFeature {
 @Component({
   selector: 'app-right-panel',
   standalone: true,
-  imports: [CommonModule, LucideAngularModule, ActivityInboxComponent],
+  imports: [CommonModule, LucideAngularModule, KapifyMessagingComponent],
   templateUrl: './right-panel.component.html',
   styleUrl: './right-panel.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

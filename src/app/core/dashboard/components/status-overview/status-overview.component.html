@@ -117,66 +117,56 @@
             }}</span>
             item{{ totalMissingItems() === 1 ? "" : "s" }} to complete setup
           </p>
-          } @else {
-          <p class="text-green-700 font-bold">✓ Setup complete</p>
           }
         </div>
       </div>
 
-      <!-- Right: Action Buttons -->
+      <!-- Right / Bottom: Actions -->
+      @if (!isComplete()) {
+      <!-- Existing incomplete-state buttons stay as-is -->
       <div class="flex flex-col gap-3">
-        @if (!isComplete()) {
-        <!-- Complete Setup Button -->
-        <button
-          (click)="completeSetup()"
-          class="w-full bg-teal-600 text-white font-black rounded-lg px-5 py-3 text-sm border-3 border-teal-700 hover:bg-teal-700 active:bg-teal-800 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 uppercase tracking-wide slide-in-right action-btn"
-          [style]="'--delay: 0.05s'"
-        >
-          <span class="flex items-center justify-center gap-2">
-            <lucide-icon [img]="FileTextIcon" [size]="18" />
-            Complete
-          </span>
-        </button>
-        } @else if (isComplete() && !isVerified() && canRequestVerification()) {
-        <!-- Request Verification Button -->
-        <button
-          (click)="requestVerification()"
-          class="w-full bg-teal-600 text-white font-black rounded-lg px-5 py-3 text-sm border-3 border-teal-700 hover:bg-teal-700 active:bg-teal-800 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 uppercase tracking-wide slide-in-right action-btn"
-          [style]="'--delay: 0.05s'"
-        >
-          <span class="flex items-center justify-center gap-2">
-            <lucide-icon [img]="ShieldIcon" [size]="18" />
-            Verify
-          </span>
-        </button>
-        }
-
-        <!-- Edit Button -->
-        <button
-          (click)="editOrganization()"
-          class="w-full bg-slate-200 text-slate-900 font-black rounded-lg px-5 py-3 text-sm border-3 border-slate-400 hover:bg-slate-300 active:bg-slate-400 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 uppercase tracking-wide slide-in-right action-btn"
+        <!-- Complete / Verify buttons -->
+      </div>
+      } @else {
+      <!-- Post-completion actions in a neat row -->
+      <div class="lg:col-span-3">
+        <div
+          class="flex flex-wrap gap-3 justify-start mt-2 slide-in-up"
           [style]="'--delay: 0.1s'"
         >
-          <span class="flex items-center justify-center gap-2">
-            Edit
-            <lucide-icon [img]="ExternalLinkIcon" [size]="16" />
-          </span>
-        </button>
+          <button
+            (click)="managePublicProfile()"
+            class="bg-slate-200 text-slate-900 font-black rounded-lg px-6 py-3 text-sm border-3 border-slate-400 hover:bg-slate-300 active:bg-slate-400 transition-all duration-200 uppercase tracking-wide"
+          >
+            <span class="flex items-center gap-2"> New opportunity </span>
+          </button>
+          @if (!isVerified() && canRequestVerification()) {
+          <button
+            (click)="requestVerification()"
+            class="bg-teal-600 text-white font-black rounded-lg px-6 py-3 text-sm border-3 border-teal-700 hover:bg-teal-700 active:bg-teal-800 transition-all duration-200 uppercase tracking-wide"
+          >
+            <span class="flex items-center gap-2"> Verify Organisation </span>
+          </button>
+          }
 
-        <!-- Profile Button -->
-        @if (canCreateOpportunities()) {
-        <button
-          (click)="managePublicProfile()"
-          class="w-full bg-slate-200 text-slate-900 font-black rounded-lg px-5 py-3 text-sm border-3 border-slate-400 hover:bg-slate-300 active:bg-slate-400 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 uppercase tracking-wide slide-in-right action-btn"
-          [style]="'--delay: 0.15s'"
-        >
-          <span class="flex items-center justify-center gap-2">
-            Profile
-            <lucide-icon [img]="ExternalLinkIcon" [size]="16" />
-          </span>
-        </button>
-        }
+          <button
+            (click)="editOrganization()"
+            class="bg-slate-200 text-slate-900 font-black rounded-lg px-6 py-3 text-sm border-3 border-slate-400 hover:bg-slate-300 active:bg-slate-400 transition-all duration-200 uppercase tracking-wide"
+          >
+            <span class="flex items-center gap-2"> Update Org Info </span>
+          </button>
+
+          @if (canCreateOpportunities()) {
+          <button
+            (click)="managePublicProfile()"
+            class="bg-slate-200 text-slate-900 font-black rounded-lg px-6 py-3 text-sm border-3 border-slate-400 hover:bg-slate-300 active:bg-slate-400 transition-all duration-200 uppercase tracking-wide"
+          >
+            <span class="flex items-center gap-2"> Manage Public Profile </span>
+          </button>
+          }
+        </div>
       </div>
+      }
     </div>
   </div>
   }

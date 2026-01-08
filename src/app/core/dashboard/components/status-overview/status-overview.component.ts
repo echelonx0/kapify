@@ -500,17 +500,18 @@ import {
 import { CommonModule } from '@angular/common';
 import {
   LucideAngularModule,
-  CheckCircle,
-  AlertTriangle,
   Shield,
   FileText,
   ExternalLink,
+  CircleCheckBig,
+  TriangleAlert,
 } from 'lucide-angular';
 import { Subject, takeUntil } from 'rxjs';
 import {
   FunderOnboardingService,
   OnboardingState,
 } from '../../../../funder/services/funder-onboarding.service';
+import { Router } from '@angular/router';
 
 export interface ActionEvent {
   type:
@@ -540,10 +541,10 @@ interface StatusPriority {
 export class OrganizationStatusOverviewComponent implements OnInit, OnDestroy {
   private onboardingService = inject(FunderOnboardingService);
   private destroy$ = new Subject<void>();
-
+  private router = inject(Router);
   // Icons
-  readonly CheckCircleIcon = CheckCircle;
-  readonly AlertTriangleIcon = AlertTriangle;
+  readonly CheckCircleIcon = CircleCheckBig;
+  readonly AlertTriangleIcon = TriangleAlert;
   readonly ShieldIcon = Shield;
   readonly FileTextIcon = FileText;
   readonly ExternalLinkIcon = ExternalLink;
@@ -649,7 +650,7 @@ export class OrganizationStatusOverviewComponent implements OnInit, OnDestroy {
     if (this.isVerified())
       return 'Your organization is verified and ready to create opportunities.';
     if (this.isComplete())
-      return 'Setup complete. Request verification to unlock all features.';
+      return 'Setup complete. Kapify verification in progress.';
     const missing = this.totalMissingItems();
     return `${missing} item${missing === 1 ? '' : 's'} remaining.`;
   });
@@ -796,5 +797,9 @@ export class OrganizationStatusOverviewComponent implements OnInit, OnDestroy {
 
   managePublicProfile(): void {
     this.actionClicked.emit({ type: 'manage_public_profile' });
+  }
+
+  createOpportunity(): void {
+    this.router.navigate(['/funding/create-opportunity']);
   }
 }
