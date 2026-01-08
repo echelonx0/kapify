@@ -235,7 +235,7 @@
           @if (analysis.executedAt) {
           <span>•</span>
           <span>
-            Completed {{ getTimeAgo(analysis.executedAt.toISOString()) }}
+            {{ getTimeAgo(analysis.executedAt.toISOString()) }}
           </span>
           } @if (analysis.hasResults) {
           <span>•</span>
