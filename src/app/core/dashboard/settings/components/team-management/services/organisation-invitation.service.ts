@@ -176,6 +176,7 @@ export class OrganizationInvitationService {
 
   /**
    * Perform the actual invitation
+   * ✅ UPDATED: Denormalize org_name, org_type, inviter_name at invite time
    * EMAIL IS NON-BLOCKING: Returns success after record created,
    * sends email async with errors logged only to console.
    */
@@ -207,12 +208,37 @@ export class OrganizationInvitationService {
         }
       }
 
-      // 3. Generate secure invitation token
+      // 3. ✅ NEW: Fetch org data once at invite time
+      console.log('📋 Fetching org data for denormalization');
+      const { data: org, error: orgError } = await this.supabase
+        .from('organizations')
+        .select('name, organization_type')
+        .eq('id', orgId)
+        .single();
+
+      if (orgError || !org) {
+        throw new Error('Organization not found');
+      }
+
+      // 4. ✅ NEW: Fetch inviter name once at invite time
+      console.log('👤 Fetching inviter name for denormalization');
+      const { data: inviter } = await this.supabase
+        .from('users')
+        .select('first_name, last_name')
+        .eq('id', userId)
+        .single();
+
+      const inviterName = inviter
+        ? `${inviter.first_name || ''} ${inviter.last_name || ''}`.trim() ||
+          'Team Member'
+        : 'Team Member';
+
+      // 5. Generate secure invitation token
       const invitationToken = this.generateSecureToken();
       const expiresAt = new Date();
       expiresAt.setDate(expiresAt.getDate() + 7); // 7 days expiry
 
-      // 4. Create invitation record
+      // 6. ✅ UPDATED: Create invitation record with denormalized data
       const { data: invitationData, error: inviteError } = await this.supabase
         .from('organization_users')
         .insert({
@@ -225,6 +251,10 @@ export class OrganizationInvitationService {
           invitation_token: invitationToken,
           invitation_expires_at: expiresAt.toISOString(),
           is_active: false,
+          // ✅ NEW: Store org data directly in invitation record
+          org_name: org.name,
+          org_type: org.organization_type,
+          inviter_name: inviterName,
         })
         .select('id')
         .single();
@@ -234,20 +264,29 @@ export class OrganizationInvitationService {
         throw new Error('Failed to create invitation record');
       }
 
-      // 5. SUCCESS: Return immediately (email is async/non-blocking)
+      // 7. SUCCESS: Return immediately (email is async/non-blocking)
       const result = {
         success: true,
         invitationId: invitationData.id,
       };
 
-      // 6. Send email async in background (errors don't break flow)
+      console.log('✅ Invitation record created with denormalized data:', {
+        invitationId: invitationData.id,
+        orgName: org.name,
+        orgType: org.organization_type,
+        inviterName,
+      });
+
+      // 8. Send email async in background (errors don't break flow)
       this.sendInvitationEmailAsync(
         invitationData.id,
         invitation.email,
         orgId,
         userId,
         invitation.role,
-        invitationToken
+        invitationToken,
+        org.name,
+        inviterName
       );
 
       return result;
@@ -261,8 +300,7 @@ export class OrganizationInvitationService {
   }
 
   /**
-   * Send invitation email async (non-blocking)
-   * Errors only logged to console, don't break the flow
+   * ✅ UPDATED: Accept inviter params (no need to fetch)
    */
   private async sendInvitationEmailAsync(
     invitationId: string,
@@ -270,14 +308,11 @@ export class OrganizationInvitationService {
     orgId: string,
     userId: string,
     role: string,
-    invitationToken: string
+    invitationToken: string,
+    orgName: string,
+    inviterName: string
   ): Promise<void> {
     try {
-      const [orgName, inviterName] = await Promise.all([
-        this.getOrganizationName(orgId),
-        this.getUserName(userId),
-      ]);
-
       const result = await this.sendInvitationEmail({
         invitationId,
         email,
@@ -587,72 +622,6 @@ export class OrganizationInvitationService {
         return of(false);
       })
     );
-  }
-
-  /**
-   * Accept invitation (called during registration/login)
-   */
-  // acceptInvitation(
-  //   token: string,
-  //   userId: string
-  // ): Observable<{
-  //   success: boolean;
-  //   organizationId?: string;
-  //   role?: string;
-  // }> {
-  //   return from(this.performAcceptInvitation(token, userId)).pipe(
-  //     catchError((error) => {
-  //       console.error('❌ Accept invitation failed:', error);
-  //       return of({ success: false });
-  //     })
-  //   );
-  // }
-
-  /**
-   * Perform accept invitation
-   */
-  private async performAcceptInvitation(
-    token: string,
-    userId: string
-  ): Promise<{ success: boolean; organizationId?: string; role?: string }> {
-    const { data: invitation, error } = await this.supabase
-      .from('organization_users')
-      .select('*')
-      .eq('invitation_token', token)
-      .eq('status', 'invited')
-      .single();
-
-    if (error || !invitation) {
-      throw new Error('Invalid or expired invitation');
-    }
-
-    const now = new Date();
-    const expiresAt = new Date(invitation.invitation_expires_at);
-    if (now > expiresAt) {
-      throw new Error('Invitation has expired');
-    }
-
-    const { error: updateError } = await this.supabase
-      .from('organization_users')
-      .update({
-        user_id: userId,
-        status: 'active',
-        is_active: true,
-        invitation_accepted_at: new Date().toISOString(),
-        invitation_token: null,
-        invitee_email: null,
-      })
-      .eq('id', invitation.id);
-
-    if (updateError) {
-      throw new Error('Failed to accept invitation');
-    }
-
-    return {
-      success: true,
-      organizationId: invitation.organization_id,
-      role: invitation.role,
-    };
   }
 
   /**
