@@ -26,11 +26,11 @@
           <div
             class="w-10 h-10 rounded-lg bg-teal-100 flex items-center justify-center"
           >
-            <lucide-icon
+            <lucide-angular
               [img]="LightbulbIcon"
               [size]="20"
               class="text-teal-600"
-            ></lucide-icon>
+            ></lucide-angular>
           </div>
           <h3 class="text-lg font-bold text-slate-900">
             How We Arrived at This Analysis
@@ -40,11 +40,11 @@
           (click)="showMethodologyModal.set(false)"
           class="p-2 hover:bg-slate-100 rounded-lg transition-colors duration-200"
         >
-          <lucide-icon
+          <lucide-angular
             [img]="XIcon"
             [size]="20"
             class="text-slate-600"
-          ></lucide-icon>
+          ></lucide-angular>
         </button>
       </div>
 
@@ -208,7 +208,7 @@
             (click)="showMethodologyModal.set(true)"
             class="flex items-center space-x-1 text-sm text-slate-600 hover:text-slate-900 transition-colors duration-200"
           >
-            <lucide-icon [img]="LightbulbIcon" [size]="16"></lucide-icon>
+            <lucide-angular [img]="LightbulbIcon" [size]="16"></lucide-angular>
             <span class="underline">How we arrived at this</span>
           </button>
         </div>
@@ -270,11 +270,11 @@
             class="bg-green-50 border-l-4 border-green-400 rounded-r-2xl p-4"
           >
             <div class="flex items-center space-x-2 mb-3">
-              <lucide-icon
+              <lucide-angular
                 [img]="CheckCircleIcon"
                 [size]="16"
                 class="text-green-600"
-              ></lucide-icon>
+              ></lucide-angular>
               <div class="font-semibold text-green-900">Key Strengths</div>
             </div>
 
@@ -292,11 +292,11 @@
             class="bg-orange-50 border-l-4 border-orange-400 rounded-r-2xl p-4"
           >
             <div class="flex items-center space-x-2 mb-3">
-              <lucide-icon
+              <lucide-angular
                 [img]="TrendingUpIcon"
                 [size]="16"
                 class="text-orange-600"
-              ></lucide-icon>
+              ></lucide-angular>
               <div class="font-semibold text-orange-900">Improvement Areas</div>
             </div>
 
@@ -343,11 +343,11 @@
         <h4
           class="text-lg font-bold text-slate-900 mb-4 flex items-center space-x-2"
         >
-          <lucide-icon
+          <lucide-angular
             [img]="LightbulbIcon"
             [size]="18"
             class="text-teal-600"
-          ></lucide-icon>
+          ></lucide-angular>
           <span>Key Investment Insights</span>
         </h4>
 
@@ -379,14 +379,14 @@
               </div>
             </div>
 
-            <lucide-icon
+            <lucide-angular
               [img]="ChevronDownIcon"
               [size]="18"
               class="text-slate-600 transition-transform duration-300"
               [style.transform]="
                 expandedInsight() === i ? 'rotate(180deg)' : ''
               "
-            ></lucide-icon>
+            ></lucide-angular>
           </button>
 
           <!-- Insight Body -->
@@ -512,11 +512,11 @@
             class="w-full flex items-center justify-between p-4 bg-slate-50 hover:bg-slate-100 rounded-xl border border-slate-200/50 transition-all duration-200"
           >
             <div class="flex items-center space-x-3 text-left">
-              <lucide-icon
+              <lucide-angular
                 [img]="BuildingIcon"
                 [size]="18"
                 class="text-slate-600"
-              ></lucide-icon>
+              ></lucide-angular>
               <div>
                 <div class="font-semibold text-slate-900 text-sm">
                   Sector & Market Trends
@@ -527,14 +527,14 @@
                 </div>
               </div>
             </div>
-            <lucide-icon
+            <lucide-angular
               [img]="ChevronDownIcon"
               [size]="18"
               class="text-slate-600 transition-transform duration-300"
               [style.transform]="
                 expandedAccordion() === 'sector' ? 'rotate(180deg)' : ''
               "
-            ></lucide-icon>
+            ></lucide-angular>
           </button>
 
           @if (expandedAccordion() === 'sector') {
@@ -589,11 +589,11 @@
             class="w-full flex items-center justify-between p-4 bg-slate-50 hover:bg-slate-100 rounded-xl border border-slate-200/50 transition-all duration-200"
           >
             <div class="flex items-center space-x-3 text-left">
-              <lucide-icon
+              <lucide-angular
                 [img]="TrendingUpIcon"
                 [size]="18"
                 class="text-slate-600"
-              ></lucide-icon>
+              ></lucide-angular>
               <div>
                 <div class="font-semibold text-slate-900 text-sm">
                   Funding Activity
@@ -606,14 +606,14 @@
                 </div>
               </div>
             </div>
-            <lucide-icon
+            <lucide-angular
               [img]="ChevronDownIcon"
               [size]="18"
               class="text-slate-600 transition-transform duration-300"
               [style.transform]="
                 expandedAccordion() === 'funding' ? 'rotate(180deg)' : ''
               "
-            ></lucide-icon>
+            ></lucide-angular>
           </button>
 
           @if (expandedAccordion() === 'funding') {
@@ -704,14 +704,14 @@
                 </div>
               </div>
             </div>
-            <lucide-icon
+            <lucide-angular
               [img]="ChevronDownIcon"
               [size]="18"
               class="text-slate-600 transition-transform duration-300"
               [style.transform]="
                 expandedAccordion() === 'opportunities' ? 'rotate(180deg)' : ''
               "
-            ></lucide-icon>
+            ></lucide-angular>
           </button>
 
           @if (expandedAccordion() === 'opportunities') {
@@ -742,11 +742,11 @@
             class="w-full flex items-center justify-between p-4 bg-slate-50 hover:bg-slate-100 rounded-xl border border-slate-200/50 transition-all duration-200"
           >
             <div class="flex items-center space-x-3 text-left">
-              <lucide-icon
+              <lucide-angular
                 [img]="ExternalLinkIcon"
                 [size]="18"
                 class="text-slate-600"
-              ></lucide-icon>
+              ></lucide-angular>
               <div>
                 <div class="font-semibold text-slate-900 text-sm">
                   Sources & References
@@ -756,14 +756,14 @@
                 </div>
               </div>
             </div>
-            <lucide-icon
+            <lucide-angular
               [img]="ChevronDownIcon"
               [size]="18"
               class="text-slate-600 transition-transform duration-300"
               [style.transform]="
                 expandedAccordion() === 'sources' ? 'rotate(180deg)' : ''
               "
-            ></lucide-icon>
+            ></lucide-angular>
           </button>
 
           @if (expandedAccordion() === 'sources') {
@@ -796,11 +796,11 @@
                   }
                 </div>
                 @if (source.url) {
-                <lucide-icon
+                <lucide-angular
                   [img]="ExternalLinkIcon"
                   [size]="16"
                   class="text-slate-400 flex-shrink-0 mt-1"
-                ></lucide-icon>
+                ></lucide-angular>
                 }
               </div>
             </div>
@@ -816,19 +816,29 @@
         class="px-6 py-4 bg-slate-50/50 flex items-center justify-between border-t border-slate-200 opacity-0 animate-fadeIn"
         style="animation-delay: 450ms"
       >
-        <div class="flex items-center space-x-2 text-sm text-slate-600">
-          <lucide-icon [img]="ClockIcon" [size]="16"></lucide-icon>
+        <!-- <div class="flex items-center space-x-2 text-sm text-slate-600">
           <span>
-            Generated {{ getTimeAgo(result.generatedAt) }} with
+            Kapify Intelligence has a confidence
             {{ result.confidence }}% confidence
           </span>
-        </div>
+        </div> -->
 
         <button
-          class="flex items-center space-x-2 px-4 py-2 text-sm font-medium bg-teal-500 text-white rounded-xl hover:bg-teal-600 active:bg-teal-700 transition-colors duration-200"
+          (click)="downloadReport()"
+          [disabled]="isDownloading()"
+          class="flex items-center space-x-2 px-4 py-2 text-sm font-medium bg-teal-500 text-white rounded-xl hover:bg-teal-600 active:bg-teal-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
         >
-          <lucide-icon [img]="DownloadIcon" [size]="16"></lucide-icon>
+          @if (isDownloading()) {
+          <lucide-angular
+            [img]="LoaderIcon"
+            [size]="16"
+            class="animate-spin"
+          ></lucide-angular>
+          <span>Generating PDF...</span>
+          } @else {
+          <lucide-angular [img]="DownloadIcon" [size]="16"></lucide-angular>
           <span>Download Report</span>
+          }
         </button>
       </div>
     </div>
