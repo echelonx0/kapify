@@ -27,9 +27,9 @@ import {
 import { KapifyReports } from './models/kapify-reports.interface';
 import { KapifyReportsGeneratorService } from './services/kapify-reports-generator.service';
 import { KapifyReportsExportService } from './services/kapify-reports-export.service';
-import { AnalysisHistoryComponent } from './analysis-history/analysis-history.component';
 import { ApplicationsStatsComponent } from './analysis-history/applications-stats.component';
 import { AuthService } from '../../auth/services/production.auth.service';
+import { AnalysisHistoryComponent } from './analysis-history/analysis-history.component';
 
 interface ActivityReport extends KapifyReports {
   matchScore?: number;

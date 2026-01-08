@@ -1,41 +1,15 @@
-<!-- src/app/funder/applications/funder-applications.component.html -->
 <div class="space-y-8 pb-20 m-8">
-  <!-- Header with Title & Refresh -->
-  <div class="flex items-center justify-between">
-    <div>
-      <h1 class="text-3xl font-bold text-slate-900">Applications</h1>
-      <p class="text-slate-600 mt-2">Manage and review applications</p>
-    </div>
-    <div class="flex items-center">
-      <div class="mr-2">
-        <button
-          class="px-6 py-2.5 bg-slate-900 text-white text-sm font-medium rounded-xl hover:bg-teal-600 active:bg-teal-700 transition-colors duration-200 flex items-center gap-2"
-        >
-          Download reports
-        </button>
-      </div>
+  <!-- Header with Export & Refresh -->
+  <app-applications-review-header
+    (refresh)="refreshApplicationsData()"
+    (export)="onExport($event)"
+    (openReportBuilder)="openReportBuilder()"
+  ></app-applications-review-header>
 
-      <button
-        (click)="refreshApplicationsData()"
-        class="px-6 py-2.5 bg-teal-500 text-white text-sm font-medium rounded-xl hover:bg-teal-600 active:bg-teal-700 transition-colors duration-200 flex items-center gap-2"
-      >
-        <svg
-          class="w-4 h-4"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-          ></path>
-        </svg>
-        Refresh
-      </button>
-    </div>
-  </div>
+  <!-- Applications Stats -->
+  <app-applications-stats
+    [summary]="activitySummary()"
+  ></app-applications-stats>
 
   <!-- Filter Section -->
   <div class="bg-white rounded-2xl border border-slate-200 p-6">
@@ -204,47 +178,67 @@
             [showProgress]="true"
           >
             <div slot="actions" class="flex items-center gap-2">
+              <!-- View Button - Only for Non-Final States -->
+              @if (canPerformActions(application.status)) {
               <button
                 (click)="
                   viewApplication(application.id); $event.stopPropagation()
                 "
                 class="px-3 py-1.5 bg-teal-500 text-white text-xs font-medium rounded-lg hover:bg-teal-600 active:bg-teal-700 transition-colors duration-200"
+                [disabled]="updatingApplicationId() === application.id"
               >
                 Start Application Review
               </button>
+              }
 
-              @if (application.status === 'submitted' && activeTab() === 'new')
-              {
+              <!-- Action Buttons - Only for Non-Final States -->
+              @if (canPerformActions(application.status)) { @if
+              (application.status === 'submitted' && activeTab() === 'new') {
               <button
                 (click)="
-                  updateApplicationStatus(application.id, 'under_review');
+                  updateApplicationStatus(application, 'under_review');
                   $event.stopPropagation()
                 "
-                class="px-3 py-1.5 bg-amber-50 text-amber-700 text-xs font-medium rounded-lg hover:bg-amber-100 active:bg-amber-200 transition-colors duration-200 border border-amber-200/50"
+                [disabled]="updatingApplicationId() === application.id"
+                class="px-3 py-1.5 bg-amber-50 text-amber-700 text-xs font-medium rounded-lg hover:bg-amber-100 active:bg-amber-200 transition-colors duration-200 border border-amber-200/50 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Mark as under review
+                {{
+                  updatingApplicationId() === application.id
+                    ? "Updating..."
+                    : "Mark as under review"
+                }}
               </button>
               } @if (application.status === 'under_review' && activeTab() ===
               'review') {
               <button
                 (click)="
-                  updateApplicationStatus(application.id, 'approved');
+                  updateApplicationStatus(application, 'approved');
                   $event.stopPropagation()
                 "
-                class="px-3 py-1.5 bg-green-50 text-green-700 text-xs font-medium rounded-lg hover:bg-green-100 active:bg-green-200 transition-colors duration-200 border border-green-200/50"
+                [disabled]="updatingApplicationId() === application.id"
+                class="px-3 py-1.5 bg-green-50 text-green-700 text-xs font-medium rounded-lg hover:bg-green-100 active:bg-green-200 transition-colors duration-200 border border-green-200/50 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Approve
+                {{
+                  updatingApplicationId() === application.id
+                    ? "Approving..."
+                    : "Approve"
+                }}
               </button>
               <button
                 (click)="
-                  updateApplicationStatus(application.id, 'rejected');
+                  updateApplicationStatus(application, 'rejected');
                   $event.stopPropagation()
                 "
-                class="px-3 py-1.5 bg-red-50 text-red-700 text-xs font-medium rounded-lg hover:bg-red-100 active:bg-red-200 transition-colors duration-200 border border-red-200/50"
+                [disabled]="updatingApplicationId() === application.id"
+                class="px-3 py-1.5 bg-red-50 text-red-700 text-xs font-medium rounded-lg hover:bg-red-100 active:bg-red-200 transition-colors duration-200 border border-red-200/50 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Reject
+                {{
+                  updatingApplicationId() === application.id
+                    ? "Rejecting..."
+                    : "Reject"
+                }}
               </button>
-              }
+              } }
             </div>
           </app-application-list-card>
         </div>
@@ -261,3 +255,10 @@
   (onClose)="selectedApplicationForModal.set(null)"
   (onDownload)="downloadApplicationDocuments($event)"
 />
+
+<!-- Report Builder Modal -->
+<app-report-builder
+  [data]="{ allRecords: transformToReportData(allApplications()) }"
+  (onExport)="onReportExport($event)"
+  (onClose)="onReportBuilderClose()"
+></app-report-builder>

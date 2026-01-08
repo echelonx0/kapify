@@ -1,8 +1,7 @@
-// src/app/ai/services/ai-analysis.service.ts - UPDATED FOR QUEUE INTEGRATION
+// src/app/ai/services/ai-analysis.service.ts
 import { Injectable, inject, signal } from '@angular/core';
 import { Observable, from, BehaviorSubject, throwError } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
-
 import { AIAnalysisQueueService } from './ai-analysis-queue.service';
 import { SharedSupabaseService } from 'src/app/shared/services/shared-supabase.service';
 import { FundingOpportunity } from 'src/app/funder/create-opportunity/shared/funding.interfaces';
@@ -19,6 +18,7 @@ export interface AIAnalysisRequest {
   } | null;
   businessProfile: FundingApplicationProfile;
   backgroundMode?: boolean;
+  //TODO: NEED FINANCIALS
 }
 
 export interface AIAnalysisResult {

@@ -38,12 +38,12 @@
   <div class="p-6 space-y-6">
     <!-- Header -->
     <div>
-      <h4 class="text-2xl font-bold text-slate-900 mb-2">
+      <!-- <h4 class="text-2xl font-bold text-slate-900 mb-2">
         {{
           getCurrentData()?.applicantOrganizationName ||
             getCurrentData()?.applicantName
         }}
-      </h4>
+      </h4> -->
       <!-- <div class="flex items-center gap-2">
         <span
           [class]="
@@ -85,7 +85,7 @@
 
     <!-- Status & Stage -->
     <div class="space-y-3">
-      <p class="text-sm font-semibold text-slate-900">Application Status</p>
+      <!-- <p class="text-sm font-semibold text-slate-900">Application Status</p> -->
       <div class="space-y-2 text-sm">
         <div
           class="flex justify-between items-center py-2 border-b border-slate-100"
@@ -95,14 +95,14 @@
             getCurrentData()?.status
           }}</span>
         </div>
-        <div
+        <!-- <div
           class="flex justify-between items-center py-2 border-b border-slate-100"
         >
           <span class="text-slate-600">Current Stage</span>
           <span class="font-medium text-slate-900">{{
             getCurrentData()?.stage
           }}</span>
-        </div>
+        </div> -->
         @if (getCurrentData()?.submittedAt) {
         <div
           class="flex justify-between items-center py-2 border-b border-slate-100"

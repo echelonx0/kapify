@@ -25,6 +25,8 @@ import {
   Axis3d,
   BinaryIcon,
   FolderOpen,
+  ChartArea,
+  TrendingUpDownIcon,
 } from 'lucide-angular';
 import { AuthService } from 'src/app/auth/services/production.auth.service';
 import { ProfileManagementService } from '../../services/profile-management.service';
@@ -66,6 +68,8 @@ export class SidebarNavComponent implements OnInit {
   Axis3dIcon = Axis3d;
   BinaryIcon = BinaryIcon;
   FolderOpenIcon = FolderOpen;
+  ChartArea = ChartArea;
+  Trending = TrendingUpDownIcon;
 
   // State - Mobile Menu
   showMobileMenu = signal(false);

@@ -34,6 +34,7 @@ import {
   imports: [CommonModule, NotificationsInputComponent],
   templateUrl: './notifications-detail.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  host: { class: 'h-full flex flex-col' },
   animations: [
     trigger('messageAppear', [
       transition(':enter', [

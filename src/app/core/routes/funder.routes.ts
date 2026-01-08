@@ -31,7 +31,7 @@ export const funderRoutes: Routes = [
         path: 'allapplications',
         loadComponent: () =>
           import(
-            '../../funder/application-details/applications-list/applications-list.component'
+            '../../funder/application-details/funder-applications/applications-list/applications-list.component'
           ).then((m) => m.FunderApplicationsListComponent),
         title: 'All Applications - Kapify',
       },
@@ -124,7 +124,7 @@ export const funderRoutes: Routes = [
         path: 'applications/:applicationId',
         loadComponent: () =>
           import(
-            '../../funder/application-details/application-detail.component'
+            '../../funder/application-details/funder-applications/application-details/application-detail.component'
           ).then((m) => m.ApplicationDetailComponent),
         title: 'Application Details - Kapify',
       },

@@ -36,10 +36,6 @@ import { ActivityInboxComponent } from 'src/app/features/messaging/messaging/mes
 
 import { SharedSupabaseService } from 'src/app/shared/services/shared-supabase.service';
 
-import {
-  ApplicationListCardComponent,
-  BaseApplicationCard,
-} from 'src/app/funder/application-details/funder-applications/application-list-card/application-list-card.component';
 import { UserType } from 'src/app/shared/models/user.models';
 
 import { ActionModalComponent } from 'src/app/shared/components/modal/action-modal.component';
@@ -49,6 +45,10 @@ import { FundingApplication } from 'src/app/fund-seeking-orgs/models/application
 import { ApplicationManagementService } from 'src/app/fund-seeking-orgs/services/application-management.service';
 import { OpportunityApplicationService } from 'src/app/fund-seeking-orgs/services/opportunity-application.service';
 import { ApplicationDetailModalComponent } from 'src/app/funder/application-details/components/application-detail-modal/application-detail-modal.component';
+import {
+  ApplicationListCardComponent,
+  BaseApplicationCard,
+} from 'src/app/funder/application-details/funder-applications/components/application-list-card/application-list-card.component';
 
 interface ApplicationData {
   id: string;

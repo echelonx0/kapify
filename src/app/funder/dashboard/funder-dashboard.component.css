@@ -1,46 +1,173 @@
-/* funder-dashboard.component.css - DESIGN SYSTEM REWRITE */
-
-/* Most styles are now inline with Tailwind classes */
-/* This file contains only essential custom styles that can't be achieved with Tailwind alone */
+/* funder-dashboard.component.css - NEO-BRUTALIST REDESIGN */
 
 :host {
   display: block;
 }
 
-/* Smooth collapsible animation helper (if needed beyond inline styles) */
-.collapsible-enter {
-  animation: slideDown 300ms ease-out;
+/* ============================================
+   TYPOGRAPHY: Bold, intentional, technical
+   ============================================ */
+
+/* Neo-brutalist aesthetic: raw edges, thick strokes, high contrast */
+h1,
+h2,
+h3 {
+  letter-spacing: -0.01em;
+  line-height: 1.1;
 }
 
-.collapsible-leave {
-  animation: slideUp 300ms ease-out;
+/* Monospace-style numbers for metrics (optional enhancement) */
+.metric-number {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.05em;
 }
+
+/* ============================================
+   BORDERS: Visible structure, intentional
+   ============================================ */
+
+/* Heavy borders for neo-brutalist feel */
+.border-3 {
+  border-width: 3px !important;
+}
+
+.border-b-3 {
+  border-bottom-width: 3px !important;
+}
+
+.border-l-4 {
+  border-left-width: 4px !important;
+}
+
+/* ============================================
+   BUTTON STATES: Bold feedback
+   ============================================ */
+
+button {
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+button:active {
+  transform: translateY(1px);
+}
+
+button:focus-visible {
+  outline: none;
+}
+
+/* ============================================
+   CARD INTERACTIONS: Visible, structural
+   ============================================ */
+
+.group:hover {
+  border-color: rgb(15 23 42); /* slate-900 */
+}
+
+/* ============================================
+   SPACING: Intentional, grid-based
+   ============================================ */
+
+/* Gap scale follows design system */
+.gap-3 {
+  gap: 0.75rem;
+}
+
+.gap-4 {
+  gap: 1rem;
+}
+
+.gap-6 {
+  gap: 1.5rem;
+}
+
+/* ============================================
+   RESPONSIVE: Mobile-first neo-brutalism
+   ============================================ */
+
+@media (max-width: 640px) {
+  /* Maintain border weight on mobile */
+  .border-3 {
+    border-width: 2px;
+  }
+
+  /* Stack buttons vertically on mobile */
+  .flex-col {
+    flex-direction: column;
+  }
+
+  /* Larger touch targets */
+  button {
+    padding: 0.75rem 1rem;
+    font-size: 0.875rem;
+  }
+}
+
+/* ============================================
+   ANIMATIONS: Subtle, intentional
+   ============================================ */
 
 @keyframes slideDown {
   from {
     opacity: 0;
-    max-height: 0;
+    transform: translateY(-4px);
   }
   to {
     opacity: 1;
-    max-height: 2000px;
+    transform: translateY(0);
   }
 }
 
-@keyframes slideUp {
-  from {
-    opacity: 1;
-    max-height: 2000px;
-  }
-  to {
-    opacity: 0;
-    max-height: 0;
-  }
+.animate-slide-down {
+  animation: slideDown 0.3s ease-out;
 }
 
-/* Print styles (if dashboard needs to be printable) */
+/* ============================================
+   PRINT STYLES
+   ============================================ */
+
 @media print {
   .no-print {
     display: none !important;
+  }
+}
+
+/* ============================================
+   ACCESSIBILITY: Focus visible enhancement
+   ============================================ */
+
+button:focus-visible {
+  outline: 2px solid rgb(20 184 166); /* teal-500 */
+  outline-offset: 2px;
+}
+
+input:focus-visible {
+  outline: 2px solid rgb(20 184 166); /* teal-500 */
+  outline-offset: 2px;
+}
+
+/* ============================================
+   UTILITY: Grid dividers (structural lines)
+   ============================================ */
+
+.divider-vertical {
+  width: 1px;
+  background-color: rgb(226 232 240); /* slate-300 */
+}
+
+.divider-horizontal {
+  height: 1px;
+  background-color: rgb(226 232 240); /* slate-300 */
+}
+
+/* ============================================
+   DARK MODE SUPPORT (Optional)
+   ============================================ */
+
+@media (prefers-color-scheme: dark) {
+  :host {
+    --bg-primary: rgb(15 23 42); /* slate-900 */
+    --bg-secondary: rgb(30 41 59); /* slate-800 */
+    --text-primary: rgb(248 250 252); /* slate-50 */
+    --border: rgb(71 85 105); /* slate-600 */
   }
 }

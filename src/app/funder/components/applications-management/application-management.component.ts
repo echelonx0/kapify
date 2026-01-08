@@ -6,19 +6,10 @@ import { FormsModule } from '@angular/forms';
 import {
   LucideAngularModule,
   ArrowLeft,
-  Users,
   FileText,
-  Clock,
-  CheckCircle,
-  XCircle,
   Search,
-  Filter,
-  Bot,
   Eye,
-  MessageSquare,
-  AlertCircle,
-  TrendingUp,
-  Calendar,
+  Building2,
 } from 'lucide-angular';
 
 import { UiButtonComponent } from '../../../shared/components';
@@ -27,17 +18,13 @@ import { AIAssistantModalComponent } from '../../../features/ai/ai-assistant/ai-
 import { AuthService } from '../../../auth/services/production.auth.service';
 import { SMEOpportunitiesService } from '../../../funding/services/opportunities.service';
 import { ApplicationManagementService } from 'src/app/fund-seeking-orgs/services/application-management.service';
+
+import { FundingApplication } from 'src/app/fund-seeking-orgs/models/application.models';
+import { FundingOpportunity } from '../../create-opportunity/shared/funding.interfaces';
 import {
   ApplicationListCardComponent,
   BaseApplicationCard,
-} from 'src/app/funder/application-details/funder-applications/application-list-card/application-list-card.component';
-import {
-  FundingApplication,
-  ApplicationStats,
-} from 'src/app/fund-seeking-orgs/models/application.models';
-import { FundingOpportunity } from '../../create-opportunity/shared/funding.interfaces';
-
-type TabId = 'overview' | 'all' | 'review-queue' | 'completed';
+} from '../../application-details/funder-applications/components/application-list-card/application-list-card.component';
 
 @Component({
   selector: 'app-application-management',
@@ -49,19 +36,9 @@ type TabId = 'overview' | 'all' | 'review-queue' | 'completed';
     UiButtonComponent,
     SidebarNavComponent,
     AIAssistantModalComponent,
-    ApplicationListCardComponent,
+    // ApplicationListCardComponent,
   ],
   templateUrl: 'application-management.component.html',
-  styles: [
-    `
-      .tab-active {
-        @apply border-primary-500 text-primary-600;
-      }
-      .tab-inactive {
-        @apply border-transparent text-neutral-500 hover:text-neutral-700 hover:border-neutral-300;
-      }
-    `,
-  ],
 })
 export class ApplicationManagementComponent implements OnInit {
   // Services
@@ -73,29 +50,18 @@ export class ApplicationManagementComponent implements OnInit {
 
   // Icons
   ArrowLeftIcon = ArrowLeft;
-  UsersIcon = Users;
   FileTextIcon = FileText;
-  ClockIcon = Clock;
-  CheckCircleIcon = CheckCircle;
-  XCircleIcon = XCircle;
   SearchIcon = Search;
-  FilterIcon = Filter;
-  BotIcon = Bot;
   EyeIcon = Eye;
-  MessageSquareIcon = MessageSquare;
-  AlertCircleIcon = AlertCircle;
-  TrendingUpIcon = TrendingUp;
-  CalendarIcon = Calendar;
+  BuildingIcon = Building2;
 
   // State
   opportunityId = signal<string>('');
   opportunity = signal<FundingOpportunity | null>(null);
   applications = signal<FundingApplication[]>([]);
-  stats = signal<ApplicationStats | null>(null);
   isLoading = signal(true);
 
   // UI State
-  activeTab = signal<TabId>('overview');
   showAIModal = signal(false);
   selectedApplicationForAI = signal<FundingApplication | null>(null);
 
@@ -106,35 +72,6 @@ export class ApplicationManagementComponent implements OnInit {
 
   // Computed
   currentUser = computed(() => this.authService.user());
-
-  tabs = computed(() => {
-    const apps = this.applications();
-    return [
-      { id: 'overview' as TabId, label: 'Overview', icon: this.TrendingUpIcon },
-      {
-        id: 'all' as TabId,
-        label: 'All Applications',
-        count: apps.length,
-        icon: this.FileTextIcon,
-      },
-      {
-        id: 'review-queue' as TabId,
-        label: 'Review Queue',
-        count: apps.filter(
-          (app) => app.status === 'submitted' || app.status === 'under_review'
-        ).length,
-        icon: this.ClockIcon,
-      },
-      {
-        id: 'completed' as TabId,
-        label: 'Completed',
-        count: apps.filter(
-          (app) => app.status === 'approved' || app.status === 'rejected'
-        ).length,
-        icon: this.CheckCircleIcon,
-      },
-    ];
-  });
 
   filteredApplications = computed(() => {
     let filtered = this.applications();
@@ -164,30 +101,7 @@ export class ApplicationManagementComponent implements OnInit {
     return filtered;
   });
 
-  displayedApplications = computed(() => {
-    const filtered = this.filteredApplications();
-
-    switch (this.activeTab()) {
-      case 'review-queue':
-        return filtered.filter(
-          (app) => app.status === 'submitted' || app.status === 'under_review'
-        );
-      case 'completed':
-        return filtered.filter(
-          (app) => app.status === 'approved' || app.status === 'rejected'
-        );
-      case 'all':
-      default:
-        return filtered;
-    }
-  });
-
-  recentApplications = computed(() => {
-    return this.applications()
-      .slice()
-      .sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime())
-      .slice(0, 5);
-  });
+  displayedApplications = computed(() => this.filteredApplications());
 
   hasActiveFilters = computed(() => {
     return !!(this.searchQuery() || this.statusFilter() || this.stageFilter());
@@ -203,25 +117,24 @@ export class ApplicationManagementComponent implements OnInit {
     }
   }
 
-  private extractRequestedAmount(formData: Record<string, any>): number {
-    // Handle different possible data structures in formData
+  private extractAmount(formData: Record<string, any>): number {
     if (formData?.['coverInformation']?.requestedAmount) {
       return formData['coverInformation'].requestedAmount;
     }
-
     if (formData?.['requestedAmount']) {
       return formData['requestedAmount'];
     }
-
-    // Check for nested funding information
     if (formData?.['fundingInformation']?.requestedAmount) {
       return formData['fundingInformation'].requestedAmount;
     }
-
-    // Default fallback
     return 0;
   }
-  // Transform method for funder applications
+
+  // Public wrapper for template use
+  extractRequestedAmount(formData: Record<string, any> | undefined): number {
+    return this.extractAmount(formData || {});
+  }
+
   transformFunderToBaseCard(app: FundingApplication): BaseApplicationCard {
     return {
       id: app.id,
@@ -243,37 +156,25 @@ export class ApplicationManagementComponent implements OnInit {
       opportunityTitle: app.opportunity?.title,
     };
   }
+
   private async loadData() {
     this.isLoading.set(true);
 
     try {
-      // Load opportunity details
       const opportunityData = await this.opportunitiesService
         .getOpportunityById(this.opportunityId())
         .toPromise();
       this.opportunity.set(opportunityData || null);
 
-      // Load applications
       const applicationsData = await this.applicationService
         .getApplicationsByOpportunity(this.opportunityId())
         .toPromise();
       this.applications.set(applicationsData || []);
-
-      // Load stats
-      const statsData = await this.applicationService
-        .getApplicationStats(this.opportunityId())
-        .toPromise();
-      this.stats.set(statsData || null);
     } catch (error) {
       console.error('Error loading application management data:', error);
     } finally {
       this.isLoading.set(false);
     }
-  }
-
-  // Tab management
-  setActiveTab(tabId: TabId) {
-    this.activeTab.set(tabId);
   }
 
   // Filter methods
@@ -311,8 +212,6 @@ export class ApplicationManagementComponent implements OnInit {
 
   // Application actions
   viewApplication(applicationId: string) {
-    // Navigate to detailed application view instead of generic applications route
-    console.log('Viewing application for ', applicationId);
     this.router.navigate(['/funder/applications', applicationId]);
   }
 
@@ -324,61 +223,33 @@ export class ApplicationManagementComponent implements OnInit {
       await this.applicationService
         .updateApplicationStatus(applicationId, status)
         .toPromise();
-      // Reload data to reflect changes
       await this.loadData();
     } catch (error) {
       console.error('Error updating application status:', error);
     }
   }
 
-  async requestMoreInfo(application: FundingApplication) {
-    const message = prompt('Enter your request for additional information:');
-    if (message) {
-      try {
-        await this.applicationService
-          .requestAdditionalInfo(application.id, message)
-          .toPromise();
-        await this.loadData();
-      } catch (error) {
-        console.error('Error requesting additional information:', error);
-      }
-    }
-  }
-
-  // Navigation
-  goBack() {
-    window.history.back();
-  }
-
   // Utility methods
-  getInitials(firstName?: string, lastName?: string): string {
-    const first = firstName?.charAt(0)?.toUpperCase() || '';
-    const last = lastName?.charAt(0)?.toUpperCase() || '';
-    return first + last || '??';
+  getStatusBadgeClass(status: string): string {
+    const classMap: Record<string, string> = {
+      submitted: 'bg-slate-100 text-slate-700 border border-slate-200',
+      under_review: 'bg-amber-50 text-amber-700 border border-amber-200/50',
+      approved: 'bg-green-50 text-green-700 border border-green-200/50',
+      rejected: 'bg-red-50 text-red-700 border border-red-200/50',
+    };
+    return (
+      classMap[status] || 'bg-slate-100 text-slate-700 border border-slate-200'
+    );
   }
 
-  getStatusText(status: string): string {
+  formatStatus(status: string): string {
     const statusMap: Record<string, string> = {
-      draft: 'Draft',
       submitted: 'Submitted',
       under_review: 'Under Review',
       approved: 'Approved',
       rejected: 'Rejected',
-      withdrawn: 'Withdrawn',
     };
     return statusMap[status] || status;
-  }
-
-  getStatusBadgeClass(status: string): string {
-    const classMap: Record<string, string> = {
-      draft: 'bg-gray-100 text-gray-800',
-      submitted: 'bg-blue-100 text-blue-800',
-      under_review: 'bg-yellow-100 text-yellow-800',
-      approved: 'bg-green-100 text-green-800',
-      rejected: 'bg-red-100 text-red-800',
-      withdrawn: 'bg-gray-100 text-gray-800',
-    };
-    return classMap[status] || 'bg-gray-100 text-gray-800';
   }
 
   formatStage(stage: string): string {
@@ -394,14 +265,22 @@ export class ApplicationManagementComponent implements OnInit {
     }).format(date);
   }
 
+  formatCurrency(amount: number): string {
+    return new Intl.NumberFormat('en-ZA', {
+      style: 'currency',
+      currency: 'ZAR',
+      minimumFractionDigits: 0,
+    }).format(amount);
+  }
+
   getEmptyStateMessage(): string {
-    switch (this.activeTab()) {
-      case 'review-queue':
-        return 'No applications are currently waiting for review.';
-      case 'completed':
-        return 'No applications have been completed yet.';
-      default:
-        return 'No applications found matching your criteria.';
+    if (this.hasActiveFilters()) {
+      return 'No applications match your filters.';
     }
+    return 'No applications found.';
+  }
+
+  goBack() {
+    window.history.back();
   }
 }

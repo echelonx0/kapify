@@ -1,262 +1,282 @@
-<!-- src/app/funder/components/applications-management/application-management.component.html -->
-<div class="min-h-screen bg-neutral-50">
+<div class="min-h-screen bg-slate-50">
   <sidebar-nav />
   <div class="ml-16">
-    <main class="p-6 max-w-7xl mx-auto">
-      <!-- Header using design system -->
-      <div class="page-header">
-        <div class="header-actions">
-          <ui-button variant="outline" (clicked)="goBack()">
+    <main class="px-8 py-6 max-w-7xl mx-auto">
+      <!-- Header -->
+      <div class="mb-8">
+        <div class="flex items-center gap-4 mb-6">
+          <ui-button variant="ghost" (clicked)="goBack()">
             <lucide-icon [img]="ArrowLeftIcon" [size]="16" class="mr-2" />
             Back
           </ui-button>
-          
-          @if (opportunity()) {
-            <div>
-              <h1 class="header-title">Applications to {{ opportunity()?.title }}</h1>
-            </div>
-          }
         </div>
 
-        <!-- Stats Cards -->
-        @if (stats() && !isLoading()) {
-          <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-            <div class="card p-4">
-              <div class="flex items-center space-x-3">
-                <div class="icon-container blue w-10 h-10">
-                  <lucide-icon [img]="FileTextIcon" [size]="20" />
-                </div>
-                <div>
-                  <p class="text-2xl font-bold text-neutral-900">{{ stats()!.total }}</p>
-                  <p class="text-sm text-neutral-600">Total Applications</p>
-                </div>
-              </div>
-            </div>
-
-            <div class="card p-4">
-              <div class="flex items-center space-x-3">
-                <div class="icon-container orange w-10 h-10">
-                  <lucide-icon [img]="ClockIcon" [size]="20" />
-                </div>
-                <div>
-                  <p class="text-2xl font-bold text-neutral-900">{{ stats()!.byStatus['under_review'] || 0 }}</p>
-                  <p class="text-sm text-neutral-600">Under Review</p>
-                </div>
-              </div>
-            </div>
-
-            <div class="card p-4">
-              <div class="flex items-center space-x-3">
-                <div class="icon-container green w-10 h-10">
-                  <lucide-icon [img]="CheckCircleIcon" [size]="20" />
-                </div>
-                <div>
-                  <p class="text-2xl font-bold text-neutral-900">{{ stats()!.byStatus['approved'] || 0 }}</p>
-                  <p class="text-sm text-neutral-600">Approved</p>
-                </div>
-              </div>
-            </div>
-
-            <div class="card p-4">
-              <div class="flex items-center space-x-3">
-                <div class="icon-container neutral w-10 h-10">
-                  <lucide-icon [img]="TrendingUpIcon" [size]="20" />
-                </div>
-                <div>
-                  <p class="text-2xl font-bold text-neutral-900">{{ stats()!.averageProcessingTime }}</p>
-                  <p class="text-sm text-neutral-600">Avg. Processing Days</p>
-                </div>
-              </div>
-            </div>
-          </div>
+        @if (opportunity()) {
+        <h1 class="text-3xl font-bold text-slate-900">
+          Applications to {{ opportunity()?.title }}
+        </h1>
         }
       </div>
 
-      <!-- Tab Navigation using design system -->
-      <div class="tab-navigation">
-        <div class="tab-container">
-          <nav class="tab-list">
-            @for (tab of tabs(); track tab.id) {
-              <button
-                (click)="setActiveTab(tab.id)"
-                class="tab-button"
-                [class.active]="activeTab() === tab.id"
-              >
-                <div class="flex items-center space-x-2">
-                  <lucide-icon [img]="tab.icon" [size]="16" />
-                  <span>{{ tab.label }}</span>
-                  @if (tab.count !== undefined) {
-                    <span class="bg-neutral-100 text-neutral-600 px-2 py-1 rounded-full text-xs">
-                      {{ tab.count }}
-                    </span>
-                  }
-                </div>
-              </button>
-            }
-          </nav>
-        </div>
-      </div>
-
-      <!-- Filters using design system -->
-      @if (activeTab() !== 'overview') {
-        <div class="filter-bar">
-          <div class="filter-controls">
-            <!-- Search -->
-            <div class="flex-1 relative">
-              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <lucide-icon [img]="SearchIcon" [size]="16" class="text-neutral-400" />
-              </div>
-              <input
-                type="text"
-                placeholder="Search applications..."
-                [value]="searchQuery()"
-                (input)="onSearchChange($event)"
-                class="block w-full pl-10 pr-3 py-2 border border-neutral-300 rounded-md placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+      <!-- Filters -->
+      <div class="bg-white rounded-2xl border border-slate-200 p-4 mb-6">
+        <div class="flex flex-col sm:flex-row gap-4">
+          <!-- Search -->
+          <div class="flex-1 relative">
+            <div
+              class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none"
+            >
+              <lucide-icon
+                [img]="SearchIcon"
+                [size]="16"
+                class="text-slate-400"
               />
             </div>
-
-            <!-- Status Filter -->
-            <select
-              [value]="statusFilter()"
-              (change)="onStatusFilterChange($event)"
-              class="px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
-            >
-              <option value="">All Status</option>
-              <option value="submitted">Submitted</option>
-              <option value="under_review">Under Review</option>
-              <option value="approved">Approved</option>
-              <option value="rejected">Rejected</option>
-            </select>
-
-            <!-- Stage Filter -->
-            <select
-              [value]="stageFilter()"
-              (change)="onStageFilterChange($event)"
-              class="px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
-            >
-              <option value="">All Stages</option>
-              <option value="initial_review">Initial Review</option>
-              <option value="due_diligence">Due Diligence</option>
-              <option value="investment_committee">Investment Committee</option>
-              <option value="documentation">Documentation</option>
-            </select>
-
-            @if (hasActiveFilters()) {
-              <ui-button variant="outline" (clicked)="clearFilters()">
-                Clear Filters
-              </ui-button>
-            }
+            <input
+              type="text"
+              placeholder="Search by name or company..."
+              [value]="searchQuery()"
+              (input)="onSearchChange($event)"
+              class="block w-full pl-10 pr-4 py-2.5 border border-slate-200 rounded-xl placeholder-slate-400 text-slate-900 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200"
+            />
           </div>
-        </div>
-      }
 
-      <!-- Loading State using design system -->
+          <!-- Status Filter -->
+          <select
+            [value]="statusFilter()"
+            (change)="onStatusFilterChange($event)"
+            class="px-4 py-2.5 border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200 text-sm"
+          >
+            <option value="">All Status</option>
+            <option value="submitted">Submitted</option>
+            <option value="under_review">Under Review</option>
+            <option value="approved">Approved</option>
+            <option value="rejected">Rejected</option>
+          </select>
+
+          <!-- Stage Filter -->
+          <select
+            [value]="stageFilter()"
+            (change)="onStageFilterChange($event)"
+            class="px-4 py-2.5 border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200 text-sm"
+          >
+            <option value="">All Stages</option>
+            <option value="initial_review">Initial Review</option>
+            <option value="due_diligence">Due Diligence</option>
+            <option value="investment_committee">Investment Committee</option>
+            <option value="documentation">Documentation</option>
+          </select>
+
+          @if (hasActiveFilters()) {
+          <ui-button
+            variant="outline"
+            (clicked)="clearFilters()"
+            class="text-sm"
+          >
+            Clear
+          </ui-button>
+          }
+        </div>
+      </div>
+
+      <!-- Loading State -->
       @if (isLoading()) {
-        <div class="card p-12 text-center">
-          <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mx-auto mb-4"></div>
-          <p class="text-neutral-600">Loading applications...</p>
-        </div>
-      }
-
-      <!-- Tab Content -->
-      @if (!isLoading()) {
-        <!-- Overview Tab -->
-        @if (activeTab() === 'overview') {
-          <div class="space-y-6">
-            <!-- Recent Activity using design system -->
-            <div class="section-card">
-              <div class="section-header">
-                <h3 class="section-title">Recent Activity</h3>
-              </div>
-              <div class="p-6">
-                @if (recentApplications().length > 0) {
-                  <div class="space-y-4">
-                    @for (app of recentApplications(); track app.id) {
-                      <app-application-list-card
-                        [application]="transformFunderToBaseCard(app)"
-                        [userType]="'funder'"
-                        [showProgress]="false"
-                        (viewDetails)="viewApplication($event.id)"
-                      >
-                        <div slot="actions" class="flex items-center gap-2">
-                          <ui-button variant="outline" size="sm" (clicked)="viewApplication(app.id)">
-                            <lucide-icon [img]="EyeIcon" [size]="14" class="mr-1" />
-                            View
-                          </ui-button>
-                        </div>
-                      </app-application-list-card>
-                    }
-                  </div>
-                } @else {
-                  <div class="empty-state">
-                    <div class="empty-icon">
-                      <lucide-icon [img]="FileTextIcon" [size]="32" class="text-neutral-400" />
-                    </div>
-                    <h3 class="empty-title">No recent activity</h3>
-                    <p class="empty-description">Activity will appear here as applications are submitted and reviewed.</p>
-                  </div>
-                }
-              </div>
-            </div>
-          </div>
-        }
-
-        <!-- Applications List using new card component -->
-        @if (activeTab() !== 'overview') {
-          <div class="space-y-4">
-            @if (displayedApplications().length > 0) {
-              @for (application of displayedApplications(); track application.id) {
-                <app-application-list-card
-                  [application]="transformFunderToBaseCard(application)"
-                  [userType]="'funder'"
-                  [showProgress]="true"
-                  (viewDetails)="viewApplication($event.id)"
+      <div
+        class="bg-white rounded-2xl border border-slate-200 p-12 text-center"
+      >
+        <div
+          class="animate-spin rounded-full h-8 w-8 border-2 border-slate-200 border-t-teal-500 mx-auto mb-4"
+        ></div>
+        <p class="text-slate-600">Loading applications...</p>
+      </div>
+      } @else {
+      <!-- Applications Table -->
+      @if (displayedApplications().length > 0) {
+      <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full">
+            <thead>
+              <tr class="border-b border-slate-200 bg-slate-50/50">
+                <th
+                  class="px-6 py-4 text-left text-sm font-semibold text-slate-900"
                 >
-                  <!-- Funder-specific actions -->
-                  <div slot="actions" class="flex items-center gap-2">
-                    <ui-button variant="primary" (clicked)="viewApplication(application.id)">
-                      <lucide-icon [img]="EyeIcon" [size]="16" class="mr-1" />
-                      View Details
-                    </ui-button>
-                    
-                    @if (application.status === 'submitted') {
-                      <ui-button variant="outline" (clicked)="updateApplicationStatus(application.id, 'under_review')">
-                        Start Review
-                      </ui-button>
-                    }
-                    
-                    @if (application.status === 'under_review') {
-                      <ui-button   (clicked)="updateApplicationStatus(application.id, 'approved')">
-                        Approve
-                      </ui-button>
-                      <ui-button   (clicked)="updateApplicationStatus(application.id, 'rejected')">
-                        Reject
-                      </ui-button>
-                    }
+                  Company
+                </th>
+                <th
+                  class="px-6 py-4 text-left text-sm font-semibold text-slate-900"
+                >
+                  Amount
+                </th>
+                <th
+                  class="px-6 py-4 text-left text-sm font-semibold text-slate-900"
+                >
+                  Status
+                </th>
+                <!-- <th
+                  class="px-6 py-4 text-left text-sm font-semibold text-slate-900"
+                >
+                  Stage
+                </th> -->
+                <th
+                  class="px-6 py-4 text-left text-sm font-semibold text-slate-900"
+                >
+                  Submitted
+                </th>
+                <th
+                  class="px-6 py-4 text-right text-sm font-semibold text-slate-900"
+                >
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-200">
+              @for (application of displayedApplications(); track
+              application.id) {
+              <tr class="hover:bg-slate-50/50 transition-colors duration-200">
+                <!-- Company -->
+                <td class="px-6 py-4">
+                  <div class="flex items-center gap-3">
+                    <div
+                      class="w-10 h-10 rounded-lg bg-teal-100 flex items-center justify-center flex-shrink-0"
+                    >
+                      <lucide-icon
+                        [img]="BuildingIcon"
+                        [size]="16"
+                        class="text-teal-600"
+                      />
+                    </div>
+                    <div>
+                      <p class="text-sm font-medium text-slate-900">
+                        {{
+                          application.applicant?.companyName ||
+                            application.title
+                        }}
+                      </p>
+                      <p class="text-xs text-slate-500">
+                        {{ application.applicant?.firstName }}
+                        {{ application.applicant?.lastName }}
+                      </p>
+                    </div>
                   </div>
-                </app-application-list-card>
+                </td>
+
+                <!-- Amount -->
+                <td class="px-6 py-4">
+                  <p class="text-sm font-medium text-slate-900">
+                    {{
+                      formatCurrency(
+                        extractRequestedAmount(application.formData)
+                      )
+                    }}
+                  </p>
+                </td>
+
+                <!-- Status Badge -->
+                <td class="px-6 py-4">
+                  <span
+                    [ngClass]="getStatusBadgeClass(application.status)"
+                    class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold"
+                  >
+                    {{ formatStatus(application.status) }}
+                  </span>
+                </td>
+
+                <!-- Stage -->
+                <!-- <td class="px-6 py-4">
+                  <p class="text-sm text-slate-600">
+                    {{ formatStage(application.stage) || "—" }}
+                  </p>
+                </td> -->
+
+                <!-- Submitted Date -->
+                <td class="px-6 py-4">
+                  <p class="text-sm text-slate-600">
+                    {{ formatDate(application.createdAt) }}
+                  </p>
+                </td>
+
+                <!-- Actions -->
+                <td class="px-6 py-4 text-right">
+                  <div class="flex items-center justify-end gap-2">
+                    <ui-button
+                      variant="ghost"
+                      size="sm"
+                      (clicked)="viewApplication(application.id)"
+                      class="text-teal-600 hover:bg-teal-50"
+                    >
+                      <lucide-icon [img]="EyeIcon" [size]="16" />
+                    </ui-button>
+
+                    @switch (application.status) { @case ('submitted') {
+                    <ui-button
+                      variant="outline"
+                      size="sm"
+                      (clicked)="
+                        updateApplicationStatus(application.id, 'under_review')
+                      "
+                    >
+                      Start Review
+                    </ui-button>
+                    } @case ('under_review') {
+                    <ui-button
+                      variant="outline"
+                      size="sm"
+                      (clicked)="
+                        updateApplicationStatus(application.id, 'approved')
+                      "
+                      class="text-green-600 border-green-200/50 hover:bg-green-50"
+                    >
+                      Approve
+                    </ui-button>
+                    <ui-button
+                      variant="outline"
+                      size="sm"
+                      (clicked)="
+                        updateApplicationStatus(application.id, 'rejected')
+                      "
+                      class="text-red-600 border-red-200/50 hover:bg-red-50"
+                    >
+                      Reject
+                    </ui-button>
+                    } }
+                  </div>
+                </td>
+              </tr>
               }
-            } @else {
-              <!-- Empty state using design system -->
-              <div class="empty-state">
-                <div class="empty-icon">
-                  <lucide-icon [img]="FileTextIcon" [size]="32" class="text-neutral-400" />
-                </div>
-                <h3 class="empty-title">No applications found</h3>
-                <p class="empty-description">{{ getEmptyStateMessage() }}</p>
-              </div>
-            }
+            </tbody>
+          </table>
+        </div>
+      </div>
+      } @else {
+      <!-- Empty State -->
+      <div
+        class="bg-white rounded-2xl border border-slate-200 p-12 text-center"
+      >
+        <div class="flex justify-center mb-4">
+          <div
+            class="w-16 h-16 rounded-lg bg-slate-100 flex items-center justify-center"
+          >
+            <lucide-icon
+              [img]="FileTextIcon"
+              [size]="32"
+              class="text-slate-400"
+            />
           </div>
-        }
-      }
+        </div>
+        <h3 class="text-lg font-semibold text-slate-900 mb-2">
+          No applications found
+        </h3>
+        <p class="text-slate-600">{{ getEmptyStateMessage() }}</p>
+      </div>
+      } }
 
       <!-- AI Assistant Modal -->
       @if (showAIModal()) {
-        <app-ai-assistant-modal
-          [application]="selectedApplicationForAI()"
-          [isOpen]="showAIModal()"
-          (closeRequested)="closeAIModal()"
-        />
+      <app-ai-assistant-modal
+        [application]="selectedApplicationForAI()"
+        [isOpen]="showAIModal()"
+        (closeRequested)="closeAIModal()"
+      />
       }
     </main>
   </div>
