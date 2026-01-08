@@ -11,7 +11,7 @@ import {
 } from '../models/public-profile.models';
 import { PublicProfileService } from '../services/public-profile.service';
 import { FunderOpportunitiesGridComponent } from './components/fund-opportunities-grid.component';
-import { FunderHeroEnhancedComponent } from 'src/app/core/landing/funds-list/funder-hero-enhanced.component';
+import { FunderHeroEnhancedComponent } from 'src/app/funder/public-profile/components/funder-hero-enhanced.component';
 
 @Component({
   selector: 'app-funder-profile',

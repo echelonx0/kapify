@@ -26,19 +26,19 @@ import { FunderCarouselCardComponent } from './funder-carousel-card.component';
   standalone: true,
   imports: [CommonModule, LucideAngularModule, FunderCarouselCardComponent],
   template: `
-    <section class="py-28 bg-white">
+    <section class="py-28 bg-slate-950">
       <div class="max-w-7xl mx-auto px-6">
         <!-- Header -->
         <div class="mb-16">
           <span
-            class="inline-block text-xs font-bold uppercase tracking-widest text-teal-600 mb-4"
+            class="inline-block text-xs font-bold uppercase tracking-widest text-emerald-400 mb-4"
           >
             Trusted Partners
           </span>
-          <h2 class="text-5xl lg:text-6xl font-black text-slate-900 mb-6">
+          <h2 class="text-5xl lg:text-6xl font-black text-white mb-6">
             Institutional Funders
           </h2>
-          <p class="text-lg text-slate-600 max-w-2xl">
+          <p class="text-lg text-slate-300 max-w-2xl">
             Leading investment firms backing South African innovation. Apply to
             verified funders with clear criteria.
           </p>
@@ -62,15 +62,15 @@ import { FunderCarouselCardComponent } from './funder-carousel-card.component';
               </div>
               } @if (isLoadingMore()) {
               <div
-                class="flex-shrink-0 w-full sm:w-80 flex items-center justify-center bg-slate-50 rounded-2xl"
+                class="flex-shrink-0 w-full sm:w-80 flex items-center justify-center bg-slate-800 rounded-2xl border border-slate-700"
               >
                 <div class="text-center">
                   <lucide-icon
                     [img]="LoaderIcon"
                     [size]="32"
-                    class="text-slate-400 mx-auto mb-2 animate-spin"
+                    class="text-emerald-400 mx-auto mb-2 animate-spin"
                   />
-                  <p class="text-sm text-slate-600">Loading funders...</p>
+                  <p class="text-sm text-slate-400">Loading funders...</p>
                 </div>
               </div>
               }
@@ -82,7 +82,7 @@ import { FunderCarouselCardComponent } from './funder-carousel-card.component';
             <button
               (click)="scroll('left')"
               [disabled]="isAtStart()"
-              class="p-2 rounded-lg bg-slate-100 text-slate-600 hover:bg-teal-100 hover:text-teal-600 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+              class="p-2 rounded-lg bg-slate-800 text-slate-400 hover:bg-emerald-500/20 hover:text-emerald-400 transition-all disabled:opacity-30 disabled:cursor-not-allowed border border-slate-700"
               aria-label="Scroll left"
             >
               <lucide-icon [img]="ChevronLeftIcon" [size]="20" />
@@ -90,7 +90,7 @@ import { FunderCarouselCardComponent } from './funder-carousel-card.component';
             <button
               (click)="scroll('right')"
               [disabled]="isAtEnd()"
-              class="p-2 rounded-lg bg-slate-100 text-slate-600 hover:bg-teal-100 hover:text-teal-600 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+              class="p-2 rounded-lg bg-slate-800 text-slate-400 hover:bg-emerald-500/20 hover:text-emerald-400 transition-all disabled:opacity-30 disabled:cursor-not-allowed border border-slate-700"
               aria-label="Scroll right"
             >
               <lucide-icon [img]="ChevronRightIcon" [size]="20" />
@@ -103,23 +103,23 @@ import { FunderCarouselCardComponent } from './funder-carousel-card.component';
             <lucide-icon
               [img]="LoaderIcon"
               [size]="48"
-              class="text-teal-500 mx-auto mb-4 animate-spin"
+              class="text-emerald-500 mx-auto mb-4 animate-spin"
             />
-            <p class="text-slate-600">Loading institutional funders...</p>
+            <p class="text-slate-400">Loading institutional funders...</p>
           </div>
           }
 
           <!-- Error State -->
           @if (error()) {
           <div
-            class="bg-red-50 border border-red-200 rounded-xl p-6 text-center"
+            class="bg-red-950/50 border border-red-800 rounded-xl p-6 text-center"
           >
-            <p class="text-red-700 font-medium">
+            <p class="text-red-300 font-medium">
               Unable to load funders at this time
             </p>
             <button
               (click)="retry()"
-              class="mt-3 px-4 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors text-sm font-medium"
+              class="mt-3 px-4 py-2 bg-red-900/50 text-red-300 rounded-lg hover:bg-red-900 transition-colors text-sm font-medium"
             >
               Try Again
             </button>
@@ -130,7 +130,7 @@ import { FunderCarouselCardComponent } from './funder-carousel-card.component';
         <!-- Empty State -->
         @if (!isLoading() && visibleProfiles().length === 0 && !error()) {
         <div class="text-center py-16">
-          <p class="text-slate-600 text-lg">
+          <p class="text-slate-400 text-lg">
             No funders available yet. Check back soon!
           </p>
         </div>

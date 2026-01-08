@@ -8,72 +8,77 @@ import { PublicProfile } from 'src/app/funder/models/public-profile.models';
   selector: 'app-funder-carousel-card',
   standalone: true,
   imports: [CommonModule, TrustBadgesComponent],
+  styles: [
+    `
+      @keyframes gradient {
+        0% {
+          background-position: 0% 50%;
+        }
+        50% {
+          background-position: 100% 50%;
+        }
+        100% {
+          background-position: 0% 50%;
+        }
+      }
+
+      .animate-gradient {
+        background-size: 200% 200%;
+        animation: gradient 6s ease infinite;
+      }
+    `,
+  ],
   template: `
     <div
-      class="group h-full rounded-2xl overflow-hidden shadow-md hover:shadow-2xl transition-all duration-300 bg-white border border-slate-200 hover:border-teal-300"
+      class="group overflow-hidden rounded-2xl bg-gradient-to-b from-slate-800 to-slate-900 border border-slate-700 hover:border-emerald-500 transition-all duration-300 hover:shadow-2xl hover:shadow-emerald-500/10"
     >
-      <!-- Hero Background with Animated Gradient -->
+      <!-- Logo/Image Section -->
+      @if (profile.logoUrl) {
       <div
-        class="relative h-40 overflow-hidden bg-gradient-to-br from-slate-100 to-slate-200"
+        class="relative h-48 overflow-hidden bg-gradient-to-br from-slate-700 to-slate-800 flex items-center justify-center"
+      >
+        <img
+          [src]="profile.logoUrl"
+          [alt]="profile.organizationName"
+          class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+        />
+      </div>
+      } @else {
+      <div
+        class="w-full h-48 bg-gradient-to-br from-emerald-600 via-slate-700 to-slate-900 animate-gradient relative overflow-hidden flex items-center justify-center"
       >
         <!-- Animated gradient overlay -->
         <div
-          class="absolute inset-0 bg-gradient-to-br from-teal-500/10 via-transparent to-slate-500/10 group-hover:from-teal-500/20 transition-all duration-500"
+          class="absolute inset-0 bg-gradient-to-br from-emerald-500/20 via-transparent to-slate-500/20 animate-pulse"
         ></div>
-
-        <!-- Logo -->
-        @if (profile.logoUrl) {
-        <div class="absolute inset-0 flex items-center justify-center p-6">
-          <img
-            [src]="profile.logoUrl"
-            [alt]="profile.organizationName"
-            class="h-12 w-auto object-contain group-hover:scale-110 transition-transform duration-300"
-          />
-        </div>
-        } @else {
-        <!-- Fallback: Organization initial with gradient -->
-        <div class="absolute inset-0 flex items-center justify-center">
-          <div
-            class="w-16 h-16 rounded-full bg-gradient-to-br from-teal-500 to-slate-600 flex items-center justify-center text-white font-black text-2xl group-hover:scale-125 transition-transform duration-300"
-          >
-            {{ getInitial(profile.organizationName) }}
-          </div>
-        </div>
-        }
-
-        <!-- Verification Badge -->
-        @if (profile.certifications && profile.certifications.length > 0) {
         <div
-          class="absolute top-3 right-3 bg-white/90 backdrop-blur-sm rounded-full p-1.5"
+          class="relative z-10 w-20 h-20 rounded-full bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center text-white font-black text-3xl group-hover:scale-125 transition-transform duration-300"
         >
-          <svg
-            class="w-4 h-4 text-teal-600"
-            fill="currentColor"
-            viewBox="0 0 20 20"
-          >
-            <path
-              fill-rule="evenodd"
-              d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-              clip-rule="evenodd"
-            />
-          </svg>
+          {{ getInitial(profile.organizationName) }}
         </div>
-        }
       </div>
+      }
 
       <!-- Content -->
-      <div class="p-6 flex flex-col h-[calc(100%-160px)]">
+      <div class="p-8">
         <!-- Name -->
         <h3
-          class="text-lg font-bold text-slate-900 mb-2 line-clamp-2 group-hover:text-teal-600 transition-colors"
+          class="text-xl font-black text-white mb-2 line-clamp-2 group-hover:text-emerald-400 transition-colors"
         >
           {{ profile.organizationName }}
         </h3>
 
-        <!-- Tagline -->
+        <!-- Tagline/Description -->
         @if (profile.tagline) {
-        <p class="text-sm text-slate-600 mb-4 line-clamp-2">
+        <p class="text-sm font-bold text-emerald-400 mb-4">
           {{ profile.tagline }}
+        </p>
+        }
+
+        <!-- Investment Range -->
+        @if (profile.investmentRange) {
+        <p class="text-sm text-slate-300 leading-relaxed mb-4">
+          Invests {{ formatRange(profile.investmentRange) }}
         </p>
         }
 
@@ -81,52 +86,41 @@ import { PublicProfile } from 'src/app/funder/models/public-profile.models';
         @if (profile.certifications && profile.certifications.length > 0) {
         <app-trust-badges
           [certifications]="profile.certifications.slice(0, 2)"
-          class="mb-4"
+          class="mb-6"
         />
-        }
-
-        <!-- Investment Range -->
-        @if (profile.investmentRange) {
-        <div class="mb-4 p-3 rounded-lg bg-teal-50 border border-teal-200">
-          <p class="text-xs uppercase font-bold text-teal-700 mb-1">
-            Investment Range
-          </p>
-          <p class="text-sm font-bold text-slate-900">
-            {{ formatRange(profile.investmentRange) }}
-          </p>
-        </div>
         }
 
         <!-- Sectors -->
         @if (profile.fundingAreas && profile.fundingAreas.length > 0) {
-        <div class="mb-4">
-          <p class="text-xs uppercase font-bold text-slate-600 mb-2">Sectors</p>
-          <div class="flex flex-wrap gap-1.5">
-            @for (area of profile.fundingAreas.slice(0, 3); track area.name) {
+        <div class="mb-6">
+          <p class="text-xs uppercase font-bold text-emerald-400 mb-2">
+            Focus Areas
+          </p>
+          <div class="flex flex-wrap gap-2">
+            @for (area of profile.fundingAreas.slice(0, 2); track area.name) {
             <span
-              class="px-2 py-1 bg-slate-100 text-slate-700 rounded-full text-xs font-medium"
+              class="px-3 py-1 bg-slate-700 text-slate-200 rounded-full text-xs font-medium"
             >
               {{ area.name }}
             </span>
-            } @if (profile.fundingAreas.length > 3) {
+            } @if (profile.fundingAreas.length > 2) {
             <span
-              class="px-2 py-1 bg-slate-100 text-slate-500 rounded-full text-xs font-medium"
+              class="px-3 py-1 bg-slate-700 text-slate-400 rounded-full text-xs font-medium"
             >
-              +{{ profile.fundingAreas.length - 3 }}
+              +{{ profile.fundingAreas.length - 2 }}
             </span>
             }
           </div>
         </div>
         }
 
-        <!-- CTA Button -->
-        <div class="mt-auto pt-4 border-t border-slate-200">
-          <button
-            class="w-full py-2.5 px-4 bg-teal-500 text-white font-semibold rounded-lg hover:bg-teal-600 active:bg-teal-700 transition-all duration-200 text-sm"
-          >
-            View Profile
-          </button>
-        </div>
+        <!-- View Profile Link -->
+        <a
+          href="#"
+          class="text-sm font-bold text-emerald-400 hover:text-emerald-300 inline-flex items-center gap-2 transition-colors"
+        >
+          View Profile →
+        </a>
       </div>
     </div>
   `,
