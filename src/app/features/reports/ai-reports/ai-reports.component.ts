@@ -33,7 +33,6 @@ import { KapifyReports } from '../models/kapify-reports.interface';
 import { KapifyReportsExportService } from '../services/kapify-reports-export.service';
 import { KapifyReportsGeneratorService } from '../services/kapify-reports-generator.service';
 import { AIAnalysisHistoryComponent } from '../analysis-history/analysis-history.component';
-import { DataIntegritySectionComponent } from '../data-integrity-section/data-integrity-section.component';
 
 interface ActivityReport extends KapifyReports {
   matchScore?: number;
@@ -55,7 +54,7 @@ interface ActivityReport extends KapifyReports {
     AIAnalysisHistoryComponent,
 
     ReportBuilderComponent,
-    DataIntegritySectionComponent,
+    // DataIntegritySectionComponent,
   ],
   templateUrl: './ai-reports.component.html',
   styleUrl: './ai-reports.component.css',

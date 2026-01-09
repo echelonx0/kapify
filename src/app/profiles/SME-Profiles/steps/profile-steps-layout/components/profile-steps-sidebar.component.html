@@ -1,0 +1,221 @@
+<!-- profile-steps-sidebar.component.html - NEO-BRUTALIST SIDEBAR (CORRECTED) -->
+
+<div
+  class="flex flex-col h-full bg-white overflow-hidden"
+  [class.is-animated]="isAnimated()"
+>
+  <!-- Header: Progress - Fixed at top with thick border -->
+  <div class="px-6 py-6 border-b-3 border-slate-300 flex-shrink-0">
+    <!-- Overall Progress Metric -->
+    <div class="flex items-baseline gap-2 mb-4">
+      <span class="text-4xl font-black text-slate-900"
+        >{{ overallProgress() }}%</span
+      >
+      <span class="text-sm font-bold text-slate-600 uppercase tracking-wide">
+        {{ completedRequired() }} of {{ totalRequired() }} required
+      </span>
+    </div>
+
+    <!-- Progress Bar: Bold with thick border -->
+    <div
+      class="h-4 bg-slate-200 rounded-lg overflow-hidden border-2 border-slate-300"
+    >
+      <div
+        class="h-full bg-gradient-to-r from-teal-500 to-teal-600 rounded-lg transition-all duration-700 ease-out"
+        [style.width.%]="overallProgress()"
+      ></div>
+    </div>
+  </div>
+
+  <!-- Steps List - Grows to fill space and scrolls -->
+  <nav class="flex-1 overflow-y-auto min-h-0">
+    <div class="p-4 space-y-3">
+      @for (step of steps(); track trackByStepId($index, step); let i = $index)
+      {
+      <button
+        (click)="stepClicked.emit(step.id)"
+        [disabled]="!canAccessStep(step.id)"
+        [class]="getStepCardClasses(step)"
+        class="step-card w-full text-left transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 rounded-lg"
+        [style.--delay]="i * 0.1 + 0.2 + 's'"
+      >
+        <!-- Step Card Container: Neo-Brutal -->
+        <div class="px-5 py-4 rounded-lg h-full">
+          <!-- Top Row: Icon, Title, Badge -->
+          <div class="flex items-start gap-3 mb-3">
+            <!-- Step Icon: Bold border -->
+            <div
+              [class]="getStepIconClasses(step)"
+              class="flex-shrink-0 scale-in-icon"
+            >
+              @if (isStepComplete(step.id)) {
+              <lucide-icon [img]="CheckIcon" [size]="18" class="text-white" />
+              } @else if (!canAccessStep(step.id)) {
+              <lucide-icon [img]="LockIcon" [size]="18" />
+              } @else {
+              <lucide-icon [img]="step.icon" [size]="18" />
+              }
+            </div>
+
+            <!-- Title -->
+            <div class="flex-1 min-w-0">
+              <h3
+                [class]="getStepTitleClasses(step)"
+                class="text-sm font-black tracking-tight truncate"
+              >
+                {{ step.shortTitle }}
+              </h3>
+            </div>
+
+            <!-- Badge -->
+            @if (!isStepComplete(step.id) && getMissingFields(step.id).length
+            === 0 && canAccessStep(step.id)) {
+            <span
+              class="inline-flex items-center px-2.5 py-1.5 rounded-lg text-xs font-black bg-teal-100 text-teal-700 border-2 border-teal-400 uppercase tracking-wide flex-shrink-0"
+            >
+              Ready
+            </span>
+            }
+          </div>
+
+          <!-- Status Row -->
+          <div class="flex items-center justify-between text-xs px-0.5 mb-3">
+            <div class="flex items-center gap-1.5">
+              @if (isStepComplete(step.id)) {
+              <span class="font-black text-green-700 uppercase tracking-wide"
+                >Complete</span
+              >
+              } @else if (isCurrentStep(step.id)) {
+              <span class="font-black text-teal-700 uppercase tracking-wide"
+                >In Progress</span
+              >
+              } @else if (canAccessStep(step.id)) {
+              <span class="font-bold text-slate-700 uppercase tracking-wide"
+                >Ready</span
+              >
+              } @else {
+              <span class="font-bold text-slate-500 uppercase tracking-wide"
+                >Locked</span
+              >
+              }
+            </div>
+
+            @if (!isStepComplete(step.id)) {
+            <span class="font-semibold text-slate-600">{{
+              step.estimatedTime
+            }}</span>
+            }
+          </div>
+
+          <!-- Progress Bar for In-Progress Steps -->
+          @if (!isStepComplete(step.id) && getCompletionPercentage(step.id) > 0)
+          {
+          <div class="mb-3">
+            <div class="flex items-center justify-between mb-2">
+              <span
+                class="text-xs font-black text-slate-700 uppercase tracking-wide"
+                >Progress</span
+              >
+              <span class="text-xs font-black text-slate-900"
+                >{{ getCompletionPercentage(step.id) }}%</span
+              >
+            </div>
+            <div
+              class="h-3 bg-slate-200 rounded-lg overflow-hidden border-2 border-slate-300"
+            >
+              <div
+                class="h-full bg-gradient-to-r from-teal-500 to-teal-600 rounded-lg transition-all duration-300"
+                [style.width.%]="getCompletionPercentage(step.id)"
+              ></div>
+            </div>
+          </div>
+          }
+
+          <!-- Missing Fields Alert: Bold borders -->
+          @if (!isStepComplete(step.id) && getMissingFields(step.id).length > 0)
+          {
+          <div
+            class="bg-amber-50 border-3 border-amber-400 rounded-lg p-3 mt-3"
+          >
+            <div class="flex gap-2.5 min-w-0">
+              <lucide-icon
+                [img]="AlertCircleIcon"
+                [size]="16"
+                class="text-amber-600 flex-shrink-0 mt-0.5"
+              />
+              <div class="text-xs text-amber-900 min-w-0">
+                <strong class="block mb-1.5 font-black">Missing:</strong>
+                <ul class="space-y-1">
+                  @for (field of getMissingFields(step.id).slice(0, 2); track
+                  field) {
+                  <li class="truncate font-semibold" [title]="field">
+                    {{ field }}
+                  </li>
+                  } @if (getMissingFields(step.id).length > 2) {
+                  <li class="text-amber-700 font-semibold">
+                    +{{ getMissingFields(step.id).length - 2 }} more
+                  </li>
+                  }
+                </ul>
+              </div>
+            </div>
+          </div>
+          }
+        </div>
+      </button>
+      }
+    </div>
+  </nav>
+
+  <!-- Footer: Stats with bold borders - Fixed at bottom -->
+  <div class="px-6 py-6 border-t-3 border-slate-300 bg-slate-50 flex-shrink-0">
+    <div
+      class="text-xs font-black text-slate-700 uppercase tracking-widest mb-4"
+    >
+      Required Progress
+    </div>
+    <div class="grid grid-cols-3 gap-3">
+      <!-- Completed Card -->
+      <div
+        class="bg-white border-3 border-green-500 rounded-lg p-4 text-center stat-card-scale"
+      >
+        <div class="text-2xl font-black text-green-600">
+          {{ completedRequired() }}
+        </div>
+        <div
+          class="text-xs font-bold text-slate-700 uppercase tracking-wide mt-2"
+        >
+          Completed
+        </div>
+      </div>
+
+      <!-- In Progress Card -->
+      <div
+        class="bg-white border-3 border-teal-500 rounded-lg p-4 text-center stat-card-scale"
+      >
+        <div class="text-2xl font-black text-teal-600">
+          {{ inProgressRequired() }}
+        </div>
+        <div
+          class="text-xs font-bold text-slate-700 uppercase tracking-wide mt-2"
+        >
+          In Progress
+        </div>
+      </div>
+
+      <!-- Locked Card -->
+      <div
+        class="bg-white border-3 border-slate-400 rounded-lg p-4 text-center stat-card-scale"
+      >
+        <div class="text-2xl font-black text-slate-500">
+          {{ lockedRequired() }}
+        </div>
+        <div
+          class="text-xs font-bold text-slate-700 uppercase tracking-wide mt-2"
+        >
+          Locked
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
