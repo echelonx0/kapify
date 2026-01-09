@@ -1065,7 +1065,7 @@ export class DatabaseApplicationService {
         documents: applicationData.documents || {},
         review_notes: {},
         opportunity_id: applicationData.opportunityId,
-        funder_id: applicationData.funderId, // ✅ REQUIRED: From opportunity.organizationId
+        funder_id: applicationData.funderId,
       };
 
       const { data, error } = await this.supabase

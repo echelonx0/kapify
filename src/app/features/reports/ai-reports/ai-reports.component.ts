@@ -28,13 +28,17 @@ import { AuthService } from 'src/app/auth/services/production.auth.service';
 import {
   ReportBuilderComponent,
   ReportBuilderData,
+  ReportExportEvent,
 } from '../analysis-history/components/report-builder-modal/report-builder.component';
 import { KapifyReports } from '../models/kapify-reports.interface';
 import { KapifyReportsExportService } from '../services/kapify-reports-export.service';
 import { KapifyReportsGeneratorService } from '../services/kapify-reports-generator.service';
 import { AIAnalysisHistoryComponent } from '../analysis-history/analysis-history.component';
+import { KapifyReportsService } from '../services/kapify-reports.service';
+import { KapifyApplicationReportsComponent } from './components/kapify-application-reports.component';
 
 interface ActivityReport extends KapifyReports {
+  funderName: string;
   matchScore?: number;
   completionScore?: number;
   timeline?: {
@@ -52,9 +56,8 @@ interface ActivityReport extends KapifyReports {
     FormsModule,
     LucideAngularModule,
     AIAnalysisHistoryComponent,
-
     ReportBuilderComponent,
-    // DataIntegritySectionComponent,
+    KapifyApplicationReportsComponent,
   ],
   templateUrl: './ai-reports.component.html',
   styleUrl: './ai-reports.component.css',
@@ -64,7 +67,7 @@ export class AIReportsComponent implements OnInit, OnDestroy {
   private exporter = inject(KapifyReportsExportService);
   private authService = inject(AuthService);
   private destroy$ = new Subject<void>();
-
+  private reportsService = inject(KapifyReportsService);
   @ViewChild(AIAnalysisHistoryComponent)
   analysisHistoryComponent!: AIAnalysisHistoryComponent;
 
@@ -100,6 +103,10 @@ export class AIReportsComponent implements OnInit, OnDestroy {
 
   pageSize = signal(8);
   currentPage = signal(0);
+  // Add this signal to track save state
+  reportSaveLoading = signal(false);
+  // Funder context
+  funderId = signal<string | null>(null);
 
   /* ================= COMPUTED ================= */
 
@@ -145,7 +152,7 @@ export class AIReportsComponent implements OnInit, OnDestroy {
     return { totalApplications, approved, pending, avgMatchScore };
   });
 
-  // Report builder data
+  // Report builder data - includes funderName for each record
   reportBuilderData = computed(
     (): ReportBuilderData => ({
       allRecords: this.reports().map((r) => ({
@@ -165,6 +172,7 @@ export class AIReportsComponent implements OnInit, OnDestroy {
         amountRequested: r.amountRequested,
         fundingType: r.fundingType,
         applicationStatus: r.applicationStatus,
+        funderName: r.funderName || '',
         createdAt: r.createdAt || new Date(),
       })),
     })
@@ -198,6 +206,10 @@ export class AIReportsComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    const funderId = this.authService.getCurrentUserOrganizationId();
+    if (funderId) {
+      this.funderId.set(funderId);
+    }
     this.loadReports();
   }
 
@@ -248,6 +260,42 @@ export class AIReportsComponent implements OnInit, OnDestroy {
     this.activeTab.set(tab);
   }
 
+  // Add this method to handle saving after report generation
+  async onReportGenerated(event: ReportExportEvent): Promise<void> {
+    this.reportSaveLoading.set(true);
+
+    try {
+      // Save the report with its configuration
+      this.reportsService
+        .saveReport({
+          title: event.title,
+          report_data: event.data,
+          export_config: {
+            format: event.format,
+            selectedFields: event.selectedFields.map((f) => String(f)),
+            dateRange: event.dateRange,
+          },
+        })
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: (savedReport) => {
+            this.reportSaveLoading.set(false);
+            console.log('✅ Report saved:', savedReport.title);
+            // Show success toast
+            // this.toastr.success(`Report "${event.title}" saved successfully`);
+          },
+          error: (err) => {
+            this.reportSaveLoading.set(false);
+            console.error('❌ Failed to save report:', err);
+            // Show error toast
+            // this.toastr.error('Failed to save report');
+          },
+        });
+    } catch (error) {
+      this.reportSaveLoading.set(false);
+      console.error('❌ Error saving report:', error);
+    }
+  }
   /* ================= REPORT BUILDER ================= */
 
   generateReports(): void {

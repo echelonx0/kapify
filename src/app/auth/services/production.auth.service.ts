@@ -549,7 +549,13 @@ export class AuthService implements OnDestroy {
       message.includes('timeout')
     );
   }
-
+  /**
+   * Get current user's ID from the user signal
+   */
+  getCurrentUserId(): string | null {
+    const user = this.userSubject();
+    return user?.id || null;
+  }
   /**
    * Cleanup on service destroy
    */

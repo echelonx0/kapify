@@ -45,6 +45,7 @@ export interface KapifyReports {
   fundingType: 'Equity' | 'Debt' | 'Grant' | 'Hybrid';
   fundingOpportunity: string;
   useOfFunds: string;
+  funderName: string;
   applicationStatus:
     | 'Draft'
     | 'Submitted'

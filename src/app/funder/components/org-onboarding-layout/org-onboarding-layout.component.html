@@ -43,9 +43,21 @@
       <!-- Header -->
       <div class="p-6 border-b-3 border-slate-300 flex-shrink-0">
         <div class="flex items-center justify-between mb-4">
-          <h2 class="text-lg font-black text-slate-900 uppercase tracking-wide">
-            Setup Progress
-          </h2>
+          <button
+            (click)="goBack()"
+            class="flex items-center gap-2 px-3 py-2 -ml-3 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors duration-200 border-2 border-slate-300 font-bold"
+          >
+            <lucide-icon
+              [img]="ArrowLeftIcon"
+              [size]="18"
+              class="text-slate-900"
+            />
+            <span
+              class="text-sm font-black text-slate-900 uppercase tracking-wide"
+            >
+              Back
+            </span>
+          </button>
         </div>
 
         <!-- Progress Bar: Bold -->
@@ -253,9 +265,21 @@
       <div
         class="p-6 border-b-3 border-slate-300 flex items-center justify-between flex-shrink-0"
       >
-        <h2 class="text-base font-black text-slate-900 uppercase tracking-wide">
-          Setup Steps
-        </h2>
+        <button
+          (click)="goBack(); closeMobileNav()"
+          class="flex items-center gap-2 px-3 py-2 -ml-2 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors border-2 border-slate-300 font-bold"
+        >
+          <lucide-icon
+            [img]="ArrowLeftIcon"
+            [size]="16"
+            class="text-slate-900"
+          />
+          <span
+            class="text-xs font-black text-slate-900 uppercase tracking-wide"
+          >
+            Back
+          </span>
+        </button>
         <button
           (click)="closeMobileNav()"
           class="p-2 -mr-2 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors border-2 border-slate-300 font-bold"

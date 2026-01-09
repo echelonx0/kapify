@@ -191,9 +191,6 @@ export class ProfileManagementService {
           .maybeSingle(),
       ]).then(
         ([userResult, profileResult, orgUserResult]) => {
-          // console.log('🔍 User result:', userResult);
-          // console.log('🔍 Profile result:', profileResult);
-          // console.log('🔍 OrgUser result:', orgUserResult);
           if (userResult.error && profileResult.error) {
             throw new Error('User not found in database');
           }

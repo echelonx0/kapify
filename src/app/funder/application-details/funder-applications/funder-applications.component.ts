@@ -475,6 +475,7 @@ export class FunderApplicationsComponent implements OnInit, OnDestroy {
       applicationStatus: app.status,
       createdAt: app.createdAt,
       updatedAt: app.updatedAt,
+      funderName: '',
     }));
   }
 

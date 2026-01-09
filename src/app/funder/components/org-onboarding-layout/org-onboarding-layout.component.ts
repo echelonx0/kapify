@@ -159,8 +159,8 @@ export class OrganizationOnboardingLayoutComponent implements OnInit {
   // NAVIGATION
   // ===============================
 
-  goToFunderDashboard() {
-    this.router.navigate(['/funder/']);
+  goBack() {
+    window.history.back();
   }
 
   goToStep(stepId: string) {

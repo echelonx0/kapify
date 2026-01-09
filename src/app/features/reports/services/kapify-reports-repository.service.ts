@@ -1,6 +1,5 @@
 import { Injectable, inject } from '@angular/core';
 import { SharedSupabaseService } from '../../../shared/services/shared-supabase.service';
-
 import { KapifyReportsFilter } from '../models/kapify-reports.interface';
 import { FundingApplication } from 'src/app/fund-seeking-orgs/models/application.models';
 
@@ -87,8 +86,8 @@ export class KapifyReportsRepositoryService {
         throw new Error('funderId is required to fetch applications');
       }
 
-      console.log('🔍 [REPO] Starting data fetch for funder:', funderId);
-      console.log('   Filters:', filters);
+      // console.log('🔍 [REPO] Starting data fetch for funder:', funderId);
+      // console.log('   Filters:', filters);
 
       // Step 1: Fetch applications (raw from DB)
       const applicationsRaw = await this.fetchApplicationsRaw(
@@ -107,7 +106,7 @@ export class KapifyReportsRepositoryService {
         this.transformDatabaseToApplication(app)
       );
 
-      console.log('✅ [REPO] Applications fetched:', applications.length);
+      // console.log('✅ [REPO] Applications fetched:', applications.length);
 
       // Step 2: Extract unique IDs for batch queries (now using camelCase)
       const applicantIds = this.extractUniqueIds(
@@ -119,8 +118,8 @@ export class KapifyReportsRepositoryService {
           .filter((id) => id !== null && id !== undefined)
       );
 
-      console.log('👥 [REPO] Unique applicants:', applicantIds.length);
-      console.log('🎯 [REPO] Unique opportunities:', opportunityIds.length);
+      // console.log('👥 [REPO] Unique applicants:', applicantIds.length);
+      // console.log('🎯 [REPO] Unique opportunities:', opportunityIds.length);
 
       // Step 3: Batch fetch related data (only if IDs exist)
       const [users, opportunities, companyInfos, financialProfiles] =
@@ -145,11 +144,11 @@ export class KapifyReportsRepositoryService {
             : Promise.resolve([]),
         ]);
 
-      console.log('✅ [REPO] Related data fetched');
-      console.log('  - Users:', users?.length || 0);
-      console.log('  - Opportunities:', opportunities?.length || 0);
-      console.log('  - Company Infos:', companyInfos?.length || 0);
-      console.log('  - Financial Profiles:', financialProfiles?.length || 0);
+      // console.log('✅ [REPO] Related data fetched');
+      // console.log('  - Users:', users?.length || 0);
+      // console.log('  - Opportunities:', opportunities?.length || 0);
+      // console.log('  - Company Infos:', companyInfos?.length || 0);
+      // console.log('  - Financial Profiles:', financialProfiles?.length || 0);
 
       // Step 4: Create lookup maps for O(1) joining
       const userMap = this.createUserMap(users);

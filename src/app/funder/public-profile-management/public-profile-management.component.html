@@ -1,90 +1,174 @@
-<div class="min-h-screen bg-gray-50">
-  <div class="mx-auto px-4 sm:px-6 lg:px-8 py-8" style="max-width: 1360px">
+<div class="min-h-screen bg-slate-50">
+  <div class="sm:px-6 py-8">
     <!-- Header -->
-    <div class="mb-8">
+    <div class="header-sticky mb-8">
       <div class="flex items-center justify-between">
-        <ui-button variant="outline" (clicked)="goBack()" class="shadow-sm">
+        <button
+          (click)="goBack()"
+          class="inline-flex items-center px-4 py-2.5 bg-white border border-slate-200 text-slate-700 rounded-xl text-sm font-medium hover:bg-slate-50 transition-colors duration-200"
+        >
           <lucide-icon [img]="ArrowLeftIcon" [size]="16" class="mr-2" />
           Go Back
-        </ui-button>
+        </button>
 
         <div class="flex items-center gap-3">
           @if (profileExists()) {
-          <ui-button
-            variant="outline"
-            (clicked)="previewProfile()"
+          <button
+            (click)="previewProfile()"
             [disabled]="!profile()?.slug"
+            class="inline-flex items-center px-4 py-2.5 bg-white border border-slate-200 text-slate-700 rounded-xl text-sm font-medium hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
           >
             <lucide-icon [img]="EyeIcon" [size]="16" class="mr-2" />
             Preview
-          </ui-button>
+          </button>
 
           @if (profile()?.isPublished) {
-          <ui-button
-            variant="outline"
-            (clicked)="viewPublicProfile()"
+          <button
+            (click)="viewPublicProfile()"
             [disabled]="!profile()?.slug"
+            class="inline-flex items-center px-4 py-2.5 bg-white border border-slate-200 text-slate-700 rounded-xl text-sm font-medium hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
           >
             <lucide-icon [img]="ExternalLinkIcon" [size]="16" class="mr-2" />
             View Live
-          </ui-button>
+          </button>
+
+          <!-- Save Actions in Header -->
+          <div class="flex items-center gap-2 pl-3 border-l border-slate-200">
+            @if (lastSaved()) {
+            <span
+              class="text-xs font-black text-teal-600 uppercase tracking-wide"
+              >SAVED</span
+            >
+            } @else if (hasChanges()) {
+            <span
+              class="text-xs font-black text-amber-600 uppercase tracking-wide"
+              >UNSAVED</span
+            >
+            }
+            <button
+              type="button"
+              (click)="saveDraft()"
+              [disabled]="!canSave()"
+              class="neo-btn neo-btn-secondary neo-btn-icon"
+            >
+              <lucide-icon [img]="SaveIcon" [size]="16" />
+            </button>
+          </div>
           } @else {
-          <ui-button
-            variant="primary"
-            (clicked)="publishProfile()"
-            [disabled]="!canPublish()"
-          >
-            <lucide-icon [img]="GlobeIcon" [size]="16" class="mr-2" />
-            {{ isPublishing() ? "Publishing..." : "Publish" }}
-          </ui-button>
+          <!-- Save Actions in Header (Draft state) -->
+          <div class="flex items-center gap-2 pl-3 border-l border-slate-200">
+            @if (lastSaved()) {
+            <span
+              class="text-xs font-black text-teal-600 uppercase tracking-wide"
+              >SAVED</span
+            >
+            } @else if (hasChanges()) {
+            <span
+              class="text-xs font-black text-amber-600 uppercase tracking-wide"
+              >UNSAVED</span
+            >
+            }
+            <button
+              type="button"
+              (click)="saveDraft()"
+              [disabled]="!canSave()"
+              class="neo-btn neo-btn-secondary neo-btn-icon"
+            >
+              <lucide-icon [img]="SaveIcon" [size]="16" />
+            </button>
+            <button
+              type="button"
+              (click)="publishProfile()"
+              [disabled]="!canPublish()"
+              class="neo-btn neo-btn-primary"
+            >
+              <lucide-icon [img]="GlobeIcon" [size]="16" class="mr-2" />
+              {{ isPublishing() ? "Publishing..." : "Publish" }}
+            </button>
+          </div>
           } } @else {
-          <ui-button
-            variant="primary"
-            (clicked)="createProfile()"
-            [disabled]="!isFormValid() || isCreating()"
-          >
-            <lucide-icon [img]="PlusIcon" [size]="16" class="mr-2" />
-            {{ isCreating() ? "Creating..." : "Create Profile" }}
-          </ui-button>
+          <!-- Save Actions in Header (New profile) -->
+          <div class="flex items-center gap-2 pl-3 border-l border-slate-200">
+            @if (lastSaved()) {
+            <span
+              class="text-xs font-black text-teal-600 uppercase tracking-wide"
+              >SAVED</span
+            >
+            } @else if (hasChanges()) {
+            <span
+              class="text-xs font-black text-amber-600 uppercase tracking-wide"
+              >UNSAVED</span
+            >
+            }
+            <button
+              type="button"
+              (click)="saveDraft()"
+              [disabled]="!canSave()"
+              class="neo-btn neo-btn-secondary neo-btn-icon"
+            >
+              <lucide-icon [img]="SaveIcon" [size]="16" />
+            </button>
+            <button
+              (click)="createProfile()"
+              [disabled]="!isFormValid() || isCreating()"
+              class="neo-btn neo-btn-primary"
+            >
+              <lucide-icon [img]="PlusIcon" [size]="16" class="mr-2" />
+              {{ isCreating() ? "Creating..." : "Create" }}
+            </button>
+          </div>
           }
         </div>
       </div>
 
       <!-- Profile URL Preview -->
       @if (profile()?.slug || profileForm.get('tagline')?.value) {
-      <div class="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+      <div class="mt-4 p-3 bg-teal-50 border-2 border-teal-300 rounded-lg">
         <div class="flex items-center gap-2 text-sm">
-          <lucide-icon [img]="GlobeIcon" [size]="14" class="text-blue-600" />
-          <span class="text-blue-600 font-medium">Public URL:</span>
-          <code class="text-blue-800"
+          <lucide-icon [img]="GlobeIcon" [size]="14" class="text-teal-600" />
+          <span class="text-teal-600 font-medium">Public URL:</span>
+          <code class="text-teal-800 font-semibold"
             >kapify.africa/funder/{{ getSlugPreview() }}</code
           >
         </div>
       </div>
       }
 
-      <!-- Validation Summary -->
+      <!-- Validation Summary - Neo-Brutalist -->
       @if (!isFormValid() && profileForm.touched) {
-      <div class="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+      <div
+        class="mt-4 p-4 bg-red-50 border-3 border-red-400 rounded-lg neo-alert-error"
+      >
         <div class="flex items-start gap-3">
           <lucide-icon
             [img]="AlertCircleIcon"
             [size]="20"
-            class="text-red-600 mt-0.5"
+            class="text-red-600 mt-0.5 flex-shrink-0"
           />
           <div>
-            <h4 class="text-red-800 font-medium mb-2">
-              Complete these required fields to publish:
+            <h4
+              class="text-red-900 font-black text-sm mb-2 uppercase tracking-wide"
+            >
+              Complete Required Fields
             </h4>
             <ul class="text-red-700 text-sm space-y-1">
               @if (hasFieldError('tagline')) {
-              <li>• {{ getFieldError("tagline") }}</li>
+              <li class="font-semibold">• {{ getFieldError("tagline") }}</li>
               } @if (hasFieldError('investmentMin')) {
-              <li>• {{ getFieldError("investmentMin") }}</li>
+              <li class="font-semibold">
+                •
+                {{ getFieldError("investmentMin") }}
+              </li>
               } @if (hasFieldError('investmentMax')) {
-              <li>• {{ getFieldError("investmentMax") }}</li>
+              <li class="font-semibold">
+                •
+                {{ getFieldError("investmentMax") }}
+              </li>
               } @if (hasFieldError('investmentRange')) {
-              <li>• {{ getFieldError("investmentRange") }}</li>
+              <li class="font-semibold">
+                •
+                {{ getFieldError("investmentRange") }}
+              </li>
               }
             </ul>
           </div>
@@ -103,45 +187,46 @@
           class="space-y-8"
         >
           <!-- Hero Section -->
-          <div class="section-card">
-            <div class="section-header">
-              <div>
-                <h1 class="text-2xl font-bold text-gray-900">Public Profile</h1>
-                <p class="text-gray-600 mt-1">
-                  Customize your public funder page to attract high-quality
-                  applications
-                </p>
-              </div>
+          <div
+            class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-md transition-all duration-200"
+          >
+            <div
+              class="bg-gradient-to-r from-slate-50 to-slate-50 px-6 py-6 border-b border-slate-200"
+            >
+              <h1 class="text-2xl font-bold text-slate-900">Public Profile</h1>
+              <p class="text-slate-600 mt-1 text-sm">
+                Customize your public funder page to attract high-quality
+                applications
+              </p>
             </div>
             <div class="p-6 space-y-6">
               <!-- Tagline -->
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">
+                <label class="block text-sm font-semibold text-slate-900 mb-2">
                   What is your Mission/Vision?
                 </label>
                 <input
                   type="text"
                   formControlName="tagline"
                   placeholder="e.g., Empowering South African entrepreneurs to scale"
-                  class="form-input"
-                  [class.error]="hasFieldError('tagline')"
+                  class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200"
+                  [class.border-red-300]="hasFieldError('tagline')"
                   maxlength="120"
                 />
                 @if (hasFieldError('tagline')) {
-                <div class="form-error">
-                  <lucide-icon
-                    [img]="AlertCircleIcon"
-                    [size]="14"
-                    class="mr-1"
-                  />
-                  {{ getFieldError("tagline") }}
+                <div class="flex items-center gap-2 mt-2 text-sm text-red-700">
+                  <lucide-icon [img]="AlertCircleIcon" [size]="14" />
+                  <span class="font-semibold">{{
+                    getFieldError("tagline")
+                  }}</span>
                 </div>
                 }
-                <p class="text-xs text-gray-500 mt-1">
+                <p class="text-xs text-slate-500 mt-1">
                   {{ profileForm.get("tagline")?.value?.length || 0 }}/120
                   characters
                 </p>
               </div>
+
               <!-- LOGO UPLOAD -->
               <div class="border-t border-slate-200 pt-6">
                 <h3 class="text-sm font-semibold text-slate-900 mb-4">
@@ -173,19 +258,20 @@
                   Recommended: 1200x600px
                 </p>
               </div>
+
               <!-- Elevator Pitch -->
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">
+                <label class="block text-sm font-medium text-slate-700 mb-2">
                   A public facing description of your organisation
                 </label>
                 <textarea
                   formControlName="elevator_pitch"
                   placeholder="2-3 sentences describing your investment focus and value proposition"
-                  class="form-textarea"
+                  class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200"
                   rows="3"
                   maxlength="300"
                 ></textarea>
-                <p class="text-xs text-gray-500 mt-1">
+                <p class="text-xs text-slate-500 mt-1">
                   {{
                     profileForm.get("elevator_pitch")?.value?.length || 0
                   }}/300 characters
@@ -194,7 +280,7 @@
 
               <!-- Hero Video -->
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">
+                <label class="block text-sm font-medium text-slate-700 mb-2">
                   Fund introduction Video (Optional)
                 </label>
                 <div class="flex gap-3">
@@ -202,18 +288,18 @@
                     type="url"
                     formControlName="heroVideoUrl"
                     placeholder="YouTube or Vimeo URL"
-                    class="form-input flex-1"
+                    class="flex-1 px-4 py-2.5 border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200"
                   />
-                  <ui-button
+                  <button
                     type="button"
-                    variant="outline"
-                    (clicked)="uploadVideo()"
+                    (click)="uploadVideo()"
+                    class="inline-flex items-center px-4 py-2.5 bg-white border border-slate-200 text-slate-700 rounded-xl text-sm font-medium hover:bg-slate-50 transition-colors duration-200"
                   >
                     <lucide-icon [img]="UploadIcon" [size]="16" class="mr-2" />
                     Upload
-                  </ui-button>
+                  </button>
                 </div>
-                <p class="text-xs text-gray-500 mt-1">
+                <p class="text-xs text-slate-500 mt-1">
                   A 30-60 second introduction video increases applications by
                   40%
                 </p>
@@ -222,10 +308,16 @@
           </div>
 
           <!-- Social Proof -->
-          <div class="section-card">
-            <div class="section-header">
-              <h2 class="section-title">Social Proof & Metrics</h2>
-              <p class="section-description">
+          <div
+            class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-md transition-all duration-200"
+          >
+            <div
+              class="bg-gradient-to-r from-slate-50 to-slate-50 px-6 py-6 border-b border-slate-200"
+            >
+              <h2 class="text-lg font-bold text-slate-900">
+                Social Proof & Metrics
+              </h2>
+              <p class="text-slate-600 mt-1 text-sm">
                 Showcase your track record and credibility
               </p>
             </div>
@@ -233,18 +325,17 @@
               <!-- Portfolio Highlights -->
               <div>
                 <div class="flex items-center justify-between mb-2">
-                  <label class="block text-sm font-medium text-gray-700">
+                  <label class="block text-sm font-medium text-slate-700">
                     Portfolio Highlights
                   </label>
-                  <ui-button
+                  <button
                     type="button"
-                    variant="outline"
-                    size="sm"
-                    (clicked)="addPortfolioHighlight()"
+                    (click)="addPortfolioHighlight()"
+                    class="inline-flex items-center px-3 py-1.5 bg-teal-50 border border-teal-200 text-teal-700 rounded-lg text-xs font-medium hover:bg-teal-100 transition-colors"
                   >
                     <lucide-icon [img]="PlusIcon" [size]="14" class="mr-1" />
                     Add
-                  </ui-button>
+                  </button>
                 </div>
                 <div class="space-y-2" formArrayName="portfolioHighlights">
                   @for (control of portfolioHighlightsArray.controls; track
@@ -254,24 +345,19 @@
                       type="text"
                       [formControlName]="$index"
                       placeholder="e.g., Funded 50+ companies"
-                      class="form-input flex-1"
+                      class="flex-1 px-4 py-2.5 border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200"
                     />
-                    <ui-button
+                    <button
                       type="button"
-                      variant="ghost"
-                      size="sm"
-                      (clicked)="removePortfolioHighlight($index)"
+                      (click)="removePortfolioHighlight($index)"
+                      class="inline-flex items-center p-2 text-slate-400 hover:text-red-600 transition-colors"
                     >
-                      <lucide-icon
-                        [img]="Trash2Icon"
-                        [size]="14"
-                        class="text-red-500"
-                      />
-                    </ui-button>
+                      <lucide-icon [img]="Trash2Icon" [size]="16" />
+                    </button>
                   </div>
                   }
                 </div>
-                <p class="text-xs text-gray-500 mt-1">
+                <p class="text-xs text-slate-500 mt-1">
                   Examples: "Funded 100+ SMEs", "R2.5B+ deployed", "95%
                   portfolio survival rate"
                 </p>
@@ -280,18 +366,17 @@
               <!-- Success Metrics -->
               <div>
                 <div class="flex items-center justify-between mb-2">
-                  <label class="block text-sm font-medium text-gray-700">
+                  <label class="block text-sm font-medium text-slate-700">
                     Key Metrics
                   </label>
-                  <ui-button
+                  <button
                     type="button"
-                    variant="outline"
-                    size="sm"
-                    (clicked)="addSuccessMetric()"
+                    (click)="addSuccessMetric()"
+                    class="inline-flex items-center px-3 py-1.5 bg-teal-50 border border-teal-200 text-teal-700 rounded-lg text-xs font-medium hover:bg-teal-100 transition-colors"
                   >
                     <lucide-icon [img]="PlusIcon" [size]="14" class="mr-1" />
                     Add Metric
-                  </ui-button>
+                  </button>
                 </div>
                 <div class="space-y-3" formArrayName="successMetrics">
                   @for (metricGroup of successMetricsArray.controls; track
@@ -303,7 +388,7 @@
                           type="text"
                           formControlName="label"
                           placeholder="Metric label"
-                          class="form-input"
+                          class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200"
                         />
                       </div>
                       <div>
@@ -311,7 +396,7 @@
                           type="text"
                           formControlName="value"
                           placeholder="Value"
-                          class="form-input"
+                          class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200"
                         />
                       </div>
                       <div class="flex gap-2">
@@ -319,22 +404,17 @@
                           <input
                             type="checkbox"
                             formControlName="emphasis"
-                            class="form-checkbox mr-2"
+                            class="w-4 h-4 border border-slate-200 rounded text-teal-600 focus:ring-teal-500"
                           />
-                          <span class="text-sm">Highlight</span>
+                          <span class="text-sm ml-2">Highlight</span>
                         </label>
-                        <ui-button
+                        <button
                           type="button"
-                          variant="ghost"
-                          size="sm"
-                          (clicked)="removeSuccessMetric($index)"
+                          (click)="removeSuccessMetric($index)"
+                          class="inline-flex items-center p-2 text-slate-400 hover:text-red-600 transition-colors"
                         >
-                          <lucide-icon
-                            [img]="Trash2Icon"
-                            [size]="14"
-                            class="text-red-500"
-                          />
-                        </ui-button>
+                          <lucide-icon [img]="Trash2Icon" [size]="16" />
+                        </button>
                       </div>
                     </div>
                   </div>
@@ -345,10 +425,16 @@
           </div>
 
           <!-- Investment Details -->
-          <div class="section-card">
-            <div class="section-header">
-              <h2 class="section-title">Investment Details</h2>
-              <p class="section-description">
+          <div
+            class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-md transition-all duration-200"
+          >
+            <div
+              class="bg-gradient-to-r from-slate-50 to-slate-50 px-6 py-6 border-b border-slate-200"
+            >
+              <h2 class="text-lg font-bold text-slate-900">
+                Investment Details
+              </h2>
+              <p class="text-slate-600 mt-1 text-sm">
                 Help SMEs understand if they're a fit
               </p>
             </div>
@@ -378,7 +464,9 @@
                       class="flex items-center gap-2 mt-2 text-sm text-red-700"
                     >
                       <lucide-icon [img]="AlertCircleIcon" [size]="14" />
-                      <span>{{ getFieldError("investmentMin") }}</span>
+                      <span class="font-semibold">{{
+                        getFieldError("investmentMin")
+                      }}</span>
                     </div>
                     }
                   </div>
@@ -398,7 +486,9 @@
                       class="flex items-center gap-2 mt-2 text-sm text-red-700"
                     >
                       <lucide-icon [img]="AlertCircleIcon" [size]="14" />
-                      <span>{{ getFieldError("investmentMax") }}</span>
+                      <span class="font-semibold">{{
+                        getFieldError("investmentMax")
+                      }}</span>
                     </div>
                     }
                   </div>
@@ -417,7 +507,9 @@
                 @if (hasFieldError('investmentRange')) {
                 <div class="flex items-center gap-2 mt-3 text-sm text-red-700">
                   <lucide-icon [img]="AlertCircleIcon" [size]="14" />
-                  <span>{{ getFieldError("investmentRange") }}</span>
+                  <span class="font-semibold">{{
+                    getFieldError("investmentRange")
+                  }}</span>
                 </div>
                 }
               </div>
@@ -428,16 +520,14 @@
                   <label class="block text-sm font-semibold text-slate-900">
                     Funding Areas & Industries
                   </label>
-                  <ui-button
+                  <button
                     type="button"
-                    variant="outline"
-                    size="sm"
-                    (clicked)="addFundingArea()"
-                    class="gap-1.5"
+                    (click)="addFundingArea()"
+                    class="inline-flex items-center px-3 py-1.5 bg-teal-50 border border-teal-200 text-teal-700 rounded-lg text-xs font-medium hover:bg-teal-100 transition-colors"
                   >
-                    <lucide-icon [img]="PlusIcon" [size]="16" />
+                    <lucide-icon [img]="PlusIcon" [size]="16" class="mr-1" />
                     <span>Add Area</span>
-                  </ui-button>
+                  </button>
                 </div>
 
                 <div class="space-y-3" formArrayName="fundingAreas">
@@ -449,15 +539,13 @@
                       placeholder="e.g., Technology, Healthcare, Agriculture"
                       class="flex-1 px-4 py-2.5 border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200"
                     />
-                    <ui-button
+                    <button
                       type="button"
-                      variant="ghost"
-                      size="sm"
-                      (clicked)="removeFundingArea($index)"
-                      class="mt-0.5 text-slate-400 hover:text-red-600 transition-colors"
+                      (click)="removeFundingArea($index)"
+                      class="inline-flex items-center p-2 text-slate-400 hover:text-red-600 transition-colors mt-0.5"
                     >
                       <lucide-icon [img]="Trash2Icon" [size]="18" />
-                    </ui-button>
+                    </button>
                   </div>
                   }
                 </div>
@@ -488,10 +576,14 @@
           </div>
 
           <!-- Social Links -->
-          <div class="section-card">
-            <div class="section-header">
-              <h2 class="section-title">Social Links</h2>
-              <p class="section-description">
+          <div
+            class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-md transition-all duration-200"
+          >
+            <div
+              class="bg-gradient-to-r from-slate-50 to-slate-50 px-6 py-6 border-b border-slate-200"
+            >
+              <h2 class="text-lg font-bold text-slate-900">Social Links</h2>
+              <p class="text-slate-600 mt-1 text-sm">
                 Build credibility with your online presence
               </p>
             </div>
@@ -499,7 +591,10 @@
               <div class="space-y-3" formArrayName="socialLinks">
                 @for (linkGroup of socialLinksArray.controls; track $index) {
                 <div [formGroupName]="$index" class="flex gap-3 items-center">
-                  <select formControlName="platform" class="form-select">
+                  <select
+                    formControlName="platform"
+                    class="px-4 py-2.5 border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200"
+                  >
                     <option value="linkedin">LinkedIn</option>
                     <option value="twitter">Twitter</option>
                     <option value="facebook">Facebook</option>
@@ -511,111 +606,66 @@
                     type="url"
                     formControlName="url"
                     placeholder="https://..."
-                    class="form-input flex-1"
+                    class="flex-1 px-4 py-2.5 border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200"
                   />
-                  <ui-button
+                  <button
                     type="button"
-                    variant="ghost"
-                    size="sm"
-                    (clicked)="removeSocialLink($index)"
+                    (click)="removeSocialLink($index)"
+                    class="inline-flex items-center p-2 text-slate-400 hover:text-red-600 transition-colors"
                   >
-                    <lucide-icon
-                      [img]="Trash2Icon"
-                      [size]="14"
-                      class="text-red-500"
-                    />
-                  </ui-button>
+                    <lucide-icon [img]="Trash2Icon" [size]="16" />
+                  </button>
                 </div>
                 }
               </div>
-              <ui-button
+              <button
                 type="button"
-                variant="outline"
-                (clicked)="addSocialLink()"
-                class="mt-3"
+                (click)="addSocialLink()"
+                class="mt-3 inline-flex items-center px-4 py-2.5 bg-white border border-slate-200 text-slate-700 rounded-xl text-sm font-medium hover:bg-slate-50 transition-colors"
               >
                 <lucide-icon [img]="PlusIcon" [size]="16" class="mr-2" />
                 Add Social Link
-              </ui-button>
+              </button>
             </div>
           </div>
 
           <!-- About Section -->
-          <div class="section-card">
-            <div class="section-header">
-              <h2 class="section-title">About</h2>
-              <p class="section-description">
+          <div
+            class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-md transition-all duration-200"
+          >
+            <div
+              class="bg-gradient-to-r from-slate-50 to-slate-50 px-6 py-6 border-b border-slate-200"
+            >
+              <h2 class="text-lg font-bold text-slate-900">About</h2>
+              <p class="text-slate-600 mt-1 text-sm">
                 Tell your story and investment approach
               </p>
             </div>
             <div class="p-6 space-y-6">
               <!-- Founding Story -->
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">
+                <label class="block text-sm font-medium text-slate-700 mb-2">
                   Founding Story (Optional)
                 </label>
                 <textarea
                   formControlName="foundingStory"
                   placeholder="Why did you start this fund? What drives your investment philosophy?"
-                  class="form-textarea"
+                  class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200"
                   rows="4"
                 ></textarea>
               </div>
 
               <!-- Investment Approach -->
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">
+                <label class="block text-sm font-medium text-slate-700 mb-2">
                   Value Proposition
                 </label>
                 <textarea
                   formControlName="investmentApproach"
                   placeholder="How do you evaluate investments? What support do you provide?"
-                  class="form-textarea"
+                  class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200"
                   rows="4"
                 ></textarea>
-              </div>
-            </div>
-          </div>
-
-          <!-- Save Actions -->
-          <div
-            class="sticky bottom-0 bg-white border-t border-gray-200 p-4 -mx-4 rounded-lg shadow-sm"
-          >
-            <div class="flex items-center justify-between">
-              <div class="text-sm text-gray-500">
-                @if (lastSaved()) {
-                <span class="text-green-600 font-medium"
-                  >✓ Last saved: {{ formatLastSaved() }}</span
-                >
-                } @else if (hasChanges()) {
-                <span class="text-orange-600">Changes not saved</span>
-                } @else {
-                <span>No changes</span>
-                }
-              </div>
-
-              <div class="flex gap-3">
-                <ui-button
-                  type="button"
-                  variant="outline"
-                  (clicked)="saveDraft()"
-                  [disabled]="!canSave()"
-                >
-                  <lucide-icon [img]="SaveIcon" [size]="16" class="mr-2" />
-                  {{ isSaving() ? "Saving..." : "Save Draft" }}
-                </ui-button>
-
-                @if (profileExists() && !profile()?.isPublished) {
-                <ui-button
-                  type="button"
-                  variant="primary"
-                  (clicked)="publishProfile()"
-                  [disabled]="!canPublish()"
-                >
-                  <lucide-icon [img]="GlobeIcon" [size]="16" class="mr-2" />
-                  {{ isPublishing() ? "Publishing..." : "Publish Profile" }}
-                </ui-button>
-                }
               </div>
             </div>
           </div>
@@ -626,7 +676,7 @@
       <div class="xl:col-span-1">
         <div class="sticky top-8 space-y-6">
           <!-- AI Profile Optimization Widget -->
-          <app-profile-optimization-widget />
+          <app-profile-explainer-widget />
         </div>
       </div>
     </div>

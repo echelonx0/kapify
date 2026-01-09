@@ -1,29 +1,36 @@
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  OnDestroy,
+  inject,
+  signal,
+  computed,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   LucideAngularModule,
   Loader,
-  Search,
   Eye,
   Download,
   Trash2,
   ChevronRight,
   Clock,
-  Sparkles,
+  FileText,
   X,
   AlertCircle,
 } from 'lucide-angular';
-import { AnalysisResultsComponent } from '../../ai/document-analysis/components/analysis-results/analysis-results.component';
-import { AnalysisReportExportService } from '../../ai/services/ai-analysis-export.service';
+import { Subject, takeUntil } from 'rxjs';
 import {
-  AIAnalysisHistoryService,
-  AnalysisResultItem,
-} from '../../ai/services/ai-analysis-history.service';
+  KapifyReportsService,
+  KapifyApplicationReport,
+} from '../../services/kapify-reports.service';
+import { KapifyReportsExportService } from '../../services/kapify-reports-export.service';
+import { KapifyReportViewComponent } from './kapify-report-view.component';
 
 @Component({
-  selector: 'app-ai-analysis-history',
+  selector: 'app-kapify-application-reports',
   standalone: true,
-  imports: [CommonModule, LucideAngularModule, AnalysisResultsComponent],
+  imports: [CommonModule, LucideAngularModule, KapifyReportViewComponent],
   template: `<div class="space-y-8">
     <!-- Loading State -->
     @if (loading()) {
@@ -37,52 +44,66 @@ import {
           class="text-teal-600 animate-spin"
         ></lucide-angular>
       </div>
-      <p class="text-slate-600 font-medium">Loading analysis results...</p>
+      <p class="text-slate-600 font-medium">Loading saved reports...</p>
     </div>
     }
 
     <!-- Empty State -->
-    @if (!loading() && allResults().length === 0) {
+    @if (!loading() && allReports().length === 0) {
     <div class="text-center py-16 bg-white rounded-2xl border border-slate-200">
-      <h3 class="text-lg font-bold text-slate-900 mb-2">No analyses yet</h3>
+      <div
+        class="inline-flex items-center justify-center w-12 h-12 rounded-lg bg-slate-100 mb-4"
+      >
+        <lucide-angular
+          [img]="FileTextIcon"
+          size="24"
+          class="text-slate-400"
+        ></lucide-angular>
+      </div>
+      <h3 class="text-lg font-bold text-slate-900 mb-2">No saved reports</h3>
       <p class="text-slate-600">
-        Run your first document analysis to see results here
+        Generate and save application reports to see them here
       </p>
     </div>
     }
 
-    <!-- Results List -->
-    @if (!loading() && paginatedResults().length > 0) {
+    <!-- Reports List -->
+    @if (!loading() && paginatedReports().length > 0) {
     <div class="space-y-4">
-      @for (result of paginatedResults(); track result.id) {
+      @for (report of paginatedReports(); track report.id) {
       <div
-        [class.animate-out]="deletingId() === result.id"
+        [class.animate-out]="deletingId() === report.id"
         class="bg-white rounded-2xl border border-slate-200 hover:shadow-md hover:border-slate-300 transition-all duration-200 overflow-hidden"
-        [style]="getCardAnimationStyle(result.id)"
+        [style]="getCardAnimationStyle(report.id)"
       >
         <div class="p-6">
           <!-- Header -->
           <div class="flex items-start justify-between gap-4 mb-4">
             <div class="flex-1">
-              <div class="flex items-center gap-2 mb-2">
-                <h4 class="text-lg font-bold text-slate-900">
-                  Investment Analysis Report
-                </h4>
-              </div>
+              <h4 class="text-lg font-bold text-slate-900 mb-2">
+                {{ report.title }}
+              </h4>
 
-              <!-- Key Metrics Row -->
+              <!-- Key Metrics -->
               <div class="flex items-center gap-4 text-sm text-slate-600">
                 <span class="flex items-center gap-1">
-                  Success Probability:
-                  <strong class="text-slate-900"
-                    >{{ result.result.successProbability }}%</strong
-                  >
+                  Records:
+                  <strong class="text-slate-900">{{
+                    report.report_data.length
+                  }}</strong>
                 </span>
                 <span>•</span>
                 <span>
-                  Market Timing:
-                  <strong class="text-slate-900 capitalize">{{
-                    result.result.marketTimingInsight
+                  Format:
+                  <strong class="text-slate-900 uppercase">{{
+                    report.export_config.format
+                  }}</strong>
+                </span>
+                <span>•</span>
+                <span>
+                  Fields:
+                  <strong class="text-slate-900">{{
+                    report.export_config.selectedFields.length
                   }}</strong>
                 </span>
               </div>
@@ -91,55 +112,51 @@ import {
             <!-- Action Buttons -->
             <div class="flex items-center gap-2">
               <button
-                (click)="onViewClick(result)"
+                (click)="onViewClick(report)"
                 class="p-2 text-slate-600 hover:text-teal-600 hover:bg-teal-50 rounded-lg transition-colors duration-200"
-                title="View Full Report"
+                title="View Report"
               >
                 <lucide-angular [img]="EyeIcon" size="18"></lucide-angular>
               </button>
               <button
-                (click)="onDownloadClick(result)"
-                class="p-2 text-slate-600 hover:text-teal-600 hover:bg-teal-50 rounded-lg transition-colors duration-200"
-                title="Download PDF"
+                (click)="onDownloadClick(report)"
+                [disabled]="downloadingId() === report.id"
+                class="p-2 text-slate-600 hover:text-teal-600 hover:bg-teal-50 rounded-lg transition-colors duration-200 disabled:opacity-50"
+                title="Download Report"
               >
                 <lucide-angular [img]="DownloadIcon" size="18"></lucide-angular>
               </button>
               <button
-                (click)="onDeleteClick(result)"
+                (click)="onDeleteClick(report)"
                 class="p-2 text-slate-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors duration-200"
-                title="Delete Analysis"
+                title="Delete Report"
               >
                 <lucide-angular [img]="Trash2Icon" size="18"></lucide-angular>
               </button>
             </div>
           </div>
 
-          <!-- Metadata Row -->
+          <!-- Metadata -->
           <div class="flex items-center gap-4 text-sm text-slate-500">
             <span class="flex items-center gap-1">
               <lucide-angular [img]="ClockIcon" size="14"></lucide-angular>
-              {{ result.createdAt | date : 'MMM d, yyyy h:mm a' }}
+              {{ report.created_at | date : 'MMM d, yyyy h:mm a' }}
             </span>
-            @if (result.result.keyInsights) {
-            <span>•</span>
-            <span class="text-teal-600 font-medium">
-              {{ result.result.keyInsights.length }} insights
-            </span>
-            }
           </div>
         </div>
       </div>
       }
 
       <!-- Pagination -->
+      @if (totalPages() > 1) {
       <div
         class="flex items-center justify-between mt-8 pt-8 border-t border-slate-200"
       >
         <p class="text-sm font-semibold text-slate-600">
           Showing {{ currentPage() * pageSize() + 1 }}-{{
-            Math.min((currentPage() + 1) * pageSize(), allResults().length)
+            Math.min((currentPage() + 1) * pageSize(), allReports().length)
           }}
-          of {{ allResults().length }}
+          of {{ allReports().length }}
         </p>
 
         <div class="flex items-center gap-2">
@@ -168,6 +185,7 @@ import {
           </button>
         </div>
       </div>
+      }
     </div>
     }
 
@@ -187,7 +205,7 @@ import {
       >
         <!-- Header -->
         <div class="px-6 py-4 border-b border-slate-200">
-          <h3 class="text-lg font-bold text-slate-900">Delete Analysis?</h3>
+          <h3 class="text-lg font-bold text-slate-900">Delete Report?</h3>
         </div>
 
         <!-- Content -->
@@ -205,27 +223,21 @@ import {
                 This action cannot be undone
               </p>
               <p class="text-sm text-red-600 mt-1">
-                The analysis and all associated data will be permanently
-                deleted.
+                The report and all associated data will be permanently deleted.
               </p>
             </div>
           </div>
 
-          @if (deleteResultToConfirm()) {
+          @if (deleteReportToConfirm(); as report) {
           <div class="space-y-2 text-sm">
             <p class="text-slate-600">
-              <span class="font-medium text-slate-900"
-                >Investment Analysis Report</span
-              >
+              <span class="font-medium text-slate-900">{{ report.title }}</span>
             </p>
             <p class="text-slate-500">
-              Match Score: {{ deleteResultToConfirm()!.result.matchScore }}%
+              Records: {{ report.report_data.length }}
             </p>
             <p class="text-slate-500">
-              Created
-              {{
-                deleteResultToConfirm()!.createdAt | date : 'MMM d, yyyy h:mm a'
-              }}
+              Created {{ report.created_at | date : 'MMM d, yyyy h:mm a' }}
             </p>
           </div>
           }
@@ -265,7 +277,7 @@ import {
     }
 
     <!-- View Report Modal -->
-    @if (viewReportOpen() && selectedResult()) {
+    @if (viewReportOpen() && selectedReport(); as report) {
     <div
       (click)="closeViewReport()"
       class="fixed inset-0 bg-black/25 backdrop-blur-sm z-40 transition-opacity duration-300"
@@ -276,25 +288,20 @@ import {
     >
       <div
         (click)="$event.stopPropagation()"
-        class="bg-white rounded-2xl border border-slate-200 shadow-xl w-full max-w-4xl my-8"
+        class="bg-white rounded-2xl border border-slate-200 shadow-xl w-full max-w-6xl my-8"
       >
         <!-- Header -->
         <div
-          class="sticky top-0 z-10 bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between rounded-t-2xl"
+          class="sticky top-0 z-10 bg-white border-b border-slate-200 px-8 py-6 flex items-center justify-between rounded-t-2xl"
         >
-          <div class="flex items-center gap-3">
-            <div
-              class="w-10 h-10 rounded-lg bg-teal-100 flex items-center justify-center"
-            >
-              <lucide-angular
-                [img]="SparklesIcon"
-                size="20"
-                class="text-teal-600"
-              ></lucide-angular>
-            </div>
+          <div>
             <h3 class="text-lg font-bold text-slate-900">
-              Investment Analysis Report
+              {{ report.title }}
             </h3>
+            <p class="text-sm text-slate-600 mt-1">
+              {{ report.report_data.length }} records •
+              {{ report.created_at | date : 'MMM d, yyyy h:mm a' }}
+            </p>
           </div>
           <button
             (click)="closeViewReport()"
@@ -305,11 +312,11 @@ import {
         </div>
 
         <!-- Content -->
-        <div class="overflow-y-auto max-h-[70vh]">
-          <app-analysis-results
-            [result]="selectedResult()!.result"
-            [uploadedFileName]="'Analysis Report'"
-          ></app-analysis-results>
+        <div class="overflow-y-auto max-h-[70vh] px-8 py-6">
+          <app-kapify-report-view
+            [report]="selectedReport"
+            (onClose)="closeViewReport()"
+          ></app-kapify-report-view>
         </div>
       </div>
     </div>
@@ -362,127 +369,146 @@ import {
     `,
   ],
 })
-export class AIAnalysisHistoryComponent implements OnInit {
-  private historyService = inject(AIAnalysisHistoryService);
-  private exportService = inject(AnalysisReportExportService);
+export class KapifyApplicationReportsComponent implements OnInit, OnDestroy {
+  private reportsService = inject(KapifyReportsService);
+  private exportService = inject(KapifyReportsExportService);
+  private destroy$ = new Subject<void>();
 
   // Expose Math to template
   Math = Math;
 
   // Icons
   LoaderIcon = Loader;
-  SearchIcon = Search;
   EyeIcon = Eye;
   DownloadIcon = Download;
   Trash2Icon = Trash2;
   ChevronRightIcon = ChevronRight;
   ClockIcon = Clock;
-  SparklesIcon = Sparkles;
+  FileTextIcon = FileText;
   XIcon = X;
   AlertCircle = AlertCircle;
 
   // State
   loading = signal(false);
-  allResults = signal<AnalysisResultItem[]>([]);
+  allReports = signal<KapifyApplicationReport[]>([]);
   currentPage = signal(0);
-  pageSize = signal(10);
+  pageSize = signal(8);
   deleteConfirmOpen = signal(false);
   viewReportOpen = signal(false);
-  selectedResult = signal<AnalysisResultItem | null>(null);
-  deleteResultToConfirm = signal<AnalysisResultItem | null>(null);
+  selectedReport = signal<KapifyApplicationReport | null>(null);
+  deleteReportToConfirm = signal<KapifyApplicationReport | null>(null);
   deletingId = signal<string | null>(null);
-  analysisDeletingId = signal<string | null>(null);
+  downloadingId = signal<string | null>(null);
 
-  // Computed
+  // Computed - Simple, clean logic
   totalPages = computed(() =>
-    Math.ceil(this.allResults().length / this.pageSize())
+    Math.ceil(this.allReports().length / this.pageSize())
   );
-  paginatedResults = computed(() => {
+
+  paginatedReports = computed(() => {
     const start = this.currentPage() * this.pageSize();
-    return this.allResults().slice(start, start + this.pageSize());
+    return this.allReports().slice(start, start + this.pageSize());
   });
 
   ngOnInit(): void {
-    this.loadResults();
+    this.loadReports();
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   /**
-   * Load analysis results
+   * Load all reports
    */
-  private loadResults(): void {
+  private loadReports(): void {
     this.loading.set(true);
-    this.historyService.getAnalysisHistory().subscribe({
-      next: (results) => {
-        this.allResults.set(results);
-        this.loading.set(false);
-      },
-      error: () => {
-        this.loading.set(false);
-      },
-    });
+    this.reportsService
+      .getReportsForOrganization()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (reports) => {
+          this.allReports.set(reports);
+          this.loading.set(false);
+        },
+        error: () => {
+          this.loading.set(false);
+        },
+      });
   }
 
   /**
-   * View full report
+   * View report details
    */
-  onViewClick(result: AnalysisResultItem): void {
-    this.selectedResult.set(result);
+  onViewClick(report: KapifyApplicationReport): void {
+    this.selectedReport.set(report);
     this.viewReportOpen.set(true);
   }
 
   closeViewReport(): void {
     this.viewReportOpen.set(false);
-    this.selectedResult.set(null);
+    this.selectedReport.set(null);
   }
 
   /**
-   * Download PDF
+   * Download report
    */
-  async onDownloadClick(result: AnalysisResultItem): Promise<void> {
+  async onDownloadClick(report: KapifyApplicationReport): Promise<void> {
+    this.downloadingId.set(report.id);
+
     try {
       const timestamp = new Date().toISOString().split('T')[0];
-      const fileName = `Analysis_${result.result.matchScore}pct_${timestamp}.pdf`;
+      const fileName = `${report.title}_${timestamp}`;
 
-      await this.exportService.exportToPDF(result.result, fileName);
+      // Use the export service with report data and config
+      await this.exportService.exportReport(
+        report.report_data,
+        report.export_config,
+        fileName
+      );
     } catch (error) {
       console.error('❌ Download failed:', error);
+    } finally {
+      this.downloadingId.set(null);
     }
   }
 
   /**
    * Delete confirmation
    */
-  onDeleteClick(result: AnalysisResultItem): void {
-    this.deleteResultToConfirm.set(result);
+  onDeleteClick(report: KapifyApplicationReport): void {
+    this.deleteReportToConfirm.set(report);
     this.deleteConfirmOpen.set(true);
   }
 
   closeDeleteConfirm(): void {
     this.deleteConfirmOpen.set(false);
-    this.deleteResultToConfirm.set(null);
+    this.deleteReportToConfirm.set(null);
   }
 
   /**
    * Confirm delete
    */
   confirmDelete(): void {
-    const result = this.deleteResultToConfirm();
-    if (!result) return;
+    const report = this.deleteReportToConfirm();
+    if (!report) return;
 
-    this.deletingId.set(result.id);
-    this.analysisDeletingId.set(result.id);
+    this.deletingId.set(report.id);
 
-    this.historyService.deleteAnalysis(result.id).subscribe({
-      next: () => {
-        this.deletingId.set(null);
-        this.analysisDeletingId.set(null);
-        this.closeDeleteConfirm();
-      },
-      error: () => {
-        this.deletingId.set(null);
-        this.analysisDeletingId.set(null);
-      },
-    });
+    this.reportsService
+      .deleteReport(report.id)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          this.deletingId.set(null);
+          this.closeDeleteConfirm();
+          this.loadReports(); // Refresh the list
+        },
+        error: () => {
+          this.deletingId.set(null);
+        },
+      });
   }
 
   /**
@@ -503,8 +529,8 @@ export class AIAnalysisHistoryComponent implements OnInit {
   /**
    * Card animation style
    */
-  getCardAnimationStyle(resultId: string): { [key: string]: string } {
-    return this.analysisDeletingId() === resultId
+  getCardAnimationStyle(reportId: string): { [key: string]: string } {
+    return this.deletingId() === reportId
       ? { opacity: '0', transform: 'translateX(-100%)' }
       : {};
   }

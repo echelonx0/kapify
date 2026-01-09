@@ -1,0 +1,127 @@
+/* src/app/funder/components/profile-explainer-widget/profile-explainer-widget.component.css */
+
+/* Smooth expand/collapse animation */
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    max-height: 0;
+    overflow: hidden;
+  }
+  to {
+    opacity: 1;
+    max-height: 1000px;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 1;
+    max-height: 1000px;
+    overflow: hidden;
+  }
+  to {
+    opacity: 0;
+    max-height: 0;
+  }
+}
+
+/* Icon entrance stagger */
+@keyframes iconFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Benefit card stagger animation */
+:host ::ng-deep .benefit-card {
+  animation: iconFadeIn 0.4s ease-out forwards;
+}
+
+:host ::ng-deep .benefit-card:nth-child(1) {
+  animation-delay: 50ms;
+}
+
+:host ::ng-deep .benefit-card:nth-child(2) {
+  animation-delay: 100ms;
+}
+
+:host ::ng-deep .benefit-card:nth-child(3) {
+  animation-delay: 150ms;
+}
+
+:host ::ng-deep .benefit-card:nth-child(4) {
+  animation-delay: 200ms;
+}
+
+/* Expanded content */
+:host ::ng-deep .animate-in {
+  animation: slideDown 0.3s ease-out;
+}
+
+/* Smooth transitions on all interactive elements */
+:host ::ng-deep button {
+  position: relative;
+  overflow: hidden;
+}
+
+:host ::ng-deep button::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.1);
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+:host ::ng-deep button:active::after {
+  opacity: 1;
+}
+
+/* Checklist item animation */
+:host ::ng-deep .checklist-item {
+  animation: iconFadeIn 0.3s ease-out forwards;
+}
+
+:host ::ng-deep .checklist-item:nth-child(1) {
+  animation-delay: 100ms;
+}
+
+:host ::ng-deep .checklist-item:nth-child(2) {
+  animation-delay: 140ms;
+}
+
+:host ::ng-deep .checklist-item:nth-child(3) {
+  animation-delay: 180ms;
+}
+
+:host ::ng-deep .checklist-item:nth-child(4) {
+  animation-delay: 220ms;
+}
+
+:host ::ng-deep .checklist-item:nth-child(5) {
+  animation-delay: 260ms;
+}
+
+/* Stat card animation */
+:host ::ng-deep .stat-card {
+  animation: iconFadeIn 0.4s ease-out forwards;
+}
+
+:host ::ng-deep .stat-card:nth-child(1) {
+  animation-delay: 200ms;
+}
+
+:host ::ng-deep .stat-card:nth-child(2) {
+  animation-delay: 240ms;
+}
+
+/* Focus ring for accessibility */
+:host ::ng-deep button:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.1), 0 0 0 2px #14b8a6;
+}
