@@ -72,8 +72,7 @@ export interface ReportFilters {
   selector: 'app-report-builder',
   standalone: true,
   imports: [CommonModule, FormsModule, LucideAngularModule],
-  template: `
-    <!-- Backdrop -->
+  template: `<!-- Backdrop -->
     @if (isOpen()) {
     <div
       (click)="close()"
@@ -125,74 +124,6 @@ export interface ReportFilters {
         <!-- Scrollable Content -->
         <div class="max-h-[calc(100vh-240px)] overflow-y-auto">
           <div class="px-8 py-6 space-y-8">
-            <!-- Statistics Cards -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-              <div
-                class="bg-gradient-to-br from-teal-50 to-teal-100/50 rounded-xl border border-teal-200/50 p-4"
-              >
-                <p
-                  class="text-xs font-semibold text-teal-600 uppercase tracking-wide"
-                >
-                  Total
-                </p>
-                <p class="text-2xl font-bold text-teal-700 mt-2">
-                  {{ totalRecords() | number }}
-                </p>
-              </div>
-
-              <div
-                class="bg-gradient-to-br from-blue-50 to-blue-100/50 rounded-xl border border-blue-200/50 p-4"
-              >
-                <p
-                  class="text-xs font-semibold text-blue-600 uppercase tracking-wide"
-                >
-                  Filtered
-                </p>
-                <p class="text-2xl font-bold text-blue-700 mt-2">
-                  {{ filteredCount() | number }}
-                </p>
-              </div>
-
-              <div
-                class="bg-gradient-to-br from-green-50 to-green-100/50 rounded-xl border border-green-200/50 p-4"
-              >
-                <p
-                  class="text-xs font-semibold text-green-600 uppercase tracking-wide"
-                >
-                  Approved
-                </p>
-                <p class="text-2xl font-bold text-green-700 mt-2">
-                  {{ approvedCount() | number }}
-                </p>
-              </div>
-
-              <div
-                class="bg-gradient-to-br from-amber-50 to-amber-100/50 rounded-xl border border-amber-200/50 p-4"
-              >
-                <p
-                  class="text-xs font-semibold text-amber-600 uppercase tracking-wide"
-                >
-                  Pending
-                </p>
-                <p class="text-2xl font-bold text-amber-700 mt-2">
-                  {{ pendingCount() | number }}
-                </p>
-              </div>
-
-              <div
-                class="bg-gradient-to-br from-slate-50 to-slate-100/50 rounded-xl border border-slate-200 p-4"
-              >
-                <p
-                  class="text-xs font-semibold text-slate-600 uppercase tracking-wide"
-                >
-                  Amount
-                </p>
-                <p class="text-xl font-bold text-slate-700 mt-2 truncate">
-                  {{ formatCurrency(totalAmount()) }}
-                </p>
-              </div>
-            </div>
-
             <!-- Filters Section -->
             <div class="space-y-6">
               <div class="flex items-center justify-between">
@@ -557,8 +488,7 @@ export interface ReportFilters {
         </div>
       </div>
     </div>
-    }
-  `,
+    } `,
 })
 export class ReportBuilderComponent {
   @Input() data: ReportBuilderData | null = null;
