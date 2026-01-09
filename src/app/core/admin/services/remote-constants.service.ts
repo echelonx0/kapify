@@ -52,9 +52,8 @@ export class SupabaseConstantsService {
     try {
       await this.loadAllConstants();
       this.error.set(null);
-      console.log('✅ Constants loaded successfully');
     } catch (err) {
-      console.error('❌ Failed to load constants from Supabase:', err);
+      // console.error('❌ Failed to load constants from Supabase:', err);
       this.loadFromLocalBackup();
       this.error.set('Using cached constants. Some data may be outdated.');
     } finally {
@@ -82,13 +81,13 @@ export class SupabaseConstantsService {
     this.geographicRegions.set(allConstants[3]);
     this.currencies.set(allConstants[4]);
 
-    console.log('📊 Constants loaded:', {
-      fundingOptions: allConstants[0].length,
-      industries: allConstants[1].length,
-      businessStages: allConstants[2].length,
-      geographicRegions: allConstants[3].length,
-      currencies: allConstants[4].length,
-    });
+    // console.log('📊 Constants loaded:', {
+    //   fundingOptions: allConstants[0].length,
+    //   industries: allConstants[1].length,
+    //   businessStages: allConstants[2].length,
+    //   geographicRegions: allConstants[3].length,
+    //   currencies: allConstants[4].length,
+    // });
 
     // Save to local backup
     this.saveToLocalBackup({
@@ -269,7 +268,6 @@ export class SupabaseConstantsService {
         this.businessStages.set(parsed.data.businessStages || []);
         this.geographicRegions.set(parsed.data.geographicRegions || []);
         this.currencies.set(parsed.data.currencies || []);
-        console.log('📦 Loaded constants from local backup');
       }
     } catch (err) {
       console.error('Failed to load local backup:', err);

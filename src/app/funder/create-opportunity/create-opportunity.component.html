@@ -292,7 +292,6 @@
     </div>
   </div>
 
-  <!-- FORM ACTIONS (standalone component) -->
   <app-opportunity-form-actions
     [currentStep]="currentStep()"
     [isFirstStep]="isFirstStep.bind(this)"
@@ -305,12 +304,13 @@
     [isCreateMode]="isCreateMode()"
     [organizationError]="!!organizationError()"
     [saveButtonText]="getSaveButtonText()"
+    [formState]="formState"
     (next)="nextStep()"
     (previous)="previousStep()"
     (publish)="publishOpportunity()"
     (save)="saveDraft()"
     (cancel)="goBack()"
-    (clear)="clearDraft()"
+    (deleteDraft)="clearDraft()"
   ></app-opportunity-form-actions>
 </div>
 }

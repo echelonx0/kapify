@@ -1,4 +1,11 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import {
+  Component,
+  Input,
+  Output,
+  EventEmitter,
+  inject,
+  signal,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   LucideAngularModule,
@@ -9,13 +16,47 @@ import {
   RefreshCw,
   Trash2,
   X,
+  AlertCircle,
 } from 'lucide-angular';
+import { trigger, transition, style, animate } from '@angular/animations';
+import { DeleteDraftConfirmationModalComponent } from '../components/delete-draft-confirmation.component';
 
+/**
+ * OpportunityFormActionsComponent
+ *
+ * Handles form navigation and actions (save, publish, delete)
+ * Responsive across mobile, tablet, and desktop
+ * Integrated with delete confirmation modal
+ */
 @Component({
   selector: 'app-opportunity-form-actions',
   standalone: true,
-  imports: [CommonModule, LucideAngularModule],
+  imports: [
+    CommonModule,
+    LucideAngularModule,
+    DeleteDraftConfirmationModalComponent,
+  ],
+  animations: [
+    trigger('modalTransition', [
+      transition(':enter', [
+        style({ opacity: 0 }),
+        animate('200ms ease-out', style({ opacity: 1 })),
+      ]),
+      transition(':leave', [animate('150ms ease-in', style({ opacity: 0 }))]),
+    ]),
+  ],
   template: `
+    <!-- DELETE CONFIRMATION MODAL -->
+    @if (showDeleteModal()) {
+    <app-delete-draft-confirmation-modal
+      [draftTitle]="deleteDraftTitle()"
+      [isDeleting]="isDeletingDraft"
+      (confirm)="onConfirmDeleteDraft()"
+      (cancel)="onCancelDeleteModal()"
+      [@modalTransition]
+    ></app-delete-draft-confirmation-modal>
+    }
+
     <div class="bg-white border-t border-slate-200">
       <!-- MOBILE: Super Compact Row (0-768px) -->
       <div
@@ -176,7 +217,7 @@ import {
 
       <!-- DESKTOP: Full Layout (1024px+) -->
       <div class="hidden lg:flex px-6 py-4 items-center justify-between gap-4">
-        <!-- Left: Navigation -->
+        <!-- Left: Navigation & Delete -->
         <div class="flex gap-2">
           <button
             (click)="onPrevious()"
@@ -194,14 +235,15 @@ import {
             Cancel
           </button>
 
+          <!-- Delete Draft Button (Create Mode Only) -->
           @if (isCreateMode) {
           <button
-            (click)="onDeleteDraft()"
-            [disabled]="isDeleting"
+            (click)="openDeleteModal()"
+            [disabled]="isDeletingDraft"
             class="px-4 py-2.5 text-sm font-medium text-red-700 bg-red-50 hover:bg-red-100 active:bg-red-200 border border-red-200/50 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl transition-colors duration-200 flex items-center gap-1.5"
             title="Delete this draft permanently"
           >
-            @if (isDeleting) {
+            @if (isDeletingDraft) {
             <div
               class="w-4 h-4 border-2 border-red-200 border-t-red-700 rounded-full animate-spin"
             ></div>
@@ -272,18 +314,26 @@ import {
   ],
 })
 export class OpportunityFormActionsComponent {
+  // ===============================
+  // INPUTS
+  // ===============================
+
   @Input() currentStep: string = 'basic';
   @Input() isFirstStep: () => boolean = () => false;
   @Input() isReviewStep: () => boolean = () => false;
   @Input() isSaving: boolean = false;
   @Input() isPublishing: boolean = false;
-  @Input() isDeleting: boolean = false;
   @Input() canContinue: boolean = false;
   @Input() canPublish: boolean = false;
   @Input() isEditMode: boolean = false;
   @Input() isCreateMode: boolean = true;
   @Input() organizationError: boolean = false;
   @Input() saveButtonText: string = 'Save Draft';
+  @Input() formState: any;
+
+  // ===============================
+  // OUTPUTS
+  // ===============================
 
   @Output() next = new EventEmitter<void>();
   @Output() previous = new EventEmitter<void>();
@@ -292,7 +342,18 @@ export class OpportunityFormActionsComponent {
   @Output() cancel = new EventEmitter<void>();
   @Output() deleteDraft = new EventEmitter<void>();
 
-  // Icons
+  // ===============================
+  // SIGNALS (Component State)
+  // ===============================
+
+  showDeleteModal = signal(false);
+  deleteDraftTitle = signal('Draft');
+  isDeletingDraft = false;
+
+  // ===============================
+  // ICONS
+  // ===============================
+
   ArrowLeftIcon = ArrowLeft;
   ArrowRightIcon = ArrowRight;
   SaveIcon = Save;
@@ -300,28 +361,98 @@ export class OpportunityFormActionsComponent {
   RefreshCwIcon = RefreshCw;
   Trash2Icon = Trash2;
   XIcon = X;
+  AlertCircleIcon = AlertCircle;
 
-  onNext() {
+  // ===============================
+  // DELETE MODAL HANDLERS
+  // ===============================
+
+  /**
+   * Open delete confirmation modal
+   * Gets current draft title from form state
+   */
+  openDeleteModal(): void {
+    // Get current draft title from form data if available
+    if (this.formState?.formData?.()) {
+      const formData = this.formState.formData();
+      if (formData?.title) {
+        this.deleteDraftTitle.set(formData.title);
+      } else {
+        this.deleteDraftTitle.set('Untitled Draft');
+      }
+    } else {
+      this.deleteDraftTitle.set('Untitled Draft');
+    }
+
+    this.showDeleteModal.set(true);
+  }
+
+  /**
+   * Confirmed: proceed with deletion
+   */
+  onConfirmDeleteDraft(): void {
+    this.onDeleteDraft();
+  }
+
+  /**
+   * Cancelled: close modal and stay on form
+   */
+  onCancelDeleteModal(): void {
+    this.showDeleteModal.set(false);
+  }
+
+  /**
+   * Handle delete draft button click
+   * Shows confirmation modal first, then emits deletion on confirmation
+   */
+  onDeleteDraft(): void {
+    // Check if modal is already showing
+    if (this.showDeleteModal()) {
+      // We're in confirmation step - actually delete
+      this.deleteDraft.emit();
+      this.showDeleteModal.set(false);
+    } else {
+      // First click - show confirmation modal
+      this.openDeleteModal();
+    }
+  }
+
+  // ===============================
+  // FORM NAVIGATION HANDLERS
+  // ===============================
+
+  /**
+   * Go to next step
+   */
+  onNext(): void {
     this.next.emit();
   }
 
-  onPrevious() {
+  /**
+   * Go to previous step
+   */
+  onPrevious(): void {
     this.previous.emit();
   }
 
-  onPublish() {
+  /**
+   * Publish opportunity
+   */
+  onPublish(): void {
     this.publish.emit();
   }
 
-  onSave() {
+  /**
+   * Save draft
+   */
+  onSave(): void {
     this.save.emit();
   }
 
-  onCancel() {
+  /**
+   * Cancel and go back
+   */
+  onCancel(): void {
     this.cancel.emit();
-  }
-
-  onDeleteDraft() {
-    this.deleteDraft.emit();
   }
 }
