@@ -33,13 +33,13 @@ export interface SidebarLink {
   standalone: true,
   imports: [CommonModule, RouterModule, LucideAngularModule],
   template: `
-    <div class="min-h-screen bg-slate-50">
+    <div class="min-h-screen bg-teal-50">
       <!-- Breadcrumb Navigation -->
-      <nav class="bg-white border-b border-slate-200">
-        <div class="max-w-7xl mx-auto px-6 py-3 text-sm text-slate-600">
+      <nav class="bg-white border-b border-teal-200">
+        <div class="max-w-7xl mx-auto px-6 py-3 text-sm text-teal-600">
           <ol class="flex items-center gap-2">
             <li>
-              <a href="/" class="hover:text-slate-900 transition-colors"
+              <a href="/" class="hover:text-teal-900 transition-colors"
                 >Kapify</a
               >
             </li>
@@ -48,12 +48,12 @@ export interface SidebarLink {
               <lucide-icon
                 [img]="ChevronRightIcon"
                 [size]="16"
-                class="text-slate-400"
+                class="text-teal-400"
               />
               @if ($last) {
-              <span class="text-slate-900 font-medium">{{ crumb }}</span>
+              <span class="text-teal-900 font-medium">{{ crumb }}</span>
               } @else {
-              <a href="#" class="hover:text-slate-900 transition-colors">{{
+              <a href="#" class="hover:text-teal-900 transition-colors">{{
                 crumb
               }}</a>
               }
@@ -65,7 +65,7 @@ export interface SidebarLink {
 
       <!-- Hero Section -->
       <section
-        class="relative bg-slate-900 text-white overflow-hidden pt-20 pb-12"
+        class="relative bg-teal-900 text-white overflow-hidden pt-20 pb-12"
       >
         <!-- Background animation -->
         <div class="absolute inset-0">
@@ -73,7 +73,7 @@ export interface SidebarLink {
             class="absolute top-0 right-0 w-96 h-96 bg-teal-500/10 rounded-full blur-3xl"
           ></div>
           <div
-            class="absolute -bottom-10 -left-10 w-96 h-96 bg-slate-700/20 rounded-full blur-3xl"
+            class="absolute -bottom-10 -left-10 w-96 h-96 bg-teal-700/20 rounded-full blur-3xl"
           ></div>
         </div>
 
@@ -83,13 +83,13 @@ export interface SidebarLink {
             <h1 class="text-5xl lg:text-6xl font-black mb-4 leading-tight">
               {{ pageData.title }}
             </h1>
-            <p class="text-lg text-slate-300 mb-8">
+            <p class="text-lg text-teal-300 mb-8">
               {{ pageData.subtitle }}
             </p>
             @if (pageData.ctaLabel) {
             <a
               [href]="pageData.ctaUrl || '#'"
-              class="inline-block px-8 py-3 bg-white text-slate-900 font-bold rounded-full hover:bg-slate-100 transition-all"
+              class="inline-block px-8 py-3 bg-white text-teal-900 font-bold rounded-full hover:bg-teal-100 transition-all"
             >
               {{ pageData.ctaLabel }}
             </a>
@@ -99,16 +99,16 @@ export interface SidebarLink {
       </section>
 
       <!-- Tab Navigation -->
-      <div class="bg-white border-b border-slate-200 sticky top-0 z-40">
+      <div class="bg-white border-b border-teal-200 sticky top-0 z-40">
         <div class="max-w-7xl mx-auto px-6">
           <div class="flex gap-8 overflow-x-auto scrollbar-hide">
             @for (tab of pageData.tabs; track tab.id) {
             <button
               (click)="selectTab(tab.id)"
               [class.border-teal-500]="activeTab === tab.id"
-              [class.text-slate-900]="activeTab === tab.id"
+              [class.text-teal-900]="activeTab === tab.id"
               [class.border-transparent]="activeTab !== tab.id"
-              [class.text-slate-600]="activeTab !== tab.id"
+              [class.text-teal-600]="activeTab !== tab.id"
               class="px-1 py-4 border-b-2 transition-all whitespace-nowrap font-medium text-sm"
             >
               {{ tab.label }}
@@ -125,13 +125,13 @@ export interface SidebarLink {
           <div class="lg:col-span-2 space-y-8">
             @if (activeTab === 'overview') {
             <div
-              class="prose prose-slate max-w-none"
+              class="prose prose-teal max-w-none"
               [innerHTML]="pageData.mainContent"
             ></div>
             } @else { @for (tab of pageData.tabs; track tab.id) { @if (tab.id
             === activeTab) {
             <div
-              class="prose prose-slate max-w-none"
+              class="prose prose-teal max-w-none"
               [innerHTML]="tab.content"
             ></div>
             } } }
@@ -141,9 +141,9 @@ export interface SidebarLink {
           <div class="lg:col-span-1">
             <!-- Resources Sidebar -->
             <div
-              class="bg-white rounded-2xl border border-slate-200 p-6 sticky top-24"
+              class="bg-white rounded-2xl border border-teal-200 p-6 sticky top-24"
             >
-              <h3 class="text-lg font-bold text-slate-900 mb-6">
+              <h3 class="text-lg font-bold text-teal-900 mb-6">
                 {{ pageData.sidebarTitle }}
               </h3>
               <ul class="space-y-3">
@@ -153,7 +153,7 @@ export interface SidebarLink {
                   <a
                     [href]="link.href"
                     [class.text-teal-600]="link.highlight"
-                    [class.text-slate-700]="!link.highlight"
+                    [class.text-teal-700]="!link.highlight"
                     class="hover:text-teal-600 transition-colors text-sm font-medium flex items-center gap-2"
                   >
                     {{ link.label }}
@@ -162,36 +162,36 @@ export interface SidebarLink {
                     }
                   </a>
                   } @else {
-                  <span class="text-slate-700 text-sm font-medium">{{
+                  <span class="text-teal-700 text-sm font-medium">{{
                     link.label
                   }}</span>
                   }
                 </li>
                 }
               </ul>
-            </div>
 
-            <!-- Quick Contact -->
-            <div class="bg-teal-50 rounded-2xl border border-teal-200 p-6 mt-6">
-              <h4 class="text-sm font-bold text-slate-900 mb-3">Questions?</h4>
-              <p class="text-sm text-slate-600 mb-4">
-                Contact our compliance team for more information.
-              </p>
-              <a
-                href="mailto:compliance@kapify.africa"
-                class="inline-block px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-all text-sm font-medium"
+              <!-- Quick Contact -->
+              <div
+                class="bg-teal-50 rounded-2xl border border-teal-200 p-6 mt-6"
               >
-                Email Us
-              </a>
+                <h4 class="text-sm font-bold text-teal-900 mb-3">Questions?</h4>
+                <p class="text-sm text-teal-600 mb-4">
+                  Contact our compliance team for more information.
+                </p>
+                <a
+                  href="mailto:compliance@kapify.africa"
+                  class="inline-block px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-all text-sm font-medium"
+                >
+                  Email Us
+                </a>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
       <!-- Footer -->
-      <footer
-        class="bg-slate-900 text-slate-400 py-12 border-t border-slate-800"
-      >
+      <footer class="bg-teal-900 text-teal-400 py-12 border-t border-teal-800">
         <div class="max-w-7xl mx-auto px-6">
           <div class="grid grid-cols-2 md:grid-cols-4 gap-8 mb-8">
             <div>
@@ -293,7 +293,7 @@ export interface SidebarLink {
               </ul>
             </div>
           </div>
-          <div class="border-t border-slate-800 pt-8 text-sm text-center">
+          <div class="border-t border-teal-800 pt-8 text-sm text-center">
             <p>
               &copy; {{ currentYear }} Kapify. All rights reserved. |
               <a href="#" class="hover:text-white">Sitemap</a>

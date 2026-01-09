@@ -328,68 +328,6 @@
     </div>
   </section>
 
-  <!-- TEAM -->
-  <!-- @if ((getLeadership().length ) > 0) {
-  <section id="team" class="py-28 bg-slate-950">
-    <div class="max-w-7xl mx-auto px-6">
-      <div class="mb-20">
-        <span
-          class="inline-block text-xs font-bold uppercase tracking-widest text-emerald-400 mb-4"
-          >Leadership</span
-        >
-        <h2 class="text-5xl lg:text-6xl font-black text-white mb-6">
-          Meet the Founders
-        </h2>
-        <p class="text-lg text-slate-300 max-w-2xl">
-          Operators, strategists, and builders with deep domain expertise.
-        </p>
-      </div>
-
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        @for (member of getLeadership(); track member.name) {
-        <div
-          class="group overflow-hidden rounded-2xl bg-gradient-to-b from-slate-800 to-slate-900 border border-slate-700 hover:border-emerald-500 transition-all duration-300 hover:shadow-2xl hover:shadow-emerald-500/10"
-        >
-          @if (member.imageUrl) {
-          <img
-            [src]="member.imageUrl"
-            [alt]="member.name"
-            class="w-full h-72 object-cover group-hover:scale-110 transition-transform duration-300"
-          />
-          } @else {
-          <div
-            class="w-full h-72 bg-gradient-to-br from-slate-700 to-slate-800"
-          ></div>
-          }
-
-          <div class="p-8">
-            <h3 class="text-xl font-black text-white mb-1">
-              {{ member.name }}
-            </h3>
-            <p class="text-sm font-bold text-emerald-400 mb-4">
-              {{ member.title }}
-            </p>
-            @if (member.bio) {
-            <p class="text-sm text-slate-300 leading-relaxed mb-6">
-              {{ member.bio }}
-            </p>
-            } @if (member.linkedinUrl) {
-            <a
-              [href]="member.linkedinUrl"
-              target="_blank"
-              class="text-sm font-bold text-emerald-400 hover:text-emerald-300 inline-flex items-center gap-2 transition-colors"
-            >
-              Connect →
-            </a>
-            }
-          </div>
-        </div>
-        }
-      </div>
-    </div>
-  </section>
-  } -->
-
   <!-- FOOTER -->
   <footer class="bg-slate-900 border-t border-slate-800">
     <div class="max-w-7xl mx-auto px-6 py-24">

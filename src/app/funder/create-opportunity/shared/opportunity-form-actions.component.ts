@@ -196,12 +196,18 @@ import {
 
           @if (isCreateMode) {
           <button
-            (click)="onClear()"
-            class="px-4 py-2.5 text-sm font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 active:bg-slate-300 rounded-xl transition-colors duration-200 flex items-center gap-1.5"
-            title="Clear form and start over"
+            (click)="onDeleteDraft()"
+            [disabled]="isDeleting"
+            class="px-4 py-2.5 text-sm font-medium text-red-700 bg-red-50 hover:bg-red-100 active:bg-red-200 border border-red-200/50 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl transition-colors duration-200 flex items-center gap-1.5"
+            title="Delete this draft permanently"
           >
+            @if (isDeleting) {
+            <div
+              class="w-4 h-4 border-2 border-red-200 border-t-red-700 rounded-full animate-spin"
+            ></div>
+            Deleting... } @else {
             <lucide-angular [img]="Trash2Icon" [size]="16"></lucide-angular>
-            Clear
+            Delete Draft }
           </button>
           }
         </div>
@@ -271,6 +277,7 @@ export class OpportunityFormActionsComponent {
   @Input() isReviewStep: () => boolean = () => false;
   @Input() isSaving: boolean = false;
   @Input() isPublishing: boolean = false;
+  @Input() isDeleting: boolean = false;
   @Input() canContinue: boolean = false;
   @Input() canPublish: boolean = false;
   @Input() isEditMode: boolean = false;
@@ -283,7 +290,7 @@ export class OpportunityFormActionsComponent {
   @Output() publish = new EventEmitter<void>();
   @Output() save = new EventEmitter<void>();
   @Output() cancel = new EventEmitter<void>();
-  @Output() clear = new EventEmitter<void>();
+  @Output() deleteDraft = new EventEmitter<void>();
 
   // Icons
   ArrowLeftIcon = ArrowLeft;
@@ -314,7 +321,7 @@ export class OpportunityFormActionsComponent {
     this.cancel.emit();
   }
 
-  onClear() {
-    this.clear.emit();
+  onDeleteDraft() {
+    this.deleteDraft.emit();
   }
 }

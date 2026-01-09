@@ -636,7 +636,7 @@ export class FinancialDataTransformer {
         assetsBySubsection.nonCurrent
       );
       assetChildren.push({
-        title: 'Non-Current Assets',
+        title: ' ',
         rows: [
           ...assetsBySubsection.nonCurrent.map((row) => ({
             label: row.label,
@@ -648,19 +648,19 @@ export class FinancialDataTransformer {
             type: 'currency' as const,
           })),
           // Total row for this subsection
-          {
-            label: 'Total Non-Current Assets',
-            values: nonCurrentTotal,
-            editable: false,
-            isCalculated: true,
-            isBold: true,
-            isTotal: true,
-            type: 'currency' as const,
-            styling: {
-              rowClass: 'bg-teal-50 border-t-2 border-slate-200',
-              labelClass: 'font-bold text-slate-900',
-            },
-          },
+          // {
+          //   label: 'Total Non-Current Assets',
+          //   values: nonCurrentTotal,
+          //   editable: false,
+          //   isCalculated: true,
+          //   isBold: true,
+          //   isTotal: true,
+          //   type: 'currency' as const,
+          //   styling: {
+          //     rowClass: 'bg-teal-50 border-t-2 border-slate-200',
+          //     labelClass: 'font-bold text-slate-900',
+          //   },
+          // },
         ],
         isCollapsible: false,
         defaultExpanded: true,
@@ -673,7 +673,7 @@ export class FinancialDataTransformer {
         assetsBySubsection.current
       );
       assetChildren.push({
-        title: 'Current Assets',
+        title: '',
         rows: [
           ...assetsBySubsection.current.map((row) => ({
             label: row.label,
@@ -753,7 +753,7 @@ export class FinancialDataTransformer {
     if (equities.length > 0) {
       const equitiesTotal = this.calculateSectionTotal(equities);
       liabilityChildren.push({
-        title: 'Equities',
+        title: '',
         rows: [
           ...equities.map((row) => ({
             label: row.label,
@@ -829,7 +829,7 @@ export class FinancialDataTransformer {
     if (currentLiabilities.length > 0) {
       const ctTotal = this.calculateSectionTotal(currentLiabilities);
       liabilityChildren.push({
-        title: 'Current Liabilities',
+        title: '',
         rows: [
           ...currentLiabilities.map((row) => ({
             label: row.label,
