@@ -41,7 +41,6 @@ import {
   RightPanelContent,
   RightPanelComponent,
 } from '../components/right-panel.component';
-
 import { ProfileManagementService } from 'src/app/shared/services/profile-management.service';
 import { AuthService } from 'src/app/auth/services/production.auth.service';
 import { FunderOnboardingService } from 'src/app/funder/services/funder-onboarding.service';

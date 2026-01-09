@@ -72,9 +72,7 @@ export const dashboardRoutes: Routes = [
       {
         path: 'profile',
         loadChildren: () =>
-          import('../../profiles/SME-Profiles/profile.routes').then(
-            (m) => m.profileRoutes
-          ),
+          import('./profile.routes').then((m) => m.profileRoutes),
       },
       {
         path: 'funding-opportunities',

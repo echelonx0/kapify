@@ -18,13 +18,82 @@ import {
   BarChart3,
   Filter,
   RefreshCw,
+  ChevronDown,
 } from 'lucide-angular';
 import { GenericExportService } from 'src/app/core/services/kapify-export.service';
 import { ExportColumn } from 'src/app/core/models/export-options.interface';
 
 /**
- * Application Report Record
- * Minimal fields needed for reporting - maps directly from FundingApplication
+ * KapifyReports - Complete field mapping
+ * All fields that can appear in exported reports
+ */
+interface KapifyReports {
+  // Company Details Section
+  no: number;
+  nameOfBusiness: string;
+  industry: string;
+  physicalAddress: string;
+  businessDetails: string;
+  businessStage:
+    | 'Pre-Launch'
+    | 'Startup'
+    | 'Early Growth'
+    | 'Growth'
+    | 'Mature'
+    | 'Expansion';
+  yearsInOperation: number;
+  numberOfEmployees: number;
+  bbbeeLeve:
+    | 'Level 1'
+    | 'Level 2'
+    | 'Level 3'
+    | 'Level 4'
+    | 'Level 5'
+    | 'Level 6'
+    | 'Level 7'
+    | 'Level 8'
+    | 'Non-Compliant';
+  province: string;
+  priorYearAnnualRevenue: number;
+
+  // Contact Person Details Section
+  firstName: string;
+  surname: string;
+  email: string;
+  phoneNumber: string;
+  role: string;
+
+  // Funding Details Section
+  amountRequested: number;
+  fundingType: 'Equity' | 'Debt' | 'Grant' | 'Hybrid';
+  fundingOpportunity: string;
+  useOfFunds: string;
+  applicationStatus:
+    | 'Draft'
+    | 'Submitted'
+    | 'Review'
+    | 'Under Review'
+    | 'Approved'
+    | 'Rejected'
+    | 'Withdrawn';
+
+  // System Fields
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+}
+
+/**
+ * Field metadata for report builder
+ */
+export interface ReportField {
+  key: keyof KapifyReports;
+  label: string;
+  category: 'company' | 'contact' | 'funding' | 'system';
+  width?: number;
+}
+
+/**
+ * Application report record (minimal fields needed)
  */
 export interface ApplicationReportRecord {
   id: string;
@@ -45,6 +114,7 @@ export interface ApplicationReportRecord {
   applicationStatus: string;
   createdAt: Date | string;
   updatedAt?: Date | string;
+  [key: string]: any;
 }
 
 export interface ReportBuilderData {
@@ -55,17 +125,12 @@ export interface ReportExportEvent {
   data: ApplicationReportRecord[];
   format: 'excel' | 'pdf' | 'csv';
   title: string;
-  filters: ReportFilters;
+  selectedFields: (keyof KapifyReports)[];
+  dateRange: { start?: string; end?: string };
 }
 
 export interface ReportFilters {
   dateRange: { start?: string; end?: string };
-  statuses: string[];
-  industries: string[];
-  stages: string[];
-  provinces: string[];
-  fundingTypes: string[];
-  amountRange: { min?: number; max?: number };
 }
 
 @Component({
@@ -87,28 +152,17 @@ export interface ReportFilters {
     >
       <div
         (click)="$event.stopPropagation()"
-        class="bg-white rounded-2xl border border-slate-200 shadow-xl w-full max-w-5xl my-8 overflow-hidden"
+        class="bg-white rounded-2xl border border-slate-200 w-full max-w-5xl my-8 overflow-hidden"
       >
         <!-- Header -->
         <div
           class="sticky top-0 z-10 px-8 py-6 border-b border-slate-200 bg-gradient-to-r from-teal-50 via-white to-slate-50 flex items-center justify-between"
         >
           <div class="flex items-center gap-3">
-            <div
-              class="w-10 h-10 rounded-lg bg-teal-100 flex items-center justify-center"
-            >
-              <lucide-angular
-                [img]="BarChartIcon"
-                size="20"
-                class="text-teal-600"
-              ></lucide-angular>
-            </div>
             <div>
-              <h2 class="text-2xl font-bold text-slate-900">
-                Build Custom Report
-              </h2>
+              <h2 class="text-2xl font-bold text-slate-900">Export report</h2>
               <p class="text-sm text-slate-600 mt-0.5">
-                Filter and export application data in your preferred format
+                Select date range and fields to export application data
               </p>
             </div>
           </div>
@@ -124,33 +178,17 @@ export interface ReportFilters {
         <!-- Scrollable Content -->
         <div class="max-h-[calc(100vh-240px)] overflow-y-auto">
           <div class="px-8 py-6 space-y-8">
-            <!-- Filters Section -->
-            <div class="space-y-6">
-              <div class="flex items-center justify-between">
-                <div class="flex items-center gap-2">
-                  <lucide-angular
-                    [img]="FilterIcon"
-                    size="20"
-                    class="text-slate-600"
-                  ></lucide-angular>
-                  <h3 class="text-lg font-bold text-slate-900">Filters</h3>
-                </div>
-                <button
-                  (click)="clearAllFilters()"
-                  class="text-sm text-teal-600 hover:text-teal-700 font-medium transition-colors flex items-center gap-1"
-                >
-                  <lucide-angular
-                    [img]="RefreshIcon"
-                    size="16"
-                  ></lucide-angular>
-                  Reset
-                </button>
+            <!-- Date Range Section -->
+            <div class="space-y-4 pb-6 border-b border-slate-200">
+              <div class="flex items-center gap-2">
+                <lucide-angular
+                  [img]="FilterIcon"
+                  size="20"
+                  class="text-slate-600"
+                ></lucide-angular>
+                <h3 class="text-lg font-bold text-slate-900">Date Range</h3>
               </div>
-
-              <!-- Date Range -->
-              <div
-                class="grid grid-cols-1 md:grid-cols-2 gap-4 pb-6 border-b border-slate-200"
-              >
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label
                     class="block text-sm font-semibold text-slate-900 mb-2"
@@ -160,7 +198,6 @@ export interface ReportFilters {
                   <input
                     type="date"
                     [(ngModel)]="filters.dateRange.start"
-                    (change)="applyFilters()"
                     class="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200"
                   />
                 </div>
@@ -173,180 +210,224 @@ export interface ReportFilters {
                   <input
                     type="date"
                     [(ngModel)]="filters.dateRange.end"
-                    (change)="applyFilters()"
                     class="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200"
                   />
                 </div>
               </div>
+            </div>
 
-              <!-- Status Filter -->
-              <div class="space-y-3">
-                <label class="block text-sm font-semibold text-slate-900">
-                  Application Status
-                </label>
-                <div
-                  class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2"
+            <!-- Field Selection Sections -->
+            <div class="space-y-4">
+              <div class="flex items-center justify-between">
+                <h3 class="text-lg font-bold text-slate-900">
+                  Select Fields to Export
+                </h3>
+                <button
+                  (click)="clearAllFields()"
+                  class="text-sm text-teal-600 hover:text-teal-700 font-medium transition-colors flex items-center gap-1"
                 >
-                  @for (status of availableStatuses; track status) {
-                  <label
-                    class="flex items-center gap-2 px-3 py-2.5 border border-slate-200 rounded-lg cursor-pointer hover:bg-slate-50 transition-colors"
-                    [class.bg-teal-50]="isStatusSelected(status)"
-                    [class.border-teal-300]="isStatusSelected(status)"
-                  >
-                    <input
-                      type="checkbox"
-                      [checked]="isStatusSelected(status)"
-                      (change)="toggleStatus(status)"
-                      class="w-4 h-4 text-teal-500 rounded cursor-pointer"
-                    />
-                    <span class="text-sm font-medium text-slate-700">
-                      {{ formatStatus(status) }}
-                    </span>
-                  </label>
-                  }
-                </div>
+                  <lucide-angular
+                    [img]="RefreshIcon"
+                    size="16"
+                  ></lucide-angular>
+                  Deselect All
+                </button>
               </div>
 
-              <!-- Industry Filter -->
-              <div class="space-y-3 pb-6 border-b border-slate-200">
-                <label class="block text-sm font-semibold text-slate-900">
-                  Industry
-                </label>
-                <div
-                  class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2"
+              <!-- Company Details Section -->
+              <div class="border border-slate-200 rounded-xl overflow-hidden">
+                <button
+                  (click)="toggleSection('company')"
+                  class="w-full px-6 py-4 bg-slate-50 hover:bg-slate-100 flex items-center justify-between transition-colors duration-200"
                 >
-                  @for (industry of availableIndustries(); track industry) {
-                  <label
-                    class="flex items-center gap-2 px-3 py-2.5 border border-slate-200 rounded-lg cursor-pointer hover:bg-slate-50 transition-colors"
-                    [class.bg-teal-50]="isIndustrySelected(industry)"
-                    [class.border-teal-300]="isIndustrySelected(industry)"
-                  >
-                    <input
-                      type="checkbox"
-                      [checked]="isIndustrySelected(industry)"
-                      (change)="toggleIndustry(industry)"
-                      class="w-4 h-4 text-teal-500 rounded cursor-pointer"
-                    />
-                    <span class="text-sm font-medium text-slate-700">
-                      {{ industry }}
+                  <div class="flex items-center gap-3">
+                    <h4 class="text-sm font-semibold text-slate-900">
+                      Company Details
+                    </h4>
+                    <span
+                      class="text-xs px-2.5 py-1 rounded-full bg-teal-50 text-teal-700 font-semibold"
+                    >
+                      {{ companyFieldsSelected() }}/{{ companyFields().length }}
                     </span>
-                  </label>
-                  }
-                </div>
-              </div>
+                  </div>
+                  <lucide-angular
+                    [img]="ChevronIcon"
+                    size="18"
+                    class="text-slate-600 transition-transform duration-200"
+                    [class.rotate-180]="isSectionOpen('company')"
+                  ></lucide-angular>
+                </button>
 
-              <!-- Business Stage Filter -->
-              <div class="space-y-3">
-                <label class="block text-sm font-semibold text-slate-900">
-                  Business Stage
-                </label>
-                <div class="grid grid-cols-2 md:grid-cols-3 gap-2">
-                  @for (stage of availableStages; track stage) {
-                  <label
-                    class="flex items-center gap-2 px-3 py-2.5 border border-slate-200 rounded-lg cursor-pointer hover:bg-slate-50 transition-colors"
-                    [class.bg-teal-50]="isStageSelected(stage)"
-                    [class.border-teal-300]="isStageSelected(stage)"
-                  >
-                    <input
-                      type="checkbox"
-                      [checked]="isStageSelected(stage)"
-                      (change)="toggleStage(stage)"
-                      class="w-4 h-4 text-teal-500 rounded cursor-pointer"
-                    />
-                    <span class="text-sm font-medium text-slate-700">
-                      {{ stage }}
-                    </span>
-                  </label>
-                  }
-                </div>
-              </div>
-
-              <!-- Province Filter -->
-              <div class="space-y-3 pb-6 border-b border-slate-200">
-                <label class="block text-sm font-semibold text-slate-900">
-                  Province
-                </label>
+                @if (isSectionOpen('company')) {
                 <div
-                  class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2"
+                  class="px-6 py-4 space-y-3 border-t border-slate-200 bg-white"
                 >
-                  @for (province of availableProvinces(); track province) {
+                  @for (field of companyFields(); track field.key) {
                   <label
-                    class="flex items-center gap-2 px-3 py-2.5 border border-slate-200 rounded-lg cursor-pointer hover:bg-slate-50 transition-colors"
-                    [class.bg-teal-50]="isProvinceSelected(province)"
-                    [class.border-teal-300]="isProvinceSelected(province)"
+                    class="flex items-center gap-3 px-3 py-2.5 border border-slate-200 rounded-lg cursor-pointer hover:bg-slate-50 transition-colors"
+                    [class.bg-teal-50]="isFieldSelected(field.key)"
+                    [class.border-teal-300]="isFieldSelected(field.key)"
                   >
                     <input
                       type="checkbox"
-                      [checked]="isProvinceSelected(province)"
-                      (change)="toggleProvince(province)"
+                      [checked]="isFieldSelected(field.key)"
+                      (change)="toggleField(field.key)"
                       class="w-4 h-4 text-teal-500 rounded cursor-pointer"
                     />
-                    <span class="text-sm font-medium text-slate-700">
-                      {{ province }}
+                    <span class="text-sm font-medium text-slate-700 flex-1">
+                      {{ field.label }}
                     </span>
                   </label>
                   }
                 </div>
+                }
               </div>
 
-              <!-- Funding Type Filter -->
-              <div class="space-y-3">
-                <label class="block text-sm font-semibold text-slate-900">
-                  Funding Type
-                </label>
-                <div class="grid grid-cols-2 md:grid-cols-3 gap-2">
-                  @for (type of availableFundingTypes; track type) {
+              <!-- Contact Person Details Section -->
+              <div class="border border-slate-200 rounded-xl overflow-hidden">
+                <button
+                  (click)="toggleSection('contact')"
+                  class="w-full px-6 py-4 bg-slate-50 hover:bg-slate-100 flex items-center justify-between transition-colors duration-200"
+                >
+                  <div class="flex items-center gap-3">
+                    <h4 class="text-sm font-semibold text-slate-900">
+                      Contact Person Details
+                    </h4>
+                    <span
+                      class="text-xs px-2.5 py-1 rounded-full bg-teal-50 text-teal-700 font-semibold"
+                    >
+                      {{ contactFieldsSelected() }}/{{ contactFields().length }}
+                    </span>
+                  </div>
+                  <lucide-angular
+                    [img]="ChevronIcon"
+                    size="18"
+                    class="text-slate-600 transition-transform duration-200"
+                    [class.rotate-180]="isSectionOpen('contact')"
+                  ></lucide-angular>
+                </button>
+
+                @if (isSectionOpen('contact')) {
+                <div
+                  class="px-6 py-4 space-y-3 border-t border-slate-200 bg-white"
+                >
+                  @for (field of contactFields(); track field.key) {
                   <label
-                    class="flex items-center gap-2 px-3 py-2.5 border border-slate-200 rounded-lg cursor-pointer hover:bg-slate-50 transition-colors"
-                    [class.bg-teal-50]="isFundingTypeSelected(type)"
-                    [class.border-teal-300]="isFundingTypeSelected(type)"
+                    class="flex items-center gap-3 px-3 py-2.5 border border-slate-200 rounded-lg cursor-pointer hover:bg-slate-50 transition-colors"
+                    [class.bg-teal-50]="isFieldSelected(field.key)"
+                    [class.border-teal-300]="isFieldSelected(field.key)"
                   >
                     <input
                       type="checkbox"
-                      [checked]="isFundingTypeSelected(type)"
-                      (change)="toggleFundingType(type)"
+                      [checked]="isFieldSelected(field.key)"
+                      (change)="toggleField(field.key)"
                       class="w-4 h-4 text-teal-500 rounded cursor-pointer"
                     />
-                    <span class="text-sm font-medium text-slate-700">
-                      {{ type }}
+                    <span class="text-sm font-medium text-slate-700 flex-1">
+                      {{ field.label }}
                     </span>
                   </label>
                   }
                 </div>
+                }
               </div>
 
-              <!-- Amount Range -->
-              <div
-                class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-6 border-t border-slate-200"
-              >
-                <div>
+              <!-- Funding Details Section -->
+              <div class="border border-slate-200 rounded-xl overflow-hidden">
+                <button
+                  (click)="toggleSection('funding')"
+                  class="w-full px-6 py-4 bg-slate-50 hover:bg-slate-100 flex items-center justify-between transition-colors duration-200"
+                >
+                  <div class="flex items-center gap-3">
+                    <h4 class="text-sm font-semibold text-slate-900">
+                      Funding Details
+                    </h4>
+                    <span
+                      class="text-xs px-2.5 py-1 rounded-full bg-teal-50 text-teal-700 font-semibold"
+                    >
+                      {{ fundingFieldsSelected() }}/{{ fundingFields().length }}
+                    </span>
+                  </div>
+                  <lucide-angular
+                    [img]="ChevronIcon"
+                    size="18"
+                    class="text-slate-600 transition-transform duration-200"
+                    [class.rotate-180]="isSectionOpen('funding')"
+                  ></lucide-angular>
+                </button>
+
+                @if (isSectionOpen('funding')) {
+                <div
+                  class="px-6 py-4 space-y-3 border-t border-slate-200 bg-white"
+                >
+                  @for (field of fundingFields(); track field.key) {
                   <label
-                    class="block text-sm font-semibold text-slate-900 mb-2"
+                    class="flex items-center gap-3 px-3 py-2.5 border border-slate-200 rounded-lg cursor-pointer hover:bg-slate-50 transition-colors"
+                    [class.bg-teal-50]="isFieldSelected(field.key)"
+                    [class.border-teal-300]="isFieldSelected(field.key)"
                   >
-                    Min Amount (ZAR)
+                    <input
+                      type="checkbox"
+                      [checked]="isFieldSelected(field.key)"
+                      (change)="toggleField(field.key)"
+                      class="w-4 h-4 text-teal-500 rounded cursor-pointer"
+                    />
+                    <span class="text-sm font-medium text-slate-700 flex-1">
+                      {{ field.label }}
+                    </span>
                   </label>
-                  <input
-                    type="number"
-                    [(ngModel)]="filters.amountRange.min"
-                    (change)="applyFilters()"
-                    placeholder="0"
-                    class="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-white text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200"
-                  />
+                  }
                 </div>
-                <div>
+                }
+              </div>
+
+              <!-- System Fields Section -->
+              <div class="border border-slate-200 rounded-xl overflow-hidden">
+                <button
+                  (click)="toggleSection('system')"
+                  class="w-full px-6 py-4 bg-slate-50 hover:bg-slate-100 flex items-center justify-between transition-colors duration-200"
+                >
+                  <div class="flex items-center gap-3">
+                    <h4 class="text-sm font-semibold text-slate-900">
+                      System Fields
+                    </h4>
+                    <span
+                      class="text-xs px-2.5 py-1 rounded-full bg-teal-50 text-teal-700 font-semibold"
+                    >
+                      {{ systemFieldsSelected() }}/{{ systemFields().length }}
+                    </span>
+                  </div>
+                  <lucide-angular
+                    [img]="ChevronIcon"
+                    size="18"
+                    class="text-slate-600 transition-transform duration-200"
+                    [class.rotate-180]="isSectionOpen('system')"
+                  ></lucide-angular>
+                </button>
+
+                @if (isSectionOpen('system')) {
+                <div
+                  class="px-6 py-4 space-y-3 border-t border-slate-200 bg-white"
+                >
+                  @for (field of systemFields(); track field.key) {
                   <label
-                    class="block text-sm font-semibold text-slate-900 mb-2"
+                    class="flex items-center gap-3 px-3 py-2.5 border border-slate-200 rounded-lg cursor-pointer hover:bg-slate-50 transition-colors"
+                    [class.bg-teal-50]="isFieldSelected(field.key)"
+                    [class.border-teal-300]="isFieldSelected(field.key)"
                   >
-                    Max Amount (ZAR)
+                    <input
+                      type="checkbox"
+                      [checked]="isFieldSelected(field.key)"
+                      (change)="toggleField(field.key)"
+                      class="w-4 h-4 text-teal-500 rounded cursor-pointer"
+                    />
+                    <span class="text-sm font-medium text-slate-700 flex-1">
+                      {{ field.label }}
+                    </span>
                   </label>
-                  <input
-                    type="number"
-                    [(ngModel)]="filters.amountRange.max"
-                    (change)="applyFilters()"
-                    placeholder="999,999,999"
-                    class="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-white text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200"
-                  />
+                  }
                 </div>
+                }
               </div>
             </div>
 
@@ -369,6 +450,7 @@ export interface ReportFilters {
                   Export Format
                 </label>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  <!-- Excel Format -->
                   <label
                     class="flex items-center p-4 border-2 border-slate-200 rounded-xl cursor-pointer hover:border-slate-300 transition-all duration-200"
                     [class.border-teal-300]="selectedFormat() === 'excel'"
@@ -381,7 +463,7 @@ export interface ReportFilters {
                       class="w-4 h-4 text-teal-500 cursor-pointer"
                     />
                     <div class="ml-3 flex-1">
-                      <p class="text-sm font-semibold text-slate-900">Excel</p>
+                      <p class="text-sm font-semibold text-slate-900">EXCEL</p>
                       <p class="text-xs text-slate-600">
                         Spreadsheet with formatting
                       </p>
@@ -395,6 +477,7 @@ export interface ReportFilters {
                     }
                   </label>
 
+                  <!-- PDF Format -->
                   <label
                     class="flex items-center p-4 border-2 border-slate-200 rounded-xl cursor-pointer hover:border-slate-300 transition-all duration-200"
                     [class.border-teal-300]="selectedFormat() === 'pdf'"
@@ -419,6 +502,7 @@ export interface ReportFilters {
                     }
                   </label>
 
+                  <!-- CSV Format -->
                   <label
                     class="flex items-center p-4 border-2 border-slate-200 rounded-xl cursor-pointer hover:border-slate-300 transition-all duration-200"
                     [class.border-teal-300]="selectedFormat() === 'csv'"
@@ -455,7 +539,8 @@ export interface ReportFilters {
           <div class="space-y-0.5">
             <p class="text-sm font-semibold text-slate-900">
               <span class="text-teal-600">{{ filteredCount() | number }}</span>
-              records will be exported
+              records • <span class="text-teal-600">{{ selectedCount() }}</span>
+              fields selected
             </p>
             <p class="text-xs text-slate-600">
               {{ selectedFormat() | uppercase }} • {{ reportTitle() }}
@@ -471,7 +556,9 @@ export interface ReportFilters {
             </button>
             <button
               (click)="executeExport()"
-              [disabled]="exporting() || filteredCount() === 0"
+              [disabled]="
+                exporting() || filteredCount() === 0 || selectedCount() === 0
+              "
               class="flex items-center gap-2 px-6 py-2.5 bg-teal-500 text-white font-medium rounded-xl hover:bg-teal-600 active:bg-teal-700 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               @if (!exporting()) {
@@ -497,42 +584,21 @@ export class ReportBuilderComponent {
 
   private exportService = inject(GenericExportService);
 
+  // State signals
   isOpen = signal(false);
   exporting = signal(false);
   selectedFormat = signal<'excel' | 'pdf' | 'csv'>('excel');
   reportTitle = signal('Applications Report');
+  selectedFields = signal<Set<keyof KapifyReports>>(new Set());
+  openSections = signal<Set<string>>(
+    new Set(['company', 'contact', 'funding', 'system'])
+  );
 
   filters: ReportFilters = {
     dateRange: { start: '', end: '' },
-    statuses: [],
-    industries: [],
-    stages: [],
-    provinces: [],
-    fundingTypes: [],
-    amountRange: { min: undefined, max: undefined },
   };
 
-  availableStatuses: string[] = [
-    'submitted',
-    'under_review',
-    'approved',
-    'rejected',
-  ];
-
-  availableStages: string[] = [
-    'Pre-Launch',
-    'Startup',
-    'Early Growth',
-    'Growth',
-    'Mature',
-    'Expansion',
-  ];
-
-  availableFundingTypes: string[] = ['Equity', 'Debt', 'Grant', 'Hybrid'];
-
-  availableIndustries = signal<string[]>([]);
-  availableProvinces = signal<string[]>([]);
-
+  // Icon references
   readonly CloseIcon = X;
   readonly DownloadIcon = Download;
   readonly LoaderIcon = Loader2;
@@ -540,55 +606,165 @@ export class ReportBuilderComponent {
   readonly BarChartIcon = BarChart3;
   readonly FilterIcon = Filter;
   readonly RefreshIcon = RefreshCw;
+  readonly ChevronIcon = ChevronDown;
 
+  // Report field definitions
+  private allFields: ReportField[] = [
+    // Company Details
+    { key: 'no', label: 'No.', category: 'company', width: 5 },
+    {
+      key: 'nameOfBusiness',
+      label: 'Business Name',
+      category: 'company',
+      width: 22,
+    },
+    { key: 'industry', label: 'Industry', category: 'company', width: 14 },
+    {
+      key: 'physicalAddress',
+      label: 'Physical Address',
+      category: 'company',
+      width: 24,
+    },
+    {
+      key: 'businessDetails',
+      label: 'Business Details',
+      category: 'company',
+      width: 20,
+    },
+    {
+      key: 'businessStage',
+      label: 'Business Stage',
+      category: 'company',
+      width: 14,
+    },
+    {
+      key: 'yearsInOperation',
+      label: 'Years in Operation',
+      category: 'company',
+      width: 12,
+    },
+    {
+      key: 'numberOfEmployees',
+      label: 'Employees',
+      category: 'company',
+      width: 10,
+    },
+    { key: 'bbbeeLeve', label: 'BBBEE Level', category: 'company', width: 12 },
+    { key: 'province', label: 'Province', category: 'company', width: 12 },
+    {
+      key: 'priorYearAnnualRevenue',
+      label: 'Prior Year Revenue',
+      category: 'company',
+      width: 16,
+    },
+    // Contact Details
+    { key: 'firstName', label: 'First Name', category: 'contact', width: 14 },
+    { key: 'surname', label: 'Surname', category: 'contact', width: 14 },
+    { key: 'email', label: 'Email', category: 'contact', width: 24 },
+    {
+      key: 'phoneNumber',
+      label: 'Phone Number',
+      category: 'contact',
+      width: 14,
+    },
+    { key: 'role', label: 'Role', category: 'contact', width: 12 },
+    // Funding Details
+    {
+      key: 'amountRequested',
+      label: 'Amount Requested',
+      category: 'funding',
+      width: 14,
+    },
+    {
+      key: 'fundingType',
+      label: 'Funding Type',
+      category: 'funding',
+      width: 12,
+    },
+    {
+      key: 'fundingOpportunity',
+      label: 'Funding Opportunity',
+      category: 'funding',
+      width: 20,
+    },
+    {
+      key: 'useOfFunds',
+      label: 'Use of Funds',
+      category: 'funding',
+      width: 20,
+    },
+    {
+      key: 'applicationStatus',
+      label: 'Application Status',
+      category: 'funding',
+      width: 14,
+    },
+    // System Fields
+    { key: 'createdAt', label: 'Created Date', category: 'system', width: 14 },
+    { key: 'updatedAt', label: 'Updated Date', category: 'system', width: 14 },
+  ];
+
+  // Filtered field lists
+  companyFields = computed(() =>
+    this.allFields.filter((f) => f.category === 'company')
+  );
+  contactFields = computed(() =>
+    this.allFields.filter((f) => f.category === 'contact')
+  );
+  fundingFields = computed(() =>
+    this.allFields.filter((f) => f.category === 'funding')
+  );
+  systemFields = computed(() =>
+    this.allFields.filter((f) => f.category === 'system')
+  );
+
+  // Data signals
   filteredRecords = signal<ApplicationReportRecord[]>([]);
 
+  // Computed properties
   totalRecords = computed(() => this.data?.allRecords.length ?? 0);
   filteredCount = computed(() => this.filteredRecords().length);
-  approvedCount = computed(
+  selectedCount = computed(() => this.selectedFields().size);
+
+  companyFieldsSelected = computed(
     () =>
-      this.filteredRecords().filter((r) => r.applicationStatus === 'approved')
+      this.companyFields().filter((f) => this.selectedFields().has(f.key))
         .length
   );
-  pendingCount = computed(
+  contactFieldsSelected = computed(
     () =>
-      this.filteredRecords().filter(
-        (r) =>
-          r.applicationStatus === 'submitted' ||
-          r.applicationStatus === 'under_review'
-      ).length
+      this.contactFields().filter((f) => this.selectedFields().has(f.key))
+        .length
   );
-  totalAmount = computed(() =>
-    this.filteredRecords().reduce((sum, r) => sum + (r.amountRequested || 0), 0)
+  fundingFieldsSelected = computed(
+    () =>
+      this.fundingFields().filter((f) => this.selectedFields().has(f.key))
+        .length
+  );
+  systemFieldsSelected = computed(
+    () =>
+      this.systemFields().filter((f) => this.selectedFields().has(f.key)).length
   );
 
   open(): void {
     this.isOpen.set(true);
-    this.initializeAvailableOptions();
-    this.applyFilters();
+    this.initializeFields();
+    this.applyDateFilter();
   }
 
   close(): void {
     this.isOpen.set(false);
     this.onClose.emit();
-    setTimeout(() => this.resetFilters(), 300);
+    setTimeout(() => this.resetState(), 300);
   }
 
-  private initializeAvailableOptions(): void {
-    if (!this.data?.allRecords) return;
-
-    const industries = Array.from(
-      new Set(this.data.allRecords.map((r) => r.industry).filter(Boolean))
-    ).sort();
-    this.availableIndustries.set(industries);
-
-    const provinces = Array.from(
-      new Set(this.data.allRecords.map((r) => r.province).filter(Boolean))
-    ).sort();
-    this.availableProvinces.set(provinces);
+  private initializeFields(): void {
+    const fields = new Set<keyof KapifyReports>();
+    this.allFields.forEach((f) => fields.add(f.key));
+    this.selectedFields.set(fields);
   }
 
-  applyFilters(): void {
+  private applyDateFilter(): void {
     if (!this.data?.allRecords) {
       this.filteredRecords.set([]);
       return;
@@ -610,120 +786,44 @@ export class ReportBuilderComponent {
       });
     }
 
-    if (this.filters.statuses.length > 0) {
-      results = results.filter((r) =>
-        this.filters.statuses.includes(r.applicationStatus)
-      );
-    }
-
-    if (this.filters.industries.length > 0) {
-      results = results.filter((r) =>
-        this.filters.industries.includes(r.industry)
-      );
-    }
-
-    if (this.filters.stages.length > 0) {
-      results = results.filter((r) =>
-        this.filters.stages.includes(r.businessStage)
-      );
-    }
-
-    if (this.filters.provinces.length > 0) {
-      results = results.filter((r) =>
-        this.filters.provinces.includes(r.province)
-      );
-    }
-
-    if (this.filters.fundingTypes.length > 0) {
-      results = results.filter((r) =>
-        this.filters.fundingTypes.includes(r.fundingType)
-      );
-    }
-
-    if (this.filters.amountRange.min !== undefined) {
-      results = results.filter(
-        (r) => r.amountRequested >= this.filters.amountRange.min!
-      );
-    }
-
-    if (this.filters.amountRange.max !== undefined) {
-      results = results.filter(
-        (r) => r.amountRequested <= this.filters.amountRange.max!
-      );
-    }
-
     this.filteredRecords.set(results);
   }
 
-  toggleStatus(status: string): void {
-    this.toggleInArray(this.filters.statuses, status);
-    this.applyFilters();
-  }
-
-  toggleIndustry(industry: string): void {
-    this.toggleInArray(this.filters.industries, industry);
-    this.applyFilters();
-  }
-
-  toggleStage(stage: string): void {
-    this.toggleInArray(this.filters.stages, stage);
-    this.applyFilters();
-  }
-
-  toggleProvince(province: string): void {
-    this.toggleInArray(this.filters.provinces, province);
-    this.applyFilters();
-  }
-
-  toggleFundingType(fundingType: string): void {
-    this.toggleInArray(this.filters.fundingTypes, fundingType);
-    this.applyFilters();
-  }
-
-  private toggleInArray(arr: string[], value: string): void {
-    const index = arr.indexOf(value);
-    if (index > -1) {
-      arr.splice(index, 1);
+  toggleSection(section: string): void {
+    const sections = new Set(this.openSections());
+    if (sections.has(section)) {
+      sections.delete(section);
     } else {
-      arr.push(value);
+      sections.add(section);
     }
+    this.openSections.set(sections);
   }
 
-  isStatusSelected(status: string): boolean {
-    return this.filters.statuses.includes(status);
+  isSectionOpen(section: string): boolean {
+    return this.openSections().has(section);
   }
 
-  isIndustrySelected(industry: string): boolean {
-    return this.filters.industries.includes(industry);
+  toggleField(key: keyof KapifyReports): void {
+    const fields = new Set(this.selectedFields());
+    if (fields.has(key)) {
+      fields.delete(key);
+    } else {
+      fields.add(key);
+    }
+    this.selectedFields.set(fields);
   }
 
-  isStageSelected(stage: string): boolean {
-    return this.filters.stages.includes(stage);
+  isFieldSelected(key: keyof KapifyReports): boolean {
+    return this.selectedFields().has(key);
   }
 
-  isProvinceSelected(province: string): boolean {
-    return this.filters.provinces.includes(province);
-  }
-
-  isFundingTypeSelected(fundingType: string): boolean {
-    return this.filters.fundingTypes.includes(fundingType);
-  }
-
-  clearAllFilters(): void {
-    this.filters = {
-      dateRange: { start: '', end: '' },
-      statuses: [],
-      industries: [],
-      stages: [],
-      provinces: [],
-      fundingTypes: [],
-      amountRange: { min: undefined, max: undefined },
-    };
-    this.applyFilters();
+  clearAllFields(): void {
+    this.selectedFields.set(new Set());
   }
 
   async executeExport(): Promise<void> {
-    if (this.filteredRecords().length === 0) return;
+    if (this.filteredRecords().length === 0 || this.selectedFields().size === 0)
+      return;
 
     this.exporting.set(true);
 
@@ -732,43 +832,9 @@ export class ReportBuilderComponent {
       const title = this.reportTitle();
       const format = this.selectedFormat();
 
-      // Define export columns using GenericExportService
-      const columns: ExportColumn<ApplicationReportRecord>[] = [
-        { header: 'No', key: 'no', width: 5 },
-        { header: 'Business Name', key: 'nameOfBusiness', width: 22 },
-        { header: 'Industry', key: 'industry', width: 14 },
-        {
-          header: 'Contact',
-          value: (row) => `${row.firstName} ${row.surname}`,
-          width: 18,
-        },
-        { header: 'Email', key: 'email', width: 22 },
-        { header: 'Phone', key: 'phoneNumber', width: 14 },
-        { header: 'Stage', key: 'businessStage', width: 14 },
-        { header: 'Years', key: 'yearsInOperation', width: 8 },
-        { header: 'Employees', key: 'numberOfEmployees', width: 10 },
-        { header: 'Province', key: 'province', width: 12 },
-        {
-          header: 'Revenue',
-          key: 'priorYearAnnualRevenue',
-          format: (val) => this.formatCurrency(val),
-          width: 14,
-        },
-        {
-          header: 'Amount',
-          key: 'amountRequested',
-          format: (val) => this.formatCurrency(val),
-          width: 14,
-        },
-        { header: 'Funding Type', key: 'fundingType', width: 12 },
-        { header: 'Status', key: 'applicationStatus', width: 14 },
-        {
-          header: 'Date',
-          key: 'createdAt',
-          format: (val) => this.formatDate(val),
-          width: 14,
-        },
-      ];
+      // Build export columns from selected fields
+      const columns: ExportColumn<ApplicationReportRecord>[] =
+        this.buildExportColumns();
 
       // Use GenericExportService
       await this.exportService.export(data, {
@@ -781,12 +847,13 @@ export class ReportBuilderComponent {
         },
       });
 
-      // Emit event for parent component tracking
+      // Emit event for parent tracking
       this.onExport.emit({
         data: data,
         format: format,
         title: title,
-        filters: { ...this.filters },
+        selectedFields: Array.from(this.selectedFields()),
+        dateRange: { ...this.filters.dateRange },
       });
 
       await new Promise((resolve) => setTimeout(resolve, 800));
@@ -798,13 +865,39 @@ export class ReportBuilderComponent {
     }
   }
 
-  private resetFilters(): void {
-    this.clearAllFilters();
-    this.selectedFormat.set('excel');
-    this.reportTitle.set('Applications Report');
+  private buildExportColumns(): ExportColumn<ApplicationReportRecord>[] {
+    const columns: ExportColumn<ApplicationReportRecord>[] = [];
+
+    this.allFields.forEach((field) => {
+      const isSelected = this.selectedFields().has(field.key);
+
+      const column: ExportColumn<ApplicationReportRecord> = {
+        header: field.label,
+        width: field.width,
+      };
+
+      if (isSelected) {
+        column.key = field.key as keyof ApplicationReportRecord;
+
+        // Apply formatting based on field type
+        if (
+          field.key === 'amountRequested' ||
+          field.key === 'priorYearAnnualRevenue'
+        ) {
+          column.format = (val) => this.formatCurrency(val);
+        } else if (field.key === 'createdAt' || field.key === 'updatedAt') {
+          column.format = (val) => this.formatDate(val);
+        }
+      }
+
+      columns.push(column);
+    });
+
+    return columns;
   }
 
-  formatCurrency(amount: number): string {
+  private formatCurrency(amount: number): string {
+    if (!amount) return '';
     return new Intl.NumberFormat('en-ZA', {
       style: 'currency',
       currency: 'ZAR',
@@ -812,7 +905,7 @@ export class ReportBuilderComponent {
     }).format(amount);
   }
 
-  formatDate(date: Date | string | undefined): string {
+  private formatDate(date: Date | string | undefined): string {
     if (!date) return '';
     return new Intl.DateTimeFormat('en-ZA', {
       year: 'numeric',
@@ -821,10 +914,11 @@ export class ReportBuilderComponent {
     }).format(new Date(date));
   }
 
-  formatStatus(status: string): string {
-    return status
-      .split('_')
-      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(' ');
+  private resetState(): void {
+    this.selectedFields.set(new Set());
+    this.openSections.set(new Set(['company', 'contact', 'funding', 'system']));
+    this.selectedFormat.set('excel');
+    this.reportTitle.set('Applications Report');
+    this.filters = { dateRange: { start: '', end: '' } };
   }
 }

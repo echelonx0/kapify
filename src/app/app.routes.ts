@@ -359,9 +359,7 @@ export const routes: Routes = [
     path: 'profile',
     canActivate: [AuthGuard],
     loadChildren: () =>
-      import('./profiles/SME-Profiles/profile.routes').then(
-        (m) => m.profileRoutes
-      ),
+      import('./core/routes/profile.routes').then((m) => m.profileRoutes),
     title: 'Profile Setup - Kapify',
   },
 

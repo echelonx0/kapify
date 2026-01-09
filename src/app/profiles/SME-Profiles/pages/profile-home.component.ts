@@ -24,7 +24,7 @@ import { UiStatusBadgeComponent } from '../../../shared/components/ui-status-bad
 
 import { AuthService } from '../../../auth/services/production.auth.service';
 import { FundingProfileSetupService } from '../../../fund-seeking-orgs/services/funding-profile-setup.service';
-import { Activity } from '../../../shared/services/database-activity.service';
+import { DataIntegritySectionComponent } from 'src/app/features/reports/data-integrity-section/data-integrity-section.component';
 
 @Component({
   selector: 'app-profile-home',
@@ -34,6 +34,7 @@ import { Activity } from '../../../shared/services/database-activity.service';
     LucideAngularModule,
     UiButtonComponent,
     UiStatusBadgeComponent,
+    DataIntegritySectionComponent,
     RouterModule,
   ],
   templateUrl: 'profile-home.component.html',

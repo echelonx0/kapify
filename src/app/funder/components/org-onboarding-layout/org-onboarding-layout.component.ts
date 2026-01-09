@@ -8,7 +8,6 @@ import {
   Check,
   Building2,
   FileText,
-  Shield,
   Menu,
   X,
   ChevronRight,
@@ -26,7 +25,6 @@ import {
   templateUrl: 'org-onboarding-layout.component.html',
   styles: [
     `
-      /* Fade in animation */
       @keyframes fadeIn {
         from {
           opacity: 0;
@@ -35,12 +33,10 @@ import {
           opacity: 1;
         }
       }
-
       .fade-in {
         animation: fadeIn 300ms ease-out;
       }
 
-      /* Slide in from left */
       @keyframes slideInLeft {
         from {
           opacity: 0;
@@ -51,37 +47,31 @@ import {
           transform: translateX(0);
         }
       }
-
       .slide-in-left {
         animation: slideInLeft 400ms ease-out;
       }
 
-      /* Progress bar fill */
       @keyframes progressFill {
         from {
           width: 0;
         }
       }
-
       .progress-bar {
         animation: progressFill 800ms ease-out;
       }
 
-      /* Step card stagger */
       .step-card {
         opacity: 0;
         animation: slideInLeft 400ms ease-out forwards;
         animation-delay: var(--delay, 0s);
       }
 
-      /* Smooth transitions */
       .transition-all {
         transition-property: all;
         transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
         transition-duration: 200ms;
       }
 
-      /* Custom scrollbar */
       nav::-webkit-scrollbar {
         width: 4px;
       }
@@ -96,7 +86,6 @@ import {
         background: #94a3b8;
       }
 
-      /* Accessibility */
       @media (prefers-reduced-motion: reduce) {
         *,
         *::before,
@@ -105,7 +94,6 @@ import {
           animation-iteration-count: 1 !important;
           transition-duration: 0.01ms !important;
         }
-
         .fade-in,
         .slide-in-left,
         .step-card,
@@ -188,37 +176,21 @@ export class OrganizationOnboardingLayoutComponent implements OnInit {
   previousStep() {
     const currentStep = this.onboardingService.currentStep();
 
-    switch (currentStep) {
-      case 'legal-compliance':
-        this.goToStep('organization-info');
-        break;
-      case 'verification':
-        this.goToStep('legal-compliance');
-        break;
-      default:
-        break;
+    if (currentStep === 'legal-compliance') {
+      this.goToStep('organization-info');
     }
   }
 
   nextStep() {
     const currentStep = this.onboardingService.currentStep();
 
-    switch (currentStep) {
-      case 'organization-info':
-        if (this.onboardingService.isBasicInfoValid()) {
-          this.goToStep('legal-compliance');
-        }
-        break;
-      case 'legal-compliance':
-        if (this.onboardingService.isLegalInfoValid()) {
-          this.goToStep('verification');
-        }
-        break;
-      case 'verification':
-        break;
-      default:
-        break;
+    // ✅ Only 2 steps - from org-info goes to legal-compliance
+    if (currentStep === 'organization-info') {
+      if (this.onboardingService.isBasicInfoValid()) {
+        this.goToStep('legal-compliance');
+      }
     }
+    // ✅ After legal-compliance, show verification CTA (not a step)
   }
 
   saveAndContinue() {
@@ -232,23 +204,18 @@ export class OrganizationOnboardingLayoutComponent implements OnInit {
       case 'legal-compliance':
         canContinue = this.onboardingService.isLegalInfoValid();
         break;
-      case 'verification':
-        canContinue = this.onboardingService.isReadyForVerification();
-        break;
     }
 
     if (canContinue) {
       this.onboardingService.saveToDatabase().subscribe({
         next: () => {
-          if (!this.isLastStep()) {
+          // ✅ Don't auto-continue after step 2
+          if (currentStep === 'organization-info') {
             this.nextStep();
           }
         },
         error: (error) => {
           console.error('❌ Save failed:', error);
-          if (!this.isLastStep()) {
-            this.nextStep();
-          }
         },
       });
     }
@@ -263,7 +230,7 @@ export class OrganizationOnboardingLayoutComponent implements OnInit {
   }
 
   getTotalSteps(): number {
-    return this.getStepInfo().length;
+    return this.getStepInfo().length; // Always 2
   }
 
   canAccessStep(stepId: string): boolean {
@@ -279,11 +246,16 @@ export class OrganizationOnboardingLayoutComponent implements OnInit {
   }
 
   isLastStep(): boolean {
-    return this.onboardingService.currentStep() === 'verification';
+    // ✅ Last step = legal-compliance (not verification)
+    return this.onboardingService.currentStep() === 'legal-compliance';
   }
 
-  canSubmit(): boolean {
-    return this.onboardingService.isReadyForVerification();
+  /**
+   * ✅ Onboarding is complete when both steps are done
+   * Verification is a separate action after this
+   */
+  isOnboardingComplete(): boolean {
+    return this.onboardingService.isOnboardingComplete();
   }
 
   // ===============================
@@ -334,8 +306,6 @@ export class OrganizationOnboardingLayoutComponent implements OnInit {
         return Building2;
       case 'legal-compliance':
         return FileText;
-      case 'verification':
-        return Shield;
       default:
         return Building2;
     }
@@ -404,9 +374,13 @@ export class OrganizationOnboardingLayoutComponent implements OnInit {
     }
   }
 
+  /**
+   * ✅ Submit for verification - separate from step progression
+   * Only enabled after onboarding is 100% complete
+   */
   submitForVerification() {
-    if (!this.canSubmit()) {
-      console.warn('Cannot submit - previous steps incomplete');
+    if (!this.isOnboardingComplete()) {
+      console.warn('Cannot submit - onboarding incomplete');
       return;
     }
 
