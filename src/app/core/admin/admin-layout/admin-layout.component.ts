@@ -63,6 +63,11 @@ export class AdminLayoutComponent {
       icon: 'fas fa-check-circle',
     },
     {
+      path: 'compliance',
+      label: 'Compliance Manager',
+      icon: 'fas fa-shield-alt',
+    },
+    {
       path: 'ai-management',
       label: 'AI Management',
       icon: 'fas fa-brain',

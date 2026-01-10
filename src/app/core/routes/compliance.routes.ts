@@ -1,10 +1,11 @@
 import { Routes } from '@angular/router';
 import { AMLKYCComponent } from '../../features/compliance/aml-kyc.component';
 import { CookiePolicyComponent } from '../../features/compliance/cookie-policy.component';
-import { DataSecurityComponent } from '../../features/compliance/data-security.component';
+
 import { PrivacyPolicyComponent } from '../../features/compliance/privacy-policy.component';
 import { TaxComplianceComponent } from '../../features/compliance/tax-compliance.component';
 import { TermsOfServiceComponent } from '../../features/compliance/terms-of-service.component';
+import { DataProtectionComponent } from 'src/app/features/compliance/data-security.component';
 
 export const complianceRoutes: Routes = [
   {
@@ -19,7 +20,7 @@ export const complianceRoutes: Routes = [
   },
   {
     path: 'security',
-    component: DataSecurityComponent,
+    component: DataProtectionComponent,
     data: { title: 'Data Security & Compliance - Kapify' },
   },
   {

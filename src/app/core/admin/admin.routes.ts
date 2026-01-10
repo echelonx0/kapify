@@ -30,6 +30,14 @@ export const adminRoutes: Routes = [
         title: 'Admin Dashboard - Kapify',
       },
       {
+        path: 'compliance',
+        loadComponent: () =>
+          import(
+            './complience-management/compliance-management.component'
+          ).then((m) => m.ComplianceManagementComponent),
+        title: 'Compliance Management - Kapify Admin',
+      },
+      {
         path: 'verification',
         loadComponent: () => {
           console.log('Loading OrganizationVerificationComponent...');

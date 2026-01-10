@@ -1,0 +1,287 @@
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 600ms ease-out;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* RICH PROSE STYLING - NEO-BRUTALIST */
+.prose-neobrutalist {
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+.prose-neobrutalist h1 {
+  @apply text-4xl font-black text-slate-900 mb-6 tracking-tight;
+  border-bottom: 4px solid #0f172a;
+  padding-bottom: 1rem;
+}
+
+.prose-neobrutalist h2 {
+  @apply text-3xl font-black text-slate-900 mt-12 mb-6 tracking-tight;
+  position: relative;
+  padding-left: 1.5rem;
+}
+
+.prose-neobrutalist h2::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: #14b8a6;
+}
+
+.prose-neobrutalist h3 {
+  @apply text-2xl font-black text-slate-900 mt-10 mb-4 tracking-tight;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.prose-neobrutalist h4 {
+  @apply text-lg font-black text-slate-900 mt-8 mb-3 uppercase tracking-widest;
+}
+
+.prose-neobrutalist p {
+  @apply text-slate-700 text-base leading-relaxed mb-5 font-medium;
+}
+
+.prose-neobrutalist strong,
+.prose-neobrutalist b {
+  @apply font-black text-slate-900;
+}
+
+.prose-neobrutalist em,
+.prose-neobrutalist i {
+  @apply italic text-slate-800;
+}
+
+/* Lists - Bold & Structured */
+.prose-neobrutalist ul,
+.prose-neobrutalist ol {
+  @apply mb-6 space-y-3;
+  margin-left: 1.5rem;
+}
+
+.prose-neobrutalist ul li {
+  @apply text-slate-700 font-semibold text-base;
+  position: relative;
+  padding-left: 1.5rem;
+}
+
+.prose-neobrutalist ul li::before {
+  content: "▸";
+  @apply text-teal-600 font-black;
+  position: absolute;
+  left: 0;
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.prose-neobrutalist ol {
+  list-style: none;
+  counter-reset: list-counter;
+}
+
+.prose-neobrutalist ol li {
+  @apply text-slate-700 font-semibold text-base;
+  counter-increment: list-counter;
+  padding-left: 2.5rem;
+  position: relative;
+}
+
+.prose-neobrutalist ol li::before {
+  content: counter(list-counter);
+  @apply bg-teal-600 text-white font-black rounded-lg;
+  position: absolute;
+  left: 0;
+  width: 1.75rem;
+  height: 1.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.875rem;
+}
+
+/* Blockquotes - Bold & Intentional */
+.prose-neobrutalist blockquote {
+  @apply bg-slate-100 border-l-4 border-teal-600 px-6 py-5 my-8 rounded-lg;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.prose-neobrutalist blockquote p {
+  @apply mb-0 italic;
+}
+
+.prose-neobrutalist blockquote strong {
+  @apply text-slate-900;
+}
+
+/* Code Blocks - Bold Styling */
+.prose-neobrutalist code {
+  @apply bg-slate-900 text-teal-400 font-mono text-sm px-2 py-1 rounded;
+  border: 1px solid #334155;
+}
+
+.prose-neobrutalist pre {
+  @apply bg-slate-900 text-slate-100 p-6 rounded-lg mb-6 overflow-x-auto border-2 border-slate-700;
+  font-family: "Courier New", monospace;
+}
+
+.prose-neobrutalist pre code {
+  @apply bg-none text-slate-100 px-0 py-0 rounded-none border-none;
+}
+
+/* Tables */
+.prose-neobrutalist table {
+  @apply w-full mb-6 border-collapse;
+}
+
+.prose-neobrutalist thead {
+  @apply bg-slate-900 text-white;
+}
+
+.prose-neobrutalist th {
+  @apply px-4 py-3 text-left font-black uppercase tracking-widest text-xs border-2 border-slate-800;
+}
+
+.prose-neobrutalist td {
+  @apply px-4 py-3 text-slate-700 border-2 border-slate-200;
+}
+
+.prose-neobrutalist tbody tr:nth-child(odd) {
+  @apply bg-slate-50;
+}
+
+.prose-neobrutalist tbody tr:hover {
+  @apply bg-teal-50 transition-colors duration-200;
+}
+
+/* Callout Boxes - Different Types */
+.prose-neobrutalist .callout {
+  @apply rounded-lg p-6 mb-6;
+}
+
+.prose-neobrutalist .callout.info {
+  @apply bg-blue-50 border-blue-400 text-blue-900;
+}
+
+.prose-neobrutalist .callout.warning {
+  @apply bg-amber-50 border-amber-400 text-amber-900;
+}
+
+.prose-neobrutalist .callout.success {
+  @apply bg-green-50 border-green-400 text-green-900;
+}
+
+.prose-neobrutalist .callout.danger {
+  @apply bg-red-50 border-red-400 text-red-900;
+}
+
+.prose-neobrutalist .callout-title {
+  @apply font-black text-sm uppercase tracking-widest mb-2;
+}
+
+.prose-neobrutalist .callout p {
+  @apply mb-0 text-sm font-semibold;
+}
+
+/* Horizontal Rules - Bold Dividers */
+.prose-neobrutalist hr {
+  @apply my-12 border-0 h-1 bg-gradient-to-r from-slate-300 via-slate-400 to-slate-300 rounded-full;
+}
+
+/* Links in Prose */
+.prose-neobrutalist a {
+  @apply text-teal-600 font-semibold hover:text-teal-700 underline decoration-2 underline-offset-2 transition-colors duration-200;
+}
+
+/* Images */
+.prose-neobrutalist img {
+  @apply rounded-lg border-2 border-slate-300 my-8 w-full;
+}
+
+/* Emphasis Boxes */
+.prose-neobrutalist .emphasis {
+  @apply bg-teal-50 border-2 border-teal-400 px-5 py-4 rounded-lg my-6;
+}
+
+.prose-neobrutalist .emphasis p {
+  @apply mb-0 font-bold text-teal-900;
+}
+
+/* List item animation */
+.prose-neobrutalist ul li {
+  animation: slideInLeft 400ms ease-out forwards;
+}
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
