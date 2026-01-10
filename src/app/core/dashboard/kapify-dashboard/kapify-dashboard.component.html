@@ -41,7 +41,8 @@
           <div class="mt-6 mb-6">
             <button
               (click)="manageSMEProfile()"
-              class="w-full bg-slate-100 text-slate-900 font-black rounded-lg px-6 py-4 text-base border-3 border-slate-400 hover:bg-slate-200 active:bg-slate-300 transition-all duration-200 uppercase tracking-wide flex items-center justify-center gap-2 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2"
+              class="w-full bg-slate-100 text-slate-900 font-black rounded-lg px-6 py-4 text-base border-3 border-slate-400 hover:bg-slate-200 active:bg-slate-300 transition-all duration-200 uppercase tracking-wide flex items-center justify-center gap-2 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 scale-in-up"
+              [style]="'--delay: 0.15s'"
             >
               <span>Manage Profile</span>
             </button>
@@ -75,7 +76,7 @@
               <div
                 class="flex flex-col lg:flex-row items-start lg:items-center gap-6"
               >
-                <div
+                <!-- <div
                   class="w-14 h-14 rounded-xl bg-blue-100 flex items-center justify-center flex-shrink-0"
                 >
                   <lucide-icon
@@ -83,7 +84,7 @@
                     [size]="28"
                     class="text-blue-600"
                   />
-                </div>
+                </div> -->
 
                 <div class="flex-1">
                   <h3 class="text-lg font-bold text-slate-900 mb-2">
@@ -96,8 +97,9 @@
                   <div class="flex flex-col sm:flex-row gap-2">
                     @if (userType() === 'sme' ) {
                     <button
-                      class="inline-flex items-center justify-center gap-2 bg-white text-slate-900 font-medium rounded-xl px-4 py-2.5 text-sm hover:bg-slate-50 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 border border-slate-200"
+                      class="inline-flex items-center justify-center gap-2 bg-white text-slate-900 font-black rounded-lg px-4 py-2.5 text-sm border-3 border-blue-400 hover:bg-slate-50 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 uppercase tracking-wide scale-in-up"
                       (click)="viewGuides()"
+                      [style]="'--delay: 0.2s'"
                     >
                       <lucide-icon [img]="BookOpenIcon" [size]="16" />
                       <span>Funding Readiness Guides</span></button

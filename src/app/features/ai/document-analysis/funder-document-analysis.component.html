@@ -155,12 +155,53 @@
     </div>
     }
 
-    <!-- Analysis Results -->
+    <!-- Analysis Complete - Navigation CTA with Countdown -->
     @if (analysisResult() && !isProcessing()) {
-    <app-analysis-results
-      [result]="analysisResult()!"
-      [uploadedFileName]="uploadedFile()?.name || 'Business Proposal'"
-    />
+    <div class="border-t-4 border-teal-600 bg-white px-8 py-6">
+      <div class="flex items-center justify-between gap-6">
+        <div class="flex items-start gap-4 flex-1">
+          <div
+            class="w-12 h-12 rounded-lg bg-teal-100 border-2 border-teal-600 flex items-center justify-center flex-shrink-0"
+          >
+            <lucide-icon
+              [img]="CheckCircleIcon"
+              [size]="24"
+              class="text-teal-700"
+            ></lucide-icon>
+          </div>
+          <div>
+            <h3 class="text-base font-bold text-slate-900 mb-1">
+              Analysis Complete
+            </h3>
+            <p class="text-sm text-slate-600">
+              @if (redirectCountdown() > 0) { Redirecting to full analysis in
+              <span class="font-bold text-teal-600">{{
+                redirectCountdown()
+              }}</span>
+              second{{ redirectCountdown() !== 1 ? "s" : "" }}... } @else { Your
+              analysis has been saved to your Reports. Access it anytime to
+              review insights and share with stakeholders. }
+            </p>
+          </div>
+        </div>
+        @if (redirectCountdown() <= 0) {
+        <div class="flex items-center gap-3 flex-shrink-0">
+          <button
+            (click)="resetAnalysis()"
+            class="px-6 py-3 bg-slate-100 text-slate-900 font-bold rounded-lg border-2 border-slate-300 hover:bg-slate-200 active:bg-slate-300 transition-all duration-200 text-sm"
+          >
+            Analyze Another
+          </button>
+          <button
+            (click)="viewAnalysisDetail()"
+            class="px-6 py-3 bg-teal-600 text-white font-bold rounded-lg border-2 border-teal-700 hover:bg-teal-700 active:bg-teal-800 transition-all duration-200 text-sm whitespace-nowrap"
+          >
+            View Full Analysis
+          </button>
+        </div>
+        }
+      </div>
+    </div>
     }
   </div>
 </div>

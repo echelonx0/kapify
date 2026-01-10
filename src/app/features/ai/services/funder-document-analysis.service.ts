@@ -1,5 +1,5 @@
 // src/app/ai/services/funder-document-analysis.service.ts
-import { Injectable, inject } from '@angular/core';
+import { Injectable, inject, signal } from '@angular/core';
 import { Observable, BehaviorSubject, from, throwError } from 'rxjs';
 import { tap, catchError } from 'rxjs/operators';
 import { AuthService } from 'src/app/auth/services/production.auth.service';
@@ -98,7 +98,20 @@ export class FunderDocumentAnalysisService {
   private processingStatusSubject =
     new BehaviorSubject<ProcessingStatus | null>(null);
   processingStatus$ = this.processingStatusSubject.asObservable();
+  // funder-document-analysis.service.ts (add to existing service)
+  private currentAnalysisResult = signal<DocumentAnalysisResult | null>(null);
 
+  setCurrentAnalysisResult(result: DocumentAnalysisResult) {
+    this.currentAnalysisResult.set(result);
+  }
+
+  getCurrentAnalysisResult(): DocumentAnalysisResult | null {
+    return this.currentAnalysisResult();
+  }
+
+  clearCurrentAnalysisResult() {
+    this.currentAnalysisResult.set(null);
+  }
   /**
    * Analyze uploaded PDF document
    */

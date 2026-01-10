@@ -1,7 +1,6 @@
 import { Routes } from '@angular/router';
 import { ActivityLogsComponent } from '../../features/activity-logs/activity-logs.component';
 import { NotificationsInboxComponent } from '../../features/notifications/notifications-inbox.component';
-import { AIReportsComponent } from 'src/app/features/reports/ai-reports/ai-reports.component';
 
 export const dashboardRoutes: Routes = [
   {
@@ -27,10 +26,26 @@ export const dashboardRoutes: Routes = [
         component: ActivityLogsComponent,
       },
 
+      // Reports list
       {
         path: 'reports',
-        component: AIReportsComponent,
+        loadComponent: () =>
+          import(
+            '../../features/reports/analysis-history/analysis-history.component'
+          ).then((c) => c.AIAnalysisHistoryComponent),
+        title: 'Analysis Reports - Kapify',
       },
+
+      // Analysis detail view (independent route)
+      {
+        path: 'analysis/:id',
+        loadComponent: () =>
+          import(
+            '../../features/ai/document-analysis/components/analysis-results/analysis-results.component'
+          ).then((c) => c.AnalysisResultsComponent),
+        title: 'Analysis Report - Kapify',
+      },
+
       // Dashboard routes
       {
         path: 'home',

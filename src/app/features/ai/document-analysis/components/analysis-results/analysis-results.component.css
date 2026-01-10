@@ -8,21 +8,103 @@
   }
 }
 
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Base animation class */
 .animate-fadeIn {
-  animation: fadeIn 0.3s ease-out forwards;
+  animation: fadeIn 0.4s ease-out forwards;
+}
+
+.animate-slideUp {
+  animation: slideUp 0.4s ease-out forwards;
+}
+
+/* Staggered animations for multiple elements */
+.animate-fadeIn:nth-child(1) {
+  animation-delay: 0ms;
+}
+.animate-fadeIn:nth-child(2) {
+  animation-delay: 50ms;
+}
+.animate-fadeIn:nth-child(3) {
+  animation-delay: 100ms;
+}
+.animate-fadeIn:nth-child(4) {
+  animation-delay: 150ms;
+}
+.animate-fadeIn:nth-child(5) {
+  animation-delay: 200ms;
 }
 
 /* Ensure animations only run on mount */
 @media (prefers-reduced-motion: no-preference) {
   .animate-fadeIn {
-    animation: fadeIn 0.3s ease-out forwards;
+    animation: fadeIn 0.4s ease-out forwards;
+  }
+
+  .animate-slideUp {
+    animation: slideUp 0.4s ease-out forwards;
   }
 }
 
 /* Override if user prefers reduced motion */
 @media (prefers-reduced-motion: reduce) {
-  .animate-fadeIn {
+  .animate-fadeIn,
+  .animate-slideUp {
     animation: none;
     opacity: 1;
+    transform: none;
   }
+}
+
+/* Loading spinner animation */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+/* Modal animations */
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes modalScaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.modal-overlay {
+  animation: modalFadeIn 0.3s ease-out forwards;
+}
+
+.modal-content {
+  animation: modalScaleIn 0.3s ease-out forwards;
 }
