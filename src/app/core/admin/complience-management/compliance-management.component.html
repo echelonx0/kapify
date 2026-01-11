@@ -1,0 +1,220 @@
+<!-- Header -->
+<div class="border-b border-slate-200 bg-white sticky top-0 z-30">
+  <div class="max-w-6xl mx-auto px-8 py-6">
+    <div class="flex items-start justify-between">
+      <div>
+        <h1 class="text-3xl font-bold text-slate-900">Compliance Content</h1>
+        <p class="text-sm text-slate-600 mt-1">
+          Manage all compliance pages and their content
+        </p>
+      </div>
+      @if (uiState().message.type) {
+      <div
+        [class.bg-green-50]="uiState().message.type === 'success'"
+        [class.bg-red-50]="uiState().message.type === 'error'"
+        [class.border-green-50]="uiState().message.type === 'success'"
+        [class.border-red-50]="uiState().message.type === 'error'"
+        [class.text-green-700]="uiState().message.type === 'success'"
+        [class.text-red-700]="uiState().message.type === 'error'"
+        class="border rounded-xl px-4 py-3 text-sm font-medium"
+      >
+        {{ uiState().message.text }}
+      </div>
+      }
+    </div>
+  </div>
+</div>
+
+<!-- Main Content -->
+<div class="bg-slate-50 min-h-screen">
+  <div class="max-w-6xl mx-auto px-8 py-8">
+    <!-- Pages Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      @for (page of pages(); track page.id) {
+      <button
+        (click)="selectPage(page.id)"
+        [class.ring-2]="selectedPageId() === page.id"
+        [class.ring-teal-500]="selectedPageId() === page.id"
+        [class.bg-teal-50]="selectedPageId() === page.id"
+        [class.border-teal-50]="selectedPageId() === page.id"
+        class="bg-white rounded-2xl border border-slate-200 p-6 text-left transition-all duration-200 hover:shadow-sm hover:border-slate-300"
+      >
+        <div class="flex items-start justify-between mb-3">
+          <h3 class="text-lg font-bold text-slate-900 flex-1">
+            {{ page.title }}
+          </h3>
+          @if (selectedPageId() === page.id) {
+          <div
+            class="w-2 h-2 rounded-full bg-teal-500 flex-shrink-0 mt-1 ml-3"
+          ></div>
+          }
+        </div>
+        <p class="text-sm text-slate-600 mb-4">
+          {{ page.subtitle }}
+        </p>
+        <div class="flex items-center gap-3 text-xs text-slate-500">
+          <span>{{ page.tabs.length }} sections</span>
+          <span>•</span>
+          <span>{{ page.sidebarLinks.length }} links</span>
+        </div>
+      </button>
+      }
+    </div>
+
+    <!-- Editor Panel -->
+    @if (selectedPage()) {
+    <div class="mt-12">
+      <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden">
+        <!-- Page Header -->
+        <div class="border-b border-slate-200 bg-slate-50/50 px-8 py-6">
+          <h2 class="text-2xl font-bold text-slate-900">
+            {{ selectedPage()!.title }}
+          </h2>
+          <p class="text-sm text-slate-600 mt-1">
+            {{ selectedPage()!.subtitle }}
+          </p>
+        </div>
+
+        <!-- Tabs Section -->
+        <div class="p-8">
+          <h3 class="text-base font-bold text-slate-900 mb-6">Sections</h3>
+
+          <div class="space-y-4">
+            @for (tab of selectedPage()!.tabs; track tab.id) {
+            <div
+              [class.bg-teal-50]="uiState().editingTabId === tab.id"
+              [class.border-teal-50]="uiState().editingTabId === tab.id"
+              class="bg-white border border-slate-200 rounded-xl p-6 transition-all duration-200"
+            >
+              <!-- Tab Header -->
+              <div
+                class="flex items-center justify-between mb-4 cursor-pointer"
+                (click)="toggleEditTab(tab.id)"
+              >
+                <h4 class="font-semibold text-slate-900">
+                  {{ tab.label }}
+                </h4>
+                <button
+                  (click)="$event.stopPropagation(); toggleEditTab(tab.id)"
+                  class="text-sm font-medium text-teal-600 hover:text-teal-700 transition-colors"
+                  type="button"
+                >
+                  {{ uiState().editingTabId === tab.id ? "Close" : "Edit" }}
+                </button>
+              </div>
+
+              <!-- Preview (collapsed) -->
+              @if (uiState().editingTabId !== tab.id) {
+              <div class="text-sm text-slate-600 line-clamp-3">
+                {{ stripHtml(tab.content) | slice : 0 : 150 }}...
+              </div>
+              }
+
+              <!-- Editor (expanded) -->
+              @if (uiState().editingTabId === tab.id) {
+              <div class="space-y-4">
+                <!-- Label Input -->
+                <div>
+                  <label
+                    class="block text-sm font-semibold text-slate-900 mb-2"
+                  >
+                    Section Title
+                  </label>
+                  <input
+                    type="text"
+                    [(ngModel)]="tab.label"
+                    class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all"
+                    placeholder="e.g., Data Collection Methods"
+                  />
+                </div>
+
+                <!-- Content Editor -->
+                <div>
+                  <label
+                    class="block text-sm font-semibold text-slate-900 mb-2"
+                  >
+                    Content
+                  </label>
+                  <textarea
+                    [(ngModel)]="tab.content"
+                    rows="10"
+                    class="w-full px-4 py-3 border border-slate-200 rounded-xl text-slate-900 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all"
+                    placeholder="HTML supported: &lt;h3&gt;, &lt;p&gt;, &lt;ul&gt;, &lt;li&gt;, &lt;strong&gt;, &lt;em&gt;"
+                  ></textarea>
+                  <p class="text-xs text-slate-500 mt-2">
+                    You can use HTML tags like &lt;h3&gt;, &lt;p&gt;,
+                    &lt;ul&gt;, &lt;li&gt;, &lt;strong&gt;, &lt;em&gt;
+                  </p>
+                </div>
+
+                <!-- Preview -->
+                <div>
+                  <label
+                    class="block text-sm font-semibold text-slate-900 mb-2"
+                  >
+                    Preview
+                  </label>
+                  <div
+                    class="w-full px-4 py-4 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-700 max-h-40 overflow-y-auto"
+                    [innerHTML]="tab.content"
+                  ></div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="flex gap-3 pt-4 border-t border-slate-200">
+                  <button
+                    (click)="saveTab(tab)"
+                    [disabled]="uiState().isSaving"
+                    class="flex-1 bg-teal-500 text-white font-medium py-2.5 px-6 rounded-xl hover:bg-teal-600 active:bg-teal-700 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                    type="button"
+                  >
+                    {{ uiState().isSaving ? "Saving..." : "Save Changes" }}
+                  </button>
+                  <button
+                    (click)="toggleEditTab(null)"
+                    class="flex-1 bg-slate-100 text-slate-700 font-medium py-2.5 px-6 rounded-xl hover:bg-slate-200 active:bg-slate-300 transition-colors duration-200"
+                    type="button"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+              }
+            </div>
+            }
+          </div>
+        </div>
+
+        <!-- Links Section -->
+        <div class="border-t border-slate-200 bg-slate-50/50 px-8 py-6">
+          <h3 class="text-base font-bold text-slate-900 mb-6">Sidebar Links</h3>
+
+          <div class="space-y-3">
+            @for (link of selectedPage()!.sidebarLinks; track link.id) {
+            <div
+              class="bg-white border border-slate-200 rounded-xl p-4 flex items-center justify-between"
+            >
+              <div class="flex-1 min-w-0">
+                <h4 class="font-medium text-slate-900 text-sm">
+                  {{ link.label }}
+                </h4>
+                <p class="text-xs text-slate-500 mt-1 truncate">
+                  {{ link.href }}
+                </p>
+              </div>
+              @if (link.highlight) {
+              <span
+                class="flex-shrink-0 ml-3 px-2.5 py-1 bg-amber-50 text-amber-700 text-xs font-medium border border-amber-200/50 rounded-lg"
+              >
+                Featured
+              </span>
+              }
+            </div>
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+    }
+  </div>
+</div>
