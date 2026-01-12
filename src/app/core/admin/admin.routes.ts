@@ -30,6 +30,14 @@ export const adminRoutes: Routes = [
         title: 'Admin Dashboard - Kapify',
       },
       {
+        path: 'demographics',
+        loadComponent: () =>
+          import(
+            './demographics-management/demographics-config-management.component'
+          ).then((m) => m.AdminDemographicsConfigComponent),
+        title: 'Demographics Management - Kapify Admin',
+      },
+      {
         path: 'compliance',
         loadComponent: () =>
           import(

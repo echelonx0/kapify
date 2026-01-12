@@ -38,6 +38,11 @@ export class AdminLayoutComponent {
       icon: 'fas fa-tachometer-alt',
     },
     {
+      path: 'demographics',
+      label: 'Demographics Manager',
+      icon: 'fas fa-tachometer-alt',
+    },
+    {
       path: 'verification',
       label: 'Organization Verification',
       icon: 'fas fa-check-circle',
