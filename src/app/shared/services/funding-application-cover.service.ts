@@ -15,6 +15,7 @@ import {
   ValidationResult,
   CompletionStatus,
 } from '../models/funding-application-cover.model';
+import { DemographicsService } from './demographics.service';
 
 /**
  * FundingApplicationCoverService
@@ -34,7 +35,7 @@ export class FundingApplicationCoverService implements OnDestroy {
   private authService = inject(AuthService);
   private documentService = inject(SupabaseDocumentService);
   private activityService = inject(ActivityService);
-
+  private demographicsService = inject(DemographicsService);
   private destroy$ = new Subject<void>();
 
   // ===== STATE MANAGEMENT =====
@@ -271,96 +272,6 @@ export class FundingApplicationCoverService implements OnDestroy {
     }
   }
 
-  // ===== CREATE OPERATIONS =====
-
-  /**
-   * Create blank cover
-   * Minimal data - user fills in later
-   */
-  async createBlankCover(
-    initialData?: CreateCoverRequest
-  ): Promise<CoverOperationResult> {
-    try {
-      this.isSaving.set(true);
-      this.error.set(null);
-
-      const userId = this.authService.getCurrentUserId();
-      const orgId = this.authService.getCurrentUserOrganizationId();
-
-      if (!userId || !orgId) {
-        throw new Error('Authentication required');
-      }
-
-      const coverData = {
-        organization_id: orgId,
-        is_default: false,
-        language_code: 'en',
-        industries: initialData?.industries || [],
-        funding_amount: initialData?.fundingAmount || 0,
-        funding_types: initialData?.fundingTypes || [],
-        business_stages: initialData?.businessStages || [],
-        investment_criteria: initialData?.investmentCriteria || [],
-        exclusion_criteria: initialData?.exclusionCriteria || [],
-        location: initialData?.location || '',
-        use_of_funds: initialData?.useOfFunds || '',
-        executive_summary: initialData?.executiveSummary || '',
-        repayment_strategy: initialData?.repaymentStrategy || null,
-        equity_offered: initialData?.equityOffered || null,
-        cover_document_id: null,
-        cover_document_url: null,
-        cover_document_name: null,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      };
-
-      const { data, error } = await this.supabase
-        .from('funding_application_cover_information')
-        .insert([coverData])
-        .select()
-        .single();
-
-      if (error) {
-        throw new Error(`Create failed: ${error.message}`);
-      }
-
-      const cover = this.transformDatabaseToLocal(data);
-      this.currentCover.set(cover);
-      this.coverSubject.next(cover);
-
-      // Invalidate cache
-      this.invalidateCache();
-
-      this.activityService.trackProfileActivity(
-        'created',
-        'Blank funding cover created',
-        'cover_creation_blank'
-      );
-
-      return {
-        success: true,
-        cover,
-        message: 'Cover created successfully',
-      };
-    } catch (error: any) {
-      const message = error?.message || 'Failed to create cover';
-      this.error.set(message);
-      console.error('❌ Create blank cover error:', error);
-
-      this.activityService.trackProfileActivity(
-        'updated',
-        `Failed to create cover: ${error?.message}`,
-        'cover_creation_error'
-      );
-
-      return {
-        success: false,
-        error: message,
-      };
-    } finally {
-      this.isSaving.set(false);
-    }
-  }
-
   /**
    * Create cover from default template
    * Pre-populates from default cover
@@ -586,86 +497,6 @@ export class FundingApplicationCoverService implements OnDestroy {
     } catch (error: any) {
       const message = error?.message || 'Failed to set default';
       this.error.set(message);
-      return {
-        success: false,
-        error: message,
-      };
-    } finally {
-      this.isSaving.set(false);
-    }
-  }
-
-  // ===== DELETE OPERATIONS =====
-
-  /**
-   * Delete cover (except default covers)
-   */
-  async deleteCover(coverId: string): Promise<CoverOperationResult> {
-    try {
-      this.isSaving.set(true);
-      const orgId = this.authService.getCurrentUserOrganizationId();
-      if (!orgId) throw new Error('No organization context');
-
-      // Check if default
-      const cover = await this.getCoverById(coverId);
-      if (cover?.isDefault) {
-        return {
-          success: false,
-          error: 'Cannot delete default cover. Unset as default first.',
-        };
-      }
-
-      // Delete document if exists
-      if (cover?.coverDocumentUrl) {
-        const documentKey = `cover_${coverId}_document`;
-        try {
-          await this.documentService
-            .deleteDocumentByKey(documentKey)
-            .toPromise();
-        } catch (docError) {
-          console.warn('Failed to delete associated document:', docError);
-          // Continue - document cleanup is non-critical
-        }
-      }
-
-      // Delete cover
-      const { error } = await this.supabase
-        .from('funding_application_cover_information')
-        .delete()
-        .eq('id', coverId)
-        .eq('organization_id', orgId);
-
-      if (error) {
-        throw new Error(`Delete failed: ${error.message}`);
-      }
-
-      if (this.currentCover()?.id === coverId) {
-        this.currentCover.set(null);
-        this.coverSubject.next(null);
-      }
-
-      this.invalidateCache();
-
-      this.activityService.trackProfileActivity(
-        'updated',
-        'Funding cover deleted',
-        'cover_deletion'
-      );
-
-      return {
-        success: true,
-        message: 'Cover deleted successfully',
-      };
-    } catch (error: any) {
-      const message = error?.message || 'Failed to delete cover';
-      this.error.set(message);
-
-      this.activityService.trackProfileActivity(
-        'updated',
-        `Failed to delete cover: ${message}`,
-        'cover_deletion_error'
-      );
-
       return {
         success: false,
         error: message,
@@ -955,6 +786,196 @@ export class FundingApplicationCoverService implements OnDestroy {
     };
   }
 
+  // KEY CHANGES FOR SINGLE-PROFILE MODE:
+  // 1. createBlankCover() always sets is_default: true
+  // 2. copyCover() method REMOVED
+  // 3. setAsDefault() logic removed (all covers are default)
+  // 4. Initialize loads defaultCover via loadDefaultCover()
+
+  // PASTE THIS METHOD into FundingApplicationCoverService to replace createBlankCover():
+
+  /**
+   * Create funding request (always default in single-profile mode)
+   * Minimal data - user fills in later
+   */
+  async createBlankCover(
+    initialData?: CreateCoverRequest
+  ): Promise<CoverOperationResult> {
+    try {
+      this.isSaving.set(true);
+      this.error.set(null);
+
+      const userId = this.authService.getCurrentUserId();
+      const orgId = this.authService.getCurrentUserOrganizationId();
+
+      if (!userId || !orgId) {
+        throw new Error('Authentication required');
+      }
+
+      const coverData = {
+        organization_id: orgId,
+        is_default: true, // ✅ ALWAYS default in single-profile mode
+        language_code: 'en',
+        industries: initialData?.industries || [],
+        funding_amount: initialData?.fundingAmount || 0,
+        funding_types: initialData?.fundingTypes || [],
+        business_stages: initialData?.businessStages || [],
+        investment_criteria: initialData?.investmentCriteria || [],
+        exclusion_criteria: initialData?.exclusionCriteria || [],
+        location: initialData?.location || '',
+        use_of_funds: initialData?.useOfFunds || '',
+        executive_summary: initialData?.executiveSummary || '',
+        repayment_strategy: initialData?.repaymentStrategy || null,
+        equity_offered: initialData?.equityOffered || null,
+        cover_document_id: null,
+        cover_document_url: null,
+        cover_document_name: null,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      };
+
+      const { data, error } = await this.supabase
+        .from('funding_application_cover_information')
+        .insert([coverData])
+        .select()
+        .single();
+
+      if (error) {
+        throw new Error(`Create failed: ${error.message}`);
+      }
+
+      const cover = this.transformDatabaseToLocal(data);
+      this.currentCover.set(cover);
+      this.coverSubject.next(cover);
+      this.defaultCover.set(cover); // ✅ Set as default
+      this.invalidateCache();
+
+      this.activityService.trackProfileActivity(
+        'created',
+        'Funding request created',
+        'funding_request_creation'
+      );
+
+      return {
+        success: true,
+        cover,
+        message: 'Funding request created successfully',
+      };
+    } catch (error: any) {
+      const message = error?.message || 'Failed to create funding request';
+      this.error.set(message);
+      console.error('❌ Create funding request error:', error);
+
+      this.activityService.trackProfileActivity(
+        'updated',
+        `Failed to create funding request: ${error?.message}`,
+        'funding_request_creation_error'
+      );
+
+      return {
+        success: false,
+        error: message,
+      };
+    } finally {
+      this.isSaving.set(false);
+    }
+  }
+
+  // ============================================
+  // REMOVE THESE METHODS (not needed in single-profile mode):
+  // - copyCover()
+  // - setAsDefault()
+  // - createCoverFromDefault()
+  // ============================================
+
+  // ============================================
+  // UPDATE deleteCover() - remove default check:
+  // ============================================
+
+  async deleteCover(coverId: string): Promise<CoverOperationResult> {
+    try {
+      this.isSaving.set(true);
+      const orgId = this.authService.getCurrentUserOrganizationId();
+      if (!orgId) throw new Error('No organization context');
+
+      // In single-profile mode, allow deletion (it's the only one)
+      // Just clean up documents
+
+      const cover = await this.getCoverById(coverId);
+      if (cover?.coverDocumentUrl) {
+        const documentKey = `cover_${coverId}_document`;
+        try {
+          await this.documentService
+            .deleteDocumentByKey(documentKey)
+            .toPromise();
+        } catch (docError) {
+          console.warn('Failed to delete associated document:', docError);
+        }
+      }
+
+      const { error } = await this.supabase
+        .from('funding_application_cover_information')
+        .delete()
+        .eq('id', coverId)
+        .eq('organization_id', orgId);
+
+      if (error) {
+        throw new Error(`Delete failed: ${error.message}`);
+      }
+
+      if (this.currentCover()?.id === coverId) {
+        this.currentCover.set(null);
+        this.coverSubject.next(null);
+      }
+
+      if (this.defaultCover()?.id === coverId) {
+        this.defaultCover.set(null);
+      }
+
+      this.invalidateCache();
+
+      this.activityService.trackProfileActivity(
+        'updated',
+        'Funding request deleted',
+        'funding_request_deleted'
+      );
+
+      return {
+        success: true,
+        message: 'Funding request deleted successfully',
+      };
+    } catch (error: any) {
+      const message = error?.message || 'Failed to delete funding request';
+      this.error.set(message);
+
+      this.activityService.trackProfileActivity(
+        'updated',
+        `Failed to delete funding request: ${message}`,
+        'funding_request_deletion_error'
+      );
+
+      return {
+        success: false,
+        error: message,
+      };
+    } finally {
+      this.isSaving.set(false);
+    }
+  }
+
+  /**
+   * Load cover with demographics
+   */
+  async loadCoverWithDemographics(
+    coverId: string
+  ): Promise<FundingApplicationCoverInformation | null> {
+    const cover = await this.getCoverById(coverId);
+    if (cover) {
+      // Also load demographics
+      await this.demographicsService.loadDemographics(coverId);
+    }
+    return cover;
+  }
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();

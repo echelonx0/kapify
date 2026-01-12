@@ -27,7 +27,7 @@ export interface CreateCoverChoice {
         <!-- Header -->
         <div class="px-8 py-8 border-b-4 border-slate-200">
           <h2 class="text-3xl font-black text-slate-900 tracking-tight mb-2">
-            Create Funding Profile
+            Create Funding Request
           </h2>
           <p class="text-sm text-slate-600 font-semibold">
             Ready to get started?
@@ -54,8 +54,8 @@ export interface CreateCoverChoice {
               <div class="flex-1">
                 <p class="text-lg font-black text-slate-900">Start Fresh</p>
                 <p class="text-sm text-slate-600 mt-2">
-                  Create a blank funding profile. You'll fill in your details
-                  and customize it to match each opportunity.
+                  Create a blank funding request. You'll fill in your details
+                  and reuse it for every opportunity you apply to.
                 </p>
               </div>
             </div>
@@ -76,29 +76,29 @@ export interface CreateCoverChoice {
             (click)="confirm()"
             class="px-5 py-2.5 bg-teal-600 text-white font-bold rounded-lg border-3 border-teal-700 hover:bg-teal-700 active:bg-teal-800 transition-all duration-200 text-sm uppercase tracking-wide"
           >
-            Create Profile
+            Create Request
           </button>
         </div>
       </div>
+
+      <!-- Global Styles for Animation -->
+      <style>
+        @keyframes fadeInScale {
+          from {
+            opacity: 0;
+            transform: scale(0.95);
+          }
+          to {
+            opacity: 1;
+            transform: scale(1);
+          }
+        }
+
+        .animate-fadeInScale {
+          animation: fadeInScale 300ms cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+      </style>
     </div>
-
-    <!-- Global Styles for Animation -->
-    <style>
-      @keyframes fadeInScale {
-        from {
-          opacity: 0;
-          transform: scale(0.95);
-        }
-        to {
-          opacity: 1;
-          transform: scale(1);
-        }
-      }
-
-      .animate-fadeInScale {
-        animation: fadeInScale 300ms cubic-bezier(0.34, 1.56, 0.64, 1);
-      }
-    </style>
   `,
 })
 export class CreateCoverModalComponent {

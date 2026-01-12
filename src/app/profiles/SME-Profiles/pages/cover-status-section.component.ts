@@ -17,13 +17,13 @@ import { CreateCoverModalComponent } from 'src/app/features/applications-cover/c
   standalone: true,
   imports: [CommonModule, LucideAngularModule, CreateCoverModalComponent],
   template: `
-    <!-- NEO-BRUTALIST COVER STATUS SECTION -->
+    <!-- NEO-BRUTALIST FUNDING REQUEST STATUS SECTION -->
     <div class="bg-white border-t-4 border-b-4 border-slate-200">
       <div class="max-w-7xl mx-auto px-4 lg:px-8 py-8">
-        <!-- COVERS EXIST STATE: Show manage button -->
-        @if (hasCoverInformation()) {
+        <!-- HAS DEFAULT FUNDING REQUEST -->
+        @if (hasFundingRequest()) {
         <div class="space-y-4">
-          <!-- Header with Icon -->
+          <!-- Header -->
           <div class="flex items-center gap-3">
             <div
               class="w-10 h-10 rounded-lg bg-green-100 border-2 border-green-600 flex items-center justify-center flex-shrink-0"
@@ -38,10 +38,10 @@ import { CreateCoverModalComponent } from 'src/app/features/applications-cover/c
               <h3
                 class="text-sm lg:text-base font-black uppercase tracking-widest text-slate-900"
               >
-                Funding Profiles Ready
+                Funding Request Ready
               </h3>
               <p class="text-xs text-slate-600 mt-1">
-                You have {{ coversCount() }} profile(s) ready to use
+                Your funding request is ready to use
               </p>
             </div>
           </div>
@@ -49,23 +49,35 @@ import { CreateCoverModalComponent } from 'src/app/features/applications-cover/c
           <!-- Call to Action -->
           <div class="pt-2">
             <p class="text-sm text-slate-700 font-semibold mb-4">
-              Manage your funding profiles and apply to opportunities.
+              Manage your funding request and apply to opportunities.
             </p>
 
-            <!-- Manage Button -->
-            <button
-              (click)="manageCover()"
-              class="flex items-center justify-center gap-2 px-6 py-3.5 bg-teal-600 text-white font-black rounded-lg border-3 border-teal-700 uppercase tracking-wide hover:bg-teal-700 active:bg-teal-800 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2"
-            >
-              <lucide-icon [img]="LayoutGridIcon" [size]="16"></lucide-icon>
-              Manage Profiles
-            </button>
+            <!-- Action Buttons -->
+            <div class="flex flex-col sm:flex-row gap-3">
+              <!-- Manage Request -->
+              <button
+                (click)="manageFundingRequest()"
+                class="flex items-center justify-center gap-2 px-6 py-3.5 bg-teal-600 text-white font-black rounded-lg border-3 border-teal-700 uppercase tracking-wide hover:bg-teal-700 active:bg-teal-800 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2"
+              >
+                <lucide-icon [img]="LayoutGridIcon" [size]="16"></lucide-icon>
+                Manage Request
+              </button>
+
+              <!-- Manage Demographics -->
+              <button
+                (click)="navigateToDemographics(defaultFundingRequest()?.id)"
+                class="flex items-center justify-center gap-2 px-6 py-3.5 bg-white text-slate-900 font-black rounded-lg border-3 border-slate-900 uppercase tracking-wide hover:bg-slate-100 active:bg-slate-200 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2"
+              >
+                <lucide-icon [img]="LayoutGridIcon" [size]="16"></lucide-icon>
+                Manage Demographics
+              </button>
+            </div>
           </div>
         </div>
         } @else {
-        <!-- NO COVERS STATE: Show modal prompt -->
+        <!-- NO FUNDING REQUEST -->
         <div class="space-y-4">
-          <!-- Header with Icon -->
+          <!-- Header -->
           <div class="flex items-center gap-3">
             <div
               class="w-10 h-10 rounded-lg bg-amber-100 border-2 border-amber-600 flex items-center justify-center flex-shrink-0"
@@ -80,28 +92,27 @@ import { CreateCoverModalComponent } from 'src/app/features/applications-cover/c
               <h3
                 class="text-sm lg:text-base font-black uppercase tracking-widest text-slate-900"
               >
-                Funding Profiles Required
+                Funding Request Required
               </h3>
               <p class="text-xs text-slate-600 mt-1">
-                Create a funding profile to match with opportunities
+                Create your funding request to match with opportunities
               </p>
             </div>
           </div>
 
-          <!-- Call to Action -->
+          <!-- CTA -->
           <div class="pt-2">
             <p class="text-sm text-slate-700 font-semibold mb-4">
-              Your profile tells funders what you're seeking and why. Create one
+              Your request tells funders what you're seeking and why. Create one
               in just 3 minutes.
             </p>
 
-            <!-- Main CTA Button -->
             <button
-              (click)="createNewCover()"
+              (click)="createNewFundingRequest()"
               class="flex items-center justify-center gap-2 px-6 py-3.5 w-full sm:w-auto bg-teal-600 text-white font-black rounded-lg border-3 border-teal-700 uppercase tracking-wide text-sm hover:bg-teal-700 active:bg-teal-800 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2"
             >
               <lucide-icon [img]="PlusIcon" [size]="16"></lucide-icon>
-              Create Profile
+              Create Request
             </button>
           </div>
         </div>
@@ -109,7 +120,7 @@ import { CreateCoverModalComponent } from 'src/app/features/applications-cover/c
       </div>
     </div>
 
-    <!-- CREATE COVER MODAL (shown when needed) -->
+    <!-- CREATE FUNDING REQUEST MODAL -->
     <app-create-cover-modal
       *ngIf="showModal()"
       (choiceMade)="onCreateChoice($event)"
@@ -132,29 +143,22 @@ export class CoverStatusSectionComponent implements OnInit {
   // Modal state
   showModal = signal(false);
 
-  // Covers state
-  covers = this.coverService.covers;
+  // Default funding request (single-profile mode)
+  defaultFundingRequest = this.coverService.defaultProfile;
 
-  // Computed: has any covers
-  hasCoverInformation = () => this.covers().length > 0;
+  // Computed
+  hasFundingRequest = () => !!this.defaultFundingRequest();
 
-  // Computed: cover count for display
-  coversCount = () => this.covers().length;
-
-  ngOnInit(): void {
-    // Cover status already loaded by parent component
-    // This component just displays the state
-  }
+  ngOnInit(): void {}
 
   /**
-   * Create new cover
-   * Shows modal instead of navigating directly
+   * Create new funding request
    */
-  createNewCover(): void {
+  createNewFundingRequest(): void {
     this.activityService.trackProfileActivity(
       'created',
-      'User initiated cover creation from status section',
-      'cover_create_cta'
+      'User initiated funding request creation',
+      'funding_request_create_cta'
     );
     this.showModal.set(true);
   }
@@ -166,12 +170,8 @@ export class CoverStatusSectionComponent implements OnInit {
     this.showModal.set(false);
 
     try {
-      // Create blank cover
       const result = await this.coverService.createBlankCover();
       if (result.success && result.cover) {
-        console.log('✅ Cover created:', result.cover.id);
-
-        // Navigate to editor with new cover
         this.router.navigate(['covers'], {
           relativeTo: this.route.parent,
           queryParams: {
@@ -182,15 +182,36 @@ export class CoverStatusSectionComponent implements OnInit {
 
         this.activityService.trackProfileActivity(
           'created',
-          'New funding profile created (from status section)',
-          'cover_create_fresh_status'
+          'New funding request created',
+          'funding_request_create_fresh'
         );
-      } else {
-        console.error('Failed to create cover:', result.error);
       }
     } catch (error) {
-      console.error('Error creating cover:', error);
+      console.error('Error creating funding request:', error);
     }
+  }
+
+  /**
+   * Navigate to demographics form
+   * ✅ FIXED: Navigate to covers route with view=demographics param
+   */
+  navigateToDemographics(coverId?: string): void {
+    if (!coverId) return;
+
+    this.activityService.trackProfileActivity(
+      'updated',
+      'User opened demographics editor',
+      'funding_request_demographics_manage'
+    );
+
+    // Navigate to covers route (which is the parent), then set view to demographics
+    this.router.navigate(['covers'], {
+      relativeTo: this.route.parent, // ← Navigate from profile level into covers
+      queryParams: {
+        coverId,
+        view: 'demographics', // ← This tells the covers component to show demographics
+      },
+    });
   }
 
   /**
@@ -201,19 +222,24 @@ export class CoverStatusSectionComponent implements OnInit {
   }
 
   /**
-   * Manage covers
-   * Navigate to covers list
+   * Manage funding request (navigate to editor)
    */
-  manageCover(): void {
+  manageFundingRequest(): void {
+    const defaultRequest = this.defaultFundingRequest();
+    if (!defaultRequest) return;
+
     this.activityService.trackProfileActivity(
       'updated',
-      'User opened cover management view',
-      'cover_manage_view'
+      'User opened funding request editor',
+      'funding_request_manage_view'
     );
 
     this.router.navigate(['covers'], {
       relativeTo: this.route.parent,
-      queryParams: { mode: 'view' },
+      queryParams: {
+        mode: 'edit',
+        coverId: defaultRequest.id,
+      },
     });
   }
 }

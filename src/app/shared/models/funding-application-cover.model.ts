@@ -33,6 +33,14 @@ export interface FundingApplicationCoverInformation {
   coverDocumentUrl?: string;
   coverDocumentName?: string;
 
+  // Demographics data (NEW)
+  demographics?: {
+    [categoryId: string]: {
+      [fieldName: string]: string | number | null;
+    };
+  };
+  demographicsUpdatedAt?: Date;
+
   // Metadata
   createdAt: Date;
   updatedAt: Date;

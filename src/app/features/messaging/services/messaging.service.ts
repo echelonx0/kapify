@@ -658,6 +658,180 @@ export class MessagingService implements OnDestroy {
   }
 
   /**
+   * EXTENSION: Add this method to MessagingService
+   * Location: After createApplicationThread() method
+   *
+   * Purpose: Send read-only system notifications (e.g., funding request created)
+   * These do NOT appear in the main messaging thread - they're standalone notifications
+   */
+
+  /**
+   * Send system notification (read-only, non-reply)
+   * Creates a one-way system message for events like:
+   * - Funding request created
+   * - Application submitted
+   * - Status updates
+   *
+   * Does NOT create a conversational thread - user cannot reply
+   */
+  async sendSystemNotification(
+    recipientUserId: string,
+    title: string,
+    message: string,
+    metadata?: {
+      notification_type?: string;
+      entity_id?: string;
+      entity_type?: string;
+      [key: string]: any;
+    }
+  ): Promise<boolean> {
+    try {
+      const currentUser = this.currentUserSubject.value;
+      if (!currentUser) {
+        console.warn('⚠️ No authenticated user for notification');
+        return false;
+      }
+
+      // Step 1: Create notification thread
+      // Thread subject = title
+      // is_broadcast = false (individual notification, not broadcast)
+      const { data: threadData, error: threadError } = await this.supabase
+        .from('message_threads')
+        .insert([
+          {
+            subject: title,
+            created_by: 'system',
+            is_broadcast: false, // Individual notification
+            metadata: {
+              notification_type: metadata?.notification_type || 'system',
+              entity_id: metadata?.entity_id,
+              entity_type: metadata?.entity_type,
+              created_at: new Date().toISOString(),
+              ...metadata,
+            },
+          },
+        ])
+        .select()
+        .single();
+
+      if (threadError || !threadData) {
+        console.error('❌ Notification thread creation failed:', threadError);
+        return false;
+      }
+
+      // Step 2: Add recipient as participant (read-only)
+      const { error: participantError } = await this.supabase
+        .from('thread_participants')
+        .insert([
+          {
+            thread_id: threadData.id,
+            user_id: recipientUserId,
+            can_reply: false, // ✅ READ-ONLY - user cannot reply
+          },
+        ]);
+
+      if (participantError) {
+        console.error(
+          '❌ Participant insert failed for notification:',
+          participantError
+        );
+        return false;
+      }
+
+      // Step 3: Create system message (one-way)
+      const { error: messageError } = await this.supabase
+        .from('messages')
+        .insert([
+          {
+            thread_id: threadData.id,
+            sender_id: null, // System message (no sender)
+            message_type: 'system',
+            content: message,
+            file_attachments: [],
+            is_system_message: true,
+            metadata: {
+              notification_type: metadata?.notification_type || 'system',
+              entity_id: metadata?.entity_id,
+              entity_type: metadata?.entity_type,
+            },
+          },
+        ]);
+
+      if (messageError) {
+        console.error(
+          '❌ Message creation failed for notification:',
+          messageError
+        );
+        return false;
+      }
+
+      console.log('✅ System notification sent:', title);
+      return true;
+    } catch (error) {
+      console.error('❌ Error sending system notification:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Build funding request creation notification message
+   * Call this to format the notification message
+   */
+  buildFundingRequestNotification(
+    companyName: string,
+    fundingAmount: number,
+    fundingTypes: string[]
+  ): string {
+    const currency = 'ZAR';
+    const formattedAmount = new Intl.NumberFormat('en-ZA', {
+      style: 'currency',
+      currency,
+      minimumFractionDigits: 0,
+    }).format(fundingAmount);
+
+    const types = fundingTypes.join(', ');
+
+    return `New Funding Request Created
+
+A new funding request has been created.
+
+Company: ${companyName}
+Amount Requested: ${formattedAmount}
+Funding Types: ${types}
+Status: Active
+
+You can now browse available opportunities and submit applications.`;
+  }
+
+  /**
+   * Send funding request creation notification
+   * Convenience method - combines buildFundingRequestNotification + sendSystemNotification
+   */
+  async notifyFundingRequestCreated(
+    recipientUserId: string,
+    companyName: string,
+    fundingAmount: number,
+    fundingTypes: string[],
+    fundingRequestId?: string
+  ): Promise<boolean> {
+    const message = this.buildFundingRequestNotification(
+      companyName,
+      fundingAmount,
+      fundingTypes
+    );
+
+    return this.sendSystemNotification(
+      recipientUserId,
+      '✓ Funding Request Created',
+      message,
+      {
+        notification_type: 'funding_request_created',
+        entity_id: fundingRequestId,
+        entity_type: 'funding_request',
+      }
+    );
+  }
+  /**
    * Get application context for messaging
    */
   async getApplicationContext(applicationId: string): Promise<any> {

@@ -1,5 +1,6 @@
+<!-- Root: fills viewport and enforces column layout -->
 <div class="h-full flex flex-col ml-12">
-  <!-- ===== ERROR DISPLAY =====-->
+  <!-- ===== ERROR DISPLAY ===== -->
   <div
     *ngIf="error()"
     class="flex-shrink-0 px-6 lg:px-8 py-4 bg-red-50 border-b-4 border-red-400 flex items-center gap-3 justify-between"
@@ -26,76 +27,128 @@
     </button>
   </div>
 
-  <!-- ===== CONTENT AREA: Main scrollable region =====-->
-  <div class="flex-1 overflow-y-auto flex flex-col">
-    <!-- INITIAL LOAD STATE -->
+  <!-- ===== MAIN CONTENT AREA ===== -->
+  <div class="flex-1 flex flex-col overflow-y-auto min-h-0">
+    <!-- LOADING STATE -->
     <div *ngIf="initializing()" class="flex-1 flex items-center justify-center">
       <div class="text-center">
         <div
           class="animate-spin w-8 h-8 border-4 border-teal-500 border-t-transparent rounded-full mx-auto mb-4"
         ></div>
-        <p class="text-slate-600 font-semibold">Loading profiles...</p>
+        <p class="text-slate-600 font-semibold">Loading funding request...</p>
       </div>
     </div>
 
-    <!-- VIEW: LIST (default) -->
-    <app-cover-list
-      *ngIf="!initializing() && currentView() === 'list'"
-      [covers]="covers()"
-      [defaultCoverId]="defaultCover()?.id || null"
-      (editCover)="navigateToEditor($event, 'edit')"
-      (setDefault)="setAsDefault($event)"
-      (deleteCover)="deleteCover($event)"
-      (uploadDocument)="navigateToUpload($event)"
-      (copyCover)="copyCover($event)"
-      (navigateBack)="navigateBack()"
-    />
+    <!-- VIEW: EDITOR -->
+    <ng-container *ngIf="!initializing() && currentView() === 'editor'">
+      <app-cover-editor
+        *ngIf="selectedCover()"
+        [cover]="selectedCover()!"
+        [defaultCover]="selectedCover()"
+        (save)="onFundingRequestSaved()"
+        (cancel)="navigateBack()"
+        (uploadDocument)="navigateToUpload(selectedId()!)"
+      />
 
-    <!-- VIEW: EDITOR (edit existing cover) -->
-    <app-cover-editor
-      *ngIf="!initializing() && currentView() === 'editor' && selectedCover()"
-      [cover]="selectedCover()"
-      [defaultCover]="defaultCover()"
-      (save)="onCoverSaved()"
-      (cancel)="navigateToList()"
-      (uploadDocument)="navigateToUpload(selectedId()!)"
-    />
+      <!-- Empty state when no cover -->
+      <div
+        *ngIf="!selectedCover()"
+        class="flex-1 flex items-center justify-center"
+      >
+        <div class="text-center max-w-md">
+          <div
+            class="w-16 h-16 rounded-lg bg-amber-100 border-3 border-amber-400 flex items-center justify-center mx-auto mb-4"
+          >
+            <svg
+              class="w-8 h-8 text-amber-600"
+              fill="currentColor"
+              viewBox="0 0 20 20"
+            >
+              <path
+                fill-rule="evenodd"
+                d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                clip-rule="evenodd"
+              ></path>
+            </svg>
+          </div>
+
+          <h2 class="text-2xl font-black text-slate-900 mb-2">
+            No Funding Request
+          </h2>
+          <p class="text-sm text-slate-600 mb-6">
+            Create your funding request to get started.
+          </p>
+
+          <button
+            (click)="navigateBack()"
+            class="px-6 py-3 bg-teal-600 text-white font-black rounded-lg border-3 border-teal-700 uppercase tracking-wide text-sm hover:bg-teal-700 active:bg-teal-800 transition-all duration-200"
+          >
+            Go Back
+          </button>
+        </div>
+      </div>
+    </ng-container>
 
     <!-- VIEW: UPLOAD DOCUMENT -->
-    <app-cover-document-upload
-      *ngIf="!initializing() && currentView() === 'upload' && selectedCover()"
-      [cover]="selectedCover()"
-      (documentAttached)="onDocumentAttached()"
-      (cancel)="navigateToEditor(selectedId()!, mode())"
-    />
+    <ng-container *ngIf="!initializing() && currentView() === 'upload'">
+      <app-cover-document-upload
+        *ngIf="selectedCover()"
+        [cover]="selectedCover()!"
+        (documentAttached)="onDocumentAttached()"
+        (cancel)="navigateToEditor(selectedId()!, mode())"
+      />
+    </ng-container>
+
+    <!-- VIEW: DEMOGRAPHICS FORM -->
+    <ng-container *ngIf="!initializing() && currentView() === 'demographics'">
+      <app-demographics-form />
+    </ng-container>
   </div>
 
-  <!-- ===== FOOTER: Neo-Brutalist =====-->
+  <!-- ===== FOOTER ===== -->
   <div
     class="flex-shrink-0 sticky bottom-0 z-30 bg-white border-t-4 border-slate-300 px-6 lg:px-8 py-4 flex items-center justify-between"
   >
     <div class="text-xs text-slate-600">
-      <p class="font-semibold" *ngIf="covers().length > 0">
-        {{ covers().length }} profile(s)
-        <span *ngIf="defaultCover()" class="ml-2">
-          • Default:
+      <p class="font-semibold" *ngIf="selectedCover()">
+        Funding Request
+        <span class="ml-2">
           <span class="font-black text-teal-600">{{
-            defaultCover()?.executiveSummary || "Unnamed"
+            selectedCover()?.executiveSummary || "Unnamed"
           }}</span>
         </span>
       </p>
-      <p class="font-semibold text-slate-500" *ngIf="covers().length === 0">
-        No profiles yet
+      <p class="font-semibold text-slate-500" *ngIf="!selectedCover()">
+        No funding request created
       </p>
     </div>
 
     <div class="flex gap-2">
+      <!-- Back button (show when not in editor view) -->
       <button
-        *ngIf="currentView() !== 'list'"
-        (click)="navigateToList()"
+        *ngIf="currentView() !== 'editor' && selectedCover()"
+        (click)="navigateToEditor(selectedId()!, mode())"
         class="px-5 py-2.5 bg-slate-100 text-slate-700 font-semibold rounded-lg border border-slate-200 hover:bg-slate-200 active:bg-slate-300 transition-all duration-200 text-sm"
       >
         Back
+      </button>
+
+      <!-- Delete button -->
+      <button
+        *ngIf="selectedCover() && currentView() === 'editor'"
+        (click)="deleteFundingRequest(selectedId()!)"
+        class="px-5 py-2.5 bg-red-50 text-red-700 font-semibold rounded-lg border border-red-200 hover:bg-red-100 active:bg-red-200 transition-all duration-200 text-sm"
+      >
+        Delete
+      </button>
+
+      <!-- Manage Demographics button -->
+      <button
+        *ngIf="selectedCover() && currentView() === 'editor'"
+        (click)="navigateToDemographics(selectedId()!)"
+        class="px-5 py-2.5 bg-slate-100 text-slate-700 font-semibold rounded-lg border border-slate-200 hover:bg-slate-200 active:bg-slate-300 transition-all duration-200 text-sm"
+      >
+        Manage Demographics
       </button>
     </div>
   </div>

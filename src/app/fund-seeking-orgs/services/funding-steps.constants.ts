@@ -98,11 +98,11 @@ export const STEP_UI_CONFIG = {
     icon: Users,
     priority: 'high' as const,
   },
-  'business-strategy': {
-    shortTitle: 'Strategy',
-    icon: TrendingUp,
-    priority: 'medium' as const,
-  },
+  // 'business-strategy': {
+  //   shortTitle: 'Strategy',
+  //   icon: TrendingUp,
+  //   priority: 'medium' as const,
+  // },
   'financial-profile': {
     shortTitle: 'Financials',
     icon: DollarSign,
