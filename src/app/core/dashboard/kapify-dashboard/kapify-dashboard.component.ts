@@ -333,6 +333,10 @@ export class KapifyDashboard implements OnInit, OnDestroy {
     this.router.navigate(['/dashboard/faqs']);
   }
 
+  openUserGuide() {
+    this.router.navigate(['/dashboard/user-guide']);
+  }
+
   // CTA Card action handler
   handleCTAClick(): void {
     // const route =

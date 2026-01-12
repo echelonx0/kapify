@@ -61,14 +61,14 @@ export const FUNDING_STEPS: FundingApplicationStep[] = [
     required: true,
     estimatedTime: '18 minutes',
   },
-  {
-    id: 'business-strategy',
-    title: 'Business Strategy',
-    description: 'Strategic plan & projections',
-    completed: false,
-    required: true,
-    estimatedTime: '25 minutes',
-  },
+  // {
+  //   id: 'business-strategy',
+  //   title: 'Business Strategy',
+  //   description: 'Strategic plan & projections',
+  //   completed: false,
+  //   required: true,
+  //   estimatedTime: '25 minutes',
+  // },
 ];
 
 // Step configuration for UI (icons, priorities, short titles)

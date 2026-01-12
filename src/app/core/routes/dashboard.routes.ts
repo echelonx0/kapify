@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { ActivityLogsComponent } from '../../features/activity-logs/activity-logs.component';
 import { NotificationsInboxComponent } from '../../features/notifications/notifications-inbox.component';
+import { UserGuideComponent } from 'src/app/shared/user-guide/user-guide.component';
 
 export const dashboardRoutes: Routes = [
   {
@@ -24,6 +25,11 @@ export const dashboardRoutes: Routes = [
       {
         path: 'logs',
         component: ActivityLogsComponent,
+      },
+
+      {
+        path: 'user-guide',
+        component: UserGuideComponent,
       },
 
       // Reports list

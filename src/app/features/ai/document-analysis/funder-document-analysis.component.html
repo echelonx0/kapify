@@ -14,7 +14,7 @@
     [wallet]="wallet()!"
     [costInCents]="5000"
     [costFormatted]="'R50.00'"
-    (onConfirm)="confirmAnalysis()"
+    (onConfirm)="confirmAnalysis($event)"
     (onCancel)="closeCostModal()"
   ></app-cost-confirmation-modal>
   }

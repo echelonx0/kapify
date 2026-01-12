@@ -12,7 +12,6 @@ import {
   Clock,
   Sparkles,
   X,
-  AlertCircle,
   CircleAlert,
   File,
 } from 'lucide-angular';
