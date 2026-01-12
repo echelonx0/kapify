@@ -9,7 +9,7 @@ export const profileRoutes: Routes = [
       import('../../profiles/SME-Profiles/profile-layout.component').then(
         (c) => c.ProfileLayoutComponent
       ),
-    canDeactivate: [UnsavedChangesGuard], // ← Add this
+    canDeactivate: [UnsavedChangesGuard],
     children: [
       {
         path: '',
@@ -38,8 +38,22 @@ export const profileRoutes: Routes = [
           import(
             'src/app/features/data-room/components/data-room-landing.component'
           ).then((c) => c.DataRoomLandingComponent),
-        title: 'Profile Overview - Kapify',
+        title: 'Data Room - Kapify',
       },
+      // ===== NEW: COVER MANAGEMENT ROUTE =====
+      {
+        path: 'covers',
+        loadComponent: () =>
+          import(
+            'src/app/features/applications-cover/funding-application-cover-management.component'
+          ).then((c) => c.FundingApplicationCoverManagementComponent),
+        title: 'Funding Covers - Kapify',
+        data: {
+          breadcrumb: 'Funding Covers',
+          description: 'Create and manage funding profiles for opportunities',
+        },
+      },
+      // ===== END NEW ROUTE =====
       {
         path: 'steps',
         loadComponent: () =>
@@ -49,11 +63,9 @@ export const profileRoutes: Routes = [
         children: [
           {
             path: '',
-
             redirectTo: 'company-info',
             pathMatch: 'full' as 'full',
           },
-
           {
             path: 'company-info',
             loadComponent: () =>

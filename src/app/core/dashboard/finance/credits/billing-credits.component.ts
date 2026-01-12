@@ -15,6 +15,7 @@ import {
   History,
   CreditCard,
   AlertCircle,
+  ChevronDown,
 } from 'lucide-angular';
 
 import {
@@ -58,6 +59,24 @@ import { PurchaseCreditsModalComponent } from './purchase-credits-modal.componen
       .pulse {
         animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
       }
+
+      .chevron-rotate {
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      .chevron-rotate.expanded {
+        transform: rotate(180deg);
+      }
+
+      .transactions-container {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      .transactions-container.expanded {
+        max-height: 600px;
+      }
     `,
   ],
 })
@@ -73,6 +92,7 @@ export class BillingCreditsComponent implements OnInit, OnDestroy {
   HistoryIcon = History;
   CreditCardIcon = CreditCard;
   AlertIcon = AlertCircle;
+  ChevronDownIcon = ChevronDown;
 
   // State
   wallet = signal<OrgWallet | null>(null);
@@ -80,6 +100,7 @@ export class BillingCreditsComponent implements OnInit, OnDestroy {
   isLoading = signal(false);
   isPurchaseModalOpen = signal(false);
   error = signal<string | null>(null);
+  isTransactionsExpanded = signal(false);
 
   // Computed: Total ever purchased
   totalPurchased = computed(() => {
@@ -108,7 +129,7 @@ export class BillingCreditsComponent implements OnInit, OnDestroy {
     return sum;
   });
 
-  //   Recent transactions
+  // Computed: Recent transactions
   recentTransactions = computed(() => {
     return this.transactions().slice(0, 5);
   });
@@ -186,6 +207,10 @@ export class BillingCreditsComponent implements OnInit, OnDestroy {
           console.error('Failed to load transactions:', err);
         },
       });
+  }
+
+  toggleTransactions() {
+    this.isTransactionsExpanded.set(!this.isTransactionsExpanded());
   }
 
   openPurchaseModal() {

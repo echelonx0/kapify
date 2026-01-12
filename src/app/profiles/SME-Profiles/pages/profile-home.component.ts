@@ -17,13 +17,18 @@ import {
   Share2,
   Copy,
   RefreshCw,
+  Edit,
+  Plus,
 } from 'lucide-angular';
 
 import { UiButtonComponent } from '../../../shared/components/ui-button.component';
 import { UiStatusBadgeComponent } from '../../../shared/components/ui-status-badge.component';
+import { CoverStatusSectionComponent } from './cover-status-section.component';
 
 import { AuthService } from '../../../auth/services/production.auth.service';
 import { FundingProfileSetupService } from '../../../fund-seeking-orgs/services/funding-profile-setup.service';
+import { FundingApplicationCoverService } from 'src/app/shared/services/funding-application-cover.service';
+
 import { PlatformDisclaimerComponent } from 'src/app/core/dashboard/components/disclaimer/disclaimer.component';
 
 @Component({
@@ -36,6 +41,7 @@ import { PlatformDisclaimerComponent } from 'src/app/core/dashboard/components/d
     UiStatusBadgeComponent,
     PlatformDisclaimerComponent,
     RouterModule,
+    CoverStatusSectionComponent,
   ],
   templateUrl: 'profile-home.component.html',
   styles: [
@@ -167,6 +173,9 @@ import { PlatformDisclaimerComponent } from 'src/app/core/dashboard/components/d
         .right-sidebar-card:nth-child(3) {
           animation-delay: 0.32s;
         }
+        .right-sidebar-card:nth-child(4) {
+          animation-delay: 0.36s;
+        }
 
         /* ===== BUTTON INTERACTIONS ===== */
         .action-button {
@@ -201,6 +210,7 @@ import { PlatformDisclaimerComponent } from 'src/app/core/dashboard/components/d
 export class ProfileHomeComponent implements OnInit, OnDestroy {
   authService = inject(AuthService);
   private fundingApplicationService = inject(FundingProfileSetupService);
+  private coverService = inject(FundingApplicationCoverService);
   private router = inject(Router);
 
   // Icons
@@ -218,6 +228,8 @@ export class ProfileHomeComponent implements OnInit, OnDestroy {
   Share2Icon = Share2;
   CopyIcon = Copy;
   RefreshIcon = RefreshCw;
+  EditIcon = Edit;
+  PlusIcon = Plus;
 
   email = 'info@bokamosoas.co.za';
   private imageRotationInterval: any;
@@ -361,6 +373,7 @@ export class ProfileHomeComponent implements OnInit, OnDestroy {
   // ===== LIFECYCLE =====
   ngOnInit() {
     this.loadApplicationData();
+    this.loadCoverData();
   }
 
   ngOnDestroy() {
@@ -374,6 +387,17 @@ export class ProfileHomeComponent implements OnInit, OnDestroy {
       await this.fundingApplicationService.loadSavedApplication();
     } catch (error) {
       console.error('Failed to load application:', error);
+    }
+  }
+
+  /**
+   * Load cover data
+   */
+  private async loadCoverData() {
+    try {
+      await this.coverService.loadDefaultCover();
+    } catch (error) {
+      console.error('Failed to load cover data:', error);
     }
   }
 

@@ -1,0 +1,159 @@
+<!-- src/app/features/applications-cover/cover-document-upload/cover-document-upload.component.html -->
+
+<div class="flex-1 overflow-y-auto px-6 lg:px-8 py-6 flex flex-col bg-slate-50">
+  <!-- Header -->
+  <div class="mb-8">
+    <h2 class="text-3xl font-bold text-slate-900 mb-2">
+      Attach Funding Profile Document
+    </h2>
+    <p class="text-slate-600 text-sm">
+      Upload pitch deck, financial summary, or other supporting documents
+    </p>
+  </div>
+
+  <!-- Error Display -->
+  <div
+    *ngIf="error()"
+    class="mb-6 bg-red-50 border-3 border-red-400 rounded-lg p-4"
+  >
+    <p class="text-sm font-semibold text-red-700">
+      {{ error() }}
+    </p>
+  </div>
+
+  <!-- Upload Card -->
+  <div
+    class="bg-white rounded-2xl border border-slate-200 p-8 flex-1 flex flex-col"
+  >
+    <!-- File Selection Area -->
+    <div class="mb-8">
+      <label class="block text-sm font-semibold text-slate-900 mb-4">
+        Select Document
+      </label>
+
+      <div
+        *ngIf="!file()"
+        class="border-2 border-dashed border-slate-300 rounded-xl p-8 text-center hover:border-teal-500 transition-colors"
+      >
+        <svg
+          class="w-12 h-12 text-slate-400 mx-auto mb-3"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="1.5"
+            d="M12 16.5V9.75m0 0l3 3m-3-3l-3 3M6.75 19.5a4.5 4.5 0 01-1.41-8.775 5.25 5.25 0 0110.233-2.33A3 3 0 0116.5 19.5H6.75z"
+          ></path>
+        </svg>
+
+        <p class="text-slate-600 mb-2">
+          <span class="font-semibold">Click to upload</span> or drag and drop
+        </p>
+        <p class="text-xs text-slate-500">
+          PDF, DOC, DOCX, JPG, PNG, XLS, XLSX (max 50MB)
+        </p>
+
+        <input
+          #fileInput
+          id="file-input"
+          type="file"
+          (change)="onFileSelected($event)"
+          class="hidden"
+          accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.xls,.xlsx"
+        />
+
+        <button
+          type="button"
+          (click)="fileInput.click()"
+          class="mt-4 px-6 py-2.5 bg-teal-500 text-white font-medium rounded-xl hover:bg-teal-600 transition-colors text-sm"
+        >
+          Choose File
+        </button>
+      </div>
+
+      <!-- File Selected -->
+      <div
+        *ngIf="file()"
+        class="bg-slate-50 border border-slate-200 rounded-xl p-6"
+      >
+        <div class="flex items-start justify-between mb-4">
+          <div class="flex items-start gap-4">
+            <div
+              class="w-12 h-12 bg-teal-100 rounded-lg flex items-center justify-center flex-shrink-0"
+            >
+              <svg
+                class="w-6 h-6 text-teal-600"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path
+                  d="M8 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM15 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z"
+                ></path>
+                <path
+                  d="M3 4a1 1 0 00-1 1v10a1 1 0 001 1h1.05a2.5 2.5 0 014.9 0H10a1 1 0 001-1V5a1 1 0 00-1-1H3zM14 7a1 1 0 00-1 1v6.05A2.5 2.5 0 0115.95 16H17a1 1 0 001-1v-5a1 1 0 00-.293-.707l-2-2A1 1 0 0015 7h-1z"
+                ></path>
+              </svg>
+            </div>
+            <div>
+              <p class="font-semibold text-slate-900">{{ fileName() }}</p>
+              <p class="text-sm text-slate-600">{{ fileSize() }}</p>
+            </div>
+          </div>
+          <button
+            type="button"
+            (click)="removeFile()"
+            class="text-red-600 hover:text-red-800 font-semibold text-lg leading-none"
+          >
+            ×
+          </button>
+        </div>
+
+        <!-- Progress Bar -->
+        <div *ngIf="uploading()" class="space-y-2">
+          <div class="h-2 bg-slate-200 rounded-full overflow-hidden">
+            <div
+              class="h-full bg-gradient-to-r from-teal-400 to-teal-500 transition-all duration-700"
+              [style.width.%]="progress()"
+            ></div>
+          </div>
+          <p class="text-xs text-slate-600">{{ progress() }}% uploaded</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Info Box -->
+    <div class="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-8">
+      <p class="text-sm text-blue-700">
+        <strong>💡 Tip:</strong> Include pitch decks, financial projections,
+        market research, or any documents that strengthen your profile.
+      </p>
+    </div>
+
+    <!-- Spacer -->
+    <div class="flex-1"></div>
+  </div>
+
+  <!-- Footer Buttons -->
+  <div class="mt-8 pt-6 border-t border-slate-200 flex gap-3 justify-end">
+    <button
+      (click)="onCancel()"
+      class="px-5 py-2.5 bg-slate-100 text-slate-700 font-medium rounded-xl border border-slate-200 hover:bg-slate-200 active:bg-slate-300 transition-all duration-200 text-sm"
+    >
+      Cancel
+    </button>
+
+    <button
+      (click)="uploadDocument()"
+      [disabled]="!canUpload()"
+      [class.opacity-50]="!canUpload()"
+      [class.cursor-not-allowed]="!canUpload()"
+      class="px-6 py-2.5 bg-teal-500 text-white font-bold rounded-xl border-2 border-teal-600 hover:bg-teal-600 active:bg-teal-700 transition-all duration-200 text-sm uppercase tracking-wide disabled:opacity-50"
+    >
+      <span *ngIf="uploading()">Uploading...</span>
+      <span *ngIf="!uploading()">Upload Document</span>
+    </button>
+  </div>
+</div>

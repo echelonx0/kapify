@@ -1,0 +1,263 @@
+<!-- Empty State -->
+<div
+  *ngIf="covers.length === 0"
+  class="flex-1 flex items-center justify-center"
+>
+  <div class="text-center py-20">
+    <div
+      class="w-20 h-20 bg-slate-100 rounded-lg border-3 border-slate-300 flex items-center justify-center mx-auto mb-6"
+    >
+      <svg
+        class="w-10 h-10 text-slate-400"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+        ></path>
+      </svg>
+    </div>
+    <h3 class="text-2xl font-black text-slate-900 mb-2">
+      No cover profiles yet
+    </h3>
+    <p class="text-slate-600 mb-6">
+      Create your first funding cover profile to get started
+    </p>
+    <button
+      (click)="createNew.emit()"
+      class="px-6 py-3 bg-teal-600 text-white font-black rounded-lg border-3 border-teal-700 hover:bg-teal-700 active:bg-teal-800 transition-all duration-200 text-sm uppercase tracking-wide inline-block"
+    >
+      Create First Profile
+    </button>
+  </div>
+</div>
+
+<!-- Grid of Covers -->
+<div *ngIf="covers.length > 0" class="flex-1 overflow-y-auto px-8 py-6">
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pb-8">
+    <div
+      *ngFor="let cover of covers; trackBy: trackById"
+      class="bg-white rounded-2xl border-3 p-6 transition-all duration-200 hover:shadow-md"
+      [class.border-teal-600]="cover.isDefault"
+      [class.border-slate-200]="!cover.isDefault"
+      [class.bg-teal-50]="cover.isDefault"
+    >
+      <!-- Header -->
+      <div class="flex items-start justify-between mb-4">
+        <div class="flex-1">
+          <div class="flex items-center gap-2 mb-2">
+            <h3 class="text-lg font-black text-slate-900">
+              {{ cover.executiveSummary || "Untitled Profile" }}
+            </h3>
+            <span
+              *ngIf="cover.isDefault"
+              class="px-2.5 py-1 bg-teal-100 text-teal-700 rounded-full text-xs font-black border border-teal-400 uppercase tracking-widest"
+            >
+              Default
+            </span>
+          </div>
+          <p
+            class="text-xs text-slate-500 font-semibold uppercase tracking-widest"
+          >
+            {{ getCoverTypeLabel(cover) }}
+          </p>
+        </div>
+      </div>
+
+      <!-- 6 Matching Fields Preview -->
+      <div class="space-y-3 mb-6">
+        <!-- Industries -->
+        <div>
+          <p
+            class="text-xs font-black text-slate-700 uppercase tracking-widest mb-1"
+          >
+            Industries
+          </p>
+          <div class="flex flex-wrap gap-1">
+            <span
+              *ngFor="let industry of cover.industries.slice(0, 2)"
+              class="px-2 py-1 bg-slate-100 text-slate-700 rounded-lg text-xs font-semibold"
+            >
+              {{ industry }}
+            </span>
+            <span
+              *ngIf="cover.industries.length > 2"
+              class="px-2 py-1 bg-slate-100 text-slate-600 rounded-lg text-xs font-semibold"
+            >
+              +{{ cover.industries.length - 2 }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Funding Amount & Type -->
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <p
+              class="text-xs font-black text-slate-700 uppercase tracking-widest mb-1"
+            >
+              Amount
+            </p>
+            <p class="text-base font-black text-teal-600">
+              {{ formatCurrency(cover.fundingAmount) }}
+            </p>
+          </div>
+          <div>
+            <p
+              class="text-xs font-black text-slate-700 uppercase tracking-widest mb-1"
+            >
+              Types
+            </p>
+            <div class="flex flex-wrap gap-1">
+              <span
+                *ngFor="let type of cover.fundingTypes.slice(0, 2)"
+                class="px-2 py-1 bg-slate-100 text-slate-700 rounded-lg text-xs font-semibold"
+              >
+                {{ type }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Business Stages & Location -->
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <p
+              class="text-xs font-black text-slate-700 uppercase tracking-widest mb-1"
+            >
+              Stages
+            </p>
+            <div class="flex flex-wrap gap-1">
+              <span
+                *ngFor="let stage of cover.businessStages.slice(0, 1)"
+                class="px-2 py-1 bg-slate-100 text-slate-700 rounded-lg text-xs font-semibold"
+              >
+                {{ stage }}
+              </span>
+            </div>
+          </div>
+          <div>
+            <p
+              class="text-xs font-black text-slate-700 uppercase tracking-widest mb-1"
+            >
+              Location
+            </p>
+            <p class="text-sm font-semibold text-slate-700">
+              {{ cover.location || "–" }}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Completion Bar -->
+      <div class="mb-4">
+        <div class="flex items-center justify-between mb-2">
+          <p
+            class="text-xs font-black text-slate-700 uppercase tracking-widest"
+          >
+            Profile Completion
+          </p>
+          <p class="text-sm font-black text-teal-600">
+            {{ getCompletionPercentage(cover) }}%
+          </p>
+        </div>
+        <div
+          class="h-2 bg-slate-100 rounded-full border border-slate-200 overflow-hidden"
+        >
+          <div
+            class="h-full bg-gradient-to-r from-teal-400 to-teal-500 transition-all duration-700"
+            [style.width.%]="getCompletionPercentage(cover)"
+          ></div>
+        </div>
+      </div>
+
+      <!-- Document Badge -->
+      <div
+        *ngIf="cover.coverDocumentUrl"
+        class="mb-4 px-3 py-2 bg-green-50 border-2 border-green-200 rounded-lg flex items-center gap-2"
+      >
+        <svg
+          class="w-4 h-4 text-green-600 flex-shrink-0"
+          fill="currentColor"
+          viewBox="0 0 20 20"
+        >
+          <path
+            fill-rule="evenodd"
+            d="M8 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM15 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z"
+          ></path>
+          <path
+            d="M3 4a1 1 0 00-1 1v10a1 1 0 001 1h1.05a2.5 2.5 0 014.9 0H10a1 1 0 001-1V5a1 1 0 00-1-1H3zM14 7a1 1 0 00-1 1v6.05A2.5 2.5 0 0115.95 16H17a1 1 0 001-1v-5a1 1 0 00-.293-.707l-2-2A1 1 0 0015 7h-1z"
+          ></path>
+        </svg>
+        <span class="text-xs font-bold text-green-700">Document attached</span>
+      </div>
+
+      <!-- Metadata -->
+      <div class="mb-4 text-xs text-slate-500">
+        <p>Created {{ formatDate(cover.createdAt) }}</p>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="space-y-2">
+        <!-- Primary: Edit -->
+        <button
+          (click)="editCover.emit(cover.id)"
+          class="w-full px-4 py-3 bg-teal-600 text-white font-black rounded-lg border-3 border-teal-700 hover:bg-teal-700 active:bg-teal-800 transition-all duration-200 text-sm uppercase tracking-wide"
+        >
+          Edit Profile
+        </button>
+
+        <!-- Secondary actions -->
+        <div class="grid grid-cols-2 gap-2">
+          <button
+            *ngIf="!cover.isDefault"
+            (click)="setDefault.emit(cover.id)"
+            class="px-3 py-2.5 bg-slate-100 text-slate-700 font-bold rounded-lg border-2 border-slate-300 hover:bg-slate-200 active:bg-slate-300 transition-all duration-200 text-xs uppercase tracking-wide"
+            title="Use this profile as the default template"
+          >
+            Set Default
+          </button>
+          <div
+            *ngIf="cover.isDefault"
+            class="px-3 py-2.5 bg-teal-50 text-teal-700 font-bold rounded-lg border-2 border-teal-300 text-xs uppercase tracking-wide text-center"
+          >
+            Is Default
+          </div>
+
+          <button
+            (click)="uploadDocument.emit(cover.id)"
+            class="px-3 py-2.5 bg-slate-100 text-slate-700 font-bold rounded-lg border-2 border-slate-300 hover:bg-slate-200 active:bg-slate-300 transition-all duration-200 text-xs uppercase tracking-wide"
+            [title]="
+              cover.coverDocumentUrl ? 'Update document' : 'Add document'
+            "
+          >
+            {{ cover.coverDocumentUrl ? "📄 Update" : "+ Document" }}
+          </button>
+        </div>
+
+        <!-- Additional Actions Row -->
+        <div class="grid grid-cols-2 gap-2 pt-2 border-t border-slate-200">
+          <button
+            (click)="copyCover.emit(cover.id)"
+            class="px-3 py-2 bg-slate-50 text-slate-700 font-bold rounded-lg border-2 border-slate-300 hover:bg-slate-100 active:bg-slate-200 transition-all duration-200 text-xs uppercase tracking-wide"
+            title="Create a copy of this cover"
+          >
+            📋 Copy
+          </button>
+
+          <button
+            *ngIf="!cover.isDefault"
+            (click)="deleteCover.emit(cover.id)"
+            class="px-3 py-2 bg-red-50 text-red-700 font-bold rounded-lg border-2 border-red-300 hover:bg-red-100 active:bg-red-200 transition-all duration-200 text-xs uppercase tracking-wide"
+            title="Delete this cover"
+          >
+            🗑️ Delete
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

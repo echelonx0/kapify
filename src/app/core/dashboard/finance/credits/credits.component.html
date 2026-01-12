@@ -176,7 +176,105 @@
       </div>
 
       <!-- Recent Transactions -->
+      <!-- Recent Transactions (Collapsible) -->
       <div class="bg-white rounded-2xl border border-slate-200 shadow-sm">
+        <!-- Header with Toggle -->
+        <button
+          (click)="toggleTransactions()"
+          class="w-full px-6 py-4 flex items-center justify-between hover:bg-slate-50 transition-colors duration-200 border-b border-slate-200"
+        >
+          <div class="flex items-center gap-3">
+            <lucide-icon
+              [img]="HistoryIcon"
+              [size]="20"
+              class="text-slate-600"
+            />
+            <h2 class="text-lg font-semibold text-slate-900">
+              Transactions History
+            </h2>
+          </div>
+          <lucide-icon
+            [img]="ChevronDownIcon"
+            [size]="20"
+            class="text-slate-600 chevron-rotate"
+            [class.expanded]="isTransactionsExpanded()"
+          />
+        </button>
+
+        <!-- Expandable Content -->
+        <div
+          class="transactions-container"
+          [class.expanded]="isTransactionsExpanded()"
+        >
+          @if (recentTransactions().length > 0) {
+          <div class="overflow-x-auto">
+            <table class="w-full">
+              <thead class="bg-slate-50 border-t border-slate-200">
+                <tr>
+                  <th
+                    class="text-left text-xs font-semibold text-slate-600 px-6 py-3"
+                  >
+                    Type
+                  </th>
+                  <th
+                    class="text-left text-xs font-semibold text-slate-600 px-6 py-3"
+                  >
+                    Amount
+                  </th>
+                  <th
+                    class="text-left text-xs font-semibold text-slate-600 px-6 py-3"
+                  >
+                    Description
+                  </th>
+                  <th
+                    class="text-left text-xs font-semibold text-slate-600 px-6 py-3"
+                  >
+                    Date
+                  </th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-200">
+                @for (txn of recentTransactions(); track txn.id) {
+                <tr class="hover:bg-slate-50 transition-colors">
+                  <td class="px-6 py-4">
+                    <span
+                      class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold"
+                      [ngClass]="
+                        txn.type === 'purchase'
+                          ? 'bg-green-50 text-green-700'
+                          : txn.type === 'spend'
+                          ? 'bg-red-50 text-red-700'
+                          : 'bg-slate-50 text-slate-700'
+                      "
+                    >
+                      {{ getTransactionLabel(txn.type) }}
+                    </span>
+                  </td>
+                  <td
+                    class="px-6 py-4 font-semibold"
+                    [ngClass]="getTransactionColor(txn.type)"
+                  >
+                    {{ formatTransactionAmount(txn) }}
+                  </td>
+                  <td class="px-6 py-4 text-sm text-slate-600">
+                    {{ txn.description || "—" }}
+                  </td>
+                  <td class="px-6 py-4 text-sm text-slate-500">
+                    {{ formatTransactionDate(txn.created_at) }}
+                  </td>
+                </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+          } @else {
+          <div class="p-12 text-center border-t border-slate-200">
+            <p class="text-slate-500 text-sm">No transactions yet</p>
+          </div>
+          }
+        </div>
+      </div>
+      <!-- <div class="bg-white rounded-2xl border border-slate-200 shadow-sm">
         <div class="border-b border-slate-200 p-6">
           <div class="flex items-center gap-2">
             <lucide-icon
@@ -256,7 +354,7 @@
           <p class="text-slate-500 text-sm">No transactions yet</p>
         </div>
         }
-      </div>
+      </div> -->
     </div>
     }
   </main>
