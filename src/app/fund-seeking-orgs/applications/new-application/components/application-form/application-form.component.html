@@ -4,149 +4,49 @@
   <div
     class="w-12 h-12 border-4 border-teal-200 border-t-teal-500 rounded-full animate-spin"
   ></div>
-  <p class="text-slate-600 font-medium">Loading your funding profiles...</p>
+  <p class="text-slate-600 font-medium">Loading your funding request...</p>
 </div>
 }
 
-<!-- EMPTY STATE -->
-@if (currentView() === 'empty') {
+<!-- ERROR STATE -->
+@if (currentView() === 'error') {
 <div
   class="flex flex-col items-center justify-center py-16 space-y-6 text-center"
 >
   <div
-    class="w-16 h-16 rounded-2xl bg-slate-100 flex items-center justify-center"
+    class="w-16 h-16 rounded-2xl bg-red-100 border-3 border-red-400 flex items-center justify-center"
   >
-    <lucide-icon [img]="PlusIcon" [size]="32" class="text-slate-400" />
+    <lucide-icon [img]="CheckIcon" [size]="32" class="text-red-600" />
   </div>
   <div>
     <h3 class="text-xl font-bold text-slate-900 mb-2">
-      No Funding Profiles Yet
+      Unable to Load Funding Request
     </h3>
     <p class="text-slate-600 mb-6 max-w-sm">
-      Create a funding profile to get started. You can reuse it for multiple
-      opportunities.
+      {{
+        errorMessage() ||
+          "An error occurred while loading your funding request."
+      }}
     </p>
   </div>
   <button
-    (click)="openCreateModal()"
+    (click)="retryInitialize()"
     class="px-6 py-2.5 bg-teal-500 text-white font-semibold rounded-xl hover:bg-teal-600 active:bg-teal-700 transition-colors duration-200"
   >
-    Create Funding Profile
+    Retry
   </button>
 </div>
 }
 
-<!-- COVER SELECTION VIEW -->
-@if (currentView() === 'selection') {
-<div class="animate-slideInUp space-y-6">
-  <!-- Header -->
-  <div>
-    <h3 class="text-lg font-semibold text-slate-900 mb-1">
-      Select Funding Profile
-    </h3>
-    <p class="text-sm text-slate-600">
-      Choose an existing profile or create a new one for this opportunity
-    </p>
-  </div>
-
-  <!-- Covers Grid -->
-  <div class="grid grid-cols-1 gap-4">
-    @for (cover of covers(); track cover.id) {
-    <!-- Neo-brutalist card style: 40% intensity -->
-    <div
-      (click)="selectCover(cover)"
-      class="bg-white rounded-xl border-2 border-slate-300 p-5 cursor-pointer transition-all duration-200 hover:border-teal-400 hover:shadow-md group"
-    >
-      <div class="flex items-start justify-between">
-        <div class="flex-1">
-          <!-- Title / Summary -->
-          <h4
-            class="font-semibold text-slate-900 group-hover:text-teal-600 transition-colors"
-          >
-            {{ cover.executiveSummary || "Untitled Profile" }}
-          </h4>
-
-          <!-- Details Grid -->
-          <div class="grid grid-cols-2 gap-4 mt-4">
-            <!-- Industries -->
-            <div>
-              <p
-                class="text-xs font-bold text-slate-600 uppercase tracking-wide mb-1"
-              >
-                Industries
-              </p>
-              <p class="text-sm text-slate-700">
-                {{ formatIndustries(cover.industries) }}
-              </p>
-            </div>
-
-            <!-- Funding Type -->
-            <div>
-              <p
-                class="text-xs font-bold text-slate-600 uppercase tracking-wide mb-1"
-              >
-                Funding Type
-              </p>
-              <p class="text-sm text-slate-700">
-                {{ formatFundingType(cover.fundingTypes) }}
-              </p>
-            </div>
-
-            <!-- Requested Amount -->
-            <div>
-              <p
-                class="text-xs font-bold text-slate-600 uppercase tracking-wide mb-1"
-              >
-                Amount
-              </p>
-              <p class="text-sm font-semibold text-teal-600">
-                {{ formatAmount(cover.fundingAmount) }}
-              </p>
-            </div>
-
-            <!-- Last Updated -->
-            <div>
-              <p
-                class="text-xs font-bold text-slate-600 uppercase tracking-wide mb-1"
-              >
-                Last Updated
-              </p>
-              <p class="text-sm text-slate-700">
-                {{ cover.updatedAt | date : "MMM d, yyyy" }}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <!-- Selection Indicator -->
-        <div
-          class="w-5 h-5 rounded-full border-2 border-slate-300 group-hover:border-teal-500 transition-all ml-4 flex-shrink-0"
-        ></div>
-      </div>
-    </div>
-    }
-  </div>
-
-  <!-- Create New Button -->
-  <button
-    (click)="openCreateModal()"
-    class="w-full px-6 py-3 bg-slate-50 text-slate-700 font-semibold rounded-xl border-2 border-dashed border-slate-300 hover:bg-slate-100 hover:border-teal-400 transition-all duration-200 flex items-center justify-center gap-2"
-  >
-    <lucide-icon [img]="PlusIcon" [size]="18" />
-    Create New Profile
-  </button>
-</div>
-}
-
-<!-- CONFIRMATION VIEW -->
+<!-- CONFIRMATION VIEW (Single profile loaded/created) -->
 @if (currentView() === 'confirmation') {
 <div class="animate-fadeInScale space-y-6">
   <!-- Header -->
   <div class="flex items-center gap-3 pb-4 border-b-2 border-slate-200">
     <lucide-icon [img]="CheckIcon" [size]="24" class="text-green-600" />
     <div>
-      <h3 class="text-lg font-bold text-slate-900">Profile Ready</h3>
-      <p class="text-sm text-slate-600">Review your funding profile details</p>
+      <h3 class="text-lg font-bold text-slate-900">Funding Request Ready</h3>
+      <p class="text-sm text-slate-600">Review your funding request details</p>
     </div>
   </div>
 
@@ -156,7 +56,7 @@
     <!-- Profile Title -->
     <div class="bg-teal-50 rounded-xl p-5 border-2 border-teal-300">
       <h4 class="text-base font-bold text-teal-900">
-        {{ cover.executiveSummary || "Funding Profile" }}
+        {{ cover.executiveSummary || "Funding Request" }}
       </h4>
       @if (cover.isDefault) {
       <span
@@ -249,7 +149,7 @@
     <div class="bg-teal-50 rounded-lg p-4 border border-teal-200">
       <div class="flex items-center justify-between mb-3">
         <span class="text-xs font-bold text-teal-900 uppercase tracking-wide">
-          Profile Completion
+          Request Completion
         </span>
         <span class="text-sm font-bold text-teal-700"
           >{{ completionPercentage() }}%</span
@@ -265,19 +165,11 @@
       </div>
     </div>
 
-    <!-- Action Buttons -->
+    <!-- Action Button -->
     <div class="flex gap-3 pt-4 border-t border-slate-200">
       <button
-        (click)="goBackToSelection()"
-        class="flex-1 px-4 py-3 bg-slate-100 text-slate-700 font-semibold rounded-lg border border-slate-200 hover:bg-slate-200 active:bg-slate-300 transition-all duration-200 flex items-center justify-center gap-2"
-      >
-        <lucide-icon [img]="BackIcon" [size]="18" />
-        Go Back
-      </button>
-
-      <button
         (click)="confirmSelection()"
-        class="flex-1 px-4 py-3 bg-teal-500 text-white font-bold rounded-lg border-2 border-teal-600 hover:bg-teal-600 active:bg-teal-700 transition-all duration-200 uppercase tracking-wide text-sm"
+        class="w-full px-4 py-3 bg-teal-500 text-white font-bold rounded-lg border-2 border-teal-600 hover:bg-teal-600 active:bg-teal-700 transition-all duration-200 uppercase tracking-wide text-sm"
       >
         Confirm & Continue
       </button>
@@ -285,13 +177,4 @@
   </div>
   }
 </div>
-}
-
-<!-- Create Cover Modal (conditionally shown) -->
-@if (showCreateModal()) {
-<app-create-cover-modal
-  (choiceMade)="onCreateCoverChoice()"
-  (cancel)="onCreateCoverCancel()"
->
-</app-create-cover-modal>
 }

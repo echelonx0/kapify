@@ -29,7 +29,7 @@ export const profileRoutes: Routes = [
         loadComponent: () =>
           import(
             '../../profiles/SME-Profiles/pages/profile-review.component'
-          ).then((c) => c.ProfileReviewComponent),
+          ).then((c) => c.ReviewTabComponent),
         title: 'Profile Overview - Kapify',
       },
       {

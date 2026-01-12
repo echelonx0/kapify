@@ -1,9 +1,7 @@
-import { Component, signal, inject, OnInit, OnDestroy } from '@angular/core';
+import { Component, signal, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Subject } from 'rxjs';
 import { LucideAngularModule, ChevronDown, FileText } from 'lucide-angular';
-
-import { PublicProfileService } from 'src/app/funder/services/public-profile.service';
 import { KapifyAIAnalysisComponent } from 'src/app/features/ai/ai-analysis/kapify-ai-analysis.component';
 import { FunderDocumentAnalysisComponent } from 'src/app/features/ai/document-analysis/funder-document-analysis.component';
 
@@ -16,7 +14,7 @@ interface ReviewTab {
 }
 
 @Component({
-  selector: 'app-profile-review',
+  selector: 'app-review-tab',
   standalone: true,
   imports: [
     CommonModule,
@@ -54,8 +52,8 @@ interface ReviewTab {
   `,
   styles: [],
 })
-export class ProfileReviewComponent implements OnInit, OnDestroy {
-  private publicProfileService = inject(PublicProfileService);
+export class ReviewTabComponent implements OnInit, OnDestroy {
+  // private publicProfileService = inject(PublicProfileService);
   private destroy$ = new Subject<void>();
 
   // State
@@ -102,14 +100,6 @@ export class ProfileReviewComponent implements OnInit, OnDestroy {
   getActiveTabDescription(): string {
     const tab = this.tabs.find((t) => t.id === this.activeTab());
     return tab?.description || '';
-  }
-
-  // Preferences
-  private loadPreferences() {
-    const saved = localStorage.getItem('profileReviewActiveTab');
-    if (saved && (saved === 'evaluator' || saved === 'analysis')) {
-      this.activeTab.set(saved);
-    }
   }
 
   private saveTabPreference(tabId: ReviewTabId) {

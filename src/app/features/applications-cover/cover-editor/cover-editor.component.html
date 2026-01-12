@@ -1,79 +1,75 @@
-<!-- src/app/features/applications-cover/cover-editor/cover-editor.component.html -->
-
-<div
-  class="flex-1 overflow-y-auto flex flex-col bg-slate-50 px-4 lg:px-8 lg:ml-24"
->
-  <div class="py-6 flex flex-col flex-1 max-w-6xl mx-auto w-full">
-    <!-- ===== HEADER ===== -->
-    <div class="mb-8 flex-shrink-0">
-      <h1 class="text-3xl font-bold text-slate-900 mb-2">
-        {{
-          isCreating()
-            ? "Create a Funding Profile"
-            : "Edit Your Funding Profile"
-        }}
-      </h1>
-      <p class="text-slate-600 text-sm">
-        {{
-          isCreating()
-            ? "Set up a custom profile to share with investors and funds"
-            : "Update your profile to reflect your current funding needs"
-        }}
-      </p>
-    </div>
-
-    <!-- ===== VALIDATION ERRORS ===== -->
-    <div
-      *ngIf="errors().length > 0"
-      class="mb-6 flex-shrink-0 bg-red-50 border border-red-200/50 rounded-2xl p-4"
-    >
-      <p
-        class="text-xs font-semibold text-red-700 uppercase tracking-wide mb-3"
-      >
-        ⚠️ Please complete these fields
-      </p>
-      <ul class="space-y-1">
-        <li *ngFor="let error of errors()" class="text-sm text-red-700">
-          • {{ error }}
-        </li>
-      </ul>
-    </div>
-
-    <!-- ===== FORM CONTENT (SCROLLABLE) ===== -->
-    <div class="space-y-6 flex-1">
-      <!-- Section 1: Profile Name -->
-      <div class="bg-white rounded-2xl border border-slate-200 p-6">
-        <h2 class="text-lg font-semibold text-slate-900 mb-4">
-          What round are you raising?
-        </h2>
-
-        <div>
-          <label class="block text-sm font-medium text-slate-900 mb-2">
-            Profile Name <span class="text-red-600">*</span>
-          </label>
-          <input
-            type="text"
-            [value]="executiveSummary()"
-            (change)="updateTextField('executiveSummary', $event)"
-            placeholder="e.g., Series A - Product Development"
-            class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200"
-          />
-          <p class="text-xs text-slate-500 mt-2">
-            Give this profile a memorable name so you can reuse it across
-            different funding applications
-          </p>
-        </div>
+<!-- Root: fills viewport and enforces column layout -->
+<div class="h-full flex flex-col bg-slate-50">
+  <!-- ===== HEADER: NEO-BRUTALIST (matching demographics) ===== -->
+  <div
+    class="flex-shrink-0 px-6 lg:px-8 py-6 border-b-4 border-slate-200 bg-white sticky top-0 z-10"
+  >
+    <div class="flex items-center justify-between">
+      <div>
+        <h1 class="text-3xl font-black text-slate-900 tracking-tight">
+          {{ isCreating() ? "CREATE FUNDING REQUEST" : "EDIT FUNDING REQUEST" }}
+        </h1>
+        <p class="text-sm text-slate-600 mt-2">
+          {{
+            isCreating()
+              ? "Set up a custom request to share with investors"
+              : "Update your funding profile request"
+          }}
+        </p>
       </div>
 
-      <!-- Section 2: Sectors & Funding Basics -->
-      <div class="bg-white rounded-2xl border border-slate-200 p-6">
-        <h2 class="text-lg font-semibold text-slate-900 mb-6">
+      <!-- Completion Badge -->
+      <div class="text-right">
+        <div class="text-4xl font-black text-teal-600">
+          {{ completionPercentage() }}%
+        </div>
+        <p class="text-xs text-slate-600 font-semibold mt-1">Complete</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== ERROR DISPLAY (Like Demographics) ===== -->
+  <div
+    *ngIf="errors().length > 0"
+    class="flex-shrink-0 px-6 lg:px-8 py-4 bg-red-50 border-b-4 border-red-400 flex items-center gap-3 justify-between"
+  >
+    <div class="flex items-center gap-3">
+      <svg
+        class="w-5 h-5 text-red-600 flex-shrink-0"
+        fill="currentColor"
+        viewBox="0 0 20 20"
+      >
+        <path
+          fill-rule="evenodd"
+          d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+          clip-rule="evenodd"
+        ></path>
+      </svg>
+      <div>
+        <p class="font-bold text-red-700 text-sm">
+          ⚠️ Please complete these fields
+        </p>
+        <ul class="space-y-1 mt-2">
+          <li *ngFor="let error of errors()" class="text-xs text-red-700">
+            • {{ error }}
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== CONTENT: SCROLLABLE ===== -->
+  <div class="flex-1 overflow-y-auto">
+    <div class="max-w-4xl mx-auto px-4 lg:px-8 py-8 space-y-6">
+      <!-- Section 1: Sectors & Funding Basics -->
+      <div class="bg-white rounded-2xl border-3 border-slate-200 p-6">
+        <h2 class="text-lg font-bold text-slate-900 mb-6">
           About Your Business
         </h2>
 
         <!-- Sectors -->
         <div class="mb-8">
-          <label class="block text-sm font-medium text-slate-900 mb-3">
+          <label class="block text-sm font-semibold text-slate-900 mb-3">
             What sectors does your business operate in?
             <span class="text-red-600">*</span>
           </label>
@@ -106,24 +102,6 @@
             </button>
           </div>
 
-          <!-- Custom Input -->
-          <div class="flex gap-2 mb-3">
-            <input
-              #industriesInput
-              type="text"
-              placeholder="Add other sectors..."
-              (keyup.enter)="addArrayItem('industries', industriesInput)"
-              class="flex-1 px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all duration-200"
-            />
-            <button
-              type="button"
-              (click)="addArrayItem('industries', industriesInput)"
-              class="px-4 py-2.5 bg-slate-100 text-slate-700 font-medium rounded-xl hover:bg-slate-200 transition-all duration-200 text-sm"
-            >
-              Add
-            </button>
-          </div>
-
           <!-- Selected Sectors -->
           <div class="flex flex-wrap gap-2">
             <span
@@ -141,73 +119,16 @@
             </span>
           </div>
         </div>
-
-        <!-- Location & Business Stages Grid -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <!-- Location -->
-          <div>
-            <label class="block text-sm font-medium text-slate-900 mb-2">
-              Where is your business based?
-              <span class="text-red-600">*</span>
-            </label>
-            <input
-              type="text"
-              [value]="location()"
-              (change)="updateTextField('location', $event)"
-              placeholder="e.g., Cape Town, South Africa"
-              class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all duration-200"
-            />
-          </div>
-
-          <!-- Business Stages -->
-          <div>
-            <label class="block text-sm font-medium text-slate-900 mb-3">
-              Which stages apply to your business?
-              <span class="text-red-600">*</span>
-            </label>
-            <div class="flex flex-wrap gap-2">
-              <button
-                *ngFor="let stage of businessStageOptions"
-                type="button"
-                (click)="toggleArrayItem('businessStages', stage.value)"
-                [class.bg-teal-50]="
-                  isItemInArray('businessStages', stage.value)
-                "
-                [class.border-teal-300]="
-                  isItemInArray('businessStages', stage.value)
-                "
-                [class.text-teal-700]="
-                  isItemInArray('businessStages', stage.value)
-                "
-                [class.font-semibold]="
-                  isItemInArray('businessStages', stage.value)
-                "
-                [class.bg-white]="!isItemInArray('businessStages', stage.value)"
-                [class.border-slate-200]="
-                  !isItemInArray('businessStages', stage.value)
-                "
-                [class.text-slate-700]="
-                  !isItemInArray('businessStages', stage.value)
-                "
-                class="px-3 py-2 border rounded-lg text-sm transition-all duration-200 hover:border-teal-300 hover:bg-teal-50"
-              >
-                {{ stage.label }}
-              </button>
-            </div>
-          </div>
-        </div>
       </div>
 
-      <!-- Section 3: Funding Details -->
-      <div class="bg-white rounded-2xl border border-slate-200 p-6">
-        <h2 class="text-lg font-semibold text-slate-900 mb-6">
-          Funding Details
-        </h2>
+      <!-- Section 2: Funding Details -->
+      <div class="bg-white rounded-2xl border-3 border-slate-200 p-6">
+        <h2 class="text-lg font-bold text-slate-900 mb-6">Funding Details</h2>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <!-- Funding Amount -->
           <div>
-            <label class="block text-sm font-medium text-slate-900 mb-2">
+            <label class="block text-sm font-semibold text-slate-900 mb-2">
               How much are you looking to raise? (ZAR)
               <span class="text-red-600">*</span>
             </label>
@@ -222,7 +143,7 @@
 
           <!-- Funding Types -->
           <div>
-            <label class="block text-sm font-medium text-slate-900 mb-3">
+            <label class="block text-sm font-semibold text-slate-900 mb-3">
               What types of funding are you open to?
               <span class="text-red-600">*</span>
             </label>
@@ -259,7 +180,7 @@
           *ngIf="hasEquityFunding()"
           class="mt-6 pt-6 border-t border-slate-200"
         >
-          <label class="block text-sm font-medium text-slate-900 mb-2">
+          <label class="block text-sm font-semibold text-slate-900 mb-2">
             What equity percentage would you offer?
           </label>
           <input
@@ -275,13 +196,13 @@
         </div>
       </div>
 
-      <!-- Section 4: Use of Funds -->
-      <div class="bg-white rounded-2xl border border-slate-200 p-6">
-        <h2 class="text-lg font-semibold text-slate-900 mb-4">
+      <!-- Section 3: Use of Funds -->
+      <div class="bg-white rounded-2xl border-3 border-slate-200 p-6">
+        <h2 class="text-lg font-bold text-slate-900 mb-4">
           How will you use this funding?
         </h2>
 
-        <label class="block text-sm font-medium text-slate-900 mb-2">
+        <label class="block text-sm font-semibold text-slate-900 mb-2">
           Tell investors your plans
           <span class="text-red-600">*</span>
         </label>
@@ -297,13 +218,13 @@
         </p>
       </div>
 
-      <!-- Section 5: Repayment & Exit Strategy -->
-      <div class="bg-white rounded-2xl border border-slate-200 p-6">
-        <h2 class="text-lg font-semibold text-slate-900 mb-4">
+      <!-- Section 4: Repayment & Exit Strategy -->
+      <div class="bg-white rounded-2xl border-3 border-slate-200 p-6">
+        <h2 class="text-lg font-bold text-slate-900 mb-4">
           How will investors get returns?
         </h2>
 
-        <label class="block text-sm font-medium text-slate-900 mb-2">
+        <label class="block text-sm font-semibold text-slate-900 mb-2">
           Your repayment or exit strategy
         </label>
         <textarea
@@ -315,91 +236,87 @@
         ></textarea>
       </div>
 
-      <!-- Section 6: Investor Preferences -->
-      <div class="bg-white rounded-2xl border border-slate-200 p-6">
-        <h2 class="text-lg font-semibold text-slate-900 mb-6">
+      <!-- Section 5: Investor Preferences -->
+      <div class="bg-white rounded-2xl border-3 border-slate-200 p-6">
+        <h2 class="text-lg font-bold text-slate-900 mb-6">
           The Right Partner Matters
         </h2>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <!-- Investor Profiles Looking For -->
-          <div>
-            <label class="block text-sm font-medium text-slate-900 mb-3">
-              What investor profiles interest you?
-            </label>
-            <p class="text-xs text-slate-500 mb-3">
-              Select types or add custom profiles
-            </p>
+        <!-- Investor Profiles Looking For -->
+        <div>
+          <label class="block text-sm font-semibold text-slate-900 mb-3">
+            What investor profiles interest you?
+          </label>
+          <p class="text-xs text-slate-500 mb-3">
+            Select types or add custom profiles
+          </p>
 
-            <!-- Predefined Investor Types -->
-            <div class="mb-3 space-y-2">
+          <!-- Predefined Investor Types -->
+          <div class="mb-3 space-y-2">
+            <button
+              *ngFor="let type of investorTypeOptions"
+              type="button"
+              (click)="addPredefinedItem('investmentCriteria', type)"
+              [class.bg-green-50]="
+                isPredefinedSelected('investmentCriteria', type)
+              "
+              [class.border-green-300]="
+                isPredefinedSelected('investmentCriteria', type)
+              "
+              [class.text-green-700]="
+                isPredefinedSelected('investmentCriteria', type)
+              "
+              [class.font-semibold]="
+                isPredefinedSelected('investmentCriteria', type)
+              "
+              [class.bg-white]="
+                !isPredefinedSelected('investmentCriteria', type)
+              "
+              [class.border-slate-200]="
+                !isPredefinedSelected('investmentCriteria', type)
+              "
+              [class.text-slate-700]="
+                !isPredefinedSelected('investmentCriteria', type)
+              "
+              class="w-full text-left px-3 py-2 border rounded-lg text-sm transition-all duration-200 hover:border-green-300 hover:bg-green-50"
+            >
+              {{ type }}
+            </button>
+          </div>
+
+          <!-- Custom Input -->
+          <div class="flex gap-2 mb-3">
+            <input
+              #criteriaInput
+              type="text"
+              placeholder="Add custom investor type..."
+              (keyup.enter)="addArrayItem('investmentCriteria', criteriaInput)"
+              class="flex-1 px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all duration-200"
+            />
+            <button
+              type="button"
+              (click)="addArrayItem('investmentCriteria', criteriaInput)"
+              class="px-4 py-2.5 bg-slate-100 text-slate-700 font-semibold rounded-xl hover:bg-slate-200 transition-all duration-200 text-sm"
+            >
+              Add
+            </button>
+          </div>
+
+          <!-- Selected Items -->
+          <div class="flex flex-wrap gap-2">
+            <span
+              *ngFor="let criteria of investmentCriteria()"
+              class="px-3 py-1.5 bg-green-50 border border-green-300/50 rounded-lg text-sm font-semibold text-green-700 flex items-center gap-2"
+            >
+              ✓ {{ criteria }}
               <button
-                *ngFor="let type of investorTypeOptions"
                 type="button"
-                (click)="addPredefinedItem('investmentCriteria', type)"
-                [class.bg-green-50]="
-                  isPredefinedSelected('investmentCriteria', type)
-                "
-                [class.border-green-300]="
-                  isPredefinedSelected('investmentCriteria', type)
-                "
-                [class.text-green-700]="
-                  isPredefinedSelected('investmentCriteria', type)
-                "
-                [class.font-semibold]="
-                  isPredefinedSelected('investmentCriteria', type)
-                "
-                [class.bg-white]="
-                  !isPredefinedSelected('investmentCriteria', type)
-                "
-                [class.border-slate-200]="
-                  !isPredefinedSelected('investmentCriteria', type)
-                "
-                [class.text-slate-700]="
-                  !isPredefinedSelected('investmentCriteria', type)
-                "
-                class="w-full text-left px-3 py-2 border rounded-lg text-sm transition-all duration-200 hover:border-green-300 hover:bg-green-50"
+                (click)="removeArrayItem('investmentCriteria', criteria)"
+                class="text-green-600 hover:text-green-800 text-lg leading-none hover:font-bold"
               >
-                {{ type }}
+                ×
               </button>
-            </div>
-
-            <!-- Custom Input -->
-            <div class="flex gap-2 mb-3">
-              <input
-                #criteriaInput
-                type="text"
-                placeholder="Add custom investor type..."
-                (keyup.enter)="
-                  addArrayItem('investmentCriteria', criteriaInput)
-                "
-                class="flex-1 px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all duration-200"
-              />
-              <button
-                type="button"
-                (click)="addArrayItem('investmentCriteria', criteriaInput)"
-                class="px-4 py-2.5 bg-slate-100 text-slate-700 font-medium rounded-xl hover:bg-slate-200 transition-all duration-200 text-sm"
-              >
-                Add
-              </button>
-            </div>
-
-            <!-- Selected Items -->
-            <div class="flex flex-wrap gap-2">
-              <span
-                *ngFor="let criteria of investmentCriteria()"
-                class="px-3 py-1.5 bg-green-50 border border-green-300/50 rounded-lg text-sm font-medium text-green-700 flex items-center gap-2"
-              >
-                ✓ {{ criteria }}
-                <button
-                  type="button"
-                  (click)="removeArrayItem('investmentCriteria', criteria)"
-                  class="text-green-600 hover:text-green-800 text-lg leading-none hover:font-bold"
-                >
-                  ×
-                </button>
-              </span>
-            </div>
+            </span>
           </div>
         </div>
       </div>
@@ -409,14 +326,14 @@
     </div>
   </div>
 
-  <!-- ===== STICKY FOOTER (STANDARD DESIGN SYSTEM) ===== -->
+  <!-- ===== STICKY FOOTER: BLENDED NEO-BRUTALIST ===== -->
   <div
-    class="flex-shrink-0 sticky bottom-0 z-20 bg-white border-t border-slate-200 px-4 lg:px-8 py-4"
+    class="flex-shrink-0 sticky bottom-0 z-20 bg-white border-t-4 border-slate-300 px-4 lg:px-8 py-4"
   >
-    <div class="max-w-6xl mx-auto flex gap-3 justify-end">
+    <div class="max-w-4xl mx-auto flex gap-3 justify-end">
       <button
         (click)="onCancel()"
-        class="px-6 py-2.5 bg-slate-100 text-slate-700 font-medium rounded-xl hover:bg-slate-200 active:bg-slate-300 transition-all duration-200 text-sm"
+        class="px-6 py-2.5 bg-slate-100 text-slate-700 font-semibold rounded-lg border border-slate-200 hover:bg-slate-200 active:bg-slate-300 transition-all duration-200 text-sm"
       >
         Cancel
       </button>
@@ -424,7 +341,7 @@
       <button
         *ngIf="!isCreating()"
         (click)="uploadDocument.emit(cover!.id)"
-        class="px-6 py-2.5 bg-slate-100 text-slate-700 font-medium rounded-xl hover:bg-slate-200 active:bg-slate-300 transition-all duration-200 text-sm"
+        class="px-6 py-2.5 bg-slate-100 text-slate-700 font-semibold rounded-lg border border-slate-200 hover:bg-slate-200 active:bg-slate-300 transition-all duration-200 text-sm"
         title="Upload pitch deck or financial summary"
       >
         Attach Files
@@ -435,7 +352,7 @@
         [disabled]="!canSave()"
         [class.opacity-50]="!canSave()"
         [class.cursor-not-allowed]="!canSave()"
-        class="px-6 py-2.5 bg-teal-500 text-white font-medium rounded-xl hover:bg-teal-600 active:bg-teal-700 transition-all duration-200 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+        class="px-6 py-2.5 bg-teal-600 text-white font-black rounded-lg border-3 border-teal-700 uppercase tracking-wide text-sm hover:bg-teal-700 active:bg-teal-800 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {{ saving() ? "Saving..." : "Save Profile" }}
       </button>
