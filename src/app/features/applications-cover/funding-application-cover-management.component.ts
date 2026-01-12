@@ -18,24 +18,20 @@ import { ActivityService } from 'src/app/shared/services/activity.service';
 import { FundingApplicationCoverInformation } from 'src/app/shared/models/funding-application-cover.model';
 import { FundingApplicationCoverService } from 'src/app/shared/services/funding-application-cover.service';
 import { CommonModule } from '@angular/common';
-import { CreateCoverModalComponent } from './create-cover-modal.component';
 
-type ViewMode = 'list' | 'editor' | 'upload' | 'createModal';
+type ViewMode = 'list' | 'editor' | 'upload';
 type OperationMode = 'create' | 'edit' | 'view';
 
 /**
  * FundingApplicationCoverManagementComponent
  *
- * Orchestrates the complete cover management system:
+ * Orchestrates the cover management system:
  * - List view (all covers)
- * - Create modal (guided choice: fresh vs copy)
  * - Editor view (edit cover details)
  * - Upload view (attach documents)
  *
- * Fixed Issues:
- * 1. Abrupt creation → Now shows decision modal first
- * 2. Scrolling in editor → Fixed overflow hierarchy
- * 3. Better UX flow → Guided, not jarring
+ * NOTE: Modal creation now happens in CoverStatusSectionComponent
+ * This component focuses on managing existing covers only.
  *
  * URL is source of truth via query params.
  */
@@ -46,7 +42,6 @@ type OperationMode = 'create' | 'edit' | 'view';
     CoverListComponent,
     CoverEditorComponent,
     CoverDocumentUploadComponent,
-    CreateCoverModalComponent,
     CommonModule,
   ],
   templateUrl: './funding-application-cover-management.component.html',
@@ -73,7 +68,6 @@ export class FundingApplicationCoverManagementComponent
   private selectedCoverId = signal<string | null>(null);
   private operationMode = signal<OperationMode>('view');
   private isInitializing = signal(true);
-  private showCreateModal = signal(false);
 
   // Error state
   error = signal<string | null>(null);
@@ -83,15 +77,9 @@ export class FundingApplicationCoverManagementComponent
   readonly selectedId = this.selectedCoverId;
   readonly mode = this.operationMode;
   readonly initializing = this.isInitializing;
-  readonly showModal = this.showCreateModal;
 
   // Determine which view to render
   readonly currentView = computed<ViewMode>(() => {
-    // Show modal if explicitly requested
-    if (this.showModal()) {
-      return 'createModal';
-    }
-
     const mode = this.mode();
     const id = this.selectedId();
     const queryView = this.route.snapshot.queryParamMap.get('view');
@@ -120,10 +108,6 @@ export class FundingApplicationCoverManagementComponent
     return this.covers().find((c) => c.isDefault) || null;
   });
 
-  readonly nonDefaultCovers = computed(() => {
-    return this.covers().filter((c) => !c.isDefault);
-  });
-
   ngOnInit(): void {
     // Initialize: Load all covers
     this.loadAllCovers();
@@ -150,12 +134,6 @@ export class FundingApplicationCoverManagementComponent
     if (coverId && coverId !== this.selectedId()) {
       this.selectedCoverId.set(coverId);
       console.log(`📍 Mode: ${mode}, Cover: ${coverId}`);
-    } else if (!coverId && mode === 'create') {
-      // For create mode without coverId: show decision modal
-      if (!this.selectedId() && !this.showModal()) {
-        console.log('📋 Showing create decision modal');
-        this.showCreateModal.set(true);
-      }
     }
   }
 
@@ -181,68 +159,6 @@ export class FundingApplicationCoverManagementComponent
    */
   async refreshCovers(): Promise<void> {
     await this.loadAllCovers();
-  }
-
-  // ===== MODAL HANDLERS =====
-
-  /**
-   * Handle create choice from modal
-   */
-  async onCreateChoice(choice: {
-    action: 'fresh' | 'copy';
-    coverId?: string;
-  }): Promise<void> {
-    this.showCreateModal.set(false);
-
-    try {
-      if (choice.action === 'fresh') {
-        // Create blank cover
-        const result = await this.coverService.createBlankCover();
-        if (result.success && result.cover) {
-          this.selectedCoverId.set(result.cover.id);
-          this.operationMode.set('edit');
-          console.log('✅ Fresh cover created:', result.cover.id);
-
-          // Track activity
-          this.activityService.trackProfileActivity(
-            'created',
-            'New funding profile created (blank)',
-            'cover_create_fresh'
-          );
-        } else {
-          this.error.set(result.error || 'Failed to create cover');
-        }
-      } else if (choice.action === 'copy' && choice.coverId) {
-        // Copy existing cover
-        const result = await this.coverService.copyCover(choice.coverId);
-        if (result.success && result.cover) {
-          await this.refreshCovers();
-          this.selectedCoverId.set(result.cover.id);
-          this.operationMode.set('edit');
-          console.log('✅ Cover copied:', result.cover.id);
-
-          // Track activity
-          this.activityService.trackProfileActivity(
-            'created',
-            'New funding profile created (from copy)',
-            'cover_create_copy'
-          );
-        } else {
-          this.error.set(result.error || 'Failed to copy cover');
-        }
-      }
-    } catch (err: any) {
-      this.error.set(err?.message || 'Failed to create cover');
-      console.error('❌ Create choice error:', err);
-    }
-  }
-
-  /**
-   * Cancel modal and return to list
-   */
-  onCreateModalCancel(): void {
-    this.showCreateModal.set(false);
-    this.navigateToList();
   }
 
   // ===== NAVIGATION =====
@@ -289,13 +205,6 @@ export class FundingApplicationCoverManagementComponent
   }
 
   // ===== COVER ACTIONS =====
-
-  /**
-   * Initiate new cover creation (shows modal)
-   */
-  createNewCover(): void {
-    this.showCreateModal.set(true);
-  }
 
   /**
    * Set cover as default
@@ -347,7 +256,7 @@ export class FundingApplicationCoverManagementComponent
   }
 
   /**
-   * Copy cover (from list, not modal)
+   * Copy cover (from list)
    */
   async copyCover(coverId: string): Promise<void> {
     try {
@@ -403,7 +312,6 @@ export class FundingApplicationCoverManagementComponent
 
   /**
    * Get cover snapshot for external use
-   * (e.g., to snapshot into an opportunity)
    */
   getSelectedCoverSnapshot(): FundingApplicationCoverInformation | null {
     return this.selectedCover();

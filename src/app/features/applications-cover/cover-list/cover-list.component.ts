@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FundingApplicationCoverInformation } from 'src/app/shared/models/funding-application-cover.model';
 
@@ -13,23 +13,25 @@ export class CoverListComponent {
   @Input() defaultCoverId: string | null = null;
 
   @Output() editCover = new EventEmitter<string>();
-  @Output() createNew = new EventEmitter<void>();
   @Output() setDefault = new EventEmitter<string>();
   @Output() deleteCover = new EventEmitter<string>();
   @Output() uploadDocument = new EventEmitter<string>();
   @Output() copyCover = new EventEmitter<string>();
+  @Output() navigateBack = new EventEmitter<void>();
+
+  expandedRow = signal<string | null>(null);
 
   trackById(index: number, cover: FundingApplicationCoverInformation): string {
     return cover.id;
   }
 
-  getCoverTypeLabel(cover: FundingApplicationCoverInformation): string {
-    return cover.isDefault ? 'Default Template' : 'Custom Cover';
+  toggleRow(coverId: string): void {
+    this.expandedRow.set(this.expandedRow() === coverId ? null : coverId);
   }
 
   getCompletionPercentage(cover: FundingApplicationCoverInformation): number {
     let filled = 0;
-    const total = 6; // 6 matching fields
+    const total = 6;
 
     if (cover.industries.length > 0) filled++;
     if (cover.fundingAmount > 0) filled++;
@@ -55,5 +57,9 @@ export class CoverListComponent {
       month: 'short',
       day: 'numeric',
     }).format(new Date(date));
+  }
+
+  isDefault(cover: FundingApplicationCoverInformation): boolean {
+    return this.defaultCoverId === cover.id;
   }
 }

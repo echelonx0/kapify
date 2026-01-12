@@ -1,25 +1,26 @@
-import { Component, inject, OnInit, computed } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, ActivatedRoute } from '@angular/router';
 import {
   LucideAngularModule,
   AlertTriangle,
   CheckCircle,
-  Edit,
+  LayoutGrid,
   Plus,
 } from 'lucide-angular';
 import { FundingApplicationCoverService } from 'src/app/shared/services/funding-application-cover.service';
 import { ActivityService } from 'src/app/shared/services/activity.service';
+import { CreateCoverModalComponent } from 'src/app/features/applications-cover/create-cover-modal.component';
 
 @Component({
   selector: 'app-cover-status-section',
   standalone: true,
-  imports: [CommonModule, LucideAngularModule],
+  imports: [CommonModule, LucideAngularModule, CreateCoverModalComponent],
   template: `
     <!-- NEO-BRUTALIST COVER STATUS SECTION -->
     <div class="bg-white border-t-4 border-b-4 border-slate-200">
       <div class="max-w-7xl mx-auto px-4 lg:px-8 py-8">
-        <!-- COVER EXISTS STATE -->
+        <!-- COVERS EXIST STATE: Show manage button -->
         @if (hasCoverInformation()) {
         <div class="space-y-4">
           <!-- Header with Icon -->
@@ -37,10 +38,10 @@ import { ActivityService } from 'src/app/shared/services/activity.service';
               <h3
                 class="text-sm lg:text-base font-black uppercase tracking-widest text-slate-900"
               >
-                Applications: Cover Information Complete
+                Funding Profiles Ready
               </h3>
               <p class="text-xs text-slate-600 mt-1">
-                Your funding cover is ready to share with funders
+                You have {{ coversCount() }} profile(s) ready to use
               </p>
             </div>
           </div>
@@ -48,30 +49,21 @@ import { ActivityService } from 'src/app/shared/services/activity.service';
           <!-- Call to Action -->
           <div class="pt-2">
             <p class="text-sm text-slate-700 font-semibold mb-4">
-              <strong>Pro Tip:</strong> Share your cover with 5+ funders to
-              increase matching opportunities by 3x.
+              Manage your funding profiles and apply to opportunities.
             </p>
 
-            <!-- Action Buttons -->
-            <div class="flex flex-col sm:flex-row gap-3">
-              <button
-                (click)="editCover()"
-                class="flex items-center justify-center gap-2 px-6 py-3.5 bg-teal-600 text-white font-black rounded-lg border-3 border-teal-700 uppercase tracking-wide hover:bg-teal-700 active:bg-teal-800 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2"
-              >
-                <lucide-icon [img]="EditIcon" [size]="16"></lucide-icon>
-                Edit Cover
-              </button>
-              <button
-                (click)="viewAllCovers()"
-                class="flex items-center justify-center gap-2 px-6 py-3.5 bg-white text-slate-900 font-black rounded-lg border-3 border-slate-300 uppercase tracking-wide hover:bg-slate-100 active:bg-slate-200 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2"
-              >
-                View All Covers
-              </button>
-            </div>
+            <!-- Manage Button -->
+            <button
+              (click)="manageCover()"
+              class="flex items-center justify-center gap-2 px-6 py-3.5 bg-teal-600 text-white font-black rounded-lg border-3 border-teal-700 uppercase tracking-wide hover:bg-teal-700 active:bg-teal-800 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2"
+            >
+              <lucide-icon [img]="LayoutGridIcon" [size]="16"></lucide-icon>
+              Manage Profiles
+            </button>
           </div>
         </div>
         } @else {
-        <!-- NO COVER STATE -->
+        <!-- NO COVERS STATE: Show modal prompt -->
         <div class="space-y-4">
           <!-- Header with Icon -->
           <div class="flex items-center gap-3">
@@ -88,10 +80,10 @@ import { ActivityService } from 'src/app/shared/services/activity.service';
               <h3
                 class="text-sm lg:text-base font-black uppercase tracking-widest text-slate-900"
               >
-                Applications: Cover Information Required
+                Funding Profiles Required
               </h3>
               <p class="text-xs text-slate-600 mt-1">
-                Create a professional funding cover to match with opportunities
+                Create a funding profile to match with opportunities
               </p>
             </div>
           </div>
@@ -99,8 +91,8 @@ import { ActivityService } from 'src/app/shared/services/activity.service';
           <!-- Call to Action -->
           <div class="pt-2">
             <p class="text-sm text-slate-700 font-semibold mb-4">
-              Your cover tells funders exactly what you're seeking and why.
-              Build a professional pitch in just 3 minutes.
+              Your profile tells funders what you're seeking and why. Create one
+              in just 3 minutes.
             </p>
 
             <!-- Main CTA Button -->
@@ -109,13 +101,20 @@ import { ActivityService } from 'src/app/shared/services/activity.service';
               class="flex items-center justify-center gap-2 px-6 py-3.5 w-full sm:w-auto bg-teal-600 text-white font-black rounded-lg border-3 border-teal-700 uppercase tracking-wide text-sm hover:bg-teal-700 active:bg-teal-800 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2"
             >
               <lucide-icon [img]="PlusIcon" [size]="16"></lucide-icon>
-              Start Cover Now
+              Create Profile
             </button>
           </div>
         </div>
         }
       </div>
     </div>
+
+    <!-- CREATE COVER MODAL (shown when needed) -->
+    <app-create-cover-modal
+      *ngIf="showModal()"
+      (choiceMade)="onCreateChoice($event)"
+      (cancel)="onCreateCancel()"
+    />
   `,
 })
 export class CoverStatusSectionComponent implements OnInit {
@@ -127,15 +126,20 @@ export class CoverStatusSectionComponent implements OnInit {
   // Icons
   AlertTriangleIcon = AlertTriangle;
   CheckCircleIcon = CheckCircle;
-  EditIcon = Edit;
+  LayoutGridIcon = LayoutGrid;
   PlusIcon = Plus;
 
-  // Computed signal for cover existence
-  hasCoverInformation = computed(
-    () =>
-      this.coverService.cover() !== null ||
-      this.coverService.defaultProfile() !== null
-  );
+  // Modal state
+  showModal = signal(false);
+
+  // Covers state
+  covers = this.coverService.covers;
+
+  // Computed: has any covers
+  hasCoverInformation = () => this.covers().length > 0;
+
+  // Computed: cover count for display
+  coversCount = () => this.covers().length;
 
   ngOnInit(): void {
     // Cover status already loaded by parent component
@@ -144,8 +148,7 @@ export class CoverStatusSectionComponent implements OnInit {
 
   /**
    * Create new cover
-   * Navigates to covers route with mode: 'create'
-   * Component will auto-create and show editor
+   * Shows modal instead of navigating directly
    */
   createNewCover(): void {
     this.activityService.trackProfileActivity(
@@ -153,50 +156,59 @@ export class CoverStatusSectionComponent implements OnInit {
       'User initiated cover creation from status section',
       'cover_create_cta'
     );
-
-    this.router.navigate(['covers'], {
-      relativeTo: this.route.parent,
-      queryParams: { mode: 'create' },
-    });
+    this.showModal.set(true);
   }
 
   /**
-   * Edit existing cover
-   * Gets the current cover and navigates with mode: 'edit'
-   * Component will load and show editor
+   * Handle modal choice
    */
-  editCover(): void {
-    const cover = this.coverService.cover();
-    if (!cover?.id) {
-      console.warn('No cover to edit');
-      return;
+  async onCreateChoice(choice: { action: 'fresh' }): Promise<void> {
+    this.showModal.set(false);
+
+    try {
+      // Create blank cover
+      const result = await this.coverService.createBlankCover();
+      if (result.success && result.cover) {
+        console.log('✅ Cover created:', result.cover.id);
+
+        // Navigate to editor with new cover
+        this.router.navigate(['covers'], {
+          relativeTo: this.route.parent,
+          queryParams: {
+            mode: 'edit',
+            coverId: result.cover.id,
+          },
+        });
+
+        this.activityService.trackProfileActivity(
+          'created',
+          'New funding profile created (from status section)',
+          'cover_create_fresh_status'
+        );
+      } else {
+        console.error('Failed to create cover:', result.error);
+      }
+    } catch (error) {
+      console.error('Error creating cover:', error);
     }
-
-    this.activityService.trackProfileActivity(
-      'updated',
-      'User opened cover for editing',
-      'cover_edit_cta'
-    );
-
-    this.router.navigate(['covers'], {
-      relativeTo: this.route.parent,
-      queryParams: {
-        mode: 'edit',
-        coverId: cover.id,
-      },
-    });
   }
 
   /**
-   * View all covers
-   * Navigates to covers route in list/view mode
-   * No mode specified = defaults to list view
+   * Cancel modal
    */
-  viewAllCovers(): void {
+  onCreateCancel(): void {
+    this.showModal.set(false);
+  }
+
+  /**
+   * Manage covers
+   * Navigate to covers list
+   */
+  manageCover(): void {
     this.activityService.trackProfileActivity(
       'updated',
       'User opened cover management view',
-      'cover_list_view'
+      'cover_manage_view'
     );
 
     this.router.navigate(['covers'], {

@@ -258,11 +258,11 @@
               [userType]="userType() === 'funder' ? 'funder' : 'sme'"
               [showProgress]="true"
               (viewDetails)="openApplicationModal(application)"
+              (applicationWithdrawn)="onApplicationWithdrawn($event)"
             />
           </div>
           } }
         </div>
-
         <!-- Pagination Controls -->
         <div
           *ngIf="!isLoading() && filteredApplications().length > 0"

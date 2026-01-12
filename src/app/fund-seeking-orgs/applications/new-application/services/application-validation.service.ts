@@ -33,19 +33,7 @@ export class ApplicationValidationService {
         )}`;
       }
     }
-    // Validate purpose statement
-    // if (!formData.purposeStatement?.trim()) {
-    //   errors.purposeStatement = 'Purpose statement is required';
-    // } else if (formData.purposeStatement.trim().length < 50) {
-    //   errors.purposeStatement = 'Purpose statement must be at least 50 characters';
-    // }
 
-    // Validate use of funds
-    // if (!formData.useOfFunds?.trim()) {
-    //   errors.useOfFunds = 'Use of funds breakdown is required';
-    // } else if (formData.useOfFunds.trim().length < 50) {
-    //   errors.useOfFunds = 'Use of funds must be at least 50 characters';
-    // }
     // Validate funding type
     if (!formData.fundingType?.trim()) {
       errors.fundingType = 'Funding type is required';

@@ -1,121 +1,297 @@
-<div class="space-y-8">
-  <div class="flex items-center space-x-3 mb-6">
-    <div
-      class="w-10 h-10 bg-gradient-to-br from-slate-500 to-slate-600 rounded-lg flex items-center justify-center shadow-lg"
-    >
-      <lucide-icon [img]="FileTextIcon" [size]="20" class="text-white" />
-    </div>
-    <div>
-      <h3 class="text-lg font-semibold text-slate-900">Application Details</h3>
-      <p class="text-sm text-slate-600">
-        Provide information specific to this opportunity
-      </p>
-    </div>
+<!-- LOADING STATE -->
+@if (currentView() === 'loading') {
+<div class="flex flex-col items-center justify-center py-16 space-y-4">
+  <div
+    class="w-12 h-12 border-4 border-teal-200 border-t-teal-500 rounded-full animate-spin"
+  ></div>
+  <p class="text-slate-600 font-medium">Loading your funding profiles...</p>
+</div>
+}
+
+<!-- EMPTY STATE -->
+@if (currentView() === 'empty') {
+<div
+  class="flex flex-col items-center justify-center py-16 space-y-6 text-center"
+>
+  <div
+    class="w-16 h-16 rounded-2xl bg-slate-100 flex items-center justify-center"
+  >
+    <lucide-icon [img]="PlusIcon" [size]="32" class="text-slate-400" />
+  </div>
+  <div>
+    <h3 class="text-xl font-bold text-slate-900 mb-2">
+      No Funding Profiles Yet
+    </h3>
+    <p class="text-slate-600 mb-6 max-w-sm">
+      Create a funding profile to get started. You can reuse it for multiple
+      opportunities.
+    </p>
+  </div>
+  <button
+    (click)="openCreateModal()"
+    class="px-6 py-2.5 bg-teal-500 text-white font-semibold rounded-xl hover:bg-teal-600 active:bg-teal-700 transition-colors duration-200"
+  >
+    Create Funding Profile
+  </button>
+</div>
+}
+
+<!-- COVER SELECTION VIEW -->
+@if (currentView() === 'selection') {
+<div class="animate-slideInUp space-y-6">
+  <!-- Header -->
+  <div>
+    <h3 class="text-lg font-semibold text-slate-900 mb-1">
+      Select Funding Profile
+    </h3>
+    <p class="text-sm text-slate-600">
+      Choose an existing profile or create a new one for this opportunity
+    </p>
   </div>
 
-  <!-- Funding Type Selection -->
-  <ui-select
-    [label]="'Funding Type'"
-    [placeholder]="'Select the type of funding you need'"
-    [required]="true"
-    [options]="fundingTypeOptions()"
-    [(ngModel)]="fundingTypeModel"
-    [error]="getFundingTypeError() || undefined"
-    [hint]="'Choose the funding structure that best fits your needs'"
-    (valueChange)="onFundingTypeChange($event)"
-  ></ui-select>
-  <!-- Requested Amount -->
-  <div class="group">
-    <label
-      class="block text-sm font-semibold text-slate-900 mb-3 group-hover:text-slate-700 transition-colors"
-    >
-      Requested Amount <span class="text-red-500">*</span>
-    </label>
-    <div class="relative">
-      <input
-        type="text"
-        inputmode="numeric"
-        [value]="getFormattedAmount()"
-        (input)="onAmountInput($event)"
-        (blur)="validateAmount()"
-        placeholder="0"
-        class="block w-full px-4 py-3 text-lg border-2 border-slate-200 rounded-lg shadow-sm placeholder-slate-400 focus:outline-none focus:border-slate-900 focus:ring-2 focus:ring-slate-100 transition-all hover:border-slate-300 font-semibold bg-white text-right tracking-tight"
-      />
-    </div>
-    @if (getAmountValidationMessage()) {
+  <!-- Covers Grid -->
+  <div class="grid grid-cols-1 gap-4">
+    @for (cover of covers(); track cover.id) {
+    <!-- Neo-brutalist card style: 40% intensity -->
     <div
-      class="mt-2.5 flex items-center space-x-1.5 text-sm text-red-600 font-medium"
+      (click)="selectCover(cover)"
+      class="bg-white rounded-xl border-2 border-slate-300 p-5 cursor-pointer transition-all duration-200 hover:border-teal-400 hover:shadow-md group"
     >
-      <div class="w-1.5 h-1.5 rounded-full bg-red-600"></div>
-      <span>{{ getAmountValidationMessage() }}</span>
+      <div class="flex items-start justify-between">
+        <div class="flex-1">
+          <!-- Title / Summary -->
+          <h4
+            class="font-semibold text-slate-900 group-hover:text-teal-600 transition-colors"
+          >
+            {{ cover.executiveSummary || "Untitled Profile" }}
+          </h4>
+
+          <!-- Details Grid -->
+          <div class="grid grid-cols-2 gap-4 mt-4">
+            <!-- Industries -->
+            <div>
+              <p
+                class="text-xs font-bold text-slate-600 uppercase tracking-wide mb-1"
+              >
+                Industries
+              </p>
+              <p class="text-sm text-slate-700">
+                {{ formatIndustries(cover.industries) }}
+              </p>
+            </div>
+
+            <!-- Funding Type -->
+            <div>
+              <p
+                class="text-xs font-bold text-slate-600 uppercase tracking-wide mb-1"
+              >
+                Funding Type
+              </p>
+              <p class="text-sm text-slate-700">
+                {{ formatFundingType(cover.fundingTypes) }}
+              </p>
+            </div>
+
+            <!-- Requested Amount -->
+            <div>
+              <p
+                class="text-xs font-bold text-slate-600 uppercase tracking-wide mb-1"
+              >
+                Amount
+              </p>
+              <p class="text-sm font-semibold text-teal-600">
+                {{ formatAmount(cover.fundingAmount) }}
+              </p>
+            </div>
+
+            <!-- Last Updated -->
+            <div>
+              <p
+                class="text-xs font-bold text-slate-600 uppercase tracking-wide mb-1"
+              >
+                Last Updated
+              </p>
+              <p class="text-sm text-slate-700">
+                {{ cover.updatedAt | date : "MMM d, yyyy" }}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Selection Indicator -->
+        <div
+          class="w-5 h-5 rounded-full border-2 border-slate-300 group-hover:border-teal-500 transition-all ml-4 flex-shrink-0"
+        ></div>
+      </div>
     </div>
-    } @else {
-    <p class="mt-2.5 text-sm text-slate-600">
-      Range: {{ formatCurrency(opportunity().minInvestment) }} –
-      {{ formatCurrency(opportunity().maxInvestment) }}
-    </p>
     }
   </div>
 
-  <!-- Purpose Statement -->
-  <ui-textarea
-    [label]="'Funding Motivation'"
-    [placeholder]="
-      'Explain why you need this funding. Be clear and compelling.'
-    "
-    [required]="true"
-    [rows]="6"
-    [value]="formData().purposeStatement"
-    [error]="getPurposeError()"
-    [hint]="
-      'Describe your business objectives and why this funding is critical.'
-    "
-    [showCharCount]="true"
-    (ngModelChange)="onPurposeStatementChange($event)"
-    ngModel
-  ></ui-textarea>
-
-  <!-- Use of Funds -->
-  <ui-textarea
-    [label]="'Use of Funds'"
-    [placeholder]="
-      'Provide a detailed breakdown of how you will use the funding.'
-    "
-    [required]="true"
-    [rows]="6"
-    [value]="formData().useOfFunds"
-    [error]="getUseOfFundsError()"
-    [hint]="'Break down how funds will be allocated across key initiatives.'"
-    [showCharCount]="true"
-    (ngModelChange)="onUseOfFundsChange($event)"
-    ngModel
-  ></ui-textarea>
-
-  <!-- Cover Statement Upload -->
-  <div class="mt-6">
-    <app-cover-statement-upload
-      (fileSelected)="onCoverStatementUploaded($event)"
-    >
-    </app-cover-statement-upload>
-  </div>
-
-  <!-- Progress Indicator -->
-  <div class="bg-slate-50 border border-slate-200 rounded-lg p-5">
-    <div class="flex items-center justify-between text-sm text-slate-700 mb-3">
-      <span class="font-semibold">Application Completion</span>
-      <span class="font-semibold text-slate-900"
-        >{{ completionPercentage() }}%</span
-      >
-    </div>
-    <div class="w-full bg-slate-200 rounded-full h-2">
-      <div
-        class="bg-gradient-to-r from-emerald-400 to-emerald-600 h-2 rounded-full transition-all duration-500"
-        [style.width.%]="completionPercentage()"
-      ></div>
-    </div>
-    <div class="mt-3 flex items-center text-xs text-slate-600 font-medium">
-      <div class="w-1.5 h-1.5 rounded-full bg-emerald-600 mr-2"></div>
-      Complete all required fields
-    </div>
-  </div>
+  <!-- Create New Button -->
+  <button
+    (click)="openCreateModal()"
+    class="w-full px-6 py-3 bg-slate-50 text-slate-700 font-semibold rounded-xl border-2 border-dashed border-slate-300 hover:bg-slate-100 hover:border-teal-400 transition-all duration-200 flex items-center justify-center gap-2"
+  >
+    <lucide-icon [img]="PlusIcon" [size]="18" />
+    Create New Profile
+  </button>
 </div>
+}
+
+<!-- CONFIRMATION VIEW -->
+@if (currentView() === 'confirmation') {
+<div class="animate-fadeInScale space-y-6">
+  <!-- Header -->
+  <div class="flex items-center gap-3 pb-4 border-b-2 border-slate-200">
+    <lucide-icon [img]="CheckIcon" [size]="24" class="text-green-600" />
+    <div>
+      <h3 class="text-lg font-bold text-slate-900">Profile Ready</h3>
+      <p class="text-sm text-slate-600">Review your funding profile details</p>
+    </div>
+  </div>
+
+  <!-- Selected Cover Summary -->
+  @if (selectedCover(); as cover) {
+  <div class="space-y-6">
+    <!-- Profile Title -->
+    <div class="bg-teal-50 rounded-xl p-5 border-2 border-teal-300">
+      <h4 class="text-base font-bold text-teal-900">
+        {{ cover.executiveSummary || "Funding Profile" }}
+      </h4>
+      @if (cover.isDefault) {
+      <span
+        class="inline-block mt-2 px-2.5 py-1 bg-teal-100 text-teal-700 text-xs font-bold rounded-lg border border-teal-300"
+      >
+        Default Profile
+      </span>
+      }
+    </div>
+
+    <!-- Key Details Grid (Neo-brutalist: bold labels, strong contrast) -->
+    <div class="grid grid-cols-2 gap-4">
+      <!-- Funding Type -->
+      <div class="bg-slate-50 rounded-lg p-4 border border-slate-200">
+        <p
+          class="text-xs font-black text-slate-700 uppercase tracking-widest mb-2"
+        >
+          Funding Type
+        </p>
+        <p class="text-sm font-semibold text-slate-900">
+          {{ formatFundingType(cover.fundingTypes) }}
+        </p>
+      </div>
+
+      <!-- Requested Amount -->
+      <div class="bg-slate-50 rounded-lg p-4 border border-slate-200">
+        <p
+          class="text-xs font-black text-slate-700 uppercase tracking-widest mb-2"
+        >
+          Amount
+        </p>
+        <p class="text-sm font-bold text-teal-600">
+          {{ formatAmount(cover.fundingAmount) }}
+        </p>
+      </div>
+
+      <!-- Industries -->
+      <div class="bg-slate-50 rounded-lg p-4 border border-slate-200">
+        <p
+          class="text-xs font-black text-slate-700 uppercase tracking-widest mb-2"
+        >
+          Industries
+        </p>
+        <p class="text-sm text-slate-900">
+          {{ formatIndustries(cover.industries) }}
+        </p>
+      </div>
+
+      <!-- Business Stages -->
+      <div class="bg-slate-50 rounded-lg p-4 border border-slate-200">
+        <p
+          class="text-xs font-black text-slate-700 uppercase tracking-widest mb-2"
+        >
+          Business Stage
+        </p>
+        <p class="text-sm text-slate-900">
+          {{ cover.businessStages.join(", ") || "All stages" }}
+        </p>
+      </div>
+    </div>
+
+    <!-- Form Data Summary -->
+    <div class="space-y-4">
+      <!-- Use of Funds -->
+      <div>
+        <p
+          class="text-xs font-bold text-slate-600 uppercase tracking-wide mb-2"
+        >
+          Use of Funds
+        </p>
+        <p class="text-sm text-slate-700 leading-relaxed">
+          {{ cover.useOfFunds || "Not specified" }}
+        </p>
+      </div>
+
+      <!-- Executive Summary / Purpose -->
+      <div>
+        <p
+          class="text-xs font-bold text-slate-600 uppercase tracking-wide mb-2"
+        >
+          Funding Motivation
+        </p>
+        <p class="text-sm text-slate-700 leading-relaxed">
+          {{ cover.executiveSummary || "Not specified" }}
+        </p>
+      </div>
+    </div>
+
+    <!-- Completion Percentage (with spring animation) -->
+    <div class="bg-teal-50 rounded-lg p-4 border border-teal-200">
+      <div class="flex items-center justify-between mb-3">
+        <span class="text-xs font-bold text-teal-900 uppercase tracking-wide">
+          Profile Completion
+        </span>
+        <span class="text-sm font-bold text-teal-700"
+          >{{ completionPercentage() }}%</span
+        >
+      </div>
+      <div
+        class="w-full h-3 bg-slate-200 rounded-full overflow-hidden border border-teal-300"
+      >
+        <div
+          class="h-full bg-gradient-to-r from-teal-400 to-teal-500 rounded-full transition-all duration-700 ease-out"
+          [style.width.%]="completionPercentage()"
+        ></div>
+      </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="flex gap-3 pt-4 border-t border-slate-200">
+      <button
+        (click)="goBackToSelection()"
+        class="flex-1 px-4 py-3 bg-slate-100 text-slate-700 font-semibold rounded-lg border border-slate-200 hover:bg-slate-200 active:bg-slate-300 transition-all duration-200 flex items-center justify-center gap-2"
+      >
+        <lucide-icon [img]="BackIcon" [size]="18" />
+        Go Back
+      </button>
+
+      <button
+        (click)="confirmSelection()"
+        class="flex-1 px-4 py-3 bg-teal-500 text-white font-bold rounded-lg border-2 border-teal-600 hover:bg-teal-600 active:bg-teal-700 transition-all duration-200 uppercase tracking-wide text-sm"
+      >
+        Confirm & Continue
+      </button>
+    </div>
+  </div>
+  }
+</div>
+}
+
+<!-- Create Cover Modal (conditionally shown) -->
+@if (showCreateModal()) {
+<app-create-cover-modal
+  (choiceMade)="onCreateCoverChoice()"
+  (cancel)="onCreateCoverCancel()"
+>
+</app-create-cover-modal>
+}

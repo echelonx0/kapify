@@ -111,7 +111,7 @@ export class OpportunityApplicationFormComponent implements OnInit, OnDestroy {
   fullFundingProfile = signal<FundingApplicationProfile | undefined>(undefined);
   aiAnalysisResult = signal<any | null>(null);
   toastservice = inject(ToastService);
-
+  private isCoverSelectionFlow = signal(false);
   // Track if opportunityId came from route params
   opportunityIdFromRoute = signal<string | null>(null);
 
@@ -166,12 +166,32 @@ export class OpportunityApplicationFormComponent implements OnInit, OnDestroy {
     this.profileValidationService.completion()
   );
 
+  // canContinue = computed(() => {
+  //   switch (this.currentStep()) {
+  //     case 'select-opportunity':
+  //       return !!this.selectedOpportunity();
+  //     case 'application-details':
+  //       return this.isFormValid();
+  //     case 'ai-analysis':
+  //       return true;
+  //     case 'review-submit':
+  //       return true;
+  //     default:
+  //       return false;
+  //   }
+  // });
+
+  // MODIFY this computed signal:
   canContinue = computed(() => {
     switch (this.currentStep()) {
       case 'select-opportunity':
         return !!this.selectedOpportunity();
       case 'application-details':
-        return this.isFormValid();
+        // NEW: Skip validation if cover was just selected
+        if (this.isCoverSelectionFlow()) {
+          return true; // ← Always allow continuation in cover flow
+        }
+        return this.isFormValid(); // ← Only validate if manual entry
       case 'ai-analysis':
         return true;
       case 'review-submit':
@@ -356,7 +376,15 @@ export class OpportunityApplicationFormComponent implements OnInit, OnDestroy {
   }
 
   onFormChanged(): void {
-    this.autoSaveDraft();
+    // Flag that we're in cover selection flow
+    this.isCoverSelectionFlow.set(true);
+
+    // Save and immediately navigate (no delay)
+    this.saveDraft().then(() => {
+      if (this.currentStep() === 'application-details') {
+        this.currentStep.set('ai-analysis');
+      }
+    });
   }
 
   onAnalysisCompleted(result: any): void {
