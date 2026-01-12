@@ -31,7 +31,7 @@ import { ScoringBreakdownComponent } from '../components/scoring-breakdown-compo
     CommonModule,
     LucideAngularModule,
     SuggestionCardComponent,
-    ScoringBreakdownComponent, // ← CRITICAL: Must import breakdown component
+    ScoringBreakdownComponent,
   ],
   template: `
     @if (isOpen()) {
