@@ -1,522 +1,911 @@
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
+// // import {
+// //   Component,
+// //   OnInit,
+// //   inject,
+// //   signal,
+// //   computed,
+// //   OnDestroy,
+// // } from '@angular/core';
+// // import { CommonModule } from '@angular/common';
+// // import { FormsModule } from '@angular/forms';
+// // import { Subject } from 'rxjs';
+// // import { takeUntil } from 'rxjs/operators';
+
+// // import { DemographicsConfigService } from '../../services/demographics-config.service';
+// // import { AdminDemographicsConfigService } from '../../services/admin-demographics-config.service';
+// // import {
+// //   DemographicCategory,
+// //   DemographicField,
+// //   DemographicFieldType,
+// // } from 'src/app/shared/models/funding-application-demographics.model';
+
+// // @Component({
+// //   selector: 'app-demographics-config-manager',
+// //   standalone: true,
+// //   imports: [CommonModule, FormsModule],
+// //   templateUrl: './demographics-config.component.html',
+// // })
+// // export class DemographicsConfigManagerComponent implements OnInit, OnDestroy {
+// //   private configService = inject(DemographicsConfigService);
+// //   private adminService = inject(AdminDemographicsConfigService);
+// //   private destroy$ = new Subject<void>();
+
+// //   // STATE
+// //   categories = signal<DemographicCategory[]>([]);
+// //   selectedCategoryId = signal<string | null>(null);
+// //   isLoading = signal(false);
+// //   error = signal<string | null>(null);
+// //   success = signal<string | null>(null);
+
+// //   // MODALS
+// //   showCategoryModal = signal(false);
+// //   showFieldModal = signal(false);
+// //   editingCategory = signal<DemographicCategory | null>(null);
+// //   editingField = signal<DemographicField | null>(null);
+
+// //   // CATEGORY FORM
+// //   categoryForm = signal({
+// //     label: '',
+// //     description: '',
+// //   });
+
+// //   // FIELD FORM
+// //   fieldForm = signal({
+// //     name: '',
+// //     label: '',
+// //     type: 'text' as DemographicFieldType,
+// //     required: false,
+// //     min: '',
+// //     max: '',
+// //     optionsText: '',
+// //     placeholder: '',
+// //     helpText: '',
+// //   });
+
+// //   // COMPUTED
+// //   selectedCategory = computed(() => {
+// //     const id = this.selectedCategoryId();
+// //     return this.categories().find((c) => c.id === id);
+// //   });
+
+// //   fieldsForCategory = computed(() => {
+// //     return this.selectedCategory()?.fields || [];
+// //   });
+
+// //   configSource = computed(() => this.configService.getSource());
+
+// //   ngOnInit(): void {
+// //     this.loadConfig();
+// //   }
+
+// //   /**
+// //    * Load config
+// //    */
+// //   private loadConfig(): void {
+// //     this.isLoading.set(true);
+// //     this.error.set(null);
+
+// //     try {
+// //       const config = this.configService.config();
+// //       if (config?.categories) {
+// //         this.categories.set(config.categories);
+// //         if (config.categories.length > 0) {
+// //           this.selectedCategoryId.set(config.categories[0].id);
+// //         }
+// //       }
+// //     } catch (err: any) {
+// //       this.error.set(err?.message || 'Failed to load config');
+// //     } finally {
+// //       this.isLoading.set(false);
+// //     }
+// //   }
+
+// //   // ===== CATEGORY OPERATIONS =====
+
+// //   openAddCategoryModal(): void {
+// //     this.editingCategory.set(null);
+// //     this.categoryForm.set({ label: '', description: '' });
+// //     this.showCategoryModal.set(true);
+// //   }
+
+// //   openEditCategoryModal(category: DemographicCategory): void {
+// //     this.editingCategory.set(category);
+// //     this.categoryForm.set({
+// //       label: category.label,
+// //       description: category.description || '',
+// //     });
+// //     this.showCategoryModal.set(true);
+// //   }
+
+// //   closeCategoryModal(): void {
+// //     this.showCategoryModal.set(false);
+// //     this.editingCategory.set(null);
+// //   }
+
+// //   saveCategoryModal(): void {
+// //     const form = this.categoryForm();
+// //     if (!form.label.trim()) {
+// //       this.error.set('Category label is required');
+// //       return;
+// //     }
+
+// //     const isEdit = !!this.editingCategory();
+
+// //     if (isEdit) {
+// //       const cat = this.editingCategory()!;
+// //       this.adminService
+// //         .updateCategory(cat.id, {
+// //           label: form.label,
+// //           description: form.description || undefined,
+// //         })
+// //         .pipe(takeUntil(this.destroy$))
+// //         .subscribe({
+// //           next: () => {
+// //             this.success.set('Category updated');
+// //             this.closeCategoryModal();
+// //             this.loadConfig();
+// //             this.clearSuccess();
+// //           },
+// //           error: (err) => {
+// //             this.error.set(err?.message || 'Failed to update category');
+// //           },
+// //         });
+// //     } else {
+// //       this.adminService
+// //         .createCategory(
+// //           this.generateKey(form.label),
+// //           form.label,
+// //           form.description
+// //         )
+// //         .pipe(takeUntil(this.destroy$))
+// //         .subscribe({
+// //           next: () => {
+// //             this.success.set('Category created');
+// //             this.closeCategoryModal();
+// //             this.loadConfig();
+// //             this.clearSuccess();
+// //           },
+// //           error: (err) => {
+// //             this.error.set(err?.message || 'Failed to create category');
+// //           },
+// //         });
+// //     }
+// //   }
+
+// //   deleteCategory(category: DemographicCategory): void {
+// //     if (
+// //       !confirm(
+// //         `Delete category "${category.label}"? This will also delete all fields.`
+// //       )
+// //     ) {
+// //       return;
+// //     }
+
+// //     this.adminService
+// //       .deleteCategory(category.id)
+// //       .pipe(takeUntil(this.destroy$))
+// //       .subscribe({
+// //         next: () => {
+// //           this.success.set('Category deleted');
+// //           this.loadConfig();
+// //           this.clearSuccess();
+// //         },
+// //         error: (err) => {
+// //           this.error.set(err?.message || 'Failed to delete category');
+// //         },
+// //       });
+// //   }
+
+// //   // ===== FIELD OPERATIONS =====
+
+// //   openAddFieldModal(): void {
+// //     if (!this.selectedCategory()) {
+// //       this.error.set('Please select a category first');
+// //       return;
+// //     }
+
+// //     this.editingField.set(null);
+// //     this.fieldForm.set({
+// //       name: '',
+// //       label: '',
+// //       type: 'text',
+// //       required: false,
+// //       min: '',
+// //       max: '',
+// //       optionsText: '',
+// //       placeholder: '',
+// //       helpText: '',
+// //     });
+// //     this.showFieldModal.set(true);
+// //   }
+
+// //   openEditFieldModal(field: DemographicField): void {
+// //     this.editingField.set(field);
+// //     this.fieldForm.set({
+// //       name: field.name,
+// //       label: field.label,
+// //       type: field.type,
+// //       required: field.required,
+// //       min: field.min?.toString() || '',
+// //       max: field.max?.toString() || '',
+// //       optionsText: field.options?.join(', ') || '',
+// //       placeholder: field.placeholder || '',
+// //       helpText: field.helpText || '',
+// //     });
+// //     this.showFieldModal.set(true);
+// //   }
+
+// //   closeFieldModal(): void {
+// //     this.showFieldModal.set(false);
+// //     this.editingField.set(null);
+// //   }
+
+// //   saveFieldModal(): void {
+// //     const form = this.fieldForm();
+// //     const category = this.selectedCategory();
+
+// //     if (!form.label.trim()) {
+// //       this.error.set('Field label is required');
+// //       return;
+// //     }
+
+// //     if (!category) {
+// //       this.error.set('No category selected');
+// //       return;
+// //     }
+
+// //     const fieldName = form.name.trim() || this.generateKey(form.label);
+// //     if (!fieldName) {
+// //       this.error.set('Could not generate field name');
+// //       return;
+// //     }
+
+// //     const isEdit = !!this.editingField();
+
+// //     const options =
+// //       form.type === 'dropdown' && form.optionsText
+// //         ? form.optionsText
+// //             .split(',')
+// //             .map((o) => o.trim())
+// //             .filter((o) => o.length > 0)
+// //         : undefined;
+
+// //     const fieldOptions = {
+// //       minValue: form.min ? parseInt(form.min, 10) : undefined,
+// //       maxValue: form.max ? parseInt(form.max, 10) : undefined,
+// //       optionsList: options,
+// //       placeholder: form.placeholder || undefined,
+// //       helpText: form.helpText || undefined,
+// //     };
+
+// //     if (isEdit) {
+// //       const field = this.editingField()!;
+// //       this.adminService
+// //         .updateField(field.name, {
+// //           label: form.label,
+// //           type: form.type,
+// //           required: form.required,
+// //           min: fieldOptions.minValue,
+// //           max: fieldOptions.maxValue,
+// //           options: fieldOptions.optionsList,
+// //           placeholder: fieldOptions.placeholder,
+// //           helpText: fieldOptions.helpText,
+// //         })
+// //         .pipe(takeUntil(this.destroy$))
+// //         .subscribe({
+// //           next: () => {
+// //             this.success.set('Field updated');
+// //             this.closeFieldModal();
+// //             this.loadConfig();
+// //             this.clearSuccess();
+// //           },
+// //           error: (err) => {
+// //             this.error.set(err?.message || 'Failed to update field');
+// //           },
+// //         });
+// //     } else {
+// //       this.adminService
+// //         .createField(
+// //           category.id,
+// //           fieldName,
+// //           form.label,
+// //           form.type,
+// //           form.required,
+// //           fieldOptions
+// //         )
+// //         .pipe(takeUntil(this.destroy$))
+// //         .subscribe({
+// //           next: () => {
+// //             this.success.set('Field created');
+// //             this.closeFieldModal();
+// //             this.loadConfig();
+// //             this.clearSuccess();
+// //           },
+// //           error: (err) => {
+// //             this.error.set(err?.message || 'Failed to create field');
+// //           },
+// //         });
+// //     }
+// //   }
+
+// //   deleteField(field: DemographicField): void {
+// //     if (!confirm(`Delete field "${field.label}"?`)) {
+// //       return;
+// //     }
+
+// //     this.adminService
+// //       .deleteField(field.name)
+// //       .pipe(takeUntil(this.destroy$))
+// //       .subscribe({
+// //         next: () => {
+// //           this.success.set('Field deleted');
+// //           this.loadConfig();
+// //           this.clearSuccess();
+// //         },
+// //         error: (err) => {
+// //           this.error.set(err?.message || 'Failed to delete field');
+// //         },
+// //       });
+// //   }
+
+// //   // ===== UTILITIES =====
+
+// //   private generateKey(label: string): string {
+// //     return label
+// //       .toLowerCase()
+// //       .replace(/\s+/g, '')
+// //       .replace(/[^a-z0-9]/g, '');
+// //   }
+
+// //   private clearSuccess(): void {
+// //     setTimeout(() => this.success.set(null), 3000);
+// //   }
+
+// //   getFieldTypeDisplay(type: string): string {
+// //     const map: Record<string, string> = {
+// //       text: 'Text',
+// //       number: 'Number',
+// //       percentage: 'Percentage',
+// //       dropdown: 'Dropdown',
+// //     };
+// //     return map[type] || type;
+// //   }
+
+// //   trackByCategory(index: number, cat: any): string {
+// //     return cat.id;
+// //   }
+
+// //   trackByField(index: number, field: any): string {
+// //     return field.name;
+// //   }
+
+// //   ngOnDestroy(): void {
+// //     this.destroy$.next();
+// //     this.destroy$.complete();
+// //   }
+// // }
+
+// import {
+//   Component,
+//   OnInit,
+//   inject,
+//   signal,
+//   computed,
+//   OnDestroy,
+// } from '@angular/core';
+// import { CommonModule } from '@angular/common';
+// import { FormsModule } from '@angular/forms';
+// import { Subject } from 'rxjs';
+// import { takeUntil } from 'rxjs/operators';
+
+// import { DemographicsConfigService } from '../../services/demographics-config.service';
+// import { AdminDemographicsConfigService } from '../../services/admin-demographics-config.service';
+// import {
+//   DemographicCategory,
+//   DemographicField,
+//   DemographicFieldType,
+// } from 'src/app/shared/models/funding-application-demographics.model';
+
+// @Component({
+//   selector: 'app-demographics-config-manager',
+//   standalone: true,
+//   imports: [CommonModule, FormsModule],
+//   templateUrl: './demographics-config.component.html',
+// })
+// export class DemographicsConfigManagerComponent implements OnInit, OnDestroy {
+//   private configService = inject(DemographicsConfigService);
+//   private adminService = inject(AdminDemographicsConfigService);
+//   private destroy$ = new Subject<void>();
+
+//   // STATE
+//   categories = signal<DemographicCategory[]>([]);
+//   selectedCategoryId = signal<string | null>(null);
+//   isLoading = signal(false);
+//   error = signal<string | null>(null);
+//   success = signal<string | null>(null);
+
+//   // MODALS
+//   showCategoryModal = signal(false);
+//   showFieldModal = signal(false);
+//   editingCategory = signal<DemographicCategory | null>(null);
+//   editingField = signal<DemographicField | null>(null);
+
+//   // CATEGORY FORM
+//   categoryForm = signal({
+//     label: '',
+//     description: '',
+//   });
+
+//   // FIELD FORM
+//   fieldForm = signal({
+//     name: '',
+//     label: '',
+//     type: 'text' as DemographicFieldType,
+//     required: false,
+//     min: '',
+//     max: '',
+//     optionsText: '',
+//     placeholder: '',
+//     helpText: '',
+//   });
+
+//   // COMPUTED
+//   selectedCategory = computed(() => {
+//     const id = this.selectedCategoryId();
+//     return this.categories().find((c) => c.id === id);
+//   });
+
+//   fieldsForCategory = computed(() => {
+//     return this.selectedCategory()?.fields || [];
+//   });
+
+//   configSource = computed(() => this.configService.getSource());
+
+//   ngOnInit(): void {
+//     this.loadConfig();
+//   }
+
+//   /**
+//    * Load config - subscribe to service changes
+//    * Service initializes asynchronously, so we listen for updates
+//    */
+//   private loadConfig(): void {
+//     this.isLoading.set(true);
+//     this.error.set(null);
+
+//     // Subscribe to config changes (handles initial load + admin updates)
+//     this.configService
+//       .watchConfigChanges()
+//       .pipe(takeUntil(this.destroy$))
+//       .subscribe({
+//         next: (config) => {
+//           if (config?.categories) {
+//             this.categories.set(config.categories);
+//             // Only set initial selection if not already set
+//             if (config.categories.length > 0 && !this.selectedCategoryId()) {
+//               this.selectedCategoryId.set(config.categories[0].id);
+//             }
+//             this.isLoading.set(false);
+//           }
+//         },
+//         error: (err: any) => {
+//           this.error.set(err?.message || 'Failed to load config');
+//           this.isLoading.set(false);
+//         },
+//       });
+//   }
+
+//   // ===== CATEGORY OPERATIONS =====
+
+//   openAddCategoryModal(): void {
+//     this.editingCategory.set(null);
+//     this.categoryForm.set({ label: '', description: '' });
+//     this.showCategoryModal.set(true);
+//   }
+
+//   openEditCategoryModal(category: DemographicCategory): void {
+//     this.editingCategory.set(category);
+//     this.categoryForm.set({
+//       label: category.label,
+//       description: category.description || '',
+//     });
+//     this.showCategoryModal.set(true);
+//   }
+
+//   closeCategoryModal(): void {
+//     this.showCategoryModal.set(false);
+//     this.editingCategory.set(null);
+//   }
+
+//   saveCategoryModal(): void {
+//     const form = this.categoryForm();
+//     if (!form.label.trim()) {
+//       this.error.set('Category label is required');
+//       return;
+//     }
+
+//     const isEdit = !!this.editingCategory();
+
+//     if (isEdit) {
+//       const cat = this.editingCategory()!;
+//       this.adminService
+//         .updateCategory(cat.id, {
+//           label: form.label,
+//           description: form.description || undefined,
+//         })
+//         .pipe(takeUntil(this.destroy$))
+//         .subscribe({
+//           next: () => {
+//             this.success.set('Category updated');
+//             this.closeCategoryModal();
+//             this.clearSuccess();
+//           },
+//           error: (err) => {
+//             this.error.set(err?.message || 'Failed to update category');
+//           },
+//         });
+//     } else {
+//       this.adminService
+//         .createCategory(
+//           this.generateKey(form.label),
+//           form.label,
+//           form.description
+//         )
+//         .pipe(takeUntil(this.destroy$))
+//         .subscribe({
+//           next: () => {
+//             this.success.set('Category created');
+//             this.closeCategoryModal();
+//             this.clearSuccess();
+//           },
+//           error: (err) => {
+//             this.error.set(err?.message || 'Failed to create category');
+//           },
+//         });
+//     }
+//   }
+
+//   deleteCategory(category: DemographicCategory): void {
+//     if (
+//       !confirm(
+//         `Delete category "${category.label}"? This will also delete all fields.`
+//       )
+//     ) {
+//       return;
+//     }
+
+//     this.adminService
+//       .deleteCategory(category.id)
+//       .pipe(takeUntil(this.destroy$))
+//       .subscribe({
+//         next: () => {
+//           this.success.set('Category deleted');
+//           this.clearSuccess();
+//         },
+//         error: (err) => {
+//           this.error.set(err?.message || 'Failed to delete category');
+//         },
+//       });
+//   }
+
+//   // ===== FIELD OPERATIONS =====
+
+//   openAddFieldModal(): void {
+//     if (!this.selectedCategory()) {
+//       this.error.set('Please select a category first');
+//       return;
+//     }
+
+//     this.editingField.set(null);
+//     this.fieldForm.set({
+//       name: '',
+//       label: '',
+//       type: 'text',
+//       required: false,
+//       min: '',
+//       max: '',
+//       optionsText: '',
+//       placeholder: '',
+//       helpText: '',
+//     });
+//     this.showFieldModal.set(true);
+//   }
+
+//   openEditFieldModal(field: DemographicField): void {
+//     this.editingField.set(field);
+//     this.fieldForm.set({
+//       name: field.name,
+//       label: field.label,
+//       type: field.type,
+//       required: field.required,
+//       min: field.min?.toString() || '',
+//       max: field.max?.toString() || '',
+//       optionsText: field.options?.join(', ') || '',
+//       placeholder: field.placeholder || '',
+//       helpText: field.helpText || '',
+//     });
+//     this.showFieldModal.set(true);
+//   }
+
+//   closeFieldModal(): void {
+//     this.showFieldModal.set(false);
+//     this.editingField.set(null);
+//   }
+
+//   saveFieldModal(): void {
+//     const form = this.fieldForm();
+//     const category = this.selectedCategory();
+
+//     if (!form.label.trim()) {
+//       this.error.set('Field label is required');
+//       return;
+//     }
+
+//     if (!category) {
+//       this.error.set('No category selected');
+//       return;
+//     }
+
+//     const fieldName = form.name.trim() || this.generateKey(form.label);
+//     if (!fieldName) {
+//       this.error.set('Could not generate field name');
+//       return;
+//     }
+
+//     const isEdit = !!this.editingField();
+
+//     const options =
+//       form.type === 'dropdown' && form.optionsText
+//         ? form.optionsText
+//             .split(',')
+//             .map((o) => o.trim())
+//             .filter((o) => o.length > 0)
+//         : undefined;
+
+//     const fieldOptions = {
+//       minValue: form.min ? parseInt(form.min, 10) : undefined,
+//       maxValue: form.max ? parseInt(form.max, 10) : undefined,
+//       optionsList: options,
+//       placeholder: form.placeholder || undefined,
+//       helpText: form.helpText || undefined,
+//     };
+
+//     if (isEdit) {
+//       const field = this.editingField()!;
+//       this.adminService
+//         .updateField(field.name, {
+//           label: form.label,
+//           type: form.type,
+//           required: form.required,
+//           min: fieldOptions.minValue,
+//           max: fieldOptions.maxValue,
+//           options: fieldOptions.optionsList,
+//           placeholder: fieldOptions.placeholder,
+//           helpText: fieldOptions.helpText,
+//         })
+//         .pipe(takeUntil(this.destroy$))
+//         .subscribe({
+//           next: () => {
+//             this.success.set('Field updated');
+//             this.closeFieldModal();
+//             this.clearSuccess();
+//           },
+//           error: (err) => {
+//             this.error.set(err?.message || 'Failed to update field');
+//           },
+//         });
+//     } else {
+//       this.adminService
+//         .createField(
+//           category.id,
+//           fieldName,
+//           form.label,
+//           form.type,
+//           form.required,
+//           fieldOptions
+//         )
+//         .pipe(takeUntil(this.destroy$))
+//         .subscribe({
+//           next: () => {
+//             this.success.set('Field created');
+//             this.closeFieldModal();
+//             this.clearSuccess();
+//           },
+//           error: (err) => {
+//             this.error.set(err?.message || 'Failed to create field');
+//           },
+//         });
+//     }
+//   }
+
+//   deleteField(field: DemographicField): void {
+//     if (!confirm(`Delete field "${field.label}"?`)) {
+//       return;
+//     }
+
+//     this.adminService
+//       .deleteField(field.name)
+//       .pipe(takeUntil(this.destroy$))
+//       .subscribe({
+//         next: () => {
+//           this.success.set('Field deleted');
+//           this.clearSuccess();
+//         },
+//         error: (err) => {
+//           this.error.set(err?.message || 'Failed to delete field');
+//         },
+//       });
+//   }
+
+//   // ===== UTILITIES =====
+
+//   private generateKey(label: string): string {
+//     return label
+//       .toLowerCase()
+//       .replace(/\s+/g, '')
+//       .replace(/[^a-z0-9]/g, '');
+//   }
+
+//   private clearSuccess(): void {
+//     setTimeout(() => this.success.set(null), 3000);
+//   }
+
+//   getFieldTypeDisplay(type: string): string {
+//     const map: Record<string, string> = {
+//       text: 'Text',
+//       number: 'Number',
+//       percentage: 'Percentage',
+//       dropdown: 'Dropdown',
+//     };
+//     return map[type] || type;
+//   }
+
+//   trackByCategory(index: number, cat: any): string {
+//     return cat.id;
+//   }
+
+//   trackByField(index: number, field: any): string {
+//     return field.name;
+//   }
+
+//   ngOnDestroy(): void {
+//     this.destroy$.next();
+//     this.destroy$.complete();
+//   }
+// }
+
+import {
+  Component,
+  OnInit,
+  inject,
+  signal,
+  computed,
+  OnDestroy,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
+
+import { DemographicsConfigService } from '../../services/demographics-config.service';
+import { AdminDemographicsConfigService } from '../../services/admin-demographics-config.service';
+
 import {
   DemographicCategory,
   DemographicField,
   DemographicFieldType,
 } from 'src/app/shared/models/funding-application-demographics.model';
-import { ActivityService } from 'src/app/shared/services/activity.service';
-import { SharedSupabaseService } from 'src/app/shared/services/shared-supabase.service';
-import { DemographicsConfigService } from '../../services/demographics-config.service';
+import { MessagingService } from 'src/app/features/messaging/services/messaging.service';
 
-/**
- * AdminDemographicsConfigComponent
- * - Manage demographic categories and fields
- * - CRUD operations with Supabase sync
- * - Drag-drop reordering
- * - Activity logging for all changes
- */
 @Component({
-  selector: 'app-admin-demographics-config',
+  selector: 'app-demographics-config-manager',
   standalone: true,
   imports: [CommonModule, FormsModule],
-  template: `
-    <div class="min-h-screen bg-slate-50">
-      <!-- Header -->
-      <header
-        class="sticky top-0 z-30 bg-white border-b border-slate-200 px-8 py-6"
-      >
-        <div class="max-w-6xl mx-auto flex items-center justify-between">
-          <div>
-            <h1 class="text-3xl font-bold text-slate-900">
-              Demographic Configuration
-            </h1>
-            <p class="text-slate-600 mt-1">
-              Manage demographic fields and categories
-            </p>
-          </div>
-
-          <div class="flex items-center gap-3">
-            @if (configService.isUsingFallback()) {
-            <div
-              class="px-4 py-2 bg-amber-50 border border-amber-200/50 rounded-xl"
-            >
-              <p class="text-xs font-semibold text-amber-700">
-                Using local config (Supabase unavailable)
-              </p>
-            </div>
-            }
-
-            <button
-              (click)="refreshConfig()"
-              [disabled]="configService.isLoading()"
-              class="px-4 py-2.5 bg-teal-500 text-white font-medium rounded-xl hover:bg-teal-600 active:bg-teal-700 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {{
-                configService.isLoading() ? 'Refreshing...' : 'Refresh Config'
-              }}
-            </button>
-
-            <button
-              (click)="openCategoryModal()"
-              class="px-4 py-2.5 bg-teal-500 text-white font-medium rounded-xl hover:bg-teal-600 active:bg-teal-700 transition-colors duration-200"
-            >
-              + New Category
-            </button>
-          </div>
-        </div>
-      </header>
-
-      <!-- Main Content -->
-      <main class="max-w-6xl mx-auto px-8 py-8">
-        @if (configService.isLoading()) {
-        <div class="text-center py-12">
-          <div
-            class="animate-spin w-8 h-8 border-2 border-teal-500 border-t-transparent rounded-full mx-auto"
-          ></div>
-          <p class="text-slate-600 mt-4">Loading configuration...</p>
-        </div>
-        } @else if (configService.error()) {
-        <div class="bg-amber-50 border border-amber-200/50 rounded-xl p-4 mb-6">
-          <p class="text-sm font-semibold text-amber-700">
-            {{ configService.error() }}
-          </p>
-        </div>
-        } @else {
-        <!-- Categories List -->
-        <div class="space-y-6">
-          @for ( category of configService.categories(); track category.id; let
-          i = $index ) {
-          <div
-            class="bg-white rounded-2xl border border-slate-200 overflow-hidden"
-          >
-            <!-- Category Header -->
-            <div
-              class="px-6 py-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between cursor-move hover:bg-slate-100 transition-colors duration-200"
-              (click)="toggleCategoryExpanded(category.id)"
-              draggable="true"
-              (dragstart)="onCategoryDragStart($event, i)"
-              (dragover)="onCategoryDragOver($event, i)"
-              (drop)="onCategoryDrop($event, i)"
-              (dragend)="onCategoryDragEnd()"
-            >
-              <div class="flex items-center gap-3 flex-1">
-                <span class="text-sm font-semibold text-slate-500">{{
-                  i + 1
-                }}</span>
-                <div class="flex-1">
-                  <h3 class="text-lg font-bold text-slate-900">
-                    {{ category.label }}
-                  </h3>
-                  @if (category.description) {
-                  <p class="text-sm text-slate-600">
-                    {{ category.description }}
-                  </p>
-                  }
-                </div>
-                <span
-                  class="px-2.5 py-1 bg-slate-100 text-slate-700 text-xs font-semibold rounded-full"
-                >
-                  {{ category.fields.length }} fields
-                </span>
-              </div>
-
-              <div class="flex items-center gap-2">
-                <button
-                  (click)="editCategory(category); $event.stopPropagation()"
-                  class="p-2 hover:bg-slate-200 rounded-lg transition-colors"
-                  title="Edit"
-                >
-                  ✎
-                </button>
-                <button
-                  (click)="
-                    deleteCategory(category.id); $event.stopPropagation()
-                  "
-                  class="p-2 hover:bg-red-100 text-red-600 rounded-lg transition-colors"
-                  title="Delete"
-                >
-                  🗑
-                </button>
-              </div>
-            </div>
-
-            <!-- Category Fields -->
-            @if (isExpanded(category.id)) {
-            <div class="p-6 space-y-3">
-              @for ( field of category.fields; track field.name; let fi = $index
-              ) {
-              <div
-                class="p-4 bg-slate-50 rounded-lg border border-slate-200 flex items-center justify-between hover:border-slate-300 transition-colors"
-                draggable="true"
-                (dragstart)="onFieldDragStart($event, category.id, fi)"
-                (dragover)="onFieldDragOver($event, category.id, fi)"
-                (drop)="onFieldDrop($event, category.id, fi)"
-                (dragend)="onFieldDragEnd()"
-              >
-                <div class="flex items-center gap-3 flex-1">
-                  <span class="text-xs font-semibold text-slate-500">{{
-                    fi + 1
-                  }}</span>
-                  <div class="flex-1">
-                    <div class="font-semibold text-slate-900">
-                      {{ field.label }}
-                    </div>
-                    <div class="text-xs text-slate-600 space-x-2 mt-1">
-                      <span
-                        class="inline-block px-2 py-0.5 bg-slate-100 rounded text-slate-700"
-                      >
-                        {{ field.type }}
-                      </span>
-                      @if (field.required) {
-                      <span
-                        class="inline-block px-2 py-0.5 bg-red-50 text-red-700 rounded"
-                      >
-                        Required
-                      </span>
-                      } @if (field.min !== undefined) {
-                      <span class="inline-block text-slate-600">
-                        Min: {{ field.min }}
-                      </span>
-                      } @if (field.max !== undefined) {
-                      <span class="inline-block text-slate-600">
-                        Max: {{ field.max }}
-                      </span>
-                      }
-                    </div>
-                  </div>
-                </div>
-
-                <div class="flex items-center gap-2">
-                  <button
-                    (click)="editField(category.id, field)"
-                    class="p-2 hover:bg-slate-200 rounded-lg transition-colors"
-                    title="Edit"
-                  >
-                    ✎
-                  </button>
-                  <button
-                    (click)="deleteField(category.id, field.name)"
-                    class="p-2 hover:bg-red-100 text-red-600 rounded-lg transition-colors"
-                    title="Delete"
-                  >
-                    🗑
-                  </button>
-                </div>
-              </div>
-              }
-
-              <!-- Add Field Button -->
-              <button
-                (click)="openFieldModal(category.id)"
-                class="w-full py-2.5 text-teal-600 font-medium border-2 border-dashed border-teal-300 rounded-lg hover:bg-teal-50 transition-colors"
-              >
-                + Add Field
-              </button>
-            </div>
-            }
-          </div>
-          }
-        </div>
-        }
-      </main>
-
-      <!-- Category Modal -->
-      @if (showCategoryModal()) {
-      <div
-        class="fixed inset-0 bg-black/25 backdrop-blur-sm z-50 flex items-center justify-center p-4"
-        (click)="closeCategoryModal()"
-      >
-        <div
-          class="bg-white rounded-2xl max-w-md w-full p-6 shadow-lg"
-          (click)="$event.stopPropagation()"
-        >
-          <h2 class="text-2xl font-bold text-slate-900 mb-6">
-            {{ editingCategory() ? 'Edit Category' : 'New Category' }}
-          </h2>
-
-          <div class="space-y-4">
-            <div>
-              <label class="block text-sm font-semibold text-slate-900 mb-2">
-                Category Key <span class="text-red-600">*</span>
-              </label>
-              <input
-                type="text"
-                [(ngModel)]="categoryFormData.categoryKey"
-                [disabled]="!!editingCategory()"
-                placeholder="e.g., shareholding"
-                class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500 disabled:bg-slate-50 disabled:opacity-60"
-              />
-            </div>
-
-            <div>
-              <label class="block text-sm font-semibold text-slate-900 mb-2">
-                Label <span class="text-red-600">*</span>
-              </label>
-              <input
-                type="text"
-                [(ngModel)]="categoryFormData.label"
-                placeholder="e.g., Shareholding"
-                class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500"
-              />
-            </div>
-
-            <div>
-              <label class="block text-sm font-semibold text-slate-900 mb-2">
-                Description
-              </label>
-              <textarea
-                [(ngModel)]="categoryFormData.description"
-                placeholder="Optional description"
-                rows="3"
-                class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500 resize-none"
-              ></textarea>
-            </div>
-          </div>
-
-          <div class="flex items-center gap-3 mt-6">
-            <button
-              (click)="closeCategoryModal()"
-              class="flex-1 px-4 py-2.5 bg-slate-100 text-slate-700 font-medium rounded-xl hover:bg-slate-200 transition-colors"
-            >
-              Cancel
-            </button>
-            <button
-              (click)="saveCategory()"
-              [disabled]="
-                !categoryFormData.label || !categoryFormData.categoryKey
-              "
-              class="flex-1 px-4 py-2.5 bg-teal-500 text-white font-medium rounded-xl hover:bg-teal-600 disabled:opacity-50 transition-colors"
-            >
-              Save
-            </button>
-          </div>
-        </div>
-      </div>
-      }
-
-      <!-- Field Modal -->
-      @if (showFieldModal()) {
-      <div
-        class="fixed inset-0 bg-black/25 backdrop-blur-sm z-50 flex items-center justify-center p-4"
-        (click)="closeFieldModal()"
-      >
-        <div
-          class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-lg max-h-96 overflow-y-auto"
-          (click)="$event.stopPropagation()"
-        >
-          <h2 class="text-2xl font-bold text-slate-900 mb-6">
-            {{ editingField() ? 'Edit Field' : 'New Field' }}
-          </h2>
-
-          <div class="space-y-4">
-            <div>
-              <label class="block text-sm font-semibold text-slate-900 mb-2">
-                Field Name <span class="text-red-600">*</span>
-              </label>
-              <input
-                type="text"
-                [(ngModel)]="fieldFormData.name"
-                [disabled]="!!editingField()"
-                placeholder="e.g., blackOwnership (camelCase)"
-                class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500 disabled:bg-slate-50 disabled:opacity-60"
-              />
-            </div>
-
-            <div>
-              <label class="block text-sm font-semibold text-slate-900 mb-2">
-                Label <span class="text-red-600">*</span>
-              </label>
-              <input
-                type="text"
-                [(ngModel)]="fieldFormData.label"
-                placeholder="e.g., Black Ownership (%)"
-                class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500"
-              />
-            </div>
-
-            <div>
-              <label class="block text-sm font-semibold text-slate-900 mb-2">
-                Type <span class="text-red-600">*</span>
-              </label>
-              <select
-                [(ngModel)]="fieldFormData.type"
-                class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500"
-              >
-                <option value="text">Text</option>
-                <option value="number">Number</option>
-                <option value="percentage">Percentage</option>
-                <option value="dropdown">Dropdown</option>
-              </select>
-            </div>
-
-            <div>
-              <label class="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  [(ngModel)]="fieldFormData.required"
-                  class="w-4 h-4 rounded border-slate-300"
-                />
-                <span class="text-sm font-semibold text-slate-900">
-                  Required
-                </span>
-              </label>
-            </div>
-
-            @if ( fieldFormData.type === 'number' || fieldFormData.type ===
-            'percentage' ) {
-            <div class="grid grid-cols-2 gap-3">
-              <div>
-                <label class="block text-sm font-semibold text-slate-900 mb-2">
-                  Min Value
-                </label>
-                <input
-                  type="number"
-                  [(ngModel)]="fieldFormData.min"
-                  class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500"
-                />
-              </div>
-              <div>
-                <label class="block text-sm font-semibold text-slate-900 mb-2">
-                  Max Value
-                </label>
-                <input
-                  type="number"
-                  [(ngModel)]="fieldFormData.max"
-                  class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500"
-                />
-              </div>
-            </div>
-            } @if (fieldFormData.type === 'dropdown') {
-            <div>
-              <label class="block text-sm font-semibold text-slate-900 mb-2">
-                Options (comma-separated)
-              </label>
-              <textarea
-                [(ngModel)]="fieldFormData.optionsText"
-                placeholder="e.g., Urban, Township, Rural"
-                rows="3"
-                class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500 resize-none"
-              ></textarea>
-            </div>
-            }
-
-            <div>
-              <label class="block text-sm font-semibold text-slate-900 mb-2">
-                Placeholder
-              </label>
-              <input
-                type="text"
-                [(ngModel)]="fieldFormData.placeholder"
-                placeholder="e.g., e.g., 45"
-                class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500"
-              />
-            </div>
-
-            <div>
-              <label class="block text-sm font-semibold text-slate-900 mb-2">
-                Help Text
-              </label>
-              <textarea
-                [(ngModel)]="fieldFormData.helpText"
-                placeholder="Optional help text"
-                rows="2"
-                class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500 resize-none"
-              ></textarea>
-            </div>
-          </div>
-
-          <div class="flex items-center gap-3 mt-6">
-            <button
-              (click)="closeFieldModal()"
-              class="flex-1 px-4 py-2.5 bg-slate-100 text-slate-700 font-medium rounded-xl hover:bg-slate-200 transition-colors"
-            >
-              Cancel
-            </button>
-            <button
-              (click)="saveField()"
-              [disabled]="!fieldFormData.label || !fieldFormData.name"
-              class="flex-1 px-4 py-2.5 bg-teal-500 text-white font-medium rounded-xl hover:bg-teal-600 disabled:opacity-50 transition-colors"
-            >
-              Save
-            </button>
-          </div>
-        </div>
-      </div>
-      }
-    </div>
-  `,
+  templateUrl: './demographics-config.component.html',
 })
-export class AdminDemographicsConfigComponent implements OnInit {
-  configService = inject(DemographicsConfigService);
-  private supabase = inject(SharedSupabaseService);
-  private activityService = inject(ActivityService);
+export class DemographicsConfigManagerComponent implements OnInit, OnDestroy {
+  private configService = inject(DemographicsConfigService);
+  private adminService = inject(AdminDemographicsConfigService);
+  private messagingService = inject(MessagingService);
+  private destroy$ = new Subject<void>();
 
-  // ===== STATE =====
-  expandedCategories = signal<Set<string>>(new Set());
+  // STATE
+  categories = signal<DemographicCategory[]>([]);
+  selectedCategoryId = signal<string | null>(null);
+  isLoading = signal(false);
+  error = signal<string | null>(null);
+  success = signal<string | null>(null);
+
+  // MODALS
   showCategoryModal = signal(false);
   showFieldModal = signal(false);
   editingCategory = signal<DemographicCategory | null>(null);
-  editingField = signal<{
-    categoryId: string;
-    field: DemographicField;
-  } | null>(null);
+  editingField = signal<DemographicField | null>(null);
 
-  categoryFormData = {
-    categoryKey: '',
+  // CATEGORY FORM
+  categoryForm = signal({
     label: '',
     description: '',
-  };
+  });
 
-  fieldFormData = {
+  // FIELD FORM
+  fieldForm = signal({
     name: '',
     label: '',
     type: 'text' as DemographicFieldType,
     required: false,
-    min: undefined as number | undefined,
-    max: undefined as number | undefined,
+    min: '',
+    max: '',
+    optionsText: '',
     placeholder: '',
     helpText: '',
-    optionsText: '',
-  };
+  });
 
-  private draggedCategory?: number;
-  private draggedField?: { categoryIndex: number; fieldIndex: number };
+  // COMPUTED
+  selectedCategory = computed(() => {
+    const id = this.selectedCategoryId();
+    return this.categories().find((c) => c.id === id);
+  });
+
+  fieldsForCategory = computed(() => {
+    return this.selectedCategory()?.fields || [];
+  });
+
+  configSource = computed(() => this.configService.getSource());
 
   ngOnInit(): void {
-    // Config loads automatically
+    this.loadConfig();
   }
 
-  // ===== CATEGORY MANAGEMENT =====
+  /**
+   * Load config - subscribe to service changes
+   */
+  private loadConfig(): void {
+    this.isLoading.set(true);
+    this.error.set(null);
 
-  isExpanded(categoryId: string): boolean {
-    return this.expandedCategories().has(categoryId);
+    this.configService
+      .watchConfigChanges()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (config) => {
+          if (config?.categories) {
+            this.categories.set(config.categories);
+            if (config.categories.length > 0 && !this.selectedCategoryId()) {
+              this.selectedCategoryId.set(config.categories[0].id);
+            }
+            this.isLoading.set(false);
+          }
+        },
+        error: (err: any) => {
+          this.error.set(err?.message || 'Failed to load config');
+          this.isLoading.set(false);
+        },
+      });
   }
 
-  toggleCategoryExpanded(categoryId: string): void {
-    const expanded = new Set(this.expandedCategories());
-    if (expanded.has(categoryId)) {
-      expanded.delete(categoryId);
-    } else {
-      expanded.add(categoryId);
-    }
-    this.expandedCategories.set(expanded);
+  // ===== NAVIGATION =====
+
+  selectCategory(categoryId: string): void {
+    this.selectedCategoryId.set(categoryId);
   }
 
-  openCategoryModal(): void {
+  // ===== CATEGORY OPERATIONS =====
+
+  openAddCategoryModal(): void {
     this.editingCategory.set(null);
-    this.categoryFormData = { categoryKey: '', label: '', description: '' };
+    this.categoryForm.set({ label: '', description: '' });
+    this.error.set(null);
     this.showCategoryModal.set(true);
   }
 
-  editCategory(category: DemographicCategory): void {
+  openEditCategoryModal(category: DemographicCategory): void {
     this.editingCategory.set(category);
-    this.categoryFormData = {
-      categoryKey: category.id,
+    this.categoryForm.set({
       label: category.label,
       description: category.description || '',
-    };
+    });
+    this.error.set(null);
     this.showCategoryModal.set(true);
   }
 
@@ -525,114 +914,125 @@ export class AdminDemographicsConfigComponent implements OnInit {
     this.editingCategory.set(null);
   }
 
-  async saveCategory(): Promise<void> {
-    try {
-      const userId = this.supabase.getCurrentUserId();
-      if (!userId) throw new Error('Not authenticated');
+  saveCategoryModal(): void {
+    const form = this.categoryForm();
+    if (!form.label.trim()) {
+      this.error.set('Category label is required');
+      return;
+    }
 
-      if (this.editingCategory()) {
-        // Update
-        const { error } = await this.supabase
-          .from('demographics_categories')
-          .update({
-            label: this.categoryFormData.label,
-            description: this.categoryFormData.description,
-            updated_by: userId,
-            updated_at: new Date().toISOString(),
-          })
-          .eq('category_key', this.categoryFormData.categoryKey);
+    const isEdit = !!this.editingCategory();
 
-        if (error) throw error;
-
-        this.activityService.trackProfileActivity(
-          'updated',
-          `Demographic category "${this.categoryFormData.label}" updated`,
-          'demographics_category_updated'
-        );
-      } else {
-        // Create
-        const { error } = await this.supabase
-          .from('demographics_categories')
-          .insert({
-            category_key: this.categoryFormData.categoryKey,
-            label: this.categoryFormData.label,
-            description: this.categoryFormData.description,
-            created_by: userId,
-          });
-
-        if (error) throw error;
-
-        this.activityService.trackProfileActivity(
-          'updated',
-          `Demographic category "${this.categoryFormData.label}" created`,
-          'demographics_category_created'
-        );
-      }
-
-      await this.configService.refresh();
-      this.closeCategoryModal();
-    } catch (error: any) {
-      alert(`Error saving category: ${error?.message}`);
+    if (isEdit) {
+      this.updateCategory();
+    } else {
+      this.createCategory(form);
     }
   }
 
-  async deleteCategory(categoryId: string): Promise<void> {
-    if (!confirm('Delete this category and all its fields?')) return;
-
-    try {
-      const { error } = await this.supabase
-        .from('demographics_categories')
-        .delete()
-        .eq('category_key', categoryId);
-
-      if (error) throw error;
-
-      this.activityService.trackProfileActivity(
-        'updated',
-        `Demographic category "${categoryId}" deleted`,
-        'demographics_category_deleted'
-      );
-
-      await this.configService.refresh();
-    } catch (error: any) {
-      alert(`Error deleting category: ${error?.message}`);
-    }
+  private createCategory(form: any): void {
+    this.adminService
+      .createCategory(
+        this.generateKey(form.label),
+        form.label,
+        form.description
+      )
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          this.showSuccess('Category created');
+          this.closeCategoryModal();
+        },
+        error: (err) => {
+          this.error.set(err?.message || 'Failed to create category');
+        },
+      });
   }
 
-  // ===== FIELD MANAGEMENT =====
+  private updateCategory(): void {
+    const cat = this.editingCategory()!;
+    const form = this.categoryForm();
 
-  openFieldModal(categoryId: string): void {
+    this.adminService
+      .updateCategory(cat.id, {
+        label: form.label,
+        description: form.description || undefined,
+      })
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          this.showSuccess('Category updated');
+          this.closeCategoryModal();
+        },
+        error: (err) => {
+          this.error.set(err?.message || 'Failed to update category');
+        },
+      });
+  }
+
+  deleteCategory(category: DemographicCategory): void {
+    if (
+      !confirm(
+        `Delete "${category.label}"? This will also delete all ${category.fields.length} fields.`
+      )
+    ) {
+      return;
+    }
+
+    this.adminService
+      .deleteCategory(category.id)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          this.showSuccess('Category deleted');
+          if (this.selectedCategoryId() === category.id) {
+            this.selectedCategoryId.set(null);
+          }
+        },
+        error: (err) => {
+          this.error.set(err?.message || 'Failed to delete category');
+        },
+      });
+  }
+
+  // ===== FIELD OPERATIONS =====
+
+  openAddFieldModal(): void {
+    if (!this.selectedCategory()) {
+      this.error.set('Please select a category first');
+      return;
+    }
+
     this.editingField.set(null);
-    this.fieldFormData = {
+    this.fieldForm.set({
       name: '',
       label: '',
       type: 'text',
       required: false,
-      min: undefined,
-      max: undefined,
+      min: '',
+      max: '',
+      optionsText: '',
       placeholder: '',
       helpText: '',
-      optionsText: '',
-    };
-    // Store categoryId in a temporary way - we'll retrieve it when saving
-    (window as any).__currentFieldCategoryId = categoryId;
+    });
+    this.error.set(null);
     this.showFieldModal.set(true);
   }
 
-  editField(categoryId: string, field: DemographicField): void {
-    this.editingField.set({ categoryId, field });
-    this.fieldFormData = {
+  openEditFieldModal(field: DemographicField): void {
+    this.editingField.set(field);
+    this.fieldForm.set({
       name: field.name,
       label: field.label,
       type: field.type,
       required: field.required,
-      min: field.min,
-      max: field.max,
+      min: field.min?.toString() || '',
+      max: field.max?.toString() || '',
+      optionsText: field.options?.join(', ') || '',
       placeholder: field.placeholder || '',
       helpText: field.helpText || '',
-      optionsText: field.options?.join(', ') || '',
-    };
-    (window as any).__currentFieldCategoryId = categoryId;
+    });
+    this.error.set(null);
     this.showFieldModal.set(true);
   }
 
@@ -641,152 +1041,155 @@ export class AdminDemographicsConfigComponent implements OnInit {
     this.editingField.set(null);
   }
 
-  async saveField(): Promise<void> {
-    try {
-      const userId = this.supabase.getCurrentUserId();
-      if (!userId) throw new Error('Not authenticated');
+  saveFieldModal(): void {
+    const form = this.fieldForm();
+    const category = this.selectedCategory();
 
-      const categoryId =
-        this.editingField()?.categoryId ||
-        (window as any).__currentFieldCategoryId;
-      const category = this.configService.getCategory(categoryId);
-      if (!category) throw new Error('Category not found');
+    if (!form.label.trim()) {
+      this.error.set('Field label is required');
+      return;
+    }
 
-      const options =
-        this.fieldFormData.type === 'dropdown'
-          ? this.fieldFormData.optionsText
-              .split(',')
-              .map((o) => o.trim())
-              .filter((o) => o)
-          : null;
+    if (!category) {
+      this.error.set('No category selected');
+      return;
+    }
 
-      if (this.editingField()) {
-        // Update
-        const { error } = await this.supabase
-          .from('demographics_fields')
-          .update({
-            label: this.fieldFormData.label,
-            type: this.fieldFormData.type,
-            is_required: this.fieldFormData.required,
-            min_value: this.fieldFormData.min,
-            max_value: this.fieldFormData.max,
-            placeholder: this.fieldFormData.placeholder,
-            help_text: this.fieldFormData.helpText,
-            options: options,
-            updated_by: userId,
-            updated_at: new Date().toISOString(),
-          })
-          .eq('field_name', this.fieldFormData.name)
-          .eq('category_id', category.id);
+    const fieldName = form.name.trim() || this.generateKey(form.label);
+    if (!fieldName) {
+      this.error.set('Could not generate field name');
+      return;
+    }
 
-        if (error) throw error;
+    const isEdit = !!this.editingField();
+    const options = this.parseDropdownOptions(form);
 
-        this.activityService.trackProfileActivity(
-          'updated',
-          `Field "${this.fieldFormData.label}" updated in "${category.label}"`,
-          'demographics_field_updated'
-        );
-      } else {
-        // Create
-        const { error } = await this.supabase
-          .from('demographics_fields')
-          .insert({
-            category_id: category.id,
-            field_name: this.fieldFormData.name,
-            label: this.fieldFormData.label,
-            type: this.fieldFormData.type,
-            is_required: this.fieldFormData.required,
-            min_value: this.fieldFormData.min,
-            max_value: this.fieldFormData.max,
-            placeholder: this.fieldFormData.placeholder,
-            help_text: this.fieldFormData.helpText,
-            options: options,
-            created_by: userId,
-          });
-
-        if (error) throw error;
-
-        this.activityService.trackProfileActivity(
-          'updated',
-          `Field "${this.fieldFormData.label}" created in "${category.label}"`,
-          'demographics_field_created'
-        );
-      }
-
-      await this.configService.refresh();
-      this.closeFieldModal();
-    } catch (error: any) {
-      alert(`Error saving field: ${error?.message}`);
+    if (isEdit) {
+      this.updateField(fieldName, form, options);
+    } else {
+      this.createField(category, fieldName, form, options);
     }
   }
 
-  async deleteField(categoryId: string, fieldName: string): Promise<void> {
-    if (!confirm('Delete this field?')) return;
+  private createField(
+    category: DemographicCategory,
+    fieldName: string,
+    form: any,
+    options?: string[]
+  ): void {
+    this.adminService
+      .createField(
+        category.id,
+        fieldName,
+        form.label,
+        form.type,
+        form.required,
+        {
+          minValue: form.min ? parseInt(form.min, 10) : undefined,
+          maxValue: form.max ? parseInt(form.max, 10) : undefined,
+          optionsList: options,
+          placeholder: form.placeholder || undefined,
+          helpText: form.helpText || undefined,
+        }
+      )
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          this.showSuccess('Field created');
+          this.closeFieldModal();
+        },
+        error: (err) => {
+          this.error.set(err?.message || 'Failed to create field');
+        },
+      });
+  }
 
-    try {
-      const category = this.configService.getCategory(categoryId);
-      if (!category) throw new Error('Category not found');
+  private updateField(fieldName: string, form: any, options?: string[]): void {
+    this.adminService
+      .updateField(fieldName, {
+        label: form.label,
+        type: form.type,
+        required: form.required,
+        min: form.min ? parseInt(form.min, 10) : undefined,
+        max: form.max ? parseInt(form.max, 10) : undefined,
+        options,
+        placeholder: form.placeholder || undefined,
+        helpText: form.helpText || undefined,
+      })
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          this.showSuccess('Field updated');
+          this.closeFieldModal();
+        },
+        error: (err) => {
+          this.error.set(err?.message || 'Failed to update field');
+        },
+      });
+  }
 
-      const { error } = await this.supabase
-        .from('demographics_fields')
-        .delete()
-        .eq('field_name', fieldName)
-        .eq('category_id', category.id);
-
-      if (error) throw error;
-
-      this.activityService.trackProfileActivity(
-        'updated',
-        `Field "${fieldName}" deleted from "${category.label}"`,
-        'demographics_field_deleted'
-      );
-
-      await this.configService.refresh();
-    } catch (error: any) {
-      alert(`Error deleting field: ${error?.message}`);
+  deleteField(field: DemographicField): void {
+    if (!confirm(`Delete field "${field.label}"?`)) {
+      return;
     }
-  }
 
-  // ===== DRAG & DROP =====
-
-  onCategoryDragStart(e: DragEvent, index: number): void {
-    this.draggedCategory = index;
-  }
-
-  onCategoryDragOver(e: DragEvent, index: number): void {
-    e.preventDefault();
-  }
-
-  onCategoryDrop(e: DragEvent, index: number): void {
-    e.preventDefault();
-    if (this.draggedCategory === undefined) return;
-    // Reordering logic would go here
-  }
-
-  onCategoryDragEnd(): void {
-    this.draggedCategory = undefined;
-  }
-
-  onFieldDragStart(e: DragEvent, categoryId: string, index: number): void {
-    this.draggedField = { categoryIndex: 0, fieldIndex: index };
-  }
-
-  onFieldDragOver(e: DragEvent, categoryId: string, index: number): void {
-    e.preventDefault();
-  }
-
-  onFieldDrop(e: DragEvent, categoryId: string, index: number): void {
-    e.preventDefault();
-    // Reordering logic would go here
-  }
-
-  onFieldDragEnd(): void {
-    this.draggedField = undefined;
+    this.adminService
+      .deleteField(field.name)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          this.showSuccess('Field deleted');
+        },
+        error: (err) => {
+          this.error.set(err?.message || 'Failed to delete field');
+        },
+      });
   }
 
   // ===== UTILITIES =====
 
-  async refreshConfig(): Promise<void> {
-    await this.configService.refresh();
+  private parseDropdownOptions(form: any): string[] | undefined {
+    if (form.type === 'dropdown' && form.optionsText) {
+      return form.optionsText
+        .split(',')
+        .map((o: string) => o.trim())
+        .filter((o: string) => o.length > 0);
+    }
+    return undefined;
+  }
+
+  private generateKey(label: string): string {
+    return label
+      .toLowerCase()
+      .replace(/\s+/g, '')
+      .replace(/[^a-z0-9]/g, '');
+  }
+
+  private showSuccess(message: string): void {
+    this.success.set(message);
+    setTimeout(() => this.success.set(null), 3000);
+  }
+
+  getFieldTypeDisplay(type: string): string {
+    const map: Record<string, string> = {
+      text: 'Text',
+      number: 'Number',
+      percentage: 'Percentage',
+      dropdown: 'Dropdown',
+    };
+    return map[type] || type;
+  }
+
+  trackByCategory(index: number, cat: any): string {
+    return cat.id;
+  }
+
+  trackByField(index: number, field: any): string {
+    return field.name;
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 }

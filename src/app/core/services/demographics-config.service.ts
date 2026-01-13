@@ -1,18 +1,465 @@
+// import { Injectable, signal, inject, OnDestroy } from '@angular/core';
+// import { Observable, Subject, BehaviorSubject } from 'rxjs';
+// import { takeUntil } from 'rxjs/operators';
+// import { SharedSupabaseService } from 'src/app/shared/services/shared-supabase.service';
+// import {
+//   DemographicCategory,
+//   DemographicField,
+// } from 'src/app/shared/models/funding-application-demographics.model';
+
+// /**
+//  * DemographicsConfigService
+//  * - Loads demographic categories & fields from Supabase
+//  * - Maps to shared DemographicCategory/DemographicField types
+//  * - Falls back to localStorage if Supabase unavailable
+//  * - Provides hardcoded fallback as last resort
+//  */
+
+// export interface DemographicsConfig {
+//   categories: DemographicCategory[];
+//   loadedAt: Date;
+//   source: 'supabase' | 'localStorage' | 'hardcoded';
+// }
+
+// @Injectable({
+//   providedIn: 'root',
+// })
+// export class DemographicsConfigService implements OnDestroy {
+//   private supabase = inject(SharedSupabaseService);
+//   private destroy$ = new Subject<void>();
+
+//   // ===== STATE SIGNALS =====
+//   private configState = signal<DemographicsConfig | null>(null);
+//   private isLoading = signal(false);
+//   private error = signal<string | null>(null);
+
+//   // ===== PUBLIC SIGNALS =====
+//   readonly config = this.configState.asReadonly();
+//   readonly loading = this.isLoading.asReadonly();
+//   readonly configError = this.error.asReadonly();
+
+//   // ===== REALTIME RELOAD =====
+//   private reloadSubject = new BehaviorSubject<void>(undefined);
+//   reload$ = this.reloadSubject.asObservable();
+
+//   // ===== STORAGE & CACHE =====
+//   private readonly STORAGE_KEY = 'kapify_demographics_config';
+//   private readonly CACHE_VERSION = 'v1';
+//   private readonly MAX_CACHE_AGE_MS = 24 * 60 * 60 * 1000;
+
+//   constructor() {
+//     this.initializeConfig();
+//   }
+
+//   /**
+//    * Initialize config on service creation
+//    */
+//   private async initializeConfig(): Promise<void> {
+//     this.isLoading.set(true);
+//     this.error.set(null);
+
+//     try {
+//       const config = await this.loadFromSupabase();
+//       this.configState.set(config);
+//       this.saveToLocalStorage(config);
+//       console.log(
+//         '✅ Demographics config loaded from Supabase:',
+//         config.categories.length,
+//         'categories'
+//       );
+//     } catch (err) {
+//       console.warn('⚠️ Supabase load failed, trying localStorage:', err);
+
+//       try {
+//         const config = this.loadFromLocalStorage();
+//         if (config) {
+//           this.configState.set(config);
+//           this.error.set('Using cached config. Some changes may be outdated.');
+//           console.log('✅ Demographics config loaded from localStorage');
+//         } else {
+//           throw new Error('No cached config available');
+//         }
+//       } catch (cacheErr) {
+//         console.warn(
+//           '⚠️ LocalStorage load failed, using hardcoded fallback:',
+//           cacheErr
+//         );
+//         const config = this.getHardcodedFallback();
+//         this.configState.set(config);
+//         this.error.set(
+//           'Using fallback config. Please contact support if this persists.'
+//         );
+//         console.log('✅ Demographics config loaded from hardcoded fallback');
+//       }
+//     } finally {
+//       this.isLoading.set(false);
+//     }
+//   }
+
+//   /**
+//    * Reload config from Supabase
+//    */
+//   async reloadConfig(): Promise<DemographicsConfig | null> {
+//     this.isLoading.set(true);
+//     this.error.set(null);
+
+//     try {
+//       const config = await this.loadFromSupabase();
+//       this.configState.set(config);
+//       this.saveToLocalStorage(config);
+//       this.reloadSubject.next();
+//       console.log('✅ Demographics config reloaded');
+//       return config;
+//     } catch (err) {
+//       console.error('❌ Failed to reload config:', err);
+//       this.error.set('Failed to reload config');
+//       return null;
+//     } finally {
+//       this.isLoading.set(false);
+//     }
+//   }
+
+//   /**
+//    * Load config from Supabase
+//    */
+//   private async loadFromSupabase(): Promise<DemographicsConfig> {
+//     try {
+//       const { data: categoriesData, error: catError } = await this.supabase
+//         .from('demographics_categories')
+//         .select('*')
+//         .eq('is_active', true)
+//         .order('order_index', { ascending: true });
+
+//       if (catError) throw catError;
+//       if (!categoriesData || categoriesData.length === 0) {
+//         throw new Error('No demographic categories found in Supabase');
+//       }
+
+//       const { data: fieldsData, error: fieldError } = await this.supabase
+//         .from('demographics_fields')
+//         .select('*')
+//         .eq('is_active', true)
+//         .order('order_index', { ascending: true });
+
+//       if (fieldError) throw fieldError;
+
+//       // Build category objects with fields
+//       const categories: DemographicCategory[] = categoriesData.map((cat) => ({
+//         id: cat.id,
+//         label: cat.label,
+//         description: cat.description,
+//         order: cat.order_index,
+//         fields: (fieldsData || [])
+//           .filter((f) => f.category_id === cat.id)
+//           .map((f) => this.mapFieldFromDb(f)),
+//       }));
+
+//       return {
+//         categories,
+//         loadedAt: new Date(),
+//         source: 'supabase',
+//       };
+//     } catch (err: any) {
+//       throw new Error(`Supabase load failed: ${err?.message}`);
+//     }
+//   }
+
+//   /**
+//    * Load config from localStorage
+//    */
+//   private loadFromLocalStorage(): DemographicsConfig | null {
+//     try {
+//       const cached = localStorage.getItem(this.STORAGE_KEY);
+//       if (!cached) return null;
+
+//       const parsed = JSON.parse(cached);
+//       const loadedAt = new Date(parsed.loadedAt);
+//       const age = Date.now() - loadedAt.getTime();
+//       if (age > this.MAX_CACHE_AGE_MS) {
+//         console.warn('⚠️ Cached config is older than 24 hours');
+//       }
+
+//       return {
+//         ...parsed,
+//         loadedAt: new Date(parsed.loadedAt),
+//         source: 'localStorage',
+//       };
+//     } catch (err) {
+//       console.error('❌ Failed to parse localStorage config:', err);
+//       return null;
+//     }
+//   }
+
+//   /**
+//    * Save config to localStorage
+//    */
+//   private saveToLocalStorage(config: DemographicsConfig): void {
+//     try {
+//       localStorage.setItem(
+//         this.STORAGE_KEY,
+//         JSON.stringify({
+//           version: this.CACHE_VERSION,
+//           ...config,
+//           loadedAt: config.loadedAt.toISOString(),
+//         })
+//       );
+//     } catch (err) {
+//       console.warn('Failed to save config to localStorage:', err);
+//     }
+//   }
+
+//   /**
+//    * Hardcoded fallback config
+//    */
+//   private getHardcodedFallback(): DemographicsConfig {
+//     return {
+//       categories: [
+//         {
+//           id: 'shareholding',
+//           label: 'Shareholding',
+//           description: 'Business ownership structure',
+//           order: 1,
+//           fields: [
+//             {
+//               name: 'blackOwnership',
+//               label: 'Black Ownership (%)',
+//               type: 'percentage',
+//               required: false,
+//               min: 0,
+//               max: 100,
+//               placeholder: 'e.g., 45',
+//               helpText: 'Percentage of shareholding under Black Ownership',
+//             },
+//             {
+//               name: 'womanOwnership',
+//               label: 'Woman Ownership (%)',
+//               type: 'percentage',
+//               required: false,
+//               min: 0,
+//               max: 100,
+//               placeholder: 'e.g., 60',
+//               helpText: 'Percentage of shareholding held by women',
+//             },
+//             {
+//               name: 'womenBlackOwnership',
+//               label: 'Black Woman Ownership (%)',
+//               type: 'percentage',
+//               required: false,
+//               min: 0,
+//               max: 100,
+//               placeholder: 'e.g., 30',
+//               helpText: 'Percentage of shareholding held by Black women',
+//             },
+//             {
+//               name: 'youthOwnership',
+//               label: 'Youth Ownership (%)',
+//               type: 'percentage',
+//               required: false,
+//               min: 0,
+//               max: 100,
+//               placeholder: 'e.g., 51',
+//               helpText: 'Percentage of shareholding held by youth (under 35)',
+//             },
+//             {
+//               name: 'youthBlackOwnership',
+//               label: 'Black Youth Ownership (%)',
+//               type: 'percentage',
+//               required: false,
+//               min: 0,
+//               max: 100,
+//               placeholder: 'e.g., 40',
+//               helpText: 'Percentage of shareholding held by Black youth',
+//             },
+//             {
+//               name: 'disabilityOwnership',
+//               label: 'Disability Ownership (%)',
+//               type: 'percentage',
+//               required: false,
+//               min: 0,
+//               max: 100,
+//               placeholder: 'e.g., 25',
+//               helpText:
+//                 'Percentage of shareholding held by individuals with disability',
+//             },
+//             {
+//               name: 'disabilityBlackOwnership',
+//               label: 'Black Disability Ownership (%)',
+//               type: 'percentage',
+//               required: false,
+//               min: 0,
+//               max: 100,
+//               placeholder: 'e.g., 15',
+//               helpText:
+//                 'Percentage of shareholding held by Black individuals with disability',
+//             },
+//           ],
+//         },
+//         {
+//           id: 'businessArea',
+//           label: 'Business Area',
+//           description: 'Where your business is located',
+//           order: 2,
+//           fields: [
+//             {
+//               name: 'area',
+//               label: 'Which area is the business registered in?',
+//               type: 'dropdown',
+//               required: false,
+//               options: ['Urban', 'Township', 'Rural'],
+//               helpText: 'Select the primary business location',
+//             },
+//           ],
+//         },
+//         {
+//           id: 'jobStats',
+//           label: 'Jobs Statistics',
+//           description: 'Employment impact metrics',
+//           order: 3,
+//           fields: [
+//             {
+//               name: 'jobsCreated',
+//               label: 'Jobs Created (last 12-24 months)',
+//               type: 'number',
+//               required: false,
+//               min: 0,
+//               placeholder: 'e.g., 15',
+//               helpText: 'Number of jobs created in the last 12-24 months',
+//             },
+//             {
+//               name: 'expectedJobs',
+//               label: 'Expected Jobs (next 12-36 months)',
+//               type: 'number',
+//               required: false,
+//               min: 0,
+//               placeholder: 'e.g., 25',
+//               helpText:
+//                 'Number of jobs expected to be created in the next 12-36 months',
+//             },
+//           ],
+//         },
+//       ],
+//       loadedAt: new Date(),
+//       source: 'hardcoded',
+//     };
+//   }
+
+//   /**
+//    * Map database field to DemographicField
+//    * Supabase columns: field_name, is_required, min_value, max_value, help_text
+//    * Model properties: name, required, min, max, helpText
+//    */
+//   private mapFieldFromDb(f: any): DemographicField {
+//     let options: string[] | undefined;
+
+//     if (f.options) {
+//       try {
+//         options = JSON.parse(f.options);
+//       } catch (e) {
+//         if (typeof f.options === 'string') {
+//           options = f.options
+//             .split(',')
+//             .map((o: string) => o.trim())
+//             .filter((o: string) => o.length > 0);
+//         }
+//       }
+//     }
+
+//     // Map Supabase column names to model property names
+//     return {
+//       name: f.field_name, // field_name → name
+//       label: f.label,
+//       type: f.type,
+//       required: f.is_required, // is_required → required
+//       placeholder: f.placeholder,
+//       options,
+//       min: f.min_value, // min_value → min
+//       max: f.max_value, // max_value → max
+//       helpText: f.help_text, // help_text → helpText
+//     };
+//   }
+
+//   /**
+//    * Get all active categories
+//    */
+//   getCategories(): DemographicCategory[] {
+//     return this.configState()?.categories || [];
+//   }
+
+//   /**
+//    * Get category by ID
+//    */
+//   getCategory(categoryId: string): DemographicCategory | undefined {
+//     return this.getCategories().find((c) => c.id === categoryId);
+//   }
+
+//   /**
+//    * Get all fields for a category
+//    */
+//   getFieldsByCategory(categoryId: string): DemographicField[] {
+//     const category = this.getCategory(categoryId);
+//     return category?.fields || [];
+//   }
+
+//   /**
+//    * Check if config is loaded
+//    */
+//   isLoaded(): boolean {
+//     return !!this.configState();
+//   }
+
+//   /**
+//    * Get config source
+//    */
+//   getSource(): 'supabase' | 'localStorage' | 'hardcoded' | null {
+//     return this.configState()?.source || null;
+//   }
+
+//   /**
+//    * Watch config changes
+//    */
+//   watchConfigChanges(): Observable<DemographicsConfig | null> {
+//     return new Observable((subscriber) => {
+//       subscriber.next(this.configState());
+
+//       const subscription = this.reload$
+//         .pipe(takeUntil(this.destroy$))
+//         .subscribe(() => {
+//           subscriber.next(this.configState());
+//         });
+
+//       return () => subscription.unsubscribe();
+//     });
+//   }
+
+//   ngOnDestroy(): void {
+//     this.destroy$.next();
+//     this.destroy$.complete();
+//   }
+// }
+
 import { Injectable, signal, inject, OnDestroy } from '@angular/core';
-import { Subject } from 'rxjs';
+import { Observable, Subject, BehaviorSubject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
+import { SharedSupabaseService } from 'src/app/shared/services/shared-supabase.service';
 import {
   DemographicCategory,
   DemographicField,
 } from 'src/app/shared/models/funding-application-demographics.model';
-import { SharedSupabaseService } from 'src/app/shared/services/shared-supabase.service';
 
 /**
  * DemographicsConfigService
- * - Loads demographic categories and fields from Supabase
- * - Falls back to hardcoded local config if Supabase unavailable
- * - Caches config in signals for reactive consumption
- * - Auto-refreshes periodically
+ * - Loads demographic categories & fields from Supabase
+ * - Maps to shared DemographicCategory/DemographicField types
+ * - Falls back to localStorage if Supabase unavailable
+ * - Provides hardcoded fallback as last resort
  */
+
+export interface DemographicsConfig {
+  categories: DemographicCategory[];
+  loadedAt: Date;
+  source: 'supabase' | 'localStorage' | 'hardcoded';
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -20,310 +467,421 @@ export class DemographicsConfigService implements OnDestroy {
   private supabase = inject(SharedSupabaseService);
   private destroy$ = new Subject<void>();
 
-  // ===== STATE =====
-  private categoriesSignal = signal<DemographicCategory[]>([]);
-  private isLoadingSignal = signal(false);
-  private errorSignal = signal<string | null>(null);
-  private lastLoadedSignal = signal<Date | null>(null);
-  private isUsingFallbackSignal = signal(false);
+  // ===== STATE SIGNALS =====
+  private configState = signal<DemographicsConfig | null>(null);
+  private isLoading = signal(false);
+  private error = signal<string | null>(null);
 
-  // ===== PUBLIC READONLY SIGNALS =====
-  readonly categories = this.categoriesSignal.asReadonly();
-  readonly isLoading = this.isLoadingSignal.asReadonly();
-  readonly error = this.errorSignal.asReadonly();
-  readonly lastLoaded = this.lastLoadedSignal.asReadonly();
-  readonly isUsingFallback = this.isUsingFallbackSignal.asReadonly();
+  // ===== PUBLIC SIGNALS =====
+  readonly config = this.configState.asReadonly();
+  readonly loading = this.isLoading.asReadonly();
+  readonly configError = this.error.asReadonly();
 
-  private readonly REFRESH_INTERVAL = 5 * 60 * 1000; // 5 minutes
-  private refreshTimer?: number;
+  // ===== REALTIME RELOAD =====
+  private reloadSubject = new BehaviorSubject<void>(undefined);
+  reload$ = this.reloadSubject.asObservable();
 
-  // Local fallback config (from hardcoded original)
-  private readonly LOCAL_FALLBACK_CONFIG: DemographicCategory[] = [
-    {
-      id: 'shareholding',
-      label: 'Shareholding',
-      description: 'Business ownership structure',
-      order: 1,
-      fields: [
-        {
-          name: 'blackOwnership',
-          label: 'Black Ownership (%)',
-          type: 'percentage',
-          required: false,
-          placeholder: 'e.g., 45',
-          min: 0,
-          max: 100,
-          helpText: 'Percentage of shareholding under Black Ownership',
-        },
-        {
-          name: 'womanOwnership',
-          label: 'Woman Ownership (%)',
-          type: 'percentage',
-          required: false,
-          placeholder: 'e.g., 60',
-          min: 0,
-          max: 100,
-          helpText: 'Percentage of shareholding held by women',
-        },
-        {
-          name: 'womenBlackOwnership',
-          label: 'Black Woman Ownership (%)',
-          type: 'percentage',
-          required: false,
-          placeholder: 'e.g., 30',
-          min: 0,
-          max: 100,
-          helpText: 'Percentage of shareholding held by Black women',
-        },
-        {
-          name: 'youthOwnership',
-          label: 'Youth Ownership (%)',
-          type: 'percentage',
-          required: false,
-          placeholder: 'e.g., 51',
-          min: 0,
-          max: 100,
-          helpText: 'Percentage of shareholding held by youth (under 35)',
-        },
-        {
-          name: 'youthBlackOwnership',
-          label: 'Black Youth Ownership (%)',
-          type: 'percentage',
-          required: false,
-          placeholder: 'e.g., 40',
-          min: 0,
-          max: 100,
-          helpText: 'Percentage of shareholding held by Black youth',
-        },
-        {
-          name: 'disabilityOwnership',
-          label: 'Disability Ownership (%)',
-          type: 'percentage',
-          required: false,
-          placeholder: 'e.g., 25',
-          min: 0,
-          max: 100,
-          helpText:
-            'Percentage of shareholding held by individuals with disability',
-        },
-        {
-          name: 'disabilityBlackOwnership',
-          label: 'Black Disability Ownership (%)',
-          type: 'percentage',
-          required: false,
-          placeholder: 'e.g., 15',
-          min: 0,
-          max: 100,
-          helpText:
-            'Percentage of shareholding held by Black individuals with disability',
-        },
-      ],
-    },
-    {
-      id: 'businessArea',
-      label: 'Business Area',
-      description: 'Where your business is located',
-      order: 2,
-      fields: [
-        {
-          name: 'area',
-          label: 'Which area is the business registered in?',
-          type: 'dropdown',
-          required: false,
-          options: ['Urban', 'Township', 'Rural'],
-          helpText: 'Select the primary business location',
-        },
-      ],
-    },
-    {
-      id: 'jobStats',
-      label: 'Jobs Statistics',
-      description: 'Employment impact metrics',
-      order: 3,
-      fields: [
-        {
-          name: 'jobsCreated',
-          label: 'Jobs Created (last 12-24 months)',
-          type: 'number',
-          required: false,
-          placeholder: 'e.g., 15',
-          min: 0,
-          helpText: 'Number of jobs created in the last 12-24 months',
-        },
-        {
-          name: 'expectedJobs',
-          label: 'Expected Jobs (next 12-36 months)',
-          type: 'number',
-          required: false,
-          placeholder: 'e.g., 25',
-          min: 0,
-          helpText:
-            'Number of jobs expected to be created in the next 12-36 months',
-        },
-      ],
-    },
-  ];
+  // ===== STORAGE & CACHE =====
+  private readonly STORAGE_KEY = 'kapify_demographics_config';
+  private readonly CACHE_VERSION = 'v1';
+  private readonly MAX_CACHE_AGE_MS = 24 * 60 * 60 * 1000;
 
   constructor() {
-    // Auto-load on service creation
-    this.loadConfig();
-
-    // Setup auto-refresh
-    this.setupAutoRefresh();
+    this.initializeConfig();
   }
 
   /**
-   * Load config from Supabase, fallback to local if needed
+   * Initialize config on service creation
    */
-  async loadConfig(): Promise<void> {
+  private async initializeConfig(): Promise<void> {
+    this.isLoading.set(true);
+    this.error.set(null);
+
     try {
-      this.isLoadingSignal.set(true);
-      this.errorSignal.set(null);
-
-      // Load from Supabase
       const config = await this.loadFromSupabase();
-
-      if (config && config.length > 0) {
-        this.categoriesSignal.set(config);
-        this.isUsingFallbackSignal.set(false);
-        this.lastLoadedSignal.set(new Date());
-        console.log('✅ Demographics config loaded from Supabase');
-      } else {
-        throw new Error('No config returned from Supabase');
-      }
-    } catch (error: any) {
-      console.warn(
-        '⚠️ Failed to load config from Supabase, using fallback:',
-        error?.message
+      this.configState.set(config);
+      this.saveToLocalStorage(config);
+      this.reloadSubject.next();
+      console.log(
+        '✅ Demographics config loaded from Supabase:',
+        config.categories.length,
+        'categories'
       );
-      this.categoriesSignal.set(this.LOCAL_FALLBACK_CONFIG);
-      this.isUsingFallbackSignal.set(true);
-      this.errorSignal.set(
-        'Using local config. Some updates may not be visible.'
-      );
-    } finally {
-      this.isLoadingSignal.set(false);
-    }
-  }
+    } catch (err) {
+      console.warn('⚠️ Supabase load failed, trying localStorage:', err);
 
-  /**
-   * Load categories and fields from Supabase
-   */
-  private async loadFromSupabase(): Promise<DemographicCategory[]> {
-    // Load categories
-    const { data: categoriesData, error: categoriesError } = await this.supabase
-      .from('demographics_categories')
-      .select('*')
-      .eq('is_active', true)
-      .order('order_index', { ascending: true });
-
-    if (categoriesError) {
-      throw new Error(`Failed to load categories: ${categoriesError.message}`);
-    }
-
-    if (!categoriesData || categoriesData.length === 0) {
-      return [];
-    }
-
-    // Load fields for each category
-    const categories: DemographicCategory[] = await Promise.all(
-      categoriesData.map(async (cat: any) => {
-        const { data: fieldsData, error: fieldsError } = await this.supabase
-          .from('demographics_fields')
-          .select('*')
-          .eq('category_id', cat.id)
-          .eq('is_active', true)
-          .order('order_index', { ascending: true });
-
-        if (fieldsError) {
-          console.warn(
-            `Failed to load fields for category ${cat.category_key}:`,
-            fieldsError
-          );
+      try {
+        const config = this.loadFromLocalStorage();
+        if (config) {
+          this.configState.set(config);
+          this.error.set('Using cached config. Some changes may be outdated.');
+          this.reloadSubject.next();
+          console.log('✅ Demographics config loaded from localStorage');
+        } else {
+          throw new Error('No cached config available');
         }
-
-        // Transform database fields to DemographicField format
-        const fields: DemographicField[] = (fieldsData || []).map(
-          (field: any) => ({
-            name: field.field_name,
-            label: field.label,
-            type: field.type,
-            required: field.is_required,
-            placeholder: field.placeholder,
-            options: field.options
-              ? Array.isArray(field.options)
-                ? field.options
-                : field.options
-              : undefined,
-            min: field.min_value,
-            max: field.max_value,
-            helpText: field.help_text,
-          })
+      } catch (cacheErr) {
+        console.warn(
+          '⚠️ LocalStorage load failed, using hardcoded fallback:',
+          cacheErr
         );
-
-        return {
-          id: cat.category_key,
-          label: cat.label,
-          description: cat.description,
-          order: cat.order_index,
-          fields,
-        };
-      })
-    );
-
-    return categories;
+        const config = this.getHardcodedFallback();
+        this.configState.set(config);
+        this.error.set(
+          'Using fallback config. Please contact support if this persists.'
+        );
+        this.reloadSubject.next();
+        console.log('✅ Demographics config loaded from hardcoded fallback');
+      }
+    } finally {
+      this.isLoading.set(false);
+    }
   }
 
   /**
-   * Get all categories
+   * Reload config from Supabase
+   */
+  async reloadConfig(): Promise<DemographicsConfig | null> {
+    this.isLoading.set(true);
+    this.error.set(null);
+
+    try {
+      const config = await this.loadFromSupabase();
+      this.configState.set(config);
+      this.saveToLocalStorage(config);
+      this.reloadSubject.next();
+      console.log('✅ Demographics config reloaded');
+      return config;
+    } catch (err) {
+      console.error('❌ Failed to reload config:', err);
+      this.error.set('Failed to reload config');
+      return null;
+    } finally {
+      this.isLoading.set(false);
+    }
+  }
+
+  /**
+   * Load config from Supabase
+   */
+  private async loadFromSupabase(): Promise<DemographicsConfig> {
+    try {
+      const { data: categoriesData, error: catError } = await this.supabase
+        .from('demographics_categories')
+        .select('*')
+        .eq('is_active', true)
+        .order('order_index', { ascending: true });
+
+      if (catError) throw catError;
+      if (!categoriesData || categoriesData.length === 0) {
+        throw new Error('No demographic categories found in Supabase');
+      }
+
+      const { data: fieldsData, error: fieldError } = await this.supabase
+        .from('demographics_fields')
+        .select('*')
+        .eq('is_active', true)
+        .order('order_index', { ascending: true });
+
+      if (fieldError) throw fieldError;
+
+      // Build category objects with fields
+      const categories: DemographicCategory[] = categoriesData.map((cat) => ({
+        id: cat.id,
+        label: cat.label,
+        description: cat.description,
+        order: cat.order_index,
+        fields: (fieldsData || [])
+          .filter((f) => f.category_id === cat.id)
+          .map((f) => this.mapFieldFromDb(f)),
+      }));
+
+      return {
+        categories,
+        loadedAt: new Date(),
+        source: 'supabase',
+      };
+    } catch (err: any) {
+      throw new Error(`Supabase load failed: ${err?.message}`);
+    }
+  }
+
+  /**
+   * Load config from localStorage
+   */
+  private loadFromLocalStorage(): DemographicsConfig | null {
+    try {
+      const cached = localStorage.getItem(this.STORAGE_KEY);
+      if (!cached) return null;
+
+      const parsed = JSON.parse(cached);
+      const loadedAt = new Date(parsed.loadedAt);
+      const age = Date.now() - loadedAt.getTime();
+      if (age > this.MAX_CACHE_AGE_MS) {
+        console.warn('⚠️ Cached config is older than 24 hours');
+      }
+
+      return {
+        ...parsed,
+        loadedAt: new Date(parsed.loadedAt),
+        source: 'localStorage',
+      };
+    } catch (err) {
+      console.error('❌ Failed to parse localStorage config:', err);
+      return null;
+    }
+  }
+
+  /**
+   * Save config to localStorage
+   */
+  private saveToLocalStorage(config: DemographicsConfig): void {
+    try {
+      localStorage.setItem(
+        this.STORAGE_KEY,
+        JSON.stringify({
+          version: this.CACHE_VERSION,
+          ...config,
+          loadedAt: config.loadedAt.toISOString(),
+        })
+      );
+    } catch (err) {
+      console.warn('Failed to save config to localStorage:', err);
+    }
+  }
+
+  /**
+   * Hardcoded fallback config
+   */
+  private getHardcodedFallback(): DemographicsConfig {
+    return {
+      categories: [
+        {
+          id: 'shareholding',
+          label: 'Shareholding',
+          description: 'Business ownership structure',
+          order: 1,
+          fields: [
+            {
+              name: 'blackOwnership',
+              label: 'Black Ownership (%)',
+              type: 'percentage',
+              required: false,
+              min: 0,
+              max: 100,
+              placeholder: 'e.g., 45',
+              helpText: 'Percentage of shareholding under Black Ownership',
+            },
+            {
+              name: 'womanOwnership',
+              label: 'Woman Ownership (%)',
+              type: 'percentage',
+              required: false,
+              min: 0,
+              max: 100,
+              placeholder: 'e.g., 60',
+              helpText: 'Percentage of shareholding held by women',
+            },
+            {
+              name: 'womenBlackOwnership',
+              label: 'Black Woman Ownership (%)',
+              type: 'percentage',
+              required: false,
+              min: 0,
+              max: 100,
+              placeholder: 'e.g., 30',
+              helpText: 'Percentage of shareholding held by Black women',
+            },
+            {
+              name: 'youthOwnership',
+              label: 'Youth Ownership (%)',
+              type: 'percentage',
+              required: false,
+              min: 0,
+              max: 100,
+              placeholder: 'e.g., 51',
+              helpText: 'Percentage of shareholding held by youth (under 35)',
+            },
+            {
+              name: 'youthBlackOwnership',
+              label: 'Black Youth Ownership (%)',
+              type: 'percentage',
+              required: false,
+              min: 0,
+              max: 100,
+              placeholder: 'e.g., 40',
+              helpText: 'Percentage of shareholding held by Black youth',
+            },
+            {
+              name: 'disabilityOwnership',
+              label: 'Disability Ownership (%)',
+              type: 'percentage',
+              required: false,
+              min: 0,
+              max: 100,
+              placeholder: 'e.g., 25',
+              helpText:
+                'Percentage of shareholding held by individuals with disability',
+            },
+            {
+              name: 'disabilityBlackOwnership',
+              label: 'Black Disability Ownership (%)',
+              type: 'percentage',
+              required: false,
+              min: 0,
+              max: 100,
+              placeholder: 'e.g., 15',
+              helpText:
+                'Percentage of shareholding held by Black individuals with disability',
+            },
+          ],
+        },
+        {
+          id: 'businessArea',
+          label: 'Business Area',
+          description: 'Where your business is located',
+          order: 2,
+          fields: [
+            {
+              name: 'area',
+              label: 'Which area is the business registered in?',
+              type: 'dropdown',
+              required: false,
+              options: ['Urban', 'Township', 'Rural'],
+              helpText: 'Select the primary business location',
+            },
+          ],
+        },
+        {
+          id: 'jobStats',
+          label: 'Jobs Statistics',
+          description: 'Employment impact metrics',
+          order: 3,
+          fields: [
+            {
+              name: 'jobsCreated',
+              label: 'Jobs Created (last 12-24 months)',
+              type: 'number',
+              required: false,
+              min: 0,
+              placeholder: 'e.g., 15',
+              helpText: 'Number of jobs created in the last 12-24 months',
+            },
+            {
+              name: 'expectedJobs',
+              label: 'Expected Jobs (next 12-36 months)',
+              type: 'number',
+              required: false,
+              min: 0,
+              placeholder: 'e.g., 25',
+              helpText:
+                'Number of jobs expected to be created in the next 12-36 months',
+            },
+          ],
+        },
+      ],
+      loadedAt: new Date(),
+      source: 'hardcoded',
+    };
+  }
+
+  /**
+   * Map database field to DemographicField
+   * Supabase columns: field_name, is_required, min_value, max_value, help_text
+   * Model properties: name, required, min, max, helpText
+   */
+  private mapFieldFromDb(f: any): DemographicField {
+    let options: string[] | undefined;
+
+    if (f.options) {
+      try {
+        options = JSON.parse(f.options);
+      } catch (e) {
+        if (typeof f.options === 'string') {
+          options = f.options
+            .split(',')
+            .map((o: string) => o.trim())
+            .filter((o: string) => o.length > 0);
+        }
+      }
+    }
+
+    // Map Supabase column names to model property names
+    return {
+      name: f.field_name, // field_name → name
+      label: f.label,
+      type: f.type,
+      required: f.is_required, // is_required → required
+      placeholder: f.placeholder,
+      options,
+      min: f.min_value, // min_value → min
+      max: f.max_value, // max_value → max
+      helpText: f.help_text, // help_text → helpText
+    };
+  }
+
+  /**
+   * Get all active categories
    */
   getCategories(): DemographicCategory[] {
-    return this.categoriesSignal();
+    return this.configState()?.categories || [];
   }
 
   /**
    * Get category by ID
    */
   getCategory(categoryId: string): DemographicCategory | undefined {
-    return this.categoriesSignal().find((cat) => cat.id === categoryId);
+    return this.getCategories().find((c) => c.id === categoryId);
   }
 
   /**
-   * Get field within a category
+   * Get all fields for a category
    */
-  getField(
-    categoryId: string,
-    fieldName: string
-  ): DemographicField | undefined {
+  getFieldsByCategory(categoryId: string): DemographicField[] {
     const category = this.getCategory(categoryId);
-    return category?.fields.find((f) => f.name === fieldName);
+    return category?.fields || [];
   }
 
   /**
-   * Refresh config from Supabase
+   * Check if config is loaded
    */
-  async refresh(): Promise<void> {
-    await this.loadConfig();
+  isLoaded(): boolean {
+    return !!this.configState();
   }
 
   /**
-   * Setup auto-refresh every 5 minutes
+   * Get config source
    */
-  private setupAutoRefresh(): void {
-    this.refreshTimer = window.setInterval(() => {
-      this.refresh().catch((error) => {
-        console.error('Auto-refresh failed:', error);
-      });
-    }, this.REFRESH_INTERVAL);
+  getSource(): 'supabase' | 'localStorage' | 'hardcoded' | null {
+    return this.configState()?.source || null;
   }
 
   /**
-   * Cleanup
+   * Watch config changes - emits immediately if loaded, then on reload
    */
+  watchConfigChanges(): Observable<DemographicsConfig | null> {
+    return new Observable((subscriber) => {
+      // Emit current state immediately if loaded
+      const currentConfig = this.configState();
+      if (currentConfig) {
+        subscriber.next(currentConfig);
+      }
+
+      // Subscribe to reload events
+      const subscription = this.reload$
+        .pipe(takeUntil(this.destroy$))
+        .subscribe(() => {
+          const updated = this.configState();
+          if (updated) {
+            subscriber.next(updated);
+          }
+        });
+
+      return () => subscription.unsubscribe();
+    });
+  }
+
   ngOnDestroy(): void {
-    if (this.refreshTimer) {
-      clearInterval(this.refreshTimer);
-    }
     this.destroy$.next();
     this.destroy$.complete();
   }

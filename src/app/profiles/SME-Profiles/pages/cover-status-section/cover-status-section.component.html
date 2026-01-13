@@ -1,0 +1,109 @@
+<!-- NEO-BRUTALIST FUNDING REQUEST STATUS SECTION -->
+<div class="bg-white border-t-4 border-b-4 border-slate-200">
+  <div class="max-w-7xl mx-auto px-4 lg:px-8 py-8">
+    <!-- HAS DEFAULT FUNDING REQUEST -->
+    @if (hasFundingRequest()) {
+    <div class="space-y-4">
+      <!-- Header -->
+      <div class="flex items-center gap-3">
+        <div
+          class="w-10 h-10 rounded-lg bg-green-100 border-2 border-green-600 flex items-center justify-center flex-shrink-0"
+        >
+          <lucide-icon
+            [img]="CheckCircleIcon"
+            [size]="18"
+            class="text-green-700"
+          ></lucide-icon>
+        </div>
+        <div>
+          <h3
+            class="text-sm lg:text-base font-black uppercase tracking-widest text-slate-900"
+          >
+            Funding Request Ready
+          </h3>
+          <p class="text-xs text-slate-600 mt-1">
+            Your funding request is ready to use
+          </p>
+        </div>
+      </div>
+
+      <!-- Call to Action -->
+      <div class="pt-2">
+        <p class="text-sm text-slate-700 font-semibold mb-4">
+          Manage your funding request and apply to opportunities.
+        </p>
+
+        <!-- Action Buttons -->
+        <div class="flex flex-col sm:flex-row gap-3">
+          <!-- Manage Request -->
+          <button
+            (click)="manageFundingRequest()"
+            class="flex items-center justify-center gap-2 px-6 py-3.5 bg-teal-600 text-white font-black rounded-lg border-3 border-teal-700 uppercase tracking-wide hover:bg-teal-700 active:bg-teal-800 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2"
+          >
+            <lucide-icon [img]="LayoutGridIcon" [size]="16"></lucide-icon>
+            Manage Request
+          </button>
+
+          <!-- Manage Demographics -->
+          <button
+            (click)="navigateToDemographics(defaultFundingRequest()?.id)"
+            class="flex items-center justify-center gap-2 px-6 py-3.5 bg-white text-slate-900 font-black rounded-lg border-3 border-slate-900 uppercase tracking-wide hover:bg-slate-100 active:bg-slate-200 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2"
+          >
+            <lucide-icon [img]="LayoutGridIcon" [size]="16"></lucide-icon>
+            Manage Demographics
+          </button>
+        </div>
+      </div>
+    </div>
+    } @else {
+    <!-- NO FUNDING REQUEST -->
+    <div class="space-y-4">
+      <!-- Header -->
+      <div class="flex items-center gap-3">
+        <div
+          class="w-10 h-10 rounded-lg bg-amber-100 border-2 border-amber-600 flex items-center justify-center flex-shrink-0"
+        >
+          <lucide-icon
+            [img]="AlertTriangleIcon"
+            [size]="18"
+            class="text-amber-700"
+          ></lucide-icon>
+        </div>
+        <div>
+          <h3
+            class="text-sm lg:text-base font-black uppercase tracking-widest text-slate-900"
+          >
+            Funding Request Required
+          </h3>
+          <p class="text-xs text-slate-600 mt-1">
+            Create your funding request to match with opportunities
+          </p>
+        </div>
+      </div>
+
+      <!-- CTA -->
+      <div class="pt-2">
+        <p class="text-sm text-slate-700 font-semibold mb-4">
+          Your request tells funders what you're seeking and why. Create one in
+          just 3 minutes.
+        </p>
+
+        <button
+          (click)="createNewFundingRequest()"
+          class="flex items-center justify-center gap-2 px-6 py-3.5 w-full sm:w-auto bg-teal-600 text-white font-black rounded-lg border-3 border-teal-700 uppercase tracking-wide text-sm hover:bg-teal-700 active:bg-teal-800 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2"
+        >
+          <lucide-icon [img]="PlusIcon" [size]="16"></lucide-icon>
+          Create Request
+        </button>
+      </div>
+    </div>
+    }
+  </div>
+</div>
+
+<!-- CREATE FUNDING REQUEST MODAL -->
+<app-create-cover-modal
+  *ngIf="showModal()"
+  (choiceMade)="onCreateChoice($event)"
+  (cancel)="onCreateCancel()"
+/>

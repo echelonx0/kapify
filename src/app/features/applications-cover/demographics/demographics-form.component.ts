@@ -12,10 +12,11 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
-import { DemographicsService } from 'src/app/shared/services/demographics.service';
 import { FundingApplicationCoverService } from 'src/app/shared/services/funding-application-cover.service';
 import { ActivityService } from 'src/app/shared/services/activity.service';
 import { DemographicCategory } from 'src/app/shared/models/funding-application-demographics.model';
+import { DemographicsConfigService } from 'src/app/core/services/demographics-config.service';
+import { DemographicsService } from 'src/app/core/services/demographics.service';
 
 @Component({
   selector: 'app-demographics-form',
@@ -29,6 +30,7 @@ export class DemographicsFormComponent implements OnInit, OnDestroy {
   private activityService = inject(ActivityService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
+  private configService = inject(DemographicsConfigService);
   private destroy$ = new Subject<void>();
 
   // ===== STATE =====
@@ -42,7 +44,12 @@ export class DemographicsFormComponent implements OnInit, OnDestroy {
 
   // Demographics data
   demographicsData = this.demographicsService.demographics;
-  categories = this.demographicsService.config;
+
+  // Categories as computed signal that safely transforms config
+  categories = computed(() => {
+    const cfg = this.configService.config();
+    return cfg?.categories || [];
+  });
 
   // Completion status
   completionStatus = computed(() => {
@@ -66,23 +73,13 @@ export class DemographicsFormComponent implements OnInit, OnDestroy {
 
   /**
    * Load demographics for the funding request
-   * Initializes from database OR creates empty structure from config
    */
   private async loadDemographics(coverId: string): Promise<void> {
     try {
       this.isLoading.set(true);
       this.error.set(null);
 
-      // Try to load from database
-      const loadedData = await this.demographicsService.loadDemographics(
-        coverId
-      );
-
-      // If no data in database, initialize from config
-      // This ensures the data structure exists even for new profiles
-      if (!loadedData || Object.keys(loadedData).length === 0) {
-        this.initializeFromConfig();
-      }
+      await this.demographicsService.loadDemographics(coverId);
 
       this.activityService.trackProfileActivity(
         'updated',
@@ -95,39 +92,6 @@ export class DemographicsFormComponent implements OnInit, OnDestroy {
     } finally {
       this.isLoading.set(false);
     }
-  }
-
-  /**
-   * Initialize empty demographics structure from config
-   * This is called when there's no data in the database yet
-   * Ensures all category.id keys exist in the data object
-   */
-  private initializeFromConfig(): void {
-    const initialized: Record<string, Record<string, string>> = {};
-
-    // For each category in config
-    for (const category of this.categories()) {
-      // Create empty object for this category
-      initialized[category.id] = {};
-
-      // For each field in the category
-      for (const field of category.fields) {
-        // Initialize field to empty string
-        initialized[category.id][field.name] = '';
-      }
-    }
-
-    // Initialize each field using service method
-    // This ensures demographicsData() will return the proper structure
-    for (const [categoryId, categoryData] of Object.entries(initialized)) {
-      if (categoryData && typeof categoryData === 'object') {
-        for (const [fieldName, value] of Object.entries(categoryData)) {
-          this.demographicsService.setFieldValue(categoryId, fieldName, value);
-        }
-      }
-    }
-
-    console.log('✅ Demographics initialized from config:', initialized);
   }
 
   /**
@@ -149,15 +113,13 @@ export class DemographicsFormComponent implements OnInit, OnDestroy {
     }
 
     const data = this.demographicsData();
-
-    this.isSaving.set(true);
+    console.log('demographics data', data);
 
     this.demographicsService
       .saveDemographics(coverId, data)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => {
-          this.isSaving.set(false);
           this.successMessage.set('Demographics saved successfully');
           setTimeout(() => this.successMessage.set(null), 3000);
 
@@ -168,7 +130,6 @@ export class DemographicsFormComponent implements OnInit, OnDestroy {
           );
         },
         error: (err) => {
-          this.isSaving.set(false);
           this.error.set(err?.message || 'Failed to save demographics');
           console.error('❌ Save error:', err);
         },
@@ -204,6 +165,21 @@ export class DemographicsFormComponent implements OnInit, OnDestroy {
   }
 
   /**
+   * Get field input type for HTML
+   */
+  getInputType(fieldType: string): string {
+    switch (fieldType) {
+      case 'percentage':
+      case 'number':
+        return 'number';
+      case 'text':
+        return 'text';
+      default:
+        return 'text';
+    }
+  }
+
+  /**
    * Track by category for *ngFor
    */
   trackByCategory(index: number, category: DemographicCategory): string {
@@ -214,7 +190,7 @@ export class DemographicsFormComponent implements OnInit, OnDestroy {
    * Track by field for *ngFor
    */
   trackByField(index: number, field: any): string {
-    return field.name;
+    return field.id || field.name || '';
   }
 
   ngOnDestroy(): void {

@@ -15,7 +15,7 @@ import {
   ValidationResult,
   CompletionStatus,
 } from '../models/funding-application-cover.model';
-import { DemographicsService } from './demographics.service';
+import { DemographicsService } from '../../core/services/demographics.service';
 
 /**
  * FundingApplicationCoverService

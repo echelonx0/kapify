@@ -83,7 +83,7 @@
   <!-- ===== CONTENT: FORM ===== -->
   <div *ngIf="!isLoading()" class="flex-1 overflow-y-auto">
     <div class="max-w-4xl mx-auto px-4 lg:px-8 py-8 space-y-8">
-      <!-- Categories: CALL THE SIGNAL with () -->
+      <!-- Categories -->
       @for (category of categories(); track trackByCategory($index, category)) {
       <div
         class="bg-white rounded-2xl border-3 border-slate-300 overflow-hidden"
@@ -103,9 +103,9 @@
           <div class="mt-4 flex items-center justify-between">
             <div class="text-xs text-slate-600 font-semibold">
               {{
-                completionStatus().categoryCompletion[category.id].filled || 0
+                completionStatus().categoryCompletion[category.id]?.filled || 0
               }}/{{
-                completionStatus().categoryCompletion[category.id].total || 0
+                completionStatus().categoryCompletion[category.id]?.total || 0
               }}
               completed
             </div>
@@ -114,7 +114,7 @@
                 class="h-full bg-gradient-to-r from-teal-400 to-teal-500 transition-all duration-500"
                 [style.width.%]="
                   completionStatus().categoryCompletion[category.id]
-                    .percentage || 0
+                    ?.percentage || 0
                 "
               ></div>
             </div>
@@ -142,7 +142,7 @@
               [id]="category.id + '_' + field.name"
               type="text"
               [value]="
-                formatFieldValue(demographicsData()[category.id][field.name])
+                formatFieldValue(demographicsData()[category.id]?.[field.name])
               "
               (change)="
                 onFieldChange(
@@ -160,7 +160,7 @@
               [id]="category.id + '_' + field.name"
               type="number"
               [value]="
-                formatFieldValue(demographicsData()[category.id][field.name])
+                formatFieldValue(demographicsData()[category.id]?.[field.name])
               "
               (change)="
                 onFieldChange(
@@ -181,7 +181,9 @@
                 [id]="category.id + '_' + field.name"
                 type="number"
                 [value]="
-                  formatFieldValue(demographicsData()[category.id][field.name])
+                  formatFieldValue(
+                    demographicsData()[category.id]?.[field.name]
+                  )
                 "
                 (change)="
                   onFieldChange(
@@ -202,7 +204,7 @@
             <select
               [id]="category.id + '_' + field.name"
               [value]="
-                formatFieldValue(demographicsData()[category.id][field.name])
+                formatFieldValue(demographicsData()[category.id]?.[field.name])
               "
               (change)="
                 onFieldChange(
@@ -227,6 +229,15 @@
           </div>
           }
         </div>
+      </div>
+      }
+
+      <!-- No categories message -->
+      @if (!categories().length) {
+      <div class="text-center py-12">
+        <p class="text-slate-600 font-semibold">
+          No demographic categories configured yet.
+        </p>
       </div>
       }
     </div>

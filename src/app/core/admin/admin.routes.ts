@@ -34,7 +34,7 @@ export const adminRoutes: Routes = [
         loadComponent: () =>
           import(
             './demographics-management/demographics-config-management.component'
-          ).then((m) => m.AdminDemographicsConfigComponent),
+          ).then((m) => m.DemographicsConfigManagerComponent),
         title: 'Demographics Management - Kapify Admin',
       },
       {
