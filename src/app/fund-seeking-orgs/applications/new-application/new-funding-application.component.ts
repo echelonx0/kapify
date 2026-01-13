@@ -88,6 +88,7 @@ export class OpportunityApplicationFormComponent implements OnInit, OnDestroy {
   private fundingProfileService = inject(FundingProfileBackendService);
   private formService = inject(ApplicationFormService);
   private validationService = inject(ApplicationValidationService);
+  private coverService = inject(FundingApplicationCoverService);
   private destroy$ = new Subject<void>();
 
   // ===============================
@@ -114,10 +115,12 @@ export class OpportunityApplicationFormComponent implements OnInit, OnDestroy {
   aiAnalysisResult = signal<any | null>(null);
   toastservice = inject(ToastService);
   private isCoverSelectionFlow = signal(false);
-  // Track if opportunityId came from route params
   opportunityIdFromRoute = signal<string | null>(null);
-  private coverService = inject(FundingApplicationCoverService);
   defaultCover = signal<FundingApplicationCoverInformation | null>(null);
+
+  // Track if defaultCover is loaded (async gate)
+  private isCoverLoaded = signal(false);
+
   // Auto-save
   private autoSaveTimeout: any = null;
 
@@ -156,9 +159,6 @@ export class OpportunityApplicationFormComponent implements OnInit, OnDestroy {
   // COMPUTED SIGNALS
   // ===============================
 
-  /**
-   * Check if opportunityId is in route params (true value means skip selector)
-   */
   shouldSkipSelector = computed(() => {
     return !!this.opportunityIdFromRoute();
   });
@@ -169,17 +169,15 @@ export class OpportunityApplicationFormComponent implements OnInit, OnDestroy {
     this.profileValidationService.completion()
   );
 
-  // MODIFY this computed signal:
   canContinue = computed(() => {
     switch (this.currentStep()) {
       case 'select-opportunity':
         return !!this.selectedOpportunity();
       case 'application-details':
-        // NEW: Skip validation if cover was just selected
         if (this.isCoverSelectionFlow()) {
-          return true; // ← Always allow continuation in cover flow
+          return true;
         }
-        return this.isFormValid(); // ← Only validate if manual entry
+        return this.isFormValid();
       case 'ai-analysis':
         return true;
       case 'review-submit':
@@ -207,34 +205,36 @@ export class OpportunityApplicationFormComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.loadFullFundingProfile();
-    this.loadDefaultCover();
-    // FIXED (correct - looks for query param)
+
+    // FIXED: Load cover first, then subscribe to route params
+    this.loadDefaultCoverAndProceed().then(() => {
+      // Now that cover is loaded, safe to load opportunity
+      this.initializeFromRouteParams();
+    });
+  }
+
+  /**
+   * Extract route params and handle initialization
+   */
+  private initializeFromRouteParams(): void {
     this.route.queryParamMap
       .pipe(takeUntil(this.destroy$))
       .subscribe((params) => {
         const opportunityId = params.get('opportunityId');
-        // console.log('🚀 opportunityId from query:', opportunityId);
+        const requestedAmount = params.get('requestedAmount');
 
-        // Store the route param value
         this.opportunityIdFromRoute.set(opportunityId);
 
-        const requestedAmount =
-          this.route.snapshot.queryParamMap.get('requestedAmount');
-
-        // Pre-fill requested amount if passed
         if (requestedAmount) {
           this.formService.prefillForm({ requestedAmount });
         }
 
         if (opportunityId) {
-          // Load specific opportunity and skip selector
-
+          // Cover is guaranteed loaded here
           this.loadSpecificOpportunity(opportunityId);
         } else {
-          // No opportunityId: show selector and load available opportunities
           console.log('📍 No opportunity ID in route, showing selector');
           this.loadAvailableOpportunities();
-          this.checkForDraftApplication();
         }
       });
   }
@@ -251,21 +251,32 @@ export class OpportunityApplicationFormComponent implements OnInit, OnDestroy {
   // DATA LOADING
   // ===============================
 
-  private loadDefaultCover(): void {
-    this.coverService.loadDefaultCover().then((cover) => {
-      if (cover) {
+  /**
+   * FIXED: Load cover and return Promise so ngOnInit can wait
+   * Prevents duplicate loading and race conditions
+   */
+  private loadDefaultCoverAndProceed(): Promise<void> {
+    return new Promise((resolve) => {
+      this.coverService.loadDefaultCover().then((cover) => {
+        if (!cover) {
+          this.error.set('A funding request cover is required');
+          this.isCoverLoaded.set(false);
+          resolve();
+          return;
+        }
+
         this.defaultCover.set(cover);
-        console.log('✅ Default cover loaded for AI analysis');
-      } else {
-        this.defaultCover.set(null);
-      }
+        this.isCoverLoaded.set(true);
+        console.log('✅ Cover loaded and ready');
+        resolve();
+      });
     });
   }
+
   private loadFullFundingProfile(): void {
     this.fundingProfileService.loadSavedProfile().subscribe({
       next: (profile) => {
         this.fullFundingProfile.set(profile);
-        // console.log('✓ Funding profile loaded for AI analysis');
       },
       error: (error) => {
         console.warn('Funding profile not available:', error);
@@ -286,14 +297,12 @@ export class OpportunityApplicationFormComponent implements OnInit, OnDestroy {
         error: (error) => {
           this.error.set('Failed to load opportunities');
           this.isLoading.set(false);
-          // console.error('Load opportunities error:', error);
         },
       });
   }
 
   /**
-   * Load specific opportunity when opportunityId is in route
-   * Automatically skips selector and goes to application-details
+   * FIXED: Only proceeds AFTER cover is loaded (called from ngOnInit after promise resolves)
    */
   private loadSpecificOpportunity(opportunityId: string): void {
     this.isLoading.set(true);
@@ -304,14 +313,11 @@ export class OpportunityApplicationFormComponent implements OnInit, OnDestroy {
         next: (opportunity) => {
           if (opportunity) {
             this.selectedOpportunity.set(opportunity);
-            // Skip selector, go straight to application-details
             this.currentStep.set('application-details');
             this.createDraftApplication(opportunity);
-            // Check for existing draft to load
             this.checkForDraftApplication();
           } else {
             this.error.set('Opportunity not found');
-            // Fall back to selector
             this.opportunityIdFromRoute.set(null);
             this.loadAvailableOpportunities();
             this.currentStep.set('select-opportunity');
@@ -321,7 +327,6 @@ export class OpportunityApplicationFormComponent implements OnInit, OnDestroy {
         error: (error) => {
           this.error.set('Failed to load opportunity');
           this.isLoading.set(false);
-          // Fall back to selector
           this.opportunityIdFromRoute.set(null);
           this.loadAvailableOpportunities();
           this.currentStep.set('select-opportunity');
@@ -374,10 +379,8 @@ export class OpportunityApplicationFormComponent implements OnInit, OnDestroy {
   }
 
   onFormChanged(): void {
-    // Flag that we're in cover selection flow
     this.isCoverSelectionFlow.set(true);
 
-    // Save and immediately navigate (no delay)
     this.saveDraft().then(() => {
       if (this.currentStep() === 'application-details') {
         this.currentStep.set('ai-analysis');
@@ -432,11 +435,9 @@ export class OpportunityApplicationFormComponent implements OnInit, OnDestroy {
     } else if (current === 'ai-analysis') {
       this.currentStep.set('application-details');
     } else if (current === 'application-details') {
-      // Don't go back to selector if opportunity came from route param
       if (!this.shouldSkipSelector()) {
         this.currentStep.set('select-opportunity');
       }
-      // If opportunityId from route, stay on application details
     }
   }
 
@@ -463,22 +464,26 @@ export class OpportunityApplicationFormComponent implements OnInit, OnDestroy {
   // SAVE & SUBMIT
   // ===============================
 
-  private autoSaveDraft(): void {
-    if (this.autoSaveTimeout) {
-      clearTimeout(this.autoSaveTimeout);
-    }
+  private logSubmitGuards(): void {
+    const selectedOpportunity = this.selectedOpportunity();
+    const isFormValid = this.isFormValid();
+    const draftApplication = this.draftApplication();
 
-    this.autoSaveTimeout = setTimeout(() => {
-      this.saveDraft();
-    }, 2000);
+    console.group('🚦 Submit guard diagnostics');
+    console.log('selectedOpportunity():', selectedOpportunity);
+    console.log('isFormValid():', isFormValid);
+    console.log('draftApplication():', draftApplication);
+    console.log('isCoverLoaded():', this.isCoverLoaded());
+    console.groupEnd();
   }
 
   async submitApplication(): Promise<void> {
-    if (
-      !this.selectedOpportunity() ||
-      !this.isFormValid() ||
-      !this.draftApplication()
-    ) {
+    this.logSubmitGuards();
+
+    const draft = this.draftApplication();
+
+    if (!this.selectedOpportunity() || !draft || !draft.fundingRequest) {
+      this.error.set('Funding request is missing');
       return;
     }
 
@@ -540,6 +545,13 @@ export class OpportunityApplicationFormComponent implements OnInit, OnDestroy {
   }
 
   private loadFromDraftApplication(application: Application): void {
+    if (!application.fundingRequest) {
+      console.error('Draft application is missing fundingRequest');
+      return;
+    }
+
+    this.defaultCover.set(application.fundingRequest);
+
     this.formService.prefillForm({
       requestedAmount: application.requestedAmount?.toString() || '',
       purposeStatement: application.purposeStatement || '',
@@ -551,13 +563,10 @@ export class OpportunityApplicationFormComponent implements OnInit, OnDestroy {
     });
   }
 
-  // PASTE THIS INTO YOUR opportunity-application.component.ts - Replace the createDraftApplication() method
-
   /**
-   * Create draft application with required funderId from opportunity
+   * FIXED: Now safe because cover is guaranteed to be loaded
    */
   private createDraftApplication(opportunity: FundingOpportunity): void {
-    // Extract funderId from opportunity.organizationId (required)
     const funderId = opportunity.organizationId;
     if (!funderId) {
       console.error(
@@ -569,12 +578,23 @@ export class OpportunityApplicationFormComponent implements OnInit, OnDestroy {
       return;
     }
 
+    const cover = this.defaultCover();
+
+    // ✅ Now cover WILL be available because we wait for isCoverLoaded
+    if (!cover) {
+      this.error.set(
+        'A funding request cover is required to start an application'
+      );
+      return;
+    }
+
     const applicationData = {
       title: `Application for ${opportunity.title}`,
       description: `Funding application for ${opportunity.fundingType} opportunity`,
       opportunityId: opportunity.id,
-      funderId: funderId, // ✅ REQUIRED: Pass funder organization ID
+      funderId,
       formData: this.formService.getFormDataForSave(),
+      fundingRequest: this.buildFundingRequestFromCover(cover),
     };
 
     this.applicationService
@@ -592,60 +612,60 @@ export class OpportunityApplicationFormComponent implements OnInit, OnDestroy {
       });
   }
 
-  /**
-   * Update saveDraft to include funderId when creating new applications
-   */
+  private buildFundingRequestFromCover(
+    cover: FundingApplicationCoverInformation
+  ): FundingApplicationCoverInformation {
+    return {
+      ...cover,
+      createdAt: cover.createdAt,
+      updatedAt: cover.updatedAt,
+    };
+  }
+
   async saveDraft(): Promise<void> {
-    if (!this.selectedOpportunity() || this.isSaving()) return;
+    if (!this.selectedOpportunity() || this.isSaving()) {
+      return;
+    }
 
     this.isSaving.set(true);
     this.error.set(null);
 
     try {
-      const formData = this.formService.getFormDataForSave();
-      const savePayload = {
-        formData: {
-          requestedAmount: parseFloat(formData.requestedAmount) || 0,
-          purposeStatement: formData.purposeStatement,
-          useOfFunds: formData.useOfFunds,
-        },
-      };
-
-      if (this.draftApplication()) {
-        // Update existing application (funder_id already set during creation)
-        const updatedApplication = await this.applicationService
-          .updateApplication(this.draftApplication()!.id, savePayload)
-          .toPromise();
-
-        if (updatedApplication) {
-          this.draftApplication.set(updatedApplication);
-        }
-      } else {
-        // Create new application with funderId
-        const opportunity = this.selectedOpportunity();
-        if (!opportunity?.organizationId) {
-          throw new Error('Opportunity missing funder information');
-        }
-
-        const newApplication = await this.applicationService
-          .createApplication({
-            title: `Application for ${opportunity.title}`,
-            description: `Funding application for ${opportunity.fundingType} opportunity`,
-            opportunityId: opportunity.id,
-            funderId: opportunity.organizationId, // ✅ REQUIRED
-            formData: savePayload.formData,
-          })
-          .toPromise();
-
-        if (newApplication) {
-          this.draftApplication.set(newApplication);
-        }
+      const draft = this.draftApplication();
+      if (!draft) {
+        throw new Error('No draft application available to save');
       }
 
-      console.log('✓ Draft saved successfully');
-    } catch (error) {
-      console.error('Failed to save draft:', error);
-      this.error.set('Failed to save draft');
+      const cover = this.defaultCover();
+      if (!cover) {
+        throw new Error('Funding request is required');
+      }
+
+      const fundingRequest = this.buildFundingRequestFromCover(cover);
+      const formData = this.formService.getFormDataForSave();
+
+      const savePayload = {
+        formData: {
+          requestedAmount: Number(formData.requestedAmount) || 0,
+          purposeStatement: formData.purposeStatement?.trim() || '',
+          useOfFunds: formData.useOfFunds || [],
+        },
+        fundingRequest,
+      };
+
+      const updatedApplication = await this.applicationService
+        .updateApplication(draft.id, savePayload)
+        .toPromise();
+
+      if (!updatedApplication) {
+        throw new Error('Failed to update application draft');
+      }
+
+      this.draftApplication.set(updatedApplication);
+    } catch (error: any) {
+      console.error('saveDraft failed:', error);
+      this.error.set(error.message || 'Failed to save draft');
+      throw error;
     } finally {
       this.isSaving.set(false);
     }

@@ -11,6 +11,7 @@ import {
   ComplianceCheck,
   AuditEntry,
 } from 'src/app/shared/models/application.models';
+import { FundingApplicationCoverInformation } from 'src/app/shared/models/funding-application-cover.model';
 
 // Enhanced Application Model with SWOT integration
 export interface Application {
@@ -22,6 +23,7 @@ export interface Application {
   fundId?: string;
   opportunityId?: string;
 
+  fundingRequest?: FundingApplicationCoverInformation;
   // Application basics
   applicationNumber: string; // system generated
   title: string;
