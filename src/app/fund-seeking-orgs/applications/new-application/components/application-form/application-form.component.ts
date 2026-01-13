@@ -24,7 +24,7 @@ import { FundingApplicationCoverInformation } from 'src/app/shared/models/fundin
 import { FundingApplicationCoverService } from 'src/app/shared/services/funding-application-cover.service';
 import { ApplicationFormService } from '../../services/application-form.service';
 import { ApplicationStorageService } from '../../services/application-local-storage.service';
-import { ActivatedRoute, Router } from '@angular/router';
+import { Router } from '@angular/router';
 import { ActivityService } from 'src/app/shared/services/activity.service';
 
 type ViewState = 'loading' | 'confirmation' | 'error';
@@ -79,7 +79,7 @@ export class ApplicationFormComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
   private router = inject(Router);
   private activityService = inject(ActivityService);
-  private route = inject(ActivatedRoute);
+
   // ===== ICONS =====
   PlusIcon = Plus;
   CheckIcon = CircleCheck;
@@ -116,10 +116,6 @@ export class ApplicationFormComponent implements OnInit, OnDestroy {
       this.errorMessage.set(null);
       this.currentView.set('loading');
 
-      // Try to load default cover
-      // console.log(
-      //   '📋 [Single Profile Mode] Loading default funding request...'
-      // );
       const defaultCover = await this.coverService.loadDefaultCover();
 
       if (defaultCover) {
@@ -129,12 +125,9 @@ export class ApplicationFormComponent implements OnInit, OnDestroy {
         this.populateFormWithCover(defaultCover);
         this.transitionToConfirmation();
       } else {
-        // No default exists - create blank
-        // console.log('📝 No default found. Creating blank funding request...');
         const result = await this.coverService.createBlankCover();
 
         if (result.success && result.cover) {
-          // console.log('✅ Blank funding request created:', result.cover.id);
           this.selectedCover.set(result.cover);
           this.populateFormWithCover(result.cover);
           this.transitionToConfirmation();
@@ -204,8 +197,7 @@ export class ApplicationFormComponent implements OnInit, OnDestroy {
     const cover = this.selectedCover();
     if (!cover) return;
 
-    this.router.navigate(['covers'], {
-      relativeTo: this.route.parent,
+    this.router.navigate(['/profile/covers'], {
       queryParams: {
         mode: 'edit',
         coverId: cover.id,

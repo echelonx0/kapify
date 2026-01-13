@@ -2,7 +2,7 @@ import { Component, signal, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Subject } from 'rxjs';
 import { LucideAngularModule, ChevronDown, FileText } from 'lucide-angular';
-import { KapifyAIAnalysisComponent } from 'src/app/features/ai/ai-analysis/kapify-ai-analysis.component';
+import { KapifyAIAnalysisComponent } from 'src/app/fund-seeking-orgs/applications/new-application/components/evaluation-component/kapify-ai-analysis.component';
 import { FunderDocumentAnalysisComponent } from 'src/app/features/ai/document-analysis/funder-document-analysis.component';
 
 type ReviewTabId = 'evaluator' | 'analysis';

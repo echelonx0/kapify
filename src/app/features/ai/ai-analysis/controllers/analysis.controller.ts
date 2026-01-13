@@ -1,28 +1,14 @@
-// src/app/ai/services/ai-analysis.controller.ts
-/**
- * AI Analysis Controller
- *
- * Handles:
- * - Analysis workflow orchestration (generate → create request → execute → persist)
- * - Credit gating integration
- * - Error handling and logging
- * - State management for analysis process
- * - User ID extraction from AuthService
- *
- * Separates business logic from UI concerns
- */
+// src/app/features/ai/ai-analysis/controllers/analysis.controller.ts
 
 import { Injectable, inject, signal } from '@angular/core';
-
-import { AiAnalysisRequestService } from '../services/ai_analysis_request.service';
-
+import { AuthService } from 'src/app/auth/services/production.auth.service';
+import { CreditGatingService } from 'src/app/features/credit-system/services/credit-gating.service';
+import { AiAnalysisRequestService } from '../../services/ai_analysis_request.service';
 import {
   ApplicationInsight,
   InvestmentScore,
   ApplicationIntelligenceService,
-} from '../services/application-intelligence.service';
-import { AuthService } from 'src/app/auth/services/production.auth.service';
-import { CreditGatingService } from '../../credit-system/services/credit-gating.service';
+} from '../../services/application-intelligence.service';
 
 export interface AnalysisRequest {
   id: string;

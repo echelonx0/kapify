@@ -14,20 +14,20 @@ import { CommonModule } from '@angular/common';
 import { Subject, takeUntil } from 'rxjs';
 
 // Child Components
-import { AnalysisLauncherComponent } from '../../../fund-seeking-orgs/applications/new-application/components/evaluation-component/evaluation.component';
-import { BusinessRulesResultsComponent } from './components/business-rules-results.component';
-import { AiAnalysisProgressComponent } from './components/ai-analysis-progress.component';
-import { ComprehensiveAnalysisResultsComponent } from './components/comprehensive-analysis-results.component';
-import { AnalysisErrorComponent } from './components/analysis-error.component';
+import { AnalysisLauncherComponent } from './evaluation.component';
+import { BusinessRulesResultsComponent } from '../../../../../features/ai/ai-analysis/components/business-rules-results.component';
+import { AiAnalysisProgressComponent } from '../../../../../features/ai/ai-analysis/components/ai-analysis-progress.component';
+import { ComprehensiveAnalysisResultsComponent } from '../../../../../features/ai/ai-analysis/components/comprehensive-analysis-results.component';
+import { AnalysisErrorComponent } from '../../../../../features/ai/ai-analysis/components/analysis-error.component';
 
 import {
   ModularAIAnalysisService,
   ComprehensiveAnalysis,
-} from '../services/modular-ai-analysis.service';
+} from '../../../../../features/ai/services/modular-ai-analysis.service';
 import {
   BusinessRulesAnalysisService,
   BusinessRulesResult,
-} from '../services/business-rules.service';
+} from '../../../../../features/ai/services/business-rules.service';
 
 import { FundingOpportunity } from 'src/app/funder/create-opportunity/shared/funding.interfaces';
 import { FundingApplicationProfile } from 'src/app/fund-seeking-orgs/applications/models/funding-application.models';
@@ -182,9 +182,9 @@ export class KapifyAIAnalysisComponent implements OnInit, OnDestroy {
         if (!data.requestedAmount || parseFloat(data.requestedAmount) <= 0) {
           issues.push('Valid funding amount required');
         }
-        if (!data.purposeStatement?.trim()) {
-          issues.push('Purpose statement required');
-        }
+        // if (!data.purposeStatement?.trim()) {
+        //   issues.push('Purpose statement required');
+        // }
         if (!data.useOfFunds?.trim()) {
           issues.push('Use of funds description required');
         }

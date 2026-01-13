@@ -1023,7 +1023,7 @@ import { FundingProfileSetupService } from 'src/app/fund-seeking-orgs/services/f
 import { FundingApplicationCoverService } from 'src/app/shared/services/funding-application-cover.service';
 
 import { SMEProfileStepsService } from '../../services/sme-profile-steps.service';
-import { KapifyAIAnalysisComponent } from 'src/app/features/ai/ai-analysis/kapify-ai-analysis.component';
+import { KapifyAIAnalysisComponent } from 'src/app/fund-seeking-orgs/applications/new-application/components/evaluation-component/kapify-ai-analysis.component';
 import { MessagingService } from 'src/app/features/messaging/services/messaging.service';
 
 interface SectionSummary {

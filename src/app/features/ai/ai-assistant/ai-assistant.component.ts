@@ -45,9 +45,9 @@ import {
   IntelligenceInsight,
 } from '../services/ai-assistant-ui.service';
 
-import { AiAnalysisController } from '../controllers/analysis.controller';
 import { CreditGatingModalComponent } from '../../credit-system/credit-gating-modal.component';
 import { CreditGatingService } from '../../credit-system/services/credit-gating.service';
+import { AiAnalysisController } from '../ai-analysis/controllers/analysis.controller';
 
 interface FormData {
   fundingType: string;
