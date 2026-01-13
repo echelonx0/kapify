@@ -1,4 +1,4 @@
-<!-- opportunity-card.component.html - NEO-BRUTALIST REDESIGN -->
+<!-- opportunity-card.component.html - NEO-BRUTALIST DESIGN -->
 
 <div class="card-wrapper" [class.is-animated]="isAnimated()">
   <!-- Card: Neo-Brutal with thick border -->
@@ -147,42 +147,6 @@
         {{ formatIndustry(industry) }}
       </span>
       }
-    </div>
-
-    <!-- Funder & Location Row -->
-    <div
-      class="flex flex-col lg:flex-row items-start lg:items-center gap-3 lg:gap-6 mb-6 pb-6 border-b-2 border-slate-300"
-    >
-      <!-- Funder -->
-      <div class="flex items-center gap-3">
-        <div
-          class="w-8 h-8 rounded-lg flex items-center justify-center bg-slate-100 text-slate-600 border-2 border-slate-300 flex-shrink-0"
-        >
-          <lucide-icon [img]="BuildingIcon" [size]="16" />
-        </div>
-        <div>
-          <p class="text-xs font-bold text-slate-500 uppercase tracking-wide">
-            Funder
-          </p>
-          <p class="text-sm font-bold text-slate-900">
-            {{ opportunity.funderOrganizationName || "Private Funder" }}
-          </p>
-        </div>
-      </div>
-
-      <!-- Verified Badge -->
-      <div class="flex items-center gap-2">
-        <lucide-icon [img]="AwardIcon" [size]="14" class="text-green-600" />
-        <span class="text-sm font-bold text-green-700">Verified</span>
-      </div>
-
-      <!-- Location -->
-      <div class="flex items-center gap-2">
-        <lucide-icon [img]="MapPinIcon" [size]="14" class="text-slate-600" />
-        <span class="text-sm font-bold text-slate-900">
-          {{ formatLocations() }}
-        </span>
-      </div>
     </div>
 
     <!-- Key Details Grid -->

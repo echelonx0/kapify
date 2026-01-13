@@ -68,35 +68,73 @@ export class OpportunityApplicationService {
     );
   }
 
+  // private async fetchUserApplications(
+  //   userId: string
+  // ): Promise<OpportunityApplication[]> {
+
+  //   try {
+  //     const { data, error } = await this.supabase
+  //       .from('applications')
+  //       .select(
+  //         `
+  //         *,
+  //         opportunity:opportunity_id (
+  //           id,
+  //           title,
+  //           funding_type,
+  //           min_investment,
+  //           max_investment,
+  //           currency,
+  //           organization_id,
+  //           decision_timeframe
+  //         )
+  //       `
+  //       )
+  //       .eq('applicant_id', userId)
+  //       .order('created_at', { ascending: false });
+
+  //     if (error) {
+  //       throw new Error(`Failed to fetch applications: ${error.message}`);
+  //     }
+  //     // console.log('Fetched applications data:', data);
+  //     return (data || []).map((item: any) =>
+  //       this.transformDatabaseToLocal(item)
+  //     );
+  //   } catch (error) {
+  //     console.error('Error fetching user applications:', error);
+  //     throw error;
+  //   }
+  // }
+
   private async fetchUserApplications(
     userId: string
   ): Promise<OpportunityApplication[]> {
-    // console.log('Fetching applications for user:', userId);
     try {
       const { data, error } = await this.supabase
         .from('applications')
         .select(
           `
-          *,
-          opportunity:opportunity_id (
-            id,
-            title,
-            funding_type,
-            min_investment,
-            max_investment,
-            currency,
-            organization_id,
-            decision_timeframe
-          )
-        `
+        *,
+        opportunity:opportunity_id (
+          id,
+          title,
+          funding_type,
+          min_investment,
+          max_investment,
+          currency,
+          organization_id,
+          decision_timeframe
+        )
+      `
         )
         .eq('applicant_id', userId)
+        .not('status', 'in', '(draft,rejected,withdrawn)')
         .order('created_at', { ascending: false });
 
       if (error) {
         throw new Error(`Failed to fetch applications: ${error.message}`);
       }
-      // console.log('Fetched applications data:', data);
+
       return (data || []).map((item: any) =>
         this.transformDatabaseToLocal(item)
       );

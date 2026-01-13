@@ -179,11 +179,13 @@ export class FundingOpportunitiesComponent implements OnInit, OnDestroy {
         .subscribe({
           next: (apps) => {
             this.applications.set(apps);
+            console.log(`Applied to ${apps} Applications`);
             this.loadOpportunities();
           },
           error: (error) => {
             console.warn('Failed to load user applications:', error);
             this.applications.set([]);
+
             this.loadOpportunities();
           },
         });
