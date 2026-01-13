@@ -156,7 +156,7 @@ export class ApplicationFormComponent implements OnInit, OnDestroy {
     this.formService.updateRequestedAmount(
       cover.fundingAmount?.toString() || ''
     );
-    this.formService.updatePurposeStatement(cover.executiveSummary || '');
+    this.formService.updatePurposeStatement(cover.fundingMotivation || '');
     this.formService.updateUseOfFunds(cover.useOfFunds || '');
 
     // Set funding type (use first in array if available)
