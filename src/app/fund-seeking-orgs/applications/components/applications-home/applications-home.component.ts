@@ -23,16 +23,16 @@ import {
   TrendingUp,
   DollarSign,
   Plus,
-  Filter,
   Eye,
   Search,
   X,
   Settings,
-  CheckCircle,
-  XCircle,
   RefreshCw,
-  AlertCircle,
   Archive,
+  CircleX,
+  CircleCheckBig,
+  CircleAlert,
+  Funnel,
 } from 'lucide-angular';
 import { AuthService } from 'src/app/auth/services/production.auth.service';
 import { KapifyMessagingComponent } from 'src/app/features/messaging/messaging/messaging.component';
@@ -44,7 +44,6 @@ import { UserType } from 'src/app/shared/models/user.models';
 import { ActionModalComponent } from 'src/app/shared/components/modal/action-modal.component';
 import { ApplicationTransformService } from '../../services/application-transform.service';
 import { OpportunityApplication } from 'src/app/profiles/SME-Profiles/models/sme-profile.models';
-import { FundingApplication } from 'src/app/fund-seeking-orgs/models/application.models';
 import { ApplicationManagementService } from 'src/app/fund-seeking-orgs/services/application-management.service';
 import { OpportunityApplicationService } from 'src/app/fund-seeking-orgs/services/opportunity-application.service';
 import { ApplicationDetailModalComponent } from 'src/app/funder/application-details/components/application-detail-modal/application-detail-modal.component';
@@ -52,6 +51,7 @@ import {
   ApplicationListCardComponent,
   BaseApplicationCard,
 } from 'src/app/funder/application-details/funder-applications/components/application-list-card/application-list-card.component';
+import { FundingApplicationCoverInformation } from 'src/app/shared/models/funding-application-cover.model';
 
 interface ApplicationData {
   id: string;
@@ -78,6 +78,7 @@ interface ApplicationData {
   applicantName?: string;
   applicantCompany?: string;
   opportunityTitle?: string;
+  fundingRequest?: FundingApplicationCoverInformation;
 
   // For SME view
   opportunityId?: string;
@@ -133,15 +134,15 @@ export class ApplicationsHomeComponent implements OnInit, OnDestroy {
   TrendingUpIcon = TrendingUp;
   DollarSignIcon = DollarSign;
   PlusIcon = Plus;
-  FilterIcon = Filter;
+  FilterIcon = Funnel;
   EyeIcon = Eye;
   SearchIcon = Search;
   XIcon = X;
   SettingsIcon = Settings;
-  CheckCircleIcon = CheckCircle;
-  XCircleIcon = XCircle;
+  CheckCircleIcon = CircleCheckBig;
+  XCircleIcon = CircleX;
   RefreshCwIcon = RefreshCw;
-  AlertCircleIcon = AlertCircle;
+  AlertCircleIcon = CircleAlert;
   ArchiveIcon = Archive;
 
   // State
@@ -215,8 +216,6 @@ export class ApplicationsHomeComponent implements OnInit, OnDestroy {
 
   // ✅ ADD: Method to handle withdrawn application
   onApplicationWithdrawn(applicationId: string): void {
-    console.log('📱 Application withdrawn:', applicationId);
-
     // Option A: Remove from list immediately (optimistic)
     this.removeApplicationFromList(applicationId);
 
@@ -400,6 +399,84 @@ export class ApplicationsHomeComponent implements OnInit, OnDestroy {
     }
   }
 
+  // private async loadFunderApplicationsDirectly(userId: string) {
+  //   try {
+  //     // Step 1: Get user's organization directly from database
+  //     const { data: orgUserData, error: orgError } = await this.supabaseService
+  //       .from('organization_users')
+  //       .select(
+  //         `
+  //         organization_id,
+  //         organizations!organization_users_organization_id_fkey (
+  //           id,
+  //           name,
+  //           organization_type
+  //         )
+  //       `
+  //       )
+  //       .eq('user_id', userId)
+  //       .single();
+
+  //     if (orgError || !orgUserData?.organizations) {
+  //       console.error('❌ Failed to load organization:', orgError);
+  //       this.error.set(
+  //         'Organization setup required. Please complete your funder profile setup.'
+  //       );
+  //       this.isLoading.set(false);
+  //       return;
+  //     }
+  //     // Access first element of the array
+  //     const org = orgUserData.organizations[0];
+  //     const organization: UserOrganization = {
+  //       id: org.id,
+  //       name: org.name,
+  //       organizationType: org.organization_type,
+  //     };
+
+  //     this.userOrganization.set(organization);
+  //     console.log('✅ Organization loaded:', organization.name);
+
+  //     // Step 2: Load applications for this organization
+  //     this.funderApplicationService
+  //       .getApplicationsByOrganization(organization.id)
+  //       .pipe(
+  //         takeUntil(this.destroy$),
+  //         tap((applications) =>
+  //           console.log('📋 Applications loaded:', applications.length)
+  //         ),
+  //         catchError((error) => {
+  //           console.error('Failed to load applications:', error);
+  //           this.error.set('Failed to load applications');
+  //           return of([]);
+  //         })
+  //       )
+  //       .subscribe({
+  //         next: (funderApplications: FundingApplication[]) => {
+  //           const applicationData = funderApplications.map((app) =>
+  //             this.transformService.transformFunderApplication(app)
+  //           );
+  //           this.applications.set(this.mergeDrafts(applicationData));
+  //           this.currentPage.set(1);
+  //           this.isLoading.set(false);
+  //           console.log(
+  //             '🎉 Funder applications successfully loaded:',
+  //             applicationData.length
+  //           );
+  //         },
+  //         error: () => {
+  //           this.applications.set([]);
+  //           this.isLoading.set(false);
+  //         },
+  //       });
+  //   } catch (error) {
+  //     console.error('💥 Database error:', error);
+  //     this.error.set('Database connection error. Please try again.');
+  //     this.isLoading.set(false);
+  //   }
+  // }
+
+  // REPLACE: loadFunderApplicationsDirectly method in applications-home.component.ts
+
   private async loadFunderApplicationsDirectly(userId: string) {
     try {
       // Step 1: Get user's organization directly from database
@@ -407,13 +484,13 @@ export class ApplicationsHomeComponent implements OnInit, OnDestroy {
         .from('organization_users')
         .select(
           `
-          organization_id,
-          organizations!organization_users_organization_id_fkey (
-            id,
-            name,
-            organization_type
-          )
-        `
+        organization_id,
+        organizations!organization_users_organization_id_fkey (
+          id,
+          name,
+          organization_type
+        )
+      `
         )
         .eq('user_id', userId)
         .single();
@@ -426,6 +503,7 @@ export class ApplicationsHomeComponent implements OnInit, OnDestroy {
         this.isLoading.set(false);
         return;
       }
+
       // Access first element of the array
       const org = orgUserData.organizations[0];
       const organization: UserOrganization = {
@@ -437,38 +515,100 @@ export class ApplicationsHomeComponent implements OnInit, OnDestroy {
       this.userOrganization.set(organization);
       console.log('✅ Organization loaded:', organization.name);
 
-      // Step 2: Load applications for this organization
-      this.funderApplicationService
-        .getApplicationsByOrganization(organization.id)
-        .pipe(
-          takeUntil(this.destroy$),
-          tap((applications) =>
-            console.log('📋 Applications loaded:', applications.length)
-          ),
-          catchError((error) => {
-            console.error('Failed to load applications:', error);
-            this.error.set('Failed to load applications');
-            return of([]);
-          })
-        )
-        .subscribe({
-          next: (funderApplications: FundingApplication[]) => {
-            const applicationData = funderApplications.map((app) =>
-              this.transformService.transformFunderApplication(app)
-            );
-            this.applications.set(this.mergeDrafts(applicationData));
-            this.currentPage.set(1);
-            this.isLoading.set(false);
-            console.log(
-              '🎉 Funder applications successfully loaded:',
-              applicationData.length
-            );
-          },
-          error: () => {
-            this.applications.set([]);
-            this.isLoading.set(false);
-          },
-        });
+      // Step 2: Load applications with funding_request (CRITICAL FIX)
+      // ✅ FIXED: Explicitly select funding_request and all necessary fields
+      const { data: applicationsData, error: appsError } =
+        await this.supabaseService
+          .from('applications')
+          .select(
+            `
+        id,
+        title,
+        status,
+        stage,
+        form_data,
+        description,
+        requested_amount,
+        funding_type,
+        opportunity_id,
+        created_at,
+        updated_at,
+        submitted_at,
+        funding_request,
+        applicant_id,
+        applicant_organization_name,
+        funder_id,
+        opportunity_id
+      `
+          )
+          .eq('funder_id', organization.id)
+          .order('updated_at', { ascending: false });
+
+      if (appsError) {
+        console.error('❌ Failed to load applications:', appsError);
+        this.error.set('Failed to load applications');
+        this.isLoading.set(false);
+        return;
+      }
+
+      if (!applicationsData || applicationsData.length === 0) {
+        console.log('📭 No applications found for organization');
+        this.applications.set([]);
+        this.isLoading.set(false);
+        return;
+      }
+
+      // Step 3: Transform database applications to ApplicationData format
+      const transformedApps: ApplicationData[] = applicationsData.map(
+        (dbApp: any) => {
+          const fundingRequest =
+            dbApp.funding_request as FundingApplicationCoverInformation | null;
+          console.log(fundingRequest);
+
+          return {
+            id: dbApp.id,
+            title: dbApp.title,
+            applicationNumber: `APP-${dbApp.created_at.split('T')[0]}-${
+              dbApp.id.split('-')[0]
+            }`,
+            status: dbApp.status || 'draft',
+            fundingType: dbApp.funding_type ? [dbApp.funding_type] : [],
+            requestedAmount:
+              dbApp.form_data?.requestedAmount || dbApp.requested_amount || 0,
+            currency: 'ZAR', // From opportunity context if available
+            currentStage: dbApp.stage || 'draft',
+            description: dbApp.description || '',
+            createdAt: new Date(dbApp.created_at),
+            updatedAt: new Date(dbApp.updated_at),
+            submittedAt: dbApp.submitted_at
+              ? new Date(dbApp.submitted_at)
+              : undefined,
+            applicantName: dbApp.applicant_organization_name || 'Unknown',
+            applicantCompany: dbApp.applicant_organization_name || 'Unknown',
+            opportunityTitle: dbApp.opportunity_id
+              ? `Opportunity ${dbApp.opportunity_id.slice(0, 8)}`
+              : 'Unknown',
+            opportunityId: dbApp.opportunity_id,
+            // ✅ CRITICAL: Include fundingRequest (the cover data)
+            fundingRequest: fundingRequest,
+          } as ApplicationData;
+        }
+      );
+
+      console.log('✅ Transformed', transformedApps.length, 'applications');
+      console.log(
+        '🔍 Sample app funding_request:',
+        transformedApps[0]?.fundingRequest ? '✓ Present' : '✗ Missing'
+      );
+
+      this.applications.set(this.mergeDrafts(transformedApps));
+      this.currentPage.set(1);
+      this.isLoading.set(false);
+
+      console.log(
+        '🎉 Funder applications successfully loaded:',
+        transformedApps.length
+      );
     } catch (error) {
       console.error('💥 Database error:', error);
       this.error.set('Database connection error. Please try again.');
@@ -476,33 +616,123 @@ export class ApplicationsHomeComponent implements OnInit, OnDestroy {
     }
   }
 
+  // REPLACE: loadSMEApplications method in applications-home.component.ts
+
   private loadSMEApplications() {
     this.smeApplicationService
       .loadUserApplications()
       .pipe(
         takeUntil(this.destroy$),
+        tap((smeApplications: OpportunityApplication[]) => {
+          console.group('📋 SME Applications Loaded');
+          console.log('Total applications:', smeApplications.length);
+
+          smeApplications.forEach((app, index) => {
+            console.log(`\n[${index + 1}] Application:`, {
+              id: app.id,
+              title: app.title,
+              status: app.status,
+              opportunityId: app.opportunityId,
+              hasFundingRequest: !!app.fundingRequest,
+              fundingRequest: app.fundingRequest
+                ? {
+                    industries: app.fundingRequest.industries,
+                    fundingAmount: app.fundingRequest.fundingAmount,
+                    fundingTypes: app.fundingRequest.fundingTypes,
+                    businessStages: app.fundingRequest.businessStages,
+                    location: app.fundingRequest.location,
+                    useOfFunds:
+                      app.fundingRequest.useOfFunds?.substring(0, 50) + '...',
+                    fundingMotivation:
+                      app.fundingRequest.fundingMotivation?.substring(0, 50) +
+                      '...',
+                    repaymentStrategy:
+                      app.fundingRequest.repaymentStrategy?.substring(0, 50) +
+                      '...',
+                    equityOffered: app.fundingRequest.equityOffered,
+                  }
+                : 'MISSING',
+            });
+          });
+          console.groupEnd();
+        }),
         catchError((error) => {
+          console.error('❌ SME applications load error:', error);
           this.error.set('Failed to load your applications');
           this.isLoading.set(false);
-          console.error('SME applications load error:', error);
           throw error;
         })
       )
       .subscribe({
         next: (smeApplications: OpportunityApplication[]) => {
-          const applicationData = smeApplications.map((app) =>
-            this.transformService.transformSMEApplication(app)
-          );
-          this.applications.set(this.mergeDrafts(applicationData));
+          console.group('🔄 Transforming SME Applications');
+          console.log('Applications to transform:', smeApplications.length);
+
+          const applicationData = smeApplications.map((app, index) => {
+            const transformed =
+              this.transformService.transformSMEApplication(app);
+            console.log(`[${index + 1}] Transformed:`, {
+              id: transformed.id,
+              title: transformed.title,
+              status: transformed.status,
+              hasFundingRequest: !!transformed.fundingRequest,
+            });
+            return transformed;
+          });
+
+          console.groupEnd();
+
+          console.group('📦 Setting Applications State');
+          const merged = this.mergeDrafts(applicationData);
+          console.log('Merged applications count:', merged.length);
+          console.log('Sample app:', {
+            id: merged[0]?.id,
+            title: merged[0]?.title,
+            hasFundingRequest: !!merged[0]?.fundingRequest,
+          });
+          console.groupEnd();
+
+          this.applications.set(merged);
           this.currentPage.set(1);
           this.isLoading.set(false);
+
+          console.log('✅ SME applications loaded and ready');
         },
         error: () => {
+          console.error('💥 Error in SME applications subscription');
           this.applications.set([]);
           this.isLoading.set(false);
         },
       });
   }
+
+  // private loadSMEApplications() {
+  //   this.smeApplicationService
+  //     .loadUserApplications()
+  //     .pipe(
+  //       takeUntil(this.destroy$),
+  //       catchError((error) => {
+  //         this.error.set('Failed to load your applications');
+  //         this.isLoading.set(false);
+  //         console.error('SME applications load error:', error);
+  //         throw error;
+  //       })
+  //     )
+  //     .subscribe({
+  //       next: (smeApplications: OpportunityApplication[]) => {
+  //         const applicationData = smeApplications.map((app) =>
+  //           this.transformService.transformSMEApplication(app)
+  //         );
+  //         this.applications.set(this.mergeDrafts(applicationData));
+  //         this.currentPage.set(1);
+  //         this.isLoading.set(false);
+  //       },
+  //       error: () => {
+  //         this.applications.set([]);
+  //         this.isLoading.set(false);
+  //       },
+  //     });
+  // }
 
   // Add this method to transform your existing data
   transformToBaseCard(app: ApplicationData): BaseApplicationCard {

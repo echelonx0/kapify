@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { OpportunityApplication } from 'src/app/profiles/SME-Profiles/models/sme-profile.models';
 import { FundingApplication } from '../../models/application.models';
+import { FundingApplicationCoverInformation } from 'src/app/shared/models/funding-application-cover.model';
 
 export interface TransformedApplication {
   id: string;
@@ -27,6 +28,7 @@ export interface TransformedApplication {
   opportunityTitle?: string;
   // For SME view
   opportunityId?: string;
+  fundingRequest?: FundingApplicationCoverInformation;
 }
 
 @Injectable({

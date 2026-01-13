@@ -10,11 +10,11 @@ import {
   DollarSign,
   Calendar,
   MapPin,
-  CheckCircle,
   FileText,
   Users,
   Eye,
   CircleOff,
+  CircleCheckBig,
 } from 'lucide-angular';
 
 import { Subject, takeUntil } from 'rxjs';
@@ -44,7 +44,7 @@ export class OpportunityDetailsComponent implements OnInit {
   DollarSignIcon = DollarSign;
   CalendarIcon = Calendar;
   MapPinIcon = MapPin;
-  CheckCircleIcon = CheckCircle;
+  CheckCircleIcon = CircleCheckBig;
   FileTextIcon = FileText;
   UsersIcon = Users;
   EyeIcon = Eye;
