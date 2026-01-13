@@ -44,7 +44,7 @@ import { ToastService } from 'src/app/shared/services/toast.service';
     ReviewSummaryComponent,
     OpportunitySidebarComponent,
   ],
-  templateUrl: './opportunity-application.component.html',
+  templateUrl: './new-funding-application.component.html',
   providers: [ApplicationFormService, ApplicationValidationService],
   styles: [
     `
@@ -165,21 +165,6 @@ export class OpportunityApplicationFormComponent implements OnInit, OnDestroy {
   profileCompletion = computed(() =>
     this.profileValidationService.completion()
   );
-
-  // canContinue = computed(() => {
-  //   switch (this.currentStep()) {
-  //     case 'select-opportunity':
-  //       return !!this.selectedOpportunity();
-  //     case 'application-details':
-  //       return this.isFormValid();
-  //     case 'ai-analysis':
-  //       return true;
-  //     case 'review-submit':
-  //       return true;
-  //     default:
-  //       return false;
-  //   }
-  // });
 
   // MODIFY this computed signal:
   canContinue = computed(() => {

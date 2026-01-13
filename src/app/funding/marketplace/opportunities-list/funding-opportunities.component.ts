@@ -14,7 +14,7 @@ import { CommonModule } from '@angular/common';
 import { of, Subject } from 'rxjs';
 import { takeUntil, catchError } from 'rxjs/operators';
 import { AuthService } from 'src/app/auth/services/production.auth.service';
-import { AdvancedFiltersComponent } from '../components/filters.component';
+import { AdvancedFiltersComponent } from '../components/marketplace-filters/marketplace-filters.component';
 import { OpportunitiesGridComponent } from '../components/opportuniy-grid/opportunities-grid.component';
 import { SearchStatsBarComponent } from './search-stats-bar.component';
 import { EmptyStateComponent } from '../components/empty-state.component';
