@@ -202,12 +202,49 @@ export class AIAnalysisHistoryService {
   /**
    * Transform database row to AnalysisResultItem
    */
+  // private transformDatabaseResult(row: any): AnalysisResultItem {
+  //   return {
+  //     id: row.id,
+  //     orgId: row.org_id,
+  //     userId: row.user_id,
+  //     result: row.analysis_result as DocumentAnalysisResult,
+  //     createdAt: new Date(row.created_at),
+  //     generatedAt: row.created_at,
+  //   };
+  // }
+
+  /**
+   * PATCH: ai-analysis-history.service.ts
+   * Replace the transformDatabaseResult method with this version
+   */
+
+  /**
+   * Transform database row to AnalysisResultItem
+   * CRITICAL FIX: Sanitize sources array to ensure all have type property
+   */
   private transformDatabaseResult(row: any): AnalysisResultItem {
+    const result = row.analysis_result as DocumentAnalysisResult;
+
+    // CRITICAL: Ensure all sources have a type property
+    if (result.sources && Array.isArray(result.sources)) {
+      result.sources = result.sources
+        .filter((s) => s && typeof s === 'object') // Remove null/invalid entries
+        .map((s) => ({
+          type: s.type && s.type.trim() ? s.type : 'document', // Default to 'document' if missing/empty
+          title: s.title && s.title.trim() ? s.title : 'Untitled',
+          url: s.url || undefined,
+          relevance:
+            s.relevance && s.relevance.trim() ? s.relevance : 'Referenced',
+        }));
+    } else {
+      result.sources = [];
+    }
+
     return {
       id: row.id,
       orgId: row.org_id,
       userId: row.user_id,
-      result: row.analysis_result as DocumentAnalysisResult,
+      result: result,
       createdAt: new Date(row.created_at),
       generatedAt: row.created_at,
     };

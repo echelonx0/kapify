@@ -1,6 +1,181 @@
 <!-- review-summary.component.html -->
+
 <div class="space-y-6">
-  <!-- Application Summary -->
+  <!-- Funding Request Section (Cover Data) - Neo-Brutalist -->
+  @if (coverData()) {
+  <div class="bg-white rounded-lg border-4 border-teal-700 p-6">
+    <!-- Header -->
+    <div class="mb-6 pb-4 border-b-4 border-teal-700">
+      <div class="flex items-center gap-3">
+        <div
+          class="w-10 h-10 bg-teal-100 border-2 border-teal-700 rounded-lg flex items-center justify-center flex-shrink-0"
+        >
+          <lucide-icon [img]="TargetIcon" [size]="20" class="text-teal-700" />
+        </div>
+        <div>
+          <h3
+            class="text-lg font-black text-slate-900 uppercase tracking-tight"
+          >
+            Funding Request
+          </h3>
+          <p
+            class="text-xs font-semibold text-slate-600 uppercase tracking-widest mt-0.5"
+          >
+            Your Funding Profile
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Content Grid -->
+    <div class="space-y-4">
+      <!-- Funding Amount -->
+      @if (coverData()!.fundingAmount && coverData()!.fundingAmount > 0) {
+      <div class="flex items-start gap-4 pb-4 border-b-2 border-slate-300">
+        <div
+          class="w-10 h-10 bg-teal-100 border-2 border-teal-600 rounded-lg flex items-center justify-center flex-shrink-0"
+        >
+          <lucide-icon
+            [img]="DollarSignIcon"
+            [size]="18"
+            class="text-teal-700"
+          />
+        </div>
+        <div class="flex-1">
+          <p
+            class="text-xs font-black text-slate-900 uppercase tracking-widest mb-1"
+          >
+            Funding Amount
+          </p>
+          <p class="text-base font-bold text-teal-700">
+            {{ formatCurrency(coverData()!.fundingAmount) }}
+          </p>
+        </div>
+      </div>
+      }
+
+      <!-- Funding Motivation -->
+      @if (coverData()!.fundingMotivation) {
+      <div class="flex items-start gap-4 pb-4 border-b-2 border-slate-300">
+        <div
+          class="w-10 h-10 bg-teal-100 border-2 border-teal-600 rounded-lg flex items-center justify-center flex-shrink-0"
+        >
+          <lucide-icon [img]="ZapIcon" [size]="18" class="text-teal-700" />
+        </div>
+        <div class="flex-1">
+          <p
+            class="text-xs font-black text-slate-900 uppercase tracking-widest mb-1"
+          >
+            Funding Motivation
+          </p>
+          <p class="text-sm font-semibold text-slate-700 leading-relaxed">
+            {{ coverData()!.fundingMotivation }}
+          </p>
+        </div>
+      </div>
+      }
+
+      <!-- Use of Funds -->
+      @if (coverData()!.useOfFunds) {
+      <div class="flex items-start gap-4 pb-4 border-b-2 border-slate-300">
+        <div
+          class="w-10 h-10 bg-teal-100 border-2 border-teal-600 rounded-lg flex items-center justify-center flex-shrink-0"
+        >
+          <lucide-icon
+            [img]="DollarSignIcon"
+            [size]="18"
+            class="text-teal-700"
+          />
+        </div>
+        <div class="flex-1">
+          <p
+            class="text-xs font-black text-slate-900 uppercase tracking-widest mb-1"
+          >
+            Use of Funds
+          </p>
+          <p class="text-sm font-semibold text-slate-700 leading-relaxed">
+            {{ coverData()!.useOfFunds }}
+          </p>
+        </div>
+      </div>
+      }
+
+      <!-- Industries -->
+      @if ( coverData()!.industries && coverData()!.industries.length > 0 ) {
+      <div class="flex items-start gap-4 pb-4 border-b-2 border-slate-300">
+        <div
+          class="w-10 h-10 bg-teal-100 border-2 border-teal-600 rounded-lg flex items-center justify-center flex-shrink-0"
+        >
+          <lucide-icon [img]="BuildingIcon" [size]="18" class="text-teal-700" />
+        </div>
+        <div class="flex-1">
+          <p
+            class="text-xs font-black text-slate-900 uppercase tracking-widest mb-2"
+          >
+            Industries
+          </p>
+          <div class="flex flex-wrap gap-2">
+            @for (industry of coverData()!.industries; track industry) {
+            <span
+              class="px-2.5 py-1.5 bg-teal-50 border-2 border-teal-600 rounded-lg text-xs font-bold text-teal-700 uppercase tracking-wide"
+            >
+              {{ industry }}
+            </span>
+            }
+          </div>
+        </div>
+      </div>
+      }
+
+      <!-- Business Location -->
+      @if (coverData()!.location) {
+      <div class="flex items-start gap-4 pb-4 border-b-2 border-slate-300">
+        <div
+          class="w-10 h-10 bg-teal-100 border-2 border-teal-600 rounded-lg flex items-center justify-center flex-shrink-0"
+        >
+          <lucide-icon [img]="MapPinIcon" [size]="18" class="text-teal-700" />
+        </div>
+        <div class="flex-1">
+          <p
+            class="text-xs font-black text-slate-900 uppercase tracking-widest mb-1"
+          >
+            Business Location
+          </p>
+          <p class="text-sm font-semibold text-slate-700">
+            {{ coverData()!.location }}
+          </p>
+        </div>
+      </div>
+      }
+
+      <!-- Principal Business Stage -->
+      @if ( coverData()!.businessStages && coverData()!.businessStages.length >
+      0 ) {
+      <div class="flex items-start gap-4">
+        <div
+          class="w-10 h-10 bg-teal-100 border-2 border-teal-600 rounded-lg flex items-center justify-center flex-shrink-0"
+        >
+          <lucide-icon [img]="TargetIcon" [size]="18" class="text-teal-700" />
+        </div>
+        <div class="flex-1">
+          <p
+            class="text-xs font-black text-slate-900 uppercase tracking-widest mb-1"
+          >
+            Principal Business Stage
+          </p>
+          <p
+            class="px-3 py-2 bg-teal-600 text-white text-sm font-black rounded-lg uppercase tracking-wide inline-block"
+          >
+            {{ formatBusinessStage(coverData()!.businessStages[0]) }}
+          </p>
+        </div>
+      </div>
+      }
+    </div>
+  </div>
+  }
+
+  <!-- Application Summary - REMOVED @if (coverData()) wrapper -->
   <div
     class="bg-gradient-to-br from-neutral-50 to-neutral-100 rounded-xl p-6 border border-neutral-200 hover:shadow-md transition-shadow"
   >

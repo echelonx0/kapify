@@ -101,6 +101,7 @@
             [applicationData]="formData()"
             [applicationId]="applicationId()"
             [businessProfile]="businessProfile()"
+            [coverData]="defaultCover()"
             [isSubmitted]="false"
             [analysisMode]="'opportunity'"
             [analysisPerspective]="'sme'"
@@ -117,6 +118,7 @@
         <app-review-summary
           [opportunity]="selectedOpportunity()!"
           [formData]="formData()"
+          [coverData]="defaultCover()"
           [aiAnalysisResult]="aiAnalysisResult()"
           [profileCompletion]="profileCompletion()"
         >

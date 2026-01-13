@@ -67,8 +67,8 @@
       }
     </div>
 
-    <!-- Key Details Grid (Neo-brutalist: bold labels, strong contrast) -->
-    <div class="grid grid-cols-2 gap-4">
+    <!-- Key Details Grid (Responsive: 1 col mobile, 3 cols tablet+) -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
       <!-- Funding Type -->
       <div class="bg-slate-50 rounded-lg p-4 border border-slate-200">
         <p
@@ -102,18 +102,6 @@
         </p>
         <p class="text-sm text-slate-900">
           {{ formatIndustries(cover.industries) }}
-        </p>
-      </div>
-
-      <!-- Business Stages -->
-      <div class="bg-slate-50 rounded-lg p-4 border border-slate-200">
-        <p
-          class="text-xs font-black text-slate-700 uppercase tracking-widest mb-2"
-        >
-          Business Stage
-        </p>
-        <p class="text-sm text-slate-900">
-          {{ cover.businessStages.join(", ") || "All stages" }}
         </p>
       </div>
     </div>

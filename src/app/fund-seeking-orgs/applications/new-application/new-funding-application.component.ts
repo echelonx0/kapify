@@ -31,6 +31,8 @@ import { KapifyAIAnalysisComponent } from 'src/app/fund-seeking-orgs/application
 import { DatabaseApplicationService } from '../../services/database-application.service';
 import { FundingProfileBackendService } from '../../services/funding-profile-backend.service';
 import { ToastService } from 'src/app/shared/services/toast.service';
+import { FundingApplicationCoverService } from 'src/app/shared/services/funding-application-cover.service';
+import { FundingApplicationCoverInformation } from 'src/app/shared/models/funding-application-cover.model';
 
 @Component({
   selector: 'app-opportunity-application-form',
@@ -114,7 +116,8 @@ export class OpportunityApplicationFormComponent implements OnInit, OnDestroy {
   private isCoverSelectionFlow = signal(false);
   // Track if opportunityId came from route params
   opportunityIdFromRoute = signal<string | null>(null);
-
+  private coverService = inject(FundingApplicationCoverService);
+  defaultCover = signal<FundingApplicationCoverInformation | null>(null);
   // Auto-save
   private autoSaveTimeout: any = null;
 
@@ -204,7 +207,7 @@ export class OpportunityApplicationFormComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.loadFullFundingProfile();
-
+    this.loadDefaultCover();
     // FIXED (correct - looks for query param)
     this.route.queryParamMap
       .pipe(takeUntil(this.destroy$))
@@ -248,6 +251,16 @@ export class OpportunityApplicationFormComponent implements OnInit, OnDestroy {
   // DATA LOADING
   // ===============================
 
+  private loadDefaultCover(): void {
+    this.coverService.loadDefaultCover().then((cover) => {
+      if (cover) {
+        this.defaultCover.set(cover);
+        console.log('✅ Default cover loaded for AI analysis');
+      } else {
+        this.defaultCover.set(null);
+      }
+    });
+  }
   private loadFullFundingProfile(): void {
     this.fundingProfileService.loadSavedProfile().subscribe({
       next: (profile) => {

@@ -1079,98 +1079,98 @@ export class AnalysisReportExportService {
   /**
    * Sources section
    */
-  private addSourcesSection(
-    doc: any,
-    sources: any[],
-    yPosition: number,
-    contentWidth: number,
-    margin: number,
-    pageHeight: number
-  ): void {
-    const pageBottomMargin = 20;
+  // private addSourcesSection(
+  //   doc: any,
+  //   sources: any[],
+  //   yPosition: number,
+  //   contentWidth: number,
+  //   margin: number,
+  //   pageHeight: number
+  // ): void {
+  //   const pageBottomMargin = 20;
 
-    // Title
-    doc.setFont('Helvetica', 'bold');
-    doc.setFontSize(12);
-    doc.setTextColor(
-      this.COLORS.slate900[0],
-      this.COLORS.slate900[1],
-      this.COLORS.slate900[2]
-    );
-    doc.text('Sources & References', margin, yPosition);
+  //   // Title
+  //   doc.setFont('Helvetica', 'bold');
+  //   doc.setFontSize(12);
+  //   doc.setTextColor(
+  //     this.COLORS.slate900[0],
+  //     this.COLORS.slate900[1],
+  //     this.COLORS.slate900[2]
+  //   );
+  //   doc.text('Sources & References', margin, yPosition);
 
-    // Underline
-    doc.setDrawColor(
-      this.COLORS.teal500[0],
-      this.COLORS.teal500[1],
-      this.COLORS.teal500[2]
-    );
-    doc.setLineWidth(0.8);
-    doc.line(margin, yPosition + 1, margin + 50, yPosition + 1);
+  //   // Underline
+  //   doc.setDrawColor(
+  //     this.COLORS.teal500[0],
+  //     this.COLORS.teal500[1],
+  //     this.COLORS.teal500[2]
+  //   );
+  //   doc.setLineWidth(0.8);
+  //   doc.line(margin, yPosition + 1, margin + 50, yPosition + 1);
 
-    yPosition += 7;
+  //   yPosition += 7;
 
-    // Source items
-    sources.forEach((source) => {
-      if (yPosition > pageHeight - pageBottomMargin - 12) {
-        doc.addPage();
-        yPosition = 28;
-      }
+  //   // Source items
+  //   sources.forEach((source) => {
+  //     if (yPosition > pageHeight - pageBottomMargin - 12) {
+  //       doc.addPage();
+  //       yPosition = 28;
+  //     }
 
-      // Source type badge
-      doc.setFillColor(
-        this.COLORS.teal500[0],
-        this.COLORS.teal500[1],
-        this.COLORS.teal500[2]
-      );
-      doc.rect(margin, yPosition - 2, 16, 4, 'F');
+  //     // Source type badge
+  //     doc.setFillColor(
+  //       this.COLORS.teal500[0],
+  //       this.COLORS.teal500[1],
+  //       this.COLORS.teal500[2]
+  //     );
+  //     doc.rect(margin, yPosition - 2, 16, 4, 'F');
 
-      doc.setFont('Helvetica', 'bold');
-      doc.setFontSize(6.5);
-      doc.setTextColor(255, 255, 255);
-      doc.text(source.type.toUpperCase(), margin + 1, yPosition + 0.5);
+  //     doc.setFont('Helvetica', 'bold');
+  //     doc.setFontSize(6.5);
+  //     doc.setTextColor(255, 255, 255);
+  //     doc.text(source.type.toUpperCase(), margin + 1, yPosition + 0.5);
 
-      // Title
-      doc.setFont('Helvetica', 'bold');
-      doc.setFontSize(8.5);
-      doc.setTextColor(
-        this.COLORS.slate900[0],
-        this.COLORS.slate900[1],
-        this.COLORS.slate900[2]
-      );
-      doc.text(source.title, margin + 18, yPosition);
-      yPosition += 4.5;
+  //     // Title
+  //     doc.setFont('Helvetica', 'bold');
+  //     doc.setFontSize(8.5);
+  //     doc.setTextColor(
+  //       this.COLORS.slate900[0],
+  //       this.COLORS.slate900[1],
+  //       this.COLORS.slate900[2]
+  //     );
+  //     doc.text(source.title, margin + 18, yPosition);
+  //     yPosition += 4.5;
 
-      // URL (if present)
-      if (source.url) {
-        doc.setFont('Helvetica', 'normal');
-        doc.setFontSize(7);
-        doc.setTextColor(
-          this.COLORS.teal600[0],
-          this.COLORS.teal600[1],
-          this.COLORS.teal600[2]
-        );
-        const urlLines = doc.splitTextToSize(source.url, contentWidth - 6);
-        doc.text(urlLines, margin + 2, yPosition);
-        yPosition += urlLines.length * 2.8 + 1;
-      }
+  //     // URL (if present)
+  //     if (source.url) {
+  //       doc.setFont('Helvetica', 'normal');
+  //       doc.setFontSize(7);
+  //       doc.setTextColor(
+  //         this.COLORS.teal600[0],
+  //         this.COLORS.teal600[1],
+  //         this.COLORS.teal600[2]
+  //       );
+  //       const urlLines = doc.splitTextToSize(source.url, contentWidth - 6);
+  //       doc.text(urlLines, margin + 2, yPosition);
+  //       yPosition += urlLines.length * 2.8 + 1;
+  //     }
 
-      // Relevance (if present)
-      if (source.relevance) {
-        doc.setFont('Helvetica', 'normal');
-        doc.setFontSize(7);
-        doc.setTextColor(
-          this.COLORS.slate600[0],
-          this.COLORS.slate600[1],
-          this.COLORS.slate600[2]
-        );
-        doc.text(`Relevance: ${source.relevance}`, margin + 2, yPosition);
-        yPosition += 3;
-      }
+  //     // Relevance (if present)
+  //     if (source.relevance) {
+  //       doc.setFont('Helvetica', 'normal');
+  //       doc.setFontSize(7);
+  //       doc.setTextColor(
+  //         this.COLORS.slate600[0],
+  //         this.COLORS.slate600[1],
+  //         this.COLORS.slate600[2]
+  //       );
+  //       doc.text(`Relevance: ${source.relevance}`, margin + 2, yPosition);
+  //       yPosition += 3;
+  //     }
 
-      yPosition += 2;
-    });
-  }
+  //     yPosition += 2;
+  //   });
+  // }
 
   // =====================================
   // UTILITY: BULLET SECTIONS
@@ -1246,5 +1246,132 @@ export class AnalysisReportExportService {
     });
 
     return yPosition;
+  }
+
+  /**
+   * PATCH: ai-analysis-export.service.ts
+   * Replace the addSourcesSection method with this defensive version
+   */
+
+  private addSourcesSection(
+    doc: any,
+    sources: any[],
+    yPosition: number,
+    contentWidth: number,
+    margin: number,
+    pageHeight: number
+  ): void {
+    const pageBottomMargin = 20;
+
+    // Title
+    doc.setFont('Helvetica', 'bold');
+    doc.setFontSize(12);
+    doc.setTextColor(
+      this.COLORS.slate900[0],
+      this.COLORS.slate900[1],
+      this.COLORS.slate900[2]
+    );
+    doc.text('Sources & References', margin, yPosition);
+
+    // Underline
+    doc.setDrawColor(
+      this.COLORS.teal500[0],
+      this.COLORS.teal500[1],
+      this.COLORS.teal500[2]
+    );
+    doc.setLineWidth(0.8);
+    doc.line(margin, yPosition + 1, margin + 50, yPosition + 1);
+
+    yPosition += 7;
+
+    // DEFENSIVE: Filter out null/invalid sources and validate structure
+    const validSources = (sources || [])
+      .filter((source) => source && typeof source === 'object')
+      .filter((source) => source.type || source.title); // Only include if has at least type or title
+
+    // Handle empty sources
+    if (validSources.length === 0) {
+      doc.setFont('Helvetica', 'normal');
+      doc.setFontSize(9);
+      doc.setTextColor(
+        this.COLORS.slate600[0],
+        this.COLORS.slate600[1],
+        this.COLORS.slate600[2]
+      );
+      doc.text('No sources available for this analysis', margin + 2, yPosition);
+      return;
+    }
+
+    // Source items
+    validSources.forEach((source) => {
+      if (yPosition > pageHeight - pageBottomMargin - 12) {
+        doc.addPage();
+        yPosition = 28;
+      }
+
+      // DEFENSIVE: Safely access source.type with fallback
+      const sourceType = source.type || 'document';
+      const sourceTitle = source.title || 'Untitled Source';
+      const sourceUrl = source.url || '';
+      const sourceRelevance = source.relevance || 'Referenced';
+
+      // Source type badge
+      doc.setFillColor(
+        this.COLORS.teal500[0],
+        this.COLORS.teal500[1],
+        this.COLORS.teal500[2]
+      );
+      doc.rect(margin, yPosition - 2, 16, 4, 'F');
+
+      doc.setFont('Helvetica', 'bold');
+      doc.setFontSize(6.5);
+      doc.setTextColor(255, 255, 255);
+      // DEFENSIVE: Call toUpperCase only after null-safety check
+      doc.text(
+        (sourceType as string).toUpperCase().substring(0, 12),
+        margin + 1,
+        yPosition + 0.5
+      );
+
+      // Title
+      doc.setFont('Helvetica', 'bold');
+      doc.setFontSize(8.5);
+      doc.setTextColor(
+        this.COLORS.slate900[0],
+        this.COLORS.slate900[1],
+        this.COLORS.slate900[2]
+      );
+      doc.text(sourceTitle, margin + 18, yPosition);
+      yPosition += 4.5;
+
+      // URL (if present and valid)
+      if (sourceUrl && typeof sourceUrl === 'string' && sourceUrl.trim()) {
+        doc.setFont('Helvetica', 'normal');
+        doc.setFontSize(7);
+        doc.setTextColor(
+          this.COLORS.teal600[0],
+          this.COLORS.teal600[1],
+          this.COLORS.teal600[2]
+        );
+        const urlLines = doc.splitTextToSize(sourceUrl, contentWidth - 6);
+        doc.text(urlLines, margin + 2, yPosition);
+        yPosition += urlLines.length * 2.8 + 1;
+      }
+
+      // Relevance (if present and valid)
+      if (sourceRelevance && typeof sourceRelevance === 'string') {
+        doc.setFont('Helvetica', 'normal');
+        doc.setFontSize(7);
+        doc.setTextColor(
+          this.COLORS.slate600[0],
+          this.COLORS.slate600[1],
+          this.COLORS.slate600[2]
+        );
+        doc.text(`Relevance: ${sourceRelevance}`, margin + 2, yPosition);
+        yPosition += 3;
+      }
+
+      yPosition += 2;
+    });
   }
 }

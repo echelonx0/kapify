@@ -1,32 +1,16 @@
 <!-- Root: fills viewport and enforces column layout -->
 <div class="h-full flex flex-col bg-slate-50">
   <!-- ===== HEADER: NEO-BRUTALIST (matching demographics) ===== -->
-  <div
-    class="flex-shrink-0 px-6 lg:px-8 py-6 border-b-4 border-slate-200 bg-white sticky top-0 z-10"
-  >
-    <div class="flex items-center justify-between">
-      <div>
-        <h1 class="text-3xl font-black text-slate-900 tracking-tight">
-          {{ isCreating() ? "CREATE FUNDING REQUEST" : "EDIT FUNDING REQUEST" }}
-        </h1>
-        <p class="text-sm text-slate-600 mt-2">
-          {{
-            isCreating()
-              ? "Set up a custom request to share with investors"
-              : "Update your funding profile request"
-          }}
-        </p>
-      </div>
-
-      <!-- Completion Badge -->
-      <div class="text-right">
-        <div class="text-4xl font-black text-teal-600">
-          {{ completionPercentage() }}%
-        </div>
-        <p class="text-xs text-slate-600 font-semibold mt-1">Complete</p>
-      </div>
-    </div>
-  </div>
+  <app-page-header
+    [title]="isCreating() ? 'CREATE FUNDING REQUEST' : 'EDIT FUNDING REQUEST'"
+    [subtitle]="
+      isCreating()
+        ? 'Set up a custom request to share with investors'
+        : 'Update your funding profile request'
+    "
+    [completionPercentage]="completionPercentage()"
+    (back)="onCancel()"
+  ></app-page-header>
 
   <!-- ===== ERROR DISPLAY (Like Demographics) ===== -->
   <div

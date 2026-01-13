@@ -15,6 +15,7 @@ import {
   UpdateCoverRequest,
 } from 'src/app/shared/models/funding-application-cover.model';
 import { FundingApplicationCoverService } from 'src/app/shared/services/funding-application-cover.service';
+import { PageHeaderComponent } from 'src/app/shared/components/header/page-header.component';
 
 // Predefined options for user guidance
 const PREDEFINED_SECTORS = [
@@ -52,7 +53,7 @@ const PREDEFINED_INVESTOR_TYPES = [
 @Component({
   selector: 'app-cover-editor',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, PageHeaderComponent],
   templateUrl: './cover-editor.component.html',
 })
 export class CoverEditorComponent implements OnInit {
