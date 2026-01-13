@@ -398,6 +398,8 @@ export class FundingApplicationCoverService implements OnDestroy {
         dbUpdates.use_of_funds = updates.useOfFunds;
       if (updates.executiveSummary !== undefined)
         dbUpdates.executive_summary = updates.executiveSummary;
+      if (updates.fundingMotivation !== undefined)
+        dbUpdates.funding_motivation = updates.fundingMotivation;
       if (updates.repaymentStrategy !== undefined)
         dbUpdates.repayment_strategy = updates.repaymentStrategy;
       if (updates.equityOffered !== undefined)
@@ -716,6 +718,7 @@ export class FundingApplicationCoverService implements OnDestroy {
         executiveSummary: `${original.executiveSummary} (Copy)`,
         repaymentStrategy: original.repaymentStrategy,
         equityOffered: original.equityOffered,
+        fundingMotivation: original.fundingMotivation,
       };
 
       const result = await this.createBlankCover(copyData);
@@ -759,6 +762,33 @@ export class FundingApplicationCoverService implements OnDestroy {
 
   // ===== TRANSFORMATION =====
 
+  // private transformDatabaseToLocal(
+  //   dbRecord: any
+  // ): FundingApplicationCoverInformation {
+  //   return {
+  //     id: dbRecord.id,
+  //     organizationId: dbRecord.organization_id,
+  //     isDefault: dbRecord.is_default,
+  //     languageCode: dbRecord.language_code,
+  //     industries: dbRecord.industries || [],
+  //     fundingAmount: dbRecord.funding_amount || 0,
+  //     fundingTypes: dbRecord.funding_types || [],
+  //     businessStages: dbRecord.business_stages || [],
+  //     investmentCriteria: dbRecord.investment_criteria || [],
+  //     exclusionCriteria: dbRecord.exclusion_criteria || [],
+  //     location: dbRecord.location || '',
+  //     useOfFunds: dbRecord.use_of_funds || '',
+  //     executiveSummary: dbRecord.executive_summary || '',
+  //     repaymentStrategy: dbRecord.repayment_strategy,
+  //     equityOffered: dbRecord.equity_offered,
+  //     coverDocumentId: dbRecord.cover_document_id,
+  //     coverDocumentUrl: dbRecord.cover_document_url,
+  //     coverDocumentName: dbRecord.cover_document_name,
+  //     createdAt: new Date(dbRecord.created_at),
+  //     updatedAt: new Date(dbRecord.updated_at),
+  //   };
+  // }
+
   private transformDatabaseToLocal(
     dbRecord: any
   ): FundingApplicationCoverInformation {
@@ -776,6 +806,7 @@ export class FundingApplicationCoverService implements OnDestroy {
       location: dbRecord.location || '',
       useOfFunds: dbRecord.use_of_funds || '',
       executiveSummary: dbRecord.executive_summary || '',
+      fundingMotivation: dbRecord.funding_motivation, // ✅ NEW
       repaymentStrategy: dbRecord.repayment_strategy,
       equityOffered: dbRecord.equity_offered,
       coverDocumentId: dbRecord.cover_document_id,
@@ -785,7 +816,6 @@ export class FundingApplicationCoverService implements OnDestroy {
       updatedAt: new Date(dbRecord.updated_at),
     };
   }
-
   // KEY CHANGES FOR SINGLE-PROFILE MODE:
   // 1. createBlankCover() always sets is_default: true
   // 2. copyCover() method REMOVED
@@ -832,6 +862,7 @@ export class FundingApplicationCoverService implements OnDestroy {
         cover_document_name: null,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
+        funding_motivation: initialData?.fundingMotivation || null,
       };
 
       const { data, error } = await this.supabase

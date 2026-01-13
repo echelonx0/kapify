@@ -1,3 +1,4 @@
+// // src/app/features/applications-cover/cover-editor/cover-editor.component.ts
 // import {
 //   Component,
 //   Input,
@@ -38,12 +39,6 @@
 //   { value: 'mezzanine', label: 'Mezzanine Financing' },
 // ];
 
-// const PREDEFINED_BUSINESS_STAGES = [
-//   { value: 'early_stage', label: 'Early Stage (Pre-revenue)' },
-//   { value: 'growth', label: 'Growth Stage (Scaling)' },
-//   { value: 'mature', label: 'Mature (Established)' },
-// ];
-
 // const PREDEFINED_INVESTOR_TYPES = [
 //   'Angel Investors',
 //   'Venture Capital Firms',
@@ -53,14 +48,6 @@
 //   'Development Finance Institutions',
 //   'Accelerators',
 //   'Strategic Partners',
-// ];
-
-// const PREDEFINED_INVESTOR_EXCLUSIONS = [
-//   'Passive Investors Only',
-//   'Competitors',
-//   'Regulatory Bodies',
-//   'Venture Debt Only',
-//   'Activist Investors',
 // ];
 
 // @Component({
@@ -75,9 +62,7 @@
 //   // Predefined options (read-only)
 //   readonly sectors = PREDEFINED_SECTORS;
 //   readonly fundingTypeOptions = PREDEFINED_FUNDING_TYPES;
-//   readonly businessStageOptions = PREDEFINED_BUSINESS_STAGES;
 //   readonly investorTypeOptions = PREDEFINED_INVESTOR_TYPES;
-//   readonly investorExclusionOptions = PREDEFINED_INVESTOR_EXCLUSIONS;
 
 //   @Input() cover: FundingApplicationCoverInformation | null = null;
 //   @Input() defaultCover: FundingApplicationCoverInformation | null = null;
@@ -90,14 +75,14 @@
 //   industries = signal<string[]>([]);
 //   fundingAmount = signal<number>(0);
 //   fundingTypes = signal<string[]>([]);
-//   businessStages = signal<string[]>([]);
 //   investmentCriteria = signal<string[]>([]);
-//   exclusionCriteria = signal<string[]>([]);
-//   location = signal<string>('');
 //   useOfFunds = signal<string>('');
-//   executiveSummary = signal<string>('');
 //   repaymentStrategy = signal<string>('');
 //   equityOffered = signal<number | null>(null);
+//   fundingMotivation = signal<string>('');
+
+//   // ===== INTERNAL (NOT USER-FACING) =====
+//   private internalProfileName = signal<string>('');
 
 //   // ===== STATE MANAGEMENT =====
 //   private isSaving = signal(false);
@@ -114,6 +99,19 @@
 //   readonly hasEquityFunding = computed(() =>
 //     this.fundingTypes().includes('equity')
 //   );
+
+//   // ===== COMPLETION TRACKING =====
+//   readonly completionPercentage = computed(() => {
+//     const requiredFields = [
+//       this.industries().length > 0,
+//       this.fundingAmount() > 0,
+//       this.fundingTypes().length > 0,
+//       this.useOfFunds().trim().length > 0,
+//     ];
+
+//     const completed = requiredFields.filter((field) => field).length;
+//     return Math.round((completed / requiredFields.length) * 100);
+//   });
 
 //   ngOnInit() {
 //     if (this.cover) {
@@ -132,14 +130,12 @@
 //     this.industries.set([...this.cover.industries]);
 //     this.fundingAmount.set(this.cover.fundingAmount);
 //     this.fundingTypes.set([...this.cover.fundingTypes]);
-//     this.businessStages.set([...this.cover.businessStages]);
 //     this.investmentCriteria.set([...this.cover.investmentCriteria]);
-//     this.exclusionCriteria.set([...this.cover.exclusionCriteria]);
-//     this.location.set(this.cover.location);
 //     this.useOfFunds.set(this.cover.useOfFunds);
-//     this.executiveSummary.set(this.cover.executiveSummary);
 //     this.repaymentStrategy.set(this.cover.repaymentStrategy || '');
 //     this.equityOffered.set(this.cover.equityOffered || null);
+//     this.internalProfileName.set(this.cover.executiveSummary);
+//     this.fundingMotivation.set(this.cover?.fundingMotivation || '');
 
 //     this.isDirty.set(false);
 //   }
@@ -152,17 +148,26 @@
 //       this.industries.set([...this.defaultCover.industries]);
 //       this.fundingAmount.set(this.defaultCover.fundingAmount);
 //       this.fundingTypes.set([...this.defaultCover.fundingTypes]);
-//       this.businessStages.set([...this.defaultCover.businessStages]);
 //       this.investmentCriteria.set([...this.defaultCover.investmentCriteria]);
-//       this.exclusionCriteria.set([...this.defaultCover.exclusionCriteria]);
-//       this.location.set(this.defaultCover.location);
 //       this.useOfFunds.set(this.defaultCover.useOfFunds);
-//       this.executiveSummary.set(this.defaultCover.executiveSummary);
 //       this.repaymentStrategy.set(this.defaultCover.repaymentStrategy || '');
 //       this.equityOffered.set(this.defaultCover.equityOffered || null);
+//       this.fundingMotivation.set(this.defaultCover?.fundingMotivation || '');
 //     }
 
+//     // Generate internal profile name (not shown to user)
+//     this.internalProfileName.set(this.generateProfileName());
 //     this.isDirty.set(false);
+//   }
+
+//   /**
+//    * Generate a random profile name for internal use
+//    * Format: "Funding Round - [timestamp]"
+//    */
+//   private generateProfileName(): string {
+//     const timestamp = Date.now().toString(36).toUpperCase();
+//     const random = Math.random().toString(36).substring(2, 8).toUpperCase();
+//     return `ROUND-${timestamp}-${random}`;
 //   }
 
 //   // ===== FORM UPDATES =====
@@ -172,17 +177,14 @@
 //       .value;
 
 //     switch (field) {
-//       case 'executiveSummary':
-//         this.executiveSummary.set(value);
-//         break;
-//       case 'location':
-//         this.location.set(value);
-//         break;
 //       case 'useOfFunds':
 //         this.useOfFunds.set(value);
 //         break;
 //       case 'repaymentStrategy':
 //         this.repaymentStrategy.set(value);
+//         break;
+//       case 'fundingMotivation':
+//         this.fundingMotivation.set(value);
 //         break;
 //     }
 
@@ -224,11 +226,6 @@
 //           this.investmentCriteria.update((arr) => [...arr, value]);
 //         }
 //         break;
-//       case 'exclusionCriteria':
-//         if (!this.exclusionCriteria().includes(value)) {
-//           this.exclusionCriteria.update((arr) => [...arr, value]);
-//         }
-//         break;
 //     }
 
 //     input.value = '';
@@ -246,9 +243,6 @@
 //         break;
 //       case 'investmentCriteria':
 //         this.investmentCriteria.update((arr) => arr.filter((i) => i !== item));
-//         break;
-//       case 'exclusionCriteria':
-//         this.exclusionCriteria.update((arr) => arr.filter((i) => i !== item));
 //         break;
 //     }
 
@@ -268,13 +262,6 @@
 //           this.fundingTypes.update((arr) => [...arr, item]);
 //         }
 //         break;
-//       case 'businessStages':
-//         if (this.businessStages().includes(item)) {
-//           this.businessStages.update((arr) => arr.filter((i) => i !== item));
-//         } else {
-//           this.businessStages.update((arr) => [...arr, item]);
-//         }
-//         break;
 //     }
 
 //     this.markDirty();
@@ -288,8 +275,6 @@
 //     switch (arrayField) {
 //       case 'fundingTypes':
 //         return this.fundingTypes().includes(item);
-//       case 'businessStages':
-//         return this.businessStages().includes(item);
 //       default:
 //         return false;
 //     }
@@ -310,11 +295,6 @@
 //           this.investmentCriteria.update((arr) => [...arr, item]);
 //         }
 //         break;
-//       case 'exclusionCriteria':
-//         if (!this.exclusionCriteria().includes(item)) {
-//           this.exclusionCriteria.update((arr) => [...arr, item]);
-//         }
-//         break;
 //     }
 
 //     this.markDirty();
@@ -330,8 +310,6 @@
 //         return this.industries().includes(item);
 //       case 'investmentCriteria':
 //         return this.investmentCriteria().includes(item);
-//       case 'exclusionCriteria':
-//         return this.exclusionCriteria().includes(item);
 //       default:
 //         return false;
 //     }
@@ -351,13 +329,7 @@
 //     if (this.fundingTypes().length === 0) {
 //       errors.push('Select at least one funding type');
 //     }
-//     if (this.businessStages().length === 0) {
-//       errors.push('Select at least one business stage');
-//     }
-//     if (!this.location()) {
-//       errors.push('Location is required');
-//     }
-//     if (!this.useOfFunds()) {
+//     if (!this.useOfFunds().trim()) {
 //       errors.push('Tell us how you will use the funds');
 //     }
 
@@ -388,14 +360,15 @@
 //         industries: this.industries(),
 //         fundingAmount: this.fundingAmount(),
 //         fundingTypes: this.fundingTypes(),
-//         businessStages: this.businessStages(),
+//         businessStages: [], // Removed from UI
 //         investmentCriteria: this.investmentCriteria(),
-//         exclusionCriteria: this.exclusionCriteria(),
-//         location: this.location(),
+//         exclusionCriteria: [], // Keep for backward compatibility
+//         location: '', // Removed from UI
 //         useOfFunds: this.useOfFunds(),
-//         executiveSummary: this.executiveSummary(),
+//         executiveSummary: this.internalProfileName(), // Internal name
 //         repaymentStrategy: this.repaymentStrategy(),
 //         equityOffered: this.equityOffered() || undefined,
+//         fundingMotivation: this.fundingMotivation(),
 //       };
 
 //       this.coverService.updateCover(this.cover.id, updates).subscribe({
@@ -437,7 +410,6 @@
 //     this.cancel.emit();
 //   }
 // }
-
 import {
   Component,
   Input,
@@ -516,6 +488,7 @@ export class CoverEditorComponent implements OnInit {
   fundingTypes = signal<string[]>([]);
   investmentCriteria = signal<string[]>([]);
   useOfFunds = signal<string>('');
+  fundingMotivation = signal<string>(''); // ✅ REQUIRED
   repaymentStrategy = signal<string>('');
   equityOffered = signal<number | null>(null);
 
@@ -545,6 +518,7 @@ export class CoverEditorComponent implements OnInit {
       this.fundingAmount() > 0,
       this.fundingTypes().length > 0,
       this.useOfFunds().trim().length > 0,
+      this.fundingMotivation().trim().length > 0, // ✅ REQUIRED
     ];
 
     const completed = requiredFields.filter((field) => field).length;
@@ -570,6 +544,7 @@ export class CoverEditorComponent implements OnInit {
     this.fundingTypes.set([...this.cover.fundingTypes]);
     this.investmentCriteria.set([...this.cover.investmentCriteria]);
     this.useOfFunds.set(this.cover.useOfFunds);
+    this.fundingMotivation.set(this.cover.fundingMotivation || ''); // ✅ REQUIRED
     this.repaymentStrategy.set(this.cover.repaymentStrategy || '');
     this.equityOffered.set(this.cover.equityOffered || null);
     this.internalProfileName.set(this.cover.executiveSummary);
@@ -587,6 +562,7 @@ export class CoverEditorComponent implements OnInit {
       this.fundingTypes.set([...this.defaultCover.fundingTypes]);
       this.investmentCriteria.set([...this.defaultCover.investmentCriteria]);
       this.useOfFunds.set(this.defaultCover.useOfFunds);
+      this.fundingMotivation.set(this.defaultCover.fundingMotivation || ''); // ✅ REQUIRED
       this.repaymentStrategy.set(this.defaultCover.repaymentStrategy || '');
       this.equityOffered.set(this.defaultCover.equityOffered || null);
     }
@@ -615,6 +591,9 @@ export class CoverEditorComponent implements OnInit {
     switch (field) {
       case 'useOfFunds':
         this.useOfFunds.set(value);
+        break;
+      case 'fundingMotivation': // ✅ REQUIRED
+        this.fundingMotivation.set(value);
         break;
       case 'repaymentStrategy':
         this.repaymentStrategy.set(value);
@@ -765,6 +744,9 @@ export class CoverEditorComponent implements OnInit {
     if (!this.useOfFunds().trim()) {
       errors.push('Tell us how you will use the funds');
     }
+    if (!this.fundingMotivation().trim()) {
+      errors.push('Explain why you need this funding'); // ✅ REQUIRED
+    }
 
     this.validationErrors.set(errors);
   }
@@ -793,12 +775,13 @@ export class CoverEditorComponent implements OnInit {
         industries: this.industries(),
         fundingAmount: this.fundingAmount(),
         fundingTypes: this.fundingTypes(),
-        businessStages: [], // Removed from UI
+        businessStages: [],
         investmentCriteria: this.investmentCriteria(),
-        exclusionCriteria: [], // Keep for backward compatibility
-        location: '', // Removed from UI
+        exclusionCriteria: [],
+        location: '',
         useOfFunds: this.useOfFunds(),
-        executiveSummary: this.internalProfileName(), // Internal name
+        fundingMotivation: this.fundingMotivation(), // ✅ REQUIRED
+        executiveSummary: this.internalProfileName(),
         repaymentStrategy: this.repaymentStrategy(),
         equityOffered: this.equityOffered() || undefined,
       };
@@ -831,6 +814,16 @@ export class CoverEditorComponent implements OnInit {
       ]);
       this.isSaving.set(false);
     }
+  }
+  navigateToDemographics(): void {
+    // this.router.navigate([], {
+    //   relativeTo: this.route,
+    //   queryParams: {
+    //     coverId,
+    //     view: 'demographics',
+    //   },
+    //   queryParamsHandling: 'merge',
+    // });
   }
 
   onCancel(): void {

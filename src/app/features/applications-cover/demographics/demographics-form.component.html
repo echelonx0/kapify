@@ -103,9 +103,9 @@
           <div class="mt-4 flex items-center justify-between">
             <div class="text-xs text-slate-600 font-semibold">
               {{
-                completionStatus().categoryCompletion[category.id]?.filled || 0
+                completionStatus().categoryCompletion[category.id].filled || 0
               }}/{{
-                completionStatus().categoryCompletion[category.id]?.total || 0
+                completionStatus().categoryCompletion[category.id].total || 0
               }}
               completed
             </div>
@@ -114,7 +114,7 @@
                 class="h-full bg-gradient-to-r from-teal-400 to-teal-500 transition-all duration-500"
                 [style.width.%]="
                   completionStatus().categoryCompletion[category.id]
-                    ?.percentage || 0
+                    .percentage || 0
                 "
               ></div>
             </div>
@@ -142,7 +142,7 @@
               [id]="category.id + '_' + field.name"
               type="text"
               [value]="
-                formatFieldValue(demographicsData()[category.id]?.[field.name])
+                formatFieldValue(demographicsData()[category.id][field.name])
               "
               (change)="
                 onFieldChange(
@@ -160,7 +160,7 @@
               [id]="category.id + '_' + field.name"
               type="number"
               [value]="
-                formatFieldValue(demographicsData()[category.id]?.[field.name])
+                formatFieldValue(demographicsData()[category.id][field.name])
               "
               (change)="
                 onFieldChange(
@@ -181,9 +181,7 @@
                 [id]="category.id + '_' + field.name"
                 type="number"
                 [value]="
-                  formatFieldValue(
-                    demographicsData()[category.id]?.[field.name]
-                  )
+                  formatFieldValue(demographicsData()[category.id][field.name])
                 "
                 (change)="
                   onFieldChange(
@@ -204,7 +202,7 @@
             <select
               [id]="category.id + '_' + field.name"
               [value]="
-                formatFieldValue(demographicsData()[category.id]?.[field.name])
+                formatFieldValue(demographicsData()[category.id][field.name])
               "
               (change)="
                 onFieldChange(

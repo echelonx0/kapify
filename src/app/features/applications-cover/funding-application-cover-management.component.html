@@ -106,7 +106,7 @@
   </div>
 
   <!-- ===== FOOTER ===== -->
-  <div
+  <!-- <div
     class="flex-shrink-0 sticky bottom-0 z-30 bg-white border-t-4 border-slate-300 px-6 lg:px-8 py-4 flex items-center justify-between"
   >
     <div class="text-xs text-slate-600">
@@ -124,7 +124,7 @@
     </div>
 
     <div class="flex gap-2">
-      <!-- Back button (show when not in editor view) -->
+      
       <button
         *ngIf="currentView() !== 'editor' && selectedCover()"
         (click)="navigateToEditor(selectedId()!, mode())"
@@ -133,7 +133,7 @@
         Back
       </button>
 
-      <!-- Delete button -->
+     
       <button
         *ngIf="selectedCover() && currentView() === 'editor'"
         (click)="deleteFundingRequest(selectedId()!)"
@@ -142,7 +142,7 @@
         Delete
       </button>
 
-      <!-- Manage Demographics button -->
+      
       <button
         *ngIf="selectedCover() && currentView() === 'editor'"
         (click)="navigateToDemographics(selectedId()!)"
@@ -151,5 +151,5 @@
         Manage Demographics
       </button>
     </div>
-  </div>
+  </div> -->
 </div>

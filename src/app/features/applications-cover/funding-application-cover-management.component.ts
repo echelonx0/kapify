@@ -1,3 +1,5 @@
+// src/app/features/applications-cover/funding-application-cover-management.component.ts
+
 import {
   Component,
   OnInit,

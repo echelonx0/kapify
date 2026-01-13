@@ -218,6 +218,29 @@
         </p>
       </div>
 
+      <!-- Section 3b: Funding Motivation (REQUIRED) -->
+      <div class="bg-white rounded-2xl border-3 border-slate-200 p-6">
+        <h2 class="text-lg font-bold text-slate-900 mb-4">
+          Why Do You Need This Funding?
+        </h2>
+
+        <label class="block text-sm font-semibold text-slate-900 mb-2">
+          What problem does this funding solve?
+          <span class="text-red-600">*</span>
+        </label>
+        <textarea
+          [value]="fundingMotivation()"
+          (change)="updateTextField('fundingMotivation', $event)"
+          placeholder="E.g., We're losing market share due to outdated infrastructure. This funding will modernize our tech stack and improve customer retention by 30%."
+          rows="3"
+          class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all duration-200"
+        ></textarea>
+        <p class="text-xs text-slate-500 mt-2">
+          Be specific: what gap are you filling? What opportunity are you
+          capturing?
+        </p>
+      </div>
+
       <!-- Section 4: Repayment & Exit Strategy -->
       <div class="bg-white rounded-2xl border-3 border-slate-200 p-6">
         <h2 class="text-lg font-bold text-slate-900 mb-4">
@@ -345,6 +368,12 @@
         title="Upload pitch deck or financial summary"
       >
         Attach Files
+      </button>
+      <button
+        (click)="navigateToDemographics()"
+        class="px-5 py-2.5 bg-slate-100 text-slate-700 font-semibold rounded-lg border border-slate-200 hover:bg-slate-200 active:bg-slate-300 transition-all duration-200 text-sm"
+      >
+        Manage Demographics
       </button>
 
       <button

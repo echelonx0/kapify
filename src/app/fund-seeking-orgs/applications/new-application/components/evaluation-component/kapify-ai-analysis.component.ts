@@ -182,9 +182,9 @@ export class KapifyAIAnalysisComponent implements OnInit, OnDestroy {
         if (!data.requestedAmount || parseFloat(data.requestedAmount) <= 0) {
           issues.push('Valid funding amount required');
         }
-        // if (!data.purposeStatement?.trim()) {
-        //   issues.push('Purpose statement required');
-        // }
+        if (!data.purposeStatement?.trim()) {
+          issues.push('Purpose statement required');
+        }
         if (!data.useOfFunds?.trim()) {
           issues.push('Use of funds description required');
         }
