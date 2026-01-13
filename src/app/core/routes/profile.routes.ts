@@ -45,7 +45,7 @@ export const profileRoutes: Routes = [
         path: 'covers',
         loadComponent: () =>
           import(
-            'src/app/features/applications-cover/funding-application-cover-management.component'
+            'src/app/fund-seeking-orgs/applications/applications-cover/funding-application-cover-management.component'
           ).then((c) => c.FundingApplicationCoverManagementComponent),
         title: 'Funding Covers - Kapify',
         data: {

@@ -10,7 +10,7 @@ import {
 } from 'lucide-angular';
 import { FundingApplicationCoverService } from 'src/app/shared/services/funding-application-cover.service';
 import { ActivityService } from 'src/app/shared/services/activity.service';
-import { CreateCoverModalComponent } from 'src/app/features/applications-cover/create-cover-modal.component';
+import { CreateCoverModalComponent } from 'src/app/fund-seeking-orgs/applications/applications-cover/create-cover-modal.component';
 
 @Component({
   selector: 'app-cover-status-section',
