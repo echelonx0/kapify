@@ -28,7 +28,7 @@ export interface TransformedApplication {
   opportunityTitle?: string;
   // For SME view
   opportunityId?: string;
-  fundingRequest?: FundingApplicationCoverInformation;
+  fundingRequest?: any;
 }
 
 @Injectable({
@@ -114,6 +114,7 @@ export class ApplicationTransformService {
       submittedAt: app.submittedAt,
       opportunityId: app.opportunityId,
       opportunityTitle: app.opportunity?.title,
+      fundingRequest: app.coverInformation,
     };
   }
 

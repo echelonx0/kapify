@@ -1,3 +1,259 @@
+// import {
+//   Component,
+//   Input,
+//   Output,
+//   EventEmitter,
+//   signal,
+//   ChangeDetectionStrategy,
+// } from '@angular/core';
+// import { CommonModule } from '@angular/common';
+// import {
+//   LucideAngularModule,
+//   X,
+//   Check,
+//   AlertCircle,
+//   TrendingUp,
+// } from 'lucide-angular';
+// import { FundingOpportunity } from 'src/app/funder/create-opportunity/shared/funding.interfaces';
+// import { trigger, transition, style, animate } from '@angular/animations';
+
+// interface ScoringCategory {
+//   name: string;
+//   label: string;
+//   isMatch: boolean;
+//   reason: string;
+// }
+
+// @Component({
+//   selector: 'app-scoring-breakdown',
+//   standalone: true,
+//   changeDetection: ChangeDetectionStrategy.OnPush,
+//   imports: [CommonModule, LucideAngularModule],
+//   template: `
+//     <!-- Backdrop (mobile only) -->
+//     <div
+//       class="fixed inset-0 bg-black/25 lg:hidden z-40"
+//       (click)="onClose()"
+//       [@fadeInOut]
+//     ></div>
+
+//     <!-- Drawer -->
+//     <div
+//       class="fixed right-0 top-0 bottom-0 w-full lg:w-96 bg-white border-l border-slate-200 flex flex-col overflow-hidden z-50"
+//       [@slideInFromRight]
+//     >
+//       <!-- Header -->
+//       <div class="flex-shrink-0 px-6 py-4 border-b border-slate-200">
+//         <div class="flex items-center justify-between mb-3">
+//           <h2 class="text-base font-bold text-slate-900">Why This Match</h2>
+//           <button
+//             (click)="onClose()"
+//             class="p-1 hover:bg-slate-100 rounded-lg transition-colors"
+//             aria-label="Close scoring breakdown"
+//           >
+//             <lucide-icon [img]="CloseIcon" [size]="18" class="text-slate-600" />
+//           </button>
+//         </div>
+//         <p class="text-xs text-slate-600 line-clamp-2">
+//           {{ opportunity.title }}
+//         </p>
+//       </div>
+
+//       <!-- Scrollable Content -->
+//       <div class="flex-1 overflow-y-auto px-6 py-4">
+//         <!-- Score Summary -->
+//         <div class="mb-6">
+//           <div class="flex items-end gap-3 mb-2">
+//             <div class="text-3xl font-bold" [class]="getScoreColor()">
+//               {{ getMatchGrade() }}
+//             </div>
+//             <div class="text-sm text-slate-600 mb-1">match</div>
+//           </div>
+//           <div class="h-2 bg-slate-100 rounded-full overflow-hidden">
+//             <div
+//               [class]="
+//                 'h-full rounded-full bg-gradient-to-r ' + getProgressGradient()
+//               "
+//               [style.width.%]="matchScore"
+//             ></div>
+//           </div>
+//         </div>
+
+//         <!-- Scoring Breakdown -->
+//         <p class="text-xs font-semibold text-slate-900 mb-3 uppercase">
+//           How We Scored
+//         </p>
+
+//         <div class="space-y-3">
+//           @for (category of categories(); track category.name) {
+//           <div
+//             class="p-3 rounded-lg border transition-colors"
+//             [class]="{
+//               'bg-green-50 border-green-200/50': category.isMatch,
+//               'bg-slate-50 border-slate-200': !category.isMatch
+//             }"
+//           >
+//             <div class="flex items-start gap-3">
+//               <div
+//                 class="w-5 h-5 rounded flex items-center justify-center flex-shrink-0 mt-0.5"
+//                 [class]="{
+//                   'bg-green-100 text-green-600': category.isMatch,
+//                   'bg-slate-100 text-slate-400': !category.isMatch
+//                 }"
+//               >
+//                 @if (category.isMatch) {
+//                 <lucide-icon [img]="CheckIcon" [size]="14" />
+//                 } @else {
+//                 <lucide-icon [img]="AlertCircleIcon" [size]="14" />
+//                 }
+//               </div>
+//               <div class="flex-1">
+//                 <p class="text-sm font-semibold text-slate-900">
+//                   {{ category.label }}
+//                 </p>
+//                 <p class="text-xs text-slate-600 mt-0.5">
+//                   {{ category.reason }}
+//                 </p>
+//               </div>
+//             </div>
+//           </div>
+//           }
+//         </div>
+
+//         <!-- Info -->
+//         <div
+//           class="mt-6 p-3 bg-blue-50/50 rounded-lg border border-blue-200/30"
+//         >
+//           <p class="text-xs text-blue-900 leading-relaxed">
+//             <span class="font-semibold">Higher match = Better fit.</span> We
+//             analyze your profile against funder requirements.
+//           </p>
+//         </div>
+//       </div>
+//     </div>
+//   `,
+//   animations: [
+//     trigger('fadeInOut', [
+//       transition(':enter', [
+//         style({ opacity: 0 }),
+//         animate('200ms ease-out', style({ opacity: 1 })),
+//       ]),
+//       transition(':leave', [animate('200ms ease-in', style({ opacity: 0 }))]),
+//     ]),
+//     trigger('slideInFromRight', [
+//       transition(':enter', [
+//         style({ transform: 'translateX(100%)' }),
+//         animate(
+//           '300ms cubic-bezier(0.4, 0, 0.2, 1)',
+//           style({ transform: 'translateX(0)' })
+//         ),
+//       ]),
+//       transition(':leave', [
+//         animate(
+//           '300ms cubic-bezier(0.4, 0, 0.2, 1)',
+//           style({ transform: 'translateX(100%)' })
+//         ),
+//       ]),
+//     ]),
+//   ],
+// })
+// export class ScoringBreakdownComponent {
+//   @Input() matchScore: number = 0;
+//   @Input() opportunity!: FundingOpportunity;
+//   @Input() matchReasons: string[] = [];
+
+//   @Output() close = new EventEmitter<void>();
+
+//   CloseIcon = X;
+//   CheckIcon = Check;
+//   AlertCircleIcon = AlertCircle;
+//   TrendingUpIcon = TrendingUp;
+
+//   categories = signal<ScoringCategory[]>([]);
+
+//   ngOnInit() {
+//     console.log('[ScoringBreakdown] Component initialized');
+//     console.log('[ScoringBreakdown] Input opportunity:', this.opportunity);
+//     console.log('[ScoringBreakdown] Input matchScore:', this.matchScore);
+//     console.log('[ScoringBreakdown] Input matchReasons:', this.matchReasons);
+//     this.buildCategories();
+//   }
+
+//   private buildCategories() {
+//     const cats: ScoringCategory[] = [
+//       {
+//         name: 'industry',
+//         label: 'Industry Match',
+//         isMatch: this.hasReason('industry', 'Industry'),
+//         reason: this.hasReason('industry', 'Industry')
+//           ? 'Your industry aligns with funder requirements'
+//           : 'Industry does not match requirements',
+//       },
+//       {
+//         name: 'funding',
+//         label: 'Funding Amount',
+//         isMatch: this.hasReason('funding', 'Funding', 'Close'),
+//         reason: this.hasReason('funding', 'Funding', 'Close')
+//           ? 'Your funding needs match opportunity range'
+//           : 'Funding amount outside your range',
+//       },
+//       {
+//         name: 'stage',
+//         label: 'Business Stage',
+//         isMatch: this.hasReason('stage', 'Stage'),
+//         reason: this.hasReason('stage', 'Stage')
+//           ? 'Your business stage is eligible'
+//           : 'Business stage does not match',
+//       },
+//       {
+//         name: 'location',
+//         label: 'Location',
+//         isMatch: this.hasReason('location', 'Location'),
+//         reason: this.hasReason('location', 'Location')
+//           ? 'Opportunity available in your area'
+//           : 'Not available in your location',
+//       },
+//     ];
+
+//     console.log('[ScoringBreakdown] Built categories:', cats);
+//     this.categories.set(cats);
+//   }
+
+//   private hasReason(...keywords: string[]): boolean {
+//     const result = this.matchReasons.some((r) =>
+//       keywords.some((k) => r.includes(k))
+//     );
+//     console.log('[ScoringBreakdown] hasReason check:', { keywords, result });
+//     return result;
+//   }
+
+//   getMatchGrade(): string {
+//     if (this.matchScore >= 86) return 'Excellent';
+//     if (this.matchScore >= 71) return 'Strong';
+//     if (this.matchScore >= 41) return 'Medium';
+//     return 'Weak';
+//   }
+
+//   getScoreColor(): string {
+//     if (this.matchScore >= 86) return 'text-green-600';
+//     if (this.matchScore >= 71) return 'text-teal-600';
+//     if (this.matchScore >= 41) return 'text-amber-600';
+//     return 'text-red-600';
+//   }
+
+//   getProgressGradient(): string {
+//     if (this.matchScore >= 86) return 'from-green-400 to-green-500';
+//     if (this.matchScore >= 71) return 'from-teal-400 to-teal-500';
+//     if (this.matchScore >= 41) return 'from-amber-400 to-amber-500';
+//     return 'from-red-400 to-red-500';
+//   }
+
+//   onClose() {
+//     console.log('[ScoringBreakdown] Close button clicked');
+//     this.close.emit();
+//   }
+// }
+
 import {
   Component,
   Input,
@@ -5,6 +261,7 @@ import {
   EventEmitter,
   signal,
   ChangeDetectionStrategy,
+  OnInit,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
@@ -12,16 +269,21 @@ import {
   X,
   Check,
   AlertCircle,
-  TrendingUp,
+  Info,
 } from 'lucide-angular';
 import { FundingOpportunity } from 'src/app/funder/create-opportunity/shared/funding.interfaces';
 import { trigger, transition, style, animate } from '@angular/animations';
 
-interface ScoringCategory {
-  name: string;
+/**
+ * Represents one scoring factor in the matching engine
+ */
+interface ScoringFactor {
+  key: string;
   label: string;
-  isMatch: boolean;
-  reason: string;
+  weight: number; // % weight
+  matched: boolean;
+  contribution: number; // % contribution to final score
+  explanation: string;
 }
 
 @Component({
@@ -30,94 +292,110 @@ interface ScoringCategory {
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, LucideAngularModule],
   template: `
-    <!-- Backdrop (mobile only) -->
+    <!-- Backdrop -->
     <div
-      class="fixed inset-0 bg-black/25 lg:hidden z-40"
+      class="fixed inset-0 bg-black/25 z-40"
       (click)="onClose()"
       [@fadeInOut]
     ></div>
 
     <!-- Drawer -->
     <div
-      class="fixed right-0 top-0 bottom-0 w-full lg:w-96 bg-white border-l border-slate-200 flex flex-col overflow-hidden z-50"
+      class="fixed right-0 top-0 bottom-0 w-full lg:w-96 bg-white border-l border-slate-200 flex flex-col z-50"
       [@slideInFromRight]
     >
       <!-- Header -->
-      <div class="flex-shrink-0 px-6 py-4 border-b border-slate-200">
-        <div class="flex items-center justify-between mb-3">
-          <h2 class="text-base font-bold text-slate-900">Why This Match</h2>
+      <div class="px-6 py-4 border-b border-slate-200">
+        <div class="flex items-center justify-between mb-2">
+          <h2 class="text-base font-semibold text-slate-900">
+            Match Explanation
+          </h2>
           <button
             (click)="onClose()"
-            class="p-1 hover:bg-slate-100 rounded-lg transition-colors"
-            aria-label="Close scoring breakdown"
+            class="p-1 rounded hover:bg-slate-100"
+            aria-label="Close"
           >
-            <lucide-icon [img]="CloseIcon" [size]="18" class="text-slate-600" />
+            <lucide-icon [img]="CloseIcon" [size]="18" />
           </button>
         </div>
+
         <p class="text-xs text-slate-600 line-clamp-2">
           {{ opportunity.title }}
         </p>
       </div>
 
-      <!-- Scrollable Content -->
+      <!-- Content -->
       <div class="flex-1 overflow-y-auto px-6 py-4">
         <!-- Score Summary -->
         <div class="mb-6">
           <div class="flex items-end gap-3 mb-2">
-            <div class="text-3xl font-bold" [class]="getScoreColor()">
+            <div class="text-3xl font-bold" [class]="scoreColor()">
               {{ matchScore }}%
             </div>
             <div class="text-sm text-slate-600 mb-1">
-              <span class="font-semibold" [class]="getScoreColor()">{{
-                getMatchGrade()
-              }}</span>
-              match
+              {{ matchGrade() }} match
             </div>
           </div>
+
           <div class="h-2 bg-slate-100 rounded-full overflow-hidden">
             <div
-              [class]="
-                'h-full rounded-full bg-gradient-to-r ' + getProgressGradient()
-              "
+              class="h-full rounded-full"
+              [class]="progressGradient()"
               [style.width.%]="matchScore"
             ></div>
           </div>
         </div>
 
-        <!-- Scoring Breakdown -->
+        <!-- Explanation -->
+        <div class="mb-5 text-xs text-slate-600 leading-relaxed">
+          Your score is calculated by comparing your business profile against
+          the funder’s requirements. Each factor has a different weight based on
+          how important it is to the funder.
+        </div>
+
+        <!-- Factors -->
         <p class="text-xs font-semibold text-slate-900 mb-3 uppercase">
-          How We Scored
+          Score Breakdown
         </p>
 
         <div class="space-y-3">
-          @for (category of categories(); track category.name) {
+          @for (factor of factors(); track factor.key) {
           <div
-            class="p-3 rounded-lg border transition-colors"
-            [class]="{
-              'bg-green-50 border-green-200/50': category.isMatch,
-              'bg-slate-50 border-slate-200': !category.isMatch
-            }"
+            class="border rounded-lg p-3"
+            [class.bg-green-50]="factor.matched"
+            [class.bg-slate-50]="!factor.matched"
           >
-            <div class="flex items-start gap-3">
+            <div class="flex gap-3">
               <div
-                class="w-5 h-5 rounded flex items-center justify-center flex-shrink-0 mt-0.5"
-                [class]="{
-                  'bg-green-100 text-green-600': category.isMatch,
-                  'bg-slate-100 text-slate-400': !category.isMatch
-                }"
+                class="w-5 h-5 rounded flex items-center justify-center mt-0.5"
+                [class.bg-green-100]="factor.matched"
+                [class.bg-slate-200]="!factor.matched"
               >
-                @if (category.isMatch) {
-                <lucide-icon [img]="CheckIcon" [size]="14" />
-                } @else {
-                <lucide-icon [img]="AlertCircleIcon" [size]="14" />
-                }
+                <lucide-icon
+                  [img]="factor.matched ? CheckIcon : AlertIcon"
+                  [size]="14"
+                  [class.text-green-600]="factor.matched"
+                  [class.text-slate-500]="!factor.matched"
+                />
               </div>
+
               <div class="flex-1">
-                <p class="text-sm font-semibold text-slate-900">
-                  {{ category.label }}
-                </p>
+                <div class="flex justify-between items-center">
+                  <p class="text-sm font-semibold text-slate-900">
+                    {{ factor.label }}
+                  </p>
+                  <p class="text-xs text-slate-500">{{ factor.weight }}%</p>
+                </div>
+
                 <p class="text-xs text-slate-600 mt-0.5">
-                  {{ category.reason }}
+                  {{ factor.explanation }}
+                </p>
+
+                <p class="text-xs text-slate-500 mt-1">
+                  Contribution:
+                  <span class="font-semibold text-slate-700">
+                    {{ factor.contribution }}%
+                  </span>
                 </p>
               </div>
             </div>
@@ -125,13 +403,18 @@ interface ScoringCategory {
           }
         </div>
 
-        <!-- Info -->
+        <!-- Footer Info -->
         <div
-          class="mt-6 p-3 bg-blue-50/50 rounded-lg border border-blue-200/30"
+          class="mt-6 p-3 bg-blue-50/60 border border-blue-200/40 rounded-lg flex gap-2"
         >
+          <lucide-icon
+            [img]="InfoIcon"
+            [size]="16"
+            class="text-blue-600 mt-0.5"
+          />
           <p class="text-xs text-blue-900 leading-relaxed">
-            <span class="font-semibold">Higher match = Better fit.</span> We
-            analyze your profile against funder requirements.
+            Higher weighted factors have a greater impact on your final score.
+            Improving these areas will most improve your matches.
           </p>
         </div>
       </div>
@@ -149,112 +432,102 @@ interface ScoringCategory {
       transition(':enter', [
         style({ transform: 'translateX(100%)' }),
         animate(
-          '300ms cubic-bezier(0.4, 0, 0.2, 1)',
+          '300ms cubic-bezier(0.4,0,0.2,1)',
           style({ transform: 'translateX(0)' })
         ),
       ]),
       transition(':leave', [
         animate(
-          '300ms cubic-bezier(0.4, 0, 0.2, 1)',
+          '300ms cubic-bezier(0.4,0,0.2,1)',
           style({ transform: 'translateX(100%)' })
         ),
       ]),
     ]),
   ],
 })
-export class ScoringBreakdownComponent {
-  @Input() matchScore: number = 0;
+export class ScoringBreakdownComponent implements OnInit {
+  @Input() matchScore = 0;
   @Input() opportunity!: FundingOpportunity;
-  @Input() matchReasons: string[] = [];
+
+  /**
+   * Expected to come directly from the matching engine
+   * Example:
+   * [
+   *   { key: 'industry', matched: true, weight: 30, contribution: 30 }
+   * ]
+   */
+  @Input() engineBreakdown: Array<{
+    key: string;
+    matched: boolean;
+    weight: number;
+    contribution: number;
+  }> = [];
 
   @Output() close = new EventEmitter<void>();
 
   CloseIcon = X;
   CheckIcon = Check;
-  AlertCircleIcon = AlertCircle;
-  TrendingUpIcon = TrendingUp;
+  AlertIcon = AlertCircle;
+  InfoIcon = Info;
 
-  categories = signal<ScoringCategory[]>([]);
+  factors = signal<ScoringFactor[]>([]);
 
   ngOnInit() {
-    console.log('[ScoringBreakdown] Component initialized');
-    console.log('[ScoringBreakdown] Input opportunity:', this.opportunity);
-    console.log('[ScoringBreakdown] Input matchScore:', this.matchScore);
-    console.log('[ScoringBreakdown] Input matchReasons:', this.matchReasons);
-    this.buildCategories();
+    this.buildFactors();
   }
 
-  private buildCategories() {
-    const cats: ScoringCategory[] = [
-      {
-        name: 'industry',
-        label: 'Industry Match',
-        isMatch: this.hasReason('industry', 'Industry'),
-        reason: this.hasReason('industry', 'Industry')
-          ? 'Your industry aligns with funder requirements'
-          : 'Industry does not match requirements',
-      },
-      {
-        name: 'funding',
-        label: 'Funding Amount',
-        isMatch: this.hasReason('funding', 'Funding', 'Close'),
-        reason: this.hasReason('funding', 'Funding', 'Close')
-          ? 'Your funding needs match opportunity range'
-          : 'Funding amount outside your range',
-      },
-      {
-        name: 'stage',
-        label: 'Business Stage',
-        isMatch: this.hasReason('stage', 'Stage'),
-        reason: this.hasReason('stage', 'Stage')
-          ? 'Your business stage is eligible'
-          : 'Business stage does not match',
-      },
-      {
-        name: 'location',
-        label: 'Location',
-        isMatch: this.hasReason('location', 'Location'),
-        reason: this.hasReason('location', 'Location')
-          ? 'Opportunity available in your area'
-          : 'Not available in your location',
-      },
-    ];
+  private buildFactors() {
+    const labelMap: Record<string, string> = {
+      industry: 'Industry Match',
+      funding: 'Funding Amount',
+      stage: 'Business Stage',
+      location: 'Location Eligibility',
+    };
 
-    console.log('[ScoringBreakdown] Built categories:', cats);
-    this.categories.set(cats);
-  }
+    const explanationMap: Record<string, string> = {
+      industry: 'Your industry was compared to the funder’s target sectors.',
+      funding: 'Your funding needs were checked against the allowed range.',
+      stage: 'Your business stage was evaluated for eligibility.',
+      location: 'Your location was checked against regional availability.',
+    };
 
-  private hasReason(...keywords: string[]): boolean {
-    const result = this.matchReasons.some((r) =>
-      keywords.some((k) => r.includes(k))
+    this.factors.set(
+      this.engineBreakdown.map((f) => ({
+        key: f.key,
+        label: labelMap[f.key] ?? f.key,
+        weight: f.weight,
+        matched: f.matched,
+        contribution: f.contribution,
+        explanation: explanationMap[f.key] ?? 'Evaluation performed.',
+      }))
     );
-    console.log('[ScoringBreakdown] hasReason check:', { keywords, result });
-    return result;
   }
 
-  getMatchGrade(): string {
-    if (this.matchScore >= 86) return 'Excellent';
-    if (this.matchScore >= 71) return 'Strong';
-    if (this.matchScore >= 41) return 'Medium';
-    return 'Weak';
+  matchGrade(): string {
+    if (this.matchScore >= 85) return 'Excellent';
+    if (this.matchScore >= 70) return 'Strong';
+    if (this.matchScore >= 40) return 'Moderate';
+    return 'Low';
   }
 
-  getScoreColor(): string {
-    if (this.matchScore >= 86) return 'text-green-600';
-    if (this.matchScore >= 71) return 'text-teal-600';
-    if (this.matchScore >= 41) return 'text-amber-600';
+  scoreColor(): string {
+    if (this.matchScore >= 85) return 'text-green-600';
+    if (this.matchScore >= 70) return 'text-teal-600';
+    if (this.matchScore >= 40) return 'text-amber-600';
     return 'text-red-600';
   }
 
-  getProgressGradient(): string {
-    if (this.matchScore >= 86) return 'from-green-400 to-green-500';
-    if (this.matchScore >= 71) return 'from-teal-400 to-teal-500';
-    if (this.matchScore >= 41) return 'from-amber-400 to-amber-500';
-    return 'from-red-400 to-red-500';
+  progressGradient(): string {
+    if (this.matchScore >= 85)
+      return 'bg-gradient-to-r from-green-400 to-green-500';
+    if (this.matchScore >= 70)
+      return 'bg-gradient-to-r from-teal-400 to-teal-500';
+    if (this.matchScore >= 40)
+      return 'bg-gradient-to-r from-amber-400 to-amber-500';
+    return 'bg-gradient-to-r from-red-400 to-red-500';
   }
 
   onClose() {
-    console.log('[ScoringBreakdown] Close button clicked');
     this.close.emit();
   }
 }

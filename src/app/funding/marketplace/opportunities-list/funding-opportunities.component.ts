@@ -140,13 +140,8 @@ export class FundingOpportunitiesComponent implements OnInit, OnDestroy {
   });
 
   ngOnInit() {
-    console.log('[FundingOpportunities] Component initialized');
-    console.log(
-      '[FundingOpportunities] suggestionsModal ViewChild:',
-      this.suggestionsModal
-    );
-
     this.loadApplicationsAndOpportunities();
+
     window.addEventListener('resize', this.onWindowResize.bind(this));
   }
 

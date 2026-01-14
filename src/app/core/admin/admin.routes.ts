@@ -38,6 +38,14 @@ export const adminRoutes: Routes = [
         title: 'Demographics Management - Kapify Admin',
       },
       {
+        path: 'scoring-weights-manager',
+        loadComponent: () =>
+          import(
+            './matching-weights-admin/matching-weights-admin.component'
+          ).then((m) => m.MatchingWeightsAdminComponent),
+        title: 'Weights Management - Kapify Admin',
+      },
+      {
         path: 'compliance',
         loadComponent: () =>
           import(

@@ -44,7 +44,7 @@ import { UserType } from 'src/app/shared/models/user.models';
 import { ActionModalComponent } from 'src/app/shared/components/modal/action-modal.component';
 import { ApplicationTransformService } from '../../services/application-transform.service';
 import { OpportunityApplication } from 'src/app/profiles/SME-Profiles/models/sme-profile.models';
-import { ApplicationManagementService } from 'src/app/fund-seeking-orgs/services/application-management.service';
+
 import { OpportunityApplicationService } from 'src/app/fund-seeking-orgs/services/opportunity-application.service';
 import { ApplicationDetailModalComponent } from 'src/app/funder/application-details/components/application-detail-modal/application-detail-modal.component';
 import {
@@ -122,7 +122,6 @@ export class ApplicationsHomeComponent implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
   private authService = inject(AuthService);
   private smeApplicationService = inject(OpportunityApplicationService);
-  private funderApplicationService = inject(ApplicationManagementService);
   private supabaseService = inject(SharedSupabaseService);
   private transformService = inject(ApplicationTransformService);
   private destroy$ = new Subject<void>();
@@ -183,11 +182,12 @@ export class ApplicationsHomeComponent implements OnInit, OnDestroy {
       stage: app.currentStage || 'Unknown',
       requestedAmount: app.requestedAmount,
       currency: app.currency,
-      description: app.description,
+      description: app.fundingRequest?.useOfFunds,
       formData: {},
       submittedAt: app.submittedAt,
       createdAt: app.createdAt,
       matchScore: app.matchScore,
+
       completionScore: 0,
       applicant: {
         firstName: app.applicantName?.split(' ')[0] || '',
@@ -200,6 +200,7 @@ export class ApplicationsHomeComponent implements OnInit, OnDestroy {
         fundingType: app.fundingType || [],
         currency: app.currency,
       },
+      fundingRequest: app.fundingRequest,
     };
   });
 
@@ -214,25 +215,20 @@ export class ApplicationsHomeComponent implements OnInit, OnDestroy {
     return type === 'funder' ? 'funder' : 'sme';
   });
 
-  // ✅ ADD: Method to handle withdrawn application
+  //  Method to handle withdrawn application
   onApplicationWithdrawn(applicationId: string): void {
     // Option A: Remove from list immediately (optimistic)
     this.removeApplicationFromList(applicationId);
 
     // Option B: Reload entire list from database (safest)
-    // this.reloadApplications();
+    this.reloadApplications();
   }
 
-  // ✅ ADD: Method to remove application from local list
+  //  Method to remove application from local list
   private removeApplicationFromList(applicationId: string): void {
     const currentApps = this.applications();
     const filtered = currentApps.filter((app) => app.id !== applicationId);
     this.applications.set(filtered);
-
-    console.log(
-      '✅ Application removed from list. New count:',
-      filtered.length
-    );
 
     // Update pagination
     this.currentPage.set(1);
@@ -399,84 +395,6 @@ export class ApplicationsHomeComponent implements OnInit, OnDestroy {
     }
   }
 
-  // private async loadFunderApplicationsDirectly(userId: string) {
-  //   try {
-  //     // Step 1: Get user's organization directly from database
-  //     const { data: orgUserData, error: orgError } = await this.supabaseService
-  //       .from('organization_users')
-  //       .select(
-  //         `
-  //         organization_id,
-  //         organizations!organization_users_organization_id_fkey (
-  //           id,
-  //           name,
-  //           organization_type
-  //         )
-  //       `
-  //       )
-  //       .eq('user_id', userId)
-  //       .single();
-
-  //     if (orgError || !orgUserData?.organizations) {
-  //       console.error('❌ Failed to load organization:', orgError);
-  //       this.error.set(
-  //         'Organization setup required. Please complete your funder profile setup.'
-  //       );
-  //       this.isLoading.set(false);
-  //       return;
-  //     }
-  //     // Access first element of the array
-  //     const org = orgUserData.organizations[0];
-  //     const organization: UserOrganization = {
-  //       id: org.id,
-  //       name: org.name,
-  //       organizationType: org.organization_type,
-  //     };
-
-  //     this.userOrganization.set(organization);
-  //     console.log('✅ Organization loaded:', organization.name);
-
-  //     // Step 2: Load applications for this organization
-  //     this.funderApplicationService
-  //       .getApplicationsByOrganization(organization.id)
-  //       .pipe(
-  //         takeUntil(this.destroy$),
-  //         tap((applications) =>
-  //           console.log('📋 Applications loaded:', applications.length)
-  //         ),
-  //         catchError((error) => {
-  //           console.error('Failed to load applications:', error);
-  //           this.error.set('Failed to load applications');
-  //           return of([]);
-  //         })
-  //       )
-  //       .subscribe({
-  //         next: (funderApplications: FundingApplication[]) => {
-  //           const applicationData = funderApplications.map((app) =>
-  //             this.transformService.transformFunderApplication(app)
-  //           );
-  //           this.applications.set(this.mergeDrafts(applicationData));
-  //           this.currentPage.set(1);
-  //           this.isLoading.set(false);
-  //           console.log(
-  //             '🎉 Funder applications successfully loaded:',
-  //             applicationData.length
-  //           );
-  //         },
-  //         error: () => {
-  //           this.applications.set([]);
-  //           this.isLoading.set(false);
-  //         },
-  //       });
-  //   } catch (error) {
-  //     console.error('💥 Database error:', error);
-  //     this.error.set('Database connection error. Please try again.');
-  //     this.isLoading.set(false);
-  //   }
-  // }
-
-  // REPLACE: loadFunderApplicationsDirectly method in applications-home.component.ts
-
   private async loadFunderApplicationsDirectly(userId: string) {
     try {
       // Step 1: Get user's organization directly from database
@@ -513,10 +431,10 @@ export class ApplicationsHomeComponent implements OnInit, OnDestroy {
       };
 
       this.userOrganization.set(organization);
-      console.log('✅ Organization loaded:', organization.name);
+      // console.log('✅ Organization loaded:', organization.name);
 
       // Step 2: Load applications with funding_request (CRITICAL FIX)
-      // ✅ FIXED: Explicitly select funding_request and all necessary fields
+      //  Explicitly select funding_request and all necessary fields
       const { data: applicationsData, error: appsError } =
         await this.supabaseService
           .from('applications')
@@ -634,24 +552,7 @@ export class ApplicationsHomeComponent implements OnInit, OnDestroy {
               status: app.status,
               opportunityId: app.opportunityId,
               hasFundingRequest: !!app.fundingRequest,
-              fundingRequest: app.fundingRequest
-                ? {
-                    industries: app.fundingRequest.industries,
-                    fundingAmount: app.fundingRequest.fundingAmount,
-                    fundingTypes: app.fundingRequest.fundingTypes,
-                    businessStages: app.fundingRequest.businessStages,
-                    location: app.fundingRequest.location,
-                    useOfFunds:
-                      app.fundingRequest.useOfFunds?.substring(0, 50) + '...',
-                    fundingMotivation:
-                      app.fundingRequest.fundingMotivation?.substring(0, 50) +
-                      '...',
-                    repaymentStrategy:
-                      app.fundingRequest.repaymentStrategy?.substring(0, 50) +
-                      '...',
-                    equityOffered: app.fundingRequest.equityOffered,
-                  }
-                : 'MISSING',
+              fundingRequest: app.coverInformation,
             });
           });
           console.groupEnd();

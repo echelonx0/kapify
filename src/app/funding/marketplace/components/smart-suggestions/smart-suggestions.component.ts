@@ -18,9 +18,9 @@ import { trigger, transition, style, animate } from '@angular/animations';
 import {
   SuggestionsMatchingService,
   MatchScore,
-} from '../../services/suggestions-matching.service';
+} from './engine/suggestions-matching.service';
 import { ScoringBreakdownComponent } from './components/scoring-breakdown-component';
-import { SuggestionCardComponent } from './modal/suggestion-card.component';
+import { SuggestionCardComponent } from './components/suggestion-card.component';
 
 @Component({
   selector: 'app-smart-suggestions-modal',
@@ -116,7 +116,7 @@ export class SmartSuggestionsModalComponent implements OnInit, OnDestroy {
     this.isLoading.set(true);
 
     this.matchingService
-      .getSuggestedOpportunities(5, true)
+      .getSuggestedOpportunities()
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (matches) => {

@@ -25,7 +25,7 @@ import { SuggestionCardComponent } from './suggestion-card.component';
 import {
   SuggestionsMatchingService,
   MatchScore,
-} from '../../../services/suggestions-matching.service';
+} from '../engine/suggestions-matching.service';
 import { FundingProfileSetupService } from 'src/app/fund-seeking-orgs/services/funding-profile-setup.service';
 import { ScoringBreakdownComponent } from './scoring-breakdown-component';
 

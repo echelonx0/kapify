@@ -785,6 +785,7 @@ export class FundingApplicationCoverService implements OnDestroy {
       coverDocumentName: dbRecord.cover_document_name,
       createdAt: new Date(dbRecord.created_at),
       updatedAt: new Date(dbRecord.updated_at),
+      demographics: dbRecord.demographics,
     };
   }
   // KEY CHANGES FOR SINGLE-PROFILE MODE:

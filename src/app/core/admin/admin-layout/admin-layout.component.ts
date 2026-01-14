@@ -43,6 +43,11 @@ export class AdminLayoutComponent {
       icon: 'fas fa-tachometer-alt',
     },
     {
+      path: 'scoring-weights-manager',
+      label: 'Scoring weights manager',
+      icon: 'fas fas-brain',
+    },
+    {
       path: 'verification',
       label: 'Organization Verification',
       icon: 'fas fa-check-circle',

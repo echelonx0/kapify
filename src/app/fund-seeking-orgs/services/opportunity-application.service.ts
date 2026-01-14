@@ -45,51 +45,6 @@ export class OpportunityApplicationService {
   // LOAD USER APPLICATIONS
   // ===============================
 
-  // loadUserApplications(): Observable<OpportunityApplication[]> {
-  //   const currentUser = this.authService.user();
-  //   if (!currentUser) {
-  //     return throwError(() => new Error('User not authenticated'));
-  //   }
-
-  //   this.isLoading.set(true);
-  //   this.error.set(null);
-
-  //   return from(this.fetchUserApplications(currentUser.id)).pipe(
-  //     tap((applications) => {
-  //       this.applicationsSubject.next(applications);
-  //       this.isLoading.set(false);
-  //     }),
-  //     catchError((error) => {
-  //       this.error.set('Failed to load applications');
-  //       this.isLoading.set(false);
-  //       // console.error('Load applications error:', error);
-  //       return throwError(() => error);
-  //     })
-  //   );
-  // }
-  // FIND AND UPDATE: OpportunityApplicationService.loadUserApplications()
-
-  // This service MUST fetch the funding_request column from applications table
-  // Currently it's probably not including it in the SELECT statement
-
-  // WRONG (current):
-  // this.supabase
-  //   .from('applications')
-  //   .select('id, title, status, ...')  // ❌ Missing funding_request
-  //   .eq('applicant_id', userId)
-
-  // CORRECT (fixed):
-  // this.supabase
-  //   .from('applications')
-  //   .select('id, title, status, ..., funding_request')  // ✅ Include this
-  //   .eq('applicant_id', userId)
-
-  // ============================================
-  // EXACT CODE TO USE
-  // ============================================
-
-  // REPLACE: loadUserApplications() method in opportunity-application.service.ts
-
   loadUserApplications(): Observable<OpportunityApplication[]> {
     const currentUser = this.authService.user();
     if (!currentUser) {
@@ -117,6 +72,7 @@ export class OpportunityApplicationService {
             useOfFunds: app.coverInformation?.useOfFunds?.substring(0, 30),
             fundingTypes: app.coverInformation?.useOfFunds,
             industries: app.coverInformation?.purposeStatement,
+            fundingRequest: app.coverInformation,
           });
         });
         this.applicationsSubject.next(applications);
@@ -219,43 +175,6 @@ export class OpportunityApplicationService {
 
     return 0;
   }
-  // private async fetchUserApplications(
-  //   userId: string
-  // ): Promise<OpportunityApplication[]> {
-
-  //   try {
-  //     const { data, error } = await this.supabase
-  //       .from('applications')
-  //       .select(
-  //         `
-  //         *,
-  //         opportunity:opportunity_id (
-  //           id,
-  //           title,
-  //           funding_type,
-  //           min_investment,
-  //           max_investment,
-  //           currency,
-  //           organization_id,
-  //           decision_timeframe
-  //         )
-  //       `
-  //       )
-  //       .eq('applicant_id', userId)
-  //       .order('created_at', { ascending: false });
-
-  //     if (error) {
-  //       throw new Error(`Failed to fetch applications: ${error.message}`);
-  //     }
-  //     // console.log('Fetched applications data:', data);
-  //     return (data || []).map((item: any) =>
-  //       this.transformDatabaseToLocal(item)
-  //     );
-  //   } catch (error) {
-  //     console.error('Error fetching user applications:', error);
-  //     throw error;
-  //   }
-  // }
 
   private async fetchUserApplications(
     userId: string

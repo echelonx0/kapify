@@ -90,12 +90,12 @@ export class KapifyOpportunityCardComponent implements OnInit {
   }
 
   private logApplicationStatus() {
-    console.log('📋 Opportunity Card Data:', {
-      opportunityId: this.opportunity.id,
-      opportunityTitle: this.opportunity.title,
-      userHasApplied: this.opportunity.userHasApplied,
-      timestamp: new Date().toISOString(),
-    });
+    // console.log('📋 Opportunity Card Data:', {
+    //   opportunityId: this.opportunity.id,
+    //   opportunityTitle: this.opportunity.title,
+    //   userHasApplied: this.opportunity.userHasApplied,
+    //   timestamp: new Date().toISOString(),
+    // });
   }
 
   private checkBookmarkStatus() {

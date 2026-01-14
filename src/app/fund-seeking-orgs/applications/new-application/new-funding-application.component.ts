@@ -233,7 +233,7 @@ export class OpportunityApplicationFormComponent implements OnInit, OnDestroy {
           // Cover is guaranteed loaded here
           this.loadSpecificOpportunity(opportunityId);
         } else {
-          console.log('📍 No opportunity ID in route, showing selector');
+          // console.log('📍 No opportunity ID in route, showing selector');
           this.loadAvailableOpportunities();
         }
       });
@@ -267,7 +267,7 @@ export class OpportunityApplicationFormComponent implements OnInit, OnDestroy {
 
         this.defaultCover.set(cover);
         this.isCoverLoaded.set(true);
-        console.log('✅ Cover loaded and ready');
+
         resolve();
       });
     });
