@@ -1,4 +1,12 @@
-import { Component, signal, inject, computed, OnDestroy } from '@angular/core';
+import {
+  Component,
+  signal,
+  inject,
+  computed,
+  OnDestroy,
+  ViewChild,
+  ElementRef,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   ReactiveFormsModule,
@@ -8,7 +16,7 @@ import {
   AbstractControl,
 } from '@angular/forms';
 import { Router, RouterModule, ActivatedRoute } from '@angular/router';
-import { LucideAngularModule } from 'lucide-angular';
+import { Eye, LucideAngularModule } from 'lucide-angular';
 import { Subscription } from 'rxjs';
 import { AuthService } from '../services/production.auth.service';
 import { RegisterRequest } from '../models/auth.models';
@@ -37,12 +45,15 @@ export class RegisterComponent implements OnDestroy {
   private router = inject(Router);
   private route = inject(ActivatedRoute);
 
+  @ViewChild('termsCheckbox') termsCheckboxRef?: ElementRef<HTMLInputElement>;
+
   registerForm!: FormGroup;
   selectedUserType = signal<'sme' | 'funder'>('sme');
   showPassword = signal(false);
   showConfirmPassword = signal(false);
   error = signal<string | null>(null);
   success = signal<string | null>(null);
+  Eye = Eye;
 
   // Multi-step form
   currentStep = signal<1 | 2>(1);
@@ -116,6 +127,17 @@ export class RegisterComponent implements OnDestroy {
         updateOn: 'change',
       }
     );
+
+    // Watch checkbox state for robustness
+    this.registerForm.get('agreeToTerms')?.valueChanges.subscribe((value) => {
+      this.syncCheckboxState(value);
+    });
+  }
+
+  private syncCheckboxState(value: boolean): void {
+    if (this.termsCheckboxRef?.nativeElement) {
+      this.termsCheckboxRef.nativeElement.checked = value === true;
+    }
   }
 
   private setupRouteSubscription(): void {
@@ -349,7 +371,7 @@ export class RegisterComponent implements OnDestroy {
       confirmPassword: formData.confirmPassword,
       userType: this.selectedUserType(),
       companyName: formData.companyName?.trim() || undefined,
-      agreeToTerms: formData.agreeToTerms,
+      agreeToTerms: formData.agreeToTerms === true,
     };
 
     console.log('Submitting registration for:', registerData.email);
@@ -417,7 +439,11 @@ export class RegisterComponent implements OnDestroy {
 
   private markAllFieldsAsTouched(): void {
     Object.keys(this.registerForm.controls).forEach((key) => {
-      this.registerForm.get(key)?.markAsTouched();
+      const control = this.registerForm.get(key);
+      if (control) {
+        control.markAsTouched();
+        control.updateValueAndValidity();
+      }
     });
   }
 
@@ -474,17 +500,17 @@ export class RegisterComponent implements OnDestroy {
   getCheckboxClasses(): string {
     const field = this.registerForm.get('agreeToTerms');
     const hasError = field?.errors && field?.touched;
-    const isChecked = field?.value;
+    const isChecked = field?.value === true;
 
     const baseClasses =
-      'h-5 w-5 rounded-md border-2 transition-all duration-200 cursor-pointer';
+      'h-5 w-5 rounded-md border-2 transition-all duration-200 cursor-pointer accent-teal-500';
 
     if (hasError) {
       return `${baseClasses} border-red-300 bg-red-50`;
     }
 
     if (isChecked) {
-      return `${baseClasses} border-teal-500 bg-teal-500 text-white`;
+      return `${baseClasses} border-teal-500 bg-teal-500`;
     }
 
     return `${baseClasses} border-slate-300 bg-white hover:border-slate-400`;
