@@ -412,14 +412,12 @@
               {{ getInvestorName(opportunity()!) }}
             </p>
 
-            @if (canViewInvestorProfile()) {
+            @if (isLoadingProfile()) {
             <button
-              (click)="viewInvestorProfile()"
-              [disabled]="isLoadingProfile()"
-              class="w-full mt-4 px-4 py-2 text-teal-600 text-sm font-medium hover:bg-teal-50 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg transition-colors duration-200"
+              disabled
+              class="w-full mt-4 px-4 py-2 text-slate-400 text-sm font-medium bg-slate-50 rounded-lg cursor-not-allowed"
             >
-              @if (isLoadingProfile()) {
-              <span class="inline-flex items-center gap-2">
+              <span class="inline-flex items-center justify-center gap-2">
                 <svg
                   class="animate-spin w-4 h-4"
                   fill="none"
@@ -440,10 +438,54 @@
                     d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                   ></path>
                 </svg>
-                Loading...
+                Loading profile...
               </span>
-              } @else { View Investor Profile → }
             </button>
+            } @else if (canViewInvestorProfile()) {
+            <button
+              (click)="viewInvestorProfile()"
+              class="w-full mt-4 px-4 py-2.5 bg-teal-50 border border-teal-200/50 text-teal-700 text-sm font-semibold rounded-xl hover:bg-teal-100 active:bg-teal-200 transition-colors duration-200 inline-flex items-center justify-center gap-2"
+            >
+              <svg
+                class="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                ></path>
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                ></path>
+              </svg>
+              View Investor Profile
+              <svg
+                class="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                ></path>
+              </svg>
+            </button>
+            } @else {
+            <div
+              class="w-full mt-4 px-4 py-2.5 bg-slate-50 border border-slate-200 text-slate-500 text-sm font-medium rounded-xl text-center"
+            >
+              Profile not yet published
+            </div>
             }
           </div>
         </div>

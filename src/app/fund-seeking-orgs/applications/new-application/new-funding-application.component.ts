@@ -33,6 +33,8 @@ import { FundingProfileBackendService } from '../../services/funding-profile-bac
 import { ToastService } from 'src/app/shared/services/toast.service';
 import { FundingApplicationCoverService } from 'src/app/shared/services/funding-application-cover.service';
 import { FundingApplicationCoverInformation } from 'src/app/shared/models/funding-application-cover.model';
+import { ApplicationNotificationService } from '../../services/application-notification.service';
+import { AuthService } from 'src/app/auth/services/production.auth.service';
 
 @Component({
   selector: 'app-opportunity-application-form',
@@ -120,7 +122,8 @@ export class OpportunityApplicationFormComponent implements OnInit, OnDestroy {
 
   // Track if defaultCover is loaded (async gate)
   private isCoverLoaded = signal(false);
-
+  private notificationService = inject(ApplicationNotificationService);
+  authService = inject(AuthService);
   // Auto-save
   private autoSaveTimeout: any = null;
 
@@ -477,13 +480,57 @@ export class OpportunityApplicationFormComponent implements OnInit, OnDestroy {
     console.groupEnd();
   }
 
+  // async submitApplication(): Promise<void> {
+  //   this.logSubmitGuards();
+
+  //   const draft = this.draftApplication();
+
+  //   if (!this.selectedOpportunity() || !draft || !draft.fundingRequest) {
+  //     this.error.set('Funding request is missing');
+  //     return;
+  //   }
+
+  //   this.isSubmitting.set(true);
+  //   this.error.set(null);
+
+  //   try {
+  //     await this.saveDraft();
+
+  //     if (this.draftApplication()) {
+  //       const submittedApplication = await this.applicationService
+  //         .submitApplication(this.draftApplication()!.id)
+  //         .toPromise();
+
+  //       if (submittedApplication) {
+  //         this.router.navigate(['/applications/submitted'], {
+  //           queryParams: {
+  //             opportunityId: this.selectedOpportunity()!.id,
+  //             applicationId: submittedApplication.id,
+  //           },
+  //         });
+  //       }
+  //     }
+  //   } catch (error) {
+  //     this.error.set('Failed to submit application');
+  //     console.error('Submit application error:', error);
+  //   } finally {
+  //     this.isSubmitting.set(false);
+  //   }
+  // }
+
   async submitApplication(): Promise<void> {
     this.logSubmitGuards();
 
     const draft = this.draftApplication();
+    const opportunity = this.selectedOpportunity();
 
-    if (!this.selectedOpportunity() || !draft || !draft.fundingRequest) {
-      this.error.set('Funding request is missing');
+    if (
+      !opportunity ||
+      !draft ||
+      !draft.fundingRequest ||
+      !draft.requestedAmount
+    ) {
+      this.error.set('Application data is incomplete');
       return;
     }
 
@@ -491,25 +538,83 @@ export class OpportunityApplicationFormComponent implements OnInit, OnDestroy {
     this.error.set(null);
 
     try {
+      // Step 1: Save draft
       await this.saveDraft();
 
-      if (this.draftApplication()) {
-        const submittedApplication = await this.applicationService
-          .submitApplication(this.draftApplication()!.id)
-          .toPromise();
-
-        if (submittedApplication) {
-          this.router.navigate(['/applications/submitted'], {
-            queryParams: {
-              opportunityId: this.selectedOpportunity()!.id,
-              applicationId: submittedApplication.id,
-            },
-          });
-        }
+      const currentDraft = this.draftApplication();
+      if (!currentDraft) {
+        throw new Error('Application could not be saved');
       }
+
+      // Step 2: Submit application to database
+      const submittedApplication = await this.applicationService
+        .submitApplication(currentDraft.id)
+        .toPromise();
+
+      if (!submittedApplication) {
+        throw new Error('Failed to submit application');
+      }
+
+      // Step 3: Get current user for email
+      const currentUser = this.authService.user();
+      if (!currentUser) {
+        throw new Error('User not authenticated');
+      }
+
+      // Step 4: Trigger notification service
+      // This sends system message + SME email + funder notification
+      try {
+        const notificationResult =
+          await this.notificationService.notifyApplicationSubmission({
+            applicationId: submittedApplication.id,
+            applicationTitle: submittedApplication.title,
+            requestedAmount: submittedApplication.requestedAmount || 0,
+            fundingType: opportunity.fundingType,
+            opportunityId: opportunity.id,
+            opportunityTitle: opportunity.title,
+            smeUserId: currentUser.id,
+            smeEmail: currentUser.email,
+            smeCompanyName: currentUser.firstName || 'Your Company',
+            funderId: opportunity.organizationId, // For funder email lookup
+          });
+
+        // Log notification results
+        if (notificationResult.errors.length > 0) {
+          console.warn(
+            '⚠️ Some notifications failed:',
+            notificationResult.errors
+          );
+          this.toastservice.warning(
+            'Application submitted, but some notifications failed'
+          );
+        } else {
+          console.log('✅ All notifications sent successfully');
+          this.toastservice.success('Application submitted successfully!');
+        }
+      } catch (notificationError) {
+        // Non-critical: notifications failed but application was submitted
+        console.error(
+          '❌ Notification error (non-critical):',
+          notificationError
+        );
+        this.toastservice.warning(
+          'Application submitted, but notifications could not be sent'
+        );
+      }
+
+      // Step 5: Navigate to success page
+      this.router.navigate(['/applications/submitted'], {
+        queryParams: {
+          opportunityId: opportunity.id,
+          applicationId: submittedApplication.id,
+        },
+      });
     } catch (error) {
-      this.error.set('Failed to submit application');
+      this.error.set(
+        error instanceof Error ? error.message : 'Failed to submit application'
+      );
       console.error('Submit application error:', error);
+      this.toastservice.error('Failed to submit application');
     } finally {
       this.isSubmitting.set(false);
     }

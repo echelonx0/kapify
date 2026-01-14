@@ -199,4 +199,29 @@ export class ApplicationDetailModalComponent {
       minute: '2-digit',
     }).format(new Date(date));
   }
+
+  // ============================================
+  // NEO-BRUTALIST BADGE COLORS (NEW METHOD)
+  // ============================================
+
+  /**
+   * Neo-brutalist funding type badge colors
+   * Uses bold borders (border-2), saturated colors, uppercase text
+   */
+  getFundingTypeColorNeoBrutalist(type: string): string {
+    const neoBrutalistColorMap: Record<string, string> = {
+      equity: 'bg-purple-50 text-purple-900 border-purple-600',
+      debt: 'bg-blue-50 text-blue-900 border-blue-600',
+      grant: 'bg-green-50 text-green-900 border-green-600',
+      crowdfunding: 'bg-orange-50 text-orange-900 border-orange-600',
+      venture_capital: 'bg-indigo-50 text-indigo-900 border-indigo-600',
+      angel_investment: 'bg-pink-50 text-pink-900 border-pink-600',
+      bank_loan: 'bg-cyan-50 text-cyan-900 border-cyan-600',
+      government_grant: 'bg-amber-50 text-amber-900 border-amber-600',
+    };
+    return (
+      neoBrutalistColorMap[type.toLowerCase()] ||
+      'bg-slate-100 text-slate-900 border-slate-600'
+    );
+  }
 }

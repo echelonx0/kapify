@@ -1,426 +1,828 @@
+// import {
+//   Component,
+//   OnInit,
+//   inject,
+//   signal,
+//   computed,
+//   OnDestroy,
+//   ViewChildren,
+//   QueryList,
+//   ElementRef,
+//   HostListener,
+//   Output,
+//   EventEmitter,
+// } from '@angular/core';
+// import { CommonModule } from '@angular/common';
+// import { FormsModule } from '@angular/forms';
+// import { ActivatedRoute, Router } from '@angular/router';
+// import { from, Subject } from 'rxjs';
+// import { takeUntil } from 'rxjs/operators';
+
+// import { FundingApplicationCoverService } from 'src/app/shared/services/funding-application-cover.service';
+// import { ActivityService } from 'src/app/shared/services/activity.service';
+
+// import { UpdateCoverRequest } from 'src/app/shared/models/funding-application-cover.model';
+// import { PageHeaderComponent } from 'src/app/shared/components/header/page-header.component';
+// import {
+//   FormSectionNavigatorComponent,
+//   FormSection,
+// } from '../form-section-navigator.component';
+
+// /**
+//  * CoverEditorComponent with Section Navigation
+//  * Full working implementation - no placeholders
+//  */
+// @Component({
+//   selector: 'app-cover-editor',
+//   standalone: true,
+//   imports: [
+//     CommonModule,
+//     FormsModule,
+//     PageHeaderComponent,
+//     // FormSectionNavigatorComponent,
+//   ],
+//   templateUrl: './cover-editor.component.html',
+//   styles: [
+//     `
+//       :host {
+//         display: block;
+//         height: 100%;
+//         width: 100%;
+//       }
+
+//       .form-section {
+//         scroll-margin-top: 120px;
+//       }
+//     `,
+//   ],
+// })
+// export class CoverEditorComponent implements OnInit, OnDestroy {
+//   private coverService = inject(FundingApplicationCoverService);
+//   private activityService = inject(ActivityService);
+//   private route = inject(ActivatedRoute);
+//   private router = inject(Router);
+//   private destroy$ = new Subject<void>();
+
+//   @ViewChildren('aboutBusinessSection', { read: ElementRef })
+//   aboutBusinessRef!: QueryList<ElementRef>;
+
+//   @ViewChildren('fundingDetailsSection', { read: ElementRef })
+//   fundingDetailsRef!: QueryList<ElementRef>;
+
+//   @ViewChildren('useOfFundsSection', { read: ElementRef })
+//   useOfFundsRef!: QueryList<ElementRef>;
+
+//   @ViewChildren('fundingMotivationSection', { read: ElementRef })
+//   fundingMotivationRef!: QueryList<ElementRef>;
+
+//   @ViewChildren('investorPreferencesSection', { read: ElementRef })
+//   investorPreferencesRef!: QueryList<ElementRef>;
+
+//   @Output() uploadDocument = new EventEmitter<string>();
+
+//   // State
+//   cover: any = null;
+//   isCreating = signal(false);
+//   saving = signal(false);
+//   errors = signal<string[]>([]);
+//   activeSection = signal<string | null>('about-business');
+
+//   // Form data signals
+//   fundingAmount = signal<number | null>(null);
+//   useOfFunds = signal<string>('');
+//   fundingMotivation = signal<string>('');
+//   equityOffered = signal<number | null>(null);
+//   industries = signal<string[]>([]);
+//   fundingTypes = signal<string[]>([]);
+//   investmentCriteria = signal<string[]>([]);
+
+//   // Options
+//   sectors = [
+//     'Technology',
+//     'Agriculture',
+//     'Retail',
+//     'Manufacturing',
+//     'Healthcare',
+//     'Finance',
+//     'Energy',
+//     'Education',
+//     'Logistics',
+//     'Media & Entertainment',
+//   ];
+
+//   fundingTypeOptions = [
+//     { label: 'Equity', value: 'equity' },
+//     { label: 'Debt / Loan', value: 'debt' },
+//     { label: 'Grant', value: 'grant' },
+//     { label: 'Convertible Note', value: 'convertible' },
+//     { label: 'Mezzanine Financing', value: 'mezzanine' },
+//   ];
+
+//   investorTypeOptions = [
+//     'Venture Capital',
+//     'Angel Investors',
+//     'Impact Investors',
+//     'Corporate Investors',
+//     'Private Equity',
+//   ];
+
+//   // Navigation sections
+//   navSections = computed<FormSection[]>(() => [
+//     { id: 'about-business', label: 'About Your Business' },
+//     { id: 'funding-details', label: 'Funding Details' },
+//     { id: 'use-of-funds', label: 'Use of Funds' },
+//     { id: 'funding-motivation', label: 'Funding Motivation' },
+//     { id: 'investor-preferences', label: 'Investor Preferences' },
+//   ]);
+
+//   // Computed
+//   hasEquityFunding = computed(() => {
+//     return this.fundingTypes().includes('equity');
+//   });
+
+//   canSave = computed(() => {
+//     return (
+//       this.fundingAmount() &&
+//       this.fundingTypes().length > 0 &&
+//       this.useOfFunds().trim() &&
+//       this.fundingMotivation().trim() &&
+//       this.industries().length > 0 &&
+//       !this.saving()
+//     );
+//   });
+
+//   completionPercentage = computed(() => {
+//     let filled = 0;
+//     const total = 7;
+
+//     if (this.fundingAmount()) filled++;
+//     if (this.fundingTypes().length > 0) filled++;
+//     if (this.useOfFunds().trim()) filled++;
+//     if (this.fundingMotivation().trim()) filled++;
+//     if (this.industries().length > 0) filled++;
+//     if (this.investmentCriteria().length > 0) filled++;
+//     if (this.equityOffered() !== null && this.hasEquityFunding()) filled++;
+
+//     return Math.round((filled / total) * 100);
+//   });
+
+//   ngOnInit(): void {
+//     this.route.queryParams
+//       .pipe(takeUntil(this.destroy$))
+//       .subscribe((params) => {
+//         const id = params['coverId'];
+//         if (id) {
+//           this.loadCover(id);
+//         } else {
+//           this.isCreating.set(true);
+//         }
+//       });
+//   }
+
+//   private loadCover(id: string): void {
+//     from(this.coverService.getCoverById(id))
+//       .pipe(takeUntil(this.destroy$))
+//       .subscribe({
+//         next: (cover) => {
+//           if (cover) {
+//             this.cover = cover;
+//             this.populateFormFromCover(cover);
+//           }
+//         },
+//         error: (err) => {
+//           this.errors.set([err?.message || 'Failed to load funding request']);
+//         },
+//       });
+//   }
+
+//   private populateFormFromCover(cover: any): void {
+//     this.fundingAmount.set(cover.fundingAmount || null);
+//     this.useOfFunds.set(cover.useOfFunds || '');
+//     this.fundingMotivation.set(cover.fundingMotivation || '');
+//     this.equityOffered.set(cover.equityOffered || null);
+//     this.industries.set(cover.industries || []);
+//     this.fundingTypes.set(cover.fundingTypes || []);
+//     this.investmentCriteria.set(cover.investmentCriteria || []);
+//   }
+
+//   updateNumberField(field: string, event: Event): void {
+//     const value = Number((event.target as HTMLInputElement).value);
+
+//     if (field === 'fundingAmount') {
+//       this.fundingAmount.set(value || null);
+//     } else if (field === 'equityOffered') {
+//       this.equityOffered.set(value || null);
+//     }
+
+//     this.validateForm();
+//   }
+
+//   updateTextField(field: string, event: Event): void {
+//     const value = (event.target as HTMLTextAreaElement).value;
+
+//     if (field === 'useOfFunds') {
+//       this.useOfFunds.set(value);
+//     } else if (field === 'fundingMotivation') {
+//       this.fundingMotivation.set(value);
+//     }
+
+//     this.validateForm();
+//   }
+
+//   addPredefinedItem(field: string, item: string): void {
+//     const current =
+//       field === 'industries' ? this.industries() : this.investmentCriteria();
+
+//     if (!current.includes(item)) {
+//       if (field === 'industries') {
+//         this.industries.set([...current, item]);
+//       } else if (field === 'investmentCriteria') {
+//         this.investmentCriteria.set([...current, item]);
+//       }
+//     }
+
+//     this.validateForm();
+//   }
+
+//   removeArrayItem(field: string, item: string): void {
+//     if (field === 'industries') {
+//       this.industries.update((arr) => arr.filter((i) => i !== item));
+//     } else if (field === 'investmentCriteria') {
+//       this.investmentCriteria.update((arr) => arr.filter((i) => i !== item));
+//     }
+
+//     this.validateForm();
+//   }
+
+//   toggleArrayItem(field: string, item: string): void {
+//     const current = field === 'fundingTypes' ? this.fundingTypes() : [];
+
+//     if (current.includes(item)) {
+//       this.fundingTypes.set(current.filter((i) => i !== item));
+//     } else {
+//       this.fundingTypes.set([...current, item]);
+//     }
+
+//     this.validateForm();
+//   }
+
+//   isItemInArray(field: string, item: string): boolean {
+//     if (field === 'fundingTypes') {
+//       return this.fundingTypes().includes(item);
+//     }
+//     return false;
+//   }
+
+//   isPredefinedSelected(field: string, item: string): boolean {
+//     if (field === 'industries') {
+//       return this.industries().includes(item);
+//     } else if (field === 'investmentCriteria') {
+//       return this.investmentCriteria().includes(item);
+//     }
+//     return false;
+//   }
+
+//   addArrayItem(field: string, input: HTMLInputElement): void {
+//     const value = input.value.trim();
+
+//     if (value) {
+//       if (field === 'investmentCriteria') {
+//         this.investmentCriteria.update((arr) =>
+//           arr.includes(value) ? arr : [...arr, value]
+//         );
+//       }
+//       input.value = '';
+//       this.validateForm();
+//     }
+//   }
+
+//   scrollToSection(sectionId: string): void {
+//     this.activeSection.set(sectionId);
+
+//     setTimeout(() => {
+//       const element = document.querySelector(
+//         `[data-section-id="${sectionId}"]`
+//       ) as HTMLElement;
+
+//       if (element) {
+//         element.scrollIntoView({
+//           behavior: 'smooth',
+//           block: 'start',
+//         });
+//       }
+//     }, 0);
+//   }
+
+//   @HostListener('window:scroll', ['$event'])
+//   onWindowScroll(): void {
+//     const sections = document.querySelectorAll('[data-section-id]');
+//     const threshold = 200;
+
+//     for (let section of sections) {
+//       const rect = (section as HTMLElement).getBoundingClientRect();
+//       if (rect.top < threshold && rect.bottom > 0) {
+//         this.activeSection.set(
+//           (section as HTMLElement).getAttribute('data-section-id') || ''
+//         );
+//         break;
+//       }
+//     }
+//   }
+
+//   validateForm(): void {
+//     const errors: string[] = [];
+
+//     if (!this.fundingAmount()) {
+//       errors.push('Funding amount is required');
+//     }
+//     if (this.fundingTypes().length === 0) {
+//       errors.push('Select at least one funding type');
+//     }
+//     if (!this.useOfFunds().trim()) {
+//       errors.push('Use of funds is required');
+//     }
+//     if (!this.fundingMotivation().trim()) {
+//       errors.push('Funding motivation is required');
+//     }
+//     if (this.industries().length === 0) {
+//       errors.push('Select at least one industry');
+//     }
+//     if (this.hasEquityFunding() && !this.equityOffered()) {
+//       errors.push('Equity percentage is required');
+//     }
+
+//     this.errors.set(errors);
+//   }
+
+//   saveChanges(): void {
+//     this.validateForm();
+
+//     if (this.errors().length > 0) {
+//       return;
+//     }
+
+//     this.saving.set(true);
+
+//     const data: UpdateCoverRequest = {
+//       fundingAmount: this.fundingAmount() ?? undefined,
+//       useOfFunds: this.useOfFunds(),
+//       fundingMotivation: this.fundingMotivation(),
+//       equityOffered: this.equityOffered() ?? undefined,
+//       industries: this.industries(),
+//       fundingTypes: this.fundingTypes(),
+//       investmentCriteria: this.investmentCriteria(),
+//     };
+
+//     if (this.isCreating()) {
+//       from(this.coverService.createBlankCover(data))
+//         .pipe(takeUntil(this.destroy$))
+//         .subscribe({
+//           next: (result) => {
+//             if (result.success && result.cover) {
+//               this.cover = result.cover;
+//               this.saving.set(false);
+//               this.activityService.trackProfileActivity(
+//                 'created',
+//                 'Funding request created',
+//                 'funding_request_created'
+//               );
+//               this.router.navigate(['..'], { relativeTo: this.route });
+//             }
+//           },
+//           error: (err) => {
+//             this.saving.set(false);
+//             this.errors.set([err?.message || 'Failed to save']);
+//           },
+//         });
+//     } else {
+//       this.coverService
+//         .updateCover(this.cover.id, data)
+//         .pipe(takeUntil(this.destroy$))
+//         .subscribe({
+//           next: () => {
+//             this.saving.set(false);
+//             this.activityService.trackProfileActivity(
+//               'updated',
+//               'Funding request updated',
+//               'funding_request_updated'
+//             );
+//             this.router.navigate(['..'], { relativeTo: this.route });
+//           },
+//           error: (err) => {
+//             this.saving.set(false);
+//             this.errors.set([err?.message || 'Failed to save']);
+//           },
+//         });
+//     }
+//   }
+
+//   onCancel(): void {
+//     this.router.navigate(['..'], { relativeTo: this.route });
+//   }
+
+//   ngOnDestroy(): void {
+//     this.destroy$.next();
+//     this.destroy$.complete();
+//   }
+// }
+
 import {
   Component,
-  Input,
-  Output,
-  EventEmitter,
-  signal,
-  computed,
   OnInit,
   inject,
+  signal,
+  computed,
+  OnDestroy,
+  ViewChildren,
+  QueryList,
+  ElementRef,
+  HostListener,
+  Output,
+  EventEmitter,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import {
-  FundingApplicationCoverInformation,
-  UpdateCoverRequest,
-} from 'src/app/shared/models/funding-application-cover.model';
+import { ActivatedRoute, Router } from '@angular/router';
+import { from, Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
+
 import { FundingApplicationCoverService } from 'src/app/shared/services/funding-application-cover.service';
+import { ActivityService } from 'src/app/shared/services/activity.service';
+import { SupabaseConstantsService } from 'src/app/core/admin/services/remote-constants.service';
+
+import { UpdateCoverRequest } from 'src/app/shared/models/funding-application-cover.model';
 import { PageHeaderComponent } from 'src/app/shared/components/header/page-header.component';
+import {
+  FormSectionNavigatorComponent,
+  FormSection,
+} from '../form-section-navigator.component';
 
-// Predefined options for user guidance
-const PREDEFINED_SECTORS = [
-  'Technology',
-  'Agriculture',
-  'Retail',
-  'Manufacturing',
-  'Healthcare',
-  'Finance',
-  'Energy',
-  'Education',
-  'Logistics',
-  'Media & Entertainment',
-];
-
-const PREDEFINED_FUNDING_TYPES = [
-  { value: 'equity', label: 'Equity' },
-  { value: 'debt', label: 'Debt / Loan' },
-  { value: 'grant', label: 'Grant' },
-  { value: 'convertible', label: 'Convertible Note' },
-  { value: 'mezzanine', label: 'Mezzanine Financing' },
-];
-
-const PREDEFINED_INVESTOR_TYPES = [
-  'Angel Investors',
-  'Venture Capital Firms',
-  'Impact Investors',
-  'Family Offices',
-  'Corporate Ventures',
-  'Development Finance Institutions',
-  'Accelerators',
-  'Strategic Partners',
-];
-
+/**
+ * CoverEditorComponent with Section Navigation
+ * Full working implementation - no placeholders
+ */
 @Component({
   selector: 'app-cover-editor',
   standalone: true,
-  imports: [CommonModule, FormsModule, PageHeaderComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    PageHeaderComponent,
+    // FormSectionNavigatorComponent,
+  ],
   templateUrl: './cover-editor.component.html',
+  styles: [
+    `
+      :host {
+        display: block;
+        height: 100%;
+        width: 100%;
+      }
+
+      .form-section {
+        scroll-margin-top: 120px;
+      }
+    `,
+  ],
 })
-export class CoverEditorComponent implements OnInit {
+export class CoverEditorComponent implements OnInit, OnDestroy {
   private coverService = inject(FundingApplicationCoverService);
+  private activityService = inject(ActivityService);
+  private constantsService = inject(SupabaseConstantsService);
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private destroy$ = new Subject<void>();
 
-  // Predefined options (read-only)
-  readonly sectors = PREDEFINED_SECTORS;
-  readonly fundingTypeOptions = PREDEFINED_FUNDING_TYPES;
-  readonly investorTypeOptions = PREDEFINED_INVESTOR_TYPES;
+  @ViewChildren('aboutBusinessSection', { read: ElementRef })
+  aboutBusinessRef!: QueryList<ElementRef>;
 
-  @Input() cover: FundingApplicationCoverInformation | null = null;
-  @Input() defaultCover: FundingApplicationCoverInformation | null = null;
+  @ViewChildren('fundingDetailsSection', { read: ElementRef })
+  fundingDetailsRef!: QueryList<ElementRef>;
 
-  @Output() save = new EventEmitter<FundingApplicationCoverInformation>();
-  @Output() cancel = new EventEmitter<void>();
+  @ViewChildren('useOfFundsSection', { read: ElementRef })
+  useOfFundsRef!: QueryList<ElementRef>;
+
+  @ViewChildren('fundingMotivationSection', { read: ElementRef })
+  fundingMotivationRef!: QueryList<ElementRef>;
+
+  @ViewChildren('investorPreferencesSection', { read: ElementRef })
+  investorPreferencesRef!: QueryList<ElementRef>;
+
   @Output() uploadDocument = new EventEmitter<string>();
 
-  // ===== FORM STATE =====
+  // State
+  cover: any = null;
+  isCreating = signal(false);
+  saving = signal(false);
+  errors = signal<string[]>([]);
+  activeSection = signal<string | null>('about-business');
+
+  // Form data signals
+  fundingAmount = signal<number | null>(null);
+  useOfFunds = signal<string>('');
+  fundingMotivation = signal<string>('');
+  equityOffered = signal<number | null>(null);
   industries = signal<string[]>([]);
-  fundingAmount = signal<number>(0);
   fundingTypes = signal<string[]>([]);
   investmentCriteria = signal<string[]>([]);
-  useOfFunds = signal<string>('');
-  fundingMotivation = signal<string>(''); // ✅ REQUIRED
-  repaymentStrategy = signal<string>('');
-  equityOffered = signal<number | null>(null);
 
-  // ===== INTERNAL (NOT USER-FACING) =====
-  private internalProfileName = signal<string>('');
-
-  // ===== STATE MANAGEMENT =====
-  private isSaving = signal(false);
-  private isDirty = signal(false);
-  private validationErrors = signal<string[]>([]);
-
-  readonly saving = this.isSaving.asReadonly();
-  readonly dirty = this.isDirty.asReadonly();
-  readonly errors = this.validationErrors.asReadonly();
-
-  readonly isCreating = computed(() => !this.cover);
-  readonly canSave = computed(() => !this.saving() && this.dirty());
-
-  readonly hasEquityFunding = computed(() =>
-    this.fundingTypes().includes('equity')
-  );
-
-  // ===== COMPLETION TRACKING =====
-  readonly completionPercentage = computed(() => {
-    const requiredFields = [
-      this.industries().length > 0,
-      this.fundingAmount() > 0,
-      this.fundingTypes().length > 0,
-      this.useOfFunds().trim().length > 0,
-      this.fundingMotivation().trim().length > 0, // ✅ REQUIRED
-    ];
-
-    const completed = requiredFields.filter((field) => field).length;
-    return Math.round((completed / requiredFields.length) * 100);
+  // Options from constants service
+  sectors = computed(() => {
+    return this.constantsService.industries().map((opt) => opt.label);
   });
 
-  ngOnInit() {
-    if (this.cover) {
-      this.initializeFromCover();
-    } else {
-      this.initializeFromDefault();
-    }
+  fundingTypeOptions = computed(() => {
+    return this.constantsService
+      .fundingOptions()
+      .map((opt) => ({ label: opt.label, value: opt.value }));
+  });
+
+  investorTypeOptions = computed(() => {
+    return this.constantsService.investorTypes().map((opt) => opt.label);
+  });
+
+  // Navigation sections
+  navSections = computed<FormSection[]>(() => [
+    { id: 'about-business', label: 'About Your Business' },
+    { id: 'funding-details', label: 'Funding Details' },
+    { id: 'use-of-funds', label: 'Use of Funds' },
+    { id: 'funding-motivation', label: 'Funding Motivation' },
+    { id: 'investor-preferences', label: 'Investor Preferences' },
+  ]);
+
+  // Computed
+  hasEquityFunding = computed(() => {
+    return this.fundingTypes().includes('equity');
+  });
+
+  canSave = computed(() => {
+    return (
+      this.fundingAmount() &&
+      this.fundingTypes().length > 0 &&
+      this.useOfFunds().trim() &&
+      this.fundingMotivation().trim() &&
+      this.industries().length > 0 &&
+      !this.saving()
+    );
+  });
+
+  completionPercentage = computed(() => {
+    let filled = 0;
+    const total = 7;
+
+    if (this.fundingAmount()) filled++;
+    if (this.fundingTypes().length > 0) filled++;
+    if (this.useOfFunds().trim()) filled++;
+    if (this.fundingMotivation().trim()) filled++;
+    if (this.industries().length > 0) filled++;
+    if (this.investmentCriteria().length > 0) filled++;
+    if (this.equityOffered() !== null && this.hasEquityFunding()) filled++;
+
+    return Math.round((filled / total) * 100);
+  });
+
+  ngOnInit(): void {
+    this.route.queryParams
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((params) => {
+        const id = params['coverId'];
+        if (id) {
+          this.loadCover(id);
+        } else {
+          this.isCreating.set(true);
+        }
+      });
   }
 
-  /**
-   * Initialize form from existing cover
-   */
-  private initializeFromCover() {
-    if (!this.cover) return;
-
-    this.industries.set([...this.cover.industries]);
-    this.fundingAmount.set(this.cover.fundingAmount);
-    this.fundingTypes.set([...this.cover.fundingTypes]);
-    this.investmentCriteria.set([...this.cover.investmentCriteria]);
-    this.useOfFunds.set(this.cover.useOfFunds);
-    this.fundingMotivation.set(this.cover.fundingMotivation || ''); // ✅ REQUIRED
-    this.repaymentStrategy.set(this.cover.repaymentStrategy || '');
-    this.equityOffered.set(this.cover.equityOffered || null);
-    this.internalProfileName.set(this.cover.executiveSummary);
-
-    this.isDirty.set(false);
+  private loadCover(id: string): void {
+    from(this.coverService.getCoverById(id))
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (cover) => {
+          if (cover) {
+            this.cover = cover;
+            this.populateFormFromCover(cover);
+          }
+        },
+        error: (err) => {
+          this.errors.set([err?.message || 'Failed to load funding request']);
+        },
+      });
   }
 
-  /**
-   * Initialize from default template
-   */
-  private initializeFromDefault() {
-    if (this.defaultCover) {
-      this.industries.set([...this.defaultCover.industries]);
-      this.fundingAmount.set(this.defaultCover.fundingAmount);
-      this.fundingTypes.set([...this.defaultCover.fundingTypes]);
-      this.investmentCriteria.set([...this.defaultCover.investmentCriteria]);
-      this.useOfFunds.set(this.defaultCover.useOfFunds);
-      this.fundingMotivation.set(this.defaultCover.fundingMotivation || ''); // ✅ REQUIRED
-      this.repaymentStrategy.set(this.defaultCover.repaymentStrategy || '');
-      this.equityOffered.set(this.defaultCover.equityOffered || null);
-    }
-
-    // Generate internal profile name (not shown to user)
-    this.internalProfileName.set(this.generateProfileName());
-    this.isDirty.set(false);
-  }
-
-  /**
-   * Generate a random profile name for internal use
-   * Format: "Funding Round - [timestamp]"
-   */
-  private generateProfileName(): string {
-    const timestamp = Date.now().toString(36).toUpperCase();
-    const random = Math.random().toString(36).substring(2, 8).toUpperCase();
-    return `ROUND-${timestamp}-${random}`;
-  }
-
-  // ===== FORM UPDATES =====
-
-  updateTextField(field: string, event: Event): void {
-    const value = (event.target as HTMLInputElement | HTMLTextAreaElement)
-      .value;
-
-    switch (field) {
-      case 'useOfFunds':
-        this.useOfFunds.set(value);
-        break;
-      case 'fundingMotivation': // ✅ REQUIRED
-        this.fundingMotivation.set(value);
-        break;
-      case 'repaymentStrategy':
-        this.repaymentStrategy.set(value);
-        break;
-    }
-
-    this.markDirty();
-    this.validateForm();
+  private populateFormFromCover(cover: any): void {
+    this.fundingAmount.set(cover.fundingAmount || null);
+    this.useOfFunds.set(cover.useOfFunds || '');
+    this.fundingMotivation.set(cover.fundingMotivation || '');
+    this.equityOffered.set(cover.equityOffered || null);
+    this.industries.set(cover.industries || []);
+    this.fundingTypes.set(cover.fundingTypes || []);
+    this.investmentCriteria.set(cover.investmentCriteria || []);
   }
 
   updateNumberField(field: string, event: Event): void {
-    const value = parseFloat((event.target as HTMLInputElement).value) || 0;
+    const value = Number((event.target as HTMLInputElement).value);
 
-    switch (field) {
-      case 'fundingAmount':
-        this.fundingAmount.set(value);
-        break;
-      case 'equityOffered':
-        this.equityOffered.set(value);
-        break;
+    if (field === 'fundingAmount') {
+      this.fundingAmount.set(value || null);
+    } else if (field === 'equityOffered') {
+      this.equityOffered.set(value || null);
     }
 
-    this.markDirty();
     this.validateForm();
   }
 
-  /**
-   * Add custom item to array
-   */
-  addArrayItem(arrayField: string, input: HTMLInputElement): void {
-    const value = input.value?.trim();
-    if (!value) return;
+  updateTextField(field: string, event: Event): void {
+    const value = (event.target as HTMLTextAreaElement).value;
 
-    switch (arrayField) {
-      case 'industries':
-        if (!this.industries().includes(value)) {
-          this.industries.update((arr) => [...arr, value]);
-        }
-        break;
-      case 'investmentCriteria':
-        if (!this.investmentCriteria().includes(value)) {
-          this.investmentCriteria.update((arr) => [...arr, value]);
-        }
-        break;
+    if (field === 'useOfFunds') {
+      this.useOfFunds.set(value);
+    } else if (field === 'fundingMotivation') {
+      this.fundingMotivation.set(value);
     }
 
-    input.value = '';
-    this.markDirty();
     this.validateForm();
   }
 
-  /**
-   * Remove item from array
-   */
-  removeArrayItem(arrayField: string, item: string): void {
-    switch (arrayField) {
-      case 'industries':
-        this.industries.update((arr) => arr.filter((i) => i !== item));
-        break;
-      case 'investmentCriteria':
-        this.investmentCriteria.update((arr) => arr.filter((i) => i !== item));
-        break;
+  addPredefinedItem(field: string, item: string): void {
+    const current =
+      field === 'industries' ? this.industries() : this.investmentCriteria();
+
+    if (!current.includes(item)) {
+      if (field === 'industries') {
+        this.industries.set([...current, item]);
+      } else if (field === 'investmentCriteria') {
+        this.investmentCriteria.set([...current, item]);
+      }
     }
 
-    this.markDirty();
     this.validateForm();
   }
 
-  /**
-   * Toggle item in array (for button chips)
-   */
-  toggleArrayItem(arrayField: string, item: string): void {
-    switch (arrayField) {
-      case 'fundingTypes':
-        if (this.fundingTypes().includes(item)) {
-          this.fundingTypes.update((arr) => arr.filter((i) => i !== item));
-        } else {
-          this.fundingTypes.update((arr) => [...arr, item]);
-        }
-        break;
+  removeArrayItem(field: string, item: string): void {
+    if (field === 'industries') {
+      this.industries.update((arr) => arr.filter((i) => i !== item));
+    } else if (field === 'investmentCriteria') {
+      this.investmentCriteria.update((arr) => arr.filter((i) => i !== item));
     }
 
-    this.markDirty();
     this.validateForm();
   }
 
-  /**
-   * Check if item is in array (for button state)
-   */
-  isItemInArray(arrayField: string, item: string): boolean {
-    switch (arrayField) {
-      case 'fundingTypes':
-        return this.fundingTypes().includes(item);
-      default:
-        return false;
-    }
-  }
+  toggleArrayItem(field: string, item: string): void {
+    const current = field === 'fundingTypes' ? this.fundingTypes() : [];
 
-  /**
-   * Add predefined sector/investor type
-   */
-  addPredefinedItem(arrayField: string, item: string): void {
-    switch (arrayField) {
-      case 'industries':
-        if (!this.industries().includes(item)) {
-          this.industries.update((arr) => [...arr, item]);
-        }
-        break;
-      case 'investmentCriteria':
-        if (!this.investmentCriteria().includes(item)) {
-          this.investmentCriteria.update((arr) => [...arr, item]);
-        }
-        break;
+    if (current.includes(item)) {
+      this.fundingTypes.set(current.filter((i) => i !== item));
+    } else {
+      this.fundingTypes.set([...current, item]);
     }
 
-    this.markDirty();
     this.validateForm();
   }
 
-  /**
-   * Check if predefined item is selected
-   */
-  isPredefinedSelected(arrayField: string, item: string): boolean {
-    switch (arrayField) {
-      case 'industries':
-        return this.industries().includes(item);
-      case 'investmentCriteria':
-        return this.investmentCriteria().includes(item);
-      default:
-        return false;
+  isItemInArray(field: string, item: string): boolean {
+    if (field === 'fundingTypes') {
+      return this.fundingTypes().includes(item);
+    }
+    return false;
+  }
+
+  isPredefinedSelected(field: string, item: string): boolean {
+    if (field === 'industries') {
+      return this.industries().includes(item);
+    } else if (field === 'investmentCriteria') {
+      return this.investmentCriteria().includes(item);
+    }
+    return false;
+  }
+
+  scrollToSection(sectionId: string): void {
+    this.activeSection.set(sectionId);
+
+    setTimeout(() => {
+      const element = document.querySelector(
+        `[data-section-id="${sectionId}"]`
+      ) as HTMLElement;
+
+      if (element) {
+        element.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start',
+        });
+      }
+    }, 0);
+  }
+
+  @HostListener('window:scroll', ['$event'])
+  onWindowScroll(): void {
+    const sections = document.querySelectorAll('[data-section-id]');
+    const threshold = 200;
+
+    for (let section of sections) {
+      const rect = (section as HTMLElement).getBoundingClientRect();
+      if (rect.top < threshold && rect.bottom > 0) {
+        this.activeSection.set(
+          (section as HTMLElement).getAttribute('data-section-id') || ''
+        );
+        break;
+      }
     }
   }
 
-  // ===== VALIDATION =====
-
-  private validateForm(): void {
+  validateForm(): void {
     const errors: string[] = [];
 
-    if (this.industries().length === 0) {
-      errors.push('Select at least one sector');
-    }
-    if (this.fundingAmount() <= 0) {
-      errors.push('Funding amount must be greater than 0');
+    if (!this.fundingAmount()) {
+      errors.push('Funding amount is required');
     }
     if (this.fundingTypes().length === 0) {
       errors.push('Select at least one funding type');
     }
     if (!this.useOfFunds().trim()) {
-      errors.push('Tell us how you will use the funds');
+      errors.push('Use of funds is required');
     }
     if (!this.fundingMotivation().trim()) {
-      errors.push('Explain why you need this funding'); // ✅ REQUIRED
+      errors.push('Funding motivation is required');
+    }
+    if (this.industries().length === 0) {
+      errors.push('Select at least one industry');
+    }
+    if (this.hasEquityFunding() && !this.equityOffered()) {
+      errors.push('Equity percentage is required');
     }
 
-    this.validationErrors.set(errors);
+    this.errors.set(errors);
   }
 
-  private markDirty(): void {
-    this.isDirty.set(true);
-  }
-
-  // ===== SAVE & CANCEL =====
-
-  async saveChanges(): Promise<void> {
+  saveChanges(): void {
     this.validateForm();
-    if (this.validationErrors().length > 0) {
+
+    if (this.errors().length > 0) {
       return;
     }
 
-    if (!this.cover) {
-      console.error('No cover to save');
-      return;
+    this.saving.set(true);
+
+    const data: UpdateCoverRequest = {
+      fundingAmount: this.fundingAmount() ?? undefined,
+      useOfFunds: this.useOfFunds(),
+      fundingMotivation: this.fundingMotivation(),
+      equityOffered: this.equityOffered() ?? undefined,
+      industries: this.industries(),
+      fundingTypes: this.fundingTypes(),
+      investmentCriteria: this.investmentCriteria(),
+    };
+
+    if (this.isCreating()) {
+      from(this.coverService.createBlankCover(data))
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: (result) => {
+            if (result.success && result.cover) {
+              this.cover = result.cover;
+              this.saving.set(false);
+              this.activityService.trackProfileActivity(
+                'created',
+                'Funding request created',
+                'funding_request_created'
+              );
+              this.router.navigate(['..'], { relativeTo: this.route });
+            }
+          },
+          error: (err) => {
+            this.saving.set(false);
+            this.errors.set([err?.message || 'Failed to save']);
+          },
+        });
+    } else {
+      this.coverService
+        .updateCover(this.cover.id, data)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: () => {
+            this.saving.set(false);
+            this.activityService.trackProfileActivity(
+              'updated',
+              'Funding request updated',
+              'funding_request_updated'
+            );
+            this.router.navigate(['..'], { relativeTo: this.route });
+          },
+          error: (err) => {
+            this.saving.set(false);
+            this.errors.set([err?.message || 'Failed to save']);
+          },
+        });
     }
-
-    try {
-      this.isSaving.set(true);
-
-      const updates: UpdateCoverRequest = {
-        industries: this.industries(),
-        fundingAmount: this.fundingAmount(),
-        fundingTypes: this.fundingTypes(),
-        businessStages: [],
-        investmentCriteria: this.investmentCriteria(),
-        exclusionCriteria: [],
-        location: '',
-        useOfFunds: this.useOfFunds(),
-        fundingMotivation: this.fundingMotivation(), // ✅ REQUIRED
-        executiveSummary: this.internalProfileName(),
-        repaymentStrategy: this.repaymentStrategy(),
-        equityOffered: this.equityOffered() || undefined,
-      };
-
-      this.coverService.updateCover(this.cover.id, updates).subscribe({
-        next: (result) => {
-          if (result?.success && result.cover) {
-            this.isDirty.set(false);
-            this.save.emit(result.cover);
-          } else if (result?.error) {
-            this.validationErrors.update((errors) => [
-              ...errors,
-              result.error || 'An error occurred',
-            ]);
-          }
-          this.isSaving.set(false);
-        },
-        error: (err: any) => {
-          this.validationErrors.update((errors) => [
-            ...errors,
-            err?.message || 'Failed to save',
-          ]);
-          this.isSaving.set(false);
-        },
-      });
-    } catch (err: any) {
-      this.validationErrors.update((errors) => [
-        ...errors,
-        err?.message || 'Failed to save',
-      ]);
-      this.isSaving.set(false);
-    }
-  }
-  navigateToDemographics(): void {
-    // this.router.navigate([], {
-    //   relativeTo: this.route,
-    //   queryParams: {
-    //     coverId,
-    //     view: 'demographics',
-    //   },
-    //   queryParamsHandling: 'merge',
-    // });
   }
 
   onCancel(): void {
-    if (this.isDirty()) {
-      if (!confirm('You have unsaved changes. Are you sure?')) {
-        return;
-      }
-    }
-    this.cancel.emit();
+    this.router.navigate(['..'], { relativeTo: this.route });
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 }

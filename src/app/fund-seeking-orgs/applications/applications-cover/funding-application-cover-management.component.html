@@ -1,50 +1,11 @@
-<!-- Root: fills viewport and enforces column layout -->
-<div class="h-full flex flex-col ml-12">
-  <!-- ===== ERROR DISPLAY ===== -->
-  <div
-    *ngIf="error()"
-    class="flex-shrink-0 px-6 lg:px-8 py-4 bg-red-50 border-b-4 border-red-400 flex items-center gap-3 justify-between"
-  >
-    <div class="flex items-center gap-3">
-      <svg
-        class="w-5 h-5 text-red-600 flex-shrink-0"
-        fill="currentColor"
-        viewBox="0 0 20 20"
-      >
-        <path
-          fill-rule="evenodd"
-          d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-          clip-rule="evenodd"
-        ></path>
-      </svg>
-      <p class="font-bold text-red-700 text-sm">{{ error() }}</p>
-    </div>
-    <button
-      (click)="error.set(null)"
-      class="text-red-600 hover:text-red-900 font-bold text-sm"
-    >
-      Dismiss
-    </button>
-  </div>
-
-  <!-- ===== MAIN CONTENT AREA ===== -->
-  <div class="flex-1 flex flex-col overflow-y-auto min-h-0">
-    <!-- LOADING STATE -->
-    <div *ngIf="initializing()" class="flex-1 flex items-center justify-center">
-      <div class="text-center">
-        <div
-          class="animate-spin w-8 h-8 border-4 border-teal-500 border-t-transparent rounded-full mx-auto mb-4"
-        ></div>
-        <p class="text-slate-600 font-semibold">Loading funding request...</p>
-      </div>
-    </div>
-
+<!-- Root: clean container with side nav -->
+<div class="h-full flex">
+  <!-- MAIN CONTENT (Left) -->
+  <div class="flex-1 flex flex-col overflow-hidden">
     <!-- VIEW: EDITOR -->
     <ng-container *ngIf="!initializing() && currentView() === 'editor'">
       <app-cover-editor
         *ngIf="selectedCover()"
-        [cover]="selectedCover()!"
-        [defaultCover]="selectedCover()"
         (save)="onFundingRequestSaved()"
         (cancel)="navigateBack()"
         (uploadDocument)="navigateToUpload(selectedId()!)"
@@ -103,53 +64,23 @@
     <ng-container *ngIf="!initializing() && currentView() === 'demographics'">
       <app-demographics-form />
     </ng-container>
+
+    <!-- LOADING STATE -->
+    <div *ngIf="initializing()" class="flex-1 flex items-center justify-center">
+      <div class="text-center">
+        <div
+          class="animate-spin w-8 h-8 border-4 border-teal-500 border-t-transparent rounded-full mx-auto mb-4"
+        ></div>
+        <p class="text-slate-600 font-semibold">Loading funding request...</p>
+      </div>
+    </div>
   </div>
 
-  <!-- ===== FOOTER ===== -->
-  <!-- <div
-    class="flex-shrink-0 sticky bottom-0 z-30 bg-white border-t-4 border-slate-300 px-6 lg:px-8 py-4 flex items-center justify-between"
-  >
-    <div class="text-xs text-slate-600">
-      <p class="font-semibold" *ngIf="selectedCover()">
-        Funding Request
-        <span class="ml-2">
-          <span class="font-black text-teal-600">{{
-            selectedCover()?.executiveSummary || "Unnamed"
-          }}</span>
-        </span>
-      </p>
-      <p class="font-semibold text-slate-500" *ngIf="!selectedCover()">
-        No funding request created
-      </p>
-    </div>
-
-    <div class="flex gap-2">
-      
-      <button
-        *ngIf="currentView() !== 'editor' && selectedCover()"
-        (click)="navigateToEditor(selectedId()!, mode())"
-        class="px-5 py-2.5 bg-slate-100 text-slate-700 font-semibold rounded-lg border border-slate-200 hover:bg-slate-200 active:bg-slate-300 transition-all duration-200 text-sm"
-      >
-        Back
-      </button>
-
-     
-      <button
-        *ngIf="selectedCover() && currentView() === 'editor'"
-        (click)="deleteFundingRequest(selectedId()!)"
-        class="px-5 py-2.5 bg-red-50 text-red-700 font-semibold rounded-lg border border-red-200 hover:bg-red-100 active:bg-red-200 transition-all duration-200 text-sm"
-      >
-        Delete
-      </button>
-
-      
-      <button
-        *ngIf="selectedCover() && currentView() === 'editor'"
-        (click)="navigateToDemographics(selectedId()!)"
-        class="px-5 py-2.5 bg-slate-100 text-slate-700 font-semibold rounded-lg border border-slate-200 hover:bg-slate-200 active:bg-slate-300 transition-all duration-200 text-sm"
-      >
-        Manage Demographics
-      </button>
-    </div>
-  </div> -->
+  <!-- SIDE NAV (Right) - Shows steps -->
+  <!-- <app-side-nav
+    [items]="sideNavItems()"
+    [activeId]="currentView()"
+    [title]="'Steps'"
+    (itemSelected)="onNavItemSelected($event)"
+  /> -->
 </div>

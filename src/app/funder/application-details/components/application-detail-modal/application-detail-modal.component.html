@@ -32,27 +32,33 @@
   <!-- Content -->
   <div class="p-6 space-y-6">
     @if (hasFundingRequest()) {
-    <div class="bg-teal-50 rounded-xl border border-teal-200/50 p-4">
-      <div class="grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
-        <!-- Industry Vertical -->
-        @if (getCurrentData()?.fundingRequest?.industries?.length) {
-        <div class="text-slate-600 font-medium">Industry Vertical</div>
-        <div class="flex flex-wrap gap-1">
+    <div class="bg-white rounded-lg border-3 border-teal-700 p-6 space-y-6">
+      <!-- Industry Vertical -->
+      @if (getCurrentData()?.fundingRequest?.industries?.length) {
+      <div class="space-y-2">
+        <div class="text-slate-900 font-bold uppercase tracking-wide text-xs">
+          Industry Vertical
+        </div>
+        <div class="flex flex-wrap gap-2">
           @for (industry of getCurrentData()?.fundingRequest?.industries; track
           industry) {
           <span
-            class="inline-block px-2 py-1 bg-teal-100 text-teal-700 rounded text-xs font-medium"
+            class="inline-block px-3 py-1.5 bg-teal-50 text-teal-700 rounded-lg text-xs font-bold border-2 border-teal-600"
           >
             {{ industry }}
           </span>
           }
         </div>
-        }
+      </div>
+      }
 
-        <!-- Funding Amount -->
-        @if (getCurrentData()?.fundingRequest?.fundingAmount) {
-        <div class="text-slate-600 font-medium">Funding Amount</div>
-        <div class="font-semibold text-slate-900">
+      <!-- Funding Amount -->
+      @if (getCurrentData()?.fundingRequest?.fundingAmount) {
+      <div class="space-y-2">
+        <div class="text-slate-900 font-bold uppercase tracking-wide text-xs">
+          Funding Amount
+        </div>
+        <div class="font-black text-slate-500">
           {{
             formatCurrency(
               getCurrentData()?.fundingRequest?.fundingAmount || 0,
@@ -60,71 +66,95 @@
             )
           }}
         </div>
-        }
+      </div>
+      }
 
-        <!-- Funding Types -->
-        @if (getCurrentData()?.fundingRequest?.fundingTypes?.length) {
-        <div class="text-slate-600 font-medium">Funding Types</div>
-        <div class="flex flex-wrap gap-1">
+      <!-- Funding Types -->
+      @if (getCurrentData()?.fundingRequest?.fundingTypes?.length) {
+      <div class="space-y-2">
+        <div class="text-slate-900 font-bold uppercase tracking-wide text-xs">
+          Funding Types
+        </div>
+        <div class="flex flex-wrap gap-2">
           @for (type of getCurrentData()?.fundingRequest?.fundingTypes; track
           type) {
           <span
-            class="inline-block px-2 py-1 rounded text-xs font-semibold border"
-            [class]="getFundingTypeColor(type)"
+            class="inline-block px-3 py-1.5 rounded-lg text-xs font-bold border-2 uppercase tracking-wide"
+            [class]="getFundingTypeColorNeoBrutalist(type)"
           >
             {{ formatFundingType(type) }}
           </span>
           }
         </div>
-        }
+      </div>
+      }
 
-        <!-- Business Stages -->
-        @if (getCurrentData()?.fundingRequest?.businessStages?.length) {
-        <div class="text-slate-600 font-medium">Business Stages</div>
-        <div class="flex flex-wrap gap-1">
+      <!-- Business Stages -->
+      @if (getCurrentData()?.fundingRequest?.businessStages?.length) {
+      <div class="space-y-2">
+        <div class="text-slate-900 font-bold uppercase tracking-wide text-xs">
+          Business Stages
+        </div>
+        <div class="flex flex-wrap gap-2">
           @for (stage of getCurrentData()?.fundingRequest?.businessStages; track
           stage) {
           <span
-            class="inline-block px-2 py-1 bg-slate-100 text-slate-700 rounded text-xs font-medium"
+            class="inline-block px-3 py-1.5 bg-slate-100 text-slate-900 rounded-lg text-xs font-bold border-2 border-slate-400"
           >
             {{ stage }}
           </span>
           }
         </div>
-        }
+      </div>
+      }
 
-        <!-- Location -->
-        @if (getCurrentData()?.fundingRequest?.location) {
-        <div class="text-slate-600 font-medium">Location</div>
-        <div class="font-medium text-slate-900">
+      <!-- Location -->
+      @if (getCurrentData()?.fundingRequest?.location) {
+      <div class="space-y-2">
+        <div class="text-slate-900 font-bold uppercase tracking-wide text-xs">
+          Location
+        </div>
+        <div class="font-bold text-slate-900">
           {{ getCurrentData()?.fundingRequest?.location }}
         </div>
-        }
+      </div>
+      }
 
-        <!-- Use of Funds -->
-        @if (getCurrentData()?.fundingRequest?.useOfFunds) {
-        <div class="text-slate-600 font-medium">Use of Funds</div>
-        <div class="font-medium text-slate-900 text-xs">
+      <!-- Use of Funds -->
+      @if (getCurrentData()?.fundingRequest?.useOfFunds) {
+      <div class="space-y-2">
+        <div class="text-slate-900 font-bold uppercase tracking-wide text-xs">
+          Use of Funds
+        </div>
+        <div class="text-slate-900 text-sm leading-relaxed">
           {{ getCurrentData()?.fundingRequest?.useOfFunds }}
         </div>
-        }
+      </div>
+      }
 
-        <!-- Funding Motivation -->
-        @if (getCurrentData()?.fundingRequest?.fundingMotivation) {
-        <div class="text-slate-600 font-medium">Funding Motivation</div>
-        <div class="font-medium text-slate-900 text-xs">
+      <!-- Funding Motivation -->
+      @if (getCurrentData()?.fundingRequest?.fundingMotivation) {
+      <div class="space-y-2">
+        <div class="text-slate-900 font-bold uppercase tracking-wide text-xs">
+          Funding Motivation
+        </div>
+        <div class="text-slate-900 text-sm leading-relaxed">
           {{ getCurrentData()?.fundingRequest?.fundingMotivation }}
         </div>
-        }
+      </div>
+      }
 
-        <!-- Equity Offered -->
-        @if (getCurrentData()?.fundingRequest?.equityOffered) {
-        <div class="text-slate-600 font-medium">Equity Offered</div>
-        <div class="font-semibold text-slate-900">
+      <!-- Equity Offered -->
+      @if (getCurrentData()?.fundingRequest?.equityOffered) {
+      <div class="space-y-2">
+        <div class="text-slate-900 font-bold uppercase tracking-wide text-xs">
+          Equity Offered
+        </div>
+        <div class="font-black text-slate-900 text-lg">
           {{ getCurrentData()?.fundingRequest?.equityOffered }}%
         </div>
-        }
       </div>
+      }
     </div>
     }
 

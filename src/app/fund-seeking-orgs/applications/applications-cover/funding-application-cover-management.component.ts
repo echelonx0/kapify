@@ -1,5 +1,3 @@
-// src/app/features/applications-cover/funding-application-cover-management.component.ts
-
 import {
   Component,
   OnInit,
@@ -11,12 +9,13 @@ import {
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
+import { CommonModule } from '@angular/common';
 import { CoverEditorComponent } from './cover-editor/cover-editor.component';
 import { CoverDocumentUploadComponent } from './cover-document-upload/cover-document-upload.component';
 import { ActivityService } from 'src/app/shared/services/activity.service';
 import { FundingApplicationCoverService } from 'src/app/shared/services/funding-application-cover.service';
-import { CommonModule } from '@angular/common';
 import { DemographicsFormComponent } from './demographics/demographics-form.component';
+import { SideNavItem } from 'src/app/profiles/SME-Profiles/pages/side-nav.component';
 
 type ViewMode = 'editor' | 'upload' | 'demographics';
 type OperationMode = 'create' | 'edit' | 'view';
@@ -24,14 +23,11 @@ type OperationMode = 'create' | 'edit' | 'view';
 /**
  * FundingApplicationCoverManagementComponent
  *
- * SINGLE-PROFILE MODE:
- * - Always shows editor (not list)
- * - One funding request only (the default)
- * - No copy/duplicate feature
- * - Modal creation in CoverStatusSectionComponent
- *
- * FIXED: Uses reactive queryParams (not stale snapshot)
- * - currentView now correctly responds to view=demographics changes
+ * SINGLE-PROFILE MODE with SIDE NAV:
+ * - Side nav shows: Editor → Upload → Demographics steps
+ * - Current view highlighted in nav
+ * - Completion status per step
+ * - Nav hides on mobile, sticky on desktop
  */
 @Component({
   selector: 'app-funding-application-cover-management',
@@ -67,7 +63,7 @@ export class FundingApplicationCoverManagementComponent
   private operationMode = signal<OperationMode>('view');
   private isInitializing = signal(true);
 
-  // ===== REACTIVE QUERY PARAMS (FIX FOR DEMOGRAPHICS VIEW) =====
+  // ===== REACTIVE QUERY PARAMS =====
   private queryView = signal<string | null>(null);
 
   // Error state
@@ -79,10 +75,6 @@ export class FundingApplicationCoverManagementComponent
   readonly mode = this.operationMode;
   readonly initializing = this.isInitializing;
 
-  /**
-   * FIXED: currentView now uses reactive queryView signal
-   * instead of stale snapshot. Responds to real-time query param changes.
-   */
   readonly currentView = computed<ViewMode>(() => {
     const view = this.queryView();
     const hasId = !!this.selectedId();
@@ -100,39 +92,78 @@ export class FundingApplicationCoverManagementComponent
     return this.defaultFundingRequest() || null;
   });
 
+  // ===== SIDE NAV CONFIG =====
+  sideNavItems = computed<SideNavItem[]>(() => {
+    const currentView = this.currentView();
+    // const hasDoc = !!this.selectedCover()?.documents?.length;
+
+    return [
+      {
+        id: 'editor',
+        label: 'Profile',
+        badge: {
+          label: 'Info',
+          color: currentView === 'editor' ? 'teal' : 'slate',
+        },
+      },
+      {
+        id: 'upload',
+        label: 'Documents',
+        // badge: {
+        //   label: hasDoc ? 'Attached' : 'Optional',
+        //   color: hasDoc ? 'green' : 'amber',
+        // },
+      },
+      {
+        id: 'demographics',
+        label: 'Demographics',
+        badge: {
+          label: 'Details',
+          color: currentView === 'demographics' ? 'teal' : 'slate',
+        },
+      },
+    ];
+  });
+
   ngOnInit(): void {
     // Initialize: Load default funding request
     this.loadDefaultFundingRequest();
 
-    // ===== FIXED: Reactive query params subscription =====
-    // This now properly updates currentView when view param changes
+    // ===== REACTIVE QUERY PARAMS SUBSCRIPTION =====
     this.route.queryParams
       .pipe(takeUntil(this.destroy$))
       .subscribe((params) => {
-        // Update the reactive signal with current view
         this.queryView.set(params['view'] || null);
-        // Handle other param changes
         this.handleQueryParamChange(params);
       });
   }
 
   /**
-   * Navigate to demographics form
+   * Navigate to specific view
    */
-  navigateToDemographics(coverId: string): void {
+  navigateToView(view: ViewMode): void {
+    const coverId = this.selectedId();
+    if (!coverId) return;
+
     this.router.navigate([], {
       relativeTo: this.route,
       queryParams: {
         coverId,
-        view: 'demographics',
+        view: view === 'editor' ? null : view,
       },
       queryParamsHandling: 'merge',
     });
   }
 
   /**
+   * Handle side nav selection
+   */
+  onNavItemSelected(itemId: string): void {
+    this.navigateToView(itemId as ViewMode);
+  }
+
+  /**
    * Handle query param changes
-   * URL is source of truth
    */
   private handleQueryParamChange(params: any): void {
     const mode = (params['mode'] || 'view') as OperationMode;
@@ -155,7 +186,6 @@ export class FundingApplicationCoverManagementComponent
       if (result) {
         this.selectedCoverId.set(result.id);
       }
-      // If no default, that's fine - user can create one from status section
     } catch (err: any) {
       this.error.set(err?.message || 'Failed to load funding request');
       console.error('❌ Load funding request error:', err);
@@ -170,39 +200,6 @@ export class FundingApplicationCoverManagementComponent
   async refreshFundingRequest(): Promise<void> {
     await this.loadDefaultFundingRequest();
   }
-
-  // ===== NAVIGATION =====
-
-  navigateToEditor(coverId: string, mode: OperationMode = 'edit'): void {
-    this.router.navigate([], {
-      relativeTo: this.route,
-      queryParams: {
-        mode,
-        coverId,
-        view: null,
-      },
-      queryParamsHandling: 'merge',
-    });
-  }
-
-  navigateToUpload(coverId: string): void {
-    this.router.navigate([], {
-      relativeTo: this.route,
-      queryParams: {
-        coverId,
-        view: 'upload',
-      },
-      queryParamsHandling: 'merge',
-    });
-  }
-
-  navigateBack(): void {
-    this.router.navigate(['..'], {
-      relativeTo: this.route,
-    });
-  }
-
-  // ===== FUNDING REQUEST ACTIONS =====
 
   /**
    * Called when funding request is saved in editor
@@ -219,7 +216,7 @@ export class FundingApplicationCoverManagementComponent
   }
 
   /**
-   * Delete funding request (single-profile mode)
+   * Delete funding request
    */
   async deleteFundingRequest(coverId: string): Promise<void> {
     if (!confirm('Delete this funding request? This cannot be undone.')) return;
@@ -251,7 +248,6 @@ export class FundingApplicationCoverManagementComponent
     const coverId = this.selectedId();
     if (coverId) {
       this.refreshFundingRequest();
-      this.navigateToEditor(coverId, 'edit');
 
       this.activityService.trackProfileActivity(
         'updated',
@@ -259,6 +255,49 @@ export class FundingApplicationCoverManagementComponent
         'funding_request_document_attached'
       );
     }
+  }
+
+  /**
+   * Navigate back
+   */
+  navigateToEditor(coverId: string, mode: OperationMode = 'edit'): void {
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: {
+        mode,
+        coverId,
+        view: null,
+      },
+      queryParamsHandling: 'merge',
+    });
+  }
+
+  navigateToUpload(coverId: string): void {
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: {
+        coverId,
+        view: 'upload',
+      },
+      queryParamsHandling: 'merge',
+    });
+  }
+
+  navigateToDemographics(coverId: string): void {
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: {
+        coverId,
+        view: 'demographics',
+      },
+      queryParamsHandling: 'merge',
+    });
+  }
+
+  navigateBack(): void {
+    this.router.navigate(['..'], {
+      relativeTo: this.route,
+    });
   }
 
   ngOnDestroy(): void {

@@ -1,287 +1,202 @@
-<!-- Root: fills viewport and enforces column layout -->
-<div class="h-full flex flex-col bg-slate-50">
-  <!-- ===== HEADER ===== -->
-  <div
-    class="flex-shrink-0 px-6 lg:px-8 py-6 border-b-4 border-slate-200 bg-white sticky top-0 z-10"
-  >
-    <div class="flex items-center justify-between">
-      <div>
-        <h1 class="text-3xl font-black text-slate-900 tracking-tight">
-          Demographics
-        </h1>
-        <p class="text-sm text-slate-600 mt-2">
-          Tell us more about your business and impact
-        </p>
-      </div>
-
-      <!-- Completion Badge -->
-      <div class="text-right">
-        <div class="text-4xl font-black text-teal-600">
-          {{ completionStatus().completionPercentage }}%
+<!-- LAYOUT WITH SIDEBAR -->
+<div class="flex h-full w-full">
+  <!-- MAIN CONTENT -->
+  <div class="flex-1 flex flex-col overflow-hidden">
+    <app-funding-request-layout
+      [header]="layoutHeader()"
+      [actions]="layoutActions()"
+      [metadata]="layoutMetadata()"
+      [error]="error"
+      [success]="successMessage"
+    >
+      <!-- LOADING STATE -->
+      <div *ngIf="isLoading()" class="flex items-center justify-center h-96">
+        <div class="text-center">
+          <div
+            class="animate-spin w-8 h-8 border-4 border-teal-500 border-t-transparent rounded-full mx-auto mb-4"
+          ></div>
+          <p class="text-slate-600 font-semibold">Loading demographics...</p>
         </div>
-        <p class="text-xs text-slate-600 font-semibold mt-1">Complete</p>
       </div>
-    </div>
-  </div>
 
-  <!-- ===== ERROR DISPLAY ===== -->
-  <div
-    *ngIf="error()"
-    class="flex-shrink-0 px-6 lg:px-8 py-4 bg-red-50 border-b-4 border-red-400 flex items-center gap-3 justify-between"
-  >
-    <div class="flex items-center gap-3">
-      <svg
-        class="w-5 h-5 text-red-600 flex-shrink-0"
-        fill="currentColor"
-        viewBox="0 0 20 20"
-      >
-        <path
-          fill-rule="evenodd"
-          d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-          clip-rule="evenodd"
-        ></path>
-      </svg>
-      <p class="font-bold text-red-700 text-sm">{{ error() }}</p>
-    </div>
-    <button
-      (click)="error.set(null)"
-      class="text-red-600 hover:text-red-900 font-bold text-sm"
-    >
-      Dismiss
-    </button>
-  </div>
-
-  <!-- ===== SUCCESS MESSAGE ===== -->
-  <div
-    *ngIf="successMessage()"
-    class="flex-shrink-0 px-6 lg:px-8 py-4 bg-green-50 border-b-4 border-green-400 flex items-center gap-3"
-  >
-    <svg
-      class="w-5 h-5 text-green-600 flex-shrink-0"
-      fill="currentColor"
-      viewBox="0 0 20 20"
-    >
-      <path
-        fill-rule="evenodd"
-        d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-        clip-rule="evenodd"
-      ></path>
-    </svg>
-    <p class="font-bold text-green-700 text-sm">{{ successMessage() }}</p>
-  </div>
-
-  <!-- ===== CONTENT: LOADING STATE ===== -->
-  <div *ngIf="isLoading()" class="flex-1 flex items-center justify-center">
-    <div class="text-center">
+      <!-- FORM CONTENT -->
       <div
-        class="animate-spin w-8 h-8 border-4 border-teal-500 border-t-transparent rounded-full mx-auto mb-4"
-      ></div>
-      <p class="text-slate-600 font-semibold">Loading demographics...</p>
-    </div>
-  </div>
-
-  <!-- ===== CONTENT: FORM ===== -->
-  <div *ngIf="!isLoading()" class="flex-1 overflow-y-auto">
-    <div class="max-w-4xl mx-auto px-4 lg:px-8 py-8 space-y-8">
-      <!-- Categories -->
-      @for (category of categories(); track trackByCategory($index, category)) {
-      <div
-        class="bg-white rounded-2xl border-3 border-slate-300 overflow-hidden"
+        *ngIf="!isLoading()"
+        class="max-w-4xl mx-auto px-4 lg:px-8 py-8 space-y-8"
+        (scroll)="onContentScroll()"
       >
-        <!-- Category Header -->
-        <div class="px-6 lg:px-8 py-6 border-b-3 border-slate-200 bg-slate-50">
-          <h2
-            class="text-lg font-black text-slate-900 uppercase tracking-widest"
+        <!-- CATEGORIES AS SECTIONS -->
+        @for (category of categories(); track trackByCategory($index, category))
+        {
+        <section [attr.data-category]="category.id" class="form-section">
+          <div
+            class="bg-white rounded-2xl border border-slate-200 overflow-hidden"
           >
-            {{ category.label }}
-          </h2>
-          <p class="text-sm text-slate-600 mt-2">
-            {{ category.description || "Complete this section" }}
-          </p>
+            <!-- Category Header -->
+            <div
+              class="px-6 lg:px-8 py-6 border-b border-slate-200 bg-slate-50"
+            >
+              <h2 class="text-xl font-bold text-slate-900">
+                {{ category.label }}
+              </h2>
+              <p class="text-sm text-slate-600 mt-2">
+                {{ category.description || "Complete this section" }}
+              </p>
 
-          <!-- Category Completion -->
-          <div class="mt-4 flex items-center justify-between">
-            <div class="text-xs text-slate-600 font-semibold">
-              {{
-                completionStatus().categoryCompletion[category.id].filled || 0
-              }}/{{
-                completionStatus().categoryCompletion[category.id].total || 0
-              }}
-              completed
+              <!-- Category Completion -->
+              <div class="mt-4 flex items-center justify-between">
+                <div class="text-xs text-slate-600 font-semibold">
+                  {{
+                    completionStatus().categoryCompletion[category.id].filled ||
+                      0
+                  }}/{{
+                    completionStatus().categoryCompletion[category.id].total ||
+                      0
+                  }}
+                  completed
+                </div>
+                <div class="h-2 w-32 bg-slate-200 rounded-full overflow-hidden">
+                  <div
+                    class="h-full bg-gradient-to-r from-teal-400 to-teal-500 transition-all duration-500"
+                    [style.width.%]="
+                      completionStatus().categoryCompletion[category.id]
+                        .percentage || 0
+                    "
+                  ></div>
+                </div>
+              </div>
             </div>
-            <div class="h-2 w-32 bg-slate-200 rounded-full overflow-hidden">
-              <div
-                class="h-full bg-gradient-to-r from-teal-400 to-teal-500 transition-all duration-500"
-                [style.width.%]="
-                  completionStatus().categoryCompletion[category.id]
-                    .percentage || 0
-                "
-              ></div>
+
+            <!-- Fields -->
+            <div class="px-6 lg:px-8 py-6 space-y-6">
+              @for (field of category.fields; track trackByField($index, field))
+              {
+              <div>
+                <!-- Label -->
+                <label
+                  [for]="category.id + '_' + field.name"
+                  class="block text-sm font-semibold text-slate-900 mb-2"
+                >
+                  {{ field.label }}
+                  @if (field.required) {
+                  <span class="text-red-600 font-bold">*</span>
+                  }
+                </label>
+
+                <!-- Input: Text -->
+                @switch (field.type) { @case ('text') {
+                <input
+                  [id]="category.id + '_' + field.name"
+                  type="text"
+                  [value]="
+                    formatFieldValue(
+                      demographicsData()[category.id][field.name]
+                    )
+                  "
+                  (change)="
+                    onFieldChange(
+                      category.id,
+                      field.name,
+                      $any($event.target).value
+                    )
+                  "
+                  [placeholder]="field.placeholder || 'Enter value'"
+                  class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200"
+                />
+                } @case ('number') {
+                <!-- Input: Number -->
+                <input
+                  [id]="category.id + '_' + field.name"
+                  type="number"
+                  [value]="
+                    formatFieldValue(
+                      demographicsData()[category.id][field.name]
+                    )
+                  "
+                  (change)="
+                    onFieldChange(
+                      category.id,
+                      field.name,
+                      $any($event.target).value
+                    )
+                  "
+                  [min]="field.min"
+                  [max]="field.max"
+                  [placeholder]="field.placeholder || 'Enter number'"
+                  class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200"
+                />
+                } @case ('percentage') {
+                <!-- Input: Percentage -->
+                <div class="flex items-center gap-2">
+                  <input
+                    [id]="category.id + '_' + field.name"
+                    type="number"
+                    [value]="
+                      formatFieldValue(
+                        demographicsData()[category.id][field.name]
+                      )
+                    "
+                    (change)="
+                      onFieldChange(
+                        category.id,
+                        field.name,
+                        $any($event.target).value
+                      )
+                    "
+                    min="0"
+                    max="100"
+                    [placeholder]="field.placeholder || '0-100'"
+                    class="flex-1 px-4 py-2.5 border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200"
+                  />
+                  <span class="text-lg font-black text-slate-900">%</span>
+                </div>
+                } @case ('dropdown') {
+                <!-- Input: Dropdown -->
+                <select
+                  [id]="category.id + '_' + field.name"
+                  [value]="
+                    formatFieldValue(
+                      demographicsData()[category.id][field.name]
+                    )
+                  "
+                  (change)="
+                    onFieldChange(
+                      category.id,
+                      field.name,
+                      $any($event.target).value
+                    )
+                  "
+                  class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-slate-900 bg-white focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200 cursor-pointer"
+                >
+                  <option value="">-- Select --</option>
+                  @for (option of field.options; track option) {
+                  <option [value]="option">{{ option }}</option>
+                  }
+                </select>
+                } }
+
+                <!-- Help Text -->
+                @if (field.helpText) {
+                <p class="text-xs text-slate-600 mt-2">
+                  {{ field.helpText }}
+                </p>
+                }
+              </div>
+              }
             </div>
           </div>
-        </div>
-
-        <!-- Fields -->
-        <div class="px-6 lg:px-8 py-6 space-y-6">
-          @for (field of category.fields; track trackByField($index, field)) {
-          <div>
-            <!-- Label -->
-            <label
-              [for]="category.id + '_' + field.name"
-              class="block text-sm font-semibold text-slate-900 mb-2"
-            >
-              {{ field.label }}
-              @if (field.required) {
-              <span class="text-red-600 font-bold">*</span>
-              }
-            </label>
-
-            <!-- Input: Text -->
-            @switch (field.type) { @case ('text') {
-            <input
-              [id]="category.id + '_' + field.name"
-              type="text"
-              [value]="
-                formatFieldValue(demographicsData()[category.id][field.name])
-              "
-              (change)="
-                onFieldChange(
-                  category.id,
-                  field.name,
-                  $any($event.target).value
-                )
-              "
-              [placeholder]="field.placeholder || 'Enter value'"
-              class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200"
-            />
-            } @case ('number') {
-            <!-- Input: Number -->
-            <input
-              [id]="category.id + '_' + field.name"
-              type="number"
-              [value]="
-                formatFieldValue(demographicsData()[category.id][field.name])
-              "
-              (change)="
-                onFieldChange(
-                  category.id,
-                  field.name,
-                  $any($event.target).value
-                )
-              "
-              [min]="field.min"
-              [max]="field.max"
-              [placeholder]="field.placeholder || 'Enter number'"
-              class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200"
-            />
-            } @case ('percentage') {
-            <!-- Input: Percentage -->
-            <div class="flex items-center gap-2">
-              <input
-                [id]="category.id + '_' + field.name"
-                type="number"
-                [value]="
-                  formatFieldValue(demographicsData()[category.id][field.name])
-                "
-                (change)="
-                  onFieldChange(
-                    category.id,
-                    field.name,
-                    $any($event.target).value
-                  )
-                "
-                min="0"
-                max="100"
-                [placeholder]="field.placeholder || '0-100'"
-                class="flex-1 px-4 py-2.5 border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200"
-              />
-              <span class="text-lg font-black text-slate-900">%</span>
-            </div>
-            } @case ('dropdown') {
-            <!-- Input: Dropdown -->
-            <select
-              [id]="category.id + '_' + field.name"
-              [value]="
-                formatFieldValue(demographicsData()[category.id][field.name])
-              "
-              (change)="
-                onFieldChange(
-                  category.id,
-                  field.name,
-                  $any($event.target).value
-                )
-              "
-              class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-slate-900 bg-white focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200 cursor-pointer"
-            >
-              <option value="">-- Select --</option>
-              @for (option of field.options; track option) {
-              <option [value]="option">{{ option }}</option>
-              }
-            </select>
-            } }
-
-            <!-- Help Text -->
-            @if (field.helpText) {
-            <p class="text-xs text-slate-600 mt-2">{{ field.helpText }}</p>
-            }
-          </div>
-          }
-        </div>
-      </div>
-      }
-
-      <!-- No categories message -->
-      @if (!categories().length) {
-      <div class="text-center py-12">
-        <p class="text-slate-600 font-semibold">
-          No demographic categories configured yet.
-        </p>
-      </div>
-      }
-    </div>
-  </div>
-
-  <!-- ===== FOOTER: Neo-Brutalist ===== -->
-  <div
-    class="flex-shrink-0 sticky bottom-0 z-30 bg-white border-t-4 border-slate-300 px-6 lg:px-8 py-4 flex items-center justify-between shadow-lg shadow-slate-200/20"
-  >
-    <div class="text-xs text-slate-600">
-      <p class="font-semibold">
-        Last saved:
-        <span
-          class="text-teal-600 font-black"
-          *ngIf="demographicsService.savedAt()"
-        >
-          {{ demographicsService.savedAt() | date : "short" }}
-        </span>
-        <span class="text-slate-500" *ngIf="!demographicsService.savedAt()">
-          Not saved yet
-        </span>
-      </p>
-    </div>
-
-    <div class="flex gap-3">
-      <button
-        (click)="goBack()"
-        class="px-5 py-2.5 bg-slate-100 text-slate-700 font-semibold rounded-lg border border-slate-200 hover:bg-slate-200 active:bg-slate-300 transition-all duration-200 text-sm"
-      >
-        Cancel
-      </button>
-
-      <button
-        (click)="saveDemographics()"
-        [disabled]="isSaving()"
-        class="flex items-center justify-center gap-2 px-6 py-2.5 bg-teal-600 text-white font-black rounded-lg border-3 border-teal-700 uppercase tracking-wide text-sm hover:bg-teal-700 active:bg-teal-800 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-      >
-        @if (isSaving()) {
-        <div
-          class="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full"
-        ></div>
-        <span>Saving...</span>
-        } @else {
-        <span>Save Demographics</span>
+        </section>
         }
-      </button>
-    </div>
+
+        <!-- No categories message -->
+        @if (!categories().length) {
+        <div class="text-center py-12">
+          <p class="text-slate-600 font-semibold">
+            No demographic categories configured yet.
+          </p>
+        </div>
+        }
+      </div>
+    </app-funding-request-layout>
   </div>
 </div>

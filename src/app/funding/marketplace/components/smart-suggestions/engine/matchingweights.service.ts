@@ -5,45 +5,6 @@ import {
   DEFAULT_MATCHING_WEIGHTS,
 } from './matching-engine.model';
 
-
-// @Injectable({ providedIn: 'root' })
-// export class MatchingWeightsService {
-//   private supabase = inject(SharedSupabaseService);
-
-//   private cachedWeights: MatchingWeights | null = null;
-
-//   async getWeights(): Promise<MatchingWeights> {
-//     if (this.cachedWeights) {
-//       return this.cachedWeights;
-//     }
-
-//     try {
-//       const { data, error } = await this.supabase
-//         .from('matching_weights')
-//         .select('key, value');
-
-//       if (error || !data) {
-//         this.cachedWeights = { ...DEFAULT_MATCHING_WEIGHTS };
-//         return this.cachedWeights;
-//       }
-
-//       this.cachedWeights = {
-//         ...DEFAULT_MATCHING_WEIGHTS,
-//         ...Object.fromEntries(data.map((r) => [r.key, Number(r.value)])),
-//       };
-//       console.log('Fetched from Datsbase');
-//       return this.cachedWeights!;
-//     } catch {
-//       this.cachedWeights = { ...DEFAULT_MATCHING_WEIGHTS };
-//       return this.cachedWeights;
-//     }
-//   }
-
-//   clearCache(): void {
-//     this.cachedWeights = null;
-//   }
-// }
-
 @Injectable({ providedIn: 'root' })
 export class MatchingWeightsService {
   private supabase = inject(SharedSupabaseService);
