@@ -1,15 +1,4 @@
 <style>
-  @keyframes slideInLeft {
-    from {
-      opacity: 0;
-      transform: translateX(-20px);
-    }
-    to {
-      opacity: 1;
-      transform: translateX(0);
-    }
-  }
-
   @keyframes slideInUp {
     from {
       opacity: 0;
@@ -21,44 +10,19 @@
     }
   }
 
-  @keyframes pulseScale {
-    0%,
-    100% {
-      transform: scale(1);
-    }
-    50% {
-      transform: scale(1.05);
-    }
-  }
-
-  @keyframes fillBar {
-    from {
-      width: 0;
-    }
-    to {
-      width: var(--progress);
-    }
-  }
-
   .step-card-enter {
     animation: slideInUp 0.3s ease-out forwards;
     opacity: 0;
   }
 
-  .progress-fill {
-    animation: fillBar 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  .step-card:hover .step-card-inner {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    border-color: rgb(203, 213, 225);
   }
 
-  .step-card:hover {
-    transform: translateY(-2px);
-  }
-
-  .step-card.current {
-    animation: pulseScale 2s ease-in-out infinite;
-  }
-
-  .back-button:active {
-    transform: scale(0.95);
+  .step-card:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -70,125 +34,125 @@
 </style>
 
 <div
-  class="flex flex-col h-full bg-white overflow-hidden border-r-4 border-slate-900"
+  class="flex flex-col h-full bg-slate-50 overflow-hidden border-r border-slate-200"
 >
   <!-- Navigation Header: Back Button + Title -->
   <header
-    class="px-4 py-3 border-b-4 border-slate-900 bg-slate-50 flex-shrink-0 flex items-center gap-3"
+    class="px-6 py-4 border-b border-slate-200 bg-white flex-shrink-0 flex items-center gap-3"
   >
     <button
       (click)="goBack()"
-      class="back-button p-2 -ml-2 bg-white hover:bg-slate-100 active:bg-slate-200 rounded-none border-3 border-slate-400 transition-all duration-200 flex items-center justify-center focus:outline-none focus:ring-4 focus:ring-teal-500 focus:ring-offset-2"
+      class="p-2 -ml-2 hover:bg-slate-100 active:bg-slate-200 rounded-lg transition-colors duration-200 flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2"
       title="Go back"
       aria-label="Go back"
     >
-      <lucide-icon
-        [name]="ArrowLeftIcon"
-        [size]="20"
-        class="text-slate-900 font-bold"
-      />
+      <lucide-icon [name]="ArrowLeftIcon" [size]="20" class="text-slate-600" />
     </button>
-    <h2 class="text-sm font-black text-slate-900 uppercase tracking-wider">
-      Go Back
-    </h2>
+    <h2 class="text-sm font-semibold text-slate-900">Steps</h2>
   </header>
 
-  <!-- Steps List - Compact Cards with Neo-Brutal Borders -->
+  <!-- Steps List - Standard Design System Cards -->
   <nav class="flex-1 overflow-y-auto min-h-0">
-    <div class="p-4 space-y-2">
+    <div class="p-4 space-y-3">
       @for (step of steps(); track step.id; let i = $index) {
       <button
         (click)="stepClicked.emit(step.id)"
         [disabled]="!canAccessStep(step.id)"
         [class]="getStepCardClasses(step)"
         [style.--delay]="i * 0.05 + 's'"
-        class="step-card w-full text-left transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-teal-500 focus:ring-offset-2 rounded-none"
+        class="step-card w-full text-left transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2"
       >
-        <!-- Neo-Brutal Card: Thick borders, bold typography -->
+        <!-- Standard Card: Soft border, clean typography -->
         <div
-          class="px-4 py-3 rounded-none border-3 transition-all duration-200"
-          [class.border-green-600]="isStepComplete(step.id)"
-          [class.border-teal-600]="
+          class="step-card-inner px-4 py-3 rounded-xl border transition-all duration-200"
+          [class.bg-green-50]="isStepComplete(step.id)"
+          [class.border-green-50]="isStepComplete(step.id)"
+          [class.bg-teal-50]="
             isCurrentStep(step.id) && !isStepComplete(step.id)
           "
-          [class.border-slate-400]="
+          [class.border-teal-50]="
+            isCurrentStep(step.id) && !isStepComplete(step.id)
+          "
+          [class.bg-white]="
             !isCurrentStep(step.id) &&
             !isStepComplete(step.id) &&
             canAccessStep(step.id)
           "
-          [class.border-slate-300]="!canAccessStep(step.id)"
+          [class.border-slate-200]="
+            !isCurrentStep(step.id) &&
+            !isStepComplete(step.id) &&
+            canAccessStep(step.id)
+          "
+          [class.bg-slate-50]="!canAccessStep(step.id)"
+          [class.border-slate-50]="!canAccessStep(step.id)"
         >
           <!-- Row 1: Icon + Title + Badge -->
-          <div class="flex items-center gap-3 mb-1.5">
-            <!-- Step Icon: Bold Border -->
+          <div class="flex items-center gap-3 mb-2">
+            <!-- Step Icon -->
             <div
               [class]="getStepIconClasses(step)"
-              class="w-6 h-6 rounded-none flex items-center justify-center flex-shrink-0 border-2 font-bold"
+              class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
             >
               @if (isStepComplete(step.id)) {
-              <lucide-icon [name]="CheckIcon" [size]="14" class="text-white" />
+              <lucide-icon [name]="CheckIcon" [size]="16" class="text-white" />
               } @else if (!canAccessStep(step.id)) {
-              <lucide-icon [name]="LockIcon" [size]="14" />
+              <lucide-icon
+                [name]="LockIcon"
+                [size]="16"
+                class="text-slate-400"
+              />
               } @else {
-              <lucide-icon [name]="step.icon" [size]="14" />
+              <lucide-icon [name]="step.icon" [size]="16" />
               }
             </div>
 
-            <!-- Title: Bold, Uppercase -->
+            <!-- Title -->
             <h3
               [class]="getStepTitleClasses(step)"
-              class="text-xs font-black uppercase tracking-wider truncate flex-1"
+              class="text-sm font-semibold truncate flex-1"
             >
               {{ step.shortTitle }}
             </h3>
 
-            <!-- Required Badge: Bold Red -->
+            <!-- Required Badge -->
             @if (step.priority === 'high' && !isStepComplete(step.id)) {
             <span
-              class="inline-block flex-shrink-0 px-2 py-0.5 rounded-none text-xs font-black bg-red-100 text-red-700 border-2 border-red-600 uppercase"
+              class="inline-block flex-shrink-0 px-2 py-1 rounded-lg text-xs font-semibold bg-red-50 text-red-700 border border-red-200/50"
             >
-              *
+              Required
             </span>
             }
           </div>
 
-          <!-- Row 2: Status + Time -->
-          <div class="flex items-center justify-between text-xs px-0.5">
-            <!-- Status: Bold -->
+          <!-- Row 2: Status -->
+          <div class="flex items-center justify-between">
             @if (isStepComplete(step.id)) {
-            <span class="font-black text-green-700 uppercase">Complete</span>
+            <span class="text-xs font-medium text-green-700">Complete</span>
             } @else if (isCurrentStep(step.id)) {
-            <span class="font-black text-teal-700 uppercase">In Progress</span>
+            <span class="text-xs font-medium text-teal-700">In Progress</span>
             } @else if (canAccessStep(step.id)) {
-            <span class="font-bold text-slate-700 uppercase">Ready</span>
+            <span class="text-xs font-medium text-slate-600">Ready</span>
             } @else {
-            <span class="font-bold text-slate-500 uppercase">Locked</span>
+            <span class="text-xs font-medium text-slate-500">Locked</span>
             }
 
-            <!-- Time -->
-            @if (!isStepComplete(step.id)) {
-            <span class="font-bold text-slate-600">{{
-              step.estimatedTime
-            }}</span>
+            <!-- Missing Fields Count -->
+            @if (!isStepComplete(step.id) && getMissingFields(step.id).length >
+            0) {
+            <div
+              class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-amber-50 border border-amber-200/50"
+            >
+              <lucide-icon
+                [name]="AlertCircleIcon"
+                [size]="12"
+                class="text-amber-600 flex-shrink-0"
+              />
+              <span class="text-xs font-medium text-amber-700">
+                {{ getMissingFields(step.id).length }} missing
+              </span>
+            </div>
             }
           </div>
-
-          <!-- Row 3: Missing Fields Badge -->
-          @if (!isStepComplete(step.id) && getMissingFields(step.id).length > 0)
-          {
-          <div
-            class="mt-2 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-none bg-amber-100 border-2 border-amber-600"
-          >
-            <lucide-icon
-              [name]="AlertCircleIcon"
-              [size]="12"
-              class="text-amber-700 flex-shrink-0 font-bold"
-            />
-            <span class="text-xs font-black text-amber-700 uppercase">
-              {{ getMissingFields(step.id).length }} missing
-            </span>
-          </div>
-          }
         </div>
       </button>
       }

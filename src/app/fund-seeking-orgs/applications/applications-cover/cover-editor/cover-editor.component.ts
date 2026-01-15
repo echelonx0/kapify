@@ -526,6 +526,18 @@ export class CoverEditorComponent implements OnInit, OnDestroy {
   fundingTypes = signal<string[]>([]);
   investmentCriteria = signal<string[]>([]);
 
+  formattedFundingAmount = computed(() => {
+    const value = this.fundingAmount();
+    if (value === null) {
+      return '';
+    }
+
+    return new Intl.NumberFormat('en-ZA', {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(value);
+  });
+
   // Options from constants service
   sectors = computed(() => {
     return this.constantsService.industries().map((opt) => opt.label);
@@ -630,6 +642,22 @@ export class CoverEditorComponent implements OnInit, OnDestroy {
     }
 
     this.validateForm();
+  }
+
+  onFundingAmountInput(event: Event): void {
+    const input = event.target as HTMLInputElement;
+
+    // Remove commas, spaces, currency symbols
+    const raw = input.value.replace(/[^\d]/g, '');
+    const numeric = raw ? Number(raw) : null;
+
+    this.fundingAmount.set(numeric);
+    this.validateForm();
+  }
+
+  onFundingAmountBlur(): void {
+    // Forces recomputation so formatting snaps cleanly
+    this.fundingAmount.set(this.fundingAmount());
   }
 
   updateTextField(field: string, event: Event): void {

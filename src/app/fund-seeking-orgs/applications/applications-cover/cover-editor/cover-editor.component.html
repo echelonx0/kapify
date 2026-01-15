@@ -137,11 +137,20 @@
                   How much are you looking to raise? (ZAR)
                   <span class="text-red-600">*</span>
                 </label>
-                <input
+                <!-- <input
                   type="number"
                   [value]="fundingAmount()"
                   (change)="updateNumberField('fundingAmount', $event)"
                   placeholder="e.g., 500000"
+                  class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all duration-200"
+                /> -->
+                <input
+                  type="text"
+                  inputmode="numeric"
+                  [value]="formattedFundingAmount()"
+                  (input)="onFundingAmountInput($event)"
+                  (blur)="onFundingAmountBlur()"
+                  placeholder="e.g., 500,000"
                   class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all duration-200"
                 />
               </div>

@@ -267,7 +267,7 @@ export class CreditsComponent implements OnInit, OnDestroy {
   }
 
   formatCurrency(amount: number): string {
-    return (amount / 100).toLocaleString('en-ZA', {
+    return amount.toLocaleString('en-ZA', {
       style: 'currency',
       currency: 'ZAR',
       minimumFractionDigits: 0,
