@@ -19,7 +19,7 @@ import {
   SuggestionsMatchingService,
   MatchScore,
 } from './engine/suggestions-matching.service';
-import { ScoringBreakdownComponent } from './components/scoring-breakdown-component';
+import { ScoringBreakdownComponent } from './components/scoring-breakdown/scoring-breakdown-component';
 import { SuggestionCardComponent } from './components/suggestion-card.component';
 
 @Component({

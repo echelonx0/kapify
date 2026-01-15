@@ -27,7 +27,7 @@ import {
   MatchScore,
 } from '../engine/suggestions-matching.service';
 import { FundingProfileSetupService } from 'src/app/fund-seeking-orgs/services/funding-profile-setup.service';
-import { ScoringBreakdownComponent } from './scoring-breakdown-component';
+import { ScoringBreakdownComponent } from './scoring-breakdown/scoring-breakdown-component';
 
 @Component({
   selector: 'app-smart-suggestions-inline',

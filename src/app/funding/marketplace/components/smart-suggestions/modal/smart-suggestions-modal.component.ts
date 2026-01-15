@@ -21,7 +21,7 @@ import {
   MatchScore,
 } from '../engine/suggestions-matching.service';
 import { SuggestionCardComponent } from '../components/suggestion-card.component';
-import { ScoringBreakdownComponent } from '../components/scoring-breakdown-component';
+import { ScoringBreakdownComponent } from '../components/scoring-breakdown/scoring-breakdown-component';
 import { FundingApplicationCoverInformation } from 'src/app/shared/models/funding-application-cover.model';
 import { FundingApplicationCoverService } from 'src/app/shared/services/funding-application-cover.service';
 import { ToastService } from 'src/app/shared/services/toast.service';
