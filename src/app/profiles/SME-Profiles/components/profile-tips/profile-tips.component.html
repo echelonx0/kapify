@@ -1,0 +1,76 @@
+<!-- Backdrop -->
+<div
+  class="fixed inset-0 bg-black/25 z-40"
+  (click)="onClose()"
+  [@fadeInOut]
+></div>
+
+<!-- Drawer - Left Side -->
+<div
+  class="fixed left-0 top-0 bottom-0 w-full lg:w-96 bg-white border-r-4 border-slate-900 flex flex-col z-50"
+  [@slideInFromLeft]
+>
+  <!-- Header -->
+  <div class="px-6 py-6 border-b-4 border-slate-900 bg-slate-50">
+    <div class="flex items-center justify-between mb-2">
+      <h2 class="text-lg font-black text-slate-900 uppercase tracking-widest">
+        Profile Tips
+      </h2>
+      <button
+        (click)="onClose()"
+        class="p-2 rounded hover:bg-slate-200 transition-colors duration-200"
+        aria-label="Close"
+      >
+        <lucide-icon [img]="CloseIcon" [size]="20" class="text-slate-900" />
+      </button>
+    </div>
+
+    <p class="text-xs text-slate-700 font-semibold uppercase tracking-wide">
+      Complete your profile to unlock funding
+    </p>
+  </div>
+
+  <!-- Content -->
+  <div class="flex-1 overflow-y-auto px-6 py-6">
+    <div class="space-y-4">
+      @for (tip of tips; track tip.id) {
+      <div
+        class="border-3 border-slate-300 rounded-lg p-4 hover:border-slate-400 transition-colors duration-200"
+      >
+        <!-- Icon + Title -->
+        <div class="flex items-start gap-3 mb-2">
+          <div
+            class="w-10 h-10 rounded-lg border-2 flex items-center justify-center flex-shrink-0"
+            [class]="getIconBgClass(tip.color)"
+          >
+            <lucide-icon [img]="tip.icon" [size]="18" />
+          </div>
+
+          <h3
+            class="text-sm font-black uppercase tracking-wide mt-0.5"
+            [class]="getTitleClass(tip.color)"
+          >
+            {{ tip.title }}
+          </h3>
+        </div>
+
+        <!-- Description -->
+        <p class="text-xs text-slate-700 leading-relaxed ml-13">
+          {{ tip.description }}
+        </p>
+      </div>
+      }
+    </div>
+
+    <!-- Footer Info Box -->
+    <div class="mt-6 p-4 bg-teal-50 border-3 border-teal-400 rounded-lg">
+      <p class="text-xs font-bold text-teal-900 uppercase tracking-wide">
+        💡 Pro Tip
+      </p>
+      <p class="text-xs text-teal-900 leading-relaxed mt-1">
+        Complete all sections to improve your matching with funders. The more
+        complete your profile, the better opportunities you'll unlock.
+      </p>
+    </div>
+  </div>
+</div>

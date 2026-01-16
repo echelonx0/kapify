@@ -1,4 +1,11 @@
-import { Component, computed, OnInit, inject, OnDestroy } from '@angular/core';
+import {
+  Component,
+  computed,
+  OnInit,
+  inject,
+  OnDestroy,
+  signal,
+} from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import {
@@ -22,15 +29,16 @@ import {
   SquarePen,
 } from 'lucide-angular';
 
-import { UiButtonComponent } from '../../../shared/components/ui-button.component';
-import { UiStatusBadgeComponent } from '../../../shared/components/ui-status-badge.component';
-import { CoverStatusSectionComponent } from './cover-status-section/cover-status-section.component';
+import { UiButtonComponent } from '../../../../shared/components/ui-button.component';
+import { UiStatusBadgeComponent } from '../../../../shared/components/ui-status-badge.component';
+import { CoverStatusSectionComponent } from '../cover-status-section/cover-status-section.component';
 
-import { AuthService } from '../../../auth/services/production.auth.service';
-import { FundingProfileSetupService } from '../../../fund-seeking-orgs/services/funding-profile-setup.service';
+import { AuthService } from '../../../../auth/services/production.auth.service';
+import { FundingProfileSetupService } from '../../../../fund-seeking-orgs/services/funding-profile-setup.service';
 import { FundingApplicationCoverService } from 'src/app/shared/services/funding-application-cover.service';
 
 import { PlatformDisclaimerComponent } from 'src/app/core/dashboard/components/disclaimer/disclaimer.component';
+import { ProfileTipsModalComponent } from '../../components/profile-tips/profile-tips.component';
 
 @Component({
   selector: 'app-profile-home',
@@ -43,168 +51,10 @@ import { PlatformDisclaimerComponent } from 'src/app/core/dashboard/components/d
     PlatformDisclaimerComponent,
     RouterModule,
     CoverStatusSectionComponent,
+    ProfileTipsModalComponent,
   ],
   templateUrl: 'profile-home.component.html',
-  styles: [
-    `
-      :host ::ng-deep {
-        .compact-mode {
-          max-height: 300px;
-          overflow-y: auto;
-        }
-
-        /* ===== KEYFRAME ANIMATIONS ===== */
-        @keyframes fadeInUp {
-          from {
-            opacity: 0;
-            transform: translateY(8px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-
-        @keyframes slideInLeft {
-          from {
-            opacity: 0;
-            transform: translateX(-12px);
-          }
-          to {
-            opacity: 1;
-            transform: translateX(0);
-          }
-        }
-
-        @keyframes pulseGlow {
-          0%,
-          100% {
-            box-shadow: inset 0 0 0 0 rgba(20, 184, 166, 0.1);
-          }
-          50% {
-            box-shadow: inset 0 0 8px 0 rgba(20, 184, 166, 0.15);
-          }
-        }
-
-        @keyframes progressSlide {
-          from {
-            transform: translateX(-100%);
-          }
-          to {
-            transform: translateX(0);
-          }
-        }
-
-        /* ===== STEP CARD ANIMATIONS ===== */
-        .step-card {
-          animation: fadeInUp 0.5s cubic-bezier(0.4, 0, 0.2, 1) both;
-          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        /* Stagger animation on initial load */
-        .step-card:nth-child(1) {
-          animation-delay: 0.08s;
-        }
-        .step-card:nth-child(2) {
-          animation-delay: 0.12s;
-        }
-        .step-card:nth-child(3) {
-          animation-delay: 0.16s;
-        }
-        .step-card:nth-child(4) {
-          animation-delay: 0.2s;
-        }
-        .step-card:nth-child(5) {
-          animation-delay: 0.24s;
-        }
-        .step-card:nth-child(6) {
-          animation-delay: 0.28s;
-        }
-
-        /* Hover state - lift + glow */
-        .step-card:hover {
-          transform: translateY(-4px);
-          border-color: rgb(20, 184, 166 / 0.3);
-          box-shadow: 0 8px 16px rgb(0 0 0 / 0.1),
-            inset 0 0 1px rgb(20, 184, 166 / 0.2);
-        }
-
-        /* Active/current step - subtle pulse */
-        .step-card.is-current {
-          animation: pulseGlow 3s ease-in-out infinite;
-          border-color: rgb(20, 184, 166 / 0.4);
-        }
-
-        /* ===== PROGRESS BAR ANIMATION ===== */
-        .progress-fill {
-          animation: progressSlide 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-          transition: width 0.7s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        /* ===== ICON ANIMATIONS ===== */
-        .step-icon {
-          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .step-card:hover .step-icon {
-          transform: scale(1.08);
-        }
-
-        /* Pulse for completed icon */
-        .step-icon-completed {
-          animation: pulseGlow 2.5s ease-in-out infinite;
-        }
-
-        /* ===== STATUS BADGE ANIMATION ===== */
-        ui-status-badge {
-          animation: fadeInUp 0.6s cubic-bezier(0.4, 0, 0.2, 1) 0.1s both;
-        }
-
-        /* ===== SIDEBAR CARD ANIMATIONS ===== */
-        .right-sidebar-card {
-          animation: slideInLeft 0.5s cubic-bezier(0.4, 0, 0.2, 1) both;
-        }
-
-        /* Stagger delays for bottom cards */
-        .right-sidebar-card:nth-child(1) {
-          animation-delay: 0.24s;
-        }
-        .right-sidebar-card:nth-child(2) {
-          animation-delay: 0.28s;
-        }
-        .right-sidebar-card:nth-child(3) {
-          animation-delay: 0.32s;
-        }
-
-        /* ===== BUTTON INTERACTIONS ===== */
-        .action-button {
-          transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-          position: relative;
-          overflow: hidden;
-        }
-
-        .action-button:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 6px 12px rgb(0 0 0 / 0.08);
-        }
-
-        .action-button:active {
-          transform: translateY(0);
-        }
-
-        /* ===== ACCESSIBILITY ===== */
-        @media (prefers-reduced-motion: reduce) {
-          .step-card,
-          .right-sidebar-card,
-          .progress-fill,
-          .action-button {
-            animation: none !important;
-            transition: none !important;
-          }
-        }
-      }
-    `,
-  ],
+  styleUrl: './profile-home.component.css',
 })
 export class ProfileHomeComponent implements OnInit, OnDestroy {
   authService = inject(AuthService);
@@ -232,7 +82,8 @@ export class ProfileHomeComponent implements OnInit, OnDestroy {
 
   email = 'info@bokamosoas.co.za';
   private imageRotationInterval: any;
-
+  //  signal to control modal visibility
+  showProfileTips = signal(false);
   // ===== COMPUTED PROPERTIES =====
   completionPercentage = computed(() => {
     const completed = this.fundingApplicationService.steps.filter(
@@ -274,6 +125,11 @@ export class ProfileHomeComponent implements OnInit, OnDestroy {
     const remaining = this.pendingSteps();
     return Math.ceil(remaining * 0.5);
   };
+
+  borderClass = computed(() => {
+    return 'border-4 border-slate-600';
+    return 'border-4 border-slate-900';
+  });
 
   // ===== STEP HELPERS =====
   private hasDataForStep(stepId: string, data: any): boolean {
@@ -375,6 +231,9 @@ export class ProfileHomeComponent implements OnInit, OnDestroy {
     this.loadCoverData();
   }
 
+  goBack() {
+    window.history.back();
+  }
   ngOnDestroy() {
     if (this.imageRotationInterval) {
       clearInterval(this.imageRotationInterval);
@@ -456,7 +315,14 @@ export class ProfileHomeComponent implements OnInit, OnDestroy {
       }
     });
   }
+  // When user clicks hint icon/button
+  openProfileTips() {
+    this.showProfileTips.set(true);
+  }
 
+  closeProfileTips() {
+    this.showProfileTips.set(false);
+  }
   // ===== GETTER =====
   get applicationSteps() {
     return this.fundingApplicationService.steps;

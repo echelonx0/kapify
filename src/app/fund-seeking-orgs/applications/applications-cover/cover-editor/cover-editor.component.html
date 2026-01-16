@@ -4,9 +4,8 @@
   <app-page-header
     [title]="isCreating() ? 'CREATE FUNDING REQUEST' : 'EDIT FUNDING REQUEST'"
     [subtitle]="
-      isCreating()
-        ? 'Set up a custom request to share with investors'
-        : 'Update your funding profile request'
+      'Outline your funding needs to help identify suitable funding
+        opportunities.'
     "
     [completionPercentage]="completionPercentage()"
     (back)="onCancel()"
@@ -137,13 +136,7 @@
                   How much are you looking to raise? (ZAR)
                   <span class="text-red-600">*</span>
                 </label>
-                <!-- <input
-                  type="number"
-                  [value]="fundingAmount()"
-                  (change)="updateNumberField('fundingAmount', $event)"
-                  placeholder="e.g., 500000"
-                  class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all duration-200"
-                /> -->
+
                 <input
                   type="text"
                   inputmode="numeric"
@@ -348,14 +341,6 @@
         <div class="h-6"></div>
       </div>
     </div>
-
-    <!-- SECTION NAVIGATOR SIDEBAR -->
-    <!-- <app-form-section-navigator
-      [sections]="navSections()"
-      [activeSection]="activeSection()"
-      [footerText]="'Sections'"
-      (sectionSelected)="scrollToSection($event)"
-    /> -->
   </div>
 
   <!-- STICKY FOOTER -->

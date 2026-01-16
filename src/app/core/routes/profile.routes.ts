@@ -20,7 +20,7 @@ export const profileRoutes: Routes = [
         path: 'home',
         loadComponent: () =>
           import(
-            '../../profiles/SME-Profiles/pages/profile-home.component'
+            '../../profiles/SME-Profiles/pages/profile-home/profile-home.component'
           ).then((c) => c.ProfileHomeComponent),
         title: 'Profile Overview - Kapify',
       },

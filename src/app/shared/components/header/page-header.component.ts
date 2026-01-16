@@ -10,18 +10,18 @@ import { CommonModule } from '@angular/common';
       class="flex-shrink-0 px-4 lg:px-8 py-5 border-b-4 border-slate-200 bg-white sticky top-0 z-10"
     >
       <div class="flex items-center justify-between gap-4">
-        <!-- Left: Back Button + Title Section -->
-        <div class="flex items-center gap-4 flex-1 min-w-0">
+        <!-- LEFT: Back Button + Title -->
+        <div class="flex items-center gap-4 min-w-0">
           <!-- Back Button -->
           <button
             (click)="goBack()"
             class="flex-shrink-0 w-9 h-9 flex items-center justify-center
-                   rounded-xl border border-slate-300
-                   bg-white text-slate-600
-                   hover:bg-slate-100 hover:text-slate-900
-                   active:bg-slate-200
-                   focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500
-                   transition-all duration-200 shadow-sm"
+               rounded-xl border border-slate-300
+               bg-white text-slate-600
+               hover:bg-slate-100 hover:text-slate-900
+               active:bg-slate-200
+               focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500
+               transition-all duration-200 shadow-sm"
             aria-label="Go back"
           >
             <svg
@@ -55,7 +55,7 @@ import { CommonModule } from '@angular/common';
           </div>
         </div>
 
-        <!-- Right: Completion Badge (Optional) -->
+        <!-- RIGHT: Completion Badge -->
         <div
           *ngIf="completionPercentage !== undefined"
           class="flex-shrink-0 text-right"
