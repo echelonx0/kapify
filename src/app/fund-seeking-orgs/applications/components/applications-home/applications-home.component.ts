@@ -542,18 +542,15 @@ export class ApplicationsHomeComponent implements OnInit, OnDestroy {
       .pipe(
         takeUntil(this.destroy$),
         tap((smeApplications: OpportunityApplication[]) => {
-          console.group('📋 SME Applications Loaded');
-          console.log('Total applications:', smeApplications.length);
-
           smeApplications.forEach((app, index) => {
-            console.log(`\n[${index + 1}] Application:`, {
-              id: app.id,
-              title: app.title,
-              status: app.status,
-              opportunityId: app.opportunityId,
-              hasFundingRequest: !!app.fundingRequest,
-              fundingRequest: app.coverInformation,
-            });
+            // console.log(`\n[${index + 1}] Application:`, {
+            //   id: app.id,
+            //   title: app.title,
+            //   status: app.status,
+            //   opportunityId: app.opportunityId,
+            //   hasFundingRequest: !!app.fundingRequest,
+            //   fundingRequest: app.coverInformation,
+            // });
           });
           console.groupEnd();
         }),
@@ -566,38 +563,33 @@ export class ApplicationsHomeComponent implements OnInit, OnDestroy {
       )
       .subscribe({
         next: (smeApplications: OpportunityApplication[]) => {
-          console.group('🔄 Transforming SME Applications');
-          console.log('Applications to transform:', smeApplications.length);
-
           const applicationData = smeApplications.map((app, index) => {
             const transformed =
               this.transformService.transformSMEApplication(app);
-            console.log(`[${index + 1}] Transformed:`, {
-              id: transformed.id,
-              title: transformed.title,
-              status: transformed.status,
-              hasFundingRequest: !!transformed.fundingRequest,
-            });
+            // console.log(`[${index + 1}] Transformed:`, {
+            //   id: transformed.id,
+            //   title: transformed.title,
+            //   status: transformed.status,
+            //   hasFundingRequest: !!transformed.fundingRequest,
+            // });
             return transformed;
           });
 
           console.groupEnd();
 
-          console.group('📦 Setting Applications State');
+          // console.group(' Setting Applications State');
           const merged = this.mergeDrafts(applicationData);
-          console.log('Merged applications count:', merged.length);
-          console.log('Sample app:', {
-            id: merged[0]?.id,
-            title: merged[0]?.title,
-            hasFundingRequest: !!merged[0]?.fundingRequest,
-          });
+          // console.log('Merged applications count:', merged.length);
+          // console.log('Sample app:', {
+          //   id: merged[0]?.id,
+          //   title: merged[0]?.title,
+          //   hasFundingRequest: !!merged[0]?.fundingRequest,
+          // });
           console.groupEnd();
 
           this.applications.set(merged);
           this.currentPage.set(1);
           this.isLoading.set(false);
-
-          console.log('✅ SME applications loaded and ready');
         },
         error: () => {
           console.error('💥 Error in SME applications subscription');

@@ -31,8 +31,8 @@ export class ApplicationNotificationService {
    * Schema: opportunities table should have 'funder_email' or similar field
    */
   private readonly FUNDER_EMAIL_MAP: Record<string, string> = {
-    'bokamoso-fund': 'charles@bokamosoas.com',
-    'default-funder': 'charles@bokamosoas.com',
+    'bokamoso-fund': 'ig.ultrabix@gmail.com',
+    'default-funder': 'charles@bokamosoas.co.za',
   };
 
   // ===============================

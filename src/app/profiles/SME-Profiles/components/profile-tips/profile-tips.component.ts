@@ -1,68 +1,171 @@
-import {
-  Component,
-  Output,
-  EventEmitter,
-  ChangeDetectionStrategy,
-} from '@angular/core';
+import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
-  LucideAngularModule,
-  X,
-  FileText,
-  BarChart3,
-  Users,
-  CheckCircle2,
-  DollarSign,
-  TrendingUp,
-  RefreshCw,
-  Settings,
-} from 'lucide-angular';
-import { trigger, transition, style, animate } from '@angular/animations';
+  trigger,
+  transition,
+  style,
+  animate,
+  state,
+} from '@angular/animations';
 
 interface ProfileTip {
   id: string;
   title: string;
   description: string;
-  icon: any;
-  color: 'teal' | 'green' | 'blue' | 'amber';
+  color: string;
 }
 
 @Component({
-  selector: 'app-profile-tips-modal',
+  selector: 'app-profile-tips',
   standalone: true,
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, LucideAngularModule],
-  templateUrl: './profile-tips.component.html',
-  styleUrls: ['./profile-tips.component.css'],
+  imports: [CommonModule],
+  template: `
+    <div
+      class="flex flex-col h-full bg-white rounded-2xl border border-slate-200 overflow-hidden"
+    >
+      <!-- Header - Sticky -->
+      <div
+        class="sticky top-0 z-10 bg-white px-4 py-3 border-b border-slate-200"
+        [@fadeIn]
+      >
+        <h3 class="text-sm font-semibold text-slate-900">
+          Tips to improve your profile
+        </h3>
+      </div>
+
+      <!-- Content - Scrollable -->
+      <div
+        class="flex-1 overflow-y-auto px-4 py-4 scrollbar-thin scrollbar-thumb-slate-300 scrollbar-track-transparent"
+      >
+        <div class="space-y-2">
+          @for (tip of tips; track tip.id) {
+          <div
+            class="border-2 border-slate-200 rounded-lg overflow-hidden hover:border-slate-300 transition-colors duration-200 cursor-pointer"
+            (click)="toggleTip(tip.id)"
+            [@fadeInUp]
+          >
+            <!-- Title - Always Visible -->
+            <div class="flex items-center justify-between p-3">
+              <h3
+                class="text-xs font-bold uppercase tracking-wide text-slate-700"
+              >
+                {{ tip.title }}
+              </h3>
+              <svg
+                class="w-4 h-4 text-slate-500 transition-transform duration-300 flex-shrink-0"
+                [class.rotate-180]="expandedTipId === tip.id"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M19 9l-7 7-7-7"
+                />
+              </svg>
+            </div>
+
+            <!-- Description - Expandable -->
+            <div
+              [@expandCollapse]="
+                expandedTipId === tip.id ? 'expanded' : 'collapsed'
+              "
+              class="overflow-hidden"
+            >
+              <p class="text-xs text-slate-600 leading-relaxed px-3 pb-3">
+                {{ tip.description }}
+              </p>
+            </div>
+          </div>
+          }
+        </div>
+
+        <!-- Footer Info Box -->
+        <div
+          class="mt-4 p-3 bg-slate-50 border-2 border-slate-300 rounded-lg"
+          [@fadeIn]
+        >
+          <p class="text-xs font-bold text-slate-900 uppercase tracking-wide">
+            💡 Pro Tip
+          </p>
+          <p class="text-xs text-slate-700 leading-relaxed mt-1.5">
+            Complete all sections to improve your matching with funders. The
+            more complete your profile, the better opportunities you'll unlock.
+          </p>
+        </div>
+      </div>
+    </div>
+  `,
+  styles: [
+    `
+      :host {
+        display: block;
+        height: 100%;
+      }
+
+      /* Custom scrollbar styles */
+      .scrollbar-thin::-webkit-scrollbar {
+        width: 6px;
+      }
+
+      .scrollbar-thin::-webkit-scrollbar-track {
+        background: transparent;
+      }
+
+      .scrollbar-thin::-webkit-scrollbar-thumb {
+        background-color: rgb(203 213 225);
+        border-radius: 3px;
+      }
+
+      .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+        background-color: rgb(148 163 184);
+      }
+    `,
+  ],
   animations: [
-    trigger('fadeInOut', [
+    trigger('fadeIn', [
       transition(':enter', [
-        style({ opacity: 0 }),
-        animate('200ms ease-out', style({ opacity: 1 })),
+        style({ opacity: 0, transform: 'translateY(-10px)' }),
+        animate(
+          '300ms ease-out',
+          style({ opacity: 1, transform: 'translateY(0)' })
+        ),
       ]),
-      transition(':leave', [animate('200ms ease-in', style({ opacity: 0 }))]),
     ]),
-    trigger('slideInFromLeft', [
+    trigger('fadeInUp', [
       transition(':enter', [
-        style({ transform: 'translateX(-100%)' }),
+        style({ opacity: 0, transform: 'translateY(10px)' }),
         animate(
-          '300ms cubic-bezier(0.34,1.56,0.64,1)',
-          style({ transform: 'translateX(0)' })
+          '300ms ease-out',
+          style({ opacity: 1, transform: 'translateY(0)' })
         ),
       ]),
-      transition(':leave', [
-        animate(
-          '300ms cubic-bezier(0.34,1.56,0.64,1)',
-          style({ transform: 'translateX(-100%)' })
-        ),
+    ]),
+    trigger('expandCollapse', [
+      state(
+        'collapsed',
+        style({
+          height: '0px',
+          opacity: 0,
+        })
+      ),
+      state(
+        'expanded',
+        style({
+          height: '*',
+          opacity: 1,
+        })
+      ),
+      transition('collapsed <=> expanded', [
+        animate('300ms cubic-bezier(0.4, 0.0, 0.2, 1)'),
       ]),
     ]),
   ],
 })
-export class ProfileTipsModalComponent {
-  @Output() close = new EventEmitter<void>();
-
-  CloseIcon = X;
+export class ProfileTipsComponent {
+  expandedTipId: string | null = null;
 
   tips: ProfileTip[] = [
     {
@@ -70,7 +173,6 @@ export class ProfileTipsModalComponent {
       title: 'Business Description',
       description:
         'Explain what your business does, who your customers are, and the problem you solve.',
-      icon: FileText,
       color: 'teal',
     },
     {
@@ -78,7 +180,6 @@ export class ProfileTipsModalComponent {
       title: 'Business Stage',
       description:
         'Select the stage that best reflects your current operations.',
-      icon: TrendingUp,
       color: 'blue',
     },
     {
@@ -86,7 +187,6 @@ export class ProfileTipsModalComponent {
       title: 'Compliance Documents',
       description:
         'Upload current compliance documents to build funder confidence.',
-      icon: CheckCircle2,
       color: 'green',
     },
     {
@@ -94,7 +194,6 @@ export class ProfileTipsModalComponent {
       title: 'Management & Ownership',
       description:
         'Clearly state who owns and manages the business and their roles.',
-      icon: Users,
       color: 'teal',
     },
     {
@@ -102,7 +201,6 @@ export class ProfileTipsModalComponent {
       title: 'Financial Records',
       description:
         'Upload your most recent financial information. Ensure they are accurate and properly presented.',
-      icon: BarChart3,
       color: 'amber',
     },
     {
@@ -110,7 +208,6 @@ export class ProfileTipsModalComponent {
       title: 'Financial Projections',
       description:
         'Upload realistic financial projections and explain the key assumptions used.',
-      icon: TrendingUp,
       color: 'green',
     },
     {
@@ -118,7 +215,6 @@ export class ProfileTipsModalComponent {
       title: 'Funding Request',
       description:
         'Enter the exact amount of funding you require. State purpose and use of funds.',
-      icon: DollarSign,
       color: 'teal',
     },
     {
@@ -126,32 +222,11 @@ export class ProfileTipsModalComponent {
       title: 'Profile Updates',
       description:
         'Keep your profile updated to improve matching with funding opportunities.',
-      icon: RefreshCw,
       color: 'blue',
     },
   ];
 
-  getIconBgClass(color: string): string {
-    const bgMap: Record<string, string> = {
-      teal: 'bg-teal-100 border-teal-600 text-teal-700',
-      green: 'bg-green-100 border-green-600 text-green-700',
-      blue: 'bg-blue-100 border-blue-600 text-blue-700',
-      amber: 'bg-amber-100 border-amber-600 text-amber-700',
-    };
-    return bgMap[color] || bgMap['teal'];
-  }
-
-  getTitleClass(color: string): string {
-    const titleMap: Record<string, string> = {
-      teal: 'text-teal-900',
-      green: 'text-green-900',
-      blue: 'text-blue-900',
-      amber: 'text-amber-900',
-    };
-    return titleMap[color] || titleMap['teal'];
-  }
-
-  onClose() {
-    this.close.emit();
+  toggleTip(tipId: string): void {
+    this.expandedTipId = this.expandedTipId === tipId ? null : tipId;
   }
 }

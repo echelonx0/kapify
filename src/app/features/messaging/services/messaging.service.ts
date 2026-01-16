@@ -700,7 +700,7 @@ export class MessagingService implements OnDestroy {
         .insert([
           {
             subject: title,
-            created_by: 'system',
+            created_by: 'd2b6babb-c1b2-4c0f-97a9-b5e65a861c80',
             is_broadcast: false, // Individual notification
             metadata: {
               notification_type: metadata?.notification_type || 'system',

@@ -480,44 +480,6 @@ export class OpportunityApplicationFormComponent implements OnInit, OnDestroy {
     console.groupEnd();
   }
 
-  // async submitApplication(): Promise<void> {
-  //   this.logSubmitGuards();
-
-  //   const draft = this.draftApplication();
-
-  //   if (!this.selectedOpportunity() || !draft || !draft.fundingRequest) {
-  //     this.error.set('Funding request is missing');
-  //     return;
-  //   }
-
-  //   this.isSubmitting.set(true);
-  //   this.error.set(null);
-
-  //   try {
-  //     await this.saveDraft();
-
-  //     if (this.draftApplication()) {
-  //       const submittedApplication = await this.applicationService
-  //         .submitApplication(this.draftApplication()!.id)
-  //         .toPromise();
-
-  //       if (submittedApplication) {
-  //         this.router.navigate(['/applications/submitted'], {
-  //           queryParams: {
-  //             opportunityId: this.selectedOpportunity()!.id,
-  //             applicationId: submittedApplication.id,
-  //           },
-  //         });
-  //       }
-  //     }
-  //   } catch (error) {
-  //     this.error.set('Failed to submit application');
-  //     console.error('Submit application error:', error);
-  //   } finally {
-  //     this.isSubmitting.set(false);
-  //   }
-  // }
-
   async submitApplication(): Promise<void> {
     this.logSubmitGuards();
 
@@ -588,7 +550,6 @@ export class OpportunityApplicationFormComponent implements OnInit, OnDestroy {
             'Application submitted, but some notifications failed'
           );
         } else {
-          console.log('✅ All notifications sent successfully');
           this.toastservice.success('Application submitted successfully!');
         }
       } catch (notificationError) {

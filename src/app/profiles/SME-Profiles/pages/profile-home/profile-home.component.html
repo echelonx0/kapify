@@ -89,26 +89,27 @@
                 >
                   Update Profile
                 </button>
+
                 <button
-                  (click)="copyProfileLink()"
-                  class="action-button flex items-center justify-center gap-2 flex-1 px-4 py-2.5 bg-white border border-slate-200 text-slate-900 rounded-xl text-xs lg:text-sm font-medium hover:bg-slate-50 transition-colors duration-200"
+                  (click)="manageFundingRequest()"
+                  class="flex items-center justify-center gap-2 px-6 py-3 bg-teal-600 text-white font-black rounded-lg border-3 border-teal-700 uppercase tracking-wide text-xs lg:text-sm hover:bg-teal-700 active:bg-teal-800 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2"
                 >
-                  <lucide-icon [img]="CopyIcon" [size]="16"></lucide-icon>
-                  Copy Link
+                  Funding Request
                 </button>
+
+                <!-- Manage Demographics -->
                 <button
-                  (click)="sharePublicProfile()"
-                  class="action-button flex items-center justify-center gap-2 flex-1 px-4 py-2.5 bg-white border border-slate-200 text-slate-900 rounded-xl text-xs lg:text-sm font-medium hover:bg-slate-50 transition-colors duration-200"
+                  (click)="navigateToDemographics()"
+                  class="flex items-center justify-center gap-2 px-6 py-3 bg-white text-slate-900 font-black rounded-lg border-3 border-slate-900 uppercase tracking-wide text-xs lg:text-sm hover:bg-slate-100 active:bg-slate-200 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2"
                 >
-                  <lucide-icon [img]="Share2Icon" [size]="16"></lucide-icon>
-                  Share
+                  Other Demographics
                 </button>
+
                 <button
-                  (click)="refreshProfileLink()"
-                  class="action-button flex items-center justify-center gap-2 flex-1 px-4 py-2.5 bg-white border border-slate-200 text-slate-900 rounded-xl text-xs lg:text-sm font-medium hover:bg-slate-50 transition-colors duration-200"
+                  (click)="scheduleCall()"
+                  class="flex items-center justify-center gap-2 px-6 py-3 bg-white text-slate-900 font-black rounded-lg border-3 border-slate-900 uppercase tracking-wide text-xs lg:text-sm hover:bg-slate-100 active:bg-slate-200 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2"
                 >
-                  <lucide-icon [img]="RefreshIcon" [size]="16"></lucide-icon>
-                  Refresh
+                  Schedule Call
                 </button>
               </div>
             </div>
@@ -124,45 +125,14 @@
           }
         </div>
 
-        <!-- RIGHT COLUMN: Funding Request + Help Section (1/3 width, vertical stack) -->
-        <div class="flex flex-col gap-4 lg:gap-2">
-          <!-- Funding Request Section -->
-          <button
-            (click)="openProfileTips()"
-            class="hidden lg:inline-flex px-4 py-2.5 text-sm font-semibold text-teal-600 border border-teal-200 rounded-xl hover:bg-teal-50 transition-colors duration-200"
-            aria-label="View profile tips"
-          >
-            Tips
-          </button>
-          <app-cover-status-section></app-cover-status-section>
-
-          <!-- HELP SECTION -->
-          <div
-            class="right-sidebar-card bg-slate-900 text-white rounded-2xl p-4 lg:p-6"
-          >
-            <div class="flex items-center gap-2 mb-3">
-              <lucide-icon [img]="HeadphonesIcon" [size]="16"></lucide-icon>
-              <h3 class="text-sm font-semibold">Need Help?</h3>
-            </div>
-            <div class="space-y-1 mb-4 text-xs lg:text-sm text-slate-300">
-              <p>{{ email }}</p>
-              <p>071 749 6762</p>
-            </div>
-            <ui-button
-              variant="outline"
-              size="sm"
-              class="w-full bg-white text-slate-900 hover:bg-slate-100 text-xs font-medium"
-              (clicked)="scheduleCall()"
-            >
-              Schedule Call
-            </ui-button>
-          </div>
+        <!-- RIGHT COLUMN: Funding TIPs Section -->
+        <!-- RIGHT COLUMN: Funding TIPs Section -->
+        <div
+          class="flex flex-col gap-4 lg:gap-2 lg:h-[calc(100vh-12rem)] lg:sticky lg:top-8"
+        >
+          <app-profile-tips class="lg:flex-1 lg:min-h-0"></app-profile-tips>
         </div>
       </div>
     </div>
   </div>
 </div>
-<!-- Modal -->
-@if (showProfileTips()) {
-<app-profile-tips-modal (close)="closeProfileTips()"></app-profile-tips-modal>
-}

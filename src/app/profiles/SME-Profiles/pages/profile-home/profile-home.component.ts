@@ -27,18 +27,18 @@ import {
   CircleCheckBig,
   TriangleAlert,
   SquarePen,
+  X,
 } from 'lucide-angular';
 
-import { UiButtonComponent } from '../../../../shared/components/ui-button.component';
 import { UiStatusBadgeComponent } from '../../../../shared/components/ui-status-badge.component';
-import { CoverStatusSectionComponent } from '../cover-status-section/cover-status-section.component';
 
 import { AuthService } from '../../../../auth/services/production.auth.service';
 import { FundingProfileSetupService } from '../../../../fund-seeking-orgs/services/funding-profile-setup.service';
 import { FundingApplicationCoverService } from 'src/app/shared/services/funding-application-cover.service';
 
 import { PlatformDisclaimerComponent } from 'src/app/core/dashboard/components/disclaimer/disclaimer.component';
-import { ProfileTipsModalComponent } from '../../components/profile-tips/profile-tips.component';
+import { ProfileTipsComponent } from '../../components/profile-tips/profile-tips.component';
+import { ActivityService } from 'src/app/shared/services/activity.service';
 
 @Component({
   selector: 'app-profile-home',
@@ -46,12 +46,10 @@ import { ProfileTipsModalComponent } from '../../components/profile-tips/profile
   imports: [
     CommonModule,
     LucideAngularModule,
-    UiButtonComponent,
     UiStatusBadgeComponent,
     PlatformDisclaimerComponent,
     RouterModule,
-    CoverStatusSectionComponent,
-    ProfileTipsModalComponent,
+    ProfileTipsComponent,
   ],
   templateUrl: 'profile-home.component.html',
   styleUrl: './profile-home.component.css',
@@ -61,7 +59,7 @@ export class ProfileHomeComponent implements OnInit, OnDestroy {
   private fundingApplicationService = inject(FundingProfileSetupService);
   private coverService = inject(FundingApplicationCoverService);
   private router = inject(Router);
-
+  private activityService = inject(ActivityService);
   // Icons
   ArrowRightIcon = ArrowRight;
   CheckCircleIcon = CircleCheckBig;
@@ -79,7 +77,8 @@ export class ProfileHomeComponent implements OnInit, OnDestroy {
   RefreshIcon = RefreshCw;
   EditIcon = SquarePen;
   PlusIcon = Plus;
-
+  // Default funding request (single-profile mode)
+  defaultFundingRequest = this.coverService.defaultProfile;
   email = 'info@bokamosoas.co.za';
   private imageRotationInterval: any;
   //  signal to control modal visibility
@@ -128,9 +127,28 @@ export class ProfileHomeComponent implements OnInit, OnDestroy {
 
   borderClass = computed(() => {
     return 'border-4 border-slate-600';
-    return 'border-4 border-slate-900';
   });
+  CloseIcon = X;
 
+  getIconBgClass(color: string): string {
+    const bgMap: Record<string, string> = {
+      teal: 'bg-teal-100 border-teal-600 text-teal-700',
+      green: 'bg-green-100 border-green-600 text-green-700',
+      blue: 'bg-blue-100 border-blue-600 text-blue-700',
+      amber: 'bg-amber-100 border-amber-600 text-amber-700',
+    };
+    return bgMap[color] || bgMap['teal'];
+  }
+
+  getTitleClass(color: string): string {
+    const titleMap: Record<string, string> = {
+      teal: 'text-teal-900',
+      green: 'text-green-900',
+      blue: 'text-blue-900',
+      amber: 'text-amber-900',
+    };
+    return titleMap[color] || titleMap['teal'];
+  }
   // ===== STEP HELPERS =====
   private hasDataForStep(stepId: string, data: any): boolean {
     const stepDataMap: { [key: string]: string } = {
@@ -248,6 +266,8 @@ export class ProfileHomeComponent implements OnInit, OnDestroy {
     }
   }
 
+  onClose() {}
+
   /**
    * Load cover data
    */
@@ -326,5 +346,74 @@ export class ProfileHomeComponent implements OnInit, OnDestroy {
   // ===== GETTER =====
   get applicationSteps() {
     return this.fundingApplicationService.steps;
+  }
+
+  /**
+   * Handle modal choice
+   */
+  async onCreateChoice(choice: { action: 'fresh' }): Promise<void> {
+    this.showProfileTips.set(false);
+
+    try {
+      const result = await this.coverService.createBlankCover();
+      if (result.success && result.cover) {
+        // this.router.navigate(['covers'], {
+        //   relativeTo: this.route.parent,
+        //   queryParams: {
+        //     mode: 'edit',
+        //     coverId: result.cover.id,
+        //   },
+        // });
+
+        this.activityService.trackProfileActivity(
+          'created',
+          'New funding request created',
+          'funding_request_create_fresh'
+        );
+      }
+    } catch (error) {
+      console.error('Error creating funding request:', error);
+    }
+  }
+
+  /**
+   * Manage funding request (navigate to editor)
+   */
+  manageFundingRequest(): void {
+    const defaultRequest = this.defaultFundingRequest();
+    if (!defaultRequest) return;
+
+    this.activityService.trackProfileActivity(
+      'updated',
+      'User opened funding request editor',
+      'funding_request_manage_view'
+    );
+
+    // this.router.navigate(['covers'], {
+    //   relativeTo: this.route.parent,
+    //   queryParams: {
+    //     mode: 'edit',
+    //     coverId: defaultRequest.id,
+    //   },
+    // });
+  }
+
+  /**
+   * Navigate to demographics form
+   */
+  navigateToDemographics(): void {
+    this.activityService.trackProfileActivity(
+      'updated',
+      'User opened demographics editor',
+      'funding_request_demographics_manage'
+    );
+
+    // this.router.navigate(['covers'], {
+    //   relativeTo: this.route.parent,
+    //   queryParams: {
+    //     coverId,
+    //     view: 'demographics',
+    //   },
+    // });
   }
 }

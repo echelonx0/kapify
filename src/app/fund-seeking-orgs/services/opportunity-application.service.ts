@@ -54,26 +54,26 @@ export class OpportunityApplicationService {
     this.isLoading.set(true);
     this.error.set(null);
 
-    console.log(
-      '📂 [OpportunityApplicationService] Loading applications for user:',
-      currentUser.id
-    );
+    // console.log(
+    //   '📂 [OpportunityApplicationService] Loading applications for user:',
+    //   currentUser.id
+    // );
 
     return from(this.fetchUserApplications(currentUser.id)).pipe(
       tap((applications) => {
-        console.log('✅ Applications loaded:', applications.length);
+        // console.log('✅ Applications loaded:', applications.length);
         applications.forEach((app) => {
-          console.log(`  - ${app.title}`, {
-            id: app.id,
-            status: app.status,
-            hasCoverInformation: !!app.coverInformation,
-            fundingMotivation:
-              app.coverInformation?.purposeStatement?.substring(0, 30),
-            useOfFunds: app.coverInformation?.useOfFunds?.substring(0, 30),
-            fundingTypes: app.coverInformation?.useOfFunds,
-            industries: app.coverInformation?.purposeStatement,
-            fundingRequest: app.coverInformation,
-          });
+          // console.log(`  - ${app.title}`, {
+          //   id: app.id,
+          //   status: app.status,
+          //   hasCoverInformation: !!app.coverInformation,
+          //   fundingMotivation:
+          //     app.coverInformation?.purposeStatement?.substring(0, 30),
+          //   useOfFunds: app.coverInformation?.useOfFunds?.substring(0, 30),
+          //   fundingTypes: app.coverInformation?.useOfFunds,
+          //   industries: app.coverInformation?.purposeStatement,
+          //   fundingRequest: app.coverInformation,
+          // });
         });
         this.applicationsSubject.next(applications);
         this.isLoading.set(false);
