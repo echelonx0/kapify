@@ -23,6 +23,7 @@ import {
   OnboardingState,
 } from '../../../../funder/services/funder-onboarding.service';
 import { Router } from '@angular/router';
+import { ToastService } from 'src/app/shared/services/toast.service';
 
 export interface ActionEvent {
   type:
@@ -53,6 +54,7 @@ export class OrganizationStatusOverviewComponent implements OnInit, OnDestroy {
   private onboardingService = inject(FunderOnboardingService);
   private destroy$ = new Subject<void>();
   private router = inject(Router);
+  private toastService = inject(ToastService);
   // Icons
   readonly CheckCircleIcon = CircleCheckBig;
   readonly AlertTriangleIcon = TriangleAlert;
@@ -124,17 +126,17 @@ export class OrganizationStatusOverviewComponent implements OnInit, OnDestroy {
 
   isComplete = computed(() => this.onboardingState()?.isComplete ?? false);
   isVerified = computed(
-    () => this.onboardingState()?.organization?.isVerified ?? false
+    () => this.onboardingState()?.organization?.isVerified ?? false,
   );
   completionPercentage = computed(
-    () => this.onboardingState()?.completionPercentage ?? 0
+    () => this.onboardingState()?.completionPercentage ?? 0,
   );
   canCreateOpportunities = computed(
-    () => this.onboardingState()?.canCreateOpportunities ?? false
+    () => this.onboardingState()?.canCreateOpportunities ?? false,
   );
 
   hasUrgentItems = computed(
-    () => this.getHighPriorityMissingItems().length > 0
+    () => this.getHighPriorityMissingItems().length > 0,
   );
   primaryAction = computed(() => {
     const highPriority = this.getHighPriorityMissingItems();
@@ -255,7 +257,7 @@ export class OrganizationStatusOverviewComponent implements OnInit, OnDestroy {
       (priority) =>
         this.isMissingField(org, priority.field) &&
         priority.revenueImpact === 'high' &&
-        priority.userEffort === 'quick'
+        priority.userEffort === 'quick',
     );
   }
 
@@ -311,6 +313,12 @@ export class OrganizationStatusOverviewComponent implements OnInit, OnDestroy {
   }
 
   createOpportunity(): void {
-    this.router.navigate(['/funding/create-opportunity']);
+    if (this.canCreateOpportunities()) {
+      this.router.navigate(['/funding/create-opportunity']);
+    } else {
+      this.toastService.error(
+        'Complete your organization setup and verification to create opportunities.',
+      );
+    }
   }
 }
