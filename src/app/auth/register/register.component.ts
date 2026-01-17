@@ -20,6 +20,8 @@ import { Eye, LucideAngularModule } from 'lucide-angular';
 import { Subscription } from 'rxjs';
 import { AuthService } from '../services/production.auth.service';
 import { RegisterRequest } from '../models/auth.models';
+import { WelcomeEmailService } from '../services/welcome-email.service';
+import { ToastService } from 'src/app/shared/services/toast.service';
 
 interface Slide {
   image: string;
@@ -44,7 +46,8 @@ export class RegisterComponent implements OnDestroy {
   private fb = inject(FormBuilder);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
-
+  private welcomeEmailService = inject(WelcomeEmailService);
+  private toastService = inject(ToastService);
   @ViewChild('termsCheckbox') termsCheckboxRef?: ElementRef<HTMLInputElement>;
 
   registerForm!: FormGroup;
@@ -125,7 +128,7 @@ export class RegisterComponent implements OnDestroy {
       {
         validators: [this.passwordMatchValidator],
         updateOn: 'change',
-      }
+      },
     );
 
     // Watch checkbox state for robustness
@@ -294,7 +297,7 @@ export class RegisterComponent implements OnDestroy {
     } catch (e) {
       console.warn(
         'Could not access selectedUserType for email validation:',
-        e
+        e,
       );
     }
 
@@ -385,7 +388,7 @@ export class RegisterComponent implements OnDestroy {
           if (response.success && response.user) {
             this.success.set('Account created successfully! Redirecting...');
             console.log(
-              'Registration successful, navigating based on user type'
+              'Registration successful, navigating based on user type',
             );
 
             setTimeout(() => {
@@ -399,7 +402,7 @@ export class RegisterComponent implements OnDestroy {
             }, 1500);
           } else {
             this.error.set(
-              response.error || 'Registration failed. Please try again.'
+              response.error || 'Registration failed. Please try again.',
             );
           }
         },

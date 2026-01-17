@@ -658,9 +658,7 @@ export class MessagingService implements OnDestroy {
   }
 
   /**
-   * EXTENSION: Add this method to MessagingService
-   * Location: After createApplicationThread() method
-   *
+  
    * Purpose: Send read-only system notifications (e.g., funding request created)
    * These do NOT appear in the main messaging thread - they're standalone notifications
    */
@@ -695,13 +693,14 @@ export class MessagingService implements OnDestroy {
       // Step 1: Create notification thread
       // Thread subject = title
       // is_broadcast = false (individual notification, not broadcast)
+
       const { data: threadData, error: threadError } = await this.supabase
         .from('message_threads')
         .insert([
           {
             subject: title,
-            created_by: 'd2b6babb-c1b2-4c0f-97a9-b5e65a861c80',
-            is_broadcast: false, // Individual notification
+            created_by: currentUser.id, // ✅ USE CURRENT USER
+            is_broadcast: false,
             metadata: {
               notification_type: metadata?.notification_type || 'system',
               entity_id: metadata?.entity_id,
@@ -1014,7 +1013,7 @@ You can now browse available opportunities and submit applications.`;
         .insert([
           {
             subject: threadSubject,
-            created_by: 'system',
+            created_by: currentUser.id,
             is_broadcast: false,
             metadata: {
               application_id: applicationId,
@@ -1059,7 +1058,7 @@ You can now browse available opportunities and submit applications.`;
         .insert([
           {
             thread_id: threadData.id,
-            sender_id: null, // System message
+            sender_id: currentUser.id, // System message
             message_type: 'system',
             content: message,
             file_attachments: [],

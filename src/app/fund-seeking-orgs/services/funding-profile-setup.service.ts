@@ -182,12 +182,6 @@ export class FundingProfileSetupService implements OnDestroy {
   // NAVIGATION
   // ===============================
 
-  // setCurrentStep(stepId: string) {
-  //   if (this.isValidStep(stepId)) {
-  //     this.currentStep.set(stepId);
-  //   }
-  // }
-
   // Update setCurrentStep:
   setCurrentStep(stepId: string) {
     if (this.isValidStep(stepId)) {

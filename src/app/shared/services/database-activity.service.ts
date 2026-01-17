@@ -335,7 +335,9 @@ export class DatabaseActivityService {
       }
 
       // Get user's organization ID (if any)
-      const organizationId = await this.getUserOrganizationId(currentUser.id);
+      const organizationId = await this.authService.getUserOrganizationId(
+        currentUser.id
+      );
 
       // Query for activities - simplified without complex joins
       let query = this.supabase
@@ -380,7 +382,9 @@ export class DatabaseActivityService {
         throw new Error('User not authenticated');
       }
 
-      const organizationId = await this.getUserOrganizationId(currentUser.id);
+      const organizationId = await this.authService.getUserOrganizationId(
+        currentUser.id
+      );
       const offset = (page - 1) * pageSize;
 
       // Get total count - simplified
@@ -482,7 +486,9 @@ export class DatabaseActivityService {
         throw new Error('User not authenticated');
       }
 
-      const organizationId = await this.getUserOrganizationId(currentUser.id);
+      const organizationId = await this.authService.getUserOrganizationId(
+        currentUser.id
+      );
 
       const dbActivity: Partial<DatabaseActivity> = {
         user_id: currentUser.id,
@@ -515,38 +521,38 @@ export class DatabaseActivityService {
     }
   }
 
-  private async getUserOrganizationId(userId: string): Promise<string | null> {
-    try {
-      // Check both SME and Funder organizations
-      const [smeResult, funderResult] = await Promise.all([
-        this.supabase
-          .from('sme_organizations')
-          .select('id')
-          .eq('user_id', userId)
-          .eq('status', 'active')
-          .single(),
+  // private async getUserOrganizationId(userId: string): Promise<string | null> {
+  //   try {
+  //     // Check both SME and Funder organizations
+  //     const [smeResult, funderResult] = await Promise.all([
+  //       this.supabase
+  //         .from('sme_organizations')
+  //         .select('id')
+  //         .eq('user_id', userId)
+  //         .eq('status', 'active')
+  //         .single(),
 
-        this.supabase
-          .from('funder_organizations')
-          .select('id')
-          .eq('user_id', userId)
-          .eq('status', 'active')
-          .single(),
-      ]);
+  //       this.supabase
+  //         .from('funder_organizations')
+  //         .select('id')
+  //         .eq('user_id', userId)
+  //         .eq('status', 'active')
+  //         .single(),
+  //     ]);
 
-      // Return whichever organization exists (SME takes precedence)
-      if (!smeResult.error) {
-        return smeResult.data?.id || null;
-      } else if (!funderResult.error) {
-        return funderResult.data?.id || null;
-      }
+  //     // Return whichever organization exists (SME takes precedence)
+  //     if (!smeResult.error) {
+  //       return smeResult.data?.id || null;
+  //     } else if (!funderResult.error) {
+  //       return funderResult.data?.id || null;
+  //     }
 
-      return null;
-    } catch (error) {
-      console.warn('Could not fetch user organization:', error);
-      return null;
-    }
-  }
+  //     return null;
+  //   } catch (error) {
+  //     console.warn('Could not fetch user organization:', error);
+  //     return null;
+  //   }
+  // }
 
   // ===============================
   // DATA TRANSFORMATION

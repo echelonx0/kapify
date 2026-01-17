@@ -527,6 +527,10 @@ Log into the Kapify funder dashboard to review this application.`;
    * Call send_notification_email edge function
    * Pattern: Same as FunderDocumentAnalysisService.callAnalysisFunction
    */
+  /**
+   * Call send_notification_email edge function
+   * NOW NON-BLOCKING: Email failures don't block submission
+   */
   private async callEmailNotificationFunction(payload: {
     recipientEmail: string;
     recipientName: string;
@@ -539,7 +543,16 @@ Log into the Kapify funder dashboard to review this application.`;
     opportunityTitle?: string;
   }): Promise<boolean> {
     try {
-      console.log('📧 Sending email notification...', payload.actionType);
+      console.log('📧 Queueing email notification...', payload.actionType);
+
+      // Validate email format
+      if (!payload.recipientEmail || !payload.recipientEmail.includes('@')) {
+        console.warn(
+          '⚠️ Invalid email format, skipping notification:',
+          payload.recipientEmail
+        );
+        return true; // Non-critical - don't block
+      }
 
       const { data, error } = await this.supabase.functions.invoke(
         'send_notification_email',
@@ -548,22 +561,24 @@ Log into the Kapify funder dashboard to review this application.`;
         }
       );
 
+      // ✅ FIX: Don't throw on error - just warn
       if (error) {
-        console.error('❌ Email function error:', error);
-        throw new Error(`Email service error: ${error.message}`);
+        console.warn('⚠️ Email service error (non-critical):', error.message);
+        return true; // Non-blocking - don't fail
       }
 
       if (!data?.success) {
-        const errorMsg = data?.error || 'Email sending failed';
-        console.error('❌ Email sending failed:', errorMsg);
-        throw new Error(errorMsg);
+        const errorMsg = data?.error || 'Email service warning';
+        console.warn('⚠️ Email service warning:', errorMsg);
+        return true; // Non-blocking - don't fail
       }
 
-      console.log('✅ Email sent successfully');
+      console.log('✅ Email queued successfully');
       return true;
     } catch (error) {
-      console.error('❌ Email notification function error:', error);
-      throw error;
+      console.error('❌ Email function caught error:', error);
+      // ✅ FIX: Don't throw - return true to continue
+      return true; // Non-blocking - don't fail submission
     }
   }
 
@@ -580,7 +595,7 @@ Log into the Kapify funder dashboard to review this application.`;
       return this.FUNDER_EMAIL_MAP[funderId];
     }
     // Placeholder: charles@bokamosoas.com
-    return 'charles@bokamosoas.com';
+    return 'charles@bokamosoas.co.za';
   }
 
   /**
