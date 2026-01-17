@@ -7,8 +7,8 @@ import { CommonModule } from '@angular/common';
   imports: [CommonModule],
   template: `
     <div class="bg-white border-t-2 border-b-2 border-slate-200">
-      <div class="max-w-7xl mx-auto px-4 lg:px-8 py-8">
-        <p class="text-slate-700 text-sm leading-relaxed">
+      <div class="max-w-7xl mx-auto px-4 lg:px-8 py-2">
+        <p class="text-slate-700 text-xs leading-relaxed">
           <strong>Disclaimer:</strong> Kapify facilitates connections and
           provides due diligence infrastructure. All investment decisions are
           made independently by the funders on the platform. Kapify does not
