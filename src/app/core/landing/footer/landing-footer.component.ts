@@ -72,7 +72,7 @@ export class LandingFooterComponent {
   FacebookIcon = Facebook;
   InstagramIcon = Instagram;
 
-  email = 'info@kapify.co.za';
+  email = 'info@kapify.africa';
 
   constructor(private router: Router) {}
 

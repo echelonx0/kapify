@@ -35,12 +35,12 @@ import { FunderCarouselCardComponent } from './funder-carousel-card.component';
           >
             Trusted Partners
           </span>
-          <h2 class="text-5xl lg:text-6xl font-black text-white mb-6">
+          <h2 class="text-5xl lg:text-6xl font-black text-white mb-2">
             Institutional Funders
           </h2>
-          <p class="text-lg text-slate-300 max-w-2xl">
-            Leading investment firms backing South African innovation. Apply to
-            verified funders with clear criteria.
+          <p class="text-sm text-slate-300 max-w-2xl">
+            Leading investment firms backing South African innovation. <br />
+            Apply to verified funders with clear criteria.
           </p>
         </div>
 
@@ -54,25 +54,26 @@ import { FunderCarouselCardComponent } from './funder-carousel-card.component';
           >
             <div class="flex gap-6 pb-4">
               @for (profile of visibleProfiles(); track profile.id) {
-              <div
-                class="flex-shrink-0 w-full sm:w-80 cursor-pointer"
-                (click)="navigateToProfile(profile.slug)"
-              >
-                <app-funder-carousel-card [profile]="profile" />
-              </div>
-              } @if (isLoadingMore()) {
-              <div
-                class="flex-shrink-0 w-full sm:w-80 flex items-center justify-center bg-slate-800 rounded-2xl border border-slate-700"
-              >
-                <div class="text-center">
-                  <lucide-icon
-                    [img]="LoaderIcon"
-                    [size]="32"
-                    class="text-emerald-400 mx-auto mb-2 animate-spin"
-                  />
-                  <p class="text-sm text-slate-400">Loading funders...</p>
+                <div
+                  class="flex-shrink-0 w-full sm:w-80 cursor-pointer"
+                  (click)="navigateToProfile(profile.slug)"
+                >
+                  <app-funder-carousel-card [profile]="profile" />
                 </div>
-              </div>
+              }
+              @if (isLoadingMore()) {
+                <div
+                  class="flex-shrink-0 w-full sm:w-80 flex items-center justify-center bg-slate-800 rounded-2xl border border-slate-700"
+                >
+                  <div class="text-center">
+                    <lucide-icon
+                      [img]="LoaderIcon"
+                      [size]="32"
+                      class="text-emerald-400 mx-auto mb-2 animate-spin"
+                    />
+                    <p class="text-sm text-slate-400">Loading funders...</p>
+                  </div>
+                </div>
               }
             </div>
           </div>
@@ -99,48 +100,48 @@ import { FunderCarouselCardComponent } from './funder-carousel-card.component';
 
           <!-- Loading State -->
           @if (isLoading() && visibleProfiles().length === 0) {
-          <div class="text-center py-16">
-            <lucide-icon
-              [img]="LoaderIcon"
-              [size]="48"
-              class="text-emerald-500 mx-auto mb-4 animate-spin"
-            />
-            <p class="text-slate-400">Loading institutional funders...</p>
-          </div>
+            <div class="text-center py-16">
+              <lucide-icon
+                [img]="LoaderIcon"
+                [size]="48"
+                class="text-emerald-500 mx-auto mb-4 animate-spin"
+              />
+              <p class="text-slate-400">Loading institutional funders...</p>
+            </div>
           }
 
           <!-- Error State -->
           @if (error()) {
-          <div
-            class="bg-red-950/50 border border-red-800 rounded-xl p-6 text-center"
-          >
-            <p class="text-red-300 font-medium">
-              Unable to load funders at this time
-            </p>
-            <button
-              (click)="retry()"
-              class="mt-3 px-4 py-2 bg-red-900/50 text-red-300 rounded-lg hover:bg-red-900 transition-colors text-sm font-medium"
+            <div
+              class="bg-red-950/50 border border-red-800 rounded-xl p-6 text-center"
             >
-              Try Again
-            </button>
-          </div>
+              <p class="text-red-300 font-medium">
+                Unable to load funders at this time
+              </p>
+              <button
+                (click)="retry()"
+                class="mt-3 px-4 py-2 bg-red-900/50 text-red-300 rounded-lg hover:bg-red-900 transition-colors text-sm font-medium"
+              >
+                Try Again
+              </button>
+            </div>
           }
         </div>
 
         <!-- Empty State -->
         @if (!isLoading() && visibleProfiles().length === 0 && !error()) {
-        <div class="text-center py-16">
-          <p class="text-slate-400 text-lg">
-            No funders available yet. Check back soon!
-          </p>
-        </div>
+          <div class="text-center py-16">
+            <p class="text-slate-400 text-lg">
+              No funders available yet. Check back soon!
+            </p>
+          </div>
         }
 
         <!-- Scroll Indicator (Mobile) -->
         @if (visibleProfiles().length > 0) {
-        <p class="text-xs text-slate-500 text-center mt-6 lg:hidden">
-          Scroll horizontally to see more funders
-        </p>
+          <p class="text-xs text-slate-500 text-center mt-6 lg:hidden">
+            Scroll horizontally to see more funders
+          </p>
         }
       </div>
     </section>
@@ -281,7 +282,7 @@ export class FunderCarouselComponent implements OnInit, OnDestroy {
 
     this.canScrollLeft.set(el.scrollLeft > 0);
     this.canScrollRight.set(
-      el.scrollLeft < el.scrollWidth - el.clientWidth - 10
+      el.scrollLeft < el.scrollWidth - el.clientWidth - 10,
     );
   }
 

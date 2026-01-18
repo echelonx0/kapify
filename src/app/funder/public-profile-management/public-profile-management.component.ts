@@ -201,7 +201,7 @@ export class PublicProfileManagementComponent implements OnInit, OnDestroy {
 
   private initializeForm() {
     this.profileForm = this.fb.group({
-      tagline: ['', [Validators.required, Validators.maxLength(120)]],
+      tagline: ['', [Validators.required, Validators.maxLength(200)]],
       elevator_pitch: ['', Validators.maxLength(300)],
 
       logoUrl: [''],
@@ -338,7 +338,7 @@ export class PublicProfileManagementComponent implements OnInit, OnDestroy {
           label: [metric.label],
           value: [metric.value],
           emphasis: [metric.emphasis || false],
-        })
+        }),
       );
     });
   }
@@ -351,7 +351,7 @@ export class PublicProfileManagementComponent implements OnInit, OnDestroy {
         this.fb.group({
           platform: [link.platform],
           url: [link.url],
-        })
+        }),
       );
     });
   }
@@ -365,7 +365,7 @@ export class PublicProfileManagementComponent implements OnInit, OnDestroy {
           name: [area.name],
           description: [area.description],
           tagsInput: [area.tags.join(', ')],
-        })
+        }),
       );
     });
   }
@@ -380,7 +380,7 @@ export class PublicProfileManagementComponent implements OnInit, OnDestroy {
           title: [member.title],
           bio: [member.bio],
           linkedinUrl: [member.linkedinUrl],
-        })
+        }),
       );
     });
   }
@@ -403,7 +403,7 @@ export class PublicProfileManagementComponent implements OnInit, OnDestroy {
         label: [''],
         value: [''],
         emphasis: [false],
-      })
+      }),
     );
   }
 
@@ -416,7 +416,7 @@ export class PublicProfileManagementComponent implements OnInit, OnDestroy {
       this.fb.group({
         platform: ['linkedin'],
         url: [''],
-      })
+      }),
     );
   }
 
@@ -430,7 +430,7 @@ export class PublicProfileManagementComponent implements OnInit, OnDestroy {
         name: [''],
         description: [''],
         tagsInput: [''],
-      })
+      }),
     );
   }
 
@@ -445,7 +445,7 @@ export class PublicProfileManagementComponent implements OnInit, OnDestroy {
         title: [''],
         bio: [''],
         linkedinUrl: [''],
-      })
+      }),
     );
   }
 
@@ -504,7 +504,7 @@ export class PublicProfileManagementComponent implements OnInit, OnDestroy {
       : this.profileService.createProfile(
           orgId,
           this.organizationName()!,
-          formData
+          formData,
         );
 
     saveOperation.pipe(takeUntil(this.destroy$)).subscribe({
@@ -602,10 +602,10 @@ export class PublicProfileManagementComponent implements OnInit, OnDestroy {
       heroImageUrl: form.heroImageUrl,
       heroVideo: form.heroVideoUrl ? { url: form.heroVideoUrl } : undefined,
       portfolioHighlights: form.portfolioHighlights.filter((h: string) =>
-        h.trim()
+        h.trim(),
       ),
       successMetrics: form.successMetrics.filter(
-        (m: any) => m.label && m.value
+        (m: any) => m.label && m.value,
       ),
       investmentRange: form.investmentRange,
       fundingAreas: form.fundingAreas
@@ -666,7 +666,7 @@ export class PublicProfileManagementComponent implements OnInit, OnDestroy {
       .pipe(
         debounceTime(30000),
         distinctUntilChanged(),
-        takeUntil(this.destroy$)
+        takeUntil(this.destroy$),
       )
       .subscribe(() => {
         if (this.hasChanges() && !this.isSaving()) {
@@ -682,8 +682,8 @@ export class PublicProfileManagementComponent implements OnInit, OnDestroy {
     const tagline = formValue.tagline?.trim();
     if (!tagline) {
       errors['tagline'] = 'Tagline is required for publishing';
-    } else if (tagline.length > 120) {
-      errors['tagline'] = 'Tagline must be 120 characters or less';
+    } else if (tagline.length > 200) {
+      errors['tagline'] = 'Tagline must be 200 characters or less';
     }
 
     const investmentRange = formValue.investmentRange;

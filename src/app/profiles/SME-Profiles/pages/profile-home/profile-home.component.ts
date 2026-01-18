@@ -57,7 +57,7 @@ import { ActivityService } from 'src/app/shared/services/activity.service';
     <div class="px-4 py-4 lg:ml-12 lg:px-8 lg:py-2">
       <div class="max-w-7xl mx-auto">
         <!-- Header -->
-        <div class="flex items-center justify-between mb-6">
+        <div class="flex items-center justify-between mb-1">
           <h2 class="text-xl font-bold text-slate-900">
             Your business funding Profile
           </h2>

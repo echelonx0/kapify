@@ -52,6 +52,7 @@ import {
 } from '../components/status-overview/status-overview.component';
 import { SupportModalComponent } from 'src/app/features/support/support.modal';
 import { AboutUsCardComponent } from '../components/about-us-card/about-us-card.component';
+import { KapifyCapitalLoaderComponent } from 'src/app/shared/components/kapify-loading-indicator/kapify-loading-indicator.component';
 
 interface OnboardingCard {
   id: string;
@@ -77,6 +78,7 @@ interface OnboardingCard {
     AboutUsCardComponent,
     OrganizationStatusOverviewComponent,
     SupportModalComponent,
+    // KapifyCapitalLoaderComponent,
   ],
   templateUrl: './kapify-dashboard.component.html',
   styleUrl: './kapify-dashboard.component.css',
@@ -204,7 +206,7 @@ export class KapifyDashboard implements OnInit, OnDestroy {
   onboardingCards = computed(() =>
     this.userType() === 'funder'
       ? this.funderOnboardingData
-      : this.smeOnboardingData
+      : this.smeOnboardingData,
   );
 
   // Computed CTA content for the component
