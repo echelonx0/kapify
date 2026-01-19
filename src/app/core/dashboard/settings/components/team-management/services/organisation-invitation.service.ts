@@ -3,6 +3,7 @@ import { Observable, from, throwError, BehaviorSubject, of } from 'rxjs';
 import { tap, catchError, map } from 'rxjs/operators';
 import { AuthService } from 'src/app/auth/services/production.auth.service';
 import { SharedSupabaseService } from 'src/app/shared/services/shared-supabase.service';
+import { ToastService } from 'src/app/shared/services/toast.service';
 
 interface UserRecord {
   first_name: string;
@@ -86,10 +87,10 @@ export class OrganizationInvitationService {
   error = signal<string | null>(null);
 
   private pendingInvitationsSubject = new BehaviorSubject<PendingInvitation[]>(
-    []
+    [],
   );
   private teamMembersSubject = new BehaviorSubject<TeamMember[]>([]);
-
+  toastService = inject(ToastService);
   pendingInvitations$ = this.pendingInvitationsSubject.asObservable();
   teamMembers$ = this.teamMembersSubject.asObservable();
 
@@ -147,7 +148,7 @@ export class OrganizationInvitationService {
 
     if (!user || !orgId) {
       return throwError(
-        () => new Error('User not authenticated or no organization')
+        () => new Error('User not authenticated or no organization'),
       );
     }
 
@@ -170,7 +171,7 @@ export class OrganizationInvitationService {
       }),
       tap(() => {
         this.isInviting.set(false);
-      })
+      }),
     );
   }
 
@@ -183,7 +184,7 @@ export class OrganizationInvitationService {
   private async performInvitation(
     invitation: InvitationRequest,
     userId: string,
-    orgId: string
+    orgId: string,
   ): Promise<{ success: boolean; invitationId?: string; error?: string }> {
     try {
       // 1. Check if user can invite
@@ -286,7 +287,7 @@ export class OrganizationInvitationService {
         invitation.role,
         invitationToken,
         org.name,
-        inviterName
+        inviterName,
       );
 
       return result;
@@ -310,7 +311,7 @@ export class OrganizationInvitationService {
     role: string,
     invitationToken: string,
     orgName: string,
-    inviterName: string
+    inviterName: string,
   ): Promise<void> {
     try {
       const result = await this.sendInvitationEmail({
@@ -325,13 +326,13 @@ export class OrganizationInvitationService {
       if (!result.success) {
         console.warn(
           `📧 Email delivery failed for invitation ${invitationId}:`,
-          result.error
+          result.error,
         );
       }
     } catch (error: any) {
       console.warn(
         `📧 Email error for invitation ${invitationId}:`,
-        error?.message
+        error?.message,
       );
     }
   }
@@ -352,7 +353,7 @@ export class OrganizationInvitationService {
         'send-invitation-email',
         {
           body: params,
-        }
+        },
       );
 
       if (error) {
@@ -390,7 +391,7 @@ export class OrganizationInvitationService {
       }),
       tap(() => {
         this.isLoading.set(false);
-      })
+      }),
     );
   }
 
@@ -398,7 +399,7 @@ export class OrganizationInvitationService {
    * Fetch pending invitations from database
    */
   private async fetchPendingInvitations(
-    orgId: string
+    orgId: string,
   ): Promise<PendingInvitation[]> {
     const { data, error } = await this.supabase
       .from('organization_users')
@@ -416,7 +417,7 @@ export class OrganizationInvitationService {
         first_name,
         last_name
       )
-    `
+    `,
       )
       .eq('organization_id', orgId)
       .eq('status', 'invited')
@@ -475,7 +476,7 @@ export class OrganizationInvitationService {
       }),
       tap(() => {
         this.isLoading.set(false);
-      })
+      }),
     );
   }
 
@@ -500,7 +501,7 @@ export class OrganizationInvitationService {
           avatar_url
         )
       )
-    `
+    `,
       )
       .eq('organization_id', orgId)
       .eq('status', 'active')
@@ -546,17 +547,18 @@ export class OrganizationInvitationService {
     return from(this.performResendInvitation(invitationId)).pipe(
       tap((success) => {
         if (success) {
-          console.log('✅ Invitation resent');
+          this.toastService.success('Invitation resent successfully.');
         }
       }),
       catchError((error) => {
         console.error('❌ Resend failed:', error);
+        this.toastService.error('Failed to resend invitation.');
         this.error.set('Failed to resend invitation');
         return of(false);
       }),
       tap(() => {
         this.isInviting.set(false);
-      })
+      }),
     );
   }
 
@@ -564,7 +566,7 @@ export class OrganizationInvitationService {
    * Perform resend invitation
    */
   private async performResendInvitation(
-    invitationId: string
+    invitationId: string,
   ): Promise<boolean> {
     const { data: invitation, error } = await this.supabase
       .from('organization_users')
@@ -576,7 +578,7 @@ export class OrganizationInvitationService {
         organization_id,
         invitation_token,
         invited_by
-      `
+      `,
       )
       .eq('id', invitationId)
       .single();
@@ -607,7 +609,7 @@ export class OrganizationInvitationService {
    */
   cancelInvitation(invitationId: string): Observable<boolean> {
     return from(
-      this.supabase.from('organization_users').delete().eq('id', invitationId)
+      this.supabase.from('organization_users').delete().eq('id', invitationId),
     ).pipe(
       map(({ error }) => !error),
       tap((success) => {
@@ -620,7 +622,7 @@ export class OrganizationInvitationService {
         console.error('❌ Cancel failed:', error);
         this.error.set('Failed to cancel invitation');
         return of(false);
-      })
+      }),
     );
   }
 
@@ -666,7 +668,7 @@ export class OrganizationInvitationService {
     const array = new Uint8Array(32);
     crypto.getRandomValues(array);
     return Array.from(array, (byte) => byte.toString(16).padStart(2, '0')).join(
-      ''
+      '',
     );
   }
 

@@ -5,7 +5,6 @@ import {
   Users,
   UserPlus,
   Mail,
-  MoreVertical,
   Shield,
   Clock,
   X,
@@ -15,9 +14,9 @@ import {
   Settings as SettingsIcon,
   Link,
   Copy,
+  EllipsisVertical,
 } from 'lucide-angular';
 import { InviteModalComponent } from './invite-modal/invite-modal.component';
-import { AuthService } from '../../../../../auth/services/production.auth.service';
 import {
   OrganizationInvitationService,
   PendingInvitation,
@@ -33,13 +32,12 @@ import {
 export class TeamManagementComponent implements OnInit {
   //  service public for template access
   invitationService = inject(OrganizationInvitationService);
-  private authService = inject(AuthService);
 
   // Icons
   UsersIcon = Users;
   UserPlusIcon = UserPlus;
   MailIcon = Mail;
-  MoreVerticalIcon = MoreVertical;
+  MoreVerticalIcon = EllipsisVertical;
   ShieldIcon = Shield;
   ClockIcon = Clock;
   XIcon = X;
@@ -64,11 +62,11 @@ export class TeamManagementComponent implements OnInit {
 
   // Computed
   totalMembers = computed(
-    () => this.teamMembers().length + this.pendingInvitations().length
+    () => this.teamMembers().length + this.pendingInvitations().length,
   );
 
   activeMembers = computed(
-    () => this.teamMembers().filter((m) => m.status === 'active').length
+    () => this.teamMembers().filter((m) => m.status === 'active').length,
   );
 
   // Share modal state
@@ -116,7 +114,7 @@ export class TeamManagementComponent implements OnInit {
     this.invitationService.resendInvitation(invitationId).subscribe({
       next: (success) => {
         if (success) {
-          console.log('Invitation resent successfully');
+          console.log('✅ Invitation resent');
         }
       },
     });
@@ -136,7 +134,7 @@ export class TeamManagementComponent implements OnInit {
 
   toggleDropdown(memberId: string) {
     this.showDropdownId.set(
-      this.showDropdownId() === memberId ? null : memberId
+      this.showDropdownId() === memberId ? null : memberId,
     );
   }
 
@@ -242,7 +240,7 @@ export class TeamManagementComponent implements OnInit {
     const invitation = this.selectedInvitation();
     if (!invitation) return;
 
-    // ✅ USE THE INVITATION TOKEN, NOT THE ID
+    // USING THE INVITATION TOKEN, NOT THE ID
     const inviteUrl = `${window.location.origin}/auth/accept-invitation?token=${invitation.invitationToken}`;
 
     navigator.clipboard

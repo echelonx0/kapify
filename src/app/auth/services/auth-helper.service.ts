@@ -1,7 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { User } from '@supabase/supabase-js';
 import { SharedSupabaseService } from '../../shared/services/shared-supabase.service';
-
 import { RegisterRequest, UserProfile } from '../models/auth.models';
 
 /**
@@ -143,7 +142,7 @@ export class AuthHelperService {
             avatar_url,
             is_verified
           )
-        `
+        `,
         )
         .eq('id', user.id)
         .single();
@@ -213,7 +212,7 @@ export class AuthHelperService {
         if (error.code === 'PGRST116') {
           console.warn(
             '⚠️ No active organization_users record for user:',
-            userId
+            userId,
           );
           return undefined;
         }
@@ -234,7 +233,7 @@ export class AuthHelperService {
     } catch (error: any) {
       console.error(
         '❌ Unexpected error in getUserOrganizationId:',
-        error?.message
+        error?.message,
       );
       return undefined;
     }
