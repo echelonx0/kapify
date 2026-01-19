@@ -119,7 +119,15 @@ export class TeamManagementComponent implements OnInit {
       },
     });
   }
-
+  confirmDeleteMember(memberId: string, memberName: string) {
+    if (
+      confirm(
+        `Remove ${memberName} from the organization? They can be re-invited later.`,
+      )
+    ) {
+      this.invitationService.deleteTeamMember(memberId).subscribe();
+    }
+  }
   cancelInvitation(invitationId: string) {
     if (confirm('Are you sure you want to cancel this invitation?')) {
       this.invitationService.cancelInvitation(invitationId).subscribe({
