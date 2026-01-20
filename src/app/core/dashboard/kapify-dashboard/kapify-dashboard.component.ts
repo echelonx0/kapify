@@ -52,7 +52,7 @@ import {
 } from '../components/status-overview/status-overview.component';
 import { SupportModalComponent } from 'src/app/features/support/support.modal';
 import { AboutUsCardComponent } from '../components/about-us-card/about-us-card.component';
-import { KapifyCapitalLoaderComponent } from 'src/app/shared/components/kapify-loading-indicator/kapify-loading-indicator.component';
+// import { KapifyCapitalLoaderComponent } from 'src/app/shared/components/kapify-loading-indicator/kapify-loading-indicator.component';
 
 interface OnboardingCard {
   id: string;
