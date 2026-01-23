@@ -77,7 +77,9 @@ export class AuthPasswordService {
    */
   private async performPasswordResetRequest(email: string): Promise<void> {
     try {
-      const { error } = await this.supabase.auth.resetPasswordForEmail(email);
+      const { error } = await this.supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: window.location.origin + '/recover-password',
+      });
 
       if (error) {
         throw new Error(error.message);
