@@ -117,9 +117,9 @@ export class AdminLayoutComponent {
       description: 'Manage your profile',
     },
     {
-      path: '/applications',
-      label: 'Applications',
-      description: 'View your applications',
+      path: '/administrator/backups',
+      label: 'Backups',
+      description: 'Manage your backups',
     },
     {
       path: '/opportunities',
