@@ -82,32 +82,32 @@
 
       <div class="grid md:grid-cols-2 gap-4">
         @for (action of creditActions(); track action.id) {
-        <div
-          class="bg-white rounded-2xl border border-slate-200 p-6 hover:shadow-md transition-all duration-200"
-        >
-          <div class="flex items-start justify-between">
-            <div class="flex gap-4">
-              <div
-                class="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
-                [class]="getActionIconClass(action.color)"
-              >
-                <lucide-icon [img]="action.icon" [size]="24" />
+          <div
+            class="bg-white rounded-2xl border border-slate-200 p-6 hover:shadow-md transition-all duration-200"
+          >
+            <div class="flex items-start justify-between">
+              <div class="flex gap-4">
+                <div
+                  class="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
+                  [class]="getActionIconClass(action.color)"
+                >
+                  <lucide-icon [img]="action.icon" [size]="24" />
+                </div>
+                <div class="flex-1">
+                  <h3 class="font-bold text-slate-900 mb-1">
+                    {{ action.title }}
+                  </h3>
+                  <p class="text-sm text-slate-600">{{ action.description }}</p>
+                </div>
               </div>
-              <div class="flex-1">
-                <h3 class="font-bold text-slate-900 mb-1">
-                  {{ action.title }}
-                </h3>
-                <p class="text-sm text-slate-600">{{ action.description }}</p>
+              <div class="flex flex-col items-end flex-shrink-0">
+                <span class="text-2xl font-bold text-teal-600">{{
+                  action.cost
+                }}</span>
+                <span class="text-xs text-slate-500">credits</span>
               </div>
-            </div>
-            <div class="flex flex-col items-end flex-shrink-0">
-              <span class="text-2xl font-bold text-teal-600">{{
-                action.cost
-              }}</span>
-              <span class="text-xs text-slate-500">credits</span>
             </div>
           </div>
-        </div>
         }
       </div>
     </div>
@@ -132,19 +132,19 @@
 
       <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
         @for (benefit of benefits(); track benefit.title) {
-        <div
-          class="bg-white rounded-2xl border border-slate-200 p-6 hover:shadow-md transition-all duration-200"
-        >
           <div
-            class="w-12 h-12 rounded-xl bg-teal-100 flex items-center justify-center text-teal-600 mb-4"
+            class="bg-white rounded-2xl border border-slate-200 p-6 hover:shadow-md transition-all duration-200"
           >
-            <lucide-icon [img]="benefit.icon" [size]="24" />
+            <div
+              class="w-12 h-12 rounded-xl bg-teal-100 flex items-center justify-center text-teal-600 mb-4"
+            >
+              <lucide-icon [img]="benefit.icon" [size]="24" />
+            </div>
+            <h3 class="font-bold text-slate-900 mb-2">
+              {{ benefit.title }}
+            </h3>
+            <p class="text-sm text-slate-600">{{ benefit.description }}</p>
           </div>
-          <h3 class="font-bold text-slate-900 mb-2">
-            {{ benefit.title }}
-          </h3>
-          <p class="text-sm text-slate-600">{{ benefit.description }}</p>
-        </div>
         }
       </div>
     </div>
@@ -235,10 +235,8 @@
 
 <!-- Purchase Modal -->
 @if (isPurchaseModalOpen()) {
-<app-purchase-credits-modal
-  [isOpen]="isPurchaseModalOpen()"
-  [organizationId]="wallet()?.organization_id || ''"
-  (close)="closePurchaseModal()"
-  (success)="onPurchaseSuccess()"
-/>
+  <app-purchase-credits-modal
+    (close)="closePurchaseModal()"
+    (success)="onPurchaseSuccess()"
+  />
 }

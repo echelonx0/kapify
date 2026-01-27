@@ -294,8 +294,6 @@
 <!-- Purchase Modal -->
 @if (isPurchaseModalOpen()) {
   <app-purchase-credits-modal
-    [isOpen]="isPurchaseModalOpen()"
-    [organizationId]="wallet()?.organization_id || ''"
     (close)="closePurchaseModal()"
     (success)="onPurchaseSuccess()"
   />

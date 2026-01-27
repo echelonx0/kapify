@@ -1,5 +1,5 @@
-// import { Injectable, signal, inject, computed } from '@angular/core';
-// import { Observable, from, throwError, BehaviorSubject, of } from 'rxjs';
+// import { Injectable, signal, inject } from '@angular/core';
+// import { Observable, from, throwError, of } from 'rxjs';
 // import { tap, catchError, map } from 'rxjs/operators';
 // import { AuthService } from 'src/app/auth/services/production.auth.service';
 // import { SharedSupabaseService } from 'src/app/shared/services/shared-supabase.service';
@@ -30,7 +30,6 @@
 //   lastName?: string;
 // }
 
-// // FIX: Add invitation_token to expose it
 // export interface PendingInvitation {
 //   id: string;
 //   email: string;
@@ -40,7 +39,7 @@
 //   invitedAt: Date;
 //   expiresAt: Date;
 //   status: 'invited' | 'expired' | 'cancelled';
-//   invitationToken: string; // ✅ ADD THIS
+//   invitationToken: string;
 // }
 
 // interface InvitationRecord {
@@ -50,7 +49,7 @@
 //   invited_by: string;
 //   invited_at: string;
 //   invitation_expires_at: string;
-//   invitation_token: string; // ✅ ADD THIS
+//   invitation_token: string;
 //   status: string;
 //   users?:
 //     | {
@@ -63,7 +62,7 @@
 //       }>;
 // }
 
-// export interface TeamMember {
+// export interface OrganizationTeamMember {
 //   id: string;
 //   userId: string;
 //   name: string;
@@ -80,28 +79,15 @@
 // export class OrganizationInvitationService {
 //   private supabase = inject(SharedSupabaseService);
 //   private authService = inject(AuthService);
+//   private toastService = inject(ToastService);
 
 //   // State signals
 //   isInviting = signal(false);
 //   isLoading = signal(false);
 //   error = signal<string | null>(null);
 
-//   private pendingInvitationsSubject = new BehaviorSubject<PendingInvitation[]>(
-//     [],
-//   );
-//   private teamMembersSubject = new BehaviorSubject<TeamMember[]>([]);
-//   toastService = inject(ToastService);
-//   pendingInvitations$ = this.pendingInvitationsSubject.asObservable();
-//   teamMembers$ = this.teamMembersSubject.asObservable();
-
 //   pendingInvitations = signal<PendingInvitation[]>([]);
-//   teamMembers = signal<TeamMember[]>([]);
-
-//   // Computed
-//   canInvite = computed(() => {
-//     const user = this.authService.user();
-//     return this.isUserAdminOrOwner(user?.id);
-//   });
+//   teamMembers = signal<OrganizationTeamMember[]>([]);
 
 //   constructor() {
 //     console.log('OrganizationInvitationService initialized');
@@ -153,13 +139,12 @@
 //     }
 
 //     this.isInviting.set(true);
-//     this.error.set(null);
+//     this.error.set(null); // ✅ Clear previous errors
 
 //     return from(this.performInvitation(invitation, user.id, orgId)).pipe(
 //       tap((result) => {
 //         if (result.success) {
 //           console.log('✅ Invitation sent successfully');
-//           // Reload invitations list
 //           this.loadPendingInvitations().subscribe();
 //         }
 //       }),
@@ -177,9 +162,6 @@
 
 //   /**
 //    * Perform the actual invitation
-//    * ✅ UPDATED: Denormalize org_name, org_type, inviter_name at invite time
-//    * EMAIL IS NON-BLOCKING: Returns success after record created,
-//    * sends email async with errors logged only to console.
 //    */
 //   private async performInvitation(
 //     invitation: InvitationRequest,
@@ -209,8 +191,7 @@
 //         }
 //       }
 
-//       // 3. ✅ NEW: Fetch org data once at invite time
-//       console.log('📋 Fetching org data for denormalization');
+//       // 3. Fetch org data for denormalization
 //       const { data: org, error: orgError } = await this.supabase
 //         .from('organizations')
 //         .select('name, organization_type')
@@ -221,8 +202,7 @@
 //         throw new Error('Organization not found');
 //       }
 
-//       // 4. ✅ NEW: Fetch inviter name once at invite time
-//       console.log('👤 Fetching inviter name for denormalization');
+//       // 4. Fetch inviter name for denormalization
 //       const { data: inviter } = await this.supabase
 //         .from('users')
 //         .select('first_name, last_name')
@@ -239,7 +219,7 @@
 //       const expiresAt = new Date();
 //       expiresAt.setDate(expiresAt.getDate() + 7); // 7 days expiry
 
-//       // 6. ✅ UPDATED: Create invitation record with denormalized data
+//       // 6. Create invitation record with denormalized data
 //       const { data: invitationData, error: inviteError } = await this.supabase
 //         .from('organization_users')
 //         .insert({
@@ -252,7 +232,6 @@
 //           invitation_token: invitationToken,
 //           invitation_expires_at: expiresAt.toISOString(),
 //           is_active: false,
-//           // ✅ NEW: Store org data directly in invitation record
 //           org_name: org.name,
 //           org_type: org.organization_type,
 //           inviter_name: inviterName,
@@ -265,20 +244,16 @@
 //         throw new Error('Failed to create invitation record');
 //       }
 
-//       // 7. SUCCESS: Return immediately (email is async/non-blocking)
 //       const result = {
 //         success: true,
 //         invitationId: invitationData.id,
 //       };
 
-//       console.log('✅ Invitation record created with denormalized data:', {
+//       console.log('✅ Invitation record created:', {
 //         invitationId: invitationData.id,
-//         orgName: org.name,
-//         orgType: org.organization_type,
-//         inviterName,
 //       });
 
-//       // 8. Send email async in background (errors don't break flow)
+//       // 7. Send email async (non-blocking)
 //       this.sendInvitationEmailAsync(
 //         invitationData.id,
 //         invitation.email,
@@ -301,7 +276,7 @@
 //   }
 
 //   /**
-//    * ✅ UPDATED: Accept inviter params (no need to fetch)
+//    * Send invitation email async (non-blocking)
 //    */
 //   private async sendInvitationEmailAsync(
 //     invitationId: string,
@@ -382,7 +357,6 @@
 //     return from(this.fetchPendingInvitations(orgId)).pipe(
 //       tap((invitations) => {
 //         this.pendingInvitations.set(invitations);
-//         this.pendingInvitationsSubject.next(invitations);
 //       }),
 //       catchError((error) => {
 //         console.error('Failed to load invitations:', error);
@@ -448,7 +422,7 @@
 //         invitedAt: new Date(inv.invited_at),
 //         expiresAt: new Date(inv.invitation_expires_at),
 //         status: this.getInvitationStatus(inv.invitation_expires_at),
-//         invitationToken: inv.invitation_token, // ✅ INCLUDE THIS
+//         invitationToken: inv.invitation_token,
 //       };
 //     });
 //   }
@@ -456,7 +430,7 @@
 //   /**
 //    * Load team members for current organization
 //    */
-//   loadTeamMembers(): Observable<TeamMember[]> {
+//   loadTeamMembers(): Observable<OrganizationTeamMember[]> {
 //     const orgId = this.authService.getCurrentUserOrganizationId();
 //     if (!orgId) {
 //       return of([]);
@@ -467,7 +441,6 @@
 //     return from(this.fetchTeamMembers(orgId)).pipe(
 //       tap((members) => {
 //         this.teamMembers.set(members);
-//         this.teamMembersSubject.next(members);
 //       }),
 //       catchError((error) => {
 //         console.error('Failed to load team members:', error);
@@ -483,7 +456,9 @@
 //   /**
 //    * Fetch team members from database
 //    */
-//   private async fetchTeamMembers(orgId: string): Promise<TeamMember[]> {
+//   private async fetchTeamMembers(
+//     orgId: string,
+//   ): Promise<OrganizationTeamMember[]> {
 //     const { data, error } = await this.supabase
 //       .from('organization_users')
 //       .select(
@@ -540,14 +515,17 @@
 
 //   /**
 //    * Resend invitation email
+//    * ✅ FIX: Reset expiry + safety checks
 //    */
 //   resendInvitation(invitationId: string): Observable<boolean> {
 //     this.isInviting.set(true);
+//     this.error.set(null); // ✅ Clear previous errors
 
 //     return from(this.performResendInvitation(invitationId)).pipe(
 //       tap((success) => {
 //         if (success) {
 //           this.toastService.success('Invitation resent successfully.');
+//           this.loadPendingInvitations().subscribe();
 //         }
 //       }),
 //       catchError((error) => {
@@ -564,63 +542,84 @@
 
 //   /**
 //    * Perform resend invitation
+//    * ✅ FIX: Added safety check .eq('status', 'invited')
+//    * ✅ FIX: Reset expiry to 7 days from resend date
 //    */
 //   private async performResendInvitation(
 //     invitationId: string,
 //   ): Promise<boolean> {
-//     const { data: invitation, error } = await this.supabase
-//       .from('organization_users')
-//       .select(
-//         `
-//       id,
-//       invitee_email,
-//       role,
-//       organization_id,
-//       invitation_token,
-//       invited_by
-//     `,
-//       )
-//       .eq('id', invitationId)
-//       .single();
+//     try {
+//       // 1. Fetch current data (with safety check)
+//       const { data: invitation, error } = await this.supabase
+//         .from('organization_users')
+//         .select(
+//           `
+//         id,
+//         invitee_email,
+//         role,
+//         organization_id,
+//         invitation_token,
+//         invited_by,
+//         status
+//       `,
+//         )
+//         .eq('id', invitationId)
+//         .eq('status', 'invited') // ✅ SAFETY: Only resend if still invited
+//         .single();
 
-//     if (error || !invitation) {
-//       throw new Error('Invitation not found');
+//       if (error || !invitation) {
+//         throw new Error('Invitation not found or already accepted');
+//       }
+
+//       // 2. Reset expiry to 7 days from NOW
+//       const newExpiresAt = new Date();
+//       newExpiresAt.setDate(newExpiresAt.getDate() + 7);
+
+//       // 3. Update with safety check
+//       const { error: updateError } = await this.supabase
+//         .from('organization_users')
+//         .update({
+//           invitation_expires_at: newExpiresAt.toISOString(),
+//           invited_at: new Date().toISOString(),
+//         })
+//         .eq('id', invitationId)
+//         .eq('status', 'invited'); // ✅ SAFETY: Only update if still invited
+
+//       if (updateError) throw updateError;
+
+//       // 4. Send email
+//       const [orgName, inviterName] = await Promise.all([
+//         this.getOrganizationName(invitation.organization_id),
+//         this.getUserName(invitation.invited_by),
+//       ]);
+
+//       const result = await this.sendInvitationEmail({
+//         invitationId: invitation.id,
+//         email: invitation.invitee_email,
+//         organizationName: orgName,
+//         inviterName: inviterName,
+//         role: invitation.role,
+//         invitationToken: invitation.invitation_token,
+//       });
+
+//       if (!result.success) {
+//         console.warn(`Email failed for resend: ${invitationId}`);
+//         // Don't fail the resend - record is already updated
+//       }
+
+//       return result.success;
+//     } catch (error: any) {
+//       console.error('Resend error:', error);
+//       throw error;
 //     }
-
-//     // ✅ NEW: Reset expiry to 7 days from now
-//     const newExpiresAt = new Date();
-//     newExpiresAt.setDate(newExpiresAt.getDate() + 7);
-
-//     // Update expiry in database
-//     await this.supabase
-//       .from('organization_users')
-//       .update({
-//         invitation_expires_at: newExpiresAt.toISOString(),
-//         invited_at: new Date().toISOString(), // Optionally reset "invited" time too
-//       })
-//       .eq('id', invitationId);
-
-//     const [orgName, inviterName] = await Promise.all([
-//       this.getOrganizationName(invitation.organization_id),
-//       this.getUserName(invitation.invited_by),
-//     ]);
-
-//     const result = await this.sendInvitationEmail({
-//       invitationId: invitation.id,
-//       email: invitation.invitee_email,
-//       organizationName: orgName,
-//       inviterName: inviterName,
-//       role: invitation.role,
-//       invitationToken: invitation.invitation_token,
-//     });
-
-//     return result.success;
 //   }
 
 //   /**
 //    * Cancel invitation
 //    */
 //   cancelInvitation(invitationId: string): Observable<boolean> {
+//     this.error.set(null); // ✅ Clear previous errors
+
 //     return from(
 //       this.supabase.from('organization_users').delete().eq('id', invitationId),
 //     ).pipe(
@@ -671,6 +670,79 @@
 //       organizationId: data.organization_id,
 //       role: data.role,
 //     };
+//   }
+
+//   /**
+//    * Delete team member (soft delete)
+//    * ✅ FIX: Added error.set(null)
+//    */
+//   deleteTeamMember(memberId: string): Observable<boolean> {
+//     this.error.set(null); // ✅ Clear previous errors
+
+//     return from(this.performDeleteMember(memberId)).pipe(
+//       tap((success) => {
+//         if (success) {
+//           this.toastService.success('Member removed from organization');
+//           this.loadTeamMembers().subscribe();
+//         }
+//       }),
+//       catchError((error) => {
+//         console.error('❌ Delete failed:', error);
+//         this.toastService.error('Failed to remove member');
+//         this.error.set(error?.message || 'Failed to remove member');
+//         return of(false);
+//       }),
+//     );
+//   }
+
+//   /**
+//    * Perform delete team member
+//    * ✅ Uses 'inactive' status (matches constraint)
+//    */
+//   private async performDeleteMember(memberId: string): Promise<boolean> {
+//     try {
+//       // Verify user can delete (owner/admin only)
+//       const canDelete = await this.canUserManageMembers();
+//       if (!canDelete) {
+//         throw new Error('You do not have permission to remove members');
+//       }
+
+//       // Soft delete: set status to 'inactive'
+//       const { error } = await this.supabase
+//         .from('organization_users')
+//         .update({
+//           status: 'inactive',
+//           removed_at: new Date().toISOString(),
+//         })
+//         .eq('id', memberId)
+//         .eq('status', 'active'); // Safety: only remove active members
+
+//       if (error) throw error;
+//       return true;
+//     } catch (error: any) {
+//       console.error('Delete member error:', error);
+//       throw error;
+//     }
+//   }
+
+//   /**
+//    * Check if current user can manage team members
+//    */
+//   private async canUserManageMembers(): Promise<boolean> {
+//     const user = this.authService.user();
+//     const orgId = this.authService.getCurrentUserOrganizationId();
+
+//     if (!user?.id || !orgId) return false;
+
+//     const { data } = await this.supabase
+//       .from('organization_users')
+//       .select('role')
+//       .eq('user_id', user.id)
+//       .eq('organization_id', orgId)
+//       .eq('status', 'active')
+//       .single();
+
+//     return ['owner', 'admin'].includes(data?.role);
 //   }
 
 //   // ===================================
@@ -735,71 +807,330 @@
 //     return descriptions[role] || '';
 //   }
 
-//   // In OrganizationInvitationService
+//   /**
+//    * ADD THIS METHOD TO OrganizationInvitationService
+//    * Location: After the deleteTeamMember() method
+//    */
 
-//   deleteTeamMember(memberId: string): Observable<boolean> {
-//     return from(this.performDeleteMember(memberId)).pipe(
-//       tap((success) => {
-//         if (success) {
-//           this.toastService.success('Member removed from organization');
+//   /**
+//    * Change team member role
+//    * ✅ Only owner/admin can change roles
+//    * ✅ Owners cannot be demoted
+//    * ✅ Admins cannot change other admins or owners
+//    * ✅ Tracks activity and notifies member
+//    */
+//   changeTeamMemberRole(
+//     memberId: string,
+//     newRole: string,
+//   ): Observable<{ success: boolean; error?: string }> {
+//     this.error.set(null);
+
+//     // Validate role
+//     const validRoles = ['owner', 'admin', 'member', 'viewer'];
+//     if (!validRoles.includes(newRole)) {
+//       const msg = 'Invalid role selected';
+//       this.error.set(msg);
+//       return of({ success: false, error: msg });
+//     }
+
+//     return from(this.performChangeRole(memberId, newRole)).pipe(
+//       tap((result) => {
+//         if (result.success) {
+//           this.toastService.success(`Role updated successfully`);
 //           this.loadTeamMembers().subscribe();
 //         }
 //       }),
 //       catchError((error) => {
-//         console.error('❌ Delete failed:', error);
-//         this.toastService.error('Failed to remove member');
-//         return of(false);
+//         const msg = error?.message || 'Failed to change role';
+//         this.error.set(msg);
+//         this.toastService.error(msg);
+//         return of({ success: false, error: msg });
 //       }),
 //     );
 //   }
 
-//   private async performDeleteMember(memberId: string): Promise<boolean> {
+//   /**
+//    * Perform the actual role change with full validation
+//    */
+//   private async performChangeRole(
+//     memberId: string,
+//     newRole: string,
+//   ): Promise<{ success: boolean; error?: string }> {
 //     try {
-//       // Verify user can delete (owner/admin only)
-//       const canDelete = await this.canUserManageMembers();
-//       if (!canDelete) {
-//         throw new Error('You do not have permission to remove members');
+//       const currentUser = this.authService.user();
+//       const orgId = this.authService.getCurrentUserOrganizationId();
+
+//       if (!currentUser?.id || !orgId) {
+//         throw new Error('User not authenticated or no organization');
 //       }
 
-//       // Soft delete: set status to 'inactive' (already in constraint)
-//       const { error } = await this.supabase
-//         .from('organization_users')
-//         .update({ status: 'inactive', removed_at: new Date().toISOString() })
-//         .eq('id', memberId)
-//         .eq('status', 'active'); // Safety: only remove active members
+//       // 1. Verify current user is owner or admin
+//       const userRole = await this.getUserRoleInOrg(currentUser.id, orgId);
+//       if (!['owner', 'admin'].includes(userRole)) {
+//         throw new Error('You do not have permission to change roles');
+//       }
 
-//       if (error) throw error;
-//       return true;
+//       // 2. Fetch target member data
+//       const { data: targetMember, error: fetchError } = await this.supabase
+//         .from('organization_users')
+//         .select(
+//           `
+//       id,
+//       user_id,
+//       role,
+//       status,
+//       users!fk_organization_users_user (
+//         id,
+//         first_name,
+//         last_name,
+//         email
+//       )
+//     `,
+//         )
+//         .eq('id', memberId)
+//         .eq('organization_id', orgId)
+//         .eq('status', 'active')
+//         .single();
+
+//       if (fetchError || !targetMember) {
+//         throw new Error('Member not found or not active');
+//       }
+
+//       const targetUser = Array.isArray(targetMember.users)
+//         ? targetMember.users[0]
+//         : targetMember.users;
+//       const targetRole = targetMember.role;
+
+//       // 3. Prevent demoting owners
+//       if (targetRole === 'owner') {
+//         throw new Error('Cannot change owner role');
+//       }
+
+//       // 4. Admin can only change member/viewer roles (not admin/owner)
+//       if (userRole === 'admin' && ['owner', 'admin'].includes(targetRole)) {
+//         throw new Error('Admins can only change member and viewer roles');
+//       }
+
+//       if (userRole === 'admin' && ['owner', 'admin'].includes(newRole)) {
+//         throw new Error('Admins can only assign member and viewer roles');
+//       }
+
+//       // 5. Cannot change your own role
+//       if (targetMember.user_id === currentUser.id) {
+//         throw new Error('You cannot change your own role');
+//       }
+
+//       // 6. Update role in database
+//       const { error: updateError } = await this.supabase
+//         .from('organization_users')
+//         .update({
+//           role: newRole,
+//           updated_at: new Date().toISOString(),
+//         })
+//         .eq('id', memberId)
+//         .eq('status', 'active');
+
+//       if (updateError) {
+//         throw new Error(`Database update failed: ${updateError.message}`);
+//       }
+
+//       // 7. Track activity (async, non-blocking)
+//       this.trackRoleChangeActivity(
+//         currentUser.id,
+//         targetMember.user_id,
+//         targetUser?.email || '',
+//         targetRole,
+//         newRole,
+//         currentUser.firstName,
+//         currentUser.lastName,
+//       );
+
+//       // 8. Notify member (async, non-blocking)
+//       this.notifyMemberRoleChanged(
+//         targetMember.user_id,
+//         targetUser?.first_name || '',
+//         targetUser?.last_name || '',
+//         targetRole,
+//         newRole,
+//       );
+
+//       return { success: true };
 //     } catch (error: any) {
-//       console.error('Delete member error:', error);
+//       console.error('Role change error:', error);
 //       throw error;
 //     }
 //   }
 
-//   private async canUserManageMembers(): Promise<boolean> {
-//     const user = this.authService.user();
-//     const orgId = this.authService.getCurrentUserOrganizationId();
-
-//     if (!user?.id || !orgId) return false;
-
-//     const { data } = await this.supabase
+//   /**
+//    * Get user's role in organization
+//    */
+//   private async getUserRoleInOrg(
+//     userId: string,
+//     orgId: string,
+//   ): Promise<string> {
+//     const { data, error } = await this.supabase
 //       .from('organization_users')
 //       .select('role')
-//       .eq('user_id', user.id)
+//       .eq('user_id', userId)
 //       .eq('organization_id', orgId)
 //       .eq('status', 'active')
 //       .single();
 
-//     return ['owner', 'admin'].includes(data?.role);
+//     if (error || !data) {
+//       throw new Error('User role not found in organization');
+//     }
+
+//     return data.role;
+//   }
+
+//   /**
+//    * Track role change activity (async, fire-and-forget)
+//    * Inject ActivityService to use this
+//    */
+//   private async trackRoleChangeActivity(
+//     changedByUserId: string,
+//     targetUserId: string,
+//     targetUserEmail: string,
+//     oldRole: string,
+//     newRole: string,
+//     changerFirstName: string,
+//     changerLastName: string,
+//   ): Promise<void> {
+//     try {
+//       // Only track if ActivityService is available
+//       // Extend this method if you have activity tracking service
+//       console.log('📝 Role change activity logged:', {
+//         changedBy: `${changerFirstName} ${changerLastName}`,
+//         targetUser: targetUserEmail,
+//         from: oldRole,
+//         to: newRole,
+//         timestamp: new Date().toISOString(),
+//       });
+//     } catch (error) {
+//       console.warn('Failed to track role change activity:', error);
+//     }
+//   }
+
+//   /**
+//    * Notify member of role change via messaging
+//    * Uses MessagingService to send system message
+//    */
+//   private async notifyMemberRoleChanged(
+//     targetUserId: string,
+//     targetFirstName: string,
+//     targetLastName: string,
+//     oldRole: string,
+//     newRole: string,
+//   ): Promise<void> {
+//     try {
+//       // Get or create notification thread for this user
+//       const threadSubject = 'Your role has been updated';
+
+//       const { data: threadData, error: threadError } = await this.supabase
+//         .from('message_threads')
+//         .select('id')
+//         .eq('created_by', 'system')
+//         .contains('metadata', { type: 'role_change_notification' })
+//         .eq('is_broadcast', false)
+//         .single();
+
+//       let threadId: string;
+
+//       if (threadError || !threadData) {
+//         // Create new notification thread
+//         const { data: newThread, error: createError } = await this.supabase
+//           .from('message_threads')
+//           .insert({
+//             subject: threadSubject,
+//             created_by: 'system',
+//             metadata: {
+//               type: 'role_change_notification',
+//               targetUserId,
+//             },
+//           })
+//           .select('id')
+//           .single();
+
+//         if (createError || !newThread) {
+//           throw new Error('Failed to create notification thread');
+//         }
+
+//         threadId = newThread.id;
+
+//         // Add participant
+//         await this.supabase.from('thread_participants').insert({
+//           thread_id: threadId,
+//           user_id: targetUserId,
+//           can_reply: false,
+//         });
+//       } else {
+//         threadId = threadData.id;
+//       }
+
+//       // Send notification message
+//       const roleName = this.getRoleDisplayName(newRole);
+//       const oldRoleName = this.getRoleDisplayName(oldRole);
+//       const message = `Your role in the organization has been changed from ${oldRoleName} to ${roleName}. You now have access to ${this.getPermissionsSummary(newRole)}.`;
+
+//       await this.supabase.from('messages').insert({
+//         thread_id: threadId,
+//         sender_id: 'system',
+//         message_type: 'system',
+//         content: message,
+//         is_system_message: true,
+//         metadata: {
+//           type: 'role_change',
+//           oldRole,
+//           newRole,
+//         },
+//       });
+
+//       console.log('✅ Role change notification sent to member');
+//     } catch (error) {
+//       console.warn(
+//         'Failed to notify member of role change (non-critical):',
+//         error,
+//       );
+//     }
+//   }
+
+//   /**
+//    * Get permissions summary for a role (used in notification)
+//    */
+//   private getPermissionsSummary(role: string): string {
+//     const summaries: Record<string, string> = {
+//       owner: 'all features including billing and team management',
+//       admin: 'team member management and organization settings',
+//       member: 'application and document management',
+//       viewer: 'view-only access to applications and data',
+//     };
+//     return summaries[role] || 'organization features';
+//   }
+
+//   /**
+//    * Add this method if it doesn't already exist in the service
+//    * Returns badge classes for role display
+//    */
+//   getRoleDisplayBadgeClasses(role: string): string {
+//     const baseClasses =
+//       'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border';
+//     const roleClasses: Record<string, string> = {
+//       owner: 'bg-teal-50 text-teal-700 border-teal-200/50',
+//       admin: 'bg-blue-50 text-blue-700 border-blue-200/50',
+//       member: 'bg-slate-50 text-slate-700 border-slate-200/50',
+//       viewer: 'bg-amber-50 text-amber-700 border-amber-200/50',
+//     };
+//     return `${baseClasses} ${roleClasses[role] || roleClasses['member']}`;
 //   }
 // }
 
 import { Injectable, signal, inject } from '@angular/core';
-import { Observable, from, throwError, of } from 'rxjs';
-import { tap, catchError, map } from 'rxjs/operators';
+import { Observable, from, throwError, of, Subject } from 'rxjs';
+import { tap, catchError, map, retry, delay, timeout } from 'rxjs/operators';
 import { AuthService } from 'src/app/auth/services/production.auth.service';
 import { SharedSupabaseService } from 'src/app/shared/services/shared-supabase.service';
 import { ToastService } from 'src/app/shared/services/toast.service';
+import { DatabaseActivityService } from 'src/app/shared/services/database-activity.service';
 
 interface UserRecord {
   first_name: string;
@@ -858,7 +1189,7 @@ interface InvitationRecord {
       }>;
 }
 
-export interface TeamMember {
+export interface OrganizationTeamMember {
   id: string;
   userId: string;
   name: string;
@@ -869,6 +1200,24 @@ export interface TeamMember {
   avatarUrl?: string;
 }
 
+// ===================================
+// ERROR HANDLING TYPES
+// ===================================
+
+export interface OperationError {
+  code: string;
+  message: string;
+  userMessage: string; // What to show to user
+  retryable: boolean;
+  timestamp: Date;
+}
+
+export interface OperationResult<T> {
+  success: boolean;
+  data?: T;
+  error?: OperationError;
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -876,79 +1225,326 @@ export class OrganizationInvitationService {
   private supabase = inject(SharedSupabaseService);
   private authService = inject(AuthService);
   private toastService = inject(ToastService);
+  private activityService = inject(DatabaseActivityService);
 
-  // State signals
+  // ===================================
+  // STATE MANAGEMENT
+  // ===================================
+
   isInviting = signal(false);
   isLoading = signal(false);
-  error = signal<string | null>(null);
+  isChangingRole = signal(false);
+  isResending = signal(false);
+  isDeleting = signal(false);
+
+  // Error queue: show multiple errors instead of overwriting
+  private errorSubject = new Subject<OperationError>();
+  errors = signal<OperationError[]>([]);
 
   pendingInvitations = signal<PendingInvitation[]>([]);
-  teamMembers = signal<TeamMember[]>([]);
+  teamMembers = signal<OrganizationTeamMember[]>([]);
+
+  // Public observable for error stream
+  errors$ = this.errorSubject.asObservable();
 
   constructor() {
     console.log('OrganizationInvitationService initialized');
+    // Subscribe to error stream
+    this.errors$.subscribe((error) => {
+      this.addError(error);
+      // Auto-remove after 6 seconds
+      setTimeout(
+        () => this.removeError(error.code + error.timestamp.getTime()),
+        6000,
+      );
+    });
+  }
+
+  // ===================================
+  // ERROR HANDLING UTILITIES
+  // ===================================
+
+  /**
+   * Add error to queue
+   */
+  private addError(error: OperationError): void {
+    const current = this.errors();
+    // Prevent duplicate errors
+    if (
+      !current.some((e) => e.code === error.code && e.message === error.message)
+    ) {
+      this.errors.set([...current, error]);
+    }
   }
 
   /**
-   * Check if user can invite team members
+   * Remove error from queue
    */
-  private async isUserAdminOrOwner(userId?: string): Promise<boolean> {
-    if (!userId) return false;
+  private removeError(errorId: string): void {
+    const current = this.errors();
+    this.errors.set(
+      current.filter((e) => e.code + e.timestamp.getTime() !== errorId),
+    );
+  }
 
-    const orgId = this.authService.getCurrentUserOrganizationId();
-    if (!orgId) return false;
+  /**
+   * Clear all errors
+   */
+  clearErrors(): void {
+    this.errors.set([]);
+  }
 
+  /**
+   * Create standardized error
+   */
+  private createError(
+    code: string,
+    message: string,
+    userMessage: string,
+    retryable: boolean = false,
+  ): OperationError {
+    return {
+      code,
+      message,
+      userMessage,
+      retryable,
+      timestamp: new Date(),
+    };
+  }
+
+  /**
+   * Handle Supabase errors with categorization
+   */
+  private handleSupabaseError(error: any, context: string): OperationError {
+    console.error(`[${context}] Supabase error:`, error);
+
+    // Auth errors
+    if (
+      error?.code === 'PGRST401' ||
+      error?.message?.includes('not authenticated')
+    ) {
+      return this.createError(
+        'AUTH_ERROR',
+        'Not authenticated',
+        'Your session has expired. Please log in again.',
+        false,
+      );
+    }
+
+    // Permission errors
+    if (
+      error?.code === 'PGRST403' ||
+      error?.message?.includes('permission') ||
+      error?.message?.includes('row level security')
+    ) {
+      return this.createError(
+        'PERMISSION_ERROR',
+        'Access denied',
+        'You do not have permission to perform this action.',
+        false,
+      );
+    }
+
+    // Duplicate/constraint errors
+    if (
+      error?.code === 'PGRST23505' ||
+      error?.message?.includes('duplicate') ||
+      error?.message?.includes('already')
+    ) {
+      return this.createError(
+        'DUPLICATE_ERROR',
+        'Duplicate record',
+        'This record already exists. Try a different value.',
+        false,
+      );
+    }
+
+    // Not found errors
+    if (error?.code === 'PGRST116' || error?.message?.includes('not found')) {
+      return this.createError(
+        'NOT_FOUND_ERROR',
+        'Resource not found',
+        'The requested resource no longer exists.',
+        false,
+      );
+    }
+
+    // Network/timeout errors (retryable)
+    if (
+      error?.message?.includes('timeout') ||
+      error?.message?.includes('network') ||
+      error?.message?.includes('ECONNREFUSED')
+    ) {
+      return this.createError(
+        'NETWORK_ERROR',
+        'Network error',
+        'Connection failed. Please try again.',
+        true,
+      );
+    }
+
+    // Default error
+    return this.createError(
+      'UNKNOWN_ERROR',
+      error?.message || 'Unknown error',
+      'An unexpected error occurred. Please try again.',
+      false,
+    );
+  }
+
+  /**
+   * Emit error and notify user
+   */
+  private emitError(error: OperationError, showToast: boolean = true): void {
+    this.errorSubject.next(error);
+    if (showToast) {
+      this.toastService.error(error.userMessage);
+    }
+  }
+
+  // ===================================
+  // VALIDATION METHODS
+  // ===================================
+
+  /**
+   * Validate invitation email format
+   */
+  private validateEmail(email: string): OperationError | null {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return this.createError(
+        'INVALID_EMAIL',
+        'Invalid email format',
+        'Please enter a valid email address.',
+        false,
+      );
+    }
+    return null;
+  }
+
+  /**
+   * Validate role
+   */
+  private validateRole(role: string): OperationError | null {
+    const validRoles = ['admin', 'member', 'viewer'];
+    if (!validRoles.includes(role)) {
+      return this.createError(
+        'INVALID_ROLE',
+        'Invalid role',
+        'The selected role is invalid.',
+        false,
+      );
+    }
+    return null;
+  }
+
+  /**
+   * Check if user can manage team
+   */
+  private async canUserManageTeam(): Promise<{
+    can: boolean;
+    error?: OperationError;
+  }> {
     try {
+      const user = this.authService.user();
+      const orgId = this.authService.getCurrentUserOrganizationId();
+
+      if (!user?.id || !orgId) {
+        return {
+          can: false,
+          error: this.createError(
+            'AUTH_ERROR',
+            'User not authenticated',
+            'Please log in to continue.',
+            false,
+          ),
+        };
+      }
+
       const { data, error } = await this.supabase
         .from('organization_users')
         .select('role')
-        .eq('user_id', userId)
+        .eq('user_id', user.id)
         .eq('organization_id', orgId)
         .eq('status', 'active')
         .single();
 
-      if (error || !data) return false;
+      if (error || !data) {
+        return {
+          can: false,
+          error: this.createError(
+            'PERMISSION_ERROR',
+            'Role not found',
+            'You do not have permission to manage this organization.',
+            false,
+          ),
+        };
+      }
 
-      return ['owner', 'admin'].includes(data.role);
-    } catch {
-      return false;
+      const canManage = ['owner', 'admin'].includes(data.role);
+      return { can: canManage };
+    } catch (error: any) {
+      return {
+        can: false,
+        error: this.handleSupabaseError(error, 'canUserManageTeam'),
+      };
     }
   }
 
+  // ===================================
+  // INVITATION METHODS
+  // ===================================
+
   /**
-   * Invite a new team member
+   * Invite team member with full error handling
    */
   inviteTeamMember(invitation: InvitationRequest): Observable<{
     success: boolean;
     invitationId?: string;
-    error?: string;
   }> {
     console.log('📧 Inviting team member:', invitation.email);
 
-    const user = this.authService.user();
-    const orgId = this.authService.getCurrentUserOrganizationId();
+    // 1. Validate email
+    const emailError = this.validateEmail(invitation.email);
+    if (emailError) {
+      this.emitError(emailError);
+      return of({ success: false });
+    }
 
-    if (!user || !orgId) {
-      return throwError(
-        () => new Error('User not authenticated or no organization'),
-      );
+    // 2. Validate role
+    const roleError = this.validateRole(invitation.role);
+    if (roleError) {
+      this.emitError(roleError);
+      return of({ success: false });
     }
 
     this.isInviting.set(true);
-    this.error.set(null); // ✅ Clear previous errors
+    this.clearErrors();
 
-    return from(this.performInvitation(invitation, user.id, orgId)).pipe(
+    return from(this.performInvitation(invitation)).pipe(
+      timeout(30000), // 30 second timeout
+      retry({
+        count: 1,
+        delay: (error, retryCount) => {
+          const opError = error as OperationError;
+          console.log(
+            `Retry attempt ${retryCount} for invitation: ${invitation.email}`,
+          );
+          return opError.retryable
+            ? of(null).pipe(delay(1000))
+            : throwError(() => error);
+        },
+      }),
       tap((result) => {
         if (result.success) {
-          console.log('✅ Invitation sent successfully');
+          this.toastService.success(`Invitation sent to ${invitation.email}`);
           this.loadPendingInvitations().subscribe();
         }
       }),
       catchError((error) => {
-        console.error('❌ Invitation failed:', error);
-        const errorMessage = error?.message || 'Failed to send invitation';
-        this.error.set(errorMessage);
-        return of({ success: false, error: errorMessage });
+        const opError = this.handleSupabaseError(error, 'inviteTeamMember');
+        this.emitError(opError);
+        return of({ success: false });
       }),
       tap(() => {
         this.isInviting.set(false);
@@ -957,37 +1553,63 @@ export class OrganizationInvitationService {
   }
 
   /**
-   * Perform the actual invitation
+   * Perform invitation with complete validation and activity logging
    */
   private async performInvitation(
     invitation: InvitationRequest,
-    userId: string,
-    orgId: string,
-  ): Promise<{ success: boolean; invitationId?: string; error?: string }> {
+  ): Promise<{ success: boolean; invitationId?: string }> {
     try {
-      // 1. Check if user can invite
-      const canInvite = await this.isUserAdminOrOwner(userId);
-      if (!canInvite) {
-        throw new Error('You do not have permission to invite team members');
+      const user = this.authService.user();
+      const orgId = this.authService.getCurrentUserOrganizationId();
+
+      if (!user?.id || !orgId) {
+        throw this.createError(
+          'AUTH_ERROR',
+          'User not authenticated',
+          'Please log in to continue.',
+          false,
+        );
       }
 
-      // 2. Check if email already invited or active
-      const { data: existingByEmail } = await this.supabase
+      // Check permissions
+      const permCheck = await this.canUserManageTeam();
+      if (!permCheck.can) {
+        throw (
+          permCheck.error || this.createError('PERMISSION_ERROR', '', '', false)
+        );
+      }
+
+      // Check if already invited/active
+      const { data: existing, error: checkError } = await this.supabase
         .from('organization_users')
         .select('id, status')
         .eq('organization_id', orgId)
         .eq('invitee_email', invitation.email)
         .maybeSingle();
 
-      if (existingByEmail) {
-        if (existingByEmail.status === 'invited') {
-          throw new Error('An invitation has already been sent to this email');
-        } else if (existingByEmail.status === 'active') {
-          throw new Error('This user is already a member of your organization');
+      if (checkError && checkError.code !== 'PGRST116') {
+        throw this.handleSupabaseError(checkError, 'checkExistingInvitation');
+      }
+
+      if (existing) {
+        if (existing.status === 'invited') {
+          throw this.createError(
+            'DUPLICATE_ERROR',
+            'Already invited',
+            'An invitation has already been sent to this email.',
+            false,
+          );
+        } else if (existing.status === 'active') {
+          throw this.createError(
+            'DUPLICATE_ERROR',
+            'Already member',
+            'This user is already a member of your organization.',
+            false,
+          );
         }
       }
 
-      // 3. Fetch org data for denormalization
+      // Fetch org data
       const { data: org, error: orgError } = await this.supabase
         .from('organizations')
         .select('name, organization_type')
@@ -995,27 +1617,31 @@ export class OrganizationInvitationService {
         .single();
 
       if (orgError || !org) {
-        throw new Error('Organization not found');
+        throw this.handleSupabaseError(orgError, 'fetchOrganization');
       }
 
-      // 4. Fetch inviter name for denormalization
-      const { data: inviter } = await this.supabase
+      // Fetch inviter name
+      const { data: inviter, error: inviterError } = await this.supabase
         .from('users')
         .select('first_name, last_name')
-        .eq('id', userId)
+        .eq('id', user.id)
         .single();
 
-      const inviterName = inviter
-        ? `${inviter.first_name || ''} ${inviter.last_name || ''}`.trim() ||
-          'Team Member'
-        : 'Team Member';
+      if (inviterError) {
+        console.warn('Failed to fetch inviter details:', inviterError);
+      }
 
-      // 5. Generate secure invitation token
+      const inviterName =
+        inviter && (inviter.first_name || inviter.last_name)
+          ? `${inviter.first_name || ''} ${inviter.last_name || ''}`.trim()
+          : 'Team Member';
+
+      // Generate token
       const invitationToken = this.generateSecureToken();
       const expiresAt = new Date();
-      expiresAt.setDate(expiresAt.getDate() + 7); // 7 days expiry
+      expiresAt.setDate(expiresAt.getDate() + 7);
 
-      // 6. Create invitation record with denormalized data
+      // Create invitation
       const { data: invitationData, error: inviteError } = await this.supabase
         .from('organization_users')
         .insert({
@@ -1023,7 +1649,7 @@ export class OrganizationInvitationService {
           invitee_email: invitation.email,
           role: invitation.role,
           status: 'invited',
-          invited_by: userId,
+          invited_by: user.id,
           invited_at: new Date().toISOString(),
           invitation_token: invitationToken,
           invitation_expires_at: expiresAt.toISOString(),
@@ -1036,43 +1662,46 @@ export class OrganizationInvitationService {
         .single();
 
       if (inviteError || !invitationData) {
-        console.error('Failed to create invitation:', inviteError);
-        throw new Error('Failed to create invitation record');
+        throw this.handleSupabaseError(inviteError, 'createInvitation');
       }
 
-      const result = {
-        success: true,
-        invitationId: invitationData.id,
-      };
+      // Track activity (fire-and-forget)
+      this.activityService.trackApplicationActivity(
+        'invitation_sent',
+        orgId,
+        `Invited ${invitation.email} as ${invitation.role}`,
+      );
 
-      console.log('✅ Invitation record created:', {
-        invitationId: invitationData.id,
-      });
-
-      // 7. Send email async (non-blocking)
+      // Send email async (fire-and-forget)
       this.sendInvitationEmailAsync(
         invitationData.id,
         invitation.email,
         orgId,
-        userId,
+        user.id,
         invitation.role,
         invitationToken,
         org.name,
         inviterName,
       );
 
-      return result;
+      return {
+        success: true,
+        invitationId: invitationData.id,
+      };
     } catch (error: any) {
       console.error('Invitation error:', error);
-      return {
-        success: false,
-        error: error?.message || 'Failed to send invitation',
-      };
+
+      // Re-throw if already an OperationError
+      if (error?.code && error?.userMessage) {
+        throw error;
+      }
+
+      throw this.handleSupabaseError(error, 'performInvitation');
     }
   }
 
   /**
-   * Send invitation email async (non-blocking)
+   * Send invitation email async
    */
   private async sendInvitationEmailAsync(
     invitationId: string,
@@ -1099,6 +1728,12 @@ export class OrganizationInvitationService {
           `📧 Email delivery failed for invitation ${invitationId}:`,
           result.error,
         );
+        // Log to activity but don't fail the operation
+        this.activityService.trackApplicationActivity(
+          'email_failed',
+          orgId,
+          `Failed to send invitation email to ${email}: ${result.error}`,
+        );
       }
     } catch (error: any) {
       console.warn(
@@ -1109,7 +1744,7 @@ export class OrganizationInvitationService {
   }
 
   /**
-   * Send invitation email via Supabase Edge Function
+   * Send email via Edge Function
    */
   private async sendInvitationEmail(params: {
     invitationId: string;
@@ -1139,8 +1774,12 @@ export class OrganizationInvitationService {
     }
   }
 
+  // ===================================
+  // LOAD DATA METHODS
+  // ===================================
+
   /**
-   * Load pending invitations for current organization
+   * Load pending invitations
    */
   loadPendingInvitations(): Observable<PendingInvitation[]> {
     const orgId = this.authService.getCurrentUserOrganizationId();
@@ -1151,12 +1790,16 @@ export class OrganizationInvitationService {
     this.isLoading.set(true);
 
     return from(this.fetchPendingInvitations(orgId)).pipe(
+      timeout(15000),
       tap((invitations) => {
         this.pendingInvitations.set(invitations);
       }),
       catchError((error) => {
-        console.error('Failed to load invitations:', error);
-        this.error.set('Failed to load pending invitations');
+        const opError = this.handleSupabaseError(
+          error,
+          'loadPendingInvitations',
+        );
+        this.emitError(opError, false); // Don't spam toast on load
         return of([]);
       }),
       tap(() => {
@@ -1166,7 +1809,7 @@ export class OrganizationInvitationService {
   }
 
   /**
-   * Fetch pending invitations from database
+   * Fetch pending invitations
    */
   private async fetchPendingInvitations(
     orgId: string,
@@ -1194,8 +1837,7 @@ export class OrganizationInvitationService {
       .order('invited_at', { ascending: false });
 
     if (error) {
-      console.error('Error fetching invitations:', error);
-      throw error;
+      throw this.handleSupabaseError(error, 'fetchPendingInvitations');
     }
 
     if (!data) {
@@ -1224,9 +1866,9 @@ export class OrganizationInvitationService {
   }
 
   /**
-   * Load team members for current organization
+   * Load team members
    */
-  loadTeamMembers(): Observable<TeamMember[]> {
+  loadTeamMembers(): Observable<OrganizationTeamMember[]> {
     const orgId = this.authService.getCurrentUserOrganizationId();
     if (!orgId) {
       return of([]);
@@ -1235,12 +1877,13 @@ export class OrganizationInvitationService {
     this.isLoading.set(true);
 
     return from(this.fetchTeamMembers(orgId)).pipe(
+      timeout(15000),
       tap((members) => {
         this.teamMembers.set(members);
       }),
       catchError((error) => {
-        console.error('Failed to load team members:', error);
-        this.error.set('Failed to load team members');
+        const opError = this.handleSupabaseError(error, 'loadTeamMembers');
+        this.emitError(opError, false);
         return of([]);
       }),
       tap(() => {
@@ -1250,9 +1893,11 @@ export class OrganizationInvitationService {
   }
 
   /**
-   * Fetch team members from database
+   * Fetch team members
    */
-  private async fetchTeamMembers(orgId: string): Promise<TeamMember[]> {
+  private async fetchTeamMembers(
+    orgId: string,
+  ): Promise<OrganizationTeamMember[]> {
     const { data, error } = await this.supabase
       .from('organization_users')
       .select(
@@ -1277,8 +1922,7 @@ export class OrganizationInvitationService {
       .order('joined_at', { ascending: false });
 
     if (error) {
-      console.error('Error fetching team members:', error);
-      throw error;
+      throw this.handleSupabaseError(error, 'fetchTeamMembers');
     }
 
     if (!data) {
@@ -1307,43 +1951,55 @@ export class OrganizationInvitationService {
     });
   }
 
+  // ===================================
+  // RESEND INVITATION
+  // ===================================
+
   /**
-   * Resend invitation email
-   * ✅ FIX: Reset expiry + safety checks
+   * Resend invitation with full error handling
    */
   resendInvitation(invitationId: string): Observable<boolean> {
-    this.isInviting.set(true);
-    this.error.set(null); // ✅ Clear previous errors
+    this.isResending.set(true);
+    this.clearErrors();
 
     return from(this.performResendInvitation(invitationId)).pipe(
+      timeout(20000),
+      retry({
+        count: 1,
+        delay: (error, retryCount) => {
+          const opError = error as OperationError;
+          console.log(
+            `Retry attempt ${retryCount} for resend: ${invitationId}`,
+          );
+          return opError.retryable
+            ? of(null).pipe(delay(1000))
+            : throwError(() => error);
+        },
+      }),
       tap((success) => {
         if (success) {
-          this.toastService.success('Invitation resent successfully.');
+          this.toastService.success('Invitation resent successfully');
           this.loadPendingInvitations().subscribe();
         }
       }),
       catchError((error) => {
-        console.error('❌ Resend failed:', error);
-        this.toastService.error('Failed to resend invitation.');
-        this.error.set('Failed to resend invitation');
+        const opError = this.handleSupabaseError(error, 'resendInvitation');
+        this.emitError(opError);
         return of(false);
       }),
       tap(() => {
-        this.isInviting.set(false);
+        this.isResending.set(false);
       }),
     );
   }
 
   /**
-   * Perform resend invitation
-   * ✅ FIX: Added safety check .eq('status', 'invited')
-   * ✅ FIX: Reset expiry to 7 days from resend date
+   * Perform resend with validation
    */
   private async performResendInvitation(
     invitationId: string,
   ): Promise<boolean> {
     try {
-      // 1. Fetch current data (with safety check)
       const { data: invitation, error } = await this.supabase
         .from('organization_users')
         .select(
@@ -1358,18 +2014,22 @@ export class OrganizationInvitationService {
       `,
         )
         .eq('id', invitationId)
-        .eq('status', 'invited') // ✅ SAFETY: Only resend if still invited
+        .eq('status', 'invited')
         .single();
 
       if (error || !invitation) {
-        throw new Error('Invitation not found or already accepted');
+        throw this.createError(
+          'NOT_FOUND_ERROR',
+          'Invitation not found',
+          'This invitation no longer exists or has already been accepted.',
+          false,
+        );
       }
 
-      // 2. Reset expiry to 7 days from NOW
+      // Reset expiry to 7 days from NOW
       const newExpiresAt = new Date();
       newExpiresAt.setDate(newExpiresAt.getDate() + 7);
 
-      // 3. Update with safety check
       const { error: updateError } = await this.supabase
         .from('organization_users')
         .update({
@@ -1377,11 +2037,13 @@ export class OrganizationInvitationService {
           invited_at: new Date().toISOString(),
         })
         .eq('id', invitationId)
-        .eq('status', 'invited'); // ✅ SAFETY: Only update if still invited
+        .eq('status', 'invited');
 
-      if (updateError) throw updateError;
+      if (updateError) {
+        throw this.handleSupabaseError(updateError, 'updateInvitationExpiry');
+      }
 
-      // 4. Send email
+      // Send email
       const [orgName, inviterName] = await Promise.all([
         this.getOrganizationName(invitation.organization_id),
         this.getUserName(invitation.invited_by),
@@ -1396,84 +2058,102 @@ export class OrganizationInvitationService {
         invitationToken: invitation.invitation_token,
       });
 
-      if (!result.success) {
-        console.warn(`Email failed for resend: ${invitationId}`);
-        // Don't fail the resend - record is already updated
-      }
+      // Track activity
+      this.activityService.trackApplicationActivity(
+        'invitation_resent',
+        invitation.organization_id,
+        `Resent invitation to ${invitation.invitee_email}`,
+      );
 
       return result.success;
     } catch (error: any) {
-      console.error('Resend error:', error);
-      throw error;
+      if (error?.code && error?.userMessage) {
+        throw error;
+      }
+      throw this.handleSupabaseError(error, 'performResendInvitation');
     }
   }
+
+  // ===================================
+  // CANCEL INVITATION
+  // ===================================
 
   /**
    * Cancel invitation
    */
   cancelInvitation(invitationId: string): Observable<boolean> {
-    this.error.set(null); // ✅ Clear previous errors
+    this.clearErrors();
 
-    return from(
-      this.supabase.from('organization_users').delete().eq('id', invitationId),
-    ).pipe(
-      map(({ error }) => !error),
+    return from(this.performCancelInvitation(invitationId)).pipe(
+      timeout(15000),
       tap((success) => {
         if (success) {
-          console.log('✅ Invitation cancelled');
+          this.toastService.success('Invitation cancelled');
           this.loadPendingInvitations().subscribe();
         }
       }),
       catchError((error) => {
-        console.error('❌ Cancel failed:', error);
-        this.error.set('Failed to cancel invitation');
+        const opError = this.handleSupabaseError(error, 'cancelInvitation');
+        this.emitError(opError);
         return of(false);
       }),
     );
   }
 
   /**
-   * Check if user has pending invitation
+   * Perform cancel
    */
-  async checkForPendingInvitation(email: string): Promise<{
-    hasInvitation: boolean;
-    token?: string;
-    organizationId?: string;
-    role?: string;
-  }> {
-    const { data, error } = await this.supabase
-      .from('organization_users')
-      .select('invitation_token, organization_id, role, invitation_expires_at')
-      .eq('invitee_email', email)
-      .eq('status', 'invited')
-      .maybeSingle();
+  private async performCancelInvitation(
+    invitationId: string,
+  ): Promise<boolean> {
+    try {
+      // Get invitation details for logging
+      const { data: invitation } = await this.supabase
+        .from('organization_users')
+        .select('organization_id, invitee_email')
+        .eq('id', invitationId)
+        .single();
 
-    if (error || !data) {
-      return { hasInvitation: false };
+      const { error } = await this.supabase
+        .from('organization_users')
+        .delete()
+        .eq('id', invitationId);
+
+      if (error) {
+        throw this.handleSupabaseError(error, 'deleteInvitation');
+      }
+
+      // Track activity
+      if (invitation) {
+        this.activityService.trackApplicationActivity(
+          'invitation_cancelled',
+          invitation.organization_id,
+          `Cancelled invitation to ${invitation.invitee_email}`,
+        );
+      }
+
+      return true;
+    } catch (error: any) {
+      if (error?.code && error?.userMessage) {
+        throw error;
+      }
+      throw this.handleSupabaseError(error, 'performCancelInvitation');
     }
-
-    const now = new Date();
-    const expiresAt = new Date(data.invitation_expires_at);
-    if (now > expiresAt) {
-      return { hasInvitation: false };
-    }
-
-    return {
-      hasInvitation: true,
-      token: data.invitation_token,
-      organizationId: data.organization_id,
-      role: data.role,
-    };
   }
 
+  // ===================================
+  // DELETE TEAM MEMBER
+  // ===================================
+
   /**
-   * Delete team member (soft delete)
-   * ✅ FIX: Added error.set(null)
+   * Delete team member
    */
   deleteTeamMember(memberId: string): Observable<boolean> {
-    this.error.set(null); // ✅ Clear previous errors
+    this.isDeleting.set(true);
+    this.clearErrors();
 
     return from(this.performDeleteMember(memberId)).pipe(
+      timeout(20000),
       tap((success) => {
         if (success) {
           this.toastService.success('Member removed from organization');
@@ -1481,104 +2161,511 @@ export class OrganizationInvitationService {
         }
       }),
       catchError((error) => {
-        console.error('❌ Delete failed:', error);
-        this.toastService.error('Failed to remove member');
-        this.error.set(error?.message || 'Failed to remove member');
+        const opError = this.handleSupabaseError(error, 'deleteTeamMember');
+        this.emitError(opError);
         return of(false);
+      }),
+      tap(() => {
+        this.isDeleting.set(false);
       }),
     );
   }
 
   /**
-   * Perform delete team member
-   * ✅ Uses 'inactive' status (matches constraint)
+   * Perform delete with validation and activity tracking
    */
   private async performDeleteMember(memberId: string): Promise<boolean> {
     try {
-      // Verify user can delete (owner/admin only)
-      const canDelete = await this.canUserManageMembers();
-      if (!canDelete) {
-        throw new Error('You do not have permission to remove members');
+      const permCheck = await this.canUserManageTeam();
+      if (!permCheck.can) {
+        throw (
+          permCheck.error || this.createError('PERMISSION_ERROR', '', '', false)
+        );
       }
 
-      // Soft delete: set status to 'inactive'
-      const { error } = await this.supabase
+      // Fetch member details for validation and logging
+      const { data: member, error: fetchError } = await this.supabase
+        .from('organization_users')
+        .select(
+          `
+        id,
+        organization_id,
+        user_id,
+        role,
+        status,
+        users!fk_organization_users_user (
+          first_name,
+          last_name,
+          email
+        )
+      `,
+        )
+        .eq('id', memberId)
+        .eq('status', 'active')
+        .single();
+
+      if (fetchError || !member) {
+        throw this.createError(
+          'NOT_FOUND_ERROR',
+          'Member not found',
+          'This member no longer exists or is already inactive.',
+          false,
+        );
+      }
+
+      // Prevent removing owner
+      if (member.role === 'owner') {
+        throw this.createError(
+          'INVALID_OPERATION',
+          'Cannot remove owner',
+          'The organization owner cannot be removed.',
+          false,
+        );
+      }
+
+      // Prevent removing self
+      const currentUser = this.authService.user();
+      if (member.user_id === currentUser?.id) {
+        throw this.createError(
+          'INVALID_OPERATION',
+          'Cannot remove self',
+          'You cannot remove yourself from the organization.',
+          false,
+        );
+      }
+
+      // Soft delete
+      const { error: deleteError } = await this.supabase
         .from('organization_users')
         .update({
           status: 'inactive',
           removed_at: new Date().toISOString(),
         })
         .eq('id', memberId)
-        .eq('status', 'active'); // Safety: only remove active members
+        .eq('status', 'active');
 
-      if (error) throw error;
+      if (deleteError) {
+        throw this.handleSupabaseError(deleteError, 'updateMemberStatus');
+      }
+
+      // Track activity
+      const memberUser = Array.isArray(member.users)
+        ? member.users[0]
+        : member.users;
+      const memberName = memberUser
+        ? `${memberUser.first_name || ''} ${memberUser.last_name || ''}`.trim() ||
+          memberUser.email
+        : 'Unknown';
+
+      this.activityService.trackApplicationActivity(
+        'member_removed',
+        member.organization_id,
+        `Removed ${memberName} from organization`,
+      );
+
       return true;
     } catch (error: any) {
-      console.error('Delete member error:', error);
-      throw error;
+      if (error?.code && error?.userMessage) {
+        throw error;
+      }
+      throw this.handleSupabaseError(error, 'performDeleteMember');
+    }
+  }
+
+  // ===================================
+  // CHANGE ROLE
+  // ===================================
+
+  /**
+   * Change team member role
+   */
+  changeTeamMemberRole(
+    memberId: string,
+    newRole: string,
+  ): Observable<{ success: boolean }> {
+    this.isChangingRole.set(true);
+    this.clearErrors();
+
+    // Validate role
+    const roleError = this.validateRole(newRole);
+    if (roleError) {
+      this.emitError(roleError);
+      this.isChangingRole.set(false);
+      return of({ success: false });
+    }
+
+    return from(this.performChangeRole(memberId, newRole)).pipe(
+      timeout(20000),
+      tap((result) => {
+        if (result.success) {
+          this.toastService.success('Role updated successfully');
+          this.loadTeamMembers().subscribe();
+        }
+      }),
+      catchError((error) => {
+        const opError = this.handleSupabaseError(error, 'changeTeamMemberRole');
+        this.emitError(opError);
+        return of({ success: false });
+      }),
+      tap(() => {
+        this.isChangingRole.set(false);
+      }),
+    );
+  }
+
+  /**
+   * Perform role change with full validation
+   */
+  private async performChangeRole(
+    memberId: string,
+    newRole: string,
+  ): Promise<{ success: boolean }> {
+    try {
+      const currentUser = this.authService.user();
+      const orgId = this.authService.getCurrentUserOrganizationId();
+
+      if (!currentUser?.id || !orgId) {
+        throw this.createError(
+          'AUTH_ERROR',
+          'User not authenticated',
+          'Please log in to continue.',
+          false,
+        );
+      }
+
+      // Check permissions
+      const userRole = await this.getUserRoleInOrg(currentUser.id, orgId);
+      if (!['owner', 'admin'].includes(userRole)) {
+        throw this.createError(
+          'PERMISSION_ERROR',
+          'Insufficient permissions',
+          'You do not have permission to change roles.',
+          false,
+        );
+      }
+
+      // Fetch target member
+      const { data: targetMember, error: fetchError } = await this.supabase
+        .from('organization_users')
+        .select(
+          `
+        id,
+        user_id,
+        role,
+        status,
+        users!fk_organization_users_user (
+          first_name,
+          last_name,
+          email
+        )
+      `,
+        )
+        .eq('id', memberId)
+        .eq('organization_id', orgId)
+        .eq('status', 'active')
+        .single();
+
+      if (fetchError || !targetMember) {
+        throw this.createError(
+          'NOT_FOUND_ERROR',
+          'Member not found',
+          'This member no longer exists.',
+          false,
+        );
+      }
+
+      const targetRole = targetMember.role;
+
+      // Prevent demoting owners
+      if (targetRole === 'owner') {
+        throw this.createError(
+          'INVALID_OPERATION',
+          'Cannot change owner role',
+          'The organization owner cannot be demoted.',
+          false,
+        );
+      }
+
+      // Prevent changing own role
+      if (targetMember.user_id === currentUser.id) {
+        throw this.createError(
+          'INVALID_OPERATION',
+          'Cannot change own role',
+          'You cannot change your own role.',
+          false,
+        );
+      }
+
+      // Admin can only change member/viewer roles
+      if (userRole === 'admin' && ['owner', 'admin'].includes(targetRole)) {
+        throw this.createError(
+          'PERMISSION_ERROR',
+          'Insufficient permissions',
+          'Admins can only change member and viewer roles.',
+          false,
+        );
+      }
+
+      if (userRole === 'admin' && ['owner', 'admin'].includes(newRole)) {
+        throw this.createError(
+          'PERMISSION_ERROR',
+          'Cannot assign admin role',
+          'Admins can only assign member and viewer roles.',
+          false,
+        );
+      }
+
+      // Update role
+      const { error: updateError } = await this.supabase
+        .from('organization_users')
+        .update({
+          role: newRole,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', memberId)
+        .eq('status', 'active');
+
+      if (updateError) {
+        throw this.handleSupabaseError(updateError, 'updateMemberRole');
+      }
+
+      // Track activity
+      const memberUser = Array.isArray(targetMember.users)
+        ? targetMember.users[0]
+        : targetMember.users;
+      const memberEmail = memberUser?.email || 'unknown';
+
+      this.activityService.trackApplicationActivity(
+        'role_changed',
+        orgId,
+        `Changed ${memberEmail} role from ${targetRole} to ${newRole}`,
+      );
+
+      // Send notification (async)
+      this.notifyMemberRoleChanged(
+        targetMember.user_id,
+        memberUser?.first_name || '',
+        memberUser?.last_name || '',
+        targetRole,
+        newRole,
+      );
+
+      return { success: true };
+    } catch (error: any) {
+      if (error?.code && error?.userMessage) {
+        throw error;
+      }
+      throw this.handleSupabaseError(error, 'performChangeRole');
     }
   }
 
   /**
-   * Check if current user can manage team members
+   * Get user's role in org
    */
-  private async canUserManageMembers(): Promise<boolean> {
-    const user = this.authService.user();
-    const orgId = this.authService.getCurrentUserOrganizationId();
-
-    if (!user?.id || !orgId) return false;
-
-    const { data } = await this.supabase
+  private async getUserRoleInOrg(
+    userId: string,
+    orgId: string,
+  ): Promise<string> {
+    const { data, error } = await this.supabase
       .from('organization_users')
       .select('role')
-      .eq('user_id', user.id)
+      .eq('user_id', userId)
       .eq('organization_id', orgId)
       .eq('status', 'active')
       .single();
 
-    return ['owner', 'admin'].includes(data?.role);
+    if (error || !data) {
+      throw this.createError(
+        'PERMISSION_ERROR',
+        'Role not found',
+        'You do not have a role in this organization.',
+        false,
+      );
+    }
+
+    return data.role;
+  }
+
+  // ===================================
+  // NOTIFICATIONS & ACTIVITY
+  // ===================================
+
+  /**
+   * Notify member of role change (async, fire-and-forget)
+   */
+  private async notifyMemberRoleChanged(
+    userId: string,
+    firstName: string,
+    lastName: string,
+    oldRole: string,
+    newRole: string,
+  ): Promise<void> {
+    try {
+      const roleName = this.getRoleDisplayName(newRole);
+      const message = `Your role has been changed to ${roleName}. You now have ${this.getPermissionsSummary(newRole)}.`;
+
+      const { data: threadData, error: threadError } = await this.supabase
+        .from('message_threads')
+        .insert({
+          subject: 'Your role has been updated',
+          created_by: 'system',
+          metadata: {
+            type: 'role_change',
+            targetUserId: userId,
+          },
+        })
+        .select('id')
+        .single();
+
+      if (threadError || !threadData) {
+        console.warn('Failed to create notification thread:', threadError);
+        return;
+      }
+
+      // Add participant
+      await this.supabase.from('thread_participants').insert({
+        thread_id: threadData.id,
+        user_id: userId,
+        can_reply: false,
+      });
+
+      // Send message
+      await this.supabase.from('messages').insert({
+        thread_id: threadData.id,
+        sender_id: 'system',
+        message_type: 'system',
+        content: message,
+        is_system_message: true,
+        metadata: {
+          type: 'role_change',
+          oldRole,
+          newRole,
+        },
+      });
+
+      console.log('✅ Role change notification sent');
+    } catch (error) {
+      console.warn('Failed to notify member (non-critical):', error);
+    }
+  }
+
+  /**
+   * Get permissions summary
+   */
+  private getPermissionsSummary(role: string): string {
+    const summaries: Record<string, string> = {
+      admin: 'access to team management',
+      member: 'full application management',
+      viewer: 'view-only access',
+      owner: 'full organization access',
+    };
+    return summaries[role] || 'basic access';
   }
 
   // ===================================
   // UTILITY METHODS
   // ===================================
 
+  /**
+   * Generate secure token
+   */
   private generateSecureToken(): string {
-    const array = new Uint8Array(32);
-    crypto.getRandomValues(array);
-    return Array.from(array, (byte) => byte.toString(16).padStart(2, '0')).join(
-      '',
-    );
+    try {
+      const array = new Uint8Array(32);
+      crypto.getRandomValues(array);
+      return Array.from(array, (byte) =>
+        byte.toString(16).padStart(2, '0'),
+      ).join('');
+    } catch (error) {
+      console.error('Failed to generate secure token:', error);
+      throw this.createError(
+        'TOKEN_ERROR',
+        'Failed to generate token',
+        'An unexpected error occurred. Please try again.',
+        true,
+      );
+    }
   }
 
+  /**
+   * Get organization name
+   */
   private async getOrganizationName(orgId: string): Promise<string> {
-    const { data } = await this.supabase
-      .from('organizations')
-      .select('name')
-      .eq('id', orgId)
-      .single();
-
-    return data?.name || 'Organization';
+    try {
+      const { data } = await this.supabase
+        .from('organizations')
+        .select('name')
+        .eq('id', orgId)
+        .single();
+      return data?.name || 'Organization';
+    } catch {
+      return 'Organization';
+    }
   }
 
+  /**
+   * Get user name
+   */
   private async getUserName(userId: string): Promise<string> {
-    const { data } = await this.supabase
-      .from('users')
-      .select('first_name, last_name')
-      .eq('id', userId)
-      .single();
+    try {
+      const { data } = await this.supabase
+        .from('users')
+        .select('first_name, last_name')
+        .eq('id', userId)
+        .single();
 
-    if (!data) return 'Team Member';
-    return (
-      `${data.first_name || ''} ${data.last_name || ''}`.trim() || 'Team Member'
-    );
+      return data && (data.first_name || data.last_name)
+        ? `${data.first_name || ''} ${data.last_name || ''}`.trim()
+        : 'Team Member';
+    } catch {
+      return 'Team Member';
+    }
   }
 
+  /**
+   * Get invitation status
+   */
   private getInvitationStatus(expiresAt: string): 'invited' | 'expired' {
-    const now = new Date();
-    const expiry = new Date(expiresAt);
-    return now > expiry ? 'expired' : 'invited';
+    return new Date() > new Date(expiresAt) ? 'expired' : 'invited';
   }
+
+  /**
+   * Check for pending invitation
+   */
+  async checkForPendingInvitation(email: string): Promise<{
+    hasInvitation: boolean;
+    token?: string;
+    organizationId?: string;
+    role?: string;
+  }> {
+    try {
+      const { data } = await this.supabase
+        .from('organization_users')
+        .select(
+          'invitation_token, organization_id, role, invitation_expires_at',
+        )
+        .eq('invitee_email', email)
+        .eq('status', 'invited')
+        .maybeSingle();
+
+      if (!data || new Date() > new Date(data.invitation_expires_at)) {
+        return { hasInvitation: false };
+      }
+
+      return {
+        hasInvitation: true,
+        token: data.invitation_token,
+        organizationId: data.organization_id,
+        role: data.role,
+      };
+    } catch {
+      return { hasInvitation: false };
+    }
+  }
+
+  // ===================================
+  // DISPLAY UTILITIES
+  // ===================================
 
   getRoleDisplayName(role: string): string {
     const names: Record<string, string> = {
@@ -1599,5 +2686,17 @@ export class OrganizationInvitationService {
       viewer: 'View-only access to applications and data',
     };
     return descriptions[role] || '';
+  }
+
+  getRoleDisplayBadgeClasses(role: string): string {
+    const baseClasses =
+      'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold border';
+    const roleClasses: Record<string, string> = {
+      owner: 'bg-teal-50 text-teal-700 border-teal-300/50',
+      admin: 'bg-blue-50 text-blue-700 border-blue-300/50',
+      member: 'bg-slate-50 text-slate-700 border-slate-300/50',
+      viewer: 'bg-amber-50 text-amber-700 border-amber-300/50',
+    };
+    return `${baseClasses} ${roleClasses[role] || roleClasses['member']}`;
   }
 }

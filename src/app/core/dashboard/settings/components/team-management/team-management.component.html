@@ -1,7 +1,41 @@
 <div class="settings-content">
+  <!-- Error Display Section -->
+  @if (errors().length > 0) {
+    <div class="mb-6 space-y-2">
+      @for (error of errors(); track trackByErrorId($index, error)) {
+        <div
+          class="bg-red-50 border-2 border-red-300 rounded-lg p-4 flex items-start gap-3 animate-in fade-in slide-in-from-top duration-300"
+        >
+          <lucide-icon
+            [img]="AlertCircleIcon"
+            [size]="20"
+            class="text-red-600 flex-shrink-0 mt-0.5 font-bold"
+          />
+          <div class="flex-1">
+            <p class="text-sm font-bold text-red-900">
+              {{ error.userMessage }}
+            </p>
+            @if (error.retryable) {
+              <p class="text-xs text-red-700 mt-1">
+                This error may be temporary.
+              </p>
+            }
+          </div>
+          <button
+            (click)="closeError(error.code + error.timestamp.getTime())"
+            class="text-red-600 hover:text-red-700 transition-colors duration-200"
+            aria-label="Dismiss error"
+          >
+            <lucide-icon [img]="XIcon" [size]="16" />
+          </button>
+        </div>
+      }
+    </div>
+  }
+
   <!-- Header -->
-  <div class="bg-white rounded-2xl border border-slate-200 shadow-sm mb-6">
-    <div class="px-8 py-6 border-b border-slate-200 bg-slate-50/50">
+  <div class="bg-white rounded-2xl border-2 border-slate-300 shadow-sm mb-6">
+    <div class="px-8 py-6 border-b-2 border-slate-300 bg-slate-50">
       <div class="flex items-center justify-between">
         <div>
           <h2 class="text-xl font-bold text-slate-900 mb-1">Team Members</h2>
@@ -12,7 +46,7 @@
           <button
             (click)="openInviteModal()"
             [disabled]="isInviting()"
-            class="bg-teal-500 text-white font-medium rounded-xl px-6 py-2.5 text-sm hover:bg-teal-600 active:bg-teal-700 transition-colors duration-200 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            class="bg-teal-600 text-white font-bold rounded-lg px-6 py-2.5 text-sm hover:bg-teal-700 active:bg-teal-800 transition-colors duration-200 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed border-2 border-teal-700 uppercase tracking-wide"
           >
             <lucide-icon [img]="UserPlusIcon" [size]="18" />
             <span>Invite Member</span>
@@ -22,85 +56,84 @@
     </div>
 
     <!-- Stats -->
-    <div class="px-8 py-4 grid grid-cols-3 gap-4">
+    <div class="px-8 py-4 grid grid-cols-3 gap-4 border-t-2 border-slate-300">
       <div class="text-center">
-        <div class="text-2xl font-bold text-slate-900">
+        <div class="text-3xl font-black text-slate-900">
           {{ totalMembers() }}
         </div>
-        <div class="text-xs text-slate-600 font-medium">Total Members</div>
+        <div
+          class="text-xs text-slate-600 font-bold uppercase tracking-widest mt-1"
+        >
+          Total Members
+        </div>
       </div>
       <div class="text-center">
-        <div class="text-2xl font-bold text-green-600">
+        <div class="text-3xl font-black text-green-600">
           {{ activeMembers() }}
         </div>
-        <div class="text-xs text-slate-600 font-medium">Active</div>
+        <div
+          class="text-xs text-slate-600 font-bold uppercase tracking-widest mt-1"
+        >
+          Active
+        </div>
       </div>
       <div class="text-center">
-        <div class="text-2xl font-bold text-amber-600">
+        <div class="text-3xl font-black text-amber-600">
           {{ pendingInvitations().length }}
         </div>
-        <div class="text-xs text-slate-600 font-medium">Pending</div>
+        <div
+          class="text-xs text-slate-600 font-bold uppercase tracking-widest mt-1"
+        >
+          Pending
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- Error Message -->
-  @if (error()) {
-    <div
-      class="bg-red-50 border border-red-200/50 rounded-xl p-4 mb-6 flex items-start gap-3"
-    >
-      <lucide-icon
-        [img]="XIcon"
-        [size]="20"
-        class="text-red-600 flex-shrink-0 mt-0.5"
-      />
-      <div class="flex-1">
-        <p class="text-sm font-semibold text-red-900">Error</p>
-        <p class="text-sm text-red-700">{{ error() }}</p>
-      </div>
-    </div>
-  }
-
   <!-- Loading State -->
   @if (isLoading() && teamMembers().length === 0) {
-    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-12">
+    <div class="bg-white rounded-2xl border-2 border-slate-300 p-12">
       <div class="flex flex-col items-center justify-center">
         <div
-          class="w-10 h-10 rounded-full border-2 border-slate-200 border-t-teal-500 animate-spin mb-4"
+          class="w-10 h-10 rounded-full border-4 border-slate-300 border-t-teal-600 animate-spin mb-4"
         ></div>
-        <p class="text-slate-600 font-medium">Loading team members...</p>
+        <p class="text-slate-600 font-bold">Loading team members...</p>
       </div>
     </div>
   } @else {
     <!-- Pending Invitations Section -->
     @if (pendingInvitations().length > 0) {
-      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm mb-6">
-        <div class="px-6 py-4 border-b border-slate-200 bg-amber-50/50">
+      <div class="bg-white rounded-2xl border-2 border-amber-300 mb-6">
+        <div class="px-6 py-4 border-b-2 border-amber-300 bg-amber-50">
           <div class="flex items-center gap-2">
-            <lucide-icon [img]="ClockIcon" [size]="18" class="text-amber-600" />
-            <h3 class="text-base font-semibold text-slate-900">
+            <lucide-icon
+              [img]="ClockIcon"
+              [size]="18"
+              class="text-amber-600 font-bold"
+            />
+            <h3 class="text-base font-bold text-slate-900">
               Pending Invitations
             </h3>
             <span
-              class="ml-auto text-xs font-semibold text-amber-700 bg-amber-100 px-2 py-1 rounded-full"
+              class="ml-auto text-xs font-bold text-amber-700 bg-amber-100 px-2.5 py-1 rounded-lg border-2 border-amber-300"
             >
               {{ pendingInvitations().length }}
             </span>
           </div>
         </div>
 
-        <div class="divide-y divide-slate-200">
+        <div class="divide-y-2 divide-slate-300">
           @for (
             invitation of pendingInvitations();
             track trackByInvitationId($index, invitation)
           ) {
             <div
-              class="px-6 py-4 hover:bg-slate-50 transition-colors duration-200"
+              class="px-6 py-4 hover:bg-amber-50/50 transition-colors duration-200"
             >
               <div class="flex items-center gap-4">
                 <!-- Avatar Placeholder -->
                 <div
-                  class="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0"
+                  class="w-10 h-10 rounded-lg bg-amber-100 border-2 border-amber-400 flex items-center justify-center flex-shrink-0"
                 >
                   <lucide-icon
                     [img]="MailIcon"
@@ -112,7 +145,7 @@
                 <!-- Info -->
                 <div class="flex-1 min-w-0">
                   <div class="flex items-center gap-2 mb-1">
-                    <p class="text-sm font-semibold text-slate-900 truncate">
+                    <p class="text-sm font-bold text-slate-900 truncate">
                       {{ invitation.email }}
                     </p>
                     <span [class]="getRoleBadgeClasses(invitation.role)">
@@ -125,13 +158,14 @@
                       }}
                     </span>
                   </div>
-                  <div class="flex items-center gap-3 text-xs text-slate-600">
+                  <div
+                    class="flex items-center gap-3 text-xs text-slate-600 font-medium"
+                  >
                     <span>Invited by {{ invitation.inviterName }}</span>
                     <span>•</span>
                     <span>{{ formatDate(invitation.invitedAt) }}</span>
                     @if (getExpiryWarning(invitation.expiresAt).show) {
                       <span
-                        class="font-semibold"
                         [class]="getExpiryWarning(invitation.expiresAt).class"
                       >
                         • {{ getExpiryWarning(invitation.expiresAt).message }}
@@ -145,25 +179,27 @@
                   <div class="flex items-center gap-2 flex-shrink-0">
                     <button
                       (click)="resendInvitation(invitation.id)"
-                      [disabled]="isInviting()"
-                      class="text-slate-600 hover:bg-slate-100 p-2 rounded-lg transition-colors duration-200 disabled:opacity-50"
+                      [disabled]="isResending()"
+                      class="text-slate-600 hover:bg-slate-100 p-2 rounded-lg transition-colors duration-200 disabled:opacity-50 border border-slate-300 hover:border-slate-400"
                       title="Resend invitation"
                     >
                       <lucide-icon [img]="RefreshCwIcon" [size]="16" />
                     </button>
-                    <button
-                      (click)="cancelInvitation(invitation.id)"
-                      [disabled]="isInviting()"
-                      class="text-red-600 hover:bg-red-50 p-2 rounded-lg transition-colors duration-200 disabled:opacity-50"
-                      title="Cancel invitation"
-                    ></button>
 
                     <button
                       (click)="openShareModal(invitation)"
-                      class="text-teal-600 hover:text-teal-700 text-sm font-medium flex items-center gap-1 transition-colors duration-200"
+                      class="text-teal-600 hover:text-teal-700 text-sm font-bold transition-colors duration-200"
                       title="Share invite link"
                     >
                       Share
+                    </button>
+
+                    <button
+                      (click)="cancelInvitation(invitation.id)"
+                      class="text-red-600 hover:text-red-700 text-sm font-bold transition-colors duration-200"
+                      title="Cancel invitation"
+                    >
+                      Cancel
                     </button>
                   </div>
                 }
@@ -175,13 +211,13 @@
     }
 
     <!-- Active Members Section -->
-    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm">
-      <div class="px-6 py-4 border-b border-slate-200">
+    <div class="bg-white rounded-2xl border-2 border-teal-300">
+      <div class="px-6 py-4 border-b-2 border-teal-300 bg-teal-50">
         <div class="flex items-center gap-2">
           <lucide-icon [img]="UsersIcon" [size]="18" class="text-teal-600" />
-          <h3 class="text-base font-semibold text-slate-900">Active Members</h3>
+          <h3 class="text-base font-bold text-slate-900">Active Members</h3>
           <span
-            class="ml-auto text-xs font-semibold text-teal-700 bg-teal-50 px-2 py-1 rounded-full border border-teal-200/50"
+            class="ml-auto text-xs font-bold text-teal-700 bg-teal-100 px-2.5 py-1 rounded-lg border-2 border-teal-300"
           >
             {{ activeMembers() }}
           </span>
@@ -191,11 +227,11 @@
       @if (teamMembers().length === 0) {
         <div class="px-6 py-12 text-center">
           <div
-            class="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-3"
+            class="w-12 h-12 rounded-lg bg-slate-100 border-2 border-slate-300 flex items-center justify-center mx-auto mb-3"
           >
             <lucide-icon [img]="UsersIcon" [size]="24" class="text-slate-400" />
           </div>
-          <p class="text-sm font-semibold text-slate-900 mb-1">
+          <p class="text-sm font-bold text-slate-900 mb-1">
             No team members yet
           </p>
           <p class="text-sm text-slate-600 mb-4">
@@ -204,14 +240,14 @@
           @if (canInvite()) {
             <button
               (click)="openInviteModal()"
-              class="bg-teal-500 text-white font-medium rounded-xl px-6 py-2.5 text-sm hover:bg-teal-600 transition-colors duration-200"
+              class="bg-teal-600 text-white font-bold rounded-lg px-6 py-2.5 text-sm hover:bg-teal-700 transition-colors duration-200 border-2 border-teal-700"
             >
               Invite Member
             </button>
           }
         </div>
       } @else {
-        <div class="divide-y divide-slate-200">
+        <div class="divide-y-2 divide-slate-300">
           @for (
             member of teamMembers();
             track trackByMemberId($index, member)
@@ -225,13 +261,13 @@
                   <img
                     [src]="member.avatarUrl"
                     [alt]="member.name"
-                    class="w-10 h-10 rounded-full object-cover flex-shrink-0"
+                    class="w-10 h-10 rounded-lg object-cover flex-shrink-0 border-2 border-slate-300"
                   />
                 } @else {
                   <div
-                    class="w-10 h-10 rounded-full bg-teal-100 flex items-center justify-center flex-shrink-0"
+                    class="w-10 h-10 rounded-lg bg-teal-100 border-2 border-teal-400 flex items-center justify-center flex-shrink-0"
                   >
-                    <span class="text-sm font-semibold text-teal-700">{{
+                    <span class="text-xs font-bold text-teal-700">{{
                       getInitials(member.name)
                     }}</span>
                   </div>
@@ -240,7 +276,7 @@
                 <!-- Info -->
                 <div class="flex-1 min-w-0">
                   <div class="flex items-center gap-2 mb-1">
-                    <p class="text-sm font-semibold text-slate-900 truncate">
+                    <p class="text-sm font-bold text-slate-900 truncate">
                       {{ member.name }}
                     </p>
                     <span [class]="getRoleBadgeClasses(member.role)">
@@ -251,7 +287,9 @@
                       {{ invitationService.getRoleDisplayName(member.role) }}
                     </span>
                   </div>
-                  <div class="flex items-center gap-3 text-xs text-slate-600">
+                  <div
+                    class="flex items-center gap-3 text-xs text-slate-600 font-medium"
+                  >
                     <span>{{ member.email }}</span>
                     <span>•</span>
                     <span>Joined {{ formatDate(member.joinedAt) }}</span>
@@ -263,24 +301,25 @@
                   <div class="relative flex-shrink-0">
                     <button
                       (click)="toggleDropdown(member.id)"
-                      class="text-slate-600 hover:bg-slate-100 p-2 rounded-lg transition-colors duration-200"
+                      class="text-slate-600 hover:bg-slate-100 p-2 rounded-lg transition-colors duration-200 border border-slate-300"
                     >
                       <lucide-icon [img]="MoreVerticalIcon" [size]="16" />
                     </button>
 
                     @if (showDropdownId() === member.id) {
                       <div
-                        class="absolute right-0 top-full mt-1 w-48 bg-white rounded-xl border border-slate-200 shadow-lg py-1 z-10"
+                        class="absolute right-0 top-full mt-1 w-48 bg-white rounded-lg border-2 border-slate-300 shadow-lg py-1 z-10"
                       >
                         <button
-                          class="w-full px-4 py-2 text-left text-sm text-slate-700 hover:bg-slate-50 transition-colors duration-200 flex items-center gap-2"
+                          (click)="openChangeRoleModal(member)"
+                          class="w-full px-4 py-2 text-left text-sm text-slate-700 hover:bg-slate-100 transition-colors duration-200 flex items-center gap-2 font-medium"
                         >
                           <lucide-icon [img]="SettingsIcon" [size]="14" />
                           Change Role
                         </button>
                         <button
                           (click)="confirmDeleteMember(member.id, member.name)"
-                          class="w-full px-4 py-2 text-left text-sm text-red-700 hover:bg-red-50 transition-colors duration-200 flex items-center gap-2"
+                          class="w-full px-4 py-2 text-left text-sm text-red-700 hover:bg-red-50 transition-colors duration-200 flex items-center gap-2 font-medium"
                         >
                           <lucide-icon [img]="XIcon" [size]="14" />
                           Remove Member
@@ -305,62 +344,68 @@
     (cancelled)="closeInviteModal()"
   />
 }
+
+<!-- Share Modal -->
 @if (showShareModal()) {
   <div
     class="fixed inset-0 bg-black/25 backdrop-blur-sm z-50 flex items-center justify-center p-4"
   >
     <div
-      class="bg-white rounded-2xl shadow-lg max-w-sm w-full border border-slate-200 animate-in fade-in duration-200"
+      class="bg-white rounded-lg border-3 border-slate-300 shadow-lg max-w-sm w-full animate-in fade-in duration-200"
     >
       <!-- Header -->
       <div
-        class="px-6 py-4 border-b border-slate-200 flex items-center justify-between"
+        class="px-6 py-4 border-b-3 border-slate-300 flex items-center justify-between bg-slate-50"
       >
-        <h3 class="text-lg font-bold text-slate-900">Share Invite Link</h3>
+        <h3 class="text-lg font-black text-slate-900 uppercase tracking-tight">
+          Share Invite Link
+        </h3>
         <button
           (click)="closeShareModal()"
-          class="text-slate-500 hover:text-slate-700 transition-colors duration-200"
+          class="text-slate-600 hover:text-slate-900 transition-colors duration-200"
           aria-label="Close"
-        ></button>
+        >
+          <lucide-icon [img]="XIcon" [size]="20" />
+        </button>
       </div>
 
       <!-- Content -->
-      <div class="px-6 py-4 space-y-4">
+      <div class="px-6 py-6 space-y-4">
         <!-- Email Info -->
         <div>
-          <p class="text-sm text-slate-600">
+          <p class="text-sm text-slate-700">
             Send this link to
-            <span class="font-semibold text-slate-900">{{
+            <span class="font-bold text-slate-900">{{
               selectedInvitation()?.email
             }}</span>
           </p>
         </div>
 
         <!-- Link Display -->
-        <div class="bg-slate-50 rounded-xl p-4 border border-slate-200">
+        <div class="bg-slate-50 rounded-lg p-4 border-2 border-slate-300">
           <p
-            class="text-xs text-slate-600 font-semibold mb-2 uppercase tracking-wide"
+            class="text-xs text-slate-600 font-black mb-2 uppercase tracking-widest"
           >
             Invite Link
           </p>
           <p
-            class="text-xs text-slate-900 break-all font-mono bg-white rounded-lg p-2 border border-slate-200"
+            class="text-xs text-slate-900 break-all font-mono bg-white rounded-lg p-2 border-2 border-slate-300"
           >
             {{ getInviteLink() }}
           </p>
         </div>
 
         <div
-          class="bg-amber-50 rounded-xl p-3 border border-amber-200/50 flex items-start gap-2"
+          class="bg-amber-50 rounded-lg p-3 border-2 border-amber-400 flex items-start gap-2"
         >
           <lucide-icon
             [img]="ClockIcon"
             [size]="16"
-            class="text-amber-600 flex-shrink-0 mt-0.5"
+            class="text-amber-700 flex-shrink-0 mt-0.5 font-bold"
           />
           <div>
-            <p class="text-xs font-semibold text-amber-900">Expires</p>
-            <p class="text-xs text-amber-700">
+            <p class="text-xs font-bold text-amber-900">Expires</p>
+            <p class="text-xs text-amber-700 font-medium">
               {{ formatExpiryDate(invitationExpiryDate()) }}
             </p>
           </div>
@@ -368,27 +413,34 @@
       </div>
 
       <!-- Actions -->
-      <div class="px-6 py-4 border-t border-slate-200 flex gap-3">
+      <div class="px-6 py-4 border-t-3 border-slate-300 flex gap-3">
         <button
           (click)="closeShareModal()"
-          class="flex-1 bg-slate-100 text-slate-700 font-medium rounded-xl px-4 py-2.5 hover:bg-slate-200 active:bg-slate-300 transition-colors duration-200"
+          class="flex-1 bg-slate-100 text-slate-900 font-black rounded-lg px-4 py-2.5 hover:bg-slate-200 active:bg-slate-300 transition-colors duration-200 border-2 border-slate-400 uppercase tracking-wide text-sm"
         >
           Close
         </button>
         <button
           (click)="copyInviteLink()"
-          class="flex-1 bg-teal-500 text-white font-medium rounded-xl px-4 py-2.5 hover:bg-teal-600 active:bg-teal-700 transition-colors duration-200 flex items-center justify-center gap-2"
+          class="flex-1 bg-teal-600 text-white font-black rounded-lg px-4 py-2.5 hover:bg-teal-700 active:bg-teal-800 transition-colors duration-200 flex items-center justify-center gap-2 border-2 border-teal-700 uppercase tracking-wide text-sm"
         >
           @if (copyFeedback()) {
-            <!-- Show only feedback message when copying -->
-            <span class="text-sm font-medium">{{ copyFeedback() }}</span>
+            <span>{{ copyFeedback() }}</span>
           } @else {
-            <!-- Show icon + text normally -->
-
+            <lucide-icon [img]="CopyIcon" [size]="16" />
             <span>Copy Link</span>
           }
         </button>
       </div>
     </div>
   </div>
+}
+
+<!-- Change Role Modal -->
+@if (showChangeRoleModal() && changeRoleRequest()) {
+  <app-change-role-modal
+    [request]="changeRoleRequest()!"
+    (confirmed)="onRoleChangeConfirmed($event)"
+    (cancelled)="closeChangeRoleModal()"
+  />
 }

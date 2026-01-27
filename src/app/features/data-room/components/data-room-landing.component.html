@@ -17,8 +17,6 @@
 
   <!-- Purchase Modal -->
   <app-purchase-credits-modal
-    [isOpen]="showPurchaseModal()"
-    [organizationId]="orgId()"
     (close)="closePurchaseModal()"
     (success)="closePurchaseModal()"
   />
@@ -36,590 +34,615 @@
         }}</span>
       </div>
       @if (!hasEnoughCredits()) {
-      <button
-        (click)="showPurchaseModal.set(true)"
-        class="px-4 py-2 bg-orange-500 text-white rounded-lg text-sm font-medium hover:bg-orange-600 transition-colors"
-      >
-        Buy Credits
-      </button>
+        <button
+          (click)="showPurchaseModal.set(true)"
+          class="px-4 py-2 bg-orange-500 text-white rounded-lg text-sm font-medium hover:bg-orange-600 transition-colors"
+        >
+          Buy Credits
+        </button>
       }
     </div>
 
     <!-- SME View -->
-    @if (userType() === 'sme') {
-    <!-- Header with Action Buttons -->
-    <div
-      class="mb-6 animate-fade-in-up flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4"
-    >
-      <!-- Title & Subtitle -->
-      <div>
-        <h1 class="text-2xl font-bold text-slate-900 mb-1">Data Room</h1>
-        <p class="text-sm text-slate-600">
-          Secure document repository version 0.0.1
-        </p>
-      </div>
-
-      <!-- Action Buttons -->
-      <div class="flex flex-wrap gap-3 mt-4 lg:mt-0">
-        <!-- Share Entire Data Room -->
-        <button
-          (click)="shareDataRoom()"
-          class="px-4 py-2 bg-teal-500 text-white text-sm rounded-xl font-medium hover:bg-orange-600 transition-colors flex items-center"
-        >
-          <lucide-icon [img]="Share2Icon" [size]="16" class="mr-2" />
-          Share Data Room
-        </button>
-
-        <!-- Manage Permissions -->
-        <button
-          (click)="managePermissions()"
-          class="px-4 py-2 bg-slate-50 text-slate-900 rounded-xl font-medium text-sm hover:bg-slate-100 transition-colors flex items-center border border-slate-200"
-        >
-          <lucide-icon [img]="ShieldIcon" [size]="16" class="mr-2" />
-          Manage Permissions
-        </button>
-
-        <!-- Generate Resource -->
-        <button
-          (click)="generateResource()"
-          class="px-4 py-2 bg-white text-teal-600 rounded-xl font-medium hover:bg-orange-50 transition-colors flex items-center border border-teal-200 text-sm"
-        >
-          <lucide-icon [img]="PlusIcon" [size]="16" class="mr-2" />
-          Generate Resource
-        </button>
-      </div>
-    </div>
-
-    <!-- Bento Grid -->
-    <div
-      *ngIf="!isLoadingDocuments() && userDocuments().length"
-      class="grid grid-cols-12 gap-6"
-    >
-      <!-- What is Data Room Card - Top Left -->
+    @if (userType() === "sme") {
+      <!-- Header with Action Buttons -->
       <div
-        class="col-span-12 lg:col-span-5 bento-card p-8 animate-fade-in-up"
-        style="animation-delay: 0.1s"
+        class="mb-6 animate-fade-in-up flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4"
       >
-        <div class="flex items-start mb-4">
-          <div
-            class="w-12 h-12 rounded-xl bg-orange-100 flex items-center justify-center mr-4"
-          >
-            <lucide-icon
-              [img]="FolderIcon"
-              [size]="24"
-              class="text-orange-600"
-            />
-          </div>
-          <div>
-            <div class="flex items-center mb-1">
-              <span class="w-2 h-2 bg-orange-500 rounded-full mr-2"></span>
-              <h3 class="text-xl font-bold text-slate-900">Data Room</h3>
-            </div>
-            <p class="text-slate-600 text-sm leading-relaxed">
-              Organize documents and resources to share with potential investors
-              and funders. All documents in your profile already exist in your
-              data room
-            </p>
-          </div>
-        </div>
-
-        <div class="mt-6 space-y-3">
-          <div class="flex items-center text-sm text-slate-700">
-            <lucide-icon
-              [img]="ShieldIcon"
-              [size]="16"
-              class="mr-2 text-slate-400"
-            />
-            <span>Bank-level encryption</span>
-          </div>
-          <div class="flex items-center text-sm text-slate-700">
-            <lucide-icon
-              [img]="EyeIcon"
-              [size]="16"
-              class="mr-2 text-slate-400"
-            />
-            <span>Track who views your documents</span>
-          </div>
-          <div class="flex items-center text-sm text-slate-700">
-            <lucide-icon
-              [img]="Share2Icon"
-              [size]="16"
-              class="mr-2 text-slate-400"
-            />
-            <span>Selective sharing control</span>
-          </div>
-        </div>
-      </div>
-      <!-- Stats Card - Top Middle (Large) -->
-
-      <div class="col-span-12 lg:col-span-4 bento-card p-8 animate-fade-in-up">
-        <div class="mb-6">
-          <div class="stat-number text-slate-900">
-            {{ userDocuments().length }}+
-          </div>
-          <div class="text-slate-600 text-lg mt-2">Documents</div>
-        </div>
-        <div class="pt-6 border-t border-slate-100">
-          <div class="flex items-center justify-between text-sm mb-3">
-            <span class="text-slate-600">Shared With</span>
-            <span class="font-semibold text-slate-900"
-              >{{ stats().sharedWith }} funders</span
-            >
-          </div>
-          <div class="flex items-center justify-between text-sm">
-            <span class="text-slate-600">Total Views</span>
-            <span class="font-semibold text-slate-900">{{
-              stats().totalViews
-            }}</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- CTA Card - Top Right -->
-      <div
-        class="col-span-12 lg:col-span-3 bento-card p-6 bg-gradient-to-br from-orange-500 to-orange-600 text-white animate-fade-in-up"
-        style="animation-delay: 0.2s"
-      >
-        <div class="flex flex-col h-full justify-between">
-          <div>
-            <div
-              class="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center mb-4"
-            >
-              <lucide-icon [img]="SparklesIcon" [size]="24" />
-            </div>
-            <h3 class="text-lg font-bold mb-2">Full Data Room</h3>
-            <p class="text-slate-500 text-sm">
-              Add documents and resources to your data room
-            </p>
-          </div>
-          <button
-            (click)="navigateToFullDataRoom()"
-            class="mt-6 w-full px-4 py-2.5 bg-white text-teal-600 rounded-xl font-medium hover:bg-orange-50 transition-colors duration-200 flex items-center justify-center"
-          >
-            Add new resource
-            <lucide-icon [img]="PlusIcon" [size]="16" class="ml-2" />
-          </button>
-        </div>
-      </div>
-
-      <!-- Your Documents Card - Middle Left -->
-      <div
-        class="col-span-12 lg:col-span-7 bento-card p-8 animate-fade-in-up"
-        style="animation-delay: 0.3s"
-      >
-        <div class="flex items-center justify-between mb-6">
-          <h3 class="text-xl font-bold text-slate-900">Your Documents</h3>
-          <button
-            class="text-sm text-slate-600 hover:text-orange-700 font-medium"
-          >
-            View All
-          </button>
-        </div>
-
-        @if (isLoadingDocuments()) {
-        <div class="text-center py-12">
-          <div
-            class="animate-spin rounded-full h-10 w-10 border-b-2 border-orange-500 mx-auto"
-          ></div>
-          <p class="text-sm text-slate-600 mt-3">Loading documents...</p>
-        </div>
-        } @if (documentsError()) {
-        <div class="p-4 bg-red-50 rounded-xl">
-          <p class="text-sm text-red-600">{{ documentsError() }}</p>
-        </div>
-        } @if (!isLoadingDocuments() && !documentsError() &&
-        userDocuments().length === 0) {
-        <div class="text-center py-12">
-          <div
-            class="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-4"
-          >
-            <lucide-icon
-              [img]="FileTextIcon"
-              [size]="24"
-              class="text-slate-400"
-            />
-          </div>
-          <p class="text-slate-600 mb-2">No documents yet</p>
-          <p class="text-sm text-slate-500">
-            Upload your first document to get started
+        <!-- Title & Subtitle -->
+        <div>
+          <h1 class="text-2xl font-bold text-slate-900 mb-1">Data Room</h1>
+          <p class="text-sm text-slate-600">
+            Secure document repository version 0.0.1
           </p>
         </div>
-        } @if (!isLoadingDocuments() && !documentsError() &&
-        userDocuments().length > 0) {
-        <div class="space-y-4">
-          @for (doc of userDocuments().slice(0, 5); track doc.id) {
-          <div
-            class="flex items-center justify-between p-4 bg-slate-50 rounded-xl hover:bg-slate-100 transition-colors cursor-pointer"
-            (click)="viewDocument(doc.documentKey)"
+
+        <!-- Action Buttons -->
+        <div class="flex flex-wrap gap-3 mt-4 lg:mt-0">
+          <!-- Share Entire Data Room -->
+          <button
+            (click)="shareDataRoom()"
+            class="px-4 py-2 bg-teal-500 text-white text-sm rounded-xl font-medium hover:bg-orange-600 transition-colors flex items-center"
           >
-            <div class="flex items-center flex-1">
-              <div
-                class="w-10 h-10 rounded-lg flex items-center justify-center mr-4"
-                [class]="getDocumentIconColor(doc.mimeType)"
-              >
-                <lucide-icon
-                  [img]="getDocumentIcon(doc.mimeType)"
-                  [size]="20"
-                />
-              </div>
-              <div>
-                <div class="font-semibold text-slate-900 text-sm">
-                  {{ doc.originalName }}
-                </div>
-                <div
-                  class="flex items-center text-xs text-slate-500 mt-0.5 space-x-2"
-                >
-                  <span>{{ formatFileSize(doc.fileSize) }}</span>
-                  <span>•</span>
-                  <span>{{ doc.category }}</span>
-                  <span>•</span>
-                  <span>{{ formatUploadDate(doc.uploadedAt) }}</span>
-                </div>
-              </div>
-            </div>
-            <div class="flex items-center space-x-2">
+            <lucide-icon [img]="Share2Icon" [size]="16" class="mr-2" />
+            Share Data Room
+          </button>
+
+          <!-- Manage Permissions -->
+          <button
+            (click)="managePermissions()"
+            class="px-4 py-2 bg-slate-50 text-slate-900 rounded-xl font-medium text-sm hover:bg-slate-100 transition-colors flex items-center border border-slate-200"
+          >
+            <lucide-icon [img]="ShieldIcon" [size]="16" class="mr-2" />
+            Manage Permissions
+          </button>
+
+          <!-- Generate Resource -->
+          <button
+            (click)="generateResource()"
+            class="px-4 py-2 bg-white text-teal-600 rounded-xl font-medium hover:bg-orange-50 transition-colors flex items-center border border-teal-200 text-sm"
+          >
+            <lucide-icon [img]="PlusIcon" [size]="16" class="mr-2" />
+            Generate Resource
+          </button>
+        </div>
+      </div>
+
+      <!-- Bento Grid -->
+      <div
+        *ngIf="!isLoadingDocuments() && userDocuments().length"
+        class="grid grid-cols-12 gap-6"
+      >
+        <!-- What is Data Room Card - Top Left -->
+        <div
+          class="col-span-12 lg:col-span-5 bento-card p-8 animate-fade-in-up"
+          style="animation-delay: 0.1s"
+        >
+          <div class="flex items-start mb-4">
+            <div
+              class="w-12 h-12 rounded-xl bg-orange-100 flex items-center justify-center mr-4"
+            >
               <lucide-icon
-                [img]="ArrowRightIcon"
-                [size]="16"
-                class="text-slate-400"
+                [img]="FolderIcon"
+                [size]="24"
+                class="text-orange-600"
               />
             </div>
-          </div>
-          }
-        </div>
-        }
-      </div>
-
-      <!-- Platform Assistance Card - Middle Right -->
-      <div
-        class="col-span-12 lg:col-span-5 bento-card p-8 animate-fade-in-up"
-        style="animation-delay: 0.4s"
-      >
-        <div class="flex items-center mb-6">
-          <h3 class="text-xl font-bold text-slate-900">Platform Assistance</h3>
-        </div>
-
-        <p class="text-slate-600 text-sm mb-6">
-          Kapify platform can guide you to create a world class data room,
-          satisfying SOC Compliance as well as investor standards
-        </p>
-
-        <div class="space-y-3">
-          @for (doc of generatableDocuments(); track doc.id) {
-          <button
-            (click)="generateDocument(doc.id)"
-            class="w-full flex items-start p-4 bg-slate-50 rounded-xl hover:bg-slate-100 transition-all text-left group"
-          >
-            <div
-              class="w-10 h-10 rounded-lg flex items-center justify-center mr-3 flex-shrink-0"
-              [class]="getDocIconColor(doc.color)"
-            >
-              <lucide-icon [img]="doc.icon" [size]="20" />
-            </div>
-            <div class="flex-1">
-              <div class="font-semibold text-slate-900 text-sm mb-1">
-                {{ doc.title }}
+            <div>
+              <div class="flex items-center mb-1">
+                <span class="w-2 h-2 bg-orange-500 rounded-full mr-2"></span>
+                <h3 class="text-xl font-bold text-slate-900">Data Room</h3>
               </div>
-              <div class="text-xs text-slate-600">{{ doc.description }}</div>
+              <p class="text-slate-600 text-sm leading-relaxed">
+                Organize documents and resources to share with potential
+                investors and funders. All documents in your profile already
+                exist in your data room
+              </p>
             </div>
-            <lucide-icon
-              [img]="PlusIcon"
-              [size]="16"
-              class="text-slate-400 group-hover:text-orange-600 transition-colors mt-2"
-            />
-          </button>
+          </div>
+
+          <div class="mt-6 space-y-3">
+            <div class="flex items-center text-sm text-slate-700">
+              <lucide-icon
+                [img]="ShieldIcon"
+                [size]="16"
+                class="mr-2 text-slate-400"
+              />
+              <span>Bank-level encryption</span>
+            </div>
+            <div class="flex items-center text-sm text-slate-700">
+              <lucide-icon
+                [img]="EyeIcon"
+                [size]="16"
+                class="mr-2 text-slate-400"
+              />
+              <span>Track who views your documents</span>
+            </div>
+            <div class="flex items-center text-sm text-slate-700">
+              <lucide-icon
+                [img]="Share2Icon"
+                [size]="16"
+                class="mr-2 text-slate-400"
+              />
+              <span>Selective sharing control</span>
+            </div>
+          </div>
+        </div>
+        <!-- Stats Card - Top Middle (Large) -->
+
+        <div
+          class="col-span-12 lg:col-span-4 bento-card p-8 animate-fade-in-up"
+        >
+          <div class="mb-6">
+            <div class="stat-number text-slate-900">
+              {{ userDocuments().length }}+
+            </div>
+            <div class="text-slate-600 text-lg mt-2">Documents</div>
+          </div>
+          <div class="pt-6 border-t border-slate-100">
+            <div class="flex items-center justify-between text-sm mb-3">
+              <span class="text-slate-600">Shared With</span>
+              <span class="font-semibold text-slate-900"
+                >{{ stats().sharedWith }} funders</span
+              >
+            </div>
+            <div class="flex items-center justify-between text-sm">
+              <span class="text-slate-600">Total Views</span>
+              <span class="font-semibold text-slate-900">{{
+                stats().totalViews
+              }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- CTA Card - Top Right -->
+        <div
+          class="col-span-12 lg:col-span-3 bento-card p-6 bg-gradient-to-br from-orange-500 to-orange-600 text-white animate-fade-in-up"
+          style="animation-delay: 0.2s"
+        >
+          <div class="flex flex-col h-full justify-between">
+            <div>
+              <div
+                class="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center mb-4"
+              >
+                <lucide-icon [img]="SparklesIcon" [size]="24" />
+              </div>
+              <h3 class="text-lg font-bold mb-2">Full Data Room</h3>
+              <p class="text-slate-500 text-sm">
+                Add documents and resources to your data room
+              </p>
+            </div>
+            <button
+              (click)="navigateToFullDataRoom()"
+              class="mt-6 w-full px-4 py-2.5 bg-white text-teal-600 rounded-xl font-medium hover:bg-orange-50 transition-colors duration-200 flex items-center justify-center"
+            >
+              Add new resource
+              <lucide-icon [img]="PlusIcon" [size]="16" class="ml-2" />
+            </button>
+          </div>
+        </div>
+
+        <!-- Your Documents Card - Middle Left -->
+        <div
+          class="col-span-12 lg:col-span-7 bento-card p-8 animate-fade-in-up"
+          style="animation-delay: 0.3s"
+        >
+          <div class="flex items-center justify-between mb-6">
+            <h3 class="text-xl font-bold text-slate-900">Your Documents</h3>
+            <button
+              class="text-sm text-slate-600 hover:text-orange-700 font-medium"
+            >
+              View All
+            </button>
+          </div>
+
+          @if (isLoadingDocuments()) {
+            <div class="text-center py-12">
+              <div
+                class="animate-spin rounded-full h-10 w-10 border-b-2 border-orange-500 mx-auto"
+              ></div>
+              <p class="text-sm text-slate-600 mt-3">Loading documents...</p>
+            </div>
+          }
+          @if (documentsError()) {
+            <div class="p-4 bg-red-50 rounded-xl">
+              <p class="text-sm text-red-600">{{ documentsError() }}</p>
+            </div>
+          }
+          @if (
+            !isLoadingDocuments() &&
+            !documentsError() &&
+            userDocuments().length === 0
+          ) {
+            <div class="text-center py-12">
+              <div
+                class="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-4"
+              >
+                <lucide-icon
+                  [img]="FileTextIcon"
+                  [size]="24"
+                  class="text-slate-400"
+                />
+              </div>
+              <p class="text-slate-600 mb-2">No documents yet</p>
+              <p class="text-sm text-slate-500">
+                Upload your first document to get started
+              </p>
+            </div>
+          }
+          @if (
+            !isLoadingDocuments() &&
+            !documentsError() &&
+            userDocuments().length > 0
+          ) {
+            <div class="space-y-4">
+              @for (doc of userDocuments().slice(0, 5); track doc.id) {
+                <div
+                  class="flex items-center justify-between p-4 bg-slate-50 rounded-xl hover:bg-slate-100 transition-colors cursor-pointer"
+                  (click)="viewDocument(doc.documentKey)"
+                >
+                  <div class="flex items-center flex-1">
+                    <div
+                      class="w-10 h-10 rounded-lg flex items-center justify-center mr-4"
+                      [class]="getDocumentIconColor(doc.mimeType)"
+                    >
+                      <lucide-icon
+                        [img]="getDocumentIcon(doc.mimeType)"
+                        [size]="20"
+                      />
+                    </div>
+                    <div>
+                      <div class="font-semibold text-slate-900 text-sm">
+                        {{ doc.originalName }}
+                      </div>
+                      <div
+                        class="flex items-center text-xs text-slate-500 mt-0.5 space-x-2"
+                      >
+                        <span>{{ formatFileSize(doc.fileSize) }}</span>
+                        <span>•</span>
+                        <span>{{ doc.category }}</span>
+                        <span>•</span>
+                        <span>{{ formatUploadDate(doc.uploadedAt) }}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="flex items-center space-x-2">
+                    <lucide-icon
+                      [img]="ArrowRightIcon"
+                      [size]="16"
+                      class="text-slate-400"
+                    />
+                  </div>
+                </div>
+              }
+            </div>
           }
         </div>
+
+        <!-- Platform Assistance Card - Middle Right -->
+        <div
+          class="col-span-12 lg:col-span-5 bento-card p-8 animate-fade-in-up"
+          style="animation-delay: 0.4s"
+        >
+          <div class="flex items-center mb-6">
+            <h3 class="text-xl font-bold text-slate-900">
+              Platform Assistance
+            </h3>
+          </div>
+
+          <p class="text-slate-600 text-sm mb-6">
+            Kapify platform can guide you to create a world class data room,
+            satisfying SOC Compliance as well as investor standards
+          </p>
+
+          <div class="space-y-3">
+            @for (doc of generatableDocuments(); track doc.id) {
+              <button
+                (click)="generateDocument(doc.id)"
+                class="w-full flex items-start p-4 bg-slate-50 rounded-xl hover:bg-slate-100 transition-all text-left group"
+              >
+                <div
+                  class="w-10 h-10 rounded-lg flex items-center justify-center mr-3 flex-shrink-0"
+                  [class]="getDocIconColor(doc.color)"
+                >
+                  <lucide-icon [img]="doc.icon" [size]="20" />
+                </div>
+                <div class="flex-1">
+                  <div class="font-semibold text-slate-900 text-sm mb-1">
+                    {{ doc.title }}
+                  </div>
+                  <div class="text-xs text-slate-600">
+                    {{ doc.description }}
+                  </div>
+                </div>
+                <lucide-icon
+                  [img]="PlusIcon"
+                  [size]="16"
+                  class="text-slate-400 group-hover:text-orange-600 transition-colors mt-2"
+                />
+              </button>
+            }
+          </div>
+        </div>
       </div>
-    </div>
     }
 
     <!-- Funder View -->
-    @if (userType() === 'funder') {
-    <!-- Header -->
-    <div class="mb-8 animate-fade-in-up">
-      <h1 class="text-4xl font-bold text-slate-900 mb-2">Data Rooms</h1>
-      <p class="text-lg text-slate-600">
-        Access shared business information and discover new opportunities
-      </p>
-    </div>
-
-    <!-- Bento Grid -->
-    <div class="grid grid-cols-12 gap-6">
-      <!-- Stats Card - Top Left -->
-      <div class="col-span-12 lg:col-span-4 bento-card p-8 animate-fade-in-up">
-        <div class="mb-6">
-          <div class="stat-number text-slate-900">
-            {{ stats().dataRoomsAccessed }}+
-          </div>
-          <div class="text-slate-600 text-lg mt-2">Data Rooms</div>
-        </div>
-        <div class="pt-6 border-t border-slate-100">
-          <div class="flex items-center justify-between text-sm">
-            <span class="text-slate-600">Pending Requests</span>
-            <span
-              class="px-3 py-1 bg-amber-100 text-amber-700 rounded-full text-xs font-semibold"
-            >
-              {{ stats().pendingRequests }}
-            </span>
-          </div>
-        </div>
+    @if (userType() === "funder") {
+      <!-- Header -->
+      <div class="mb-8 animate-fade-in-up">
+        <h1 class="text-4xl font-bold text-slate-900 mb-2">Data Rooms</h1>
+        <p class="text-lg text-slate-600">
+          Access shared business information and discover new opportunities
+        </p>
       </div>
 
-      <!-- Search Card - Top Middle (Large) -->
-      <div
-        class="col-span-12 lg:col-span-8 bento-card p-8 animate-fade-in-up"
-        style="animation-delay: 0.1s"
-      >
-        <div class="flex items-center mb-6">
-          <div
-            class="w-12 h-12 rounded-xl bg-orange-100 flex items-center justify-center mr-4"
-          >
-            <lucide-icon
-              [img]="SearchIcon"
-              [size]="24"
-              class="text-orange-600"
-            />
-          </div>
-          <div>
-            <h3 class="text-xl font-bold text-slate-900">Find Organizations</h3>
-            <p class="text-slate-600 text-sm">
-              Search and request access to business data rooms
-            </p>
-          </div>
-        </div>
-
-        <div class="relative">
-          <input
-            type="text"
-            [(ngModel)]="searchQuery"
-            (keyup.enter)="searchOrganizations()"
-            placeholder="Search by company name, industry, or location..."
-            class="w-full px-6 py-4 border-2 border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 search-input transition-all duration-200"
-          />
-          <button
-            (click)="searchOrganizations()"
-            class="absolute right-2 top-1/2 -translate-y-1/2 px-6 py-2.5 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors font-medium"
-          >
-            Search
-          </button>
-        </div>
-
-        <div class="mt-6 grid grid-cols-3 gap-4">
-          <div
-            class="p-4 bg-slate-50 rounded-xl text-center cursor-pointer hover:bg-slate-100 transition-colors"
-            (click)="searchQuery.set('Technology')"
-          >
-            <div class="text-2xl mb-2">💻</div>
-            <div class="text-sm font-medium text-slate-700">Technology</div>
-          </div>
-          <div
-            class="p-4 bg-slate-50 rounded-xl text-center cursor-pointer hover:bg-slate-100 transition-colors"
-            (click)="searchQuery.set('Healthcare')"
-          >
-            <div class="text-2xl mb-2">🏥</div>
-            <div class="text-sm font-medium text-slate-700">Healthcare</div>
-          </div>
-          <div
-            class="p-4 bg-slate-50 rounded-xl text-center cursor-pointer hover:bg-slate-100 transition-colors"
-            (click)="searchQuery.set('Retail')"
-          >
-            <div class="text-2xl mb-2">🛍️</div>
-            <div class="text-sm font-medium text-slate-700">Retail</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Info Card - Middle Left -->
-      <div
-        class="col-span-12 lg:col-span-5 bento-card p-8 animate-fade-in-up"
-        style="animation-delay: 0.2s"
-      >
+      <!-- Bento Grid -->
+      <div class="grid grid-cols-12 gap-6">
+        <!-- Stats Card - Top Left -->
         <div
-          class="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center mb-6"
+          class="col-span-12 lg:col-span-4 bento-card p-8 animate-fade-in-up"
         >
-          <lucide-icon [img]="ShieldIcon" [size]="24" class="text-blue-600" />
-        </div>
-
-        <h3 class="text-xl font-bold text-slate-900 mb-4">Secure Access</h3>
-
-        <div class="space-y-4">
-          <div class="flex items-start">
-            <div
-              class="w-6 h-6 rounded-full bg-green-100 flex items-center justify-center mr-3 mt-0.5 flex-shrink-0"
-            >
-              <lucide-icon
-                [img]="LockIcon"
-                [size]="14"
-                class="text-green-600"
-              />
+          <div class="mb-6">
+            <div class="stat-number text-slate-900">
+              {{ stats().dataRoomsAccessed }}+
             </div>
-            <div>
-              <div class="font-semibold text-slate-900 text-sm mb-1">
-                Request Access
-              </div>
-              <div class="text-xs text-slate-600">
-                Companies review and approve your requests
-              </div>
-            </div>
+            <div class="text-slate-600 text-lg mt-2">Data Rooms</div>
           </div>
-
-          <div class="flex items-start">
-            <div
-              class="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center mr-3 mt-0.5 flex-shrink-0"
-            >
-              <lucide-icon [img]="EyeIcon" [size]="14" class="text-blue-600" />
-            </div>
-            <div>
-              <div class="font-semibold text-slate-900 text-sm mb-1">
-                View Documents
-              </div>
-              <div class="text-xs text-slate-600">
-                Access financials, plans, and legal docs
-              </div>
-            </div>
-          </div>
-
-          <div class="flex items-start">
-            <div
-              class="w-6 h-6 rounded-full bg-purple-100 flex items-center justify-center mr-3 mt-0.5 flex-shrink-0"
-            >
-              <lucide-icon
-                [img]="DownloadIcon"
-                [size]="14"
-                class="text-purple-600"
-              />
-            </div>
-            <div>
-              <div class="font-semibold text-slate-900 text-sm mb-1">
-                Download & Analyze
-              </div>
-              <div class="text-xs text-slate-600">
-                Export documents for due diligence
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Shared Data Rooms Card - Middle Right (Large) -->
-      <div
-        class="col-span-12 lg:col-span-7 bento-card p-8 animate-fade-in-up"
-        style="animation-delay: 0.3s"
-      >
-        <div class="flex items-center justify-between mb-6">
-          <h3 class="text-xl font-bold text-slate-900">Shared With You</h3>
-          <button
-            class="text-sm text-orange-600 hover:text-orange-700 font-medium"
-          >
-            View All
-          </button>
-        </div>
-
-        @if (sharedDataRooms().length > 0) {
-        <div class="space-y-4">
-          @for (room of sharedDataRooms(); track room.id) {
-          <div
-            class="flex items-center justify-between p-5 bg-slate-50 rounded-xl hover:bg-slate-100 transition-colors cursor-pointer"
-            (click)="viewDataRoom(room.id)"
-          >
-            <div class="flex items-center flex-1">
-              <div
-                class="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center mr-4 text-white font-bold"
-              >
-                {{ room.companyName.charAt(0) }}
-              </div>
-              <div>
-                <div class="font-semibold text-slate-900 mb-1">
-                  {{ room.companyName }}
-                </div>
-                <div class="flex items-center text-xs text-slate-500 space-x-3">
-                  <span class="flex items-center">
-                    <lucide-icon
-                      [img]="FileTextIcon"
-                      [size]="12"
-                      class="mr-1"
-                    />
-                    {{ room.documentCount }} documents
-                  </span>
-                  <span class="flex items-center">
-                    <lucide-icon
-                      [img]="CalendarIcon"
-                      [size]="12"
-                      class="mr-1"
-                    />
-                    {{ formatDate(room.sharedDate) }}
-                  </span>
-                </div>
-              </div>
-            </div>
-            <div class="flex items-center space-x-3">
+          <div class="pt-6 border-t border-slate-100">
+            <div class="flex items-center justify-between text-sm">
+              <span class="text-slate-600">Pending Requests</span>
               <span
-                class="px-3 py-1 rounded-full text-xs font-medium"
-                [class]="getStatusColor(room.status)"
+                class="px-3 py-1 bg-amber-100 text-amber-700 rounded-full text-xs font-semibold"
               >
-                {{ room.status }}
+                {{ stats().pendingRequests }}
               </span>
-              <lucide-icon
-                [img]="ArrowRightIcon"
-                [size]="16"
-                class="text-slate-400"
-              />
             </div>
           </div>
-          }
         </div>
-        } @else {
-        <div class="text-center py-12">
-          <div
-            class="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-4"
-          >
-            <lucide-icon
-              [img]="FolderIcon"
-              [size]="24"
-              class="text-slate-400"
-            />
-          </div>
-          <p class="text-slate-600">No data rooms shared with you yet</p>
-          <p class="text-sm text-slate-500 mt-1">
-            Use the search above to find organizations
-          </p>
-        </div>
-        }
-      </div>
 
-      <!-- CTA Card - Bottom -->
-      <div
-        class="col-span-12 bento-card p-8 bg-gradient-to-r from-slate-900 to-slate-800 text-white animate-fade-in-up"
-        style="animation-delay: 0.4s"
-      >
-        <div class="flex items-center justify-between">
-          <div class="flex-1">
-            <h3 class="text-2xl font-bold mb-2">
-              Discover Investment Opportunities
-            </h3>
-            <p class="text-slate-300 mb-6 max-w-2xl">
-              Search our database of SMEs seeking funding. Request access to
-              detailed business information and make informed investment
-              decisions.
-            </p>
-            <button
-              class="px-6 py-3 bg-orange-500 text-white rounded-xl font-medium hover:bg-orange-600 transition-colors inline-flex items-center"
+        <!-- Search Card - Top Middle (Large) -->
+        <div
+          class="col-span-12 lg:col-span-8 bento-card p-8 animate-fade-in-up"
+          style="animation-delay: 0.1s"
+        >
+          <div class="flex items-center mb-6">
+            <div
+              class="w-12 h-12 rounded-xl bg-orange-100 flex items-center justify-center mr-4"
             >
-              Browse Companies
-              <lucide-icon [img]="ArrowRightIcon" [size]="20" class="ml-2" />
+              <lucide-icon
+                [img]="SearchIcon"
+                [size]="24"
+                class="text-orange-600"
+              />
+            </div>
+            <div>
+              <h3 class="text-xl font-bold text-slate-900">
+                Find Organizations
+              </h3>
+              <p class="text-slate-600 text-sm">
+                Search and request access to business data rooms
+              </p>
+            </div>
+          </div>
+
+          <div class="relative">
+            <input
+              type="text"
+              [(ngModel)]="searchQuery"
+              (keyup.enter)="searchOrganizations()"
+              placeholder="Search by company name, industry, or location..."
+              class="w-full px-6 py-4 border-2 border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 search-input transition-all duration-200"
+            />
+            <button
+              (click)="searchOrganizations()"
+              class="absolute right-2 top-1/2 -translate-y-1/2 px-6 py-2.5 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors font-medium"
+            >
+              Search
             </button>
           </div>
-          <div class="hidden lg:block ml-8">
-            <lucide-icon
-              [img]="Building2Icon"
-              [size]="80"
-              class="text-white opacity-20"
-            />
+
+          <div class="mt-6 grid grid-cols-3 gap-4">
+            <div
+              class="p-4 bg-slate-50 rounded-xl text-center cursor-pointer hover:bg-slate-100 transition-colors"
+              (click)="searchQuery.set('Technology')"
+            >
+              <div class="text-2xl mb-2">💻</div>
+              <div class="text-sm font-medium text-slate-700">Technology</div>
+            </div>
+            <div
+              class="p-4 bg-slate-50 rounded-xl text-center cursor-pointer hover:bg-slate-100 transition-colors"
+              (click)="searchQuery.set('Healthcare')"
+            >
+              <div class="text-2xl mb-2">🏥</div>
+              <div class="text-sm font-medium text-slate-700">Healthcare</div>
+            </div>
+            <div
+              class="p-4 bg-slate-50 rounded-xl text-center cursor-pointer hover:bg-slate-100 transition-colors"
+              (click)="searchQuery.set('Retail')"
+            >
+              <div class="text-2xl mb-2">🛍️</div>
+              <div class="text-sm font-medium text-slate-700">Retail</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Info Card - Middle Left -->
+        <div
+          class="col-span-12 lg:col-span-5 bento-card p-8 animate-fade-in-up"
+          style="animation-delay: 0.2s"
+        >
+          <div
+            class="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center mb-6"
+          >
+            <lucide-icon [img]="ShieldIcon" [size]="24" class="text-blue-600" />
+          </div>
+
+          <h3 class="text-xl font-bold text-slate-900 mb-4">Secure Access</h3>
+
+          <div class="space-y-4">
+            <div class="flex items-start">
+              <div
+                class="w-6 h-6 rounded-full bg-green-100 flex items-center justify-center mr-3 mt-0.5 flex-shrink-0"
+              >
+                <lucide-icon
+                  [img]="LockIcon"
+                  [size]="14"
+                  class="text-green-600"
+                />
+              </div>
+              <div>
+                <div class="font-semibold text-slate-900 text-sm mb-1">
+                  Request Access
+                </div>
+                <div class="text-xs text-slate-600">
+                  Companies review and approve your requests
+                </div>
+              </div>
+            </div>
+
+            <div class="flex items-start">
+              <div
+                class="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center mr-3 mt-0.5 flex-shrink-0"
+              >
+                <lucide-icon
+                  [img]="EyeIcon"
+                  [size]="14"
+                  class="text-blue-600"
+                />
+              </div>
+              <div>
+                <div class="font-semibold text-slate-900 text-sm mb-1">
+                  View Documents
+                </div>
+                <div class="text-xs text-slate-600">
+                  Access financials, plans, and legal docs
+                </div>
+              </div>
+            </div>
+
+            <div class="flex items-start">
+              <div
+                class="w-6 h-6 rounded-full bg-purple-100 flex items-center justify-center mr-3 mt-0.5 flex-shrink-0"
+              >
+                <lucide-icon
+                  [img]="DownloadIcon"
+                  [size]="14"
+                  class="text-purple-600"
+                />
+              </div>
+              <div>
+                <div class="font-semibold text-slate-900 text-sm mb-1">
+                  Download & Analyze
+                </div>
+                <div class="text-xs text-slate-600">
+                  Export documents for due diligence
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Shared Data Rooms Card - Middle Right (Large) -->
+        <div
+          class="col-span-12 lg:col-span-7 bento-card p-8 animate-fade-in-up"
+          style="animation-delay: 0.3s"
+        >
+          <div class="flex items-center justify-between mb-6">
+            <h3 class="text-xl font-bold text-slate-900">Shared With You</h3>
+            <button
+              class="text-sm text-orange-600 hover:text-orange-700 font-medium"
+            >
+              View All
+            </button>
+          </div>
+
+          @if (sharedDataRooms().length > 0) {
+            <div class="space-y-4">
+              @for (room of sharedDataRooms(); track room.id) {
+                <div
+                  class="flex items-center justify-between p-5 bg-slate-50 rounded-xl hover:bg-slate-100 transition-colors cursor-pointer"
+                  (click)="viewDataRoom(room.id)"
+                >
+                  <div class="flex items-center flex-1">
+                    <div
+                      class="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center mr-4 text-white font-bold"
+                    >
+                      {{ room.companyName.charAt(0) }}
+                    </div>
+                    <div>
+                      <div class="font-semibold text-slate-900 mb-1">
+                        {{ room.companyName }}
+                      </div>
+                      <div
+                        class="flex items-center text-xs text-slate-500 space-x-3"
+                      >
+                        <span class="flex items-center">
+                          <lucide-icon
+                            [img]="FileTextIcon"
+                            [size]="12"
+                            class="mr-1"
+                          />
+                          {{ room.documentCount }} documents
+                        </span>
+                        <span class="flex items-center">
+                          <lucide-icon
+                            [img]="CalendarIcon"
+                            [size]="12"
+                            class="mr-1"
+                          />
+                          {{ formatDate(room.sharedDate) }}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="flex items-center space-x-3">
+                    <span
+                      class="px-3 py-1 rounded-full text-xs font-medium"
+                      [class]="getStatusColor(room.status)"
+                    >
+                      {{ room.status }}
+                    </span>
+                    <lucide-icon
+                      [img]="ArrowRightIcon"
+                      [size]="16"
+                      class="text-slate-400"
+                    />
+                  </div>
+                </div>
+              }
+            </div>
+          } @else {
+            <div class="text-center py-12">
+              <div
+                class="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-4"
+              >
+                <lucide-icon
+                  [img]="FolderIcon"
+                  [size]="24"
+                  class="text-slate-400"
+                />
+              </div>
+              <p class="text-slate-600">No data rooms shared with you yet</p>
+              <p class="text-sm text-slate-500 mt-1">
+                Use the search above to find organizations
+              </p>
+            </div>
+          }
+        </div>
+
+        <!-- CTA Card - Bottom -->
+        <div
+          class="col-span-12 bento-card p-8 bg-gradient-to-r from-slate-900 to-slate-800 text-white animate-fade-in-up"
+          style="animation-delay: 0.4s"
+        >
+          <div class="flex items-center justify-between">
+            <div class="flex-1">
+              <h3 class="text-2xl font-bold mb-2">
+                Discover Investment Opportunities
+              </h3>
+              <p class="text-slate-300 mb-6 max-w-2xl">
+                Search our database of SMEs seeking funding. Request access to
+                detailed business information and make informed investment
+                decisions.
+              </p>
+              <button
+                class="px-6 py-3 bg-orange-500 text-white rounded-xl font-medium hover:bg-orange-600 transition-colors inline-flex items-center"
+              >
+                Browse Companies
+                <lucide-icon [img]="ArrowRightIcon" [size]="20" class="ml-2" />
+              </button>
+            </div>
+            <div class="hidden lg:block ml-8">
+              <lucide-icon
+                [img]="Building2Icon"
+                [size]="80"
+                class="text-white opacity-20"
+              />
+            </div>
           </div>
         </div>
       </div>
-    </div>
     }
   </div>
 </div>

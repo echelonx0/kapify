@@ -10,7 +10,7 @@ import {
   Globe,
   Save,
   Check,
-  AlertCircleIcon,
+  CircleAlert,
   ChevronDown,
   ChevronRight,
   FileText,
@@ -65,7 +65,7 @@ export class BasicInfoFormComponent implements OnInit, OnDestroy {
   GlobeIcon = Globe;
   SaveIcon = Save;
   CheckIcon = Check;
-  AlertCircleIcon = AlertCircleIcon;
+  AlertCircleIcon = CircleAlert;
   ChevronDownIcon = ChevronDown;
   ChevronRightIcon = ChevronRight;
   FileTextIcon = FileText;
@@ -222,7 +222,7 @@ export class BasicInfoFormComponent implements OnInit, OnDestroy {
   hasAnyData(): boolean {
     const data = this.formData();
     return Object.values(data).some(
-      (value) => value && value.toString().trim() !== ''
+      (value) => value && value.toString().trim() !== '',
     );
   }
 

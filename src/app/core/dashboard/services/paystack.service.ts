@@ -42,8 +42,8 @@
 //   initError = signal<string | null>(null);
 
 //   constructor(private supabase: SharedSupabaseService) {
-//     console.log('✅ PaystackService initialized with NPM package');
-//     console.log('   PaystackPop available:', typeof PaystackPop);
+//     // console.log('✅ PaystackService initialized with NPM package');
+//     // console.log('   PaystackPop available:', typeof PaystackPop);
 //   }
 
 //   /**
@@ -51,7 +51,7 @@
 //    * Returns access code needed for Paystack Popup
 //    */
 //   async initializeTransaction(
-//     request: PaystackCheckoutRequest
+//     request: PaystackCheckoutRequest,
 //   ): Promise<PaystackCheckoutResponse> {
 //     try {
 //       this.isInitializing.set(true);
@@ -111,7 +111,7 @@
 //    * Called from success callback with transaction reference
 //    */
 //   async verifyPayment(
-//     reference: string
+//     reference: string,
 //   ): Promise<PaystackVerificationResponse> {
 //     try {
 //       const {
@@ -125,7 +125,7 @@
 //           headers: {
 //             Authorization: `Bearer ${session?.access_token || ''}`,
 //           },
-//         }
+//         },
 //       );
 
 //       if (!response.ok) {
@@ -190,9 +190,19 @@
 
 import { Injectable, signal } from '@angular/core';
 import { SharedSupabaseService } from 'src/app/shared/services/shared-supabase.service';
-
-// Import Paystack from NPM package
 import PaystackPop from '@paystack/inline-js';
+
+export interface InvoiceDetailsSnapshot {
+  business_name: string;
+  legal_name: string;
+  vat_number: string;
+  address_line1: string;
+  address_line2?: string;
+  city: string;
+  province: string;
+  postal_code?: string;
+  country: string;
+}
 
 export interface PaystackCheckoutRequest {
   organizationId: string;
@@ -233,7 +243,6 @@ export class PaystackService {
 
   constructor(private supabase: SharedSupabaseService) {
     console.log('✅ PaystackService initialized with NPM package');
-    console.log('   PaystackPop available:', typeof PaystackPop);
   }
 
   /**
@@ -241,7 +250,7 @@ export class PaystackService {
    * Returns access code needed for Paystack Popup
    */
   async initializeTransaction(
-    request: PaystackCheckoutRequest
+    request: PaystackCheckoutRequest,
   ): Promise<PaystackCheckoutResponse> {
     try {
       this.isInitializing.set(true);
@@ -301,7 +310,7 @@ export class PaystackService {
    * Called from success callback with transaction reference
    */
   async verifyPayment(
-    reference: string
+    reference: string,
   ): Promise<PaystackVerificationResponse> {
     try {
       const {
@@ -315,7 +324,7 @@ export class PaystackService {
           headers: {
             Authorization: `Bearer ${session?.access_token || ''}`,
           },
-        }
+        },
       );
 
       if (!response.ok) {
@@ -351,12 +360,10 @@ export class PaystackService {
       try {
         console.log('🔄 Creating Paystack popup instance...');
 
-        // Create new Paystack popup instance
         const popup = new PaystackPop();
 
         console.log('✅ Popup instance created');
 
-        // Open the popup by resuming the transaction
         popup.resumeTransaction(accessCode, {
           onCancel: () => {
             console.log('⚠️ User closed Paystack popup');
@@ -375,5 +382,23 @@ export class PaystackService {
         reject(error);
       }
     });
+  }
+
+  /**
+   * Capture invoice details snapshot from organization data
+   * Returns JSONB-compatible object for storage
+   */
+  captureInvoiceDetailsSnapshot(orgData: any): InvoiceDetailsSnapshot {
+    return {
+      business_name: orgData.name || 'Business',
+      legal_name: orgData.legalName || orgData.name || 'Business',
+      vat_number: orgData.vatNumber || '0000000000',
+      address_line1: orgData.addressLine1 || '',
+      address_line2: orgData.addressLine2,
+      city: orgData.city || '',
+      province: orgData.province || '',
+      postal_code: orgData.postalCode,
+      country: orgData.country || 'South Africa',
+    };
   }
 }

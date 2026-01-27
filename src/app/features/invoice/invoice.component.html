@@ -10,15 +10,15 @@
           </p>
         </div>
         <div class="flex gap-2">
-          <button
-            (click)="goHome()"
-            class="bg-slate-100 text-slate-700 font-medium rounded-xl px-6 py-2.5 text-sm hover:bg-slate-200 active:bg-slate-300 transition-colors duration-200"
+          <a
+            routerLink="/dashboard/home"
+            class="bg-slate-100 text-slate-700 font-medium rounded-xl px-6 py-2.5 text-sm hover:bg-slate-200 transition-colors"
           >
             Home
-          </button>
+          </a>
           <button
             (click)="goBack()"
-            class="bg-teal-500 text-white font-medium rounded-xl px-6 py-2.5 text-sm hover:bg-teal-600 active:bg-teal-700 transition-colors duration-200"
+            class="bg-teal-500 text-white font-medium rounded-xl px-6 py-2.5 text-sm hover:bg-teal-600 transition-colors"
           >
             Back
           </button>
@@ -27,189 +27,49 @@
     </div>
   </header>
 
-  <!-- Main Content -->
+  <!-- Content -->
   <main class="max-w-6xl mx-auto px-4 lg:px-8 py-8">
-    <!-- Loading State -->
     @if (loading()) {
-    <div class="flex items-center justify-center py-12">
-      <div class="text-center">
-        <div
-          class="animate-spin w-8 h-8 border-4 border-teal-500 border-t-transparent rounded-full mx-auto"
-        ></div>
-        <p class="text-sm text-slate-600 mt-4">Loading invoices...</p>
-      </div>
-    </div>
+      <p class="text-center text-slate-600">Loading invoices...</p>
     } @else if (error()) {
-    <!-- Error State -->
-    <div class="bg-red-50 border border-red-200/50 rounded-2xl p-6 text-center">
-      <div
-        class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4"
-      >
-        <svg
-          class="w-6 h-6 text-red-600"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
+      <div class="text-center">
+        <p class="text-red-600 mb-4">{{ error() }}</p>
+        <button
+          (click)="retry()"
+          class="bg-red-600 text-white px-6 py-2 rounded-xl"
         >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-          />
-        </svg>
+          Try Again
+        </button>
       </div>
-      <p class="text-red-700 font-semibold mb-2">Error</p>
-      <p class="text-red-600 text-sm mb-4">{{ error() }}</p>
-      <button
-        (click)="retry()"
-        class="bg-red-600 text-white font-medium rounded-xl px-6 py-2.5 text-sm hover:bg-red-700 active:bg-red-800 transition-colors duration-200"
-      >
-        Try Again
-      </button>
-    </div>
     } @else if (invoices().length === 0) {
-    <!-- Empty State -->
-    <div class="bg-white rounded-2xl border border-slate-200 p-12 text-center">
-      <div
-        class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4"
-      >
-        <svg
-          class="w-8 h-8 text-slate-400"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-          />
-        </svg>
-      </div>
-      <h3 class="text-lg font-bold text-slate-900 mb-2">No invoices yet</h3>
-      <p class="text-slate-600 mb-6">
-        Purchase credits to see your invoice history here
-      </p>
-      <button
-        (click)="goBack()"
-        class="bg-teal-500 text-white font-medium rounded-xl px-6 py-2.5 text-sm hover:bg-teal-600 active:bg-teal-700 transition-colors duration-200"
-      >
-        Go back
-      </button>
-    </div>
+      <p class="text-center text-slate-600">No invoices yet.</p>
     } @else {
-    <!-- Invoice List -->
-    <div class="space-y-4">
-      @for (invoice of invoices(); track invoice.id) {
-      <div
-        class="bg-white rounded-2xl border border-slate-200 p-6 hover:shadow-md hover:border-slate-300 transition-all duration-200"
-      >
-        <div class="flex items-start justify-between gap-4">
-          <!-- Invoice Details -->
-          <div class="flex-1 min-w-0">
-            <div class="flex items-center gap-3 mb-3 flex-wrap">
-              <!-- Invoice Number -->
-              <h3 class="text-lg font-semibold text-slate-900">
-                @if (invoice.zohoInvoiceNumber) {
-                {{ invoice.zohoInvoiceNumber }}
-                } @else { Invoice #{{ invoice.id.slice(0, 8) }}
-                }
-              </h3>
-
-              <!-- Status Badge -->
-              <span
-                class="px-2.5 py-1 rounded-full text-xs font-semibold border"
-                [ngClass]="getStatusColor(invoice.status)"
-              >
-                {{ getStatusText(invoice.status) }}
-              </span>
-
-              <!-- Payment Provider Badge -->
-              <span
-                class="px-2.5 py-1 rounded-full text-xs font-semibold border"
-                [ngClass]="getProviderBadgeColor(invoice.paymentProvider)"
-              >
-                {{ getProviderBadgeText(invoice.paymentProvider) }}
-              </span>
-            </div>
-
-            <!-- Invoice Details Grid -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
-              <div>
-                <p class="text-xs text-slate-500 mb-1">Date</p>
-                <p class="text-sm font-medium text-slate-900">
-                  {{ formatDate(invoice.createdAt) }}
-                </p>
-              </div>
-              <div>
-                <p class="text-xs text-slate-500 mb-1">Credits</p>
-                <p class="text-sm font-medium text-slate-900">
-                  {{ formatCredits(invoice.creditAmount) }}
-                </p>
-              </div>
-              <div>
-                <p class="text-xs text-slate-500 mb-1">Amount</p>
-                <p class="text-sm font-medium text-slate-900">
-                  {{ formatAmount(invoice.amountZar) }}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <!-- Download Button -->
-          <button
-            (click)="downloadInvoice(invoice)"
-            [disabled]="isDownloading(invoice.id)"
-            class="flex items-center justify-center gap-2 px-4 py-2.5 bg-teal-500 text-white font-medium rounded-xl hover:bg-teal-600 active:bg-teal-700 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
-            [title]="
-              isDownloading(invoice.id) ? 'Downloading...' : 'Download PDF'
-            "
+      <div class="space-y-4">
+        @for (invoice of invoices(); track invoice.id) {
+          <div
+            class="bg-white rounded-2xl border p-6 flex justify-between items-center"
           >
-            @if (isDownloading(invoice.id)) {
-            <svg
-              class="w-4 h-4 animate-spin"
-              fill="currentColor"
-              viewBox="0 0 24 24"
+            <div>
+              <h3 class="font-semibold">
+                {{ invoice.zohoInvoiceNumber || invoice.id.slice(0, 8) }}
+              </h3>
+              <p class="text-sm text-slate-600">
+                {{ formatDate(invoice.createdAt) }} ·
+                {{ formatCredits(invoice.creditAmount) }} credits ·
+                {{ formatAmount(invoice.amountZar) }}
+              </p>
+            </div>
+
+            <button
+              (click)="downloadInvoice(invoice)"
+              [disabled]="isDownloading(invoice.id)"
+              class="bg-teal-500 text-white px-4 py-2 rounded-xl disabled:opacity-50"
             >
-              <circle
-                class="opacity-25"
-                cx="12"
-                cy="12"
-                r="10"
-                stroke="currentColor"
-                stroke-width="4"
-                fill="none"
-              ></circle>
-              <path
-                class="opacity-75"
-                fill="currentColor"
-                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-              ></path>
-            </svg>
-            <span>Downloading...</span>
-            } @else {
-            <svg
-              class="w-4 h-4"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
-              />
-            </svg>
-            <span>Download</span>
-            }
-          </button>
-        </div>
+              {{ isDownloading(invoice.id) ? "Downloading…" : "Download" }}
+            </button>
+          </div>
+        }
       </div>
-      }
-    </div>
     }
   </main>
 </div>

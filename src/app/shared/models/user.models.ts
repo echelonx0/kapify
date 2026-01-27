@@ -1,6 +1,10 @@
 // src/app/shared/models/user.models.ts
 export type UserType = 'sme' | 'funder' | 'admin' | 'consultant';
-export type UserStatus = 'active' | 'inactive' | 'suspended' | 'pending_verification';
+export type UserStatus =
+  | 'active'
+  | 'inactive'
+  | 'suspended'
+  | 'pending_verification';
 export type AccountTier = 'basic' | 'premium' | 'enterprise';
 
 export interface User {
@@ -36,8 +40,6 @@ export interface UserProfile {
   updatedAt: Date;
 }
 
- 
-
 // Legacy interfaces for compatibility with existing code
 export interface SMEUser extends OrganizationUser {
   permissions: SMEPermissions;
@@ -53,7 +55,7 @@ export interface SMEOrganization extends Organization {
 
 export interface FunderOrganization extends Organization {
   type: 'funder';
-   userId?: string;
+  userId?: string;
 }
 
 export interface SMEPermissions {
@@ -94,12 +96,12 @@ export interface FunderPermissions {
 }
 
 // src/app/shared/models/organization.models.ts
-export type OrganizationType = 
-  | 'investment_fund' 
-  | 'bank' 
-  | 'government' 
-  | 'ngo' 
-  | 'private_equity' 
+export type OrganizationType =
+  | 'investment_fund'
+  | 'bank'
+  | 'government'
+  | 'ngo'
+  | 'private_equity'
   | 'venture_capital'
   | 'sme'
   | 'consultant'
@@ -109,13 +111,18 @@ export interface Organization {
   id: string;
   name: string;
   description?: string;
-  
+  vatNumber?: string;
   // Core fields
   organizationType: OrganizationType;
-  status: 'active' | 'inactive' | 'pending_verification' | 'suspended' | 'verification_rejected';
+  status:
+    | 'active'
+    | 'inactive'
+    | 'pending_verification'
+    | 'suspended'
+    | 'verification_rejected';
   website?: string;
   logoUrl?: string;
-  
+
   // Funder-specific fields (optional for SMEs)
   legalName?: string;
   registrationNumber?: string;
@@ -125,11 +132,11 @@ export interface Organization {
   assetsUnderManagement?: number;
   isVerified: boolean;
   verificationDate?: Date;
-  
+
   // Contact information
   email?: string;
   phone?: string;
-  
+
   // Address information
   addressLine1?: string;
   addressLine2?: string;
@@ -137,7 +144,7 @@ export interface Organization {
   province?: string;
   postalCode?: string;
   country: string;
-  
+
   // Metadata
   createdAt: Date;
   updatedAt: Date;
@@ -173,7 +180,7 @@ export const DEFAULT_PERMISSIONS: Record<string, OrganizationPermissions> = {
     canCreateOpportunities: true,
     canManageApplications: true,
     canViewReports: true,
-    canManageFinances: true
+    canManageFinances: true,
   },
   admin: {
     canManageOrganizationSettings: true,
@@ -181,7 +188,7 @@ export const DEFAULT_PERMISSIONS: Record<string, OrganizationPermissions> = {
     canCreateOpportunities: true,
     canManageApplications: true,
     canViewReports: true,
-    canManageFinances: false
+    canManageFinances: false,
   },
   member: {
     canManageOrganizationSettings: false,
@@ -189,7 +196,7 @@ export const DEFAULT_PERMISSIONS: Record<string, OrganizationPermissions> = {
     canCreateOpportunities: true,
     canManageApplications: true,
     canViewReports: true,
-    canManageFinances: false
+    canManageFinances: false,
   },
   viewer: {
     canManageOrganizationSettings: false,
@@ -197,6 +204,6 @@ export const DEFAULT_PERMISSIONS: Record<string, OrganizationPermissions> = {
     canCreateOpportunities: false,
     canManageApplications: false,
     canViewReports: true,
-    canManageFinances: false
-  }
+    canManageFinances: false,
+  },
 };

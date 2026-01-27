@@ -178,7 +178,13 @@ export class DatabaseActivityService {
       | 'submitted'
       | 'approved'
       | 'rejected'
-      | 'withdrawn',
+      | 'withdrawn'
+      | 'email_failed'
+      | 'invitation_sent'
+      | 'invitation_resent'
+      | 'invitation_cancelled'
+      | 'member_removed'
+      | 'role_changed',
     applicationId: string,
     message: string,
     amount?: number,
@@ -192,7 +198,6 @@ export class DatabaseActivityService {
       amount,
       status: 'completed',
     }).subscribe({
-      // next: () => console.log(`Application activity tracked: ${action}`),
       error: (error) =>
         console.error('Failed to track application activity:', error),
     });

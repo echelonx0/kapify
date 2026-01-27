@@ -125,7 +125,7 @@ export class InviteModalComponent {
         if (result.success) {
           this.invitationSent.emit();
         } else {
-          this.formError.set(result.error || 'Failed to send invitation');
+          this.formError.set('Failed to send invitation');
         }
       },
       error: (error) => {
