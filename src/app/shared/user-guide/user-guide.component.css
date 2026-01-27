@@ -1,0 +1,135 @@
+/* src/app/shared/pages/user-guide.component.css */
+
+:host {
+  display: block;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* Section hover effects */
+:host ::ng-deep {
+  /* Smooth transitions for expandable sections */
+  .space-y-6 > div {
+    transition: all 0.2s ease-out;
+  }
+
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    .lg\:col-span-4 {
+      grid-column: span 1;
+    }
+
+    .lg\:col-span-3 {
+      grid-column: span 1;
+    }
+
+    .lg\:col-span-1 {
+      grid-column: span 1;
+    }
+
+    /* Stack sidebar on mobile */
+    .grid-cols-1.lg\:grid-cols-4 {
+      grid-template-columns: 1fr;
+    }
+  }
+}
+
+/* Neo-brutalist text effect */
+.font-black {
+  font-weight: 900;
+  letter-spacing: -0.02em;
+}
+
+.uppercase {
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Border emphasis */
+.border-3 {
+  border-width: 3px;
+}
+
+.border-l-4 {
+  border-left-width: 4px;
+}
+
+.border-b-4 {
+  border-bottom-width: 4px;
+}
+
+.border-t-4 {
+  border-top-width: 4px;
+}
+
+/* Button neo-brutalist style */
+button.neo-brutalist {
+  border-width: 2px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+button.neo-brutalist:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+button.neo-brutalist:active {
+  transform: translateY(0);
+}
+
+/* Glass morphism subtle effect for cards */
+.backdrop-blur-sm {
+  backdrop-filter: blur(4px);
+}
+
+/* Gradient backgrounds (design system) */
+.bg-gradient-to-r {
+  background-image: linear-gradient(to right, var(--tw-gradient-stops));
+}
+
+.bg-gradient-to-br {
+  background-image: linear-gradient(to bottom right, var(--tw-gradient-stops));
+}
+
+/* Focus states for accessibility */
+button:focus-visible {
+  outline: 3px solid #14b8a6;
+  outline-offset: 2px;
+}
+
+/* Code-like consistency for lists */
+ul,
+ol {
+  list-style: none;
+}
+
+/* Print styles */
+@media print {
+  .sticky {
+    position: static;
+  }
+
+  button {
+    pointer-events: none;
+  }
+}

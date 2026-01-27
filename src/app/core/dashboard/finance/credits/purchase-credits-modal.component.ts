@@ -9,7 +9,7 @@
 // } from '@angular/core';
 // import { CommonModule } from '@angular/common';
 // import { FormsModule } from '@angular/forms';
-// import { LucideAngularModule, X, AlertCircle, Loader } from 'lucide-angular';
+// import { LucideAngularModule, X, Loader, CircleAlert } from 'lucide-angular';
 // import { PaystackService } from '../../services/paystack.service';
 // import { DatabaseActivityService } from 'src/app/shared/services/database-activity.service';
 
@@ -19,148 +19,153 @@
 //   imports: [CommonModule, FormsModule, LucideAngularModule],
 //   template: `
 //     @if (isOpen) {
-//     <!-- Backdrop -->
-//     <div
-//       class="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 transition-opacity duration-200"
-//       (click)="onBackdropClick()"
-//     ></div>
-
-//     <!-- Modal -->
-//     <div class="fixed inset-0 flex items-center justify-center z-50 p-4">
+//       <!-- Backdrop -->
 //       <div
-//         class="bg-white rounded-2xl shadow-lg max-w-md w-full max-h-[90vh] overflow-y-auto"
-//       >
-//         <!-- Header -->
+//         class="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 transition-opacity duration-200"
+//         (click)="onBackdropClick()"
+//       ></div>
+
+//       <!-- Modal -->
+//       <div class="fixed inset-0 flex items-center justify-center z-50 p-4">
 //         <div
-//           class="sticky top-0 bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between"
+//           class="bg-white rounded-2xl shadow-lg max-w-md w-full max-h-[90vh] overflow-y-auto"
 //         >
-//           <h2 class="text-lg font-bold text-slate-900">Purchase Credits</h2>
-//           <button
-//             (click)="onBackdropClick()"
-//             class="text-slate-500 hover:text-slate-700 transition-colors duration-200"
-//             [disabled]="isProcessing()"
-//           >
-//             <lucide-icon [img]="XIcon" [size]="24" />
-//           </button>
-//         </div>
-
-//         <!-- Content -->
-//         <div class="p-6 space-y-6">
-//           <!-- Price Info -->
-//           <div class="bg-teal-50 rounded-xl p-4 border border-teal-200/50">
-//             <p
-//               class="text-xs font-semibold text-teal-700 uppercase tracking-wide mb-1"
-//             >
-//               Pricing
-//             </p>
-//             <p class="text-sm text-teal-900">
-//               <span class="font-semibold">R0.01</span> per credit
-//             </p>
-//           </div>
-
-//           <!-- Amount Input -->
-//           <div>
-//             <label class="block text-sm font-semibold text-slate-900 mb-2">
-//               Number of Credits
-//               <span class="text-teal-600">*</span>
-//             </label>
-//             <div class="relative">
-//               <input
-//                 type="number"
-//                 [(ngModel)]="creditAmount"
-//                 (ngModelChange)="onCreditAmountChange()"
-//                 [min]="minCredits"
-//                 [step]="stepSize"
-//                 class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200"
-//                 placeholder="Enter credit amount"
-//                 [disabled]="isProcessing()"
-//               />
-//               <span
-//                 class="absolute right-4 top-3 text-slate-500 text-sm font-medium"
-//               >
-//                 credits
-//               </span>
-//             </div>
-//             <p class="text-xs text-slate-500 mt-2">
-//               Minimum: {{ formatNumber(minCredits) }} credits
-//             </p>
-//           </div>
-
-//           <!-- Cost Breakdown -->
-//           <div class="bg-teal-50 rounded-xl p-4 border border-teal-200/50">
-//             <div class="space-y-2 mb-3">
-//               <div class="flex justify-between items-center">
-//                 <span class="text-sm font-medium text-slate-600">Credits</span>
-//                 <span class="font-semibold text-slate-900">
-//                   {{ formatNumber(creditAmount) }}
-//                 </span>
-//               </div>
-//               <div class="flex justify-between items-center">
-//                 <span class="text-sm font-medium text-slate-600">Rate</span>
-//                 <span class="font-semibold text-slate-900">R0.01/credit</span>
-//               </div>
-//             </div>
-//             <div
-//               class="border-t border-teal-200/50 pt-3 flex justify-between items-center"
-//             >
-//               <span class="font-semibold text-slate-900">Total Cost</span>
-//               <span class="text-2xl font-bold text-teal-600">
-//                 {{ formatCurrency(totalCostZAR) }}
-//               </span>
-//             </div>
-//           </div>
-
-//           <!-- Error State -->
-//           @if (error()) {
+//           <!-- Header -->
 //           <div
-//             class="bg-red-50 border border-red-200/50 rounded-xl p-4 flex gap-3"
+//             class="sticky top-0 bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between"
 //           >
-//             <lucide-icon
-//               [img]="AlertIcon"
-//               [size]="20"
-//               class="text-red-600 flex-shrink-0 mt-0.5"
-//             />
-//             <div class="flex-1">
-//               <p class="text-sm font-semibold text-red-900">Payment Failed</p>
-//               <p class="text-xs text-red-700 mt-1">{{ error() }}</p>
-//             </div>
-//           </div>
-//           }
-
-//           <!-- Action Buttons -->
-//           <div class="flex gap-3 pt-2">
+//             <h2 class="text-lg font-bold text-slate-900">Purchase Credits</h2>
 //             <button
 //               (click)="onBackdropClick()"
-//               class="flex-1 px-4 py-2.5 border border-slate-200 text-slate-900 font-medium rounded-xl hover:bg-slate-50 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+//               class="text-slate-500 hover:text-slate-700 transition-colors duration-200"
 //               [disabled]="isProcessing()"
 //             >
-//               Cancel
-//             </button>
-//             <button
-//               (click)="handlePayment()"
-//               class="flex-1 px-4 py-2.5 bg-teal-500 text-white font-medium rounded-xl hover:bg-teal-600 active:bg-teal-700 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-//               [disabled]="!isValidAmount() || isProcessing()"
-//             >
-//               @if (isProcessing()) {
-//               <lucide-icon
-//                 [img]="LoaderIcon"
-//                 [size]="16"
-//                 class="animate-spin"
-//               />
-//               <span>Processing...</span>
-//               } @else {
-//               <span>Continue to Payment</span>
-//               }
+//               <lucide-icon [img]="XIcon" [size]="24" />
 //             </button>
 //           </div>
 
-//           <!-- Terms -->
-//           <p class="text-xs text-slate-500 text-center">
-//             By proceeding, you agree to our Terms of Service and Privacy Policy.
-//           </p>
+//           <!-- Content -->
+//           <div class="p-6 space-y-6">
+//             <!-- Price Info -->
+//             <div class="bg-teal-50 rounded-xl p-4 border border-teal-200/50">
+//               <p
+//                 class="text-xs font-semibold text-teal-700 uppercase tracking-wide mb-1"
+//               >
+//                 Pricing
+//               </p>
+//               <p class="text-sm text-teal-900">
+//                 <span class="font-semibold">R1.00</span> per credit
+//               </p>
+//             </div>
+
+//             <!-- Amount Input -->
+//             <div>
+//               <label class="block text-sm font-semibold text-slate-900 mb-2">
+//                 Number of Credits
+//                 <span class="text-teal-600">*</span>
+//               </label>
+//               <div class="relative">
+//                 <input
+//                   type="number"
+//                   [(ngModel)]="creditAmount"
+//                   (ngModelChange)="onCreditAmountChange()"
+//                   [min]="minCredits"
+//                   [step]="stepSize"
+//                   class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200"
+//                   placeholder="Enter credit amount"
+//                   [disabled]="isProcessing()"
+//                 />
+//                 <span
+//                   class="absolute right-4 top-3 text-slate-500 text-sm font-medium"
+//                 >
+//                   credits
+//                 </span>
+//               </div>
+//               <p class="text-xs text-slate-500 mt-2">
+//                 Minimum: {{ formatNumber(minCredits) }} credits
+//               </p>
+//             </div>
+
+//             <!-- Cost Breakdown -->
+//             <div class="bg-teal-50 rounded-xl p-4 border border-teal-200/50">
+//               <div class="space-y-2 mb-3">
+//                 <div class="flex justify-between items-center">
+//                   <span class="text-sm font-medium text-slate-600"
+//                     >Credits</span
+//                   >
+//                   <span class="font-semibold text-slate-900">
+//                     {{ formatNumber(creditAmount) }}
+//                   </span>
+//                 </div>
+//                 <div class="flex justify-between items-center">
+//                   <span class="text-sm font-medium text-slate-600">Rate</span>
+//                   <span class="font-semibold text-slate-900">R1.00/credit</span>
+//                 </div>
+//               </div>
+//               <div
+//                 class="border-t border-teal-200/50 pt-3 flex justify-between items-center"
+//               >
+//                 <span class="font-semibold text-slate-900">Total Cost</span>
+//                 <span class="text-2xl font-bold text-teal-600">
+//                   {{ formatCurrency(totalCostZAR) }}
+//                 </span>
+//               </div>
+//             </div>
+
+//             <!-- Error State -->
+//             @if (error()) {
+//               <div
+//                 class="bg-red-50 border border-red-200/50 rounded-xl p-4 flex gap-3"
+//               >
+//                 <lucide-icon
+//                   [img]="AlertIcon"
+//                   [size]="20"
+//                   class="text-red-600 flex-shrink-0 mt-0.5"
+//                 />
+//                 <div class="flex-1">
+//                   <p class="text-sm font-semibold text-red-900">
+//                     Payment Failed
+//                   </p>
+//                   <p class="text-xs text-red-700 mt-1">{{ error() }}</p>
+//                 </div>
+//               </div>
+//             }
+
+//             <!-- Action Buttons -->
+//             <div class="flex gap-3 pt-2">
+//               <button
+//                 (click)="onBackdropClick()"
+//                 class="flex-1 px-4 py-2.5 border border-slate-200 text-slate-900 font-medium rounded-xl hover:bg-slate-50 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+//                 [disabled]="isProcessing()"
+//               >
+//                 Cancel
+//               </button>
+//               <button
+//                 (click)="handlePayment()"
+//                 class="flex-1 px-4 py-2.5 bg-teal-500 text-white font-medium rounded-xl hover:bg-teal-600 active:bg-teal-700 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+//                 [disabled]="!isValidAmount() || isProcessing()"
+//               >
+//                 @if (isProcessing()) {
+//                   <lucide-icon
+//                     [img]="LoaderIcon"
+//                     [size]="16"
+//                     class="animate-spin"
+//                   />
+//                   <span>Processing...</span>
+//                 } @else {
+//                   <span>Continue to Payment</span>
+//                 }
+//               </button>
+//             </div>
+
+//             <!-- Terms -->
+//             <p class="text-xs text-slate-500 text-center">
+//               By proceeding, you agree to our Terms of Service and Privacy
+//               Policy.
+//             </p>
+//           </div>
 //         </div>
 //       </div>
-//     </div>
 //     }
 //   `,
 //   styles: [
@@ -181,16 +186,16 @@
 //   private activityService = inject(DatabaseActivityService);
 
 //   XIcon = X;
-//   AlertIcon = AlertCircle;
+//   AlertIcon = CircleAlert;
 //   LoaderIcon = Loader;
 
-//   creditAmount = 50000;
+//   creditAmount = 500;
 //   isProcessing = signal(false);
 //   error = signal<string | null>(null);
 
-//   readonly minCredits = 10000;
-//   readonly stepSize = 1000;
-//   readonly creditsPerZAR = 100;
+//   readonly minCredits = 100;
+//   readonly stepSize = 10;
+//   readonly creditsPerZAR = 1; // 1 ZAR = 1 credit
 
 //   get totalCostZAR(): number {
 //     return this.creditAmount / this.creditsPerZAR;
@@ -224,14 +229,14 @@
 //   private trackPurchaseCompleted(
 //     creditAmount: number,
 //     costZAR: number,
-//     reference: string
+//     reference: string,
 //   ): void {
 //     this.activityService
 //       .createActivity({
 //         type: 'system',
 //         action: 'credit_purchase_completed',
 //         message: `Purchased ${this.formatNumber(
-//           creditAmount
+//           creditAmount,
 //         )} credits for ${this.formatCurrency(costZAR)}`,
 //         amount: creditAmount,
 //         metadata: {
@@ -304,7 +309,7 @@
 //   async handlePayment(): Promise<void> {
 //     if (!this.isValidAmount()) {
 //       this.error.set(
-//         `Minimum ${this.formatNumber(this.minCredits)} credits required`
+//         `Minimum ${this.formatNumber(this.minCredits)} credits required`,
 //       );
 //       return;
 //     }
@@ -342,7 +347,7 @@
 //       let reference: string;
 //       try {
 //         reference = await this.paystackService.openPaystackPopup(
-//           initResult.accessCode
+//           initResult.accessCode,
 //         );
 //       } catch (popupErr) {
 //         const errorMsg =
@@ -385,7 +390,7 @@
 //       this.trackPurchaseCompleted(
 //         this.creditAmount,
 //         this.totalCostZAR,
-//         reference
+//         reference,
 //       );
 
 //       // Close modal and notify parent
@@ -417,7 +422,7 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { LucideAngularModule, X, AlertCircle, Loader } from 'lucide-angular';
+import { LucideAngularModule, X, Loader, CircleAlert } from 'lucide-angular';
 import { PaystackService } from '../../services/paystack.service';
 import { DatabaseActivityService } from 'src/app/shared/services/database-activity.service';
 
@@ -427,148 +432,174 @@ import { DatabaseActivityService } from 'src/app/shared/services/database-activi
   imports: [CommonModule, FormsModule, LucideAngularModule],
   template: `
     @if (isOpen) {
-    <!-- Backdrop -->
-    <div
-      class="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 transition-opacity duration-200"
-      (click)="onBackdropClick()"
-    ></div>
-
-    <!-- Modal -->
-    <div class="fixed inset-0 flex items-center justify-center z-50 p-4">
+      <!-- Backdrop -->
       <div
-        class="bg-white rounded-2xl shadow-lg max-w-md w-full max-h-[90vh] overflow-y-auto"
-      >
-        <!-- Header -->
+        class="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 transition-opacity duration-200"
+        (click)="onBackdropClick()"
+      ></div>
+
+      <!-- Modal -->
+      <div class="fixed inset-0 flex items-center justify-center z-50 p-4">
         <div
-          class="sticky top-0 bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between"
+          class="bg-white rounded-2xl shadow-lg max-w-md w-full max-h-[90vh] overflow-y-auto"
         >
-          <h2 class="text-lg font-bold text-slate-900">Purchase Credits</h2>
-          <button
-            (click)="onBackdropClick()"
-            class="text-slate-500 hover:text-slate-700 transition-colors duration-200"
-            [disabled]="isProcessing()"
-          >
-            <lucide-icon [img]="XIcon" [size]="24" />
-          </button>
-        </div>
-
-        <!-- Content -->
-        <div class="p-6 space-y-6">
-          <!-- Price Info -->
-          <div class="bg-teal-50 rounded-xl p-4 border border-teal-200/50">
-            <p
-              class="text-xs font-semibold text-teal-700 uppercase tracking-wide mb-1"
-            >
-              Pricing
-            </p>
-            <p class="text-sm text-teal-900">
-              <span class="font-semibold">R1.00</span> per credit
-            </p>
-          </div>
-
-          <!-- Amount Input -->
-          <div>
-            <label class="block text-sm font-semibold text-slate-900 mb-2">
-              Number of Credits
-              <span class="text-teal-600">*</span>
-            </label>
-            <div class="relative">
-              <input
-                type="number"
-                [(ngModel)]="creditAmount"
-                (ngModelChange)="onCreditAmountChange()"
-                [min]="minCredits"
-                [step]="stepSize"
-                class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200"
-                placeholder="Enter credit amount"
-                [disabled]="isProcessing()"
-              />
-              <span
-                class="absolute right-4 top-3 text-slate-500 text-sm font-medium"
-              >
-                credits
-              </span>
-            </div>
-            <p class="text-xs text-slate-500 mt-2">
-              Minimum: {{ formatNumber(minCredits) }} credits
-            </p>
-          </div>
-
-          <!-- Cost Breakdown -->
-          <div class="bg-teal-50 rounded-xl p-4 border border-teal-200/50">
-            <div class="space-y-2 mb-3">
-              <div class="flex justify-between items-center">
-                <span class="text-sm font-medium text-slate-600">Credits</span>
-                <span class="font-semibold text-slate-900">
-                  {{ formatNumber(creditAmount) }}
-                </span>
-              </div>
-              <div class="flex justify-between items-center">
-                <span class="text-sm font-medium text-slate-600">Rate</span>
-                <span class="font-semibold text-slate-900">R1.00/credit</span>
-              </div>
-            </div>
-            <div
-              class="border-t border-teal-200/50 pt-3 flex justify-between items-center"
-            >
-              <span class="font-semibold text-slate-900">Total Cost</span>
-              <span class="text-2xl font-bold text-teal-600">
-                {{ formatCurrency(totalCostZAR) }}
-              </span>
-            </div>
-          </div>
-
-          <!-- Error State -->
-          @if (error()) {
+          <!-- Header -->
           <div
-            class="bg-red-50 border border-red-200/50 rounded-xl p-4 flex gap-3"
+            class="sticky top-0 bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between"
           >
-            <lucide-icon
-              [img]="AlertIcon"
-              [size]="20"
-              class="text-red-600 flex-shrink-0 mt-0.5"
-            />
-            <div class="flex-1">
-              <p class="text-sm font-semibold text-red-900">Payment Failed</p>
-              <p class="text-xs text-red-700 mt-1">{{ error() }}</p>
-            </div>
-          </div>
-          }
-
-          <!-- Action Buttons -->
-          <div class="flex gap-3 pt-2">
+            <h2 class="text-lg font-bold text-slate-900">Purchase Credits</h2>
             <button
               (click)="onBackdropClick()"
-              class="flex-1 px-4 py-2.5 border border-slate-200 text-slate-900 font-medium rounded-xl hover:bg-slate-50 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              class="text-slate-500 hover:text-slate-700 transition-colors duration-200"
               [disabled]="isProcessing()"
             >
-              Cancel
-            </button>
-            <button
-              (click)="handlePayment()"
-              class="flex-1 px-4 py-2.5 bg-teal-500 text-white font-medium rounded-xl hover:bg-teal-600 active:bg-teal-700 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-              [disabled]="!isValidAmount() || isProcessing()"
-            >
-              @if (isProcessing()) {
-              <lucide-icon
-                [img]="LoaderIcon"
-                [size]="16"
-                class="animate-spin"
-              />
-              <span>Processing...</span>
-              } @else {
-              <span>Continue to Payment</span>
-              }
+              <lucide-icon [img]="XIcon" [size]="24" />
             </button>
           </div>
 
-          <!-- Terms -->
-          <p class="text-xs text-slate-500 text-center">
-            By proceeding, you agree to our Terms of Service and Privacy Policy.
-          </p>
+          <!-- Content -->
+          <div class="p-6 space-y-6">
+            <!-- Price Info -->
+            <div class="bg-teal-50 rounded-xl p-4 border border-teal-200/50">
+              <p
+                class="text-xs font-semibold text-teal-700 uppercase tracking-wide mb-1"
+              >
+                Pricing
+              </p>
+              <p class="text-sm text-teal-900">
+                <span class="font-semibold">R1.00</span> per credit
+              </p>
+            </div>
+
+            <!-- Amount Input -->
+            <div>
+              <label class="block text-sm font-semibold text-slate-900 mb-2">
+                Number of Credits
+                <span class="text-teal-600">*</span>
+              </label>
+              <div class="relative">
+                <input
+                  type="number"
+                  [(ngModel)]="creditAmount"
+                  (ngModelChange)="onCreditAmountChange()"
+                  [min]="minCredits"
+                  [step]="stepSize"
+                  class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200"
+                  placeholder="Enter credit amount"
+                  [disabled]="isProcessing()"
+                />
+                <span
+                  class="absolute right-4 top-3 text-slate-500 text-sm font-medium"
+                >
+                  credits
+                </span>
+              </div>
+              <p class="text-xs text-slate-500 mt-2">
+                Minimum: {{ formatNumber(minCredits) }} credits
+              </p>
+            </div>
+
+            <!-- Cost Breakdown -->
+            <div class="bg-teal-50 rounded-xl p-4 border border-teal-200/50">
+              <div class="space-y-2 mb-3">
+                <div class="flex justify-between items-center">
+                  <span class="text-sm font-medium text-slate-600"
+                    >Credits</span
+                  >
+                  <span class="font-semibold text-slate-900">
+                    {{ formatNumber(creditAmount) }}
+                  </span>
+                </div>
+                <div class="flex justify-between items-center">
+                  <span class="text-sm font-medium text-slate-600">Rate</span>
+                  <span class="font-semibold text-slate-900">R1.00/credit</span>
+                </div>
+              </div>
+              <div
+                class="border-t border-teal-200/50 pt-3 flex justify-between items-center"
+              >
+                <span class="font-semibold text-slate-900">Total Cost</span>
+                <span class="text-2xl font-bold text-teal-600">
+                  {{ formatCurrency(totalCostZAR) }}
+                </span>
+              </div>
+            </div>
+
+            <!-- Error State -->
+            @if (error()) {
+              <div
+                class="bg-red-50 border border-red-200/50 rounded-xl p-4 flex gap-3"
+              >
+                <lucide-icon
+                  [img]="AlertIcon"
+                  [size]="20"
+                  class="text-red-600 flex-shrink-0 mt-0.5"
+                />
+                <div class="flex-1">
+                  <p class="text-sm font-semibold text-red-900">
+                    {{ error() }}
+                  </p>
+                </div>
+              </div>
+            }
+
+            <!-- Terms Checkbox -->
+            <div class="flex items-start gap-3">
+              <input
+                type="checkbox"
+                id="termsCheckbox"
+                [(ngModel)]="termsAccepted"
+                (ngModelChange)="onTermsChange()"
+                [disabled]="isProcessing()"
+                class="mt-1 w-4 h-4 accent-teal-500 cursor-pointer rounded border border-slate-300 transition-colors duration-200"
+              />
+              <label
+                for="termsCheckbox"
+                class="text-sm text-slate-700 cursor-pointer leading-relaxed"
+              >
+                I understand that credits are
+                <span class="font-semibold">non-refundable</span> and
+                <span class="font-semibold">non-transferable</span>
+              </label>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex gap-3 pt-2">
+              <button
+                (click)="onBackdropClick()"
+                class="flex-1 px-4 py-2.5 border border-slate-200 text-slate-900 font-medium rounded-xl hover:bg-slate-50 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                [disabled]="isProcessing()"
+              >
+                Cancel
+              </button>
+              <button
+                (click)="handlePayment()"
+                class="flex-1 px-4 py-2.5 bg-teal-500 text-white font-medium rounded-xl hover:bg-teal-600 active:bg-teal-700 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                [disabled]="
+                  !isValidAmount() || !termsAccepted() || isProcessing()
+                "
+              >
+                @if (isProcessing()) {
+                  <lucide-icon
+                    [img]="LoaderIcon"
+                    [size]="16"
+                    class="animate-spin"
+                  />
+                  <span>Processing...</span>
+                } @else {
+                  <span>Continue to Payment</span>
+                }
+              </button>
+            </div>
+
+            <!-- Terms -->
+            <p class="text-xs text-slate-500 text-center">
+              By proceeding, you agree to our Terms of Service and Privacy
+              Policy.
+            </p>
+          </div>
         </div>
       </div>
-    </div>
     }
   `,
   styles: [
@@ -589,12 +620,13 @@ export class PurchaseCreditsModalComponent implements OnInit {
   private activityService = inject(DatabaseActivityService);
 
   XIcon = X;
-  AlertIcon = AlertCircle;
+  AlertIcon = CircleAlert;
   LoaderIcon = Loader;
 
   creditAmount = 500;
   isProcessing = signal(false);
   error = signal<string | null>(null);
+  termsAccepted = signal(false);
 
   readonly minCredits = 100;
   readonly stepSize = 10;
@@ -627,19 +659,52 @@ export class PurchaseCreditsModalComponent implements OnInit {
   }
 
   /**
+   * Track terms acceptance
+   */
+  private trackTermsAccepted(): void {
+    this.activityService
+      .createActivity({
+        type: 'system',
+        action: 'credit_terms_accepted',
+        message: 'User accepted non-refundable terms',
+        metadata: { termsVersion: '1.0' },
+      })
+      .subscribe({
+        error: (err) => console.warn('Failed to track terms acceptance:', err),
+      });
+  }
+
+  /**
+   * Track payment attempt without terms
+   */
+  private trackPaymentAttemptedWithoutTerms(): void {
+    this.activityService
+      .createActivity({
+        type: 'system',
+        action: 'credit_payment_attempted_without_terms',
+        message: 'User attempted payment without accepting terms',
+        metadata: { compliance: 'warning' },
+      })
+      .subscribe({
+        error: (err) =>
+          console.warn('Failed to track terms compliance warning:', err),
+      });
+  }
+
+  /**
    * Track successful credit purchase
    */
   private trackPurchaseCompleted(
     creditAmount: number,
     costZAR: number,
-    reference: string
+    reference: string,
   ): void {
     this.activityService
       .createActivity({
         type: 'system',
         action: 'credit_purchase_completed',
         message: `Purchased ${this.formatNumber(
-          creditAmount
+          creditAmount,
         )} credits for ${this.formatCurrency(costZAR)}`,
         amount: creditAmount,
         metadata: {
@@ -687,6 +752,13 @@ export class PurchaseCreditsModalComponent implements OnInit {
     }
   }
 
+  onTermsChange(): void {
+    this.error.set(null);
+    if (this.termsAccepted()) {
+      this.trackTermsAccepted();
+    }
+  }
+
   isValidAmount(): boolean {
     return this.creditAmount >= this.minCredits;
   }
@@ -710,10 +782,18 @@ export class PurchaseCreditsModalComponent implements OnInit {
   }
 
   async handlePayment(): Promise<void> {
+    // Validate amount
     if (!this.isValidAmount()) {
       this.error.set(
-        `Minimum ${this.formatNumber(this.minCredits)} credits required`
+        `Minimum ${this.formatNumber(this.minCredits)} credits required`,
       );
+      return;
+    }
+
+    // Validate terms acceptance
+    if (!this.termsAccepted()) {
+      this.error.set('You must agree to the non-refundable terms to continue');
+      this.trackPaymentAttemptedWithoutTerms();
       return;
     }
 
@@ -750,7 +830,7 @@ export class PurchaseCreditsModalComponent implements OnInit {
       let reference: string;
       try {
         reference = await this.paystackService.openPaystackPopup(
-          initResult.accessCode
+          initResult.accessCode,
         );
       } catch (popupErr) {
         const errorMsg =
@@ -793,7 +873,7 @@ export class PurchaseCreditsModalComponent implements OnInit {
       this.trackPurchaseCompleted(
         this.creditAmount,
         this.totalCostZAR,
-        reference
+        reference,
       );
 
       // Close modal and notify parent

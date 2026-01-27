@@ -7,16 +7,23 @@ import {
   PublicProfile,
   SuccessMetric,
   FundingArea,
-  TeamMember,
 } from '../models/public-profile.models';
 import { PublicProfileService } from '../services/public-profile.service';
 import { FunderOpportunitiesGridComponent } from './components/fund-opportunities-grid.component';
+import { FunderProfileHeaderComponent } from './components/header/funder-header.component';
+import { FunderWhatWeFundComponent } from './components/funding-areas/funding-areas.component';
 
 @Component({
   selector: 'app-funder-profile',
   standalone: true,
-  imports: [CommonModule, FunderOpportunitiesGridComponent],
-  templateUrl: 'public-profile.component.html',
+  imports: [
+    CommonModule,
+    FunderOpportunitiesGridComponent,
+
+    FunderProfileHeaderComponent,
+    FunderWhatWeFundComponent,
+  ],
+  templateUrl: './public-profile.component.html',
 })
 export class FunderProfileComponent implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
@@ -43,10 +50,10 @@ export class FunderProfileComponent implements OnInit, OnDestroy {
   private loadProfile() {
     this.route.params.pipe(takeUntil(this.destroy$)).subscribe((params) => {
       const slug = params['slug'];
-      console.log(`The slug is ...${slug}`);
       if (slug) this.fetchProfile(slug);
     });
   }
+
   get typicalInvestment() {
     return this.profile()?.investmentRange?.typical ?? 0;
   }
@@ -62,7 +69,6 @@ export class FunderProfileComponent implements OnInit, OnDestroy {
         next: (profile) => {
           if (profile) {
             this.profile.set(profile);
-            console.log(profile);
             this.setupSEO(profile);
           } else {
             this.error.set('Profile not found or not published');
@@ -93,25 +99,14 @@ export class FunderProfileComponent implements OnInit, OnDestroy {
     }
   }
 
-  // ===============================
-  // ACTIONS
-  // ===============================
-
   startApplication() {
-    console.log('Application started:', this.profile()?.slug);
-    this.router.navigate(['/apply'], {
-      queryParams: { funder: this.profile()?.slug },
-    });
+    const slug = this.profile()?.slug;
+    if (slug) {
+      this.router.navigate(['/apply'], {
+        queryParams: { funder: slug },
+      });
+    }
   }
-
-  playVideo() {
-    const videoUrl = this.profile()?.heroVideo?.url;
-    if (videoUrl) window.open(videoUrl, '_blank');
-  }
-
-  // ===============================
-  // DISPLAY HELPERS
-  // ===============================
 
   getTopFundingAreas(): FundingArea[] {
     return this.profile()?.fundingAreas.slice(0, 4) || [];
@@ -123,10 +118,6 @@ export class FunderProfileComponent implements OnInit, OnDestroy {
         ?.successMetrics.filter((m) => m.emphasis)
         .slice(0, 3) || []
     );
-  }
-
-  getLeadership(): TeamMember[] {
-    return this.profile()?.teamMembers.slice(0, 3) || [];
   }
 
   formatAmount(amount: number): string {

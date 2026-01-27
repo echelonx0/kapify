@@ -110,13 +110,7 @@ export class SidebarNavComponent implements OnInit {
     //   route: '/profile',
     //   userTypes: ['sme'],
     // },
-    {
-      id: 'review',
-      label: 'Review',
-      icon: Axis3d,
-      route: '/profile/review',
-      userTypes: ['sme'],
-    },
+
     {
       id: 'funding',
       label: 'Funding Opportunities',
@@ -126,14 +120,14 @@ export class SidebarNavComponent implements OnInit {
     },
     {
       id: 'funder-opportunities',
-      label: 'Opportunities',
+      label: 'Funding Opportunities',
       icon: FolderOpen,
       route: '/funder/dashboard',
       userTypes: ['funder'],
     },
     {
       id: 'funder-applications',
-      label: 'Applications',
+      label: 'Manage Applications',
       icon: BinaryIcon,
       route: '/funder/applications',
       userTypes: ['funder'],
@@ -145,6 +139,13 @@ export class SidebarNavComponent implements OnInit {
       route: '/applications',
       userTypes: ['sme'],
       badge: 2,
+    },
+    {
+      id: 'review',
+      label: 'Review',
+      icon: Axis3d,
+      route: '/profile/review',
+      userTypes: ['sme'],
     },
     {
       id: 'data-room',

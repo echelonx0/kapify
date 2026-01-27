@@ -64,25 +64,33 @@
         <!-- Social Links -->
         <div class="flex items-center gap-4 pt-4">
           <a
-            href="#"
+            href="https://linkedin.com/company/kapify"
+            target="_blank"
+            rel="noopener noreferrer"
             class="w-10 h-10 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center transition-all transform hover:scale-110"
           >
             <lucide-icon [img]="LinkedinIcon" [size]="20" class="text-white" />
           </a>
           <a
-            href="#"
+            href="https://twitter.com/kapify_africa"
+            target="_blank"
+            rel="noopener noreferrer"
             class="w-10 h-10 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center transition-all transform hover:scale-110"
           >
             <lucide-icon [img]="TwitterIcon" [size]="20" class="text-white" />
           </a>
           <a
-            href="#"
+            href="https://facebook.com/kapify"
+            target="_blank"
+            rel="noopener noreferrer"
             class="w-10 h-10 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center transition-all transform hover:scale-110"
           >
             <lucide-icon [img]="FacebookIcon" [size]="20" class="text-white" />
           </a>
           <a
-            href="#"
+            href="https://instagram.com/kapify_africa"
+            target="_blank"
+            rel="noopener noreferrer"
             class="w-10 h-10 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center transition-all transform hover:scale-110"
           >
             <lucide-icon [img]="InstagramIcon" [size]="20" class="text-white" />
@@ -100,12 +108,12 @@
             >Features</a
           >
           <a
-            routerLink="faqs"
+            routerLink="/faqs"
             class="block text-gray-300 hover:text-white transition-colors hover:translate-x-1 transform duration-200"
             >How It Works</a
           >
           <a
-            href="#pricing"
+            routerLink="/pricing"
             class="block text-gray-300 hover:text-white transition-colors hover:translate-x-1 transform duration-200"
             >Pricing</a
           >
@@ -129,7 +137,7 @@
         <h3 class="text-lg font-bold">For Businesses</h3>
         <div class="space-y-3">
           <a
-            href="#"
+            routerLink="/marketplace"
             class="block text-gray-300 hover:text-white transition-colors hover:translate-x-1 transform duration-200"
             >Find Funding</a
           >
@@ -144,7 +152,7 @@
             >Resources</a
           >
           <a
-            href="#"
+            href="mailto:support@kapify.co.za"
             class="block text-gray-300 hover:text-white transition-colors hover:translate-x-1 transform duration-200"
             >Support</a
           >
@@ -209,7 +217,11 @@
           </div>
           <div>
             <div class="text-sm text-gray-400">Email us</div>
-            <div class="text-white font-semibold">{{ email }}</div>
+            <a
+              href="mailto:{{ email }}"
+              class="text-white font-semibold hover:text-gray-200"
+              >{{ email }}</a
+            >
           </div>
         </div>
 
@@ -234,23 +246,55 @@
     </div>
   </div>
 
-  <!-- Bottom Bar -->
+  <!-- Bottom Bar - Compliance Links -->
   <div class="relative border-t border-white/10">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+      <div
+        class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-8"
+      >
         <p class="text-gray-400 text-sm">
           &copy; 2025 Kapify by Bokamoso Advisory Services. All rights reserved.
         </p>
-        <div class="flex items-center gap-6 text-sm">
-          <a href="#" class="text-gray-400 hover:text-white transition-colors"
-            >Privacy Policy</a
+        <div
+          class="grid grid-cols-2 sm:grid-cols-3 lg:flex lg:flex-wrap items-center gap-4 lg:gap-6 text-sm"
+        >
+          <!-- Compliance Links -->
+          <a
+            routerLink="/compliance/privacy"
+            class="text-gray-400 hover:text-white transition-colors"
           >
-          <a href="#" class="text-gray-400 hover:text-white transition-colors"
-            >Terms of Service</a
+            Privacy Policy
+          </a>
+          <a
+            routerLink="/compliance/terms"
+            class="text-gray-400 hover:text-white transition-colors"
           >
-          <a href="#" class="text-gray-400 hover:text-white transition-colors"
-            >Cookie Policy</a
+            Terms of Service
+          </a>
+          <a
+            routerLink="/compliance/cookies"
+            class="text-gray-400 hover:text-white transition-colors"
           >
+            Cookie Policy
+          </a>
+          <a
+            routerLink="/compliance/security"
+            class="text-gray-400 hover:text-white transition-colors"
+          >
+            Data Security
+          </a>
+          <a
+            routerLink="/compliance/aml-kyc"
+            class="text-gray-400 hover:text-white transition-colors"
+          >
+            AML/KYC Policy
+          </a>
+          <a
+            routerLink="/compliance/tax-compliance"
+            class="text-gray-400 hover:text-white transition-colors"
+          >
+            Tax Compliance
+          </a>
         </div>
       </div>
     </div>

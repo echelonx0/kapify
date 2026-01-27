@@ -1,0 +1,378 @@
+<!-- Root: fills viewport and enforces column layout -->
+<div class="h-full flex flex-col bg-slate-50 ml-12">
+  <!-- HEADER -->
+  <app-page-header
+    [title]="isCreating() ? 'CREATE FUNDING REQUEST' : 'EDIT FUNDING REQUEST'"
+    [subtitle]="
+      'Outline your funding needs to help identify suitable funding
+        opportunities.'
+    "
+    [completionPercentage]="completionPercentage()"
+    (back)="onCancel()"
+  ></app-page-header>
+
+  <!-- ERROR DISPLAY -->
+  <div
+    *ngIf="errors().length > 0"
+    class="flex-shrink-0 px-6 lg:px-8 py-4 bg-red-50 border-b-4 border-red-400 flex items-center gap-3 justify-between"
+  >
+    <div class="flex items-center gap-3">
+      <svg
+        class="w-5 h-5 text-red-600 flex-shrink-0"
+        fill="currentColor"
+        viewBox="0 0 20 20"
+      >
+        <path
+          fill-rule="evenodd"
+          d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+          clip-rule="evenodd"
+        ></path>
+      </svg>
+      <div>
+        <p class="font-bold text-red-700 text-sm">
+          ⚠️ Please complete these fields
+        </p>
+        <ul class="space-y-1 mt-2">
+          <li *ngFor="let error of errors()" class="text-xs text-red-700">
+            • {{ error }}
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN LAYOUT: CONTENT + SIDEBAR -->
+  <div class="flex-1 flex overflow-hidden">
+    <!-- CONTENT AREA -->
+    <div class="flex-1 overflow-y-auto">
+      <div class="max-w-4xl mx-auto px-4 lg:px-8 py-8 space-y-6">
+        <!-- SECTION 1: ABOUT YOUR BUSINESS -->
+        <section
+          #aboutBusinessSection
+          class="form-section"
+          data-section-id="about-business"
+        >
+          <div class="bg-white rounded-2xl border-3 border-slate-200 p-6">
+            <h2 class="text-lg font-bold text-slate-900 mb-6">
+              About Your Business
+            </h2>
+
+            <!-- Sectors -->
+            <div class="mb-8">
+              <label class="block text-sm font-semibold text-slate-900 mb-3">
+                What sectors does your business operate in?
+                <span class="text-red-600">*</span>
+              </label>
+              <p class="text-xs text-slate-500 mb-3">
+                Select from the options below
+              </p>
+
+              <!-- Predefined Sectors -->
+              <div class="mb-4 flex flex-wrap gap-2">
+                <button
+                  *ngFor="let sector of sectors()"
+                  type="button"
+                  (click)="addPredefinedItem('industries', sector)"
+                  [class.bg-teal-50]="
+                    isPredefinedSelected('industries', sector)
+                  "
+                  [class.border-teal-300]="
+                    isPredefinedSelected('industries', sector)
+                  "
+                  [class.text-teal-700]="
+                    isPredefinedSelected('industries', sector)
+                  "
+                  [class.font-semibold]="
+                    isPredefinedSelected('industries', sector)
+                  "
+                  [class.bg-white]="!isPredefinedSelected('industries', sector)"
+                  [class.border-slate-200]="
+                    !isPredefinedSelected('industries', sector)
+                  "
+                  [class.text-slate-700]="
+                    !isPredefinedSelected('industries', sector)
+                  "
+                  class="px-3 py-2 border rounded-lg text-sm transition-all duration-200 hover:border-teal-300 hover:bg-teal-50"
+                >
+                  {{ sector }}
+                </button>
+              </div>
+
+              <!-- Selected Sectors -->
+              <div class="flex flex-wrap gap-2">
+                <span
+                  *ngFor="let industry of industries()"
+                  class="px-3 py-1.5 bg-teal-50 border border-teal-300/50 rounded-lg text-sm font-medium text-teal-700 flex items-center gap-2"
+                >
+                  {{ industry }}
+                  <button
+                    type="button"
+                    (click)="removeArrayItem('industries', industry)"
+                    class="text-teal-600 hover:text-teal-800 text-lg leading-none hover:font-bold"
+                  >
+                    ×
+                  </button>
+                </span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- SECTION 2: FUNDING DETAILS -->
+        <section
+          #fundingDetailsSection
+          class="form-section"
+          data-section-id="funding-details"
+        >
+          <div class="bg-white rounded-2xl border-3 border-slate-200 p-6">
+            <h2 class="text-lg font-bold text-slate-900 mb-6">
+              Funding Details
+            </h2>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <!-- Funding Amount -->
+              <div>
+                <label class="block text-sm font-semibold text-slate-900 mb-2">
+                  How much are you looking to raise? (ZAR)
+                  <span class="text-red-600">*</span>
+                </label>
+
+                <input
+                  type="text"
+                  inputmode="numeric"
+                  [value]="formattedFundingAmount()"
+                  (input)="onFundingAmountInput($event)"
+                  (blur)="onFundingAmountBlur()"
+                  placeholder="e.g., 500,000"
+                  class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all duration-200"
+                />
+              </div>
+
+              <!-- Funding Types -->
+              <div>
+                <label class="block text-sm font-semibold text-slate-900 mb-3">
+                  What types of funding are you open to?
+                  <span class="text-red-600">*</span>
+                </label>
+                <div class="flex flex-wrap gap-2">
+                  <button
+                    *ngFor="let type of fundingTypeOptions()"
+                    type="button"
+                    (click)="toggleArrayItem('fundingTypes', type.value)"
+                    [class.bg-teal-500]="
+                      isItemInArray('fundingTypes', type.value)
+                    "
+                    [class.text-white]="
+                      isItemInArray('fundingTypes', type.value)
+                    "
+                    [class.border-teal-600]="
+                      isItemInArray('fundingTypes', type.value)
+                    "
+                    [class.font-semibold]="
+                      isItemInArray('fundingTypes', type.value)
+                    "
+                    [class.bg-white]="
+                      !isItemInArray('fundingTypes', type.value)
+                    "
+                    [class.text-slate-700]="
+                      !isItemInArray('fundingTypes', type.value)
+                    "
+                    [class.border-slate-200]="
+                      !isItemInArray('fundingTypes', type.value)
+                    "
+                    class="px-3 py-2 border rounded-lg font-medium text-sm transition-all duration-200 hover:shadow-sm"
+                  >
+                    {{ type.label }}
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Equity Offered (Conditional) -->
+            <div
+              *ngIf="hasEquityFunding()"
+              class="mt-6 pt-6 border-t border-slate-200"
+            >
+              <label class="block text-sm font-semibold text-slate-900 mb-2">
+                What equity percentage would you offer?
+              </label>
+              <input
+                type="number"
+                [value]="equityOffered()"
+                (change)="updateNumberField('equityOffered', $event)"
+                min="0"
+                max="100"
+                step="0.5"
+                placeholder="e.g., 25"
+                class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all duration-200"
+              />
+            </div>
+          </div>
+        </section>
+
+        <!-- SECTION 3: USE OF FUNDS -->
+        <section
+          #useOfFundsSection
+          class="form-section"
+          data-section-id="use-of-funds"
+        >
+          <div class="bg-white rounded-2xl border-3 border-slate-200 p-6">
+            <h2 class="text-lg font-bold text-slate-900 mb-4">
+              How will you use this funding?
+            </h2>
+
+            <label class="block text-sm font-semibold text-slate-900 mb-2">
+              Tell investors your plans
+              <span class="text-red-600">*</span>
+            </label>
+            <textarea
+              [value]="useOfFunds()"
+              (change)="updateTextField('useOfFunds', $event)"
+              placeholder="Be specific: product development, team expansion, marketing, infrastructure, working capital, etc."
+              rows="4"
+              class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all duration-200"
+            ></textarea>
+            <p class="text-xs text-slate-500 mt-2">
+              Clear breakdown helps investors understand your priorities
+            </p>
+          </div>
+        </section>
+
+        <!-- SECTION 4: FUNDING MOTIVATION -->
+        <section
+          #fundingMotivationSection
+          class="form-section"
+          data-section-id="funding-motivation"
+        >
+          <div class="bg-white rounded-2xl border-3 border-slate-200 p-6">
+            <h2 class="text-lg font-bold text-slate-900 mb-4">
+              Why Do You Need This Funding?
+            </h2>
+
+            <label class="block text-sm font-semibold text-slate-900 mb-2">
+              What problem does this funding solve?
+              <span class="text-red-600">*</span>
+            </label>
+            <textarea
+              [value]="fundingMotivation()"
+              (change)="updateTextField('fundingMotivation', $event)"
+              placeholder="E.g., We're losing market share due to outdated infrastructure. This funding will modernize our tech stack and improve customer retention by 30%."
+              rows="3"
+              class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all duration-200"
+            ></textarea>
+            <p class="text-xs text-slate-500 mt-2">
+              Be specific: what gap are you filling? What opportunity are you
+              capturing?
+            </p>
+          </div>
+        </section>
+
+        <!-- SECTION 5: INVESTOR PREFERENCES -->
+        <section
+          #investorPreferencesSection
+          class="form-section"
+          data-section-id="investor-preferences"
+        >
+          <div class="bg-white rounded-2xl border-3 border-slate-200 p-6">
+            <h2 class="text-lg font-bold text-slate-900 mb-6">
+              The Right Partner Matters
+            </h2>
+
+            <!-- Investor Profiles Looking For -->
+            <div>
+              <label class="block text-sm font-semibold text-slate-900 mb-3">
+                What investor profiles interest you?
+              </label>
+
+              <!-- Predefined Investor Types -->
+              <div class="mb-3 space-y-2">
+                <button
+                  *ngFor="let type of investorTypeOptions()"
+                  type="button"
+                  (click)="addPredefinedItem('investmentCriteria', type)"
+                  [class.bg-green-50]="
+                    isPredefinedSelected('investmentCriteria', type)
+                  "
+                  [class.border-green-300]="
+                    isPredefinedSelected('investmentCriteria', type)
+                  "
+                  [class.text-green-700]="
+                    isPredefinedSelected('investmentCriteria', type)
+                  "
+                  [class.font-semibold]="
+                    isPredefinedSelected('investmentCriteria', type)
+                  "
+                  [class.bg-white]="
+                    !isPredefinedSelected('investmentCriteria', type)
+                  "
+                  [class.border-slate-200]="
+                    !isPredefinedSelected('investmentCriteria', type)
+                  "
+                  [class.text-slate-700]="
+                    !isPredefinedSelected('investmentCriteria', type)
+                  "
+                  class="w-full text-left px-3 py-2 border rounded-lg text-sm transition-all duration-200 hover:border-green-300 hover:bg-green-50"
+                >
+                  {{ type }}
+                </button>
+              </div>
+
+              <!-- Selected Items -->
+              <div class="flex flex-wrap gap-2">
+                <span
+                  *ngFor="let criteria of investmentCriteria()"
+                  class="px-3 py-1.5 bg-green-50 border border-green-300/50 rounded-lg text-sm font-semibold text-green-700 flex items-center gap-2"
+                >
+                  ✓ {{ criteria }}
+                  <button
+                    type="button"
+                    (click)="removeArrayItem('investmentCriteria', criteria)"
+                    class="text-green-600 hover:text-green-800 text-lg leading-none hover:font-bold"
+                  >
+                    ×
+                  </button>
+                </span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Spacer for footer -->
+        <div class="h-6"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STICKY FOOTER -->
+  <div
+    class="flex-shrink-0 sticky bottom-0 z-20 bg-white border-t-4 border-slate-300 px-4 lg:px-8 py-4"
+  >
+    <div class="max-w-4xl mx-auto flex gap-3 justify-end">
+      <button
+        (click)="onCancel()"
+        class="px-6 py-2.5 bg-slate-100 text-slate-700 font-semibold rounded-lg border border-slate-200 hover:bg-slate-200 active:bg-slate-300 transition-all duration-200 text-sm"
+      >
+        Cancel
+      </button>
+
+      <button
+        *ngIf="!isCreating()"
+        (click)="uploadDocument.emit(cover!.id)"
+        class="px-6 py-2.5 bg-slate-100 text-slate-700 font-semibold rounded-lg border border-slate-200 hover:bg-slate-200 active:bg-slate-300 transition-all duration-200 text-sm"
+        title="Upload pitch deck or financial summary"
+      >
+        Attach Files
+      </button>
+
+      <button
+        (click)="saveChanges()"
+        [disabled]="!canSave()"
+        [class.opacity-50]="!canSave()"
+        [class.cursor-not-allowed]="!canSave()"
+        class="px-6 py-2.5 bg-teal-600 text-white font-black rounded-lg border-3 border-teal-700 uppercase tracking-wide text-sm hover:bg-teal-700 active:bg-teal-800 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        {{ saving() ? "Saving..." : "Save " }}
+      </button>
+    </div>
+  </div>
+</div>

@@ -1,7 +1,7 @@
 import { Routes } from '@angular/router';
-import { AIReportsComponent } from '../../features/reports/ai-reports.component';
 import { ActivityLogsComponent } from '../../features/activity-logs/activity-logs.component';
 import { NotificationsInboxComponent } from '../../features/notifications/notifications-inbox.component';
+import { UserGuideComponent } from 'src/app/shared/user-guide/user-guide.component';
 
 export const dashboardRoutes: Routes = [
   {
@@ -28,9 +28,30 @@ export const dashboardRoutes: Routes = [
       },
 
       {
-        path: 'reports',
-        component: AIReportsComponent,
+        path: 'user-guide',
+        component: UserGuideComponent,
       },
+
+      // Reports list
+      {
+        path: 'reports',
+        loadComponent: () =>
+          import(
+            '../../features/reports/analysis-history/analysis-history.component'
+          ).then((c) => c.AIAnalysisHistoryComponent),
+        title: 'Analysis Reports - Kapify',
+      },
+
+      // Analysis detail view (independent route)
+      {
+        path: 'analysis/:id',
+        loadComponent: () =>
+          import(
+            '../../features/ai/document-analysis/components/analysis-results/analysis-results.component'
+          ).then((c) => c.AnalysisResultsComponent),
+        title: 'Analysis Report - Kapify',
+      },
+
       // Dashboard routes
       {
         path: 'home',
@@ -72,9 +93,7 @@ export const dashboardRoutes: Routes = [
       {
         path: 'profile',
         loadChildren: () =>
-          import('../../profiles/SME-Profiles/profile.routes').then(
-            (m) => m.profileRoutes
-          ),
+          import('./profile.routes').then((m) => m.profileRoutes),
       },
       {
         path: 'funding-opportunities',

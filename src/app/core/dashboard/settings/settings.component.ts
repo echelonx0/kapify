@@ -128,7 +128,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
   LockIcon = Lock;
 
   // State
-  activeSection = signal<SettingsSection>('billing');
+  activeSection = signal<SettingsSection>('account');
 
   // Service state
   isLoading = this.settingsService.isLoading;
@@ -142,6 +142,18 @@ export class SettingsComponent implements OnInit, OnDestroy {
     const isSME = this.userType() === 'sme';
 
     const allTabs: SettingsTab[] = [
+      {
+        id: 'account',
+        label: 'Your Account',
+        icon: this.ProfileIcon,
+        enabled: true,
+      },
+      {
+        id: 'team',
+        label: 'Team Members',
+        icon: this.UserIcon,
+        enabled: true,
+      },
       {
         id: 'general',
         label: 'General Info',
@@ -166,18 +178,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
         icon: this.CreditCardIcon,
         enabled: true,
       },
-      {
-        id: 'team',
-        label: 'Team Members',
-        icon: this.UserIcon,
-        enabled: true,
-      },
-      {
-        id: 'account',
-        label: 'Your Account',
-        icon: this.ProfileIcon,
-        enabled: true,
-      },
+
       {
         id: 'password',
         label: 'Change Password',
@@ -188,7 +189,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
         id: 'profile',
         label: 'Public Profile',
         icon: this.ProfileIcon,
-        enabled: true,
+        enabled: false,
       },
       {
         id: 'integrations',
@@ -211,7 +212,6 @@ export class SettingsComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe((org) => {
         if (org) {
-          console.log('Organization loaded:', org.name);
           // Reset to first available tab if current tab is hidden for this user type
           if (!this.settingsTabs.find((t) => t.id === this.activeSection())) {
             this.activeSection.set(this.settingsTabs[0]?.id || 'billing');

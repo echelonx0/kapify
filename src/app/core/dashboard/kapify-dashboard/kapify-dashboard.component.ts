@@ -41,21 +41,18 @@ import {
   RightPanelContent,
   RightPanelComponent,
 } from '../components/right-panel.component';
-
 import { ProfileManagementService } from 'src/app/shared/services/profile-management.service';
 import { AuthService } from 'src/app/auth/services/production.auth.service';
 import { FunderOnboardingService } from 'src/app/funder/services/funder-onboarding.service';
 import { OpportunityManagementService } from 'src/app/funder/services/opportunity-management.service';
-import {
-  // PrimaryCTACardComponent,
-  CTAContent,
-  PrimaryCTACardComponent,
-} from '../components/cta-card/cta-card.component';
+import { CTAContent } from '../components/cta-card/cta-card.component';
 import {
   OrganizationStatusOverviewComponent,
   ActionEvent,
 } from '../components/status-overview/status-overview.component';
 import { SupportModalComponent } from 'src/app/features/support/support.modal';
+import { AboutUsCardComponent } from '../components/about-us-card/about-us-card.component';
+// import { KapifyCapitalLoaderComponent } from 'src/app/shared/components/kapify-loading-indicator/kapify-loading-indicator.component';
 
 interface OnboardingCard {
   id: string;
@@ -78,9 +75,10 @@ interface OnboardingCard {
     FormsModule,
     LucideAngularModule,
     RightPanelComponent,
-    // PrimaryCTACardComponent,
+    AboutUsCardComponent,
     OrganizationStatusOverviewComponent,
     SupportModalComponent,
+    // KapifyCapitalLoaderComponent,
   ],
   templateUrl: './kapify-dashboard.component.html',
   styleUrl: './kapify-dashboard.component.css',
@@ -208,7 +206,7 @@ export class KapifyDashboard implements OnInit, OnDestroy {
   onboardingCards = computed(() =>
     this.userType() === 'funder'
       ? this.funderOnboardingData
-      : this.smeOnboardingData
+      : this.smeOnboardingData,
   );
 
   // Computed CTA content for the component
@@ -337,6 +335,10 @@ export class KapifyDashboard implements OnInit, OnDestroy {
     this.router.navigate(['/dashboard/faqs']);
   }
 
+  openUserGuide() {
+    this.router.navigate(['/dashboard/user-guide']);
+  }
+
   // CTA Card action handler
   handleCTAClick(): void {
     // const route =
@@ -389,11 +391,15 @@ export class KapifyDashboard implements OnInit, OnDestroy {
     const hour = new Date().getHours();
 
     if (hour < 12) {
-      return `Good morning! Ready to make progress today?`;
+      return 'Good morning. Capitalise on momentum and meaningful opportunity.';
     } else if (hour < 18) {
-      return `Good afternoon! Let's keep the momentum going.`;
+      return 'Good afternoon. Turning capital into impact requires clarity and intent.';
     } else {
-      return `Good evening! Time to review today's achievements.`;
+      return 'Good evening. Measured capital decisions define long-term success.';
     }
+  }
+
+  manageSMEProfile() {
+    this.router.navigate(['/profile/home']);
   }
 }

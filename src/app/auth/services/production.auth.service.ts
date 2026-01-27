@@ -9,7 +9,7 @@ import {
   finalize,
   takeUntil,
 } from 'rxjs/operators';
-import { Session, User } from '@supabase/supabase-js';
+import { Session } from '@supabase/supabase-js';
 import { SharedSupabaseService } from '../../shared/services/shared-supabase.service';
 import { RegistrationTransactionService } from '../../shared/services/registration-transaction.service';
 import { AuthHelperService } from './auth-helper.service';
@@ -21,6 +21,7 @@ import {
   SignUpData,
   UserProfile,
 } from '../models/auth.models';
+import { ToastService } from 'src/app/shared/services/toast.service';
 
 /**
  * AuthService
@@ -38,7 +39,7 @@ export class AuthService implements OnDestroy {
   private registrationTransaction = inject(RegistrationTransactionService);
   private authHelper = inject(AuthHelperService);
   private destroy$ = new Subject<void>();
-
+  private toastService = inject(ToastService);
   // Single source of truth: user profile
   private userSubject = signal<UserProfile | null>(null);
 
@@ -93,7 +94,7 @@ export class AuthService implements OnDestroy {
 
   isAuthenticated$ = this.session$.pipe(
     map((session) => !!session?.user),
-    takeUntil(this.destroy$)
+    takeUntil(this.destroy$),
   );
 
   constructor() {
@@ -135,7 +136,7 @@ export class AuthService implements OnDestroy {
         })
         .unsubscribe();
     } catch (error: any) {
-      console.error('❌ Auth initialization failed:', error);
+      this.toastService.error(`There was an error ${error}`);
       this.clearAuthState();
     } finally {
       this.updateLoadingState({ initialization: false });
@@ -163,31 +164,28 @@ export class AuthService implements OnDestroy {
       if (error) {
         // Check if it's a "not found" error (expected) vs actual error
         if (error.code === 'PGRST116') {
-          console.warn(
-            '⚠️ No active organization_users record for user:',
-            userId
+          this.toastService.error(
+            `There was an error No active organization_users record for user: ${userId}`,
           );
           return undefined;
         }
 
-        console.error('❌ Error fetching org ID:', {
-          code: error.code,
-          message: error.message,
-        });
+        this.toastService.error(
+          `There was an error ${error?.message || 'Failed to fetch org ID'}`,
+        );
         return undefined;
       }
 
       if (!data || !data.organization_id) {
-        console.warn('⚠️ Organization ID is null for user:', userId);
+        this.toastService.error(
+          `There was an error Organization ID is null for user: ${userId}`,
+        );
         return undefined;
       }
 
       return data.organization_id;
     } catch (error: any) {
-      console.error(
-        '❌ Unexpected error in getUserOrganizationId:',
-        error?.message
-      );
+      this.toastService.error(`There was an error ${error?.message}`);
       return undefined;
     }
   }
@@ -221,7 +219,7 @@ export class AuthService implements OnDestroy {
         }),
         map((result) => this.mapTransactionResultToAuthResult(result)),
         catchError((error) => {
-          console.error('❌ Registration failed:', error);
+          this.toastService.error(`There was an error ${error}`);
           return of({
             user: null,
             error:
@@ -235,7 +233,7 @@ export class AuthService implements OnDestroy {
         finalize(() => {
           this.updateLoadingState({ registration: false });
         }),
-        takeUntil(this.destroy$)
+        takeUntil(this.destroy$),
       );
   }
 
@@ -246,11 +244,11 @@ export class AuthService implements OnDestroy {
     this.updateLoadingState({ login: true });
 
     return from(
-      this.performLogin(credentials.email, credentials.password)
+      this.performLogin(credentials.email, credentials.password),
     ).pipe(
       timeout(30000),
       catchError((error) => {
-        console.error('❌ Login failed:', error);
+        //  this.toastService.error(`There was an error ${error}`);
         return of({
           user: null,
           error: error?.message || 'Login failed. Please try again.',
@@ -260,7 +258,7 @@ export class AuthService implements OnDestroy {
       finalize(() => {
         this.updateLoadingState({ login: false });
       }),
-      takeUntil(this.destroy$)
+      takeUntil(this.destroy$),
     );
   }
 
@@ -269,13 +267,13 @@ export class AuthService implements OnDestroy {
    */
   private async performLogin(
     email: string,
-    password: string
+    password: string,
   ): Promise<AuthOperationResult> {
     try {
       const loginResult = await Promise.race([
         this.supabaseService.auth.signInWithPassword({ email, password }),
         new Promise<never>((_, reject) =>
-          setTimeout(() => reject(new Error('Login timeout')), 25000)
+          setTimeout(() => reject(new Error('Login timeout')), 25000),
         ),
       ]);
 
@@ -300,7 +298,7 @@ export class AuthService implements OnDestroy {
         success: true,
       };
     } catch (error: any) {
-      console.error('Login operation failed:', error);
+      this.toastService.error(`There was an error ${error}`);
       throw error;
     }
   }
@@ -312,11 +310,11 @@ export class AuthService implements OnDestroy {
     try {
       const { error } = await this.supabaseService.auth.signOut();
       if (error && !this.isTransientError(error)) {
-        console.error('SignOut error:', error);
+        this.toastService.error(`There was an error ${error}`);
       }
     } catch (error: any) {
       if (!this.isTransientError(error)) {
-        console.error('SignOut failed:', error);
+        this.toastService.error(`There was an error ${error}`);
       }
     } finally {
       this.clearAuthState();
@@ -341,7 +339,7 @@ export class AuthService implements OnDestroy {
         checkAuth();
       }).pipe(
         timeout(10000),
-        catchError(() => of(false))
+        catchError(() => of(false)),
       );
     }
 
@@ -365,7 +363,7 @@ export class AuthService implements OnDestroy {
         recoveryCheck.missingComponents.includes('organization')
       );
     } catch (error) {
-      console.error('Error checking organization recovery needs:', error);
+      this.toastService.error(`There was an error ${error}`);
       return false;
     }
   }
@@ -414,10 +412,10 @@ export class AuthService implements OnDestroy {
           }
         }),
         catchError((error) => {
-          console.error('❌ Organization recovery failed:', error);
+          this.toastService.error(`There was an error ${error}`);
           return of({ success: false });
         }),
-        takeUntil(this.destroy$)
+        takeUntil(this.destroy$),
       );
   }
 
@@ -506,7 +504,7 @@ export class AuthService implements OnDestroy {
       const userProfile = await this.authHelper.buildUserProfile(session.user);
       this.userSubject.set(userProfile);
     } catch (error) {
-      console.error('Failed to establish user session:', error);
+      //this.toastService.error(`There was an error ${error}`);
       this.clearAuthState();
       throw error;
     } finally {
@@ -549,7 +547,13 @@ export class AuthService implements OnDestroy {
       message.includes('timeout')
     );
   }
-
+  /**
+   * Get current user's ID from the user signal
+   */
+  getCurrentUserId(): string | null {
+    const user = this.userSubject();
+    return user?.id || null;
+  }
   /**
    * Cleanup on service destroy
    */

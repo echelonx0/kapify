@@ -7,6 +7,7 @@ import { SharedSupabaseService } from './shared-supabase.service';
 import { OrganizationSetupService } from './organization-setup.service';
 import { User } from '@supabase/supabase-js';
 import { RegisterRequest } from 'src/app/auth/models/auth.models';
+import { WelcomeEmailService } from 'src/app/auth/services/welcome-email.service';
 
 export interface RegistrationTransactionState {
   phase:
@@ -48,6 +49,7 @@ export interface RegistrationTransactionResult {
 export class RegistrationTransactionService {
   private supabaseService = inject(SharedSupabaseService);
   private organizationSetupService = inject(OrganizationSetupService);
+  private welcomeEmailService = inject(WelcomeEmailService); // ← ADD THIS
 
   constructor() {
     // console.log('RegistrationTransactionService initialized');
@@ -58,9 +60,9 @@ export class RegistrationTransactionService {
   // ===============================
 
   executeRegistrationTransaction(
-    credentials: RegisterRequest
+    credentials: RegisterRequest,
   ): Observable<RegistrationTransactionResult> {
-    //  console.log('Starting registration transaction for:', credentials.email);
+    console.log('Starting registration transaction for:', credentials.email);
 
     const transactionState: RegistrationTransactionState = {
       phase: 'auth',
@@ -69,25 +71,63 @@ export class RegistrationTransactionService {
     };
 
     return from(
-      this.performRegistrationTransaction(credentials, transactionState)
+      this.performRegistrationTransaction(credentials, transactionState),
     ).pipe(
       tap((result) => {
         if (result.success) {
-          // console.log('Registration transaction completed successfully');
+          console.log('✅ Registration transaction completed successfully');
+
+          // ✅ FIRE AND FORGET: Send welcome email (non-blocking)
+          // This does NOT wait, does NOT check response, does NOT block
+          this.sendWelcomeEmailAsync(credentials);
         } else {
-          console.error('Registration transaction failed:', result.error);
+          console.error('❌ Registration transaction failed:', result.error);
         }
       }),
       catchError((error) => {
         console.error('Registration transaction error:', error);
         return from(this.handleTransactionFailure(error, transactionState));
-      })
+      }),
     );
+  }
+
+  /**
+   * Send welcome email in background (non-blocking, fire-and-forget)
+   *
+   * ✅ KEY POINTS:
+   * - Does NOT await
+   * - Does NOT check response
+   * - Does NOT throw errors
+   * - Does NOT block registration
+   * - Starts in background and moves on immediately
+   */
+  private sendWelcomeEmailAsync(credentials: RegisterRequest): void {
+    // Fire in background - don't wait
+    this.welcomeEmailService
+      .sendWelcomeEmail({
+        email: credentials.email,
+        firstName: credentials.firstName,
+        lastName: credentials.lastName || '',
+        userType: credentials.userType,
+      })
+      .then(() => {
+        console.log(
+          '✅ Welcome email sent successfully to:',
+          credentials.email,
+        );
+      })
+      .catch((error) => {
+        // Log error but DON'T throw - email is non-critical
+        console.warn(
+          '⚠️ Welcome email failed (non-blocking, registration completed):',
+          error,
+        );
+      });
   }
 
   private async performRegistrationTransaction(
     credentials: RegisterRequest,
-    state: RegistrationTransactionState
+    state: RegistrationTransactionState,
   ): Promise<RegistrationTransactionResult> {
     try {
       // PHASE 1: Create Supabase Auth User
@@ -127,7 +167,7 @@ export class RegistrationTransactionService {
       state.phase = 'organization';
       const orgResult = await this.createOrganization(
         authResult.user,
-        credentials
+        credentials,
       );
       state.organizationId = orgResult.organization.id;
       state.completedSteps.push('organization_created');
@@ -144,7 +184,7 @@ export class RegistrationTransactionService {
         success: true,
         user: await this.buildFinalUserProfile(
           authResult.user,
-          state.organizationId!
+          state.organizationId!,
         ),
         organizationId: state.organizationId,
         state,
@@ -152,7 +192,7 @@ export class RegistrationTransactionService {
     } catch (error: any) {
       console.error(
         `Registration transaction failed at phase ${state.phase}:`,
-        error
+        error,
       );
       state.error = error.message;
       throw error;
@@ -160,7 +200,7 @@ export class RegistrationTransactionService {
   }
 
   private async createAuthUser(
-    credentials: RegisterRequest
+    credentials: RegisterRequest,
   ): Promise<{ user: User }> {
     try {
       const { data: authData, error: authError } = await Promise.race([
@@ -180,8 +220,8 @@ export class RegistrationTransactionService {
         new Promise<never>((_, reject) =>
           setTimeout(
             () => reject(new Error('Auth user creation timeout')),
-            15000
-          )
+            15000,
+          ),
         ),
       ]);
 
@@ -191,7 +231,7 @@ export class RegistrationTransactionService {
 
       if (!authData.user) {
         throw new Error(
-          'User creation failed - no user returned from Supabase'
+          'User creation failed - no user returned from Supabase',
         );
       }
 
@@ -200,7 +240,7 @@ export class RegistrationTransactionService {
     } catch (error: any) {
       if (error.message?.includes('timeout')) {
         throw new Error(
-          'User creation timed out. Please check your connection and try again.'
+          'User creation timed out. Please check your connection and try again.',
         );
       }
       throw error;
@@ -263,10 +303,10 @@ export class RegistrationTransactionService {
 
   private async handleTransactionFailure(
     error: any,
-    state: RegistrationTransactionState
+    state: RegistrationTransactionState,
   ): Promise<RegistrationTransactionResult> {
     console.log(
-      'Executing COMPLETE rollback for failed registration transaction'
+      'Executing COMPLETE rollback for failed registration transaction',
     );
     console.log('Failed at phase:', state.phase);
     console.log('Completed steps:', state.completedSteps);
@@ -302,13 +342,13 @@ export class RegistrationTransactionService {
     ];
 
     return userFriendlyErrors.some((friendlyError) =>
-      message.includes(friendlyError)
+      message.includes(friendlyError),
     );
   }
 
   private async createUserProfile(
     user: User,
-    credentials: RegisterRequest
+    credentials: RegisterRequest,
   ): Promise<void> {
     try {
       const { error: profileError } = await this.supabaseService
@@ -329,7 +369,7 @@ export class RegistrationTransactionService {
 
       if (profileError) {
         throw new Error(
-          `Failed to create user profile: ${profileError.message}`
+          `Failed to create user profile: ${profileError.message}`,
         );
       }
 
@@ -342,7 +382,7 @@ export class RegistrationTransactionService {
 
   private async createUserMetadata(
     user: User,
-    credentials: RegisterRequest
+    credentials: RegisterRequest,
   ): Promise<void> {
     try {
       const { error: metadataError } = await this.supabaseService
@@ -361,7 +401,7 @@ export class RegistrationTransactionService {
       if (metadataError) {
         console.warn(
           'User metadata creation failed (non-critical):',
-          metadataError
+          metadataError,
         );
       } else {
         console.log('User metadata created successfully');
@@ -373,7 +413,7 @@ export class RegistrationTransactionService {
 
   private async createOrganization(
     user: User,
-    credentials: RegisterRequest
+    credentials: RegisterRequest,
   ): Promise<{
     organization: any;
     organizationUserId: string;
@@ -383,7 +423,7 @@ export class RegistrationTransactionService {
         'Creating organization for user:',
         user.id,
         'Type:',
-        credentials.userType
+        credentials.userType,
       );
 
       const orgSetupResult = await this.organizationSetupService
@@ -416,7 +456,7 @@ export class RegistrationTransactionService {
 
       console.log(
         'Organization created successfully:',
-        orgSetupResult.organization.id
+        orgSetupResult.organization.id,
       );
       return {
         organization: orgSetupResult.organization,
@@ -434,7 +474,7 @@ export class RegistrationTransactionService {
 
   private async buildFinalUserProfile(
     user: User,
-    organizationId: string
+    organizationId: string,
   ): Promise<any> {
     try {
       const { data: userRecord, error: userError } = await this.supabaseService
@@ -448,7 +488,7 @@ export class RegistrationTransactionService {
             avatar_url,
             is_verified
           )
-        `
+        `,
         )
         .eq('id', user.id)
         .single();
@@ -497,7 +537,7 @@ export class RegistrationTransactionService {
   }
 
   private async executeRollback(
-    rollbackActions: RollbackAction[]
+    rollbackActions: RollbackAction[],
   ): Promise<void> {
     // Execute rollback actions in reverse order
     for (const action of rollbackActions.reverse()) {
@@ -517,7 +557,7 @@ export class RegistrationTransactionService {
         // Note: Supabase doesn't allow deleting auth users from client
         // This would need to be handled by a server function in production
         console.warn(
-          'Auth user rollback not implemented - requires server-side function'
+          'Auth user rollback not implemented - requires server-side function',
         );
         break;
 

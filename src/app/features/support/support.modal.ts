@@ -15,7 +15,7 @@ import {
   Mail,
   Calendar,
   Send,
-  CheckCircle,
+  CircleCheckBig,
 } from 'lucide-angular';
 
 import { AuthService } from 'src/app/auth/services/production.auth.service';
@@ -98,7 +98,7 @@ import {
                 <h3 class="font-semibold text-slate-900 text-sm">
                   Phone / WhatsApp
                 </h3>
-                <p class="text-xs text-slate-600 mt-1">+27 (0) 21 XXX XXXX</p>
+                <p class="text-xs text-slate-600 mt-1">+27 +27 71 749 6762</p>
               </div>
             </div>
 
@@ -357,7 +357,7 @@ export class SupportModalComponent implements OnInit {
   MailIcon = Mail;
   CalendarIcon = Calendar;
   SendIcon = Send;
-  CheckCircleIcon = CheckCircle;
+  CheckCircleIcon = CircleCheckBig;
   supportEmail = 'support@kapify.africa';
   // State
   isLoading = signal(false);

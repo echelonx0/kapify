@@ -12,15 +12,15 @@ import { FormsModule } from '@angular/forms';
 import {
   LucideAngularModule,
   X,
-  CheckCircle,
-  XCircle,
   FileText,
   Users,
   Flag,
-  AlertCircle,
   MessageSquare,
   Clock,
   Send,
+  CircleCheckBig,
+  CircleX,
+  CircleAlert,
 } from 'lucide-angular';
 import { FundingApplication } from 'src/app/fund-seeking-orgs/models/application.models';
 import {
@@ -48,12 +48,12 @@ export class StatusManagementModalComponent {
 
   // Icons
   XIcon = X;
-  CheckCircleIcon = CheckCircle;
-  XCircleIcon = XCircle;
+  CheckCircleIcon = CircleCheckBig;
+  XCircleIcon = CircleX;
   FileTextIcon = FileText;
   UsersIcon = Users;
   FlagIcon = Flag;
-  AlertCircleIcon = AlertCircle;
+  AlertCircleIcon = CircleAlert;
   MessageSquareIcon = MessageSquare;
   ClockIcon = Clock;
   SendIcon = Send;
@@ -107,8 +107,6 @@ export class StatusManagementModalComponent {
     this.error.set(null);
 
     try {
-      console.log('🚀 [MODAL] Submitting action:', action.id);
-
       await this.statusService
         .submitAction({
           action,
@@ -118,11 +116,9 @@ export class StatusManagementModalComponent {
         })
         .toPromise();
 
-      console.log('✅ [MODAL] Action submitted successfully');
       this.actionCompleted.emit();
       this.closeModal();
     } catch (error) {
-      console.error('❌ [MODAL] Error submitting action:', error);
       this.error.set(
         error instanceof Error ? error.message : 'Failed to complete action'
       );
@@ -156,11 +152,11 @@ export class StatusManagementModalComponent {
       approve: 'text-green-600',
       reject: 'text-red-600',
       request_documents: 'text-blue-600',
-      request_info: 'text-purple-600',
-      request_amendments: 'text-orange-600',
+      request_info: 'text-teal-600',
+      request_amendments: 'text-amber-600',
       refer_committee: 'text-indigo-600',
-      add_note: 'text-gray-600',
-      flag_review: 'text-yellow-600',
+      add_note: 'text-slate-600',
+      flag_review: 'text-amber-600',
       set_priority: 'text-pink-600',
       request_peer_review: 'text-teal-600',
     };
@@ -181,5 +177,21 @@ export class StatusManagementModalComponent {
       request_peer_review: this.UsersIcon,
     };
     return iconMap[actionId] || this.FileTextIcon;
+  }
+
+  getActionBgColor(actionId: string): string {
+    const colorMap: Record<string, string> = {
+      approve: 'bg-green-100',
+      reject: 'bg-red-100',
+      request_documents: 'bg-blue-100',
+      request_info: 'bg-teal-100',
+      request_amendments: 'bg-amber-100',
+      refer_committee: 'bg-indigo-100',
+      add_note: 'bg-slate-100',
+      flag_review: 'bg-amber-100',
+      set_priority: 'bg-pink-100',
+      request_peer_review: 'bg-teal-100',
+    };
+    return colorMap[actionId] || 'bg-slate-100';
   }
 }

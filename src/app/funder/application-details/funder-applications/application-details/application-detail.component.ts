@@ -1,4 +1,4 @@
-// src/app/funders/application-detail/application-detail.component.ts - CLEANED VERSION
+// src/app/funders/application-detail/application-detail.component.ts -
 import {
   Component,
   signal,

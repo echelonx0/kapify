@@ -1,5 +1,4 @@
-// src/app/ai/services/funder-document-analysis.service.ts
-import { Injectable, inject } from '@angular/core';
+import { Injectable, inject, signal } from '@angular/core';
 import { Observable, BehaviorSubject, from, throwError } from 'rxjs';
 import { tap, catchError } from 'rxjs/operators';
 import { AuthService } from 'src/app/auth/services/production.auth.service';
@@ -19,7 +18,15 @@ export interface ProcessingStatus {
   isError?: boolean;
 }
 
+export interface NextStep {
+  step: string;
+  rationale: string;
+  timeframe?: string;
+}
+
 export interface DocumentAnalysisResult {
+  companyName: string; // NEW: Company name for report header
+  documentSummary: string; // Half-page objective summary (300-400 words)
   matchScore: number;
   successProbability: number;
   competitivePositioning: 'strong' | 'moderate' | 'weak';
@@ -55,7 +62,6 @@ export interface DocumentAnalysisResult {
       timeframe: string;
     }>;
   };
-  // keyInsights: string[];
   keyInsights: Array<{
     title: string;
     executiveSummary: string;
@@ -74,7 +80,8 @@ export interface DocumentAnalysisResult {
     }>;
     investorTakeaway: string;
   }>;
-
+  conclusion: string; // Comprehensive investment recommendation
+  nextSteps: NextStep[];
   recommendations: string[];
   sources: Array<{
     type: string;
@@ -98,12 +105,28 @@ export class FunderDocumentAnalysisService {
   private processingStatusSubject =
     new BehaviorSubject<ProcessingStatus | null>(null);
   processingStatus$ = this.processingStatusSubject.asObservable();
+  private currentAnalysisResult = signal<DocumentAnalysisResult | null>(null);
+
+  setCurrentAnalysisResult(result: DocumentAnalysisResult) {
+    this.currentAnalysisResult.set(result);
+  }
+
+  getCurrentAnalysisResult(): DocumentAnalysisResult | null {
+    return this.currentAnalysisResult();
+  }
+
+  clearCurrentAnalysisResult() {
+    this.currentAnalysisResult.set(null);
+  }
 
   /**
    * Analyze uploaded PDF document
    */
-  analyzeDocument(file: File): Observable<DocumentAnalysisResult> {
-    return from(this.performAnalysis(file)).pipe(
+  analyzeDocument(
+    file: File,
+    companyName: string
+  ): Observable<DocumentAnalysisResult> {
+    return from(this.performAnalysis(file, companyName)).pipe(
       tap((result) => {
         this.emitStatus({
           stage: 'completed',
@@ -123,7 +146,10 @@ export class FunderDocumentAnalysisService {
     );
   }
 
-  private async performAnalysis(file: File): Promise<DocumentAnalysisResult> {
+  private async performAnalysis(
+    file: File,
+    companyName: string
+  ): Promise<DocumentAnalysisResult> {
     const startTime = Date.now();
 
     try {
@@ -153,17 +179,18 @@ export class FunderDocumentAnalysisService {
 
       const base64Pdf = await this.fileToBase64(file);
 
-      // Step 3: Send to Edge Function (extraction + analysis happens server-side)
+      // Step 3: Send to Edge Function
       this.emitStatus({
         stage: 'extracting',
         message: 'Extracting and analyzing...',
-        details: 'Processing with AI',
+        details: 'Processing with Kapify Intelligence',
         progress: 30,
       });
 
       const analysisResult = await this.callAnalysisFunction(
         base64Pdf,
-        file.name
+        file.name,
+        companyName
       );
 
       this.emitStatus({
@@ -204,17 +231,10 @@ export class FunderDocumentAnalysisService {
     });
   }
 
-  /**
-   * ✅ FIX: Better error handling for API calls
-   */
-  // src/app/ai/services/funder-document-analysis.service.ts (updated)
-  // CHANGES:
-  // 1. callAnalysisFunction now extracts and passes orgId
-  // 2. Updated API call body to include orgId
-
   private async callAnalysisFunction(
     base64Pdf: string,
-    fileName: string
+    fileName: string,
+    companyName: string
   ): Promise<Omit<DocumentAnalysisResult, 'processingTimeMs' | 'generatedAt'>> {
     console.log('Sending PDF to analysis function...');
 
@@ -226,12 +246,14 @@ export class FunderDocumentAnalysisService {
       }
 
       const { data, error } = await this.supabase.functions.invoke(
+        // 'analyze-document',
         'analyse-investment-proposal',
         {
           body: {
             pdfData: base64Pdf,
             fileName,
-            orgId, // ✅ NOW PASSING ORG_ID
+            companyName,
+            orgId,
             includeMarketIntelligence: true,
           },
         }
@@ -260,7 +282,6 @@ export class FunderDocumentAnalysisService {
       console.error('Analysis function error:', error);
 
       if (error instanceof Error) {
-        // Better error categorization
         if (error.message.includes('429')) {
           throw new Error(
             'API quota exceeded. Please try again in a few moments.'
@@ -279,20 +300,30 @@ export class FunderDocumentAnalysisService {
         if (error.message.includes('404')) {
           throw new Error('Claude API endpoint error. Contact support.');
         }
-        // Pass through other errors
         throw error;
       }
 
       throw new Error('Analysis failed unexpectedly');
     }
   }
+
   /**
    * Validate analysis result and ensure all required fields exist
    */
   private validateAnalysisResult(result: unknown): void {
     const analysis = result as Record<string, unknown>;
 
-    // Set defaults for any missing fields
+    // Validate companyName
+    if (!('companyName' in analysis) || !analysis['companyName']) {
+      (analysis as Record<string, unknown>)['companyName'] = 'Unknown Company';
+    }
+
+    // Validate documentSummary
+    if (!('documentSummary' in analysis)) {
+      (analysis as Record<string, unknown>)['documentSummary'] =
+        'No document summary available.';
+    }
+
     if (!('matchScore' in analysis))
       (analysis as Record<string, unknown>)['matchScore'] = 50;
     if (!('successProbability' in analysis))
@@ -330,6 +361,10 @@ export class FunderDocumentAnalysisService {
     }
     if (!('keyInsights' in analysis))
       (analysis as Record<string, unknown>)['keyInsights'] = [];
+    if (!('conclusion' in analysis))
+      (analysis as Record<string, unknown>)['conclusion'] = '';
+    if (!('nextSteps' in analysis))
+      (analysis as Record<string, unknown>)['nextSteps'] = [];
     if (!('recommendations' in analysis))
       (analysis as Record<string, unknown>)['recommendations'] = [];
     if (!('sources' in analysis))
@@ -338,6 +373,19 @@ export class FunderDocumentAnalysisService {
       (analysis as Record<string, unknown>)['searchQueries'] = [];
     if (!('confidence' in analysis))
       (analysis as Record<string, unknown>)['confidence'] = 60;
+
+    // CRITICAL: Validate and sanitize sources array
+    const sources = analysis['sources'] as any[];
+    if (Array.isArray(sources)) {
+      analysis['sources'] = sources
+        .filter((s) => s && typeof s === 'object')
+        .map((s) => ({
+          type: s.type || 'document',
+          title: s.title || 'Untitled',
+          url: s.url || undefined,
+          relevance: s.relevance || 'Referenced',
+        }));
+    }
   }
 
   private emitStatus(status: ProcessingStatus): void {

@@ -1,304 +1,265 @@
-<div
-  class="relative bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md hover:border-slate-300 transition-all duration-200 overflow-hidden"
->
-  <!-- Status Border Top -->
-  <div
-    class="absolute top-0 left-0 right-0 h-1"
-    [class]="getStatusBorderClass()"
-  ></div>
+<!-- opportunity-card.component.html - NEO-BRUTALIST DESIGN -->
 
-  <div class="p-6">
-    <!-- Header: Title + Action Buttons (Top Right) -->
-    <div class="flex items-start justify-between gap-4 mb-4">
-      <div class="flex-1 min-w-0">
-        <h3 class="text-lg font-bold text-slate-900 mb-3">
+<div class="card-wrapper" [class.is-animated]="isAnimated()">
+  <!-- Card: Neo-Brutal with thick border -->
+  <div
+    class="bg-white rounded-lg p-6 lg:p-8 scale-in-up"
+    [class]="getStatusBorderClass()"
+  >
+    <!-- Header Section: Title + Quick Actions -->
+    <div class="mb-6 pb-6 border-b-3 border-slate-300">
+      <div class="flex items-start justify-between gap-4 mb-4">
+        <!-- Title -->
+        <h3
+          class="text-2xl lg:text-3xl font-black text-slate-900 tracking-tight flex-1"
+        >
           {{ opportunity.title }}
         </h3>
 
-        <!-- Badges: Funding Type + Popular -->
-        <div class="flex flex-wrap items-center gap-2 mb-4">
-          <span
-            class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold"
-            [ngClass]="getFundingTypeClass()"
-          >
-            {{ formatFundingType() }}
-          </span>
-
-          <span
-            *ngIf="isPopular()"
-            class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-teal-50 text-teal-700 border border-teal-300/50"
-          >
-            <lucide-icon [img]="TrendingUpIcon" [size]="12" class="mr-1" />
-            Popular
-          </span>
-        </div>
-      </div>
-
-      <!-- Action Button Group (Top Right) -->
-      <div class="flex items-center gap-2 flex-shrink-0">
-        <!-- Apply/Pending Button -->
-        <button
-          *ngIf="canApply"
-          (click)="onApply()"
-          [class.bg-teal-500]="!opportunity.userHasApplied"
-          [class.hover:bg-teal-600]="!opportunity.userHasApplied"
-          [class.bg-green-50]="opportunity.userHasApplied"
-          [class.hover:bg-green-100]="opportunity.userHasApplied"
-          class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg transition-all duration-200"
-        >
-          <lucide-icon
-            *ngIf="opportunity.userHasApplied"
-            [img]="CheckCircleIcon"
-            [size]="14"
-            class="text-green-600"
-          />
-          <span
-            [class.text-white]="!opportunity.userHasApplied"
-            [class.text-green-700]="opportunity.userHasApplied"
-          >
-            {{
-              opportunity.userHasApplied
-                ? "You have a pending application to this opportunity"
-                : "Apply"
-            }}
-          </span>
-        </button>
-
-        <!-- View Details Button -->
-        <button
-          (click)="onViewDetails()"
-          class="inline-flex items-center justify-center gap-1 px-3 py-1.5 text-xs font-semibold bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition-all duration-200"
-          [attr.title]="'View full details'"
-        >
-          <lucide-icon [img]="EyeIcon" [size]="14" />
-          <span>View</span>
-        </button>
-
-        <!-- Bookmark Button -->
-        <button
-          (click)="onBookmark()"
-          [disabled]="isBookmarkLoading()"
-          class="relative inline-flex items-center justify-center w-9 h-9 rounded-lg transition-all duration-200"
-          [class.bg-slate-100]="!isBookmarked() && !isBookmarkLoading()"
-          [class.hover:bg-slate-200]="!isBookmarked() && !isBookmarkLoading()"
-          [class.bg-teal-50]="isBookmarked()"
-          [class.hover:bg-teal-100]="isBookmarked()"
-          [class.opacity-50]="isBookmarkLoading()"
-          [attr.aria-label]="
-            isBookmarked() ? 'Remove bookmark' : 'Add bookmark'
-          "
-          [attr.title]="isBookmarked() ? 'Remove bookmark' : 'Add bookmark'"
-        >
-          <lucide-icon
-            [img]="BookmarkIcon"
-            [size]="16"
-            [class.text-slate-600]="!isBookmarked()"
-            [class.text-teal-600]="isBookmarked()"
-            [class.fill-current]="isBookmarked()"
-          />
-        </button>
-
-        <!-- Share Button with Dropdown -->
-        <div class="relative">
+        <!-- Quick Action Icons (Top Right) -->
+        <div class="flex items-center gap-2 flex-shrink-0">
+          <!-- Bookmark Button -->
           <button
-            (click)="onShare()"
-            class="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 transition-all duration-200"
-            [attr.aria-label]="'Share opportunity'"
-            [attr.title]="'Share opportunity'"
+            (click)="onBookmark()"
+            [disabled]="isBookmarkLoading()"
+            class="icon-btn"
+            [class.bookmarked]="isBookmarked()"
+            [attr.aria-label]="
+              isBookmarked() ? 'Remove bookmark' : 'Add bookmark'
+            "
           >
-            <lucide-icon [img]="ShareIcon" [size]="16" />
+            <lucide-icon
+              [img]="BookmarkIcon"
+              [size]="18"
+              [class.fill-current]="isBookmarked()"
+            />
           </button>
 
-          <!-- Share Dropdown Menu -->
-          <div
-            *ngIf="showShareMenu()"
-            class="absolute right-0 top-full mt-2 w-48 bg-white rounded-xl border border-slate-200 shadow-md z-50 overflow-hidden"
-          >
-            <!-- Copy Link -->
-            <button
-              (click)="onCopyLink()"
-              class="w-full flex items-center gap-3 px-4 py-3 text-slate-900 hover:bg-slate-50 transition-colors duration-200 text-sm font-medium border-b border-slate-200/50"
-              [attr.title]="linkCopied() ? 'Copied!' : 'Copy link to clipboard'"
-            >
-              <span [class.text-green-600]="linkCopied()">
-                {{ linkCopied() ? "Copied!" : "Copy link" }}
-              </span>
+          <!-- Share Button -->
+          <div class="relative">
+            <button (click)="onShare()" class="icon-btn">
+              <lucide-icon [img]="ShareIcon" [size]="18" />
             </button>
 
-            <!-- LinkedIn -->
-            <button
-              (click)="onShareLinkedIn()"
-              class="w-full flex items-center gap-3 px-4 py-3 text-slate-900 hover:bg-slate-50 transition-colors duration-200 text-sm font-medium border-b border-slate-200/50"
+            <!-- Share Menu (Neo-Brutal) -->
+            @if (showShareMenu()) {
+            <div
+              class="absolute right-0 top-full mt-2 w-56 bg-white rounded-lg border-3 border-slate-900 shadow-xl z-50 overflow-hidden menu-scale-in"
             >
-              <svg
-                class="w-4 h-4 text-blue-600"
-                fill="currentColor"
-                viewBox="0 0 24 24"
+              <!-- Copy Link -->
+              <button
+                (click)="onCopyLink()"
+                class="w-full flex items-center gap-3 px-5 py-3.5 text-slate-900 hover:bg-slate-100 transition-colors duration-200 text-sm font-bold border-b-2 border-slate-200 uppercase tracking-wide"
+                [class.text-green-700]="linkCopied()"
               >
-                <path
-                  d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"
-                />
-              </svg>
-              <span>Share on LinkedIn</span>
-            </button>
+                <lucide-icon [img]="LinkIcon" [size]="16" />
+                <span>{{ linkCopied() ? "Copied!" : "Copy Link" }}</span>
+              </button>
 
-            <!-- Twitter -->
-            <button
-              (click)="onShareTwitter()"
-              class="w-full flex items-center gap-3 px-4 py-3 text-slate-900 hover:bg-slate-50 transition-colors duration-200 text-sm font-medium border-b border-slate-200/50"
-            >
-              <svg
-                class="w-4 h-4 text-blue-400"
-                fill="currentColor"
-                viewBox="0 0 24 24"
+              <!-- LinkedIn -->
+              <button
+                (click)="onShareLinkedIn()"
+                class="w-full flex items-center gap-3 px-5 py-3.5 text-slate-900 hover:bg-slate-100 transition-colors duration-200 text-sm font-bold border-b-2 border-slate-200 uppercase tracking-wide"
               >
-                <path
-                  d="M23 3a10.9 10.9 0 01-3.14 1.53 4.48 4.48 0 00-7.86 3v1A10.66 10.66 0 013 4s-4 9 5 13a11.64 11.64 0 01-7 2s9 5 20 5a9.5 9.5 0 00-9-5.5c4.75 2.25 7-7 7-11.5a4.5 4.5 0 00-.08-.83A7.72 7.72 0 0723 3z"
-                />
-              </svg>
-              <span>Share on X</span>
-            </button>
+                <svg
+                  class="w-4 h-4 text-blue-600"
+                  fill="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"
+                  />
+                </svg>
+                <span>LinkedIn</span>
+              </button>
 
-            <!-- Email -->
-            <button
-              (click)="onShareEmail()"
-              class="w-full flex items-center gap-3 px-4 py-3 text-slate-900 hover:bg-slate-50 transition-colors duration-200 text-sm font-medium"
-            >
-              <span>Share via Email</span>
-            </button>
+              <!-- Twitter/X -->
+              <button
+                (click)="onShareTwitter()"
+                class="w-full flex items-center gap-3 px-5 py-3.5 text-slate-900 hover:bg-slate-100 transition-colors duration-200 text-sm font-bold border-b-2 border-slate-200 uppercase tracking-wide"
+              >
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                  <path
+                    d="M23 3a10.9 10.9 0 01-3.14 1.53 4.48 4.48 0 00-7.86 3v1A10.66 10.66 0 013 4s-4 9 5 13a11.64 11.64 0 01-7 2s9 5 20 5a9.5 9.5 0 00-9-5.5c4.75 2.25 7-7 7-11.5a4.5 4.5 0 00-.08-.83A7.72 7.72 0 0723 3z"
+                  />
+                </svg>
+                <span>X (Twitter)</span>
+              </button>
+
+              <!-- Email -->
+              <button
+                (click)="onShareEmail()"
+                class="w-full flex items-center gap-3 px-5 py-3.5 text-slate-900 hover:bg-slate-100 transition-colors duration-200 text-sm font-bold uppercase tracking-wide"
+              >
+                <lucide-icon [img]="MailIcon" [size]="16" />
+                <span>Email</span>
+              </button>
+            </div>
+            }
+
+            <!-- Backdrop -->
+            @if (showShareMenu()) {
+            <div
+              (click)="showShareMenu.set(false)"
+              class="fixed inset-0 z-40"
+            ></div>
+            }
           </div>
-
-          <!-- Backdrop to close menu on click-outside -->
-          <div
-            *ngIf="showShareMenu()"
-            (click)="showShareMenu.set(false)"
-            class="fixed inset-0 z-40"
-          ></div>
         </div>
       </div>
-    </div>
 
-    <!-- Industries -->
-    <div class="flex flex-wrap gap-2 mb-4">
-      <span
-        *ngFor="
-          let industry of getDisplayIndustries();
-          trackBy: trackByIndustry
-        "
-        class="inline-flex items-center px-2 py-1 bg-slate-100 text-slate-700 rounded-lg text-xs font-medium"
-      >
-        {{ formatIndustry(industry) }}
-      </span>
+      <!-- Badges: Funding Type + Popular -->
+      <div class="flex flex-wrap items-center gap-2">
+        <!-- Funding Type -->
+        <span
+          class="inline-flex items-center px-3 py-2 rounded-lg text-xs font-bold border-2"
+          [ngClass]="getFundingTypeClass()"
+        >
+          {{ formatFundingType() }}
+        </span>
+
+        <!-- Popular Badge -->
+        @if (isPopular()) {
+        <span
+          class="inline-flex items-center gap-1.5 px-3 py-2 bg-teal-50 text-teal-700 border-2 border-teal-400 rounded-lg text-xs font-bold uppercase tracking-wide"
+        >
+          <lucide-icon [img]="TrendingUpIcon" [size]="14" />
+          <span>Popular</span>
+        </span>
+        }
+      </div>
     </div>
 
     <!-- Description -->
-    <p class="text-sm text-slate-600 line-clamp-2 mb-4">
+    <p
+      class="text-sm lg:text-base font-medium text-slate-600 mb-6 line-clamp-2"
+    >
       {{ opportunity.shortDescription || opportunity.description }}
     </p>
 
-    <!-- Funder Info Row -->
-    <div
-      class="flex items-center gap-3 text-sm text-slate-600 mb-6 pb-6 border-b border-slate-200/50"
-    >
-      <div class="flex items-center gap-2">
-        <div
-          class="w-6 h-6 rounded-lg flex items-center justify-center bg-slate-100 text-slate-600 flex-shrink-0"
-        >
-          <lucide-icon [img]="BuildingIcon" [size]="14" />
-        </div>
-        <span class="font-medium">
-          {{ opportunity.funderOrganizationName || "Private Funder" }}
-        </span>
-      </div>
-
-      <span class="text-slate-300">•</span>
-
-      <div class="flex items-center gap-1">
-        <lucide-icon [img]="AwardIcon" [size]="14" class="text-green-600" />
-        <span class="text-green-700 font-medium">Verified</span>
-      </div>
-
-      <span class="text-slate-300">•</span>
-
-      <div class="flex items-center gap-1">
-        <lucide-icon [img]="MapPinIcon" [size]="14" class="text-slate-500" />
-        <span class="font-medium">{{ formatLocations() }}</span>
-      </div>
+    <!-- Industries Chips -->
+    <div class="flex flex-wrap gap-2 mb-6">
+      @for (industry of getDisplayIndustries(); track trackByIndustry($index,
+      industry)) {
+      <span
+        class="inline-flex items-center px-3 py-1.5 bg-slate-100 text-slate-700 rounded-lg text-xs font-bold border-2 border-slate-300 uppercase tracking-wide"
+      >
+        {{ formatIndustry(industry) }}
+      </span>
+      }
     </div>
 
-    <!-- Details Grid -->
-    <div class="grid grid-cols-3 gap-4 mb-6">
+    <!-- Key Details Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
       <!-- Funding Amount -->
-      <div class="flex items-start gap-3">
+      <div class="flex items-start gap-4">
         <div
-          class="w-8 h-8 rounded-lg flex items-center justify-center bg-teal-100 text-teal-600 flex-shrink-0"
+          class="w-12 h-12 rounded-lg flex items-center justify-center bg-teal-100 text-teal-600 border-3 border-teal-500 flex-shrink-0"
         >
-          <lucide-icon [img]="DollarSignIcon" [size]="16" />
+          <lucide-icon [img]="DollarSignIcon" [size]="20" />
         </div>
-        <div class="min-w-0">
-          <p
-            class="text-xs font-semibold text-slate-500 uppercase tracking-wide"
-          >
+        <div>
+          <p class="text-xs font-bold text-slate-600 uppercase tracking-wide">
             Funding Range
           </p>
-          <p class="text-sm font-semibold text-slate-900 mt-1">
+          <p class="text-sm lg:text-base font-black text-slate-900 mt-2">
             {{ formatAmountRange() }}
           </p>
         </div>
       </div>
 
-      <!-- Decision Timeline -->
-      <div class="flex items-start gap-3">
+      <!-- Decision Time -->
+      <div class="flex items-start gap-4">
         <div
-          class="w-8 h-8 rounded-lg flex items-center justify-center bg-blue-100 text-blue-600 flex-shrink-0"
+          class="w-12 h-12 rounded-lg flex items-center justify-center bg-blue-100 text-blue-600 border-3 border-blue-500 flex-shrink-0"
         >
-          <lucide-icon [img]="ClockIcon" [size]="16" />
+          <lucide-icon [img]="ClockIcon" [size]="20" />
         </div>
-        <div class="min-w-0">
-          <p
-            class="text-xs font-semibold text-slate-500 uppercase tracking-wide"
-          >
+        <div>
+          <p class="text-xs font-bold text-slate-600 uppercase tracking-wide">
             Decision Time
           </p>
-          <p class="text-sm font-semibold text-slate-900 mt-1">
+          <p class="text-sm lg:text-base font-black text-slate-900 mt-2">
             {{ formatDecisionTime() }}
           </p>
         </div>
       </div>
 
       <!-- Applications/Interest -->
-      <div class="flex items-start gap-3" *ngIf="showApplicationCount()">
+      @if (showApplicationCount()) {
+      <div class="flex items-start gap-4">
         <div
-          class="w-8 h-8 rounded-lg flex items-center justify-center bg-amber-100 text-amber-600 flex-shrink-0"
+          class="w-12 h-12 rounded-lg flex items-center justify-center bg-amber-100 text-amber-600 border-3 border-amber-500 flex-shrink-0"
         >
-          <lucide-icon [img]="UsersIcon" [size]="16" />
+          <lucide-icon [img]="UsersIcon" [size]="20" />
         </div>
-        <div class="min-w-0">
-          <p
-            class="text-xs font-semibold text-slate-500 uppercase tracking-wide"
-          >
+        <div>
+          <p class="text-xs font-bold text-slate-600 uppercase tracking-wide">
             Interest
           </p>
-          <p class="text-sm font-semibold text-slate-900 mt-1">
+          <p class="text-sm lg:text-base font-black text-slate-900 mt-2">
             {{ formatApplicationCount() }}
           </p>
         </div>
       </div>
+      }
     </div>
 
     <!-- Progress Bar (if applicable) -->
-    <div *ngIf="getProgressPercentage() > 0" class="mb-6">
-      <div class="flex items-center justify-between mb-2">
-        <p class="text-xs font-semibold text-slate-600">Deployment Progress</p>
-        <p class="text-xs text-slate-500">{{ getProgressPercentage() }}%</p>
+    @if (getProgressPercentage() > 0) {
+    <div class="mb-6">
+      <div class="flex items-center justify-between mb-3">
+        <p class="text-xs font-bold text-slate-700 uppercase tracking-wide">
+          Deployment Progress
+        </p>
+        <p class="text-sm font-black text-slate-900">
+          {{ getProgressPercentage() }}%
+        </p>
       </div>
-      <div class="h-2 bg-slate-100 rounded-full overflow-hidden">
+      <div
+        class="h-4 bg-slate-200 rounded-lg overflow-hidden border-2 border-slate-300"
+      >
         <div
-          class="h-full bg-gradient-to-r from-teal-400 to-teal-500 rounded-full transition-all duration-700 ease-out"
+          class="h-full bg-gradient-to-r from-teal-500 to-teal-600 rounded-lg transition-all duration-700 ease-out"
           [style.width.%]="getProgressPercentage()"
         ></div>
       </div>
-      <p class="text-xs text-slate-500 mt-2">{{ formatProgress() }}</p>
+      <p class="text-xs font-semibold text-slate-600 mt-3">
+        {{ formatProgress() }}
+      </p>
+    </div>
+    }
+
+    <!-- Action Buttons Row -->
+    <div class="flex flex-col sm:flex-row gap-3">
+      <!-- Apply/Pending Button -->
+      @if (canApply) {
+      <button
+        (click)="onApply()"
+        class="flex-1 action-btn-primary"
+        [class.has-applied]="opportunity.userHasApplied"
+      >
+        @if (opportunity.userHasApplied) {
+        <lucide-icon [img]="CheckCircleIcon" [size]="18" />
+        <span>View Application</span>
+        } @else {
+        <span>Apply Now</span>
+        }
+      </button>
+      }
+
+      <!-- View Details Button -->
+      <button (click)="onViewDetails()" class="flex-1 action-btn-secondary">
+        <lucide-icon [img]="EyeIcon" [size]="18" />
+        <span>View Details</span>
+      </button>
+
+      <!-- Manage Button (Funder Only) -->
+      @if (canManage) {
+      <button (click)="onManage()" class="flex-1 action-btn-secondary">
+        <span>Manage</span>
+      </button>
+      }
     </div>
   </div>
 </div>

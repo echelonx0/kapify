@@ -386,3 +386,33 @@ button.toast-close-button {
     width: 25em;
   }
 }
+
+/* ============================================
+   SCROLLBAR STYLING - TEAL THEME
+   ============================================ */
+
+/* Chrome, Edge, Safari */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f5f9; /* slate-100 */
+}
+
+::-webkit-scrollbar-thumb {
+  background: #14b8a6; /* teal-500 */
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #0d9488; /* teal-600 */
+}
+
+/* Firefox */
+* {
+  scrollbar-color: #14b8a6 #f1f5f9; /* thumb track */
+  scrollbar-width: thin;
+}

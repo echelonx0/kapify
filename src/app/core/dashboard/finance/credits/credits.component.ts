@@ -17,6 +17,7 @@ import {
   CreditCard,
   CircleAlert,
   CircleCheck,
+  ChevronDown,
 } from 'lucide-angular';
 
 import {
@@ -38,6 +39,46 @@ import { PurchaseCreditsModalComponent } from './purchase-credits-modal.componen
       :host {
         display: block;
       }
+
+      .metric-card {
+        transition: all 0.2s ease;
+      }
+
+      .metric-card:hover {
+        transform: translateY(-2px);
+      }
+
+      @keyframes pulse {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.5;
+        }
+      }
+
+      .pulse {
+        animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+      }
+
+      .chevron-rotate {
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      .chevron-rotate.expanded {
+        transform: rotate(180deg);
+      }
+
+      .transactions-container {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      .transactions-container.expanded {
+        max-height: 600px;
+      }
     `,
   ],
 })
@@ -48,7 +89,7 @@ export class CreditsComponent implements OnInit, OnDestroy {
   private supabase = inject(SharedSupabaseService);
   private authService = inject(AuthService);
   private destroy$ = new Subject<void>();
-
+  isTransactionsExpanded = signal(false);
   // Icons
   TrendingUpIcon = TrendingUp;
   ZapIcon = Zap;
@@ -56,7 +97,7 @@ export class CreditsComponent implements OnInit, OnDestroy {
   CreditCardIcon = CreditCard;
   AlertCircleIcon = CircleAlert;
   CheckCircle2Icon = CircleCheck;
-
+  ChevronDownIcon = ChevronDown;
   // Payment Status
   status = signal<'success' | 'cancelled' | null>(null);
   reference = signal<string | null>(null);
@@ -123,6 +164,9 @@ export class CreditsComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     this.destroy$.next();
     this.destroy$.complete();
+  }
+  toggleTransactions() {
+    this.isTransactionsExpanded.set(!this.isTransactionsExpanded());
   }
 
   private loadWallet() {
@@ -223,7 +267,7 @@ export class CreditsComponent implements OnInit, OnDestroy {
   }
 
   formatCurrency(amount: number): string {
-    return (amount / 100).toLocaleString('en-ZA', {
+    return amount.toLocaleString('en-ZA', {
       style: 'currency',
       currency: 'ZAR',
       minimumFractionDigits: 0,

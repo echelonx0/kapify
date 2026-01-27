@@ -1,0 +1,86 @@
+<!-- Root: clean container with side nav -->
+<div class="h-full flex">
+  <!-- MAIN CONTENT (Left) -->
+  <div class="flex-1 flex flex-col overflow-hidden">
+    <!-- VIEW: EDITOR -->
+    <ng-container *ngIf="!initializing() && currentView() === 'editor'">
+      <app-cover-editor
+        *ngIf="selectedCover()"
+        (save)="onFundingRequestSaved()"
+        (cancel)="navigateBack()"
+        (uploadDocument)="navigateToUpload(selectedId()!)"
+      />
+
+      <!-- Empty state when no cover -->
+      <div
+        *ngIf="!selectedCover()"
+        class="flex-1 flex items-center justify-center"
+      >
+        <div class="text-center max-w-md">
+          <div
+            class="w-16 h-16 rounded-lg bg-amber-100 border-3 border-amber-400 flex items-center justify-center mx-auto mb-4"
+          >
+            <svg
+              class="w-8 h-8 text-amber-600"
+              fill="currentColor"
+              viewBox="0 0 20 20"
+            >
+              <path
+                fill-rule="evenodd"
+                d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                clip-rule="evenodd"
+              ></path>
+            </svg>
+          </div>
+
+          <h2 class="text-2xl font-black text-slate-900 mb-2">
+            No Funding Request
+          </h2>
+          <p class="text-sm text-slate-600 mb-6">
+            Create your funding request to get started.
+          </p>
+
+          <button
+            (click)="navigateBack()"
+            class="px-6 py-3 bg-teal-600 text-white font-black rounded-lg border-3 border-teal-700 uppercase tracking-wide text-sm hover:bg-teal-700 active:bg-teal-800 transition-all duration-200"
+          >
+            Go Back
+          </button>
+        </div>
+      </div>
+    </ng-container>
+
+    <!-- VIEW: UPLOAD DOCUMENT -->
+    <ng-container *ngIf="!initializing() && currentView() === 'upload'">
+      <app-cover-document-upload
+        *ngIf="selectedCover()"
+        [cover]="selectedCover()!"
+        (documentAttached)="onDocumentAttached()"
+        (cancel)="navigateToEditor(selectedId()!, mode())"
+      />
+    </ng-container>
+
+    <!-- VIEW: DEMOGRAPHICS FORM -->
+    <ng-container *ngIf="!initializing() && currentView() === 'demographics'">
+      <app-demographics-form />
+    </ng-container>
+
+    <!-- LOADING STATE -->
+    <div *ngIf="initializing()" class="flex-1 flex items-center justify-center">
+      <div class="text-center">
+        <div
+          class="animate-spin w-8 h-8 border-4 border-teal-500 border-t-transparent rounded-full mx-auto mb-4"
+        ></div>
+        <p class="text-slate-600 font-semibold">Loading funding request...</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SIDE NAV (Right) - Shows steps -->
+  <!-- <app-side-nav
+    [items]="sideNavItems()"
+    [activeId]="currentView()"
+    [title]="'Steps'"
+    (itemSelected)="onNavItemSelected($event)"
+  /> -->
+</div>

@@ -14,18 +14,16 @@ import { CommonModule } from '@angular/common';
 import { of, Subject } from 'rxjs';
 import { takeUntil, catchError } from 'rxjs/operators';
 import { AuthService } from 'src/app/auth/services/production.auth.service';
-
-import { AdvancedFiltersComponent } from '../components/filters.component';
+import { AdvancedFiltersComponent } from '../components/marketplace-filters/marketplace-filters.component';
 import { OpportunitiesGridComponent } from '../components/opportuniy-grid/opportunities-grid.component';
 import { SearchStatsBarComponent } from './search-stats-bar.component';
 import { EmptyStateComponent } from '../components/empty-state.component';
 import { LoadingStateComponent } from './loading-state.component';
-
 import { FundingOpportunity } from 'src/app/funder/create-opportunity/shared/funding.interfaces';
 import { OpportunitiesHeaderComponent } from '../components/opportunity-header/opportunities-header.component';
 import { SmartSuggestionsModalComponent } from '../components/smart-suggestions/modal/smart-suggestions-modal.component';
 import { LandingFooterComponent } from 'src/app/core/landing/footer/landing-footer.component';
-import { LandingHeaderComponent } from 'src/app/core/landing/landing-header.component';
+import { LandingHeaderComponent } from 'src/app/core/landing/components/landing-header.component';
 import { SMEOpportunitiesService } from '../../services/opportunities.service';
 import { OpportunityApplicationService } from 'src/app/fund-seeking-orgs/services/opportunity-application.service';
 
@@ -143,6 +141,7 @@ export class FundingOpportunitiesComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.loadApplicationsAndOpportunities();
+
     window.addEventListener('resize', this.onWindowResize.bind(this));
   }
 
@@ -165,14 +164,9 @@ export class FundingOpportunitiesComponent implements OnInit, OnDestroy {
     }
   }
 
-  /**
-   * Load both applications and opportunities in parallel
-   * Applications determine which opportunities show "already applied" status
-   */
   private loadApplicationsAndOpportunities() {
     this.isLoading.set(true);
 
-    // Only load applications if user is authenticated
     if (this.isAuthenticated()) {
       this.applicationService
         .loadUserApplications()
@@ -180,11 +174,13 @@ export class FundingOpportunitiesComponent implements OnInit, OnDestroy {
         .subscribe({
           next: (apps) => {
             this.applications.set(apps);
+            console.log(`Applied to ${apps} Applications`);
             this.loadOpportunities();
           },
           error: (error) => {
             console.warn('Failed to load user applications:', error);
             this.applications.set([]);
+
             this.loadOpportunities();
           },
         });
@@ -341,7 +337,27 @@ export class FundingOpportunitiesComponent implements OnInit, OnDestroy {
     }
   }
 
+  /**
+   * DEBUG: Test method to open modal
+   */
+  testOpenModal() {
+    console.log('[TEST] testOpenModal called');
+    console.log('[TEST] suggestionsModal exists?', !!this.suggestionsModal);
+    console.log('[TEST] suggestionsModal ref:', this.suggestionsModal);
+
+    if (this.suggestionsModal) {
+      console.log('[TEST] Calling open() on modal');
+      this.suggestionsModal.open();
+    } else {
+      console.error(
+        '[TEST] ❌ suggestionsModal is undefined - ViewChild not working'
+      );
+    }
+  }
+
   openSmartSuggestions() {
+    console.log('[Modal] openSmartSuggestions() called');
+    console.log('[Modal] suggestionsModal:', this.suggestionsModal);
     this.suggestionsModal?.open();
   }
 

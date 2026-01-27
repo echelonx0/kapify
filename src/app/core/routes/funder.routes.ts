@@ -15,17 +15,7 @@ export const funderRoutes: Routes = [
           ),
         title: 'Dashboard - Kapify',
       },
-      // NEW: Global applications overview route
-      // {
-      //   path: 'applications',
-      //   loadComponent: () =>
-      //     import('./dashboard/tabs/overview-tab.component').then(
-      //       (m) => m.FunderApplicationsOverviewComponent
-      //     ),
-      //   title: 'All Applications - Kapify',
-      // },
-
-      // In funder.routes.ts
+   
 
       {
         path: 'allapplications',

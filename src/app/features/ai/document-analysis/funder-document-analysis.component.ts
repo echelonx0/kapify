@@ -8,16 +8,13 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import {
   LucideAngularModule,
   FileText,
   Upload,
   Sparkles,
   TrendingUp,
-  AlertTriangle,
-  CheckCircle,
-  XCircle,
-  Loader2,
   Download,
   Eye,
   Globe,
@@ -25,10 +22,14 @@ import {
   DollarSign,
   Clock,
   Building,
-  AlertCircle,
+  CircleAlert,
   Zap,
   X,
   Info,
+  LoaderCircle,
+  CircleX,
+  TriangleAlert,
+  CircleCheckBig,
 } from 'lucide-angular';
 import { Subject, takeUntil } from 'rxjs';
 
@@ -49,9 +50,6 @@ import {
 } from './components/processing-timeline.component';
 import { CostConfirmationModalComponent } from './components/cost-confirmation-modal.component';
 import { HowAnalysisWorksComponent } from './components/how-analysis-works.component';
-import { AnalysisResultsComponent } from './components/analysis-results/analysis-results.component';
-
-// Extracted components
 
 // Cost model
 const ANALYSIS_COST_CREDITS = 5000;
@@ -72,7 +70,6 @@ interface CostConfirmation {
     HowAnalysisWorksComponent,
     CostConfirmationModalComponent,
     ProcessingTimelineComponent,
-    AnalysisResultsComponent,
   ],
   templateUrl: 'funder-document-analysis.component.html',
   styles: [],
@@ -81,6 +78,7 @@ export class FunderDocumentAnalysisComponent implements OnInit, OnDestroy {
   private analysisService = inject(FunderDocumentAnalysisService);
   private creditService = inject(OrgCreditService);
   private authService = inject(AuthService);
+  private router = inject(Router);
   private destroy$ = new Subject<void>();
 
   // Icons
@@ -88,10 +86,10 @@ export class FunderDocumentAnalysisComponent implements OnInit, OnDestroy {
   UploadIcon = Upload;
   SparklesIcon = Sparkles;
   TrendingUpIcon = TrendingUp;
-  AlertTriangleIcon = AlertTriangle;
-  CheckCircleIcon = CheckCircle;
-  XCircleIcon = XCircle;
-  Loader2Icon = Loader2;
+  AlertTriangleIcon = TriangleAlert;
+  CheckCircleIcon = CircleCheckBig;
+  XCircleIcon = CircleX;
+  Loader2Icon = LoaderCircle;
   DownloadIcon = Download;
   EyeIcon = Eye;
   GlobeIcon = Globe;
@@ -99,7 +97,7 @@ export class FunderDocumentAnalysisComponent implements OnInit, OnDestroy {
   DollarSignIcon = DollarSign;
   ClockIcon = Clock;
   BuildingIcon = Building;
-  AlertIcon = AlertCircle;
+  AlertIcon = CircleAlert;
   ZapIcon = Zap;
   XIcon = X;
   InfoIcon = Info;
@@ -110,9 +108,12 @@ export class FunderDocumentAnalysisComponent implements OnInit, OnDestroy {
   analysisResult = signal<DocumentAnalysisResult | null>(null);
   errorMessage = signal<string | null>(null);
   uploadedFile = signal<File | null>(null);
+  companyName = signal<string | null>(null);
 
   // UI State
   showHowItWorks = signal(false);
+  showAnalysisNotification = signal(false);
+  redirectCountdown = signal(5);
 
   // Credits
   wallet = signal<OrgWallet | null>(null);
@@ -254,17 +255,19 @@ export class FunderDocumentAnalysisComponent implements OnInit, OnDestroy {
   closeCostModal() {
     this.costConfirmation.set({ isOpen: false });
     this.pendingFile.set(null);
+    this.companyName.set(null);
   }
 
-  confirmAnalysis() {
+  confirmAnalysis(companyNameInput: string) {
     const file = this.pendingFile();
     if (file) {
+      this.companyName.set(companyNameInput);
       this.closeCostModal();
-      this.startAnalysis(file);
+      this.startAnalysis(file, companyNameInput);
     }
   }
 
-  private async startAnalysis(file: File) {
+  private async startAnalysis(file: File, companyNameInput: string) {
     this.isProcessing.set(true);
     this.errorMessage.set(null);
     this.analysisResult.set(null);
@@ -289,7 +292,7 @@ export class FunderDocumentAnalysisComponent implements OnInit, OnDestroy {
         .subscribe({
           next: () => {
             this.loadWallet(); // Reload wallet to show new balance
-            this.executeAnalysis(file);
+            this.executeAnalysis(file, companyNameInput);
           },
           error: (err) => {
             console.error('Failed to deduct credits:', err);
@@ -308,7 +311,7 @@ export class FunderDocumentAnalysisComponent implements OnInit, OnDestroy {
     }
   }
 
-  private executeAnalysis(file: File) {
+  private executeAnalysis(file: File, companyNameInput: string) {
     try {
       // Reset processing statuses
       this.processingStatuses.set([
@@ -353,11 +356,13 @@ export class FunderDocumentAnalysisComponent implements OnInit, OnDestroy {
           }
         });
 
-      // Start the analysis
-      this.analysisService.analyzeDocument(file).subscribe({
+      // Start the analysis with company name
+      this.analysisService.analyzeDocument(file, companyNameInput).subscribe({
         next: (result) => {
           this.analysisResult.set(result);
           this.markStageComplete('complete');
+          this.showAnalysisNotification.set(true);
+          this.startRedirectCountdown();
         },
         error: (error) => {
           console.error('Analysis failed:', error);
@@ -458,13 +463,53 @@ export class FunderDocumentAnalysisComponent implements OnInit, OnDestroy {
     }
   }
 
+  // ===== NAVIGATION =====
+  /**
+   * Start 5-second countdown before redirecting to analysis
+   */
+  private startRedirectCountdown() {
+    this.redirectCountdown.set(5);
+
+    const countdownInterval = setInterval(() => {
+      const current = this.redirectCountdown();
+
+      if (current <= 1) {
+        clearInterval(countdownInterval);
+        this.viewAnalysisDetail();
+      } else {
+        this.redirectCountdown.set(current - 1);
+      }
+    }, 1000);
+
+    // Cleanup interval on destroy
+    this.destroy$.pipe(takeUntil(this.destroy$)).subscribe(() => {
+      clearInterval(countdownInterval);
+    });
+  }
+
+  /**
+   * Navigate to analysis detail view with result data
+   */
+  viewAnalysisDetail() {
+    const result = this.analysisResult();
+    if (!result) return;
+
+    // Store in service
+    this.analysisService.setCurrentAnalysisResult(result);
+
+    // Navigate
+    this.router.navigate(['/dashboard/analysis', 'temp-' + Date.now()]);
+  }
+
   // ===== RESET AND ACTIONS =====
   resetAnalysis() {
     this.isProcessing.set(false);
     this.analysisResult.set(null);
     this.errorMessage.set(null);
     this.uploadedFile.set(null);
+    this.companyName.set(null);
     this.isDragOver.set(false);
+    this.showAnalysisNotification.set(false);
     this.analysisService.clearStatus();
   }
 
@@ -475,6 +520,7 @@ export class FunderDocumentAnalysisComponent implements OnInit, OnDestroy {
     // Create a comprehensive report
     const reportData = {
       documentName: this.uploadedFile()?.name || 'Business Proposal',
+      companyName: this.companyName() || 'Unknown',
       analysisDate: new Date().toISOString(),
       executiveSummary: {
         investmentScore: result.matchScore,
@@ -494,7 +540,9 @@ export class FunderDocumentAnalysisComponent implements OnInit, OnDestroy {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `analysis-report-${Date.now()}.json`;
+    a.download = `analysis-report-${
+      this.companyName() || 'unknown'
+    }-${Date.now()}.json`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);

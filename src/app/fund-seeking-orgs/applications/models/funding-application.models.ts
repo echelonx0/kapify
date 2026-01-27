@@ -548,6 +548,6 @@ export interface FundingApplicationStep {
   description: string;
   completed: boolean;
   required: boolean;
-  estimatedTime?: string; // e.g., "15 minutes"
-  dependencies?: string[]; // other step IDs that must be completed first
+  estimatedTime?: string;
+  dependencies?: string[];
 }

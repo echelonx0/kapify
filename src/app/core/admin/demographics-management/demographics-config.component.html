@@ -1,0 +1,472 @@
+<div class="min-h-screen bg-slate-50 py-8 px-4 lg:px-8">
+  <div class="max-w-6xl mx-auto">
+    <!-- HEADER -->
+    <div class="mb-8">
+      <h1 class="text-3xl font-black text-slate-900">
+        Demographics Configuration
+      </h1>
+      <p class="text-slate-600 mt-2">
+        Manage demographic categories and their fields
+      </p>
+      <div class="mt-4 flex items-center gap-3">
+        <span
+          class="inline-block px-3 py-1.5 bg-teal-100 text-teal-700 text-xs font-black rounded-lg"
+        >
+          Source: {{ configSource() || "loading" }}
+        </span>
+      </div>
+    </div>
+
+    <!-- ERROR ALERT -->
+    @if (error()) {
+    <div
+      class="mb-6 p-4 bg-red-50 border-2 border-red-400 rounded-lg flex items-start gap-3"
+    >
+      <span class="text-red-700 font-semibold flex-1">{{ error() }}</span>
+      <button
+        (click)="error.set(null)"
+        class="text-red-600 hover:text-red-900 font-bold"
+      >
+        ✕
+      </button>
+    </div>
+    }
+
+    <!-- SUCCESS ALERT -->
+    @if (success()) {
+    <div class="mb-6 p-4 bg-green-50 border-2 border-green-400 rounded-lg">
+      <p class="text-green-700 font-semibold">{{ success() }}</p>
+    </div>
+    }
+
+    <!-- LOADING STATE -->
+    @if (isLoading()) {
+    <div class="text-center py-16">
+      <div class="inline-block">
+        <div
+          class="animate-spin w-8 h-8 border-3 border-teal-500 border-t-transparent rounded-full"
+        ></div>
+        <p class="text-slate-600 font-semibold mt-3">
+          Loading configuration...
+        </p>
+      </div>
+    </div>
+    }
+
+    <!-- MAIN CONTENT -->
+    @if (!isLoading()) {
+    <div class="bg-white rounded-2xl border-2 border-slate-200 overflow-hidden">
+      <!-- CATEGORY TABS -->
+      <div class="border-b-2 border-slate-200 bg-slate-50">
+        <div class="flex items-center overflow-x-auto px-6 py-4">
+          <!-- Category Tabs -->
+          <div class="flex gap-2 flex-1 overflow-x-auto pb-2">
+            @for (category of categories(); track trackByCategory($index,
+            category)) {
+            <button
+              (click)="selectCategory(category.id)"
+              [class.bg-teal-600]="selectedCategoryId() === category.id"
+              [class.text-white]="selectedCategoryId() === category.id"
+              [class.bg-white]="selectedCategoryId() !== category.id"
+              [class.text-slate-700]="selectedCategoryId() !== category.id"
+              [class.border-teal-600]="selectedCategoryId() === category.id"
+              [class.border-slate-300]="selectedCategoryId() !== category.id"
+              class="px-4 py-2 rounded-lg border-2 font-bold text-sm whitespace-nowrap transition-all duration-200 hover:shadow-md flex items-center gap-2"
+            >
+              <span>{{ category.label }}</span>
+              <span
+                [class.bg-teal-700]="selectedCategoryId() === category.id"
+                [class.bg-slate-300]="selectedCategoryId() !== category.id"
+                class="text-xs font-bold text-white px-2 py-0.5 rounded-full"
+              >
+                {{ category.fields.length }}
+              </span>
+            </button>
+            }
+          </div>
+
+          <!-- Add Category Button -->
+          <button
+            (click)="openAddCategoryModal()"
+            class="ml-2 px-4 py-2 bg-teal-600 text-white font-bold rounded-lg hover:bg-teal-700 active:bg-teal-800 transition-colors duration-200 text-sm whitespace-nowrap flex-shrink-0"
+          >
+            + Category
+          </button>
+        </div>
+      </div>
+
+      <!-- CATEGORY CONTENT -->
+      @if (selectedCategory(); as category) {
+      <div class="p-6 lg:p-8">
+        <!-- CATEGORY HEADER -->
+        <div class="mb-8 flex items-start justify-between">
+          <div class="flex-1">
+            <h2 class="text-2xl font-black text-slate-900">
+              {{ category.label }}
+            </h2>
+            @if (category.description) {
+            <p class="text-slate-600 mt-2">{{ category.description }}</p>
+            }
+          </div>
+          <div class="flex gap-2 ml-4 flex-shrink-0">
+            <button
+              (click)="openEditCategoryModal(category)"
+              class="px-4 py-2 bg-blue-100 text-blue-700 font-bold rounded-lg hover:bg-blue-200 text-sm transition-colors"
+            >
+              Edit
+            </button>
+            <button
+              (click)="deleteCategory(category)"
+              class="px-4 py-2 bg-red-100 text-red-700 font-bold rounded-lg hover:bg-red-200 text-sm transition-colors"
+            >
+              Delete
+            </button>
+          </div>
+        </div>
+
+        <!-- FIELDS HEADER -->
+        <div class="mb-6 flex items-center justify-between">
+          <h3 class="text-lg font-black text-slate-900">
+            Fields ({{ fieldsForCategory().length }})
+          </h3>
+          <button
+            (click)="openAddFieldModal()"
+            class="px-4 py-2 bg-teal-600 text-white font-bold rounded-lg hover:bg-teal-700 active:bg-teal-800 transition-colors duration-200 text-sm"
+          >
+            + Add Field
+          </button>
+        </div>
+
+        <!-- FIELDS LIST -->
+        @if (fieldsForCategory().length > 0) {
+        <div class="grid gap-4">
+          @for (field of fieldsForCategory(); track trackByField($index, field))
+          {
+          <div
+            class="bg-slate-50 rounded-xl border-2 border-slate-200 p-6 hover:border-slate-300 hover:shadow-sm transition-all duration-200"
+          >
+            <div class="flex items-start justify-between mb-3">
+              <div class="flex-1">
+                <div class="flex items-center gap-3">
+                  <h4 class="text-base font-black text-slate-900">
+                    {{ field.label }}
+                  </h4>
+                  @if (field.required) {
+                  <span
+                    class="px-2.5 py-1 bg-red-100 text-red-700 text-xs font-bold rounded-lg"
+                  >
+                    REQUIRED
+                  </span>
+                  }
+                </div>
+                <p class="text-sm text-slate-600 mt-1">
+                  <span class="font-semibold">Field name:</span>
+                  {{ field.name }}
+                </p>
+              </div>
+              <div class="flex gap-2 ml-4 flex-shrink-0">
+                <button
+                  (click)="openEditFieldModal(field)"
+                  class="px-3 py-2 bg-blue-100 text-blue-700 font-bold rounded-lg hover:bg-blue-200 text-xs transition-colors"
+                >
+                  Edit
+                </button>
+                <button
+                  (click)="deleteField(field)"
+                  class="px-3 py-2 bg-red-100 text-red-700 font-bold rounded-lg hover:bg-red-200 text-xs transition-colors"
+                >
+                  Delete
+                </button>
+              </div>
+            </div>
+
+            <!-- FIELD DETAILS -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+              <div>
+                <p class="text-slate-600 font-semibold">Type</p>
+                <p class="text-slate-900 font-bold mt-1">
+                  {{ getFieldTypeDisplay(field.type) }}
+                </p>
+              </div>
+
+              @if (field.min !== undefined || field.max !== undefined) {
+              <div>
+                <p class="text-slate-600 font-semibold">Range</p>
+                <p class="text-slate-900 font-bold mt-1">
+                  @if (field.min !== undefined) { Min: {{ field.min }} } @if
+                  (field.max !== undefined) { Max: {{ field.max }} }
+                </p>
+              </div>
+              } @if (field.placeholder) {
+              <div>
+                <p class="text-slate-600 font-semibold">Placeholder</p>
+                <p class="text-slate-900 font-bold mt-1">
+                  {{ field.placeholder }}
+                </p>
+              </div>
+              } @if (field.options && field.options.length > 0) {
+              <div class="md:col-span-2">
+                <p class="text-slate-600 font-semibold">Options</p>
+                <div class="flex flex-wrap gap-2 mt-2">
+                  @for (option of field.options; track option) {
+                  <span
+                    class="px-3 py-1.5 bg-teal-100 text-teal-700 text-xs font-bold rounded-lg"
+                  >
+                    {{ option }}
+                  </span>
+                  }
+                </div>
+              </div>
+              } @if (field.helpText) {
+              <div class="md:col-span-2">
+                <p class="text-slate-600 font-semibold">Help Text</p>
+                <p class="text-slate-700 mt-1 italic">{{ field.helpText }}</p>
+              </div>
+              }
+            </div>
+          </div>
+          }
+        </div>
+        } @else {
+        <div class="text-center py-12">
+          <p class="text-slate-600 font-semibold">No fields yet</p>
+          <p class="text-slate-500 text-sm mt-1">
+            Add your first field to get started
+          </p>
+        </div>
+        }
+      </div>
+      }
+    </div>
+    }
+  </div>
+
+  <!-- CATEGORY MODAL -->
+  @if (showCategoryModal()) {
+  <div
+    class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+  >
+    <div
+      class="bg-white rounded-2xl border-2 border-slate-200 max-w-md w-full p-8"
+    >
+      <h2 class="text-2xl font-black text-slate-900 mb-6">
+        {{ editingCategory() ? "Edit Category" : "Create New Category" }}
+      </h2>
+
+      <div class="space-y-4">
+        <div>
+          <label
+            class="block text-sm font-black text-slate-900 mb-2 uppercase tracking-widest"
+          >
+            Category Name *
+          </label>
+          <input
+            type="text"
+            [(ngModel)]="categoryForm().label"
+            placeholder="e.g., Shareholding"
+            class="w-full px-4 py-2.5 border-2 border-slate-200 rounded-lg text-slate-900 placeholder-slate-400 font-semibold focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all"
+          />
+        </div>
+
+        <div>
+          <label
+            class="block text-sm font-black text-slate-900 mb-2 uppercase tracking-widest"
+          >
+            Description
+          </label>
+          <textarea
+            [(ngModel)]="categoryForm().description"
+            placeholder="Optional description"
+            rows="3"
+            class="w-full px-4 py-2.5 border-2 border-slate-200 rounded-lg text-slate-900 placeholder-slate-400 font-semibold focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all resize-none"
+          ></textarea>
+        </div>
+      </div>
+
+      <div class="flex gap-3 mt-8">
+        <button
+          (click)="closeCategoryModal()"
+          class="flex-1 px-4 py-3 border-2 border-slate-300 text-slate-900 font-black rounded-lg hover:bg-slate-50 active:bg-slate-100 transition-colors uppercase tracking-wide text-sm"
+        >
+          Cancel
+        </button>
+        <button
+          (click)="saveCategoryModal()"
+          class="flex-1 px-4 py-3 bg-teal-600 text-white font-black rounded-lg hover:bg-teal-700 active:bg-teal-800 transition-colors uppercase tracking-wide text-sm"
+        >
+          Save
+        </button>
+      </div>
+    </div>
+  </div>
+  }
+
+  <!-- FIELD MODAL -->
+  @if (showFieldModal()) {
+  <div
+    class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+  >
+    <div
+      class="bg-white rounded-2xl border-2 border-slate-200 max-w-md w-full p-8 max-h-[90vh] overflow-y-auto"
+    >
+      <h2 class="text-2xl font-black text-slate-900 mb-6">
+        {{ editingField() ? "Edit Field" : "Create New Field" }}
+      </h2>
+
+      <div class="space-y-4">
+        <div>
+          <label
+            class="block text-sm font-black text-slate-900 mb-2 uppercase tracking-widest"
+          >
+            Field Label *
+          </label>
+          <input
+            type="text"
+            [(ngModel)]="fieldForm().label"
+            placeholder="e.g., Black Ownership (%)"
+            class="w-full px-4 py-2.5 border-2 border-slate-200 rounded-lg text-slate-900 placeholder-slate-400 font-semibold focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all"
+          />
+        </div>
+
+        <div>
+          <label
+            class="block text-sm font-black text-slate-900 mb-2 uppercase tracking-widest"
+          >
+            Field Name
+          </label>
+          <input
+            type="text"
+            [(ngModel)]="fieldForm().name"
+            placeholder="Auto-generated if blank"
+            class="w-full px-4 py-2.5 border-2 border-slate-200 rounded-lg text-slate-900 placeholder-slate-400 font-semibold focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all"
+          />
+          <p class="text-xs text-slate-500 mt-1">snake_case identifier</p>
+        </div>
+
+        <div>
+          <label
+            class="block text-sm font-black text-slate-900 mb-2 uppercase tracking-widest"
+          >
+            Type *
+          </label>
+          <select
+            [(ngModel)]="fieldForm().type"
+            class="w-full px-4 py-2.5 border-2 border-slate-200 rounded-lg text-slate-900 font-semibold focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all"
+          >
+            <option value="text">Text</option>
+            <option value="number">Number</option>
+            <option value="percentage">Percentage</option>
+            <option value="dropdown">Dropdown</option>
+          </select>
+        </div>
+
+        <div
+          class="flex items-center gap-3 p-3 bg-slate-50 rounded-lg border-2 border-slate-200"
+        >
+          <input
+            type="checkbox"
+            [(ngModel)]="fieldForm().required"
+            id="required"
+            class="w-5 h-5 cursor-pointer"
+          />
+          <label
+            for="required"
+            class="text-sm font-black text-slate-900 cursor-pointer uppercase tracking-wide"
+          >
+            Required Field
+          </label>
+        </div>
+
+        @if (fieldForm().type === 'number' || fieldForm().type === 'percentage')
+        {
+        <div
+          class="grid grid-cols-2 gap-3 p-4 bg-blue-50 border-2 border-blue-300 rounded-lg"
+        >
+          <div>
+            <label
+              class="block text-xs font-black text-blue-900 mb-1.5 uppercase tracking-widest"
+            >
+              Min Value
+            </label>
+            <input
+              type="number"
+              [(ngModel)]="fieldForm().min"
+              class="w-full px-3 py-2 border-2 border-blue-200 rounded-lg text-slate-900 font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+            />
+          </div>
+          <div>
+            <label
+              class="block text-xs font-black text-blue-900 mb-1.5 uppercase tracking-widest"
+            >
+              Max Value
+            </label>
+            <input
+              type="number"
+              [(ngModel)]="fieldForm().max"
+              class="w-full px-3 py-2 border-2 border-blue-200 rounded-lg text-slate-900 font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+            />
+          </div>
+        </div>
+        } @if (fieldForm().type === 'dropdown') {
+        <div class="p-4 bg-amber-50 border-2 border-amber-300 rounded-lg">
+          <label
+            class="block text-xs font-black text-amber-900 mb-1.5 uppercase tracking-widest"
+          >
+            Options (comma-separated)
+          </label>
+          <textarea
+            [(ngModel)]="fieldForm().optionsText"
+            placeholder="Urban, Township, Rural"
+            rows="2"
+            class="w-full px-3 py-2 border-2 border-amber-200 rounded-lg text-slate-900 font-semibold focus:outline-none focus:ring-2 focus:ring-amber-500 transition-all resize-none"
+          ></textarea>
+        </div>
+        }
+
+        <div>
+          <label
+            class="block text-sm font-black text-slate-900 mb-2 uppercase tracking-widest"
+          >
+            Placeholder Text
+          </label>
+          <input
+            type="text"
+            [(ngModel)]="fieldForm().placeholder"
+            placeholder="e.g., Enter value..."
+            class="w-full px-4 py-2.5 border-2 border-slate-200 rounded-lg text-slate-900 placeholder-slate-400 font-semibold focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all"
+          />
+        </div>
+
+        <div>
+          <label
+            class="block text-sm font-black text-slate-900 mb-2 uppercase tracking-widest"
+          >
+            Help Text
+          </label>
+          <textarea
+            [(ngModel)]="fieldForm().helpText"
+            placeholder="Optional guidance for users"
+            rows="2"
+            class="w-full px-4 py-2.5 border-2 border-slate-200 rounded-lg text-slate-900 placeholder-slate-400 font-semibold focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all resize-none"
+          ></textarea>
+        </div>
+      </div>
+
+      <div class="flex gap-3 mt-8">
+        <button
+          (click)="closeFieldModal()"
+          class="flex-1 px-4 py-3 border-2 border-slate-300 text-slate-900 font-black rounded-lg hover:bg-slate-50 active:bg-slate-100 transition-colors uppercase tracking-wide text-sm"
+        >
+          Cancel
+        </button>
+        <button
+          (click)="saveFieldModal()"
+          class="flex-1 px-4 py-3 bg-teal-600 text-white font-black rounded-lg hover:bg-teal-700 active:bg-teal-800 transition-colors uppercase tracking-wide text-sm"
+        >
+          Save
+        </button>
+      </div>
+    </div>
+  </div>
+  }
+</div>

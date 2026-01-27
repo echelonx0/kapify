@@ -1,228 +1,356 @@
 <!-- src/app/profile/steps/review/profile-review.component.html -->
-<div class="max-w-7xl mx-auto space-y-8 ml-8">
-  <!-- AI Analysis Section -->
-  <!-- Profile Evaluation Section -->
-  <div class="mt-8">
-    <div class="space-y-6">
-      <!-- Hero Header -->
-      <div class="bg-slate-950 rounded-2xl p-12 text-white">
-        <h2 class="text-4xl font-bold mb-4">Profile Evaluation</h2>
-        <p class="text-slate-300 text-lg mb-10 leading-relaxed max-w-2xl">
-          Get insights about your business profile's strengths, areas for
-          improvement, and funding readiness.
+<div class="space-y-6">
+  <!-- ===== FUNDING REQUEST REQUIRED BANNER ===== -->
+  @if (!hasFundingRequest()) {
+  <div class="bg-amber-50 border-l-4 border-amber-400 p-4 rounded-lg">
+    <div class="flex items-start gap-3">
+      <lucide-icon
+        [img]="AlertCircleIcon"
+        [size]="20"
+        class="text-amber-600 flex-shrink-0 mt-0.5"
+      ></lucide-icon>
+      <div class="flex-1">
+        <h3 class="font-bold text-amber-900 text-sm">
+          Funding Request Required
+        </h3>
+        <p class="text-sm text-amber-800 mt-1">
+          Create a funding request to match with opportunities and submit
+          applications.
         </p>
+        <button
+          (click)="createFundingRequest()"
+          class="mt-3 inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-amber-600 text-white font-semibold rounded-lg hover:bg-amber-700 active:bg-amber-800 transition-all duration-200 text-sm"
+        >
+          Create Funding Request
+        </button>
+      </div>
+    </div>
+  </div>
+  }
 
-        <!-- Action Button with branded accent -->
-        <div class="flex">
-          <div class="w-1 bg-emerald-500"></div>
-          <button
-            (click)="toggleAIAnalysis()"
-            class="flex-1 bg-emerald-500 text-white px-8 py-4 font-semibold text-lg hover:bg-emerald-600 transition-colors"
+  <!-- ===== APPLICATION READINESS BANNER ===== -->
+  <div
+    [ngClass]="
+      canStartApplications()
+        ? 'bg-green-50 border-l-4 border-green-400'
+        : 'bg-blue-50 border-l-4 border-blue-400'
+    "
+    class="p-4 rounded-lg"
+  >
+    <div class="flex items-start gap-3">
+      <lucide-icon
+        [ngClass]="canStartApplications() ? 'text-green-600' : 'text-blue-600'"
+        [img]="canStartApplications() ? CheckCircleIcon : AlertCircleIcon"
+        [size]="20"
+        class="flex-shrink-0 mt-0.5"
+      ></lucide-icon>
+      <div class="flex-1">
+        <h3
+          [ngClass]="
+            canStartApplications() ? 'text-green-900' : 'text-blue-900'
+          "
+          class="font-bold text-sm"
+        >
+          {{ getApplicationReadinessMessage() }}
+        </h3>
+      </div>
+      @if (canStartApplications()) {
+      <button
+        (click)="startApplicationProcess()"
+        class="flex items-center justify-center gap-2 px-4 py-2.5 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 active:bg-green-800 transition-all duration-200 text-sm whitespace-nowrap"
+      >
+        Browse Opportunities
+        <lucide-icon [img]="ArrowRightIcon" [size]="16"></lucide-icon>
+      </button>
+      }
+    </div>
+  </div>
+
+  <!-- Existing content... -->
+  <!-- Profile Overview -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div class="bg-white rounded-2xl border border-slate-200 p-6">
+      <p class="text-xs text-slate-600 font-semibold mb-2">Company Name</p>
+      <p class="text-lg font-bold text-slate-900">
+        {{ profileOverview().companyName }}
+      </p>
+    </div>
+
+    <div class="bg-white rounded-2xl border border-slate-200 p-6">
+      <p class="text-xs text-slate-600 font-semibold mb-2">Industry</p>
+      <p class="text-lg font-bold text-slate-900">
+        {{ profileOverview().industry }}
+      </p>
+    </div>
+
+    <div class="bg-white rounded-2xl border border-slate-200 p-6">
+      <p class="text-xs text-slate-600 font-semibold mb-2">Monthly Revenue</p>
+      <p class="text-lg font-bold text-slate-900">
+        {{ formatCurrency(profileOverview().monthlyRevenue) }}
+      </p>
+    </div>
+
+    <div class="bg-white rounded-2xl border border-slate-200 p-6">
+      <p class="text-xs text-slate-600 font-semibold mb-2">Funding Requested</p>
+      <p class="text-lg font-bold text-slate-900">
+        {{ formatCurrency(profileOverview().requestedFunding) }}
+      </p>
+    </div>
+  </div>
+
+  <!-- Profile Completion Progress -->
+  <div class="bg-white rounded-2xl border border-slate-200 p-6">
+    <div class="flex items-center justify-between mb-4">
+      <h3 class="text-lg font-bold text-slate-900">Profile Completion</h3>
+      <span
+        [ngClass]="
+          getCompletionStatusClass(profileOverview().completionPercentage)
+        "
+        class="text-2xl font-black"
+      >
+        {{ formatPercentage(profileOverview().completionPercentage) }}
+      </span>
+    </div>
+
+    <div class="w-full bg-slate-200 rounded-full overflow-hidden h-3">
+      <div
+        class="bg-gradient-to-r from-teal-400 to-teal-500 h-full transition-all duration-500"
+        [style.width]="
+          getCompletionBarWidth(profileOverview().completionPercentage)
+        "
+      ></div>
+    </div>
+  </div>
+
+  <!-- Readiness Assessment -->
+  <div class="bg-white rounded-2xl border border-slate-200 p-6">
+    <h3 class="text-lg font-bold text-slate-900 mb-4">Readiness Assessment</h3>
+
+    <div
+      [ngClass]="getReadinessLevelClass(readinessAssessment().level)"
+      class="border rounded-lg p-4 mb-4"
+    >
+      <div class="flex items-start gap-3">
+        <lucide-icon
+          [img]="
+            readinessAssessment().level === 'excellent'
+              ? CheckCircleIcon
+              : AlertCircleIcon
+          "
+          [size]="20"
+          class="flex-shrink-0 mt-0.5"
+        ></lucide-icon>
+        <div>
+          <h4 class="font-bold text-sm capitalize">
+            {{ readinessAssessment().level }} Readiness
+          </h4>
+          <p class="text-sm mt-1">
+            {{ readinessAssessment().message }}
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <p
+        class="text-xs font-semibold text-slate-600 mb-3 uppercase tracking-wide"
+      >
+        Recommendations
+      </p>
+      <ul class="space-y-2">
+        <li
+          *ngFor="let rec of readinessAssessment().recommendations"
+          class="text-sm text-slate-700 flex items-start gap-2"
+        >
+          <span class="text-teal-600 font-bold mt-0.5">→</span>
+          {{ rec }}
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Section Summaries -->
+  <div class="space-y-4">
+    <h3 class="text-lg font-bold text-slate-900">Section Summaries</h3>
+
+    <div
+      *ngFor="let section of sectionSummaries(); let last = last"
+      class="bg-white rounded-2xl border border-slate-200 p-6"
+      [ngClass]="{ 'border-b-4 border-b-slate-300': !last }"
+    >
+      <!-- Header -->
+      <div class="flex items-center justify-between mb-4">
+        <div class="flex items-center gap-3">
+          <div
+            class="w-10 h-10 rounded-lg bg-slate-100 flex items-center justify-center"
           >
-            @if (showAIAnalysis()) { Hide Analysis } @else { Analyze My Profile
-            }
-          </button>
+            <lucide-icon
+              [img]="getSectionIcon(section.stepId)"
+              [size]="18"
+              class="text-slate-600"
+            ></lucide-icon>
+          </div>
+          <div>
+            <h4 class="font-bold text-slate-900">{{ section.title }}</h4>
+            <p class="text-xs text-slate-500">
+              {{ section.completionPercentage }}% complete
+            </p>
+          </div>
+        </div>
+
+        <button
+          (click)="editSection(section.stepId)"
+          class="px-3 py-2 text-sm text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-all duration-200"
+        >
+          <lucide-icon [img]="EditIcon" [size]="16"></lucide-icon>
+        </button>
+      </div>
+
+      <!-- Progress Bar -->
+      <div class="mb-4">
+        <div class="w-full bg-slate-200 rounded-full overflow-hidden h-2">
+          <div
+            class="bg-gradient-to-r from-teal-400 to-teal-500 h-full transition-all duration-500"
+            [style.width]="getCompletionBarWidth(section.completionPercentage)"
+          ></div>
         </div>
       </div>
 
-      <!-- Analysis Content -->
-      @if (showAIAnalysis()) {
-      <div class="bg-white border border-slate-200 rounded-lg p-8">
-        <app-enhanced-ai-analysis
-          [opportunity]="null"
-          [applicationData]="null"
-          [applicationId]="null"
-          [isSubmitted]="false"
-          [analysisMode]="'profile'"
-          (analysisCompleted)="onProfileAnalysisCompleted($event)"
+      <!-- Key Data -->
+      <div class="space-y-2 mb-4">
+        <div
+          *ngFor="let item of section.keyData"
+          class="flex items-center justify-between text-sm"
         >
-        </app-enhanced-ai-analysis>
+          <span class="text-slate-700">{{ item.label }}</span>
+          <span
+            [ngClass]="getStatusBadgeClass(item.status || '')"
+            class="px-2 py-1 rounded text-xs font-medium"
+          >
+            {{ item.value }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Missing Items -->
+      @if (section.missingItems.length > 0) {
+      <div class="bg-red-50 border border-red-200/50 rounded-lg p-3">
+        <p class="text-xs font-semibold text-red-700 mb-2">Missing Items:</p>
+        <ul class="space-y-1">
+          <li
+            *ngFor="let item of section.missingItems"
+            class="text-xs text-red-700"
+          >
+            • {{ item }}
+          </li>
+        </ul>
       </div>
       }
     </div>
   </div>
 
-  <!-- Profile Overview Card -->
-  <ui-card class="mb-8">
-    <div class="p-6">
-      <!-- Header -->
-      <div class="flex items-center justify-between mb-6 border-b pb-4">
-        <h2 class="text-xl font-semibold text-gray-900 flex items-center">
-          <lucide-icon
-            [name]="BuildingIcon"
-            [size]="20"
-            class="text-primary-600 mr-2"
-          />
-          Business Overview
-        </h2>
-        <div class="text-right">
-          <div class="text-2xl font-bold text-primary-600">
-            {{ formatPercentage(profileOverview().completionPercentage) }}
-          </div>
-          <div class="text-sm text-gray-500">Complete</div>
-        </div>
-      </div>
-
-      <!-- Key Info -->
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <div class="p-4 rounded-lg bg-gray-50">
-          <div class="text-sm font-medium text-gray-500">Company Name</div>
-          <div class="text-lg font-semibold text-gray-900">
-            {{ profileOverview().companyName }}
-          </div>
-        </div>
-        <div class="p-4 rounded-lg bg-gray-50">
-          <div class="text-sm font-medium text-gray-500">Industry</div>
-          <div class="text-lg font-semibold text-gray-900">
-            {{ profileOverview().industry }}
-          </div>
-        </div>
-        <div class="p-4 rounded-lg bg-gray-50">
-          <div class="text-sm font-medium text-gray-500">
-            Years in Operation
-          </div>
-          <div class="text-lg font-semibold text-gray-900">
-            {{ profileOverview().yearsInOperation }}
-          </div>
-        </div>
-        <div class="p-4 rounded-lg bg-gray-50">
-          <div class="text-sm font-medium text-gray-500">Employee Count</div>
-          <div class="text-lg font-semibold text-gray-900">
-            {{ profileOverview().employeeCount }}
-          </div>
-        </div>
-        <div class="p-4 rounded-lg bg-gray-50">
-          <div class="text-sm font-medium text-gray-500">Monthly Revenue</div>
-          <div class="text-lg font-semibold text-green-600">
-            {{ formatCurrency(profileOverview().monthlyRevenue) }}
-          </div>
-        </div>
-        <div class="p-4 rounded-lg bg-gray-50">
-          <div class="text-sm font-medium text-gray-500">Funding Required</div>
-          <div class="text-lg font-semibold text-slate-600">
-            {{ formatCurrency(profileOverview().requestedFunding) }}
-          </div>
-        </div>
-      </div>
-    </div>
-  </ui-card>
-
-  <!-- Section Summaries -->
-  <div class="space-y-6">
+  <!-- AI Analysis Section -->
+  <div class="bg-white rounded-2xl border border-slate-200 p-6">
     <div class="flex items-center justify-between">
-      <h2 class="text-xl font-semibold text-gray-900">Section Details</h2>
-      @if (hasAnyMissingItems()) {
-      <div class="text-sm text-orange-600 bg-orange-50 px-3 py-1 rounded-full">
-        {{ getTotalMissingItems() }} items need attention
+      <div>
+        <h3 class="text-lg font-bold text-slate-900">AI Profile Analysis</h3>
+        <p class="text-sm text-slate-600 mt-1">
+          Get personalized recommendations to strengthen your funding profile
+        </p>
       </div>
-      }
+      <button
+        (click)="toggleAIAnalysis()"
+        class="px-4 py-2.5 bg-teal-600 text-white font-semibold rounded-lg hover:bg-teal-700 transition-all duration-200 text-sm"
+      >
+        {{ showAIAnalysis() ? "Hide" : "Show" }} Analysis
+      </button>
     </div>
 
-    <div class="space-y-6 mb-4">
-      @for (section of sectionSummaries(); track section.stepId) {
-      <div class="p-6 border rounded-lg bg-white shadow-sm">
-        <!-- Section Header -->
-        <div class="flex items-center justify-between mb-4">
-          <div class="flex items-center">
-            <div
-              [class]="
-                'w-10 h-10 rounded-lg flex items-center justify-center mr-3 ' +
-                (section.completed ? 'bg-green-100' : 'bg-gray-100')
-              "
-            >
-              <lucide-icon
-                [name]="section.completed ? CheckCircleIcon : section.icon"
-                [size]="20"
-                [class]="section.completed ? 'text-green-600' : 'text-gray-400'"
-              />
-            </div>
-            <div>
-              <h3 class="font-semibold text-gray-900">{{ section.title }}</h3>
-              <div
-                [class]="
-                  'text-sm ' +
-                  getCompletionStatusClass(section.completionPercentage)
-                "
-              >
-                {{ section.completionPercentage }}% complete
-              </div>
-            </div>
-          </div>
+    @if (showAIAnalysis()) {
+    <div class="mt-4">
+      <app-enhanced-ai-analysis
+        [coverData]="getCoverInformation()"
+        (analysisCompleted)="onProfileAnalysisCompleted($event)"
+        (improvementRequested)="onImprovementRequested()"
+      ></app-enhanced-ai-analysis>
+    </div>
+    }
+  </div>
 
-          <ui-button
-            variant="ghost"
-            size="sm"
-            (clicked)="editSection(section.stepId)"
-          >
-            <lucide-icon [name]="EditIcon" [size]="16" class="mr-1" />
-            Edit
-          </ui-button>
-        </div>
+  <!-- Action Buttons -->
+  <div class="flex gap-3 pt-4">
+    <button
+      (click)="saveProfile()"
+      class="px-6 py-2.5 bg-slate-100 text-slate-700 font-semibold rounded-xl hover:bg-slate-200 transition-all duration-200 text-sm"
+    >
+      Save Progress
+    </button>
 
-        <!-- Progress Bar -->
-        <div class="mb-4">
-          <div class="w-full bg-gray-200 rounded-full h-2">
-            <div
-              [class]="
-                'h-2 rounded-full transition-all duration-300 ' +
-                (section.completed ? 'bg-green-500' : 'bg-slate-500')
-              "
-              [style.width]="
-                getCompletionBarWidth(section.completionPercentage)
-              "
-            ></div>
-          </div>
-        </div>
+    <button
+      (click)="generateReport()"
+      [disabled]="isGeneratingReport()"
+      class="flex items-center justify-center gap-2 px-6 py-2.5 bg-slate-100 text-slate-700 font-semibold rounded-xl hover:bg-slate-200 transition-all duration-200 text-sm disabled:opacity-50"
+    >
+      <lucide-icon [img]="DownloadIcon" [size]="16"></lucide-icon>
+      {{ isGeneratingReport() ? "Generating..." : "Download Report" }}
+    </button>
+  </div>
+</div>
 
-        <!-- Key Data -->
-        @if (section.keyData.length > 0) {
-        <div class="space-y-2 mb-4">
-          @for (item of section.keyData; track item.label) {
-          <div class="flex items-center justify-between">
-            <span class="text-sm text-gray-600">{{ item.label }}</span>
-            <div class="flex items-center">
-              <span class="text-sm font-medium text-gray-900 mr-2">{{
-                item.value
-              }}</span>
-              @if (item.status) {
-              <span
-                [class]="
-                  'px-2 py-1 rounded-lg text-xs font-medium ' +
-                  getStatusBadgeClass(item.status)
-                "
-              >
-                {{ item.status }}
-              </span>
-              }
-            </div>
-          </div>
-          }
+<!-- ===== FUNDING REQUEST REQUIRED MODAL ===== -->
+@if (showFundingRequiredModal()) {
+<div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+  <div
+    class="bg-white rounded-2xl border-3 border-slate-300 max-w-md w-full mx-4 overflow-hidden"
+  >
+    <!-- Header -->
+    <div class="bg-amber-50 border-b-3 border-amber-300 px-6 py-6">
+      <div class="flex items-center gap-3">
+        <div
+          class="w-12 h-12 rounded-lg bg-amber-100 border-2 border-amber-600 flex items-center justify-center"
+        >
+          <lucide-icon
+            [img]="AlertCircleIcon"
+            [size]="20"
+            class="text-amber-700"
+          ></lucide-icon>
         </div>
-        }
-
-        <!-- Missing Items -->
-        @if (section.missingItems.length > 0) {
-        <div class="bg-orange-50 border border-orange-200 rounded-lg p-3">
-          <div class="flex items-center mb-2">
-            <lucide-icon
-              [name]="AlertCircleIcon"
-              [size]="16"
-              class="text-orange-600 mr-2"
-            />
-            <span class="font-medium text-orange-900">Missing Items</span>
-          </div>
-          <ul class="text-sm text-orange-700 space-y-1">
-            @for (item of section.missingItems; track item) {
-            <li class="flex items-start">
-              <span class="mr-2">•</span>
-              <span>{{ item }}</span>
-            </li>
-            }
-          </ul>
-        </div>
-        }
+        <h2 class="text-xl font-black text-slate-900 uppercase tracking-tight">
+          Funding Request Required
+        </h2>
       </div>
-      }
+    </div>
+
+    <!-- Content -->
+    <div class="px-6 py-6 space-y-4">
+      <p class="text-slate-700 text-sm">
+        To apply for funding opportunities, you need to create a funding request
+        that tells funders what you're seeking and how you'll use the funds.
+      </p>
+
+      <p class="text-slate-600 text-sm font-semibold">
+        Ready to get started? Create your funding request in just 3 minutes.
+      </p>
+    </div>
+
+    <!-- Footer -->
+    <div
+      class="bg-slate-50 border-t border-slate-200 px-6 py-4 flex gap-3 justify-end"
+    >
+      <button
+        (click)="closeFundingRequiredModal()"
+        class="px-6 py-2.5 bg-slate-100 text-slate-700 font-semibold rounded-lg border border-slate-200 hover:bg-slate-200 transition-all duration-200 text-sm"
+      >
+        Cancel
+      </button>
+
+      <button
+        (click)="createFundingRequest()"
+        class="flex items-center justify-center gap-2 px-6 py-2.5 bg-teal-600 text-white font-black rounded-lg border-3 border-teal-700 uppercase tracking-wide text-sm hover:bg-teal-700 active:bg-teal-800 transition-all duration-200"
+      >
+        Create Request
+      </button>
     </div>
   </div>
 </div>
+}

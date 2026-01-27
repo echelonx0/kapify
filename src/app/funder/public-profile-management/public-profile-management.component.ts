@@ -1,4 +1,3 @@
-// src/app/funder/components/public-profile-management/public-profile-management.component.ts
 import {
   Component,
   inject,
@@ -37,7 +36,6 @@ import {
   PenLine,
   CircleAlert,
 } from 'lucide-angular';
-import { UiButtonComponent } from 'src/app/shared/components';
 import {
   PublicProfile,
   SuccessMetric,
@@ -47,11 +45,13 @@ import {
 } from '../models/public-profile.models';
 import { FunderOnboardingService } from '../services/funder-onboarding.service';
 import { PublicProfileService } from '../services/public-profile.service';
-import { ProfileOptimizationWidgetComponent } from './components/optimisation-component/profile-optimisation.component';
+
 import {
   PublicProfileLogoUploadComponent,
   ProfileImage,
 } from './components/public-profile-logo-upload.component';
+import { ProfileExplainerWidgetComponent } from './components/optimisation-component/profile-explainer-widget.component';
+import { OrganizationSettingsService } from 'src/app/core/dashboard/services/organization-settings.service';
 
 @Component({
   selector: 'app-public-profile-management',
@@ -60,8 +60,7 @@ import {
     CommonModule,
     ReactiveFormsModule,
     LucideAngularModule,
-    UiButtonComponent,
-    ProfileOptimizationWidgetComponent,
+    ProfileExplainerWidgetComponent,
     PublicProfileLogoUploadComponent,
   ],
   templateUrl: 'public-profile-management.component.html',
@@ -71,6 +70,7 @@ export class PublicProfileManagementComponent implements OnInit, OnDestroy {
   private fb = inject(FormBuilder);
   private profileService = inject(PublicProfileService);
   private onboardingService = inject(FunderOnboardingService);
+  private organizationSettingsService = inject(OrganizationSettingsService);
   private destroy$ = new Subject<void>();
 
   // Icons
@@ -107,37 +107,25 @@ export class PublicProfileManagementComponent implements OnInit, OnDestroy {
   // Form
   profileForm!: FormGroup;
   private formChanged = signal(0);
+
   // Computed - Fixed validation logic
   profileExists = computed(() => !!this.profile()?.id);
 
-  // Replace your isFormValid computed property with this fixed version:
-
-  // Make isFormValid reactive:
   isFormValid = computed(() => {
-    // Subscribe to form changes to make this reactive
     this.formChanged();
 
     if (!this.profileForm) return false;
 
-    // Get current form values
-    const formValue = this.profileForm.getRawValue(); // Use getRawValue() instead of .value
+    const formValue = this.profileForm.getRawValue();
 
-    console.log('Validation check (reactive):', {
-      tagline: formValue.tagline,
-      investmentRange: formValue.investmentRange,
-    });
-
-    // Check required fields
     const tagline = formValue.tagline?.trim();
     const investmentRange = formValue.investmentRange;
 
     if (!tagline || tagline.length === 0) {
-      console.log('Validation failed: No tagline');
       return false;
     }
 
     if (!investmentRange) {
-      console.log('Validation failed: No investment range object');
       return false;
     }
 
@@ -145,39 +133,26 @@ export class PublicProfileManagementComponent implements OnInit, OnDestroy {
     const maxAmount = investmentRange.max;
 
     if (!minAmount || minAmount <= 0) {
-      console.log('Validation failed: Invalid min amount:', minAmount);
       return false;
     }
 
     if (!maxAmount || maxAmount <= 0) {
-      console.log('Validation failed: Invalid max amount:', maxAmount);
       return false;
     }
 
     if (maxAmount <= minAmount) {
-      console.log('Validation failed: Max not greater than min');
       return false;
     }
 
-    console.log('Validation passed!');
     return true;
   });
 
-  // Update canPublish to be reactive:
   canPublish = computed(() => {
-    // Subscribe to form changes
     this.formChanged();
 
     const isValid = this.isFormValid();
     const notSaving = !this.isSaving();
     const notPublishing = !this.isPublishing();
-
-    console.log('Can publish check (reactive):', {
-      isValid,
-      notSaving,
-      notPublishing,
-      result: isValid && notSaving && notPublishing,
-    });
 
     return isValid && notSaving && notPublishing;
   });
@@ -226,10 +201,9 @@ export class PublicProfileManagementComponent implements OnInit, OnDestroy {
 
   private initializeForm() {
     this.profileForm = this.fb.group({
-      tagline: ['', [Validators.required, Validators.maxLength(120)]],
+      tagline: ['', [Validators.required, Validators.maxLength(200)]],
       elevator_pitch: ['', Validators.maxLength(300)],
 
-      // ADD THESE:
       logoUrl: [''],
       heroImageUrl: [''],
       heroVideoUrl: [''],
@@ -251,24 +225,36 @@ export class PublicProfileManagementComponent implements OnInit, OnDestroy {
     });
   }
 
-  // Helper method to get field error
-  getFieldError(fieldName: string): string | null {
-    return this.validationErrors()[fieldName] || null;
-  }
-
-  // Helper method to check if field has error
-  hasFieldError(fieldName: string): boolean {
-    return !!this.getFieldError(fieldName);
-  }
-
   private loadOrganizationData() {
     this.onboardingService.onboardingState$
       .pipe(takeUntil(this.destroy$))
       .subscribe((state) => {
         if (state?.organization?.id) {
           this.organizationId.set(state.organization.id);
-          this.organizationName.set(state.organization.name); // ADD THIS
+          this.organizationName.set(state.organization.name);
           this.loadProfile(state.organization.id);
+          // Auto-load logo from organization settings
+          this.autoLoadOrgLogo();
+        }
+      });
+  }
+
+  /**
+   * Auto-load logo from organization settings if it exists
+   * Only populates if profile doesn't already have a logo
+   */
+  private autoLoadOrgLogo() {
+    this.organizationSettingsService.organization$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((org) => {
+        if (org?.logoUrl) {
+          const currentLogoUrl = this.profileForm.get('logoUrl')?.value;
+          // Only populate if no logo is already set in the profile
+          if (!currentLogoUrl) {
+            this.profileForm.patchValue({ logoUrl: org.logoUrl });
+            // Mark as pristine since this is auto-populated, not a user change
+            this.profileForm.markAsPristine();
+          }
         }
       });
   }
@@ -295,21 +281,20 @@ export class PublicProfileManagementComponent implements OnInit, OnDestroy {
       });
   }
 
-  goBack() {
-    window.history.back();
+  getFieldError(fieldName: string): string | null {
+    return this.validationErrors()[fieldName] || null;
   }
 
-  saveProfile() {
-    this.saveDraft();
+  hasFieldError(fieldName: string): boolean {
+    return !!this.getFieldError(fieldName);
   }
 
   private populateForm(profile: PublicProfile) {
-    // Basic fields
     this.profileForm.patchValue({
       tagline: profile.tagline,
       elevator_pitch: profile.elevator_pitch,
-      logoUrl: profile.logoUrl, // ← ADD
-      heroImageUrl: profile.heroImageUrl, // ← ADD
+      logoUrl: profile.logoUrl,
+      heroImageUrl: profile.heroImageUrl,
       heroVideoUrl: profile.heroVideo?.url,
       applicationProcess: profile.applicationProcess,
       responseTimePromise: profile.responseTimePromise,
@@ -317,21 +302,18 @@ export class PublicProfileManagementComponent implements OnInit, OnDestroy {
       investmentApproach: profile.investmentApproach,
     });
 
-    // Investment range
     if (profile.investmentRange) {
       this.profileForm
         .get('investmentRange')
         ?.patchValue(profile.investmentRange);
     }
 
-    // Arrays
     this.populatePortfolioHighlights(profile.portfolioHighlights);
     this.populateSuccessMetrics(profile.successMetrics);
     this.populateSocialLinks(profile.socialLinks);
     this.populateFundingAreas(profile.fundingAreas);
     this.populateTeamMembers(profile.teamMembers);
 
-    // Mark as pristine after population
     this.profileForm.markAsPristine();
   }
 
@@ -356,7 +338,7 @@ export class PublicProfileManagementComponent implements OnInit, OnDestroy {
           label: [metric.label],
           value: [metric.value],
           emphasis: [metric.emphasis || false],
-        })
+        }),
       );
     });
   }
@@ -369,7 +351,7 @@ export class PublicProfileManagementComponent implements OnInit, OnDestroy {
         this.fb.group({
           platform: [link.platform],
           url: [link.url],
-        })
+        }),
       );
     });
   }
@@ -383,7 +365,7 @@ export class PublicProfileManagementComponent implements OnInit, OnDestroy {
           name: [area.name],
           description: [area.description],
           tagsInput: [area.tags.join(', ')],
-        })
+        }),
       );
     });
   }
@@ -398,7 +380,7 @@ export class PublicProfileManagementComponent implements OnInit, OnDestroy {
           title: [member.title],
           bio: [member.bio],
           linkedinUrl: [member.linkedinUrl],
-        })
+        }),
       );
     });
   }
@@ -421,7 +403,7 @@ export class PublicProfileManagementComponent implements OnInit, OnDestroy {
         label: [''],
         value: [''],
         emphasis: [false],
-      })
+      }),
     );
   }
 
@@ -434,7 +416,7 @@ export class PublicProfileManagementComponent implements OnInit, OnDestroy {
       this.fb.group({
         platform: ['linkedin'],
         url: [''],
-      })
+      }),
     );
   }
 
@@ -448,7 +430,7 @@ export class PublicProfileManagementComponent implements OnInit, OnDestroy {
         name: [''],
         description: [''],
         tagsInput: [''],
-      })
+      }),
     );
   }
 
@@ -463,7 +445,7 @@ export class PublicProfileManagementComponent implements OnInit, OnDestroy {
         title: [''],
         bio: [''],
         linkedinUrl: [''],
-      })
+      }),
     );
   }
 
@@ -474,6 +456,7 @@ export class PublicProfileManagementComponent implements OnInit, OnDestroy {
   // ===============================
   // ACTIONS
   // ===============================
+
   onLogoUploaded(result: ProfileImage) {
     this.profileForm.patchValue({ logoUrl: result.url });
     this.saveDraft();
@@ -493,8 +476,16 @@ export class PublicProfileManagementComponent implements OnInit, OnDestroy {
     this.profileForm.patchValue({ heroImageUrl: '' });
     this.saveDraft();
   }
+
+  goBack() {
+    window.history.back();
+  }
+
+  saveProfile() {
+    this.saveDraft();
+  }
+
   saveDraft() {
-    // Mark all fields as touched to show validation errors
     this.profileForm.markAllAsTouched();
     this.updateValidationErrors();
 
@@ -513,7 +504,7 @@ export class PublicProfileManagementComponent implements OnInit, OnDestroy {
       : this.profileService.createProfile(
           orgId,
           this.organizationName()!,
-          formData
+          formData,
         );
 
     saveOperation.pipe(takeUntil(this.destroy$)).subscribe({
@@ -545,7 +536,6 @@ export class PublicProfileManagementComponent implements OnInit, OnDestroy {
   }
 
   previewProfile() {
-    // Save current changes first, then open preview
     if (this.hasChanges()) {
       this.saveDraft();
     }
@@ -562,8 +552,40 @@ export class PublicProfileManagementComponent implements OnInit, OnDestroy {
   }
 
   uploadVideo() {
-    // TODO: Implement video upload functionality
     console.log('Video upload not implemented yet');
+  }
+
+  publishProfile() {
+    this.profileForm.markAllAsTouched();
+    this.updateValidationErrors();
+
+    if (!this.canPublish()) {
+      console.log('Form validation failed');
+      return;
+    }
+
+    if (!this.profile()?.id) {
+      this.saveDraft();
+      return;
+    }
+
+    this.isPublishing.set(true);
+
+    this.profileService
+      .publishProfile(this.profile()!.id)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (profile) => {
+          this.profile.set(profile);
+          this.error.set(null);
+          this.isPublishing.set(false);
+        },
+        error: (error) => {
+          console.error('Publish failed:', error);
+          this.error.set('Failed to publish profile');
+          this.isPublishing.set(false);
+        },
+      });
   }
 
   // ===============================
@@ -576,14 +598,14 @@ export class PublicProfileManagementComponent implements OnInit, OnDestroy {
     return {
       tagline: form.tagline,
       elevator_pitch: form.elevator_pitch,
-      logoUrl: form.logoUrl, // ← ADD
-      heroImageUrl: form.heroImageUrl, // ← ADD
+      logoUrl: form.logoUrl,
+      heroImageUrl: form.heroImageUrl,
       heroVideo: form.heroVideoUrl ? { url: form.heroVideoUrl } : undefined,
       portfolioHighlights: form.portfolioHighlights.filter((h: string) =>
-        h.trim()
+        h.trim(),
       ),
       successMetrics: form.successMetrics.filter(
-        (m: any) => m.label && m.value
+        (m: any) => m.label && m.value,
       ),
       investmentRange: form.investmentRange,
       fundingAreas: form.fundingAreas
@@ -642,9 +664,9 @@ export class PublicProfileManagementComponent implements OnInit, OnDestroy {
   private setupAutoSave() {
     this.profileForm.valueChanges
       .pipe(
-        debounceTime(30000), // Auto-save every 30 seconds
+        debounceTime(30000),
         distinctUntilChanged(),
-        takeUntil(this.destroy$)
+        takeUntil(this.destroy$),
       )
       .subscribe(() => {
         if (this.hasChanges() && !this.isSaving()) {
@@ -657,15 +679,13 @@ export class PublicProfileManagementComponent implements OnInit, OnDestroy {
     const errors: Record<string, string> = {};
     const formValue = this.profileForm.value;
 
-    // Check tagline
     const tagline = formValue.tagline?.trim();
     if (!tagline) {
       errors['tagline'] = 'Tagline is required for publishing';
-    } else if (tagline.length > 120) {
-      errors['tagline'] = 'Tagline must be 120 characters or less';
+    } else if (tagline.length > 200) {
+      errors['tagline'] = 'Tagline must be 200 characters or less';
     }
 
-    // Check investment range
     const investmentRange = formValue.investmentRange;
     const minAmount = investmentRange?.min;
     const maxAmount = investmentRange?.max;
@@ -686,15 +706,12 @@ export class PublicProfileManagementComponent implements OnInit, OnDestroy {
   }
 
   private setupValidation() {
-    // Initial validation
     this.updateValidationErrors();
 
-    // Watch for any form changes and trigger reactivity
     this.profileForm.valueChanges
       .pipe(takeUntil(this.destroy$))
       .subscribe(() => {
         this.updateValidationErrors();
-        // Force computed properties to recalculate
         this.formChanged.set(this.formChanged() + 1);
       });
 
@@ -703,42 +720,6 @@ export class PublicProfileManagementComponent implements OnInit, OnDestroy {
       .subscribe(() => {
         this.updateValidationErrors();
         this.formChanged.set(this.formChanged() + 1);
-      });
-  }
-
-  // Update your publishProfile method to force validation:
-  publishProfile() {
-    // Force form to be touched to show all validation errors
-    this.profileForm.markAllAsTouched();
-    this.updateValidationErrors();
-
-    if (!this.canPublish()) {
-      console.log('Form validation failed');
-      return;
-    }
-
-    if (!this.profile()?.id) {
-      // Save first, then publish
-      this.saveDraft();
-      return;
-    }
-
-    this.isPublishing.set(true);
-
-    this.profileService
-      .publishProfile(this.profile()!.id)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (profile) => {
-          this.profile.set(profile);
-          this.error.set(null);
-          this.isPublishing.set(false);
-        },
-        error: (error) => {
-          console.error('Publish failed:', error);
-          this.error.set('Failed to publish profile');
-          this.isPublishing.set(false);
-        },
       });
   }
 }

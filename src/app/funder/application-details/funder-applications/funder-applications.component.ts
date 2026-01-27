@@ -26,7 +26,7 @@ import {
   ReportBuilderComponent,
   ApplicationReportRecord,
   ReportExportEvent,
-} from 'src/app/features/reports/analysis-history/components/report-builder-modal-premium.component';
+} from 'src/app/features/reports/analysis-history/components/report-builder-modal/report-builder.component';
 import {
   ApplicationListCardComponent,
   BaseApplicationCard,
@@ -475,6 +475,7 @@ export class FunderApplicationsComponent implements OnInit, OnDestroy {
       applicationStatus: app.status,
       createdAt: app.createdAt,
       updatedAt: app.updatedAt,
+      funderName: '',
     }));
   }
 

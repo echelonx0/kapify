@@ -14,7 +14,7 @@ import { CommonModule } from '@angular/common';
   standalone: true,
   imports: [CommonModule],
   template: `
-    <div class="space-y-2">
+    <div class="space-y-2 mt-4">
       @if (label()) {
       <label class="block text-sm font-semibold text-slate-900">
         {{ label() }}

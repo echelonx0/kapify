@@ -242,36 +242,6 @@ export class FundingOpportunityService {
     );
   }
 
-  /**
-   * Delete current draft (all sections)
-   */
-  deleteDraft(): Observable<{ success: boolean }> {
-    const currentAuth = this.authService.user();
-    if (!currentAuth) {
-      return throwError(() => new Error('User not authenticated'));
-    }
-
-    return from(this.deleteDraftFromSupabase(currentAuth.id)).pipe(
-      tap(() => {
-        this.lastSavedAt.set(null);
-        this.overallCompletion.set(0);
-        this.sectionCompletions.set({
-          'basic-info': 0,
-          'investment-terms': 0,
-          'eligibility-criteria': 0,
-          'application-process': 0,
-          settings: 0,
-        });
-        this.draftDataSubject.next({});
-        console.log('Draft deleted successfully');
-      }),
-      catchError((error) => {
-        console.error('Delete draft error:', error);
-        return throwError(() => error);
-      })
-    );
-  }
-
   // ===============================
   // OPPORTUNITY MANAGEMENT
   // ===============================
@@ -1701,6 +1671,115 @@ export class FundingOpportunityService {
 
   getCurrentError(): string | null {
     return this.error();
+  }
+
+  /**
+   * Delete all draft data (Supabase + localStorage)
+   * Clears form state and resets all service signals
+   * Returns draft title for activity tracking
+   */
+  deleteDraft(): Observable<{ success: boolean; draftTitle?: string }> {
+    const currentAuth = this.authService.user();
+    if (!currentAuth) {
+      return throwError(() => new Error('User not authenticated'));
+    }
+
+    return from(this.performCompleteDraftDeletion(currentAuth.id)).pipe(
+      tap((result) => {
+        // Reset all service state
+        this.lastSavedAt.set(null);
+        this.overallCompletion.set(0);
+        this.error.set(null);
+        this.sectionCompletions.set({
+          'basic-info': 0,
+          'investment-terms': 0,
+          'eligibility-criteria': 0,
+          'application-process': 0,
+          settings: 0,
+        });
+        this.draftDataSubject.next({});
+
+        console.log(
+          '✅ Draft deleted successfully:',
+          result.draftTitle || 'Untitled'
+        );
+      }),
+      catchError((error) => {
+        this.error.set('Failed to delete draft');
+        console.error('❌ Delete draft error:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  // ===============================
+  // ADD NEW PRIVATE METHOD
+  // ===============================
+
+  /**
+   * Perform complete draft deletion from all sources
+   * Handles Supabase + localStorage cleanup in transaction-like manner
+   */
+  private async performCompleteDraftDeletion(
+    userId: string
+  ): Promise<{ success: boolean; draftTitle?: string }> {
+    try {
+      // Step 1: Get draft title before deletion for activity tracking
+      let draftTitle: string | undefined;
+      try {
+        const { data: sections } = await this.supabaseService
+          .from('opportunity_drafts')
+          .select('data')
+          .eq('user_id', userId)
+          .eq('section_type', 'basic-info')
+          .single();
+
+        if (sections?.data?.title) {
+          draftTitle = sections.data.title;
+        }
+      } catch (err) {
+        console.warn(
+          '⚠️ Could not retrieve draft title for activity logging:',
+          err
+        );
+      }
+
+      // Step 2: Delete all draft sections from Supabase
+      const { error: dbError } = await this.supabaseService
+        .from('opportunity_drafts')
+        .delete()
+        .eq('user_id', userId);
+
+      // PGRST116 = no rows found, which is acceptable
+      if (dbError && dbError.code !== 'PGRST116') {
+        throw new Error(`Database deletion failed: ${dbError.message}`);
+      }
+
+      // Step 3: Clear localStorage draft
+      try {
+        localStorage.removeItem('opportunity_draft');
+        console.log('✅ Cleared localStorage draft');
+      } catch (err) {
+        console.warn('⚠️ Could not clear localStorage:', err);
+        // Non-critical, continue anyway
+      }
+
+      console.log('✅ All draft data cleared:', {
+        supabase: 'deleted',
+        localStorage: 'cleared',
+        draftTitle: draftTitle || 'Untitled Draft',
+      });
+
+      return {
+        success: true,
+        draftTitle: draftTitle || 'Untitled Draft',
+      };
+    } catch (error: any) {
+      console.error('❌ Error in performCompleteDraftDeletion:', error);
+      throw new Error(
+        `Failed to delete draft: ${error.message || 'Unknown error'}`
+      );
+    }
   }
 
   // ===============================

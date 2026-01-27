@@ -1,0 +1,121 @@
+<!-- Backdrop -->
+<div
+  class="fixed inset-0 bg-black/25 z-40"
+  (click)="onClose()"
+  [@fadeInOut]
+></div>
+
+<!-- Drawer -->
+<div
+  class="fixed right-0 top-0 bottom-0 w-full lg:w-96 bg-white border-l border-slate-200 flex flex-col z-50"
+  [@slideInFromRight]
+>
+  <!-- Header -->
+  <div class="px-6 py-4 border-b border-slate-200">
+    <div class="flex items-center justify-between mb-2">
+      <h2 class="text-base font-semibold text-slate-900">Match Explanation</h2>
+      <button
+        (click)="onClose()"
+        class="p-1 rounded hover:bg-slate-100"
+        aria-label="Close"
+      >
+        <lucide-icon [img]="CloseIcon" [size]="18" />
+      </button>
+    </div>
+
+    <p class="text-xs text-slate-600 line-clamp-2">
+      {{ opportunity.title }}
+    </p>
+  </div>
+
+  <!-- Content -->
+  <div class="flex-1 overflow-y-auto px-6 py-4">
+    <!-- Score Summary -->
+    <div class="mb-6">
+      <div class="flex items-end gap-3 mb-2">
+        <!-- <div class="text-3xl font-bold" [class]="scoreColor()">
+              {{ matchScore }}%
+            </div> -->
+        <div class="text-sm text-slate-600 mb-1">{{ matchGrade() }} match</div>
+      </div>
+
+      <div class="h-2 bg-slate-100 rounded-full overflow-hidden">
+        <div
+          class="h-full rounded-full"
+          [class]="progressGradient()"
+          [style.width.%]="matchScore"
+        ></div>
+      </div>
+    </div>
+
+    <!-- Explanation -->
+    <div class="mb-5 text-xs text-slate-600 leading-relaxed">
+      Your score is calculated by comparing your business profile against the
+      funder’s requirements. Each factor has a different weight based on how
+      important it is to the funder.
+    </div>
+
+    <!-- Factors -->
+    <p class="text-xs font-semibold text-slate-900 mb-3 uppercase">
+      Score Breakdown
+    </p>
+
+    <div class="space-y-3">
+      @for (factor of factors(); track factor.key) {
+      <div
+        class="border rounded-lg p-3"
+        [class.bg-green-50]="factor.matched"
+        [class.bg-slate-50]="!factor.matched"
+      >
+        <div class="flex gap-3">
+          <div
+            class="w-5 h-5 rounded flex items-center justify-center mt-0.5"
+            [class.bg-green-100]="factor.matched"
+            [class.bg-slate-200]="!factor.matched"
+          >
+            <lucide-icon
+              [img]="factor.matched ? CheckIcon : AlertIcon"
+              [size]="14"
+              [class.text-green-600]="factor.matched"
+              [class.text-slate-500]="!factor.matched"
+            />
+          </div>
+
+          <div class="flex-1">
+            <div class="flex justify-between items-center">
+              <p class="text-sm font-semibold text-slate-900">
+                {{ factor.label }}
+              </p>
+              <!-- <p class="text-xs text-slate-500">{{ factor.weight }}%</p> -->
+            </div>
+
+            <p class="text-xs text-slate-600 mt-0.5">
+              {{ factor.explanation }}
+            </p>
+
+            @if (factor.key === 'fundingAmount') {
+            <p class="text-xs text-slate-500 mt-1">
+              Contribution:
+              <span class="font-semibold text-slate-700">
+                {{ factor.contribution }}%
+              </span>
+            </p>
+            }
+          </div>
+        </div>
+      </div>
+      }
+    </div>
+
+    <!-- Footer Info -->
+    <div
+      class="mt-6 p-3 bg-blue-50/60 border border-blue-200/40 rounded-lg flex gap-2"
+    >
+      <lucide-icon [img]="InfoIcon" [size]="16" class="text-blue-600 mt-0.5" />
+      <p class="text-xs text-blue-900 leading-relaxed">
+        Higher weighted factors have a greater impact on your final score.
+        Improving these areas will most improve your matches.
+      </p>
+    </div>
+  </div>
+</div>

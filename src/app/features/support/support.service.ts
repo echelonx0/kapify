@@ -95,9 +95,39 @@ export class SupportService {
         if (error) throw error;
         return this.mapDatabaseToTicket(data);
       }),
-      tap((ticket) => {
+
+      tap(async (ticket) => {
         console.log('✅ Support ticket created:', ticket.id);
+
+        /**
+         * Fire-and-forget support email dispatch
+         * Uses the same Supabase Edge Function invocation
+         * pattern as funder-document-analysis.service
+         */
+        try {
+          const { error } = await this.supabase.functions.invoke(
+            'send-support-email',
+            {
+              body: {
+                ticketId: ticket.id,
+                name: ticket.name,
+                email: ticket.email,
+                subject: ticket.subject,
+                message: ticket.message,
+                category: ticket.category,
+              },
+            }
+          );
+
+          if (error) {
+            console.error('❌ Support email function returned error:', error);
+          }
+        } catch (err) {
+          // Must never break ticket creation
+          console.error('❌ Failed to invoke support email function:', err);
+        }
       }),
+
       catchError((error) => {
         console.error('❌ Failed to create support ticket:', error);
         return throwError(() => error);

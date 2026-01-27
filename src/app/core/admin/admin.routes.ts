@@ -22,7 +22,7 @@ export const adminRoutes: Routes = [
           return import('./dashboard/admin-dashboard.component').then((m) => {
             console.log(
               'AdminDashboardComponent loaded:',
-              m.AdminDashboardComponent
+              m.AdminDashboardComponent,
             );
             return m.AdminDashboardComponent;
           });
@@ -30,18 +30,42 @@ export const adminRoutes: Routes = [
         title: 'Admin Dashboard - Kapify',
       },
       {
+        path: 'demographics',
+        loadComponent: () =>
+          import('./demographics-management/demographics-config-management.component').then(
+            (m) => m.DemographicsConfigManagerComponent,
+          ),
+        title: 'Demographics Management - Kapify Admin',
+      },
+      {
+        path: 'scoring-weights-manager',
+        loadComponent: () =>
+          import('./matching-weights-admin/matching-weights-admin.component').then(
+            (m) => m.MatchingWeightsAdminComponent,
+          ),
+        title: 'Weights Management - Kapify Admin',
+      },
+      {
+        path: 'compliance',
+        loadComponent: () =>
+          import('./complience-management/compliance-management.component').then(
+            (m) => m.ComplianceManagementComponent,
+          ),
+        title: 'Compliance Management - Kapify Admin',
+      },
+      {
         path: 'verification',
         loadComponent: () => {
           console.log('Loading OrganizationVerificationComponent...');
-          return import(
-            './organization-verification/organization-verification.component'
-          ).then((m) => {
-            console.log(
-              'OrganizationVerificationComponent loaded:',
-              m.OrganizationVerificationComponent
-            );
-            return m.OrganizationVerificationComponent;
-          });
+          return import('./organization-verification/organization-verification.component').then(
+            (m) => {
+              console.log(
+                'OrganizationVerificationComponent loaded:',
+                m.OrganizationVerificationComponent,
+              );
+              return m.OrganizationVerificationComponent;
+            },
+          );
         },
         title: 'Organization Verification - Kapify Admin',
       },
@@ -52,19 +76,38 @@ export const adminRoutes: Routes = [
         title: 'Reports - Kapify Admin',
       },
 
+      // Add this route to your admin.routes.ts file
+
+      {
+        path: 'backups',
+        loadComponent: () => {
+          console.log('Loading BackupManagementComponent...');
+          return import('./backup-management/backup-management.component').then(
+            (m) => {
+              console.log(
+                'BackupManagementComponent loaded:',
+                m.BackupManagementComponent,
+              );
+              return m.BackupManagementComponent;
+            },
+          );
+        },
+        title: 'Backup & Recovery - Kapify Admin',
+      },
+
       {
         path: 'constants',
         loadComponent: () => {
           console.log('Loading ConstantsManagementComponent...');
-          return import(
-            './dashboard/components/management-component/constants-management.component'
-          ).then((m) => {
-            console.log(
-              'ConstantsManagementComponent loaded:',
-              m.ConstantsManagementComponent
-            );
-            return m.ConstantsManagementComponent;
-          });
+          return import('./dashboard/components/management-component/constants-management.component').then(
+            (m) => {
+              console.log(
+                'ConstantsManagementComponent loaded:',
+                m.ConstantsManagementComponent,
+              );
+              return m.ConstantsManagementComponent;
+            },
+          );
         },
         title: 'Constants Management - Kapify Admin',
       },
@@ -72,15 +115,15 @@ export const adminRoutes: Routes = [
         path: 'credit-costs',
         loadComponent: () => {
           console.log('Loading CreditCostsManagementComponent...');
-          return import(
-            './credit-costs/credit-costs-management.component'
-          ).then((m) => {
-            console.log(
-              'CreditCostsManagementComponent loaded:',
-              m.CreditCostsManagementComponent
-            );
-            return m.CreditCostsManagementComponent;
-          });
+          return import('./credit-costs/credit-costs-management.component').then(
+            (m) => {
+              console.log(
+                'CreditCostsManagementComponent loaded:',
+                m.CreditCostsManagementComponent,
+              );
+              return m.CreditCostsManagementComponent;
+            },
+          );
         },
         title: 'Credit Costs - Kapify Admin',
       },
@@ -88,15 +131,15 @@ export const adminRoutes: Routes = [
         path: 'back-office-questions',
         loadComponent: () => {
           console.log('Loading BackOfficeQuestionsManagementComponent...');
-          return import(
-            './dashboard/components/management-component/back-office-form-questions-mgmt.component'
-          ).then((m) => {
-            console.log(
-              'BackOfficeQuestionsManagementComponent loaded:',
-              m.BackOfficeQuestionsManagementComponent
-            );
-            return m.BackOfficeQuestionsManagementComponent;
-          });
+          return import('./dashboard/components/management-component/back-office-form-questions-mgmt.component').then(
+            (m) => {
+              console.log(
+                'BackOfficeQuestionsManagementComponent loaded:',
+                m.BackOfficeQuestionsManagementComponent,
+              );
+              return m.BackOfficeQuestionsManagementComponent;
+            },
+          );
         },
         title: 'Back Office Questions - Kapify Admin',
       },
@@ -104,15 +147,15 @@ export const adminRoutes: Routes = [
         path: 'fund-financial-terms',
         loadComponent: () => {
           console.log('Loading FundFinancialTermsManagementComponent...');
-          return import(
-            './dashboard/components/management-component/financial-terms-manager.component'
-          ).then((m) => {
-            console.log(
-              'FundFinancialTermsManagementComponent loaded:',
-              m.FundFinancialTermsManagementComponent
-            );
-            return m.FundFinancialTermsManagementComponent;
-          });
+          return import('./dashboard/components/management-component/financial-terms-manager.component').then(
+            (m) => {
+              console.log(
+                'FundFinancialTermsManagementComponent loaded:',
+                m.FundFinancialTermsManagementComponent,
+              );
+              return m.FundFinancialTermsManagementComponent;
+            },
+          );
         },
         title: 'Fund Financial Terms - Kapify Admin',
       },
@@ -120,7 +163,7 @@ export const adminRoutes: Routes = [
         path: 'faqs',
         loadComponent: () =>
           import('./faq-management/faq-management.component').then(
-            (c) => c.FAQManagementComponent
+            (c) => c.FAQManagementComponent,
           ),
         title: 'FAQ Management - Kapify Admin',
       },
@@ -135,10 +178,10 @@ export const adminRoutes: Routes = [
             (m) => {
               console.log(
                 'GuideManagementComponent loaded:',
-                m.GuideManagementComponent
+                m.GuideManagementComponent,
               );
               return m.GuideManagementComponent;
-            }
+            },
           );
         },
         title: 'Guides Management - Kapify Admin',
@@ -158,7 +201,7 @@ export const adminRoutes: Routes = [
           return import('./support/admin-support.component').then((m) => {
             console.log(
               'AdminSupportComponent loaded:',
-              m.AdminSupportComponent
+              m.AdminSupportComponent,
             );
             return m.AdminSupportComponent;
           });
@@ -180,15 +223,15 @@ export const adminRoutes: Routes = [
             path: 'services',
             loadComponent: () => {
               console.log('Loading AiServicesRegistryComponent...');
-              return import(
-                './ai-management/ai-services-registry.component'
-              ).then((m) => {
-                console.log(
-                  'AiServicesRegistryComponent loaded:',
-                  m.AiServicesRegistryComponent
-                );
-                return m.AiServicesRegistryComponent;
-              });
+              return import('./ai-management/ai-services-registry.component').then(
+                (m) => {
+                  console.log(
+                    'AiServicesRegistryComponent loaded:',
+                    m.AiServicesRegistryComponent,
+                  );
+                  return m.AiServicesRegistryComponent;
+                },
+              );
             },
             title: 'AI Services - Kapify Admin',
           },
@@ -200,10 +243,10 @@ export const adminRoutes: Routes = [
                 (m) => {
                   console.log(
                     'AiServiceDetailComponent loaded:',
-                    m.AiServiceDetailComponent
+                    m.AiServiceDetailComponent,
                   );
                   return m.AiServiceDetailComponent;
-                }
+                },
               );
             },
             title: 'AI Service Detail - Kapify Admin',

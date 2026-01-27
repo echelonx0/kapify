@@ -1,11 +1,11 @@
-// src/app/funder/services/application-status.service.ts
-
 import { Injectable, inject, signal } from '@angular/core';
 import { Observable, from, throwError } from 'rxjs';
 import { tap, catchError } from 'rxjs/operators';
 import { AuthService } from 'src/app/auth/services/production.auth.service';
 import { SharedSupabaseService } from 'src/app/shared/services/shared-supabase.service';
 import { MessagingService } from 'src/app/features/messaging/services/messaging.service';
+import { ActivityService } from 'src/app/shared/services/activity.service';
+import { ToastService } from 'src/app/shared/services/toast.service';
 import {
   FundingApplication,
   ReviewNote,
@@ -25,6 +25,7 @@ export interface StatusAction {
     | 'peer_review';
   requiresComment: boolean;
   createsThread?: boolean;
+  sendsEmail?: boolean;
 }
 
 export interface ActionSubmission {
@@ -41,6 +42,8 @@ export class ApplicationStatusService {
   private supabase = inject(SharedSupabaseService);
   private authService = inject(AuthService);
   private messagingService = inject(MessagingService);
+  private activityService = inject(ActivityService);
+  private toastService = inject(ToastService);
 
   // State
   isProcessing = signal(false);
@@ -48,7 +51,7 @@ export class ApplicationStatusService {
 
   /**
    * Submit an action for an application
-   * Handles review notes, status updates, and message threads
+   * Handles review notes, status updates, notifications, and activity tracking
    */
   submitAction(submission: ActionSubmission): Observable<FundingApplication> {
     this.isProcessing.set(true);
@@ -57,11 +60,15 @@ export class ApplicationStatusService {
     return from(this.executeAction(submission)).pipe(
       tap(() => {
         this.isProcessing.set(false);
+        this.toastService.success(`✓ ${submission.action.label}`);
         console.log('✅ [STATUS] Action completed successfully');
       }),
       catchError((error) => {
         console.error('❌ [STATUS] Error executing action:', error);
-        this.error.set('Failed to complete action. Please try again.');
+        const errorMessage =
+          error instanceof Error ? error.message : 'Failed to complete action';
+        this.error.set(errorMessage);
+        this.toastService.error(errorMessage);
         this.isProcessing.set(false);
         return throwError(() => error);
       })
@@ -70,6 +77,11 @@ export class ApplicationStatusService {
 
   /**
    * Execute the action with proper sequencing
+   * 1. Add review note (audit trail)
+   * 2. Update application status if needed
+   * 3. Create message thread if external action
+   * 4. Trigger email if action warrants it
+   * 5. Track activity
    */
   private async executeAction(
     submission: ActionSubmission
@@ -79,9 +91,11 @@ export class ApplicationStatusService {
 
     console.log('🚀 [STATUS] Starting action submission:', action.id);
 
-    // Step 1: Add review note (audit trail for all actions)
-    let updatedApplication: FundingApplication | undefined;
+    // Fetch application for context
+    let application = await this.getApplicationById(applicationId);
+    let updatedApplication = application;
 
+    // Step 1: Add review note (audit trail for all actions)
     if (reviewNoteMessage) {
       console.log('📝 [STATUS] Step 1: Adding review note');
       updatedApplication = await this.addReviewNote(
@@ -103,18 +117,205 @@ export class ApplicationStatusService {
       );
     }
 
-    // Step 3: Create message thread for external actions
-    if (action.createsThread && reviewNoteMessage) {
-      console.log('💬 [STATUS] Step 3: Creating message thread');
-      await this.createMessageThread(applicationId, action, reviewNoteMessage);
+    // Step 3: Create message thread for external actions (notify applicant)
+    if (action.category === 'external') {
+      console.log('💬 [STATUS] Step 3: Creating message thread for applicant');
+
+      // Get applicant details for messaging
+      const applicantUser = await this.getApplicantUser(
+        application.applicantId
+      );
+
+      if (applicantUser) {
+        try {
+          const threadId = await this.messagingService.createApplicationThread(
+            applicationId,
+            `Update: ${action.label}`,
+            []
+          );
+
+          if (threadId && reviewNoteMessage) {
+            await this.messagingService.sendMessage(
+              threadId,
+              reviewNoteMessage,
+              'message'
+            );
+            console.log('✅ [MESSAGE] Thread created and message sent');
+
+            // Log message activity
+            this.activityService.trackApplicationActivity(
+              'updated',
+              applicationId,
+              `Message sent to applicant: ${action.label}`,
+              application.formData?.['requestedAmount']
+            );
+          }
+        } catch (error) {
+          console.warn('⚠️ [MESSAGE] Error creating thread:', error);
+          // Continue - non-critical
+        }
+      }
     }
 
-    // Fetch and return the final application state
-    if (!updatedApplication) {
-      updatedApplication = await this.getApplicationById(applicationId);
+    // Step 4: Trigger email for specific actions
+    if (action.sendsEmail && action.category === 'external') {
+      console.log('📧 [EMAIL] Step 4: Triggering notification email');
+
+      const applicantUser = await this.getApplicantUser(
+        application.applicantId
+      );
+      if (applicantUser) {
+        try {
+          const emailSent = await this.sendNotificationEmail(
+            applicantUser,
+            application,
+            action,
+            reviewNoteMessage
+          );
+
+          if (emailSent) {
+            console.log('✅ [EMAIL] Notification email sent successfully');
+            // Log email activity
+            this.activityService.trackApplicationActivity(
+              'updated',
+              applicationId,
+              `Email sent to applicant: ${action.label}`,
+              application.formData?.['requestedAmount']
+            );
+          }
+        } catch (error) {
+          console.warn('⚠️ [EMAIL] Error sending email (non-critical):', error);
+          // Continue - non-critical, message was already sent
+        }
+      }
     }
 
-    return updatedApplication;
+    // Step 5: Log comprehensive activity
+    console.log('📊 [ACTIVITY] Step 5: Logging activity');
+    try {
+      const activityMessage = this.buildActivityMessage(
+        action,
+        application,
+        reviewNoteMessage
+      );
+
+      this.activityService.trackApplicationActivity(
+        'updated',
+        applicationId,
+        activityMessage,
+        application.formData?.['requestedAmount']
+      );
+    } catch (error) {
+      console.warn('⚠️ [ACTIVITY] Error logging activity:', error);
+      // Continue - non-critical
+    }
+
+    // Fetch and return final application state
+    const finalApplication = await this.getApplicationById(applicationId);
+    return finalApplication;
+  }
+
+  /**
+   * Send notification email via Edge Function
+   * Uses Supabase functions.invoke() pattern (fire-and-forget, non-blocking)
+   */
+  private async sendNotificationEmail(
+    applicantUser: any,
+    application: FundingApplication,
+    action: StatusAction,
+    message: string
+  ): Promise<boolean> {
+    try {
+      const currentUser = this.authService.user();
+      const funderName = currentUser?.email || 'Kapify Team';
+
+      console.log('📧 [EMAIL] Invoking send_notification_email function');
+
+      // Use Supabase functions.invoke() - handles auth automatically
+      const { data, error } = await this.supabase.functions.invoke(
+        'send_notification_email',
+        {
+          body: {
+            recipientEmail: applicantUser.email,
+            recipientName: applicantUser.first_name || 'Applicant',
+            applicantCompanyName: applicantUser.company_name,
+            applicationTitle: application.title,
+            actionType: action.id,
+            message,
+            applicationAmount: application.formData?.['requestedAmount'],
+            funderName,
+            opportunityTitle: application.title,
+          },
+        }
+      );
+
+      if (error) {
+        console.error('❌ [EMAIL] Edge Function returned error:', error);
+        return false;
+      }
+
+      if (data?.success === true) {
+        console.log('✅ [EMAIL] Notification email queued successfully');
+        return true;
+      }
+
+      console.warn('⚠️ [EMAIL] Function returned success: false');
+      return false;
+    } catch (error) {
+      // Must never break the action - email is non-critical
+      console.error(
+        '❌ [EMAIL] Failed to invoke edge function (non-critical):',
+        error
+      );
+      return false;
+    }
+  }
+
+  /**
+   * Get applicant user details for messaging/email
+   */
+  private async getApplicantUser(applicantId: string): Promise<any> {
+    try {
+      const { data, error } = await this.supabase
+        .from('users')
+        .select('id, email, first_name, last_name, company_name, user_type')
+        .eq('id', applicantId)
+        .single();
+
+      if (error) {
+        console.warn('Failed to fetch applicant user:', error);
+        return null;
+      }
+
+      return data;
+    } catch (error) {
+      console.error('Error fetching applicant user:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Build activity message based on action
+   */
+  private buildActivityMessage(
+    action: StatusAction,
+    application: FundingApplication,
+    comment?: string
+  ): string {
+    const messages: Record<string, string> = {
+      approve: `Application approved: ${application.title}`,
+      reject: `Application rejected: ${application.title}`,
+      request_documents: `Document request sent: ${application.title}`,
+      request_info: `Information request sent: ${application.title}`,
+      request_amendments: `Amendment request sent: ${application.title}`,
+      refer_committee: `Application referred to committee: ${application.title}`,
+      add_note: `Internal note added: ${application.title}`,
+      flag_review: `Application flagged for review: ${application.title}`,
+      set_priority: `Priority level updated: ${application.title}`,
+      request_peer_review: `Peer review requested: ${application.title}`,
+    };
+
+    return messages[action.id] || `Action taken: ${action.label}`;
   }
 
   /**
@@ -136,8 +337,6 @@ export class ApplicationStatusService {
       if (!currentUser) {
         throw new Error('User not authenticated');
       }
-
-      console.log('👤 [REVIEW NOTE] Current user:', currentUser.email);
 
       // Fetch current application with review_notes
       const { data: currentApp, error: fetchError } = await this.supabase
@@ -162,8 +361,6 @@ export class ApplicationStatusService {
         isRead: false,
       };
 
-      console.log('📝 [REVIEW NOTE] New note:', newNote);
-
       // Ensure review_notes is an array
       let existingNotes = currentApp?.review_notes;
       if (!Array.isArray(existingNotes)) {
@@ -174,10 +371,6 @@ export class ApplicationStatusService {
       }
 
       const updatedNotes = [...existingNotes, newNote];
-      console.log(
-        '📊 [REVIEW NOTE] Total notes after update:',
-        updatedNotes.length
-      );
 
       // Update application with new review note
       const { data, error: updateError } = await this.supabase
@@ -252,52 +445,6 @@ export class ApplicationStatusService {
   }
 
   /**
-   * Create a message thread for external actions
-   */
-  private async createMessageThread(
-    applicationId: string,
-    action: StatusAction,
-    message: string
-  ): Promise<void> {
-    try {
-      console.log('🔍 [MESSAGE THREAD] Creating thread for action:', action.id);
-
-      const subject = this.getThreadSubject(action, applicationId);
-
-      const threadId = await this.messagingService.createApplicationThread(
-        applicationId,
-        subject
-      );
-
-      if (threadId) {
-        await this.messagingService.sendMessage(threadId, message, 'message');
-        console.log('✅ [MESSAGE THREAD] Thread created and message sent');
-      }
-    } catch (error) {
-      console.error('⚠️ [MESSAGE THREAD] Error (non-critical):', error);
-      // Non-critical - don't fail the action if messaging fails
-    }
-  }
-
-  /**
-   * Get thread subject based on action
-   */
-  private getThreadSubject(
-    action: StatusAction,
-    applicationId: string
-  ): string {
-    const subjects: Record<string, string> = {
-      approve: 'Application Approved',
-      reject: 'Application Status Update',
-      request_documents: 'Additional Documents Requested',
-      request_info: 'Information Request',
-      request_amendments: 'Amendments Requested',
-    };
-
-    return subjects[action.id] || 'Application Update';
-  }
-
-  /**
    * Get application by ID
    */
   private async getApplicationById(
@@ -360,11 +507,11 @@ export class ApplicationStatusService {
   }
 
   /**
-   * Get predefined status actions
+   * Get predefined status actions with email configuration
    */
   getAvailableActions(): StatusAction[] {
     return [
-      // EXTERNAL ACTIONS
+      // EXTERNAL ACTIONS (notify applicant)
       {
         id: 'approve',
         label: 'Approve Application',
@@ -373,6 +520,7 @@ export class ApplicationStatusService {
         status: 'approved',
         requiresComment: false,
         createsThread: true,
+        sendsEmail: true,
       },
       {
         id: 'reject',
@@ -382,6 +530,7 @@ export class ApplicationStatusService {
         status: 'rejected',
         requiresComment: true,
         createsThread: true,
+        sendsEmail: true,
       },
       {
         id: 'request_documents',
@@ -391,6 +540,7 @@ export class ApplicationStatusService {
         status: 'under_review',
         requiresComment: true,
         createsThread: true,
+        sendsEmail: true,
       },
       {
         id: 'request_info',
@@ -400,6 +550,7 @@ export class ApplicationStatusService {
         status: 'under_review',
         requiresComment: true,
         createsThread: true,
+        sendsEmail: true,
       },
       {
         id: 'request_amendments',
@@ -409,9 +560,10 @@ export class ApplicationStatusService {
         status: 'under_review',
         requiresComment: true,
         createsThread: true,
+        sendsEmail: true,
       },
 
-      // INTERNAL ACTIONS
+      // INTERNAL ACTIONS (no email, messaging only)
       {
         id: 'refer_committee',
         label: 'Refer to Investment Committee',
@@ -419,6 +571,7 @@ export class ApplicationStatusService {
         category: 'internal',
         status: 'under_review',
         requiresComment: false,
+        sendsEmail: false,
       },
       {
         id: 'add_note',
@@ -426,6 +579,7 @@ export class ApplicationStatusService {
         description: 'Add private note visible only to team',
         category: 'internal',
         requiresComment: true,
+        sendsEmail: false,
       },
       {
         id: 'flag_review',
@@ -433,6 +587,7 @@ export class ApplicationStatusService {
         description: 'Mark for deeper analysis',
         category: 'internal',
         requiresComment: true,
+        sendsEmail: false,
       },
       {
         id: 'set_priority',
@@ -440,6 +595,7 @@ export class ApplicationStatusService {
         description: 'Change application priority',
         category: 'internal',
         requiresComment: false,
+        sendsEmail: false,
       },
       {
         id: 'request_peer_review',
@@ -447,6 +603,7 @@ export class ApplicationStatusService {
         description: 'Ask colleague to review',
         category: 'internal',
         requiresComment: true,
+        sendsEmail: false,
       },
     ];
   }

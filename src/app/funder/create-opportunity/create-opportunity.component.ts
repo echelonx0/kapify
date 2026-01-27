@@ -62,6 +62,7 @@ import { OpportunityUIHelperService } from './services/ui-helper.service';
 import { OpportunityActionModalComponent } from 'src/app/shared/components/modal/app-modal.component';
 import { OpportunityReviewComponent } from './steps/review/opportunity-review.component';
 import { FundSettingsComponent } from './steps/fund-settings/fund-settings.component';
+import { AuthService } from 'src/app/auth/services/production.auth.service';
 
 @Component({
   selector: 'app-opportunity-form',
@@ -112,7 +113,10 @@ export class CreateOpportunityComponent implements OnInit, OnDestroy {
   public stepNavigation = inject(StepNavigationService);
   public ui = inject(OpportunityUIHelperService);
   public organizationState = inject(OrganizationStateService);
+  private authService = inject(AuthService);
 
+  isDeletingDraft = signal(false);
+  deleteDraftError = signal<string | null>(null);
   // Component state
   mode = signal<'create' | 'edit'>('create');
   opportunityId = signal<string | null>(null);
@@ -133,7 +137,32 @@ export class CreateOpportunityComponent implements OnInit, OnDestroy {
   get overallCompletion() {
     return this.opportunityService.overallCompletion;
   }
+  /**
+   * Get delete draft state for template use
+   */
+  get isDeletingDraftState(): boolean {
+    return this.isDeletingDraft();
+  }
 
+  /**
+   * Get delete error message for template use
+   */
+  get deleteDraftErrorMessage(): string | null {
+    return this.deleteDraftError();
+  }
+
+  // ===============================
+  // 8. OPTIONAL: Add error dismissal handler
+  // ===============================
+
+  /**
+   * Dismiss delete error message
+   */
+  dismissDeleteError(): void {
+    this.deleteDraftError.set(null);
+  }
+
+  // ==
   // Icons
   ArrowLeftIcon = ArrowLeft;
   TargetIcon = Target;
@@ -180,13 +209,6 @@ export class CreateOpportunityComponent implements OnInit, OnDestroy {
 
     this.organizationState.loadOrganizationData();
     this.setupSubscriptions();
-  }
-
-  ngOnDestroy() {
-    this.destroy$.next();
-    this.destroy$.complete();
-    this.formState.destroy();
-    this.organizationState.destroy();
   }
 
   private initializeEffects() {
@@ -856,9 +878,132 @@ export class CreateOpportunityComponent implements OnInit, OnDestroy {
     this.ui.onImageError(field);
   }
 
-  clearDraft() {
-    this.formState.clearDraft();
-    this.toast.info('Draft cleared');
+  clearDraft(): void {
+    // Prevent multiple deletions
+    if (this.isDeletingDraft()) {
+      return;
+    }
+
+    this.isDeletingDraft.set(true);
+    this.deleteDraftError.set(null);
+
+    console.log('🗑️ Starting draft deletion...');
+
+    this.opportunityService.deleteDraft().subscribe({
+      next: (result) => {
+        console.log('✅ Draft deletion successful:', result);
+
+        // Reset form state
+        this.formState.clearDraft();
+        this.opportunityId.set(null);
+        this.publishError.set(null);
+        this.formState.validationErrors.set([]);
+
+        const draftTitle = result.draftTitle || 'Your draft';
+
+        // Show success toast
+        this.toast.success(`${draftTitle} deleted successfully`, 4000);
+
+        // Track activity
+        this.trackDraftDeletion(result.draftTitle);
+
+        // Navigate to dashboard after short delay for toast visibility
+        setTimeout(() => {
+          this.router.navigate(['/funder/dashboard']).then(() => {
+            this.isDeletingDraft.set(false);
+          });
+        }, 500);
+      },
+      error: (error) => {
+        console.error('❌ Draft deletion failed:', error);
+
+        const errorMessage = this.extractDeleteErrorMessage(error);
+        this.deleteDraftError.set(errorMessage);
+
+        // Show error toast
+        this.toast.error(errorMessage, 5000);
+
+        // Log error for debugging
+        console.error('Delete draft error details:', {
+          message: error.message,
+          errorMessage: errorMessage,
+          timestamp: new Date().toISOString(),
+          stack: error.stack,
+        });
+
+        this.isDeletingDraft.set(false);
+      },
+    });
+  }
+
+  /**
+   * Extract user-friendly error message from deletion error
+   */
+  private extractDeleteErrorMessage(error: any): string {
+    if (!error) {
+      return 'An unexpected error occurred while deleting the draft.';
+    }
+
+    if (error.message) {
+      // Check for specific error patterns
+      if (error.message.includes('not authenticated')) {
+        return 'Your session has expired. Please log in again and try deleting the draft.';
+      }
+      if (error.message.includes('Database deletion')) {
+        return 'Failed to delete draft from database. Please try again or contact support.';
+      }
+      if (error.message.includes('Failed to delete draft')) {
+        return error.message;
+      }
+
+      // Generic message with actual error
+      return `Failed to delete draft: ${error.message}`;
+    }
+
+    if (error.details) {
+      return `Draft deletion error: ${error.details}`;
+    }
+
+    return 'Failed to delete draft. Please try again.';
+  }
+
+  /**
+   * Track draft deletion activity
+   * Logs with draft title, user ID, and timestamp
+   */
+  private trackDraftDeletion(draftTitle?: string): void {
+    try {
+      const currentUser = this.authService.user();
+      if (!currentUser) {
+        console.warn('⚠️ Cannot track deletion: user not authenticated');
+        return;
+      }
+
+      const activityMessage = `Deleted draft: ${draftTitle || 'Untitled'}`;
+
+      console.log('📊 Logging activity:', {
+        type: 'application',
+        action: 'draft_deleted',
+        message: activityMessage,
+        draftTitle: draftTitle || 'Untitled Draft',
+        userId: currentUser.id,
+        timestamp: new Date().toISOString(),
+      });
+
+      // Activity is logged but not awaited
+      // This ensures navigation happens immediately after success toast
+      // In production, this could be connected to a dedicated activity tracking service
+    } catch (err) {
+      console.warn('⚠️ Failed to track draft deletion activity:', err);
+      // Non-critical: don't block deletion if activity tracking fails
+    }
+  }
+  /**
+   * Cancel deletion and stay on form
+   */
+  cancelDraftDeletion(): void {
+    this.deleteDraftError.set(null);
+    this.isDeletingDraft.set(false);
   }
 
   getFieldError(fieldName: string) {
@@ -891,5 +1036,17 @@ export class CreateOpportunityComponent implements OnInit, OnDestroy {
 
   isReviewStep(): boolean {
     return this.currentStep() === 'review';
+  }
+
+  ngOnDestroy() {
+    // Reset delete state
+    this.isDeletingDraft.set(false);
+    this.deleteDraftError.set(null);
+
+    // Existing cleanup
+    this.destroy$.next();
+    this.destroy$.complete();
+    this.formState.destroy();
+    this.organizationState.destroy();
   }
 }

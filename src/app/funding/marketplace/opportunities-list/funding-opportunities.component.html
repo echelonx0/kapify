@@ -1,4 +1,5 @@
 <!-- Public / Unauthenticated View -->
+
 @if (!isAuthenticated()) {
 <div class="min-h-screen bg-slate-50">
   <!-- Landing Header for Public Users -->
@@ -35,7 +36,12 @@
         (clearFilters)="clearFilters()"
       >
       </app-empty-state>
-
+      <button
+        (click)="suggestionsModal?.open()"
+        class="px-4 py-2 bg-red-500 text-white"
+      >
+        TEST: Open Modal
+      </button>
       <!-- Opportunities Grid -->
       <app-opportunities-grid
         *ngIf="!isLoading() && filteredOpportunities().length > 0"
@@ -128,8 +134,6 @@
 <!-- Authenticated View -->
 @if (isAuthenticated() && !isUserFunder()) {
 <div class="min-h-screen bg-slate-50">
-  <landing-header />
-
   <!-- Horizontal Advanced Filters -->
   <div class="bg-white border-b border-slate-200">
     <div class="max-w-7xl mx-auto px-4 lg:px-8 py-6">

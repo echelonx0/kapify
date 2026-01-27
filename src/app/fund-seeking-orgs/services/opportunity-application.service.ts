@@ -1,7 +1,7 @@
 // src/app/applications/services/opportunity-application.service.ts
 import { Injectable, inject, signal } from '@angular/core';
 import { Observable, from, throwError, BehaviorSubject } from 'rxjs';
-import { tap, catchError } from 'rxjs/operators';
+import { tap, catchError, map } from 'rxjs/operators';
 import { AuthService } from '../../auth/services/production.auth.service';
 import { SharedSupabaseService } from '../../shared/services/shared-supabase.service';
 import { ProfileData } from '../../profiles/SME-Profiles/models/funding.models';
@@ -54,49 +54,157 @@ export class OpportunityApplicationService {
     this.isLoading.set(true);
     this.error.set(null);
 
+    // console.log(
+    //   '📂 [OpportunityApplicationService] Loading applications for user:',
+    //   currentUser.id
+    // );
+
     return from(this.fetchUserApplications(currentUser.id)).pipe(
       tap((applications) => {
+        // console.log('✅ Applications loaded:', applications.length);
+        applications.forEach((app) => {
+          // console.log(`  - ${app.title}`, {
+          //   id: app.id,
+          //   status: app.status,
+          //   hasCoverInformation: !!app.coverInformation,
+          //   fundingMotivation:
+          //     app.coverInformation?.purposeStatement?.substring(0, 30),
+          //   useOfFunds: app.coverInformation?.useOfFunds?.substring(0, 30),
+          //   fundingTypes: app.coverInformation?.useOfFunds,
+          //   industries: app.coverInformation?.purposeStatement,
+          //   fundingRequest: app.coverInformation,
+          // });
+        });
         this.applicationsSubject.next(applications);
         this.isLoading.set(false);
       }),
       catchError((error) => {
+        console.error('❌ Error loading applications:', error);
         this.error.set('Failed to load applications');
         this.isLoading.set(false);
-        // console.error('Load applications error:', error);
         return throwError(() => error);
       })
     );
   }
 
+  /**
+   * Transform database record to OpportunityApplication
+   * ✅ FIXED: Includes funding_request as coverInformation
+   */
+  private transformDatabaseToLocal(dbData: any): OpportunityApplication {
+    const formData = dbData.form_data || {};
+
+    // Extract coverInformation from either nested formData or from funding_request column
+    let coverInformation: CoverInformation;
+
+    if (formData.coverInformation) {
+      // From form_data (old structure)
+      coverInformation = formData.coverInformation;
+    } else if (dbData.funding_request) {
+      // From funding_request column (new structure - THIS IS THE FIX)
+      // Map funding_request to CoverInformation format
+      coverInformation = {
+        requestedAmount: dbData.funding_request.fundingAmount || 0,
+        purposeStatement: dbData.funding_request.fundingMotivation || '',
+        useOfFunds: dbData.funding_request.useOfFunds || '',
+        timeline: '',
+        opportunityAlignment: '',
+        // ✅ Add the full funding_request so we can access all fields
+        fundingMotivation: dbData.funding_request.fundingMotivation,
+        fundingTypes: dbData.funding_request.fundingTypes,
+        industries: dbData.funding_request.industries,
+        fundingAmount: dbData.funding_request.fundingAmount,
+        businessStages: dbData.funding_request.businessStages,
+        location: dbData.funding_request.location,
+        repaymentStrategy: dbData.funding_request.repaymentStrategy,
+        equityOffered: dbData.funding_request.equityOffered,
+        exclusionCriteria: dbData.funding_request.exclusionCriteria,
+        investmentCriteria: dbData.funding_request.investmentCriteria,
+      } as any;
+    } else {
+      // Fallback: extract from form_data root
+      coverInformation = {
+        requestedAmount: this.extractRequestedAmount(formData),
+        purposeStatement: formData.purposeStatement || '',
+        useOfFunds: formData.useOfFunds || '',
+        timeline: formData.timeline || '',
+        opportunityAlignment: formData.opportunityAlignment || '',
+      };
+    }
+
+    return {
+      id: dbData.id,
+      applicantId: dbData.applicant_id,
+      opportunityId: dbData.opportunity_id,
+      title: dbData.title,
+      description: dbData.description,
+      status: dbData.status,
+      stage: dbData.stage,
+      profileData: formData.profileData || {},
+      coverInformation,
+      submittedAt: dbData.submitted_at
+        ? new Date(dbData.submitted_at)
+        : undefined,
+      reviewStartedAt: dbData.review_started_at
+        ? new Date(dbData.review_started_at)
+        : undefined,
+      reviewedAt: dbData.reviewed_at ? new Date(dbData.reviewed_at) : undefined,
+      decidedAt: dbData.decided_at ? new Date(dbData.decided_at) : undefined,
+      createdAt: new Date(dbData.created_at),
+      updatedAt: new Date(dbData.updated_at),
+      opportunity: dbData.opportunity,
+      reviewNotes: dbData.review_notes || [],
+      aiAssessment: formData.aiAssessment,
+    };
+  }
+
+  /**
+   * Extract requested amount safely (handles string or number, returns 0 if invalid)
+   */
+  private extractRequestedAmount(formData: Record<string, any>): number {
+    const value = formData['requestedAmount'];
+
+    if (typeof value === 'number') {
+      return value;
+    }
+
+    if (typeof value === 'string' && value.trim() !== '') {
+      const parsed = parseFloat(value);
+      return isNaN(parsed) ? 0 : parsed;
+    }
+
+    return 0;
+  }
+
   private async fetchUserApplications(
     userId: string
   ): Promise<OpportunityApplication[]> {
-    // console.log('Fetching applications for user:', userId);
     try {
       const { data, error } = await this.supabase
         .from('applications')
         .select(
           `
-          *,
-          opportunity:opportunity_id (
-            id,
-            title,
-            funding_type,
-            min_investment,
-            max_investment,
-            currency,
-            organization_id,
-            decision_timeframe
-          )
-        `
+        *,
+        opportunity:opportunity_id (
+          id,
+          title,
+          funding_type,
+          min_investment,
+          max_investment,
+          currency,
+          organization_id,
+          decision_timeframe
+        )
+      `
         )
         .eq('applicant_id', userId)
+        .not('status', 'in', '(draft,rejected,withdrawn)')
         .order('created_at', { ascending: false });
 
       if (error) {
         throw new Error(`Failed to fetch applications: ${error.message}`);
       }
-      // console.log('Fetched applications data:', data);
+
       return (data || []).map((item: any) =>
         this.transformDatabaseToLocal(item)
       );
@@ -543,74 +651,6 @@ export class OpportunityApplicationService {
     });
 
     return from([stats]);
-  }
-
-  // ===============================
-  // DATA TRANSFORMATION
-  // ===============================
-
-  private transformDatabaseToLocal(dbData: any): OpportunityApplication {
-    const formData = dbData.form_data || {};
-
-    // Extract coverInformation - handles both nested and flat structures
-    let coverInformation: CoverInformation;
-
-    if (formData.coverInformation) {
-      // Nested structure (new submissions)
-      coverInformation = formData.coverInformation;
-    } else {
-      // Flat structure (existing data) - extract from root level
-      coverInformation = {
-        requestedAmount: this.extractRequestedAmount(formData),
-        purposeStatement: formData.purposeStatement || '',
-        useOfFunds: formData.useOfFunds || '',
-        timeline: formData.timeline || '',
-        opportunityAlignment: formData.opportunityAlignment || '',
-      };
-    }
-
-    return {
-      id: dbData.id,
-      applicantId: dbData.applicant_id,
-      opportunityId: dbData.opportunity_id,
-      title: dbData.title,
-      description: dbData.description,
-      status: dbData.status,
-      stage: dbData.stage,
-      profileData: formData.profileData || {},
-      coverInformation,
-      submittedAt: dbData.submitted_at
-        ? new Date(dbData.submitted_at)
-        : undefined,
-      reviewStartedAt: dbData.review_started_at
-        ? new Date(dbData.review_started_at)
-        : undefined,
-      reviewedAt: dbData.reviewed_at ? new Date(dbData.reviewed_at) : undefined,
-      decidedAt: dbData.decided_at ? new Date(dbData.decided_at) : undefined,
-      createdAt: new Date(dbData.created_at),
-      updatedAt: new Date(dbData.updated_at),
-      opportunity: dbData.opportunity,
-      reviewNotes: dbData.review_notes || [],
-      aiAssessment: formData.aiAssessment,
-    };
-  }
-
-  /**
-   * Extract requested amount safely (handles string or number, returns 0 if invalid)
-   */
-  private extractRequestedAmount(formData: Record<string, any>): number {
-    const value = formData['requestedAmount'];
-
-    if (typeof value === 'number') {
-      return value;
-    }
-
-    if (typeof value === 'string' && value.trim() !== '') {
-      const parsed = parseFloat(value);
-      return isNaN(parsed) ? 0 : parsed;
-    }
-
-    return 0;
   }
 
   // ===============================

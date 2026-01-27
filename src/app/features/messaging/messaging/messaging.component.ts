@@ -1,69 +1,83 @@
 // src/app/shared/components/messaging.component.ts
-import { Component, signal, computed, OnInit, ElementRef, ViewChild, AfterViewChecked, OnDestroy, inject } from '@angular/core';
+import {
+  Component,
+  signal,
+  computed,
+  OnInit,
+  ElementRef,
+  ViewChild,
+  AfterViewChecked,
+  OnDestroy,
+  inject,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { 
-  LucideAngularModule, 
+import {
+  LucideAngularModule,
   Send,
   Paperclip,
   Smile,
   ArrowLeft,
-  MoreVertical,
   Search,
-  X
+  X,
+  EllipsisVertical,
 } from 'lucide-angular';
-import { MessagingService, MessageThread, Message } from '../services/messaging.service';
+import {
+  MessagingService,
+  MessageThread,
+  Message,
+} from '../services/messaging.service';
 import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-activity-inbox',
   standalone: true,
-  imports: [
-    CommonModule,
-    FormsModule,
-    LucideAngularModule
-  ],
+  imports: [CommonModule, FormsModule, LucideAngularModule],
   templateUrl: 'messaging.component.html',
-  styles: [`
-    .line-clamp-2 {
-      display: -webkit-box;
-      -webkit-line-clamp: 2;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
-    }
-
-    @keyframes slide-in {
-      from {
-        opacity: 0;
-        transform: translateY(10px);
+  styles: [
+    `
+      .line-clamp-2 {
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
       }
-      to {
-        opacity: 1;
-        transform: translateY(0);
+
+      @keyframes slide-in {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
       }
-    }
 
-    .animate-slide-in {
-      animation: slide-in 0.3s ease-out forwards;
-    }
+      .animate-slide-in {
+        animation: slide-in 0.3s ease-out forwards;
+      }
 
-    .self-message {
-      animation-delay: 0ms !important;
-    }
-  `]
+      .self-message {
+        animation-delay: 0ms !important;
+      }
+    `,
+  ],
 })
-export class ActivityInboxComponent implements OnInit, AfterViewChecked, OnDestroy {
+export class KapifyMessagingComponent
+  implements OnInit, AfterViewChecked, OnDestroy
+{
   @ViewChild('messagesContainer') messagesContainer!: ElementRef;
-  
+
   private messagingService = inject(MessagingService);
   private subscriptions: Subscription[] = [];
- 
+
   // Icons
   SendIcon = Send;
   PaperclipIcon = Paperclip;
   SmileIcon = Smile;
   ArrowLeftIcon = ArrowLeft;
-  MoreVerticalIcon = MoreVertical;
+  MoreVerticalIcon = EllipsisVertical;
   SearchIcon = Search;
   XIcon = X;
 
@@ -73,7 +87,7 @@ export class ActivityInboxComponent implements OnInit, AfterViewChecked, OnDestr
   searchQuery = signal('');
   threads = signal<MessageThread[]>([]);
   isLoading = signal(false);
-  
+
   private shouldScrollToBottom = false;
 
   ngOnInit() {
@@ -89,25 +103,27 @@ export class ActivityInboxComponent implements OnInit, AfterViewChecked, OnDestr
   }
 
   ngOnDestroy() {
-    this.subscriptions.forEach(sub => sub.unsubscribe());
+    this.subscriptions.forEach((sub) => sub.unsubscribe());
   }
 
   private scrollToBottom() {
     try {
-      this.messagesContainer.nativeElement.scrollTop = 
+      this.messagesContainer.nativeElement.scrollTop =
         this.messagesContainer.nativeElement.scrollHeight;
-    } catch(err) {}
+    } catch (err) {}
   }
 
   private subscribeToThreads() {
     const threadsSubscription = this.messagingService.threads$.subscribe({
       next: (threads) => {
         this.threads.set(threads);
-        
+
         // Update selected thread if it's currently viewed
         const currentSelected = this.selectedThread();
         if (currentSelected) {
-          const updatedSelected = threads.find(t => t.id === currentSelected.id);
+          const updatedSelected = threads.find(
+            (t) => t.id === currentSelected.id
+          );
           if (updatedSelected) {
             this.selectedThread.set(updatedSelected);
             this.shouldScrollToBottom = true;
@@ -116,7 +132,7 @@ export class ActivityInboxComponent implements OnInit, AfterViewChecked, OnDestr
       },
       error: (error) => {
         console.error('Error in threads subscription:', error);
-      }
+      },
     });
 
     this.subscriptions.push(threadsSubscription);
@@ -137,11 +153,12 @@ export class ActivityInboxComponent implements OnInit, AfterViewChecked, OnDestr
   filteredThreads = computed(() => {
     const query = this.searchQuery().toLowerCase();
     if (!query) return this.threads();
-    
-    return this.threads().filter(thread => 
-      thread.subject.toLowerCase().includes(query) ||
-      (thread.lastMessage?.content.toLowerCase().includes(query)) ||
-      thread.participants.some(p => p.name.toLowerCase().includes(query))
+
+    return this.threads().filter(
+      (thread) =>
+        thread.subject.toLowerCase().includes(query) ||
+        thread.lastMessage?.content.toLowerCase().includes(query) ||
+        thread.participants.some((p) => p.name.toLowerCase().includes(query))
     );
   });
 
@@ -165,13 +182,13 @@ export class ActivityInboxComponent implements OnInit, AfterViewChecked, OnDestr
   async sendReply() {
     const message = this.replyMessage().trim();
     const currentThread = this.selectedThread();
-    
+
     if (!message || !currentThread) return;
 
     try {
       const success = await this.messagingService.sendMessage(
-        currentThread.id, 
-        message, 
+        currentThread.id,
+        message,
         'message'
       );
 
@@ -196,12 +213,13 @@ export class ActivityInboxComponent implements OnInit, AfterViewChecked, OnDestr
   }
 
   getParticipantsList(thread: MessageThread): string {
-    return thread.participants.map(p => p.name).join(', ');
+    return thread.participants.map((p) => p.name).join(', ');
   }
 
   getTimeAgo(timestamp: string | Date): string {
     const now = new Date();
-    const messageDate = typeof timestamp === 'string' ? new Date(timestamp) : timestamp;
+    const messageDate =
+      typeof timestamp === 'string' ? new Date(timestamp) : timestamp;
     const diff = now.getTime() - messageDate.getTime();
     const minutes = Math.floor(diff / 60000);
     const hours = Math.floor(diff / 3600000);

@@ -1,335 +1,354 @@
-<!-- src/app/dashboard/components/applications/applications-home.component.html -->
 <div class="min-h-screen bg-slate-50">
-  <div class="max-w-7xl mx-auto px-8 py-8">
-    <!-- Header -->
-    <div class="mb-8">
-      <h1 class="text-3xl font-bold text-slate-900">Applications</h1>
-      <p class="text-slate-600 mt-1">
-        @if (isFunder()) { Manage and review funding applications from SMEs }
-        @else { Track your funding applications }
-      </p>
-    </div>
+  <div class="max-w-7xl mx-auto px-4 lg:px-8 py-8">
+    <!-- Sticky Header: Title + Search + Filters (Neo-Brutalist) -->
+    <div class="sticky top-0 z-40 bg-slate-50 border-b-4 border-slate-900 mb-8">
+      <div
+        class="flex flex-col lg:flex-row items-start lg:items-center gap-4 lg:gap-6 px-4 lg:px-8 py-6"
+      >
+        <!-- Title (Hidden on mobile in row, shown full on desktop) -->
+        <div class="hidden lg:block">
+          <h1 class="text-3xl font-black text-slate-900 tracking-tight">
+            Applications
+          </h1>
+        </div>
 
-    <!-- Search & Filter Bar -->
-    <div
-      class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 mb-8"
-    >
-      <div class="flex items-center gap-4 mb-4">
-        <!-- Search Input -->
-        <div class="flex-1">
+        <!-- Mobile Title -->
+        <h1
+          class="lg:hidden text-2xl font-black text-slate-900 tracking-tight w-full"
+        >
+          Applications
+        </h1>
+
+        <!-- Search Input (grows on desktop, full width on mobile) -->
+        <div class="flex-1 w-full lg:w-auto">
           <div class="relative">
             <input
               type="text"
-              placeholder="Search by title, company, or application ID..."
+              placeholder="Search applications..."
               [value]="searchQuery()"
               (input)="searchQuery.set($any($event.target).value)"
-              class="w-full pl-10 pr-4 py-2.5 border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200"
+              class="w-full pl-10 pr-4 py-3 bg-white border-3 border-slate-900 rounded-lg text-slate-900 font-medium placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 transition-all duration-200 uppercase tracking-wide text-sm"
             />
           </div>
         </div>
 
-        <!-- Filter Actions -->
-        <div class="flex items-center gap-2">
+        <!-- Filter Actions Row -->
+        <div class="flex items-center gap-2 w-full lg:w-auto flex-wrap">
           @if (hasActiveFilters()) {
-          <button
-            (click)="clearFilters()"
-            class="px-4 py-2.5 text-sm font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors duration-200 flex items-center gap-2"
-          >
-            <lucide-icon [img]="XIcon" [size]="16" />
-            Clear Filters
-          </button>
+            <button
+              (click)="clearFilters()"
+              class="flex-1 lg:flex-none px-4 py-3 text-xs font-black bg-white text-slate-900 border-3 border-slate-900 rounded-lg uppercase tracking-widest hover:bg-slate-100 active:bg-slate-200 transition-all duration-200 flex items-center justify-center gap-2"
+            >
+              <lucide-icon [img]="XIcon" [size]="16" />
+              Clear
+            </button>
           }
 
           <button
             (click)="toggleFilters()"
             [class]="
               showFilters()
-                ? 'bg-teal-50 border-teal-200 text-teal-700'
-                : 'bg-white border-slate-200 text-slate-600'
+                ? 'bg-teal-600 border-teal-700 text-white'
+                : 'bg-white border-slate-900 text-slate-900'
             "
-            class="px-4 py-2.5 text-sm font-medium border rounded-xl hover:bg-slate-50 transition-colors duration-200 flex items-center gap-2"
+            class="flex-1 lg:flex-none px-4 py-3 text-xs font-black border-3 rounded-lg uppercase tracking-widest hover:shadow-md transition-all duration-200 flex items-center justify-center gap-2"
           >
             <lucide-icon [img]="FilterIcon" [size]="16" />
             <span>Filters</span>
             @if (hasActiveFilters()) {
-            <span class="w-2 h-2 rounded-full bg-teal-500 ml-1"></span>
+              <span class="w-2.5 h-2.5 rounded-full bg-amber-400 ml-1"></span>
             }
           </button>
+
+          <!-- Archive Button (if archived exist) -->
+          @if (stats().archived > 0) {
+            <button
+              (click)="openArchivedModal()"
+              class="flex-1 lg:flex-none px-4 py-3 text-xs font-black bg-white text-slate-900 border-3 border-slate-900 rounded-lg uppercase tracking-widest hover:bg-slate-100 active:bg-slate-200 transition-all duration-200 flex items-center justify-center gap-2"
+            >
+              <lucide-icon [img]="ArchiveIcon" [size]="16" />
+              <span class="hidden sm:inline">Archived</span>
+              <span class="inline sm:hidden">({{ stats().archived }})</span>
+            </button>
+          }
         </div>
       </div>
 
-      <!-- Filter Panel -->
+      <!-- Filter Panel (expands below when open) -->
       @if (showFilters()) {
-      <div class="pt-4 border-t border-slate-200 space-y-4">
-        <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          <!-- Status Filter -->
-          <div>
-            <label
-              class="block text-xs font-semibold text-slate-600 uppercase tracking-wide mb-2"
-              >Status</label
-            >
-            <select
-              [value]="statusFilter()"
-              (change)="statusFilter.set($any($event.target).value)"
-              class="w-full px-3 py-2.5 border border-slate-200 rounded-xl text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200 bg-white"
-            >
-              <option value="">All Statuses</option>
-              <option value="draft">Draft</option>
-              <option value="submitted">Submitted</option>
-              <option value="under_review">Under Review</option>
-              <option value="approved">Approved</option>
-              <option value="rejected">Rejected</option>
-            </select>
-          </div>
+        <div
+          class="border-t-4 border-slate-900 bg-white px-4 lg:px-8 py-6 space-y-4"
+        >
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <!-- Status Filter -->
+            <div>
+              <label
+                class="block text-xs font-black text-slate-900 uppercase tracking-widest mb-2"
+                >Status</label
+              >
+              <select
+                [value]="statusFilter()"
+                (change)="statusFilter.set($any($event.target).value)"
+                class="w-full px-3 py-3 bg-white border-3 border-slate-900 rounded-lg text-slate-900 font-semibold text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 transition-all duration-200"
+              >
+                <option value="">All Statuses</option>
+                <option value="draft">Draft</option>
+                <option value="submitted">Submitted</option>
+                <option value="under_review">Under Review</option>
+              </select>
+            </div>
 
-          <!-- Funding Type Filter -->
-          <div>
-            <label
-              class="block text-xs font-semibold text-slate-600 uppercase tracking-wide mb-2"
-              >Funding Type</label
-            >
-            <select
-              [value]="fundingTypeFilter()"
-              (change)="fundingTypeFilter.set($any($event.target).value)"
-              class="w-full px-3 py-2.5 border border-slate-200 rounded-xl text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200 bg-white"
-            >
-              <option value="">All Types</option>
-              <option value="equity">Equity</option>
-              <option value="debt">Debt</option>
-              <option value="grant">Grant</option>
-              <option value="mezzanine">Mezzanine</option>
-            </select>
-          </div>
+            <!-- Funding Type Filter -->
+            <div>
+              <label
+                class="block text-xs font-black text-slate-900 uppercase tracking-widest mb-2"
+                >Funding Type</label
+              >
+              <select
+                [value]="fundingTypeFilter()"
+                (change)="fundingTypeFilter.set($any($event.target).value)"
+                class="w-full px-3 py-3 bg-white border-3 border-slate-900 rounded-lg text-slate-900 font-semibold text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 transition-all duration-200"
+              >
+                <option value="">All Types</option>
+                <option value="equity">Equity</option>
+                <option value="debt">Debt</option>
+                <option value="grant">Grant</option>
+                <option value="mezzanine">Mezzanine</option>
+              </select>
+            </div>
 
-          <!-- Amount Range Filter -->
-          <div>
-            <label
-              class="block text-xs font-semibold text-slate-600 uppercase tracking-wide mb-2"
-              >Amount Range</label
-            >
-            <select
-              class="w-full px-3 py-2.5 border border-slate-200 rounded-xl text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200 bg-white"
-            >
-              <option value="">All Amounts</option>
-              <option value="0-100k">R0 - R100K</option>
-              <option value="100k-500k">R100K - R500K</option>
-              <option value="500k-1m">R500K - R1M</option>
-              <option value="1m+">R1M+</option>
-            </select>
-          </div>
+            <!-- Amount Range Filter -->
+            <div>
+              <label
+                class="block text-xs font-black text-slate-900 uppercase tracking-widest mb-2"
+                >Amount Range</label
+              >
+              <select
+                class="w-full px-3 py-3 bg-white border-3 border-slate-900 rounded-lg text-slate-900 font-semibold text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 transition-all duration-200"
+              >
+                <option value="">All Amounts</option>
+                <option value="0-100k">R0 - R100K</option>
+                <option value="100k-500k">R100K - R500K</option>
+                <option value="500k-1m">R500K - R1M</option>
+                <option value="1m+">R1M+</option>
+              </select>
+            </div>
 
-          <!-- Sort Filter -->
-          <div>
-            <label
-              class="block text-xs font-semibold text-slate-600 uppercase tracking-wide mb-2"
-              >Sort By</label
-            >
-            <select
-              class="w-full px-3 py-2.5 border border-slate-200 rounded-xl text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200 bg-white"
-            >
-              <option value="recent">Most Recent</option>
-              <option value="oldest">Oldest First</option>
-              <option value="amount-high">Highest Amount</option>
-              <option value="amount-low">Lowest Amount</option>
-            </select>
+            <!-- Sort Filter -->
+            <div>
+              <label
+                class="block text-xs font-black text-slate-900 uppercase tracking-widest mb-2"
+                >Sort By</label
+              >
+              <select
+                class="w-full px-3 py-3 bg-white border-3 border-slate-900 rounded-lg text-slate-900 font-semibold text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 transition-all duration-200"
+              >
+                <option value="recent">Most Recent</option>
+                <option value="oldest">Oldest First</option>
+                <option value="amount-high">Highest Amount</option>
+                <option value="amount-low">Lowest Amount</option>
+              </select>
+            </div>
           </div>
         </div>
-      </div>
       }
     </div>
 
     <!-- Error State -->
     @if (error()) {
-    <div
-      class="mb-8 p-4 bg-red-50 border border-red-200/50 rounded-xl flex items-center gap-3"
-    >
-      <lucide-icon
-        [img]="AlertCircleIcon"
-        [size]="18"
-        class="text-red-600 flex-shrink-0"
-      />
-      <div class="flex-1">
-        <p class="text-sm font-medium text-red-900">{{ error() }}</p>
-      </div>
-      <button
-        (click)="loadApplications()"
-        class="text-sm font-medium text-red-700 hover:text-red-900 flex-shrink-0"
+      <div
+        class="mb-8 p-4 bg-red-50 border border-red-200/50 rounded-xl flex items-center gap-3"
       >
-        Try Again
-      </button>
-    </div>
+        <lucide-icon
+          [img]="AlertCircleIcon"
+          [size]="18"
+          class="text-red-600 flex-shrink-0"
+        />
+        <div class="flex-1">
+          <p class="text-sm font-medium text-red-900">{{ error() }}</p>
+        </div>
+        <button
+          (click)="refreshData()"
+          class="text-sm font-medium text-red-700 hover:text-red-900 flex-shrink-0"
+        >
+          Try Again
+        </button>
+      </div>
     }
 
     <!-- Applications Container -->
-    <div class="grid grid-cols-3 gap-8">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
       <!-- Main Content -->
-      <div class="col-span-2 space-y-4">
+      <div class="lg:col-span-2 space-y-4">
         <!-- Loading State -->
         @if (isLoading()) {
-        <div
-          class="bg-white rounded-2xl border border-slate-200 shadow-sm p-12 text-center"
-        >
           <div
-            class="w-10 h-10 rounded-full border-2 border-slate-200 border-t-teal-500 animate-spin mx-auto mb-4"
-          ></div>
-          <p class="text-slate-600 font-medium">Loading applications...</p>
-        </div>
+            class="bg-white rounded-2xl border border-slate-200 shadow-sm p-12 text-center"
+          >
+            <div
+              class="w-10 h-10 rounded-full border-2 border-slate-200 border-t-teal-500 animate-spin mx-auto mb-4"
+            ></div>
+            <p class="text-slate-600 font-medium">Loading applications...</p>
+          </div>
         }
 
-        <!-- Empty State - No Applications -->
+        <!-- Empty State - No Active Applications -->
         @else if (filteredApplications().length === 0 && !hasActiveFilters()) {
-        <div
-          class="bg-white rounded-2xl border border-slate-200 shadow-sm p-12 text-center"
-        >
           <div
-            class="w-16 h-16 bg-slate-100 rounded-xl flex items-center justify-center mx-auto mb-4"
+            class="bg-white rounded-2xl border border-slate-200 shadow-sm p-12 text-center"
           >
-            <lucide-icon
-              [img]="FileTextIcon"
-              [size]="32"
-              class="text-slate-400"
-            />
+            <div
+              class="w-16 h-16 bg-slate-100 rounded-xl flex items-center justify-center mx-auto mb-4"
+            >
+              <lucide-icon
+                [img]="FileTextIcon"
+                [size]="32"
+                class="text-slate-400"
+              />
+            </div>
+            <h3 class="text-lg font-bold text-slate-900 mb-2">
+              {{ getEmptyStateMessage() }}
+            </h3>
+            <p class="text-slate-600 mb-6">
+              @if (isFunder()) {
+                Create funding opportunities to receive applications from SMEs
+              } @else {
+                Find opportunities that match your funding needs
+              }
+            </p>
+            <button
+              (click)="
+                isFunder() ? manageOpportunities() : createNewApplication()
+              "
+              class="px-6 py-2.5 bg-teal-500 text-white font-medium rounded-xl hover:bg-teal-600 active:bg-teal-700 transition-colors duration-200"
+            >
+              @if (isFunder()) {
+                Create Opportunity
+              } @else {
+                Browse Opportunities
+              }
+            </button>
           </div>
-          <h3 class="text-lg font-bold text-slate-900 mb-2">
-            No applications yet
-          </h3>
-          <p class="text-slate-600 mb-6">
-            @if (isFunder()) { Create opportunities to receive applications from
-            SMEs } @else { Browse available opportunities to start your funding
-            application }
-          </p>
-          <button
-            (click)="
-              isFunder() ? manageOpportunities() : createNewApplication()
-            "
-            class="px-6 py-2.5 bg-teal-500 text-white font-medium rounded-xl hover:bg-teal-600 active:bg-teal-700 transition-colors duration-200"
-          >
-            @if (isFunder()) { Create Opportunity } @else { Browse Opportunities
-            }
-          </button>
-        </div>
         }
 
         <!-- Empty State - No Results from Filters -->
         @else if (filteredApplications().length === 0 && hasActiveFilters()) {
-        <div
-          class="bg-white rounded-2xl border border-slate-200 shadow-sm p-12 text-center"
-        >
           <div
-            class="w-16 h-16 bg-slate-100 rounded-xl flex items-center justify-center mx-auto mb-4"
+            class="bg-white rounded-2xl border border-slate-200 shadow-sm p-12 text-center"
           >
-            <lucide-icon
-              [img]="SearchIcon"
-              [size]="32"
-              class="text-slate-400"
-            />
+            <div
+              class="w-16 h-16 bg-slate-100 rounded-xl flex items-center justify-center mx-auto mb-4"
+            ></div>
+            <h3 class="text-lg font-bold text-slate-900 mb-2">
+              No matching applications
+            </h3>
+            <p class="text-slate-600 mb-6">
+              Try adjusting your search or filters
+            </p>
+            <button
+              (click)="clearFilters()"
+              class="text-teal-600 hover:text-teal-700 font-medium text-sm"
+            >
+              Clear all filters
+            </button>
           </div>
-          <h3 class="text-lg font-bold text-slate-900 mb-2">
-            No matching applications
-          </h3>
-          <p class="text-slate-600 mb-6">
-            Try adjusting your search or filters
-          </p>
-          <button
-            (click)="clearFilters()"
-            class="text-teal-600 hover:text-teal-700 font-medium text-sm"
-          >
-            Clear all filters
-          </button>
-        </div>
         }
 
         <!-- Applications List -->
         @else {
-        <div class="space-y-4">
-          @for (application of paginatedApplications(); track application.id) {
-          @if (userType()) {
-          <div
-            (click)="openApplicationModal(application)"
-            class="cursor-pointer transition-all duration-200 hover:shadow-md"
-          >
-            <app-application-list-card
-              [application]="transformToBaseCard(application)"
-              [userType]="userType() === 'funder' ? 'funder' : 'sme'"
-              [showProgress]="true"
-              (viewDetails)="openApplicationModal(application)"
-            />
-          </div>
-          } }
-        </div>
-
-        <!-- Pagination Controls -->
-        <div
-          *ngIf="!isLoading() && filteredApplications().length > 0"
-          class="mt-12 flex flex-col items-center gap-6"
-        >
-          <!-- Pagination Text -->
-          <p class="text-sm font-medium text-slate-600">
-            {{ getPaginationText() }}
-          </p>
-
-          <!-- Pagination Controls -->
-          <div class="flex flex-wrap items-center justify-center gap-2">
-            <!-- Previous Button -->
-            <button
-              (click)="previousPage()"
-              [disabled]="currentPage() === 1"
-              class="px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200"
-              [class.bg-white]="currentPage() !== 1"
-              [class.border]="currentPage() !== 1"
-              [class.border-slate-200]="currentPage() !== 1"
-              [class.text-slate-700]="currentPage() !== 1"
-              [class.hover:border-teal-300]="currentPage() !== 1"
-              [class.hover:bg-teal-50]="currentPage() !== 1"
-              [class.bg-slate-100]="currentPage() === 1"
-              [class.text-slate-400]="currentPage() === 1"
-              [class.cursor-not-allowed]="currentPage() === 1"
-            >
-              Previous
-            </button>
-
-            <!-- Page Numbers -->
-            @for (page of pageRange(); track page) {
-            <button
-              (click)="goToPage(page)"
-              class="w-10 h-10 rounded-lg text-sm font-medium transition-all duration-200"
-              [class.bg-teal-500]="currentPage() === page"
-              [class.text-white]="currentPage() === page"
-              [class.bg-white]="currentPage() !== page"
-              [class.border]="currentPage() !== page"
-              [class.border-slate-200]="currentPage() !== page"
-              [class.text-slate-700]="currentPage() !== page"
-              [class.hover:border-teal-300]="currentPage() !== page"
-              [class.hover:bg-teal-50]="currentPage() !== page"
-            >
-              {{ page }}
-            </button>
+          <div class="space-y-4" #applicationsGrid>
+            @for (
+              application of paginatedApplications();
+              track application.id
+            ) {
+              @if (userType()) {
+                <div
+                  (click)="openApplicationModal(application)"
+                  class="cursor-pointer transition-all duration-200 hover:shadow-md"
+                >
+                  <app-application-list-card
+                    [application]="transformToBaseCard(application)"
+                    [userType]="userType() === 'funder' ? 'funder' : 'sme'"
+                    [showProgress]="true"
+                    (viewDetails)="openApplicationModal(application)"
+                    (applicationWithdrawn)="onApplicationWithdrawn($event)"
+                  />
+                </div>
+              }
             }
-
-            <!-- Next Button -->
-            <button
-              (click)="nextPage()"
-              [disabled]="currentPage() === totalPages()"
-              class="px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200"
-              [class.bg-white]="currentPage() !== totalPages()"
-              [class.border]="currentPage() !== totalPages()"
-              [class.border-slate-200]="currentPage() !== totalPages()"
-              [class.text-slate-700]="currentPage() !== totalPages()"
-              [class.hover:border-teal-300]="currentPage() !== totalPages()"
-              [class.hover:bg-teal-50]="currentPage() !== totalPages()"
-              [class.bg-slate-100]="currentPage() === totalPages()"
-              [class.text-slate-400]="currentPage() === totalPages()"
-              [class.cursor-not-allowed]="currentPage() === totalPages()"
-            >
-              Next
-            </button>
           </div>
-        </div>
+          <!-- Pagination Controls -->
+          <div
+            *ngIf="!isLoading() && filteredApplications().length > 0"
+            class="mt-12 flex flex-col items-center gap-6"
+          >
+            <!-- Pagination Text -->
+            <p class="text-sm font-medium text-slate-600">
+              {{ getPaginationText() }}
+            </p>
+
+            <!-- Pagination Controls -->
+            <div class="flex flex-wrap items-center justify-center gap-2">
+              <!-- Previous Button -->
+              <button
+                (click)="previousPage()"
+                [disabled]="currentPage() === 1"
+                class="px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200"
+                [class.bg-white]="currentPage() !== 1"
+                [class.border]="currentPage() !== 1"
+                [class.border-slate-200]="currentPage() !== 1"
+                [class.text-slate-700]="currentPage() !== 1"
+                [class.hover:border-teal-300]="currentPage() !== 1"
+                [class.hover:bg-teal-50]="currentPage() !== 1"
+                [class.bg-slate-100]="currentPage() === 1"
+                [class.text-slate-400]="currentPage() === 1"
+                [class.cursor-not-allowed]="currentPage() === 1"
+              >
+                Previous
+              </button>
+
+              <!-- Page Numbers -->
+              @for (page of pageRange(); track page) {
+                <button
+                  (click)="goToPage(page)"
+                  class="w-10 h-10 rounded-lg text-sm font-medium transition-all duration-200"
+                  [class.bg-teal-500]="currentPage() === page"
+                  [class.text-white]="currentPage() === page"
+                  [class.bg-white]="currentPage() !== page"
+                  [class.border]="currentPage() !== page"
+                  [class.border-slate-200]="currentPage() !== page"
+                  [class.text-slate-700]="currentPage() !== page"
+                  [class.hover:border-teal-300]="currentPage() !== page"
+                  [class.hover:bg-teal-50]="currentPage() !== page"
+                >
+                  {{ page }}
+                </button>
+              }
+
+              <!-- Next Button -->
+              <button
+                (click)="nextPage()"
+                [disabled]="currentPage() === totalPages()"
+                class="px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200"
+                [class.bg-white]="currentPage() !== totalPages()"
+                [class.border]="currentPage() !== totalPages()"
+                [class.border-slate-200]="currentPage() !== totalPages()"
+                [class.text-slate-700]="currentPage() !== totalPages()"
+                [class.hover:border-teal-300]="currentPage() !== totalPages()"
+                [class.hover:bg-teal-50]="currentPage() !== totalPages()"
+                [class.bg-slate-100]="currentPage() === totalPages()"
+                [class.text-slate-400]="currentPage() === totalPages()"
+                [class.cursor-not-allowed]="currentPage() === totalPages()"
+              >
+                Next
+              </button>
+            </div>
+          </div>
         }
       </div>
 
       <!-- Activity Sidebar -->
-      <div class="col-span-1">
+      <div class="lg:col-span-1">
         <div
           class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden sticky top-8"
         >
@@ -341,6 +360,145 @@
       </div>
     </div>
   </div>
+
+  <!-- Archived Applications Modal -->
+  @if (showArchivedModal()) {
+    <div
+      class="fixed inset-0 bg-black/25 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+    >
+      <div
+        class="bg-white rounded-2xl shadow-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+      >
+        <!-- Modal Header -->
+        <div
+          class="sticky top-0 px-6 py-4 border-b border-slate-200 bg-white flex items-center justify-between"
+        >
+          <div class="flex items-center gap-3">
+            <lucide-icon
+              [img]="ArchiveIcon"
+              [size]="20"
+              class="text-slate-600"
+            />
+            <h2 class="text-lg font-bold text-slate-900">
+              Archived Applications
+            </h2>
+            <span
+              class="px-2 py-1 bg-slate-100 text-slate-700 text-xs font-semibold rounded-lg"
+              >{{ stats().archived }}</span
+            >
+          </div>
+          <button
+            (click)="closeArchivedModal()"
+            class="p-1 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors duration-200"
+          >
+            <lucide-icon [img]="XIcon" [size]="20" />
+          </button>
+        </div>
+
+        <!-- Modal Content -->
+        <div class="p-6">
+          @if (archivedApplications().length === 0) {
+            <div class="text-center py-8">
+              <lucide-icon
+                [img]="ArchiveIcon"
+                [size]="32"
+                class="text-slate-300 mx-auto mb-3"
+              />
+              <p class="text-slate-600">No archived applications</p>
+            </div>
+          } @else {
+            <div class="space-y-3">
+              @for (app of paginatedArchivedApplications(); track app.id) {
+                <div
+                  (click)="openApplicationModal(app)"
+                  class="p-4 bg-slate-50 border border-slate-200 rounded-xl hover:bg-slate-100 cursor-pointer transition-colors duration-200"
+                >
+                  <div class="flex items-start justify-between mb-2">
+                    <div class="flex-1">
+                      <h4 class="text-sm font-semibold text-slate-900">
+                        {{ app.title }}
+                      </h4>
+                      <p class="text-xs text-slate-600 mt-1">
+                        {{ app.applicantCompany || app.opportunityTitle }}
+                      </p>
+                    </div>
+                    <span
+                      [class]="
+                        'px-2 py-1 text-xs font-semibold rounded-full ' +
+                        getStatusBadgeClass(app.status)
+                      "
+                    >
+                      {{ getStatusText(app.status) }}
+                    </span>
+                  </div>
+
+                  <div
+                    class="flex items-center justify-between text-xs text-slate-600"
+                  >
+                    <span>{{
+                      formatCurrency(app.requestedAmount, app.currency)
+                    }}</span>
+                    <span>{{ formatDate(app.updatedAt) }}</span>
+                  </div>
+                </div>
+              }
+            </div>
+
+            <!-- Archive Pagination -->
+            <div class="mt-6 flex flex-col items-center gap-4">
+              <p class="text-xs font-medium text-slate-600">
+                Showing
+                {{ (archivedPage() - 1) * archivedPageSize() + 1 }} to
+                {{
+                  Math.min(
+                    archivedPage() * archivedPageSize(),
+                    archivedApplications().length
+                  )
+                }}
+                of {{ archivedApplications().length }}
+              </p>
+
+              @if (archivedTotalPages() > 1) {
+                <div class="flex items-center gap-2">
+                  <button
+                    (click)="previousArchivedPage()"
+                    [disabled]="archivedPage() === 1"
+                    class="px-3 py-1.5 text-xs font-medium rounded-lg border border-slate-200 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+                  >
+                    Previous
+                  </button>
+
+                  @for (page of archivedPageRange(); track page) {
+                    <button
+                      (click)="goToArchivedPage(page)"
+                      class="w-8 h-8 text-xs font-medium rounded-lg transition-all duration-200"
+                      [class.bg-teal-500]="archivedPage() === page"
+                      [class.text-white]="archivedPage() === page"
+                      [class.bg-white]="archivedPage() !== page"
+                      [class.border]="archivedPage() !== page"
+                      [class.border-slate-200]="archivedPage() !== page"
+                      [class.text-slate-700]="archivedPage() !== page"
+                      [class.hover:bg-slate-50]="archivedPage() !== page"
+                    >
+                      {{ page }}
+                    </button>
+                  }
+
+                  <button
+                    (click)="nextArchivedPage()"
+                    [disabled]="archivedPage() === archivedTotalPages()"
+                    class="px-3 py-1.5 text-xs font-medium rounded-lg border border-slate-200 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+                  >
+                    Next
+                  </button>
+                </div>
+              }
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  }
 
   <!-- Application Detail Modal -->
   <app-application-detail-modal

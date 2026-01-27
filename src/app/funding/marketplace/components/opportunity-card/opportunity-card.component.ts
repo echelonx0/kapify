@@ -26,7 +26,7 @@ import {
   MailIcon,
   CheckCheckIcon,
   LinkIcon,
-  CheckCircle,
+  CircleCheckBig,
 } from 'lucide-angular';
 import { FundingOpportunity } from 'src/app/funder/create-opportunity/shared/funding.interfaces';
 import { AuthService } from 'src/app/auth/services/production.auth.service';
@@ -40,13 +40,7 @@ import { ToastService } from 'src/app/shared/services/toast.service';
   standalone: true,
   imports: [CommonModule, LucideAngularModule],
   templateUrl: 'opportunity-card.component.html',
-  styles: [
-    `
-      :host {
-        display: block;
-      }
-    `,
-  ],
+  styleUrl: 'opportunity-card.component.css',
 })
 export class KapifyOpportunityCardComponent implements OnInit {
   @Input() opportunity!: FundingOpportunity & { userHasApplied?: boolean };
@@ -65,41 +59,43 @@ export class KapifyOpportunityCardComponent implements OnInit {
   private router = inject(Router);
 
   // Icons
-  DollarSignIcon = DollarSign;
-  CalendarIcon = Calendar;
-  MapPinIcon = MapPin;
-  UsersIcon = Users;
-  EyeIcon = Eye;
-  ExternalLinkIcon = ExternalLink;
-  ClockIcon = Clock;
-  BuildingIcon = Building;
-  TrendingUpIcon = TrendingUp;
-  AwardIcon = Award;
-  ShareIcon = Share2;
-  BookmarkIcon = Bookmark;
-  mail = MailIcon;
-  check = CheckCheckIcon;
-  link = LinkIcon;
-  CheckCircleIcon = CheckCircle;
+  readonly DollarSignIcon = DollarSign;
+  readonly CalendarIcon = Calendar;
+  readonly MapPinIcon = MapPin;
+  readonly UsersIcon = Users;
+  readonly EyeIcon = Eye;
+  readonly ExternalLinkIcon = ExternalLink;
+  readonly ClockIcon = Clock;
+  readonly BuildingIcon = Building;
+  readonly TrendingUpIcon = TrendingUp;
+  readonly AwardIcon = Award;
+  readonly ShareIcon = Share2;
+  readonly BookmarkIcon = Bookmark;
+  readonly MailIcon = MailIcon;
+  readonly CheckCheckIcon = CheckCheckIcon;
+  readonly LinkIcon = LinkIcon;
+  readonly CheckCircleIcon = CircleCheckBig;
 
   // State
   isBookmarked = signal(false);
   isBookmarkLoading = signal(false);
   showShareMenu = signal(false);
   linkCopied = signal(false);
+  isAnimated = signal(false);
 
   ngOnInit() {
     this.checkBookmarkStatus();
     this.logApplicationStatus();
+    setTimeout(() => this.isAnimated.set(true), 50);
   }
 
   private logApplicationStatus() {
-    console.log('📋 Opportunity Card Data:', {
-      opportunityId: this.opportunity.id,
-      opportunityTitle: this.opportunity.title,
-      userHasApplied: this.opportunity.userHasApplied,
-      timestamp: new Date().toISOString(),
-    });
+    // console.log('📋 Opportunity Card Data:', {
+    //   opportunityId: this.opportunity.id,
+    //   opportunityTitle: this.opportunity.title,
+    //   userHasApplied: this.opportunity.userHasApplied,
+    //   timestamp: new Date().toISOString(),
+    // });
   }
 
   private checkBookmarkStatus() {
@@ -111,7 +107,7 @@ export class KapifyOpportunityCardComponent implements OnInit {
     }
   }
 
-  // --- Share & Bookmark Methods ---
+  /* ================= SHARE & BOOKMARK ================= */
 
   onShare() {
     this.showShareMenu.set(!this.showShareMenu());
@@ -179,7 +175,7 @@ export class KapifyOpportunityCardComponent implements OnInit {
       });
   }
 
-  // --- Application Methods ---
+  /* ================= APPLICATION ================= */
 
   onApply() {
     if (this.opportunity.userHasApplied) {
@@ -190,22 +186,9 @@ export class KapifyOpportunityCardComponent implements OnInit {
   }
 
   private viewMyApplication() {
-    // Navigate to the application - using the opportunity ID to find the draft/submitted application
     this.router.navigate(['/applications'], {
       queryParams: { opportunityId: this.opportunity.id },
     });
-  }
-
-  // --- Existing Methods ---
-
-  private getPrimaryFundingType(): string | undefined {
-    const ft = this.opportunity.fundingType;
-    return Array.isArray(ft) ? ft[0] : ft;
-  }
-
-  private getAllFundingTypes(): string[] {
-    const ft = this.opportunity.fundingType;
-    return Array.isArray(ft) ? ft : ft ? [ft] : [];
   }
 
   onViewDetails() {
@@ -220,20 +203,18 @@ export class KapifyOpportunityCardComponent implements OnInit {
     this.signInToApply.emit();
   }
 
-  getCardStatusClass(): string {
-    return `card-${this.opportunity.status || 'active'}`;
-  }
+  /* ================= STYLING METHODS ================= */
 
   getStatusBorderClass(): string {
     switch (this.opportunity.status) {
       case 'active':
-        return 'bg-green-600';
+        return 'border-4 border-green-600';
       case 'closed':
-        return 'bg-red-600';
+        return 'border-4 border-red-600';
       case 'paused':
-        return 'bg-amber-600';
+        return 'border-4 border-amber-600';
       default:
-        return 'bg-green-600';
+        return 'border-4 border-green-600';
     }
   }
 
@@ -241,22 +222,34 @@ export class KapifyOpportunityCardComponent implements OnInit {
     const primaryType = this.getPrimaryFundingType();
     switch (primaryType) {
       case 'equity':
-        return 'bg-purple-50 text-purple-700 border border-purple-200/50';
+        return 'bg-purple-50 text-purple-700 border-2 border-purple-300';
       case 'debt':
-        return 'bg-blue-50 text-blue-700 border border-blue-200/50';
+        return 'bg-blue-50 text-blue-700 border-2 border-blue-300';
       case 'grant':
-        return 'bg-green-50 text-green-700 border border-green-200/50';
+        return 'bg-green-50 text-green-700 border-2 border-green-300';
       case 'mezzanine':
-        return 'bg-cyan-50 text-cyan-700 border border-cyan-200/50';
+        return 'bg-cyan-50 text-cyan-700 border-2 border-cyan-300';
       case 'convertible':
-        return 'bg-indigo-50 text-indigo-700 border border-indigo-200/50';
+        return 'bg-indigo-50 text-indigo-700 border-2 border-indigo-300';
       case 'purchase_order':
-        return 'bg-amber-50 text-amber-700 border border-amber-200/50';
+        return 'bg-amber-50 text-amber-700 border-2 border-amber-300';
       case 'invoice_financing':
-        return 'bg-teal-50 text-teal-700 border border-teal-200/50';
+        return 'bg-teal-50 text-teal-700 border-2 border-teal-300';
       default:
-        return 'bg-slate-100 text-slate-700 border border-slate-200/50';
+        return 'bg-slate-100 text-slate-700 border-2 border-slate-300';
     }
+  }
+
+  /* ================= FORMATTING ================= */
+
+  private getPrimaryFundingType(): string | undefined {
+    const ft = this.opportunity.fundingType;
+    return Array.isArray(ft) ? ft[0] : ft;
+  }
+
+  private getAllFundingTypes(): string[] {
+    const ft = this.opportunity.fundingType;
+    return Array.isArray(ft) ? ft : ft ? [ft] : [];
   }
 
   formatFundingType(): string {

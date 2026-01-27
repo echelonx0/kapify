@@ -95,7 +95,7 @@ export class DatabaseActivityService {
         this.isLoading.set(false);
         console.error('Load activities error:', error);
         return throwError(() => error);
-      })
+      }),
     );
   }
 
@@ -104,7 +104,7 @@ export class DatabaseActivityService {
    */
   getActivitiesPaged(
     page: number,
-    pageSize: number
+    pageSize: number,
   ): Observable<{
     activities: Activity[];
     total: number;
@@ -115,7 +115,7 @@ export class DatabaseActivityService {
         this.error.set('Failed to load paginated activities');
         console.error('Load paginated activities error:', error);
         return throwError(() => error);
-      })
+      }),
     );
   }
 
@@ -128,7 +128,7 @@ export class DatabaseActivityService {
         this.error.set('Failed to load activity details');
         console.error('Fetch activity error:', error);
         return throwError(() => error);
-      })
+      }),
     );
   }
 
@@ -160,7 +160,7 @@ export class DatabaseActivityService {
         this.error.set('Failed to create activity');
         console.error('Create activity error:', error);
         return throwError(() => error);
-      })
+      }),
     );
   }
 
@@ -181,7 +181,7 @@ export class DatabaseActivityService {
       | 'withdrawn',
     applicationId: string,
     message: string,
-    amount?: number
+    amount?: number,
   ): void {
     this.createActivity({
       type: 'application',
@@ -206,7 +206,7 @@ export class DatabaseActivityService {
     message: string,
     amount: number,
     entityId?: string,
-    method?: string
+    method?: string,
   ): void {
     this.createActivity({
       type: 'funding',
@@ -230,7 +230,7 @@ export class DatabaseActivityService {
   trackProfileActivity(
     action: 'created' | 'updated' | 'completed' | 'verified',
     message: string,
-    profileSection?: string
+    profileSection?: string,
   ): void {
     this.createActivity({
       type: 'profile',
@@ -253,7 +253,7 @@ export class DatabaseActivityService {
     action: 'uploaded' | 'updated' | 'verified' | 'rejected',
     message: string,
     documentId?: string,
-    documentType?: string
+    documentType?: string,
   ): void {
     this.createActivity({
       type: 'document',
@@ -276,7 +276,7 @@ export class DatabaseActivityService {
   trackSystemActivity(
     action: string,
     message: string,
-    metadata?: Record<string, any>
+    metadata?: Record<string, any>,
   ): void {
     this.createActivity({
       type: 'system',
@@ -299,12 +299,13 @@ export class DatabaseActivityService {
     action:
       | 'password_reset_requested'
       | 'password_reset_completed'
+      | 'password_reset_failed'
       | 'login'
       | 'logout'
       | 'register',
     message: string,
     status: 'success' | 'failed' = 'success',
-    metadata?: Record<string, any>
+    metadata?: Record<string, any>,
   ): void {
     this.createActivity({
       type: 'system',
@@ -326,7 +327,7 @@ export class DatabaseActivityService {
   // ===============================
 
   private async fetchActivitiesFromDatabase(
-    limit: number
+    limit: number,
   ): Promise<Activity[]> {
     try {
       const currentUser = this.authService.user();
@@ -335,7 +336,9 @@ export class DatabaseActivityService {
       }
 
       // Get user's organization ID (if any)
-      const organizationId = await this.getUserOrganizationId(currentUser.id);
+      const organizationId = await this.authService.getUserOrganizationId(
+        currentUser.id,
+      );
 
       // Query for activities - simplified without complex joins
       let query = this.supabase
@@ -347,7 +350,7 @@ export class DatabaseActivityService {
       // Filter by user ID and optionally organization ID
       if (organizationId) {
         query = query.or(
-          `user_id.eq.${currentUser.id},organization_id.eq.${organizationId}`
+          `user_id.eq.${currentUser.id},organization_id.eq.${organizationId}`,
         );
       } else {
         query = query.eq('user_id', currentUser.id);
@@ -368,7 +371,7 @@ export class DatabaseActivityService {
 
   private async fetchActivitiesPaged(
     page: number,
-    pageSize: number
+    pageSize: number,
   ): Promise<{
     activities: Activity[];
     total: number;
@@ -380,7 +383,9 @@ export class DatabaseActivityService {
         throw new Error('User not authenticated');
       }
 
-      const organizationId = await this.getUserOrganizationId(currentUser.id);
+      const organizationId = await this.authService.getUserOrganizationId(
+        currentUser.id,
+      );
       const offset = (page - 1) * pageSize;
 
       // Get total count - simplified
@@ -390,7 +395,7 @@ export class DatabaseActivityService {
 
       if (organizationId) {
         countQuery = countQuery.or(
-          `user_id.eq.${currentUser.id},organization_id.eq.${organizationId}`
+          `user_id.eq.${currentUser.id},organization_id.eq.${organizationId}`,
         );
       } else {
         countQuery = countQuery.eq('user_id', currentUser.id);
@@ -411,7 +416,7 @@ export class DatabaseActivityService {
 
       if (organizationId) {
         dataQuery = dataQuery.or(
-          `user_id.eq.${currentUser.id},organization_id.eq.${organizationId}`
+          `user_id.eq.${currentUser.id},organization_id.eq.${organizationId}`,
         );
       } else {
         dataQuery = dataQuery.eq('user_id', currentUser.id);
@@ -421,7 +426,7 @@ export class DatabaseActivityService {
 
       if (error) {
         throw new Error(
-          `Failed to fetch paginated activities: ${error.message}`
+          `Failed to fetch paginated activities: ${error.message}`,
         );
       }
 
@@ -482,7 +487,9 @@ export class DatabaseActivityService {
         throw new Error('User not authenticated');
       }
 
-      const organizationId = await this.getUserOrganizationId(currentUser.id);
+      const organizationId = await this.authService.getUserOrganizationId(
+        currentUser.id,
+      );
 
       const dbActivity: Partial<DatabaseActivity> = {
         user_id: currentUser.id,
@@ -515,38 +522,38 @@ export class DatabaseActivityService {
     }
   }
 
-  private async getUserOrganizationId(userId: string): Promise<string | null> {
-    try {
-      // Check both SME and Funder organizations
-      const [smeResult, funderResult] = await Promise.all([
-        this.supabase
-          .from('sme_organizations')
-          .select('id')
-          .eq('user_id', userId)
-          .eq('status', 'active')
-          .single(),
+  // private async getUserOrganizationId(userId: string): Promise<string | null> {
+  //   try {
+  //     // Check both SME and Funder organizations
+  //     const [smeResult, funderResult] = await Promise.all([
+  //       this.supabase
+  //         .from('sme_organizations')
+  //         .select('id')
+  //         .eq('user_id', userId)
+  //         .eq('status', 'active')
+  //         .single(),
 
-        this.supabase
-          .from('funder_organizations')
-          .select('id')
-          .eq('user_id', userId)
-          .eq('status', 'active')
-          .single(),
-      ]);
+  //       this.supabase
+  //         .from('funder_organizations')
+  //         .select('id')
+  //         .eq('user_id', userId)
+  //         .eq('status', 'active')
+  //         .single(),
+  //     ]);
 
-      // Return whichever organization exists (SME takes precedence)
-      if (!smeResult.error) {
-        return smeResult.data?.id || null;
-      } else if (!funderResult.error) {
-        return funderResult.data?.id || null;
-      }
+  //     // Return whichever organization exists (SME takes precedence)
+  //     if (!smeResult.error) {
+  //       return smeResult.data?.id || null;
+  //     } else if (!funderResult.error) {
+  //       return funderResult.data?.id || null;
+  //     }
 
-      return null;
-    } catch (error) {
-      console.warn('Could not fetch user organization:', error);
-      return null;
-    }
-  }
+  //     return null;
+  //   } catch (error) {
+  //     console.warn('Could not fetch user organization:', error);
+  //     return null;
+  //   }
+  // }
 
   // ===============================
   // DATA TRANSFORMATION

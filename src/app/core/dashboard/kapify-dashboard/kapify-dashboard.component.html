@@ -1,4 +1,4 @@
-<!-- Kapify Dashboard - With Organization Status Overview Component -->
+<!-- Kapify Dashboard - Neo-Brutalist SME Manage Button -->
 <div class="min-h-screen bg-slate-50">
   <!-- Main Content Wrapper -->
   <div class="flex h-screen">
@@ -27,51 +27,50 @@
                   </div>
                 </div>
               </div>
-
-              <!-- Quick Action Button -->
-              @if (userType() === 'funder' &&
-              onboardingState()?.canCreateOpportunities) {
-              <button
-                class="hidden lg:flex items-center gap-2 bg-teal-500 text-white font-medium rounded-xl px-6 py-3 text-sm hover:bg-teal-600 active:bg-teal-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2"
-                (click)="createOpportunity()"
-              >
-                <lucide-icon [img]="PlusIcon" [size]="16" />
-                <span>New Opportunity</span>
-              </button>
-              }
-              <button
-                class="inline-flex items-center justify-center gap-2 bg-white text-slate-900 font-medium rounded-xl px-4 py-2.5 text-sm hover:bg-slate-50 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 border border-slate-200"
-                (click)="goToProfile()"
-              >
-                <!-- <lucide-icon [img]="BookOpenIcon" [size]="16" /> -->
-                <span>My profile</span>
-              </button>
             </div>
           </div>
+          <!-- <kapify-capital-loader /> -->
+
+          <!-- Organization Status Overview Section (Funder Only) -->
+          @if (userType() === "funder" && onboardingState()) {
+            <div class="mt-2 mb-4">
+              <app-organization-status-overview
+                (actionClicked)="handleOrganizationAction($event)"
+              />
+            </div>
+          }
+          @if (userType() === "sme") {
+            <div class="mt-6 mb-6">
+              <button
+                (click)="manageSMEProfile()"
+                class="w-full bg-slate-100 text-slate-900 font-black rounded-lg px-6 py-4 text-base border-3 border-slate-400 hover:bg-slate-200 active:bg-slate-300 transition-all duration-200 uppercase tracking-wide flex items-center justify-center gap-2 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 scale-in-up"
+                [style]="'--delay: 0.15s'"
+              >
+                <span>Manage Profile</span>
+              </button>
+            </div>
+          }
 
           <!-- Quick Actions Section (Mobile - Funder) -->
-          @if (userType() === 'funder' &&
-          onboardingState()?.canCreateOpportunities) {
-          <div class="lg:hidden mt-6">
-            <div class="bg-white rounded-2xl border border-slate-200 p-4">
-              <button
-                class="w-full flex items-center justify-center gap-2 bg-teal-500 text-white font-medium rounded-xl px-6 py-3 text-sm hover:bg-teal-600 active:bg-teal-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2"
-                (click)="createOpportunity()"
-              >
-                <lucide-icon [img]="PlusIcon" [size]="16" />
-                <span>Create New Opportunity</span>
-              </button>
+          @if (
+            userType() === "funder" && onboardingState()?.canCreateOpportunities
+          ) {
+            <div class="lg:hidden mt-6">
+              <div class="bg-white rounded-2xl border border-slate-200 p-4">
+                <button
+                  class="w-full flex items-center justify-center gap-2 bg-teal-500 text-white font-medium rounded-xl px-6 py-3 text-sm hover:bg-teal-600 active:bg-teal-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2"
+                  (click)="createOpportunity()"
+                >
+                  <lucide-icon [img]="PlusIcon" [size]="16" />
+                  <span>Create New Opportunity</span>
+                </button>
+              </div>
             </div>
-          </div>
           }
-          <!-- Organization Status Overview Section (Funder Only) -->
-          @if (userType() === 'funder' && onboardingState()) {
-          <div class="mt-2">
-            <app-organization-status-overview
-              (actionClicked)="handleOrganizationAction($event)"
-            />
-          </div>
-          }
+
+          <!-- Primary CTA Card Component (Extracted & Animated) -->
+          <app-about-us-card />
+
           <!-- Help & Resources -->
           <div class="mt-4">
             <div
@@ -80,7 +79,7 @@
               <div
                 class="flex flex-col lg:flex-row items-start lg:items-center gap-6"
               >
-                <div
+                <!-- <div
                   class="w-14 h-14 rounded-xl bg-blue-100 flex items-center justify-center flex-shrink-0"
                 >
                   <lucide-icon
@@ -88,7 +87,7 @@
                     [size]="28"
                     class="text-blue-600"
                   />
-                </div>
+                </div> -->
 
                 <div class="flex-1">
                   <h3 class="text-lg font-bold text-slate-900 mb-2">
@@ -99,20 +98,20 @@
                     support resources to maximize your success on Kapify.
                   </p>
                   <div class="flex flex-col sm:flex-row gap-2">
-                    @if (userType() === 'sme' ) {
-                    <button
-                      class="inline-flex items-center justify-center gap-2 bg-white text-slate-900 font-medium rounded-xl px-4 py-2.5 text-sm hover:bg-slate-50 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 border border-slate-200"
-                      (click)="viewGuides()"
-                    >
-                      <lucide-icon [img]="BookOpenIcon" [size]="16" />
-                      <span>Funding Readiness Guides</span></button
-                    >}
+                    @if (userType() === "sme") {
+                      <button
+                        class="inline-flex items-center justify-center gap-2 bg-white text-slate-900 font-black rounded-lg px-4 py-2.5 text-sm border-3 border-blue-400 hover:bg-slate-50 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 uppercase tracking-wide scale-in-up"
+                        (click)="viewGuides()"
+                        [style]="'--delay: 0.2s'"
+                      >
+                        <span>Funding Readiness Guides</span>
+                      </button>
+                    }
 
                     <button
                       class="inline-flex items-center justify-center gap-2 bg-white text-slate-900 font-medium rounded-xl px-4 py-2.5 text-sm hover:bg-slate-50 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 border border-slate-200"
                       (click)="viewFAQs()"
                     >
-                      <lucide-icon [img]="HelpCircleIcon" [size]="16" />
                       <span>View FAQs</span>
                     </button>
                     <button
@@ -122,17 +121,19 @@
                       <lucide-icon [img]="UsersIcon" [size]="16" />
                       <span>Contact Support</span>
                     </button>
+
+                    <button
+                      class="inline-flex items-center justify-center gap-2 bg-white text-slate-900 font-medium rounded-xl px-4 py-2.5 text-sm hover:bg-slate-50 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 border border-slate-200"
+                      (click)="openUserGuide()"
+                    >
+                      <lucide-icon [img]="HelpCircleIcon" [size]="16" />
+                      <span>User Guide</span>
+                    </button>
                   </div>
                 </div>
               </div>
             </div>
           </div>
-
-          <!-- Primary CTA Card Component (Extracted & Animated) -->
-          <!-- <app-primary-cta-card
-            [content]="ctaContent()"
-            (ctaClick)="handleCTAClick()"
-          /> -->
         </div>
       </div>
     </main>
@@ -160,33 +161,33 @@
 
   <!-- Mobile Bottom Sheet -->
   @if (isMobilePanelOpen()) {
-  <div
-    class="lg:hidden fixed inset-0 z-50 bg-black/25 backdrop-blur-sm"
-    (click)="toggleMobilePanel()"
-  >
     <div
-      class="absolute bottom-0 left-0 right-0 bg-white rounded-t-2xl max-h-[80vh] overflow-hidden shadow-2xl"
-      (click)="$event.stopPropagation()"
+      class="lg:hidden fixed inset-0 z-50 bg-black/25 backdrop-blur-sm"
+      (click)="toggleMobilePanel()"
     >
-      <!-- Handle Bar -->
-      <div class="flex justify-center py-3 border-b border-slate-200">
-        <div class="w-12 h-1 bg-slate-300 rounded-full"></div>
-      </div>
+      <div
+        class="absolute bottom-0 left-0 right-0 bg-white rounded-t-2xl max-h-[80vh] overflow-hidden shadow-2xl"
+        (click)="$event.stopPropagation()"
+      >
+        <!-- Handle Bar -->
+        <div class="flex justify-center py-3 border-b border-slate-200">
+          <div class="w-12 h-1 bg-slate-300 rounded-full"></div>
+        </div>
 
-      <!-- Panel Content -->
-      <div class="overflow-y-auto max-h-[calc(80vh-60px)]">
-        <app-right-panel
-          [content]="rightPanelContent()"
-          (contentChange)="onRightPanelContentChange($event)"
-          [userType]="userType()"
-        />
+        <!-- Panel Content -->
+        <div class="overflow-y-auto max-h-[calc(80vh-60px)]">
+          <app-right-panel
+            [content]="rightPanelContent()"
+            (contentChange)="onRightPanelContentChange($event)"
+            [userType]="userType()"
+          />
+        </div>
       </div>
     </div>
-  </div>
   }
 </div>
 
 <!-- Render modal when open -->
 @if (showSupportModal()) {
-<app-support-modal />
+  <app-support-modal />
 }

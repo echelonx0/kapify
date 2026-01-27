@@ -384,35 +384,6 @@ import {
           </div>
         </div>
 
-        <!-- Main Setup Card -->
-        <div
-          class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden mb-6 fade-in-up"
-          style="--delay: 0.3s"
-        >
-          <div class="p-8 text-center">
-            <h2 class="text-2xl font-bold text-slate-900 mb-3">
-              Ready to Get Started?
-            </h2>
-            <p class="text-slate-600 mb-6 max-w-xl mx-auto">
-              Complete your organization profile in three simple steps. You can
-              save progress and return anytime.
-            </p>
-
-            <button
-              (click)="onStartSetup()"
-              class="w-full max-w-md mx-auto bg-teal-500 text-white font-semibold rounded-xl px-8 py-4 text-lg hover:bg-teal-600 active:bg-teal-700 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 flex items-center justify-center gap-3 shadow-sm hover:shadow-md group"
-            >
-              <lucide-icon [img]="Building2Icon" [size]="24" />
-              <span>Start Organization Setup</span>
-              <lucide-icon
-                [img]="ArrowRightIcon"
-                [size]="20"
-                class="group-hover:translate-x-1 transition-transform"
-              />
-            </button>
-          </div>
-        </div>
-
         <!-- Steps Overview -->
         <div
           class="bg-white rounded-2xl border border-slate-200 p-6 fade-in-up"

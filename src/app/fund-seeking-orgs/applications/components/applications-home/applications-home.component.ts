@@ -1,3 +1,5 @@
+// src/app/fund-seeking-orgs/applications/components/applications-home/applications-home.component.ts
+
 import {
   Component,
   signal,
@@ -21,18 +23,19 @@ import {
   TrendingUp,
   DollarSign,
   Plus,
-  Filter,
   Eye,
   Search,
   X,
   Settings,
-  CheckCircle,
-  XCircle,
   RefreshCw,
-  AlertCircle,
+  Archive,
+  CircleX,
+  CircleCheckBig,
+  CircleAlert,
+  Funnel,
 } from 'lucide-angular';
 import { AuthService } from 'src/app/auth/services/production.auth.service';
-import { ActivityInboxComponent } from 'src/app/features/messaging/messaging/messaging.component';
+import { KapifyMessagingComponent } from 'src/app/features/messaging/messaging/messaging.component';
 
 import { SharedSupabaseService } from 'src/app/shared/services/shared-supabase.service';
 
@@ -41,14 +44,14 @@ import { UserType } from 'src/app/shared/models/user.models';
 import { ActionModalComponent } from 'src/app/shared/components/modal/action-modal.component';
 import { ApplicationTransformService } from '../../services/application-transform.service';
 import { OpportunityApplication } from 'src/app/profiles/SME-Profiles/models/sme-profile.models';
-import { FundingApplication } from 'src/app/fund-seeking-orgs/models/application.models';
-import { ApplicationManagementService } from 'src/app/fund-seeking-orgs/services/application-management.service';
+
 import { OpportunityApplicationService } from 'src/app/fund-seeking-orgs/services/opportunity-application.service';
 import { ApplicationDetailModalComponent } from 'src/app/funder/application-details/components/application-detail-modal/application-detail-modal.component';
 import {
   ApplicationListCardComponent,
   BaseApplicationCard,
 } from 'src/app/funder/application-details/funder-applications/components/application-list-card/application-list-card.component';
+import { FundingApplicationCoverInformation } from 'src/app/shared/models/funding-application-cover.model';
 
 interface ApplicationData {
   id: string;
@@ -75,6 +78,7 @@ interface ApplicationData {
   applicantName?: string;
   applicantCompany?: string;
   opportunityTitle?: string;
+  fundingRequest?: FundingApplicationCoverInformation;
 
   // For SME view
   opportunityId?: string;
@@ -94,7 +98,7 @@ interface UserOrganization {
     FormsModule,
     LucideAngularModule,
     ActionModalComponent,
-    ActivityInboxComponent,
+    KapifyMessagingComponent,
     ApplicationListCardComponent,
     ApplicationDetailModalComponent,
   ],
@@ -118,30 +122,32 @@ export class ApplicationsHomeComponent implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
   private authService = inject(AuthService);
   private smeApplicationService = inject(OpportunityApplicationService);
-  private funderApplicationService = inject(ApplicationManagementService);
   private supabaseService = inject(SharedSupabaseService);
   private transformService = inject(ApplicationTransformService);
   private destroy$ = new Subject<void>();
-
+  // Expose Math to template
+  Math = Math;
   // Icons
   FileTextIcon = FileText;
   ClockIcon = Clock;
   TrendingUpIcon = TrendingUp;
   DollarSignIcon = DollarSign;
   PlusIcon = Plus;
-  FilterIcon = Filter;
+  FilterIcon = Funnel;
   EyeIcon = Eye;
   SearchIcon = Search;
   XIcon = X;
   SettingsIcon = Settings;
-  CheckCircleIcon = CheckCircle;
-  XCircleIcon = XCircle;
+  CheckCircleIcon = CircleCheckBig;
+  XCircleIcon = CircleX;
   RefreshCwIcon = RefreshCw;
-  AlertCircleIcon = AlertCircle;
+  AlertCircleIcon = CircleAlert;
+  ArchiveIcon = Archive;
 
   // State
   isLoading = signal(false);
   showFilters = signal(false);
+  showArchivedModal = signal(false);
   applications = signal<ApplicationData[]>([]);
   error = signal<string | null>(null);
   userOrganization = signal<UserOrganization | null>(null);
@@ -155,6 +161,10 @@ export class ApplicationsHomeComponent implements OnInit, OnDestroy {
   currentPage = signal(1);
   pageSize = signal(3);
   isMobile = signal(window.innerWidth < 1024);
+
+  // Archive pagination
+  archivedPage = signal(1);
+  archivedPageSize = signal(5);
 
   // Modal state
   selectedApplication = signal<ApplicationData | null>(null);
@@ -172,11 +182,12 @@ export class ApplicationsHomeComponent implements OnInit, OnDestroy {
       stage: app.currentStage || 'Unknown',
       requestedAmount: app.requestedAmount,
       currency: app.currency,
-      description: app.description,
+      description: app.fundingRequest?.useOfFunds,
       formData: {},
       submittedAt: app.submittedAt,
       createdAt: app.createdAt,
       matchScore: app.matchScore,
+
       completionScore: 0,
       applicant: {
         firstName: app.applicantName?.split(' ')[0] || '',
@@ -189,6 +200,7 @@ export class ApplicationsHomeComponent implements OnInit, OnDestroy {
         fundingType: app.fundingType || [],
         currency: app.currency,
       },
+      fundingRequest: app.fundingRequest,
     };
   });
 
@@ -203,7 +215,46 @@ export class ApplicationsHomeComponent implements OnInit, OnDestroy {
     return type === 'funder' ? 'funder' : 'sme';
   });
 
-  // Pagination computed
+  //  Method to handle withdrawn application
+  onApplicationWithdrawn(applicationId: string): void {
+    // Option A: Remove from list immediately (optimistic)
+    this.removeApplicationFromList(applicationId);
+
+    // Option B: Reload entire list from database (safest)
+    this.reloadApplications();
+  }
+
+  //  Method to remove application from local list
+  private removeApplicationFromList(applicationId: string): void {
+    const currentApps = this.applications();
+    const filtered = currentApps.filter((app) => app.id !== applicationId);
+    this.applications.set(filtered);
+
+    // Update pagination
+    this.currentPage.set(1);
+  }
+
+  // ✅ ADD: Method to reload applications (if you prefer full reload)
+  private reloadApplications(): void {
+    console.log('🔄 Reloading applications...');
+    this.loadApplications();
+  }
+  activeApplications = computed(() => {
+    // ✅ FIXED: Only truly active statuses (no withdrawn, no draft)
+    const activeStatuses = ['submitted', 'under_review']; // Changed: removed 'draft'
+    return this.applications().filter((app) =>
+      activeStatuses.includes(app.status)
+    );
+  });
+
+  archivedApplications = computed(() => {
+    const archivedStatuses = ['approved', 'rejected', 'withdrawn'];
+    return this.applications().filter((app) =>
+      archivedStatuses.includes(app.status)
+    );
+  });
+
+  // Pagination computed for active applications
   totalPages = computed(() =>
     Math.ceil(this.filteredApplications().length / this.pageSize())
   );
@@ -242,6 +293,36 @@ export class ApplicationsHomeComponent implements OnInit, OnDestroy {
 
     if (total === 0) return 'No applications';
     return `Showing ${startIdx}–${endIdx} of ${total} applications`;
+  });
+
+  // Pagination for archived applications
+  archivedTotalPages = computed(() =>
+    Math.ceil(this.archivedApplications().length / this.archivedPageSize())
+  );
+
+  paginatedArchivedApplications = computed(() => {
+    const startIdx = (this.archivedPage() - 1) * this.archivedPageSize();
+    const endIdx = startIdx + this.archivedPageSize();
+    return this.archivedApplications().slice(startIdx, endIdx);
+  });
+
+  archivedPageRange = computed(() => {
+    const total = this.archivedTotalPages();
+    const current = this.archivedPage();
+    const range = [];
+
+    if (total <= 5) {
+      for (let i = 1; i <= total; i++) range.push(i);
+    } else {
+      if (current <= 3) {
+        for (let i = 1; i <= 5; i++) range.push(i);
+      } else if (current >= total - 2) {
+        for (let i = total - 4; i <= total; i++) range.push(i);
+      } else {
+        for (let i = current - 2; i <= current + 2; i++) range.push(i);
+      }
+    }
+    return range;
   });
 
   ngOnInit() {
@@ -321,13 +402,13 @@ export class ApplicationsHomeComponent implements OnInit, OnDestroy {
         .from('organization_users')
         .select(
           `
-          organization_id,
-          organizations!organization_users_organization_id_fkey (
-            id,
-            name,
-            organization_type
-          )
-        `
+        organization_id,
+        organizations!organization_users_organization_id_fkey (
+          id,
+          name,
+          organization_type
+        )
+      `
         )
         .eq('user_id', userId)
         .single();
@@ -340,6 +421,7 @@ export class ApplicationsHomeComponent implements OnInit, OnDestroy {
         this.isLoading.set(false);
         return;
       }
+
       // Access first element of the array
       const org = orgUserData.organizations[0];
       const organization: UserOrganization = {
@@ -349,40 +431,102 @@ export class ApplicationsHomeComponent implements OnInit, OnDestroy {
       };
 
       this.userOrganization.set(organization);
-      console.log('✅ Organization loaded:', organization.name);
+      // console.log('✅ Organization loaded:', organization.name);
 
-      // Step 2: Load applications for this organization
-      this.funderApplicationService
-        .getApplicationsByOrganization(organization.id)
-        .pipe(
-          takeUntil(this.destroy$),
-          tap((applications) =>
-            console.log('📋 Applications loaded:', applications.length)
-          ),
-          catchError((error) => {
-            console.error('Failed to load applications:', error);
-            this.error.set('Failed to load applications');
-            return of([]);
-          })
-        )
-        .subscribe({
-          next: (funderApplications: FundingApplication[]) => {
-            const applicationData = funderApplications.map((app) =>
-              this.transformService.transformFunderApplication(app)
-            );
-            this.applications.set(this.mergeDrafts(applicationData));
-            this.currentPage.set(1);
-            this.isLoading.set(false);
-            console.log(
-              '🎉 Funder applications successfully loaded:',
-              applicationData.length
-            );
-          },
-          error: () => {
-            this.applications.set([]);
-            this.isLoading.set(false);
-          },
-        });
+      // Step 2: Load applications with funding_request (CRITICAL FIX)
+      //  Explicitly select funding_request and all necessary fields
+      const { data: applicationsData, error: appsError } =
+        await this.supabaseService
+          .from('applications')
+          .select(
+            `
+        id,
+        title,
+        status,
+        stage,
+        form_data,
+        description,
+        requested_amount,
+        funding_type,
+        opportunity_id,
+        created_at,
+        updated_at,
+        submitted_at,
+        funding_request,
+        applicant_id,
+        applicant_organization_name,
+        funder_id,
+        opportunity_id
+      `
+          )
+          .eq('funder_id', organization.id)
+          .order('updated_at', { ascending: false });
+
+      if (appsError) {
+        console.error('❌ Failed to load applications:', appsError);
+        this.error.set('Failed to load applications');
+        this.isLoading.set(false);
+        return;
+      }
+
+      if (!applicationsData || applicationsData.length === 0) {
+        console.log('📭 No applications found for organization');
+        this.applications.set([]);
+        this.isLoading.set(false);
+        return;
+      }
+
+      // Step 3: Transform database applications to ApplicationData format
+      const transformedApps: ApplicationData[] = applicationsData.map(
+        (dbApp: any) => {
+          const fundingRequest =
+            dbApp.funding_request as FundingApplicationCoverInformation | null;
+          console.log(fundingRequest);
+
+          return {
+            id: dbApp.id,
+            title: dbApp.title,
+            applicationNumber: `APP-${dbApp.created_at.split('T')[0]}-${
+              dbApp.id.split('-')[0]
+            }`,
+            status: dbApp.status || 'draft',
+            fundingType: dbApp.funding_type ? [dbApp.funding_type] : [],
+            requestedAmount:
+              dbApp.form_data?.requestedAmount || dbApp.requested_amount || 0,
+            currency: 'ZAR', // From opportunity context if available
+            currentStage: dbApp.stage || 'draft',
+            description: dbApp.description || '',
+            createdAt: new Date(dbApp.created_at),
+            updatedAt: new Date(dbApp.updated_at),
+            submittedAt: dbApp.submitted_at
+              ? new Date(dbApp.submitted_at)
+              : undefined,
+            applicantName: dbApp.applicant_organization_name || 'Unknown',
+            applicantCompany: dbApp.applicant_organization_name || 'Unknown',
+            opportunityTitle: dbApp.opportunity_id
+              ? `Opportunity ${dbApp.opportunity_id.slice(0, 8)}`
+              : 'Unknown',
+            opportunityId: dbApp.opportunity_id,
+            // ✅ CRITICAL: Include fundingRequest (the cover data)
+            fundingRequest: fundingRequest,
+          } as ApplicationData;
+        }
+      );
+
+      console.log('✅ Transformed', transformedApps.length, 'applications');
+      console.log(
+        '🔍 Sample app funding_request:',
+        transformedApps[0]?.fundingRequest ? '✓ Present' : '✗ Missing'
+      );
+
+      this.applications.set(this.mergeDrafts(transformedApps));
+      this.currentPage.set(1);
+      this.isLoading.set(false);
+
+      console.log(
+        '🎉 Funder applications successfully loaded:',
+        transformedApps.length
+      );
     } catch (error) {
       console.error('💥 Database error:', error);
       this.error.set('Database connection error. Please try again.');
@@ -390,33 +534,98 @@ export class ApplicationsHomeComponent implements OnInit, OnDestroy {
     }
   }
 
+  // REPLACE: loadSMEApplications method in applications-home.component.ts
+
   private loadSMEApplications() {
     this.smeApplicationService
       .loadUserApplications()
       .pipe(
         takeUntil(this.destroy$),
+        tap((smeApplications: OpportunityApplication[]) => {
+          smeApplications.forEach((app, index) => {
+            // console.log(`\n[${index + 1}] Application:`, {
+            //   id: app.id,
+            //   title: app.title,
+            //   status: app.status,
+            //   opportunityId: app.opportunityId,
+            //   hasFundingRequest: !!app.fundingRequest,
+            //   fundingRequest: app.coverInformation,
+            // });
+          });
+          console.groupEnd();
+        }),
         catchError((error) => {
+          console.error('❌ SME applications load error:', error);
           this.error.set('Failed to load your applications');
           this.isLoading.set(false);
-          console.error('SME applications load error:', error);
           throw error;
         })
       )
       .subscribe({
         next: (smeApplications: OpportunityApplication[]) => {
-          const applicationData = smeApplications.map((app) =>
-            this.transformService.transformSMEApplication(app)
-          );
-          this.applications.set(this.mergeDrafts(applicationData));
+          const applicationData = smeApplications.map((app, index) => {
+            const transformed =
+              this.transformService.transformSMEApplication(app);
+            // console.log(`[${index + 1}] Transformed:`, {
+            //   id: transformed.id,
+            //   title: transformed.title,
+            //   status: transformed.status,
+            //   hasFundingRequest: !!transformed.fundingRequest,
+            // });
+            return transformed;
+          });
+
+          console.groupEnd();
+
+          // console.group(' Setting Applications State');
+          const merged = this.mergeDrafts(applicationData);
+          // console.log('Merged applications count:', merged.length);
+          // console.log('Sample app:', {
+          //   id: merged[0]?.id,
+          //   title: merged[0]?.title,
+          //   hasFundingRequest: !!merged[0]?.fundingRequest,
+          // });
+          console.groupEnd();
+
+          this.applications.set(merged);
           this.currentPage.set(1);
           this.isLoading.set(false);
         },
         error: () => {
+          console.error('💥 Error in SME applications subscription');
           this.applications.set([]);
           this.isLoading.set(false);
         },
       });
   }
+
+  // private loadSMEApplications() {
+  //   this.smeApplicationService
+  //     .loadUserApplications()
+  //     .pipe(
+  //       takeUntil(this.destroy$),
+  //       catchError((error) => {
+  //         this.error.set('Failed to load your applications');
+  //         this.isLoading.set(false);
+  //         console.error('SME applications load error:', error);
+  //         throw error;
+  //       })
+  //     )
+  //     .subscribe({
+  //       next: (smeApplications: OpportunityApplication[]) => {
+  //         const applicationData = smeApplications.map((app) =>
+  //           this.transformService.transformSMEApplication(app)
+  //         );
+  //         this.applications.set(this.mergeDrafts(applicationData));
+  //         this.currentPage.set(1);
+  //         this.isLoading.set(false);
+  //       },
+  //       error: () => {
+  //         this.applications.set([]);
+  //         this.isLoading.set(false);
+  //       },
+  //     });
+  // }
 
   // Add this method to transform your existing data
   transformToBaseCard(app: ApplicationData): BaseApplicationCard {
@@ -445,7 +654,7 @@ export class ApplicationsHomeComponent implements OnInit, OnDestroy {
   // ===============================
 
   filteredApplications = computed(() => {
-    let filtered = this.applications();
+    let filtered = this.activeApplications();
 
     if (this.searchQuery()) {
       const query = this.searchQuery().toLowerCase();
@@ -477,6 +686,8 @@ export class ApplicationsHomeComponent implements OnInit, OnDestroy {
     const apps = this.applications();
     return {
       total: apps.length,
+      active: this.activeApplications().length,
+      archived: this.archivedApplications().length,
       draft: apps.filter((app) => app.status === 'draft').length,
       submitted: apps.filter((app) => app.status === 'submitted').length,
       underReview: apps.filter((app) => app.status === 'under_review').length,
@@ -543,6 +754,24 @@ export class ApplicationsHomeComponent implements OnInit, OnDestroy {
     }
   }
 
+  goToArchivedPage(page: number) {
+    if (page >= 1 && page <= this.archivedTotalPages()) {
+      this.archivedPage.set(page);
+    }
+  }
+
+  previousArchivedPage() {
+    if (this.archivedPage() > 1) {
+      this.goToArchivedPage(this.archivedPage() - 1);
+    }
+  }
+
+  nextArchivedPage() {
+    if (this.archivedPage() < this.archivedTotalPages()) {
+      this.goToArchivedPage(this.archivedPage() + 1);
+    }
+  }
+
   // ===============================
   // MODAL METHODS
   // ===============================
@@ -553,6 +782,16 @@ export class ApplicationsHomeComponent implements OnInit, OnDestroy {
 
   closeApplicationModal() {
     this.selectedApplication.set(null);
+  }
+
+  openArchivedModal() {
+    this.archivedPage.set(1);
+    this.showArchivedModal.set(true);
+  }
+
+  closeArchivedModal() {
+    this.showArchivedModal.set(false);
+    this.archivedPage.set(1);
   }
 
   // ===============================
@@ -639,14 +878,14 @@ export class ApplicationsHomeComponent implements OnInit, OnDestroy {
 
   getStatusBadgeClass(status: string): string {
     const classMap: Record<string, string> = {
-      draft: 'bg-gray-100 text-gray-800',
-      submitted: 'bg-blue-100 text-blue-800',
-      under_review: 'bg-yellow-100 text-yellow-800',
-      approved: 'bg-green-100 text-green-800',
-      rejected: 'bg-red-100 text-red-800',
-      withdrawn: 'bg-gray-100 text-gray-800',
+      draft: 'bg-slate-100 text-slate-800',
+      submitted: 'bg-blue-50 text-blue-700 border border-blue-200/50',
+      under_review: 'bg-amber-50 text-amber-700 border border-amber-200/50',
+      approved: 'bg-green-50 text-green-700 border border-green-200/50',
+      rejected: 'bg-red-50 text-red-700 border border-red-200/50',
+      withdrawn: 'bg-slate-100 text-slate-600',
     };
-    return classMap[status] || 'bg-gray-100 text-gray-800';
+    return classMap[status] || 'bg-slate-100 text-slate-800';
   }
 
   getApplicationProgress(application: ApplicationData): number {
@@ -679,7 +918,7 @@ export class ApplicationsHomeComponent implements OnInit, OnDestroy {
   }
 
   formatTotalRequested(): string {
-    const total = this.applications().reduce(
+    const total = this.activeApplications().reduce(
       (sum, app) => sum + app.requestedAmount,
       0
     );
@@ -692,8 +931,8 @@ export class ApplicationsHomeComponent implements OnInit, OnDestroy {
 
   getEmptyStateMessage(): string {
     if (this.isFunder()) {
-      return 'No applications received yet. Create opportunities to start receiving applications.';
+      return 'No active applications. Create opportunities to start receiving applications.';
     }
-    return 'No applications yet. Browse funding opportunities to get started.';
+    return 'No active applications. Browse funding opportunities to get started.';
   }
 }

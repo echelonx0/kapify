@@ -1,0 +1,147 @@
+/* src/app/shared/components/modal/action-modal.component.css */
+
+:host {
+  --color-red: rgb(220, 38, 38);
+  --color-red-50: rgb(254, 242, 242);
+  --color-red-100: rgb(254, 226, 226);
+  --color-red-600: rgb(220, 38, 38);
+  --color-red-700: rgb(185, 28, 28);
+  --color-red-800: rgb(153, 27, 27);
+
+  --color-green: rgb(16, 185, 129);
+  --color-green-50: rgb(240, 253, 250);
+  --color-green-100: rgb(204, 251, 241);
+  --color-green-600: rgb(16, 185, 129);
+  --color-green-700: rgb(5, 150, 105);
+  --color-green-800: rgb(4, 120, 87);
+
+  --color-amber: rgb(245, 158, 11);
+  --color-amber-50: rgb(255, 251, 235);
+  --color-amber-100: rgb(254, 243, 199);
+  --color-amber-600: rgb(217, 119, 6);
+  --color-amber-700: rgb(180, 83, 9);
+  --color-amber-800: rgb(146, 64, 14);
+
+  --color-blue: rgb(37, 99, 235);
+  --color-blue-50: rgb(239, 246, 255);
+  --color-blue-100: rgb(219, 234, 254);
+  --color-blue-600: rgb(37, 99, 235);
+  --color-blue-700: rgb(29, 78, 216);
+  --color-blue-800: rgb(25, 55, 170);
+}
+
+/* Prevent body scroll when modal is open */
+:host {
+  display: contents;
+}
+
+/* Focus management for accessibility */
+:focus-visible {
+  outline: 2px solid var(--color-blue);
+  outline-offset: 2px;
+}
+
+/* Loading spinner styles */
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Backdrop blur support for older browsers */
+@supports not (backdrop-filter: blur(1px)) {
+  .backdrop-blur-sm {
+    background-color: rgba(0, 0, 0, 0.4);
+  }
+}
+
+/* Color scheme utilities for dynamic styling */
+.bg-red-50 {
+  background-color: var(--color-red-50);
+}
+
+.bg-red-100 {
+  background-color: var(--color-red-100);
+}
+
+.text-red-600 {
+  color: var(--color-red-600);
+}
+
+.text-red-700 {
+  color: var(--color-red-700);
+}
+
+.bg-green-50 {
+  background-color: var(--color-green-50);
+}
+
+.bg-green-100 {
+  background-color: var(--color-green-100);
+}
+
+.bg-green-600 {
+  background-color: var(--color-green-600);
+}
+
+.text-green-600 {
+  color: var(--color-green-600);
+}
+
+.bg-amber-50 {
+  background-color: var(--color-amber-50);
+}
+
+.bg-amber-100 {
+  background-color: var(--color-amber-100);
+}
+
+.text-amber-600 {
+  color: var(--color-amber-600);
+}
+
+.bg-blue-50 {
+  background-color: var(--color-blue-50);
+}
+
+.bg-blue-100 {
+  background-color: var(--color-blue-100);
+}
+
+.text-blue-600 {
+  color: var(--color-blue-600);
+}
+
+/* Smooth transitions */
+button {
+  transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+button:active {
+  transform: scale(0.98);
+}
+
+/* Focus ring for keyboard navigation */
+button:focus-visible {
+  outline: 2px solid;
+  outline-offset: 2px;
+}
+
+/* Disable native focus outline style, use custom ring */
+button:focus {
+  outline: none;
+}
+
+/* Responsive modal width */
+@media (max-width: 640px) {
+  .max-w-md {
+    max-width: 100% !important;
+  }
+}

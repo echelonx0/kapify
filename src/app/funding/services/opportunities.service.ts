@@ -92,6 +92,29 @@ export class SMEOpportunitiesService {
       throw error;
     }
   }
+  // private async fetchActiveOpportunities(): Promise<FundingOpportunity[]> {
+  //   try {
+  //     console.log('Fetching active opportunities from Supabase...');
+
+  //     const { data, error } = await this.supabase
+  //       .from('funding_opportunities')
+  //       .select('*')
+  //        .eq('status', 'active')
+  //       // .not('published_at', 'is', null)
+  //       .not('status', 'in', '(draft,rejected,withdrawn)')
+  //       .order('published_at', { ascending: false });
+
+  //     if (error) {
+  //       throw new Error(`Failed to fetch opportunities: ${error.message}`);
+  //     }
+
+  //     console.log(`Fetched ${data?.length || 0} opportunities`);
+  //     return (data || []).map((item) => this.transformDatabaseToLocal(item));
+  //   } catch (error) {
+  //     console.error('Error fetching active opportunities:', error);
+  //     throw error;
+  //   }
+  // }
 
   // TODO: Remove this once RLS policies are properly configured
   private async enrichWithOrganizationData(

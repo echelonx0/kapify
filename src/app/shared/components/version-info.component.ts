@@ -8,7 +8,7 @@ import {
   IssueItem,
   ChangelogData,
 } from '../services/changelog.service';
-import { LandingHeaderComponent } from 'src/app/core/landing/landing-header.component';
+import { LandingHeaderComponent } from 'src/app/core/landing/components/landing-header.component';
 import { Observable, tap } from 'rxjs';
 import {
   trigger,

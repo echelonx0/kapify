@@ -8,18 +8,19 @@ import { NotFoundComponent } from './shared/components/not-found/not-found.compo
 import { SuccessPageComponent } from './shared/components/success-page/success-page.component';
 import { VersionInfoComponent } from './shared/components/version-info.component';
 import { PricingPageComponent } from './core/dashboard/finance/pricing-page/pricing-page.component';
-
 import { AcceptInvitationComponent } from './auth/accept-invitation/accept-invitation.component';
-
 import { InvoiceComponent } from './features/invoice/invoice.component';
 import { AuthGuard } from './core/guards/auth.guard';
 import { GuestGuard } from './core/guards/guest.guard';
 import { ProfileCompletionGuard } from './core/guards/profile-completion.guard';
 import { RoleGuard } from './core/guards/role.guard';
-import { PasswordResetComponent } from './auth/password-reset/password-reset.component';
 import { PublicProfileViewComponent } from './profiles/SME-Profiles/public-page/public-profile.component';
 import { CreditsComponent } from './features/credit-system/credit-component/credit.component';
 import { FundingOpportunitiesComponent } from './funding/marketplace/opportunities-list/funding-opportunities.component';
+import { AboutUsComponent } from './core/about-kapify/about.component';
+import { ChangePasswordComponent } from './core/dashboard/settings/components/change-password/change-password.component';
+import { RecoverPasswordComponent } from './auth/recover-password/recover-password.component';
+import { PasswordResetComponent } from './auth/password-reset/password-reset.component';
 
 export const routes: Routes = [
   // Public routes
@@ -46,7 +47,7 @@ export const routes: Routes = [
     path: 'opportunity/:id',
     loadComponent: () =>
       import('./funding/public-opportunity/public-opportunity.component').then(
-        (m) => m.PublicOpportunityComponent
+        (m) => m.PublicOpportunityComponent,
       ),
     title: 'Funding Opportunity - Kapify',
   },
@@ -66,11 +67,16 @@ export const routes: Routes = [
     path: 'faqs',
     loadComponent: () =>
       import('./core/components/faq/faq.component').then(
-        (c) => c.FAQsComponent
+        (c) => c.FAQsComponent,
       ),
     title: 'FAQs - Kapify',
   },
-
+  {
+    path: 'recover-password',
+    component: RecoverPasswordComponent,
+    canActivate: [GuestGuard], // Allow only unauthenticated users
+    title: 'Reset Password - Kapify',
+  },
   {
     path: 'passwordreset',
     component: PasswordResetComponent,
@@ -86,6 +92,12 @@ export const routes: Routes = [
     component: RegisterComponent,
     canActivate: [GuestGuard],
     title: 'Create Account - Kapify',
+  },
+  {
+    path: 'about',
+    component: AboutUsComponent,
+
+    title: 'About Kapify',
   },
 
   {
@@ -105,16 +117,16 @@ export const routes: Routes = [
     canActivate: [AuthGuard],
     loadComponent: () =>
       import('./features/reports/reports.component').then(
-        (m) => m.ReportsComponent
+        (m) => m.ReportsComponent,
       ),
   },
   {
     path: 'executive-application-form',
     canActivate: [AuthGuard],
     loadComponent: () =>
-      import(
-        './core/admin/executive-applications/executive-application-form.component'
-      ).then((m) => m.ExecutiveApplicationFormComponent),
+      import('./core/admin/executive-applications/executive-application-form.component').then(
+        (m) => m.ExecutiveApplicationFormComponent,
+      ),
   },
   // Protected routes (require authentication)
   {
@@ -141,9 +153,7 @@ export const routes: Routes = [
     path: 'profile',
     canActivate: [AuthGuard],
     loadChildren: () =>
-      import('./profiles/SME-Profiles/profile.routes').then(
-        (m) => m.profileRoutes
-      ),
+      import('./core/routes/profile.routes').then((m) => m.profileRoutes),
     title: 'Profile Setup - Kapify',
   },
 
@@ -153,7 +163,7 @@ export const routes: Routes = [
     canActivate: [AuthGuard],
     loadChildren: () =>
       import('./fund-seeking-orgs/applications/applications.routes').then(
-        (m) => m.applicationRoutes
+        (m) => m.applicationRoutes,
       ),
   },
 
@@ -162,7 +172,7 @@ export const routes: Routes = [
     canActivate: [AuthGuard],
     loadChildren: () =>
       import('./core/dashboard/finance/finance.routes').then(
-        (m) => m.financeRoutes
+        (m) => m.financeRoutes,
       ),
   },
 
@@ -194,7 +204,7 @@ export const routes: Routes = [
     path: 'funder/:slug',
     loadComponent: () =>
       import('./funder/public-profile/public-profile.component').then(
-        (m) => m.FunderProfileComponent
+        (m) => m.FunderProfileComponent,
       ),
     title: 'Funder Profile - Kapify',
   },
@@ -211,6 +221,13 @@ export const routes: Routes = [
     component: CreditsComponent,
     canActivate: [AuthGuard],
     title: 'Buy Credits - Kapify',
+  },
+
+  // Compliance routes (public, no auth required)
+  {
+    path: 'compliance',
+    loadChildren: () =>
+      import('./core/routes/compliance.routes').then((m) => m.complianceRoutes),
   },
 
   // Catch all - redirect to 404

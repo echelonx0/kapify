@@ -1,6 +1,6 @@
 // src/app/shared/components/landing-footer.component.ts
 import { Component } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import {
   LucideAngularModule,
@@ -17,7 +17,7 @@ import {
 @Component({
   selector: 'landing-footer',
   standalone: true,
-  imports: [CommonModule, LucideAngularModule],
+  imports: [CommonModule, RouterModule, LucideAngularModule],
   templateUrl: './landing-footer.component.html',
 
   styles: [
@@ -72,7 +72,7 @@ export class LandingFooterComponent {
   FacebookIcon = Facebook;
   InstagramIcon = Instagram;
 
-  email = 'info@kapify.co.za';
+  email = 'info@kapify.africa';
 
   constructor(private router: Router) {}
 

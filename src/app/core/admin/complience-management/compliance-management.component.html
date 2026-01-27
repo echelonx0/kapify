@@ -1,0 +1,351 @@
+<!-- Main Container -->
+<div class="flex h-screen bg-slate-50 overflow-hidden">
+  <!-- Sidebar Navigation -->
+  <div
+    class="hidden lg:flex lg:w-64 flex-col bg-white border-r border-slate-200 sticky top-0 z-40"
+  >
+    <!-- Sidebar Header -->
+    <div class="px-6 py-6 border-b border-slate-200 bg-slate-50/50">
+      <h2 class="text-sm font-bold text-slate-900 uppercase tracking-wide">
+        Compliance Pages
+      </h2>
+      <p class="text-xs text-slate-500 mt-1">{{ pages().length }} pages</p>
+    </div>
+
+    <!-- Page List -->
+    <div class="flex-1 overflow-y-auto">
+      <nav class="space-y-1 p-4">
+        @for (page of pages(); track trackByPageId($index, page)) {
+          <button
+            (click)="selectPage(page.id)"
+            [class.bg-teal-50]="selectedPageId() === page.id"
+            [class.text-teal-700]="selectedPageId() === page.id"
+            [class.border-teal-50]="selectedPageId() === page.id"
+            [class.border-l-4]="selectedPageId() === page.id"
+            [class.border-l-teal-500]="selectedPageId() === page.id"
+            [class.text-slate-600]="selectedPageId() !== page.id"
+            [class.hover:bg-slate-50]="selectedPageId() !== page.id"
+            class="w-full text-left px-4 py-3 rounded-lg transition-colors duration-200 group"
+          >
+            <div class="flex items-start justify-between gap-2 min-w-0">
+              <div class="flex-1 min-w-0">
+                <h3 class="text-sm font-semibold truncate">{{ page.title }}</h3>
+                <p class="text-xs text-slate-500 mt-0.5 line-clamp-1">
+                  {{ page.tabs.length }} sections
+                </p>
+                <p class="text-xs text-slate-400 mt-1">
+                  {{ getLastEditedInfo(page) }}
+                </p>
+              </div>
+              @if (selectedPageId() === page.id) {
+                <div
+                  class="w-2 h-2 rounded-full bg-teal-500 flex-shrink-0 mt-1.5"
+                ></div>
+              }
+            </div>
+          </button>
+        }
+      </nav>
+    </div>
+
+    <!-- Sidebar Footer -->
+    <div class="border-t border-slate-200 bg-slate-50/50 px-6 py-4">
+      <p class="text-xs text-slate-500 text-center">
+        Last synced: {{ "now" | date: "short" }}
+      </p>
+    </div>
+  </div>
+
+  <!-- Main Content Area -->
+  <div class="flex-1 flex flex-col overflow-hidden">
+    <!-- Header -->
+    <div class="border-b border-slate-200 bg-white sticky top-0 z-30">
+      <div class="px-4 lg:px-8 py-6 flex items-center justify-between">
+        <div>
+          @if (selectedPage()) {
+            <h1 class="text-3xl font-bold text-slate-900">
+              {{ selectedPage()!.title }}
+            </h1>
+            <p class="text-sm text-slate-600 mt-1">
+              {{ selectedPage()!.subtitle }}
+            </p>
+          } @else {
+            <h1 class="text-3xl font-bold text-slate-900">
+              Compliance Content
+            </h1>
+            <p class="text-sm text-slate-600 mt-1">
+              Select a page from the sidebar to edit
+            </p>
+          }
+        </div>
+
+        <!-- Message Toast -->
+        @if (uiState().message.type) {
+          <div
+            [@.disabled]="true"
+            [class.bg-green-50]="uiState().message.type === 'success'"
+            [class.bg-red-50]="uiState().message.type === 'error'"
+            [class.border-green-50]="uiState().message.type === 'success'"
+            [class.border-red-50]="uiState().message.type === 'error'"
+            [class.text-green-700]="uiState().message.type === 'success'"
+            [class.text-red-700]="uiState().message.type === 'error'"
+            class="border rounded-xl px-4 py-3 text-sm font-medium animate-in fade-in slide-in-from-right-4 duration-200"
+          >
+            {{ uiState().message.text }}
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- Content Area -->
+    <div class="flex-1 overflow-y-auto">
+      @if (uiState().isLoading) {
+        <!-- Loading State -->
+        <div class="flex items-center justify-center h-full">
+          <div class="text-center">
+            <div
+              class="w-12 h-12 border-2 border-teal-200 border-t-teal-500 rounded-full animate-spin mx-auto"
+            ></div>
+            <p class="text-sm text-slate-600 mt-4">
+              Loading compliance pages...
+            </p>
+          </div>
+        </div>
+      } @else if (uiState().error) {
+        <!-- Error State -->
+        <div class="p-4 lg:p-8">
+          <div
+            class="bg-red-50 border border-red-200/50 rounded-xl p-6 text-center"
+          >
+            <p class="text-red-700 font-medium">{{ uiState().error }}</p>
+            <button
+              (click)="loadPages()"
+              class="mt-4 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm font-medium"
+            >
+              Try Again
+            </button>
+          </div>
+        </div>
+      } @else if (selectedPage()) {
+        <!-- Editor Panel -->
+        <div class="p-4 lg:p-8 space-y-8">
+          <!-- Tabs Section -->
+          <div
+            class="bg-white rounded-2xl border border-slate-200 overflow-hidden"
+          >
+            <div
+              class="px-6 lg:px-8 py-6 border-b border-slate-200 bg-slate-50/50"
+            >
+              <h2 class="text-lg font-bold text-slate-900">Sections</h2>
+              <p class="text-sm text-slate-600 mt-1">
+                {{ selectedPage()!.tabs.length }} editable sections
+              </p>
+            </div>
+
+            <div class="p-6 lg:p-8 space-y-4">
+              @for (
+                tab of selectedPage()!.tabs;
+                track trackByTabId($index, tab)
+              ) {
+                <div
+                  [class.bg-teal-50]="uiState().editingTabId === tab.id"
+                  [class.border-teal-300]="uiState().editingTabId === tab.id"
+                  class="bg-white border border-slate-200 rounded-xl transition-all duration-200"
+                >
+                  <!-- Tab Header / Preview (Collapsed) -->
+                  @if (uiState().editingTabId !== tab.id) {
+                    <button
+                      (click)="toggleEditTab(tab.id)"
+                      class="w-full text-left px-6 py-4 hover:bg-slate-50 transition-colors duration-200 group"
+                    >
+                      <div class="flex items-center justify-between gap-4">
+                        <div class="flex-1 min-w-0">
+                          <h3
+                            class="font-bold text-slate-900 group-hover:text-teal-600 transition-colors"
+                          >
+                            {{ tab.label }}
+                          </h3>
+                          <p class="text-sm text-slate-600 mt-2 line-clamp-2">
+                            {{ stripHtml(tab.content) | slice: 0 : 100 }}...
+                          </p>
+                        </div>
+                        <div
+                          class="flex-shrink-0 text-teal-600 group-hover:translate-x-0.5 transition-transform"
+                        >
+                          <svg
+                            class="w-5 h-5"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              stroke-width="2"
+                              d="M9 5l7 7-7 7"
+                            ></path>
+                          </svg>
+                        </div>
+                      </div>
+                    </button>
+                  } @else {
+                    <!-- Edit Mode (Expanded) -->
+                    <div
+                      class="px-6 py-4 bg-slate-50 border-b border-slate-200"
+                    >
+                      <h3 class="font-bold text-slate-900">Edit Section</h3>
+                    </div>
+
+                    <div class="p-6 space-y-6">
+                      <!-- Label Input -->
+                      <div>
+                        <label
+                          class="block text-sm font-bold text-slate-900 mb-2"
+                        >
+                          Section Title <span class="text-red-600">*</span>
+                        </label>
+                        <input
+                          type="text"
+                          [(ngModel)]="tab.label"
+                          class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all"
+                          placeholder="e.g., Data Collection Methods"
+                        />
+                      </div>
+
+                      <!-- Content Editor -->
+                      <div>
+                        <label
+                          class="block text-sm font-bold text-slate-900 mb-2"
+                        >
+                          Content <span class="text-red-600">*</span>
+                        </label>
+                        <textarea
+                          [(ngModel)]="tab.content"
+                          rows="12"
+                          class="w-full px-4 py-3 border border-slate-200 rounded-xl text-slate-900 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all resize-none"
+                          placeholder="HTML supported: <h3>, <p>, <ul>, <li>, <strong>, <em>"
+                        ></textarea>
+                        <p class="text-xs text-slate-500 mt-2 font-medium">
+                          💡 HTML Tags: &lt;h3&gt;, &lt;p&gt;, &lt;ul&gt;,
+                          &lt;li&gt;, &lt;strong&gt;, &lt;em&gt;
+                        </p>
+                      </div>
+
+                      <!-- Live Preview -->
+                      <div>
+                        <label
+                          class="block text-sm font-bold text-slate-900 mb-2"
+                        >
+                          Live Preview
+                        </label>
+                        <div
+                          class="w-full px-4 py-4 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-700 max-h-48 overflow-y-auto prose prose-sm"
+                          [innerHTML]="tab.content"
+                        ></div>
+                      </div>
+
+                      <!-- Action Buttons -->
+                      <div class="flex gap-3 pt-4 border-t border-slate-200">
+                        <button
+                          (click)="saveTab(tab)"
+                          [disabled]="uiState().isSaving"
+                          class="flex-1 bg-teal-500 text-white font-bold py-2.5 px-6 rounded-xl hover:bg-teal-600 active:bg-teal-700 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-sm uppercase tracking-wide"
+                          type="button"
+                        >
+                          {{
+                            uiState().isSaving ? "Saving..." : "Save Changes"
+                          }}
+                        </button>
+                        <button
+                          (click)="toggleEditTab(null)"
+                          class="flex-1 bg-slate-100 text-slate-700 font-bold py-2.5 px-6 rounded-xl hover:bg-slate-200 active:bg-slate-300 transition-colors duration-200 text-sm uppercase tracking-wide"
+                          type="button"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+          </div>
+
+          <!-- Links Section -->
+          @if (selectedPage()!.sidebarLinks.length > 0) {
+            <div
+              class="bg-white rounded-2xl border border-slate-200 overflow-hidden"
+            >
+              <div
+                class="px-6 lg:px-8 py-6 border-b border-slate-200 bg-slate-50/50"
+              >
+                <h2 class="text-lg font-bold text-slate-900">
+                  {{ selectedPage()!.sidebarTitle }}
+                </h2>
+                <p class="text-sm text-slate-600 mt-1">
+                  {{ selectedPage()!.sidebarLinks.length }} sidebar links
+                </p>
+              </div>
+
+              <div class="p-6 lg:p-8 space-y-3">
+                @for (
+                  link of selectedPage()!.sidebarLinks;
+                  track trackByLinkId($index, link)
+                ) {
+                  <div
+                    class="bg-slate-50 border border-slate-200 rounded-xl p-4 flex items-center justify-between hover:bg-slate-100 transition-colors"
+                  >
+                    <div class="flex-1 min-w-0">
+                      <h4 class="font-semibold text-slate-900 text-sm">
+                        {{ link.label }}
+                      </h4>
+                      <p class="text-xs text-slate-500 mt-1 truncate font-mono">
+                        {{ link.href }}
+                      </p>
+                    </div>
+                    @if (link.highlight) {
+                      <span
+                        class="flex-shrink-0 ml-3 px-3 py-1.5 bg-amber-50 text-amber-700 text-xs font-bold border border-amber-200/50 rounded-lg uppercase tracking-wide"
+                      >
+                        Featured
+                      </span>
+                    }
+                  </div>
+                }
+              </div>
+            </div>
+          }
+        </div>
+      } @else {
+        <!-- Empty State -->
+        <div class="flex items-center justify-center h-full p-4 lg:p-8">
+          <div class="text-center">
+            <div
+              class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4"
+            >
+              <svg
+                class="w-8 h-8 text-slate-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                ></path>
+              </svg>
+            </div>
+            <h3 class="text-lg font-bold text-slate-900 mt-4">
+              No page selected
+            </h3>
+            <p class="text-slate-600 text-sm mt-1">
+              Select a compliance page from the sidebar to begin editing
+            </p>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+</div>

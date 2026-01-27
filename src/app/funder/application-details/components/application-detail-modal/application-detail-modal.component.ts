@@ -9,11 +9,13 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { LucideAngularModule, X, Download, FileText } from 'lucide-angular';
+import { FundingApplicationCoverInformation } from 'src/app/shared/models/funding-application-cover.model';
 
 export interface ApplicationDetailModalData {
   id: string;
   title: string;
   applicantOrganizationName?: string;
+  fundingRequest?: FundingApplicationCoverInformation;
   applicantName?: string;
   status: string;
   stage: string;
@@ -94,9 +96,9 @@ export class ApplicationDetailModalComponent {
     return app?.status === 'under_review' || app?.status === 'submitted';
   });
 
-  hasFundingRequirements = computed(() => {
+  hasFundingRequest = computed(() => {
     const app = this.getCurrentData();
-    return !!app?.fundingRequirements;
+    return !!app?.fundingRequest;
   });
 
   getCurrentData(): ApplicationDetailModalData | null {
@@ -151,23 +153,32 @@ export class ApplicationDetailModalComponent {
         return 'bg-blue-50 text-blue-700 border-blue-200/50';
       case 'loan':
         return 'bg-amber-50 text-amber-700 border-amber-200/50';
+      case 'debt':
+        return 'bg-amber-50 text-amber-700 border-amber-200/50';
       case 'grant':
         return 'bg-green-50 text-green-700 border-green-200/50';
       case 'convertible':
         return 'bg-purple-50 text-purple-700 border-purple-200/50';
       case 'revenue_share':
         return 'bg-teal-50 text-teal-700 border-teal-200/50';
+      case 'mezzanine':
+        return 'bg-indigo-50 text-indigo-700 border-indigo-200/50';
       default:
         return 'bg-slate-100 text-slate-600 border-slate-200/50';
     }
   }
 
-  formatFundingType(fundingType?: string): string {
+  formatFundingType(fundingType?: string | string[]): string {
     if (!fundingType) return '';
-    return fundingType
-      .split('_')
-      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(' ');
+    const types = Array.isArray(fundingType) ? fundingType : [fundingType];
+    return types
+      .map((type) =>
+        type
+          .split('_')
+          .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+          .join(' ')
+      )
+      .join(', ');
   }
 
   formatCurrency(amount: number, currency?: string): string {
@@ -187,5 +198,30 @@ export class ApplicationDetailModalComponent {
       hour: '2-digit',
       minute: '2-digit',
     }).format(new Date(date));
+  }
+
+  // ============================================
+  // NEO-BRUTALIST BADGE COLORS (NEW METHOD)
+  // ============================================
+
+  /**
+   * Neo-brutalist funding type badge colors
+   * Uses bold borders (border-2), saturated colors, uppercase text
+   */
+  getFundingTypeColorNeoBrutalist(type: string): string {
+    const neoBrutalistColorMap: Record<string, string> = {
+      equity: 'bg-purple-50 text-purple-900 border-purple-600',
+      debt: 'bg-blue-50 text-blue-900 border-blue-600',
+      grant: 'bg-green-50 text-green-900 border-green-600',
+      crowdfunding: 'bg-orange-50 text-orange-900 border-orange-600',
+      venture_capital: 'bg-indigo-50 text-indigo-900 border-indigo-600',
+      angel_investment: 'bg-pink-50 text-pink-900 border-pink-600',
+      bank_loan: 'bg-cyan-50 text-cyan-900 border-cyan-600',
+      government_grant: 'bg-amber-50 text-amber-900 border-amber-600',
+    };
+    return (
+      neoBrutalistColorMap[type.toLowerCase()] ||
+      'bg-slate-100 text-slate-900 border-slate-600'
+    );
   }
 }

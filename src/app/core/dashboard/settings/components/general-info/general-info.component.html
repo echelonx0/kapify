@@ -36,19 +36,20 @@
               generalForm.get('name')?.touched
             "
           />
-          @if (generalForm.get('name')?.invalid &&
-          generalForm.get('name')?.touched) {
-          <p
-            class="mt-1.5 text-xs font-medium text-red-600 flex items-center gap-1"
-          >
-            <span class="w-1 h-1 rounded-full bg-red-600"></span>
-            Organization name is required
-          </p>
+          @if (
+            generalForm.get("name")?.invalid && generalForm.get("name")?.touched
+          ) {
+            <p
+              class="mt-1.5 text-xs font-medium text-red-600 flex items-center gap-1"
+            >
+              <span class="w-1 h-1 rounded-full bg-red-600"></span>
+              Organization name is required
+            </p>
           }
         </div>
 
         <!-- Organization Type -->
-        <div class="col-span-2 md:col-span-1">
+        <!-- <div class="col-span-2 md:col-span-1">
           <label class="block text-sm font-semibold text-slate-900 mb-2">
             Organization Type
             <span class="text-orange-500">*</span>
@@ -79,7 +80,7 @@
             Organization type is required
           </p>
           }
-        </div>
+        </div> -->
       </div>
 
       <!-- Description -->
@@ -98,39 +99,40 @@
             generalForm.get('description')?.touched
           "
         ></textarea>
-        @if (generalForm.get('description')?.invalid &&
-        generalForm.get('description')?.touched) {
-        <p
-          class="mt-1.5 text-xs font-medium text-red-600 flex items-center gap-1"
-        >
-          <span class="w-1 h-1 rounded-full bg-red-600"></span>
-          Description is required
-        </p>
+        @if (
+          generalForm.get("description")?.invalid &&
+          generalForm.get("description")?.touched
+        ) {
+          <p
+            class="mt-1.5 text-xs font-medium text-red-600 flex items-center gap-1"
+          >
+            <span class="w-1 h-1 rounded-full bg-red-600"></span>
+            Description is required
+          </p>
         }
       </div>
 
       <!-- Assets Under Management (Funders Only) -->
       @if (isFunder()) {
-      <div>
-        <label class="block text-sm font-semibold text-slate-900 mb-2">
-          Assets Under Management (AUM)
-          <span class="text-slate-400 font-normal">(Optional)</span>
-        </label>
-        <div class="relative">
-          <input
-            type="text"
-            formControlName="assetsUnderManagement"
-            placeholder="0"
-            (input)="formatAUM($event)"
-            (blur)="finalizeAUM($event)"
-            class="w-full pl-8 pr-4 py-2.5 border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200"
-          />
+        <div>
+          <label class="block text-sm font-semibold text-slate-900 mb-2">
+            Assets Under Management (AUM)
+            <span class="text-slate-400 font-normal">(Optional)</span>
+          </label>
+          <div class="relative">
+            <input
+              type="text"
+              formControlName="assetsUnderManagement"
+              placeholder="0"
+              (input)="formatAUM($event)"
+              (blur)="finalizeAUM($event)"
+              class="w-full pl-8 pr-4 py-2.5 border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200"
+            />
+          </div>
+          <p class="mt-1.5 text-xs text-slate-500">
+            Total value of assets currently under management
+          </p>
         </div>
-        <p class="mt-1.5 text-xs text-slate-500">
-          Total value of assets currently under management
-        </p>
-      </div>
-
       }
       <div>
         <app-logo-upload
@@ -147,15 +149,15 @@
         <!-- Status Message -->
         <div class="text-sm">
           @if (lastSaved()) {
-          <div class="flex items-center gap-1.5 text-green-600 font-medium">
-            <lucide-icon [img]="CheckIcon" [size]="16" />
-            Saved {{ formatLastSaved(lastSaved()) }}
-          </div>
+            <div class="flex items-center gap-1.5 text-green-600 font-medium">
+              <lucide-icon [img]="CheckIcon" [size]="16" />
+              Saved {{ formatLastSaved(lastSaved()) }}
+            </div>
           } @else if (hasUnsavedChanges()) {
-          <div class="flex items-center gap-1.5 text-amber-600 font-medium">
-            <lucide-icon [img]="AlertCircleIcon" [size]="16" />
-            You have unsaved changes
-          </div>
+            <div class="flex items-center gap-1.5 text-amber-600 font-medium">
+              <lucide-icon [img]="AlertCircleIcon" [size]="16" />
+              You have unsaved changes
+            </div>
           }
         </div>
 
@@ -176,13 +178,13 @@
             class="px-4 py-2.5 text-sm font-medium text-white bg-orange-500 hover:bg-orange-600 active:bg-orange-700 rounded-xl transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
           >
             @if (isLoading) {
-            <div
-              class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"
-            ></div>
-            <span>Saving...</span>
+              <div
+                class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"
+              ></div>
+              <span>Saving...</span>
             } @else {
-            <lucide-icon [img]="SaveIcon" [size]="16" />
-            <span>Save Changes</span>
+              <lucide-icon [img]="SaveIcon" [size]="16" />
+              <span>Save Changes</span>
             }
           </button>
         </div>
@@ -192,15 +194,15 @@
 
   <!-- Upload Error Alert -->
   @if (uploadError()) {
-  <div
-    class="px-4 py-3 bg-red-50 border border-red-200/50 rounded-xl flex items-center gap-3"
-  >
-    <lucide-icon
-      [img]="AlertCircleIcon"
-      [size]="18"
-      class="text-red-600 flex-shrink-0"
-    />
-    <p class="text-sm font-medium text-red-700">{{ uploadError() }}</p>
-  </div>
+    <div
+      class="px-4 py-3 bg-red-50 border border-red-200/50 rounded-xl flex items-center gap-3"
+    >
+      <lucide-icon
+        [img]="AlertCircleIcon"
+        [size]="18"
+        class="text-red-600 flex-shrink-0"
+      />
+      <p class="text-sm font-medium text-red-700">{{ uploadError() }}</p>
+    </div>
   }
 </div>

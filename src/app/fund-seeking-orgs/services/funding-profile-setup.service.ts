@@ -22,7 +22,7 @@ export class FundingProfileSetupService implements OnDestroy {
   private readonly authService = inject(AuthService);
   private readonly utilityService = inject(FundingApplicationUtilityService);
   private readonly supabase = inject(SharedSupabaseService);
-  private cachedCompanyInfo: any = null;
+
   // ===== ORGANIZATION CONTEXT =====
   currentOrganization = signal<string | null>(null);
   currentSlug = signal<string | null>(null);
@@ -116,10 +116,6 @@ export class FundingProfileSetupService implements OnDestroy {
       if (saved) {
         const parsed = JSON.parse(saved);
         if (parsed.organizationId) {
-          // console.log(
-          //   '✅ Organization retrieved from localStorage:',
-          //   parsed.organizationId
-          // );
           return parsed.organizationId;
         }
       }
@@ -185,12 +181,6 @@ export class FundingProfileSetupService implements OnDestroy {
   // ===============================
   // NAVIGATION
   // ===============================
-
-  // setCurrentStep(stepId: string) {
-  //   if (this.isValidStep(stepId)) {
-  //     this.currentStep.set(stepId);
-  //   }
-  // }
 
   // Update setCurrentStep:
   setCurrentStep(stepId: string) {

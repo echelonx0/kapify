@@ -317,8 +317,8 @@ export class PublicProfileService {
       heroVideo: dbData.hero_video,
       tagline: dbData.tagline,
       elevator_pitch: dbData.elevator_pitch,
-      logoUrl: dbData.logo_url, // ← MAPPED FROM DB
-      heroImageUrl: dbData.hero_image_url, // ← MAPPED FROM DB
+      logoUrl: dbData.logo_url,
+      heroImageUrl: dbData.hero_image_url,
       portfolioHighlights: dbData.portfolio_highlights || [],
       successMetrics: dbData.success_metrics || [],
       featuredPortfolioLogos: dbData.featured_portfolio_logos || [],
@@ -448,6 +448,40 @@ export class PublicProfileService {
       }),
       catchError((error) => {
         console.error('Error fetching organization opportunities:', error);
+        return of([]);
+      })
+    );
+  }
+
+  /**
+   * Fetch all published profiles for carousel display
+   */
+  getAllPublishedProfiles(): Observable<PublicProfile[]> {
+    return from(
+      this.supabaseService
+        .from('public_profiles')
+        .select(
+          `
+        *,
+        organization:organizations(
+          name,
+          logo_url,
+          is_verified
+        )
+      `
+        )
+        .eq('is_published', true)
+        .order('updated_at', { ascending: false })
+    ).pipe(
+      map(({ data, error }) => {
+        if (error) {
+          console.error('Failed to fetch published profiles:', error);
+          return [];
+        }
+        return (data || []).map((profile) => this.mapDatabaseToModel(profile));
+      }),
+      catchError((error) => {
+        console.error('Error fetching published profiles:', error);
         return of([]);
       })
     );

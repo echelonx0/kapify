@@ -38,7 +38,6 @@ type WelcomeView =
   imports: [
     CommonModule,
     LucideAngularModule,
-
     MobileHeaderComponent,
     SetupStateComponent,
     VerificationReadyStateComponent,

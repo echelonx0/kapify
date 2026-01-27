@@ -38,6 +38,16 @@ export class AdminLayoutComponent {
       icon: 'fas fa-tachometer-alt',
     },
     {
+      path: 'demographics',
+      label: 'Demographics Manager',
+      icon: 'fas fa-tachometer-alt',
+    },
+    {
+      path: 'scoring-weights-manager',
+      label: 'Scoring weights manager',
+      icon: 'fas fas-brain',
+    },
+    {
       path: 'verification',
       label: 'Organization Verification',
       icon: 'fas fa-check-circle',
@@ -61,6 +71,11 @@ export class AdminLayoutComponent {
       path: 'fund-financial-terms',
       label: 'Manage Funding Terms',
       icon: 'fas fa-check-circle',
+    },
+    {
+      path: 'compliance',
+      label: 'Compliance Manager',
+      icon: 'fas fa-shield-alt',
     },
     {
       path: 'ai-management',
@@ -102,9 +117,9 @@ export class AdminLayoutComponent {
       description: 'Manage your profile',
     },
     {
-      path: '/applications',
-      label: 'Applications',
-      description: 'View your applications',
+      path: '/administrator/backups',
+      label: 'Backups',
+      description: 'Manage your backups',
     },
     {
       path: '/opportunities',

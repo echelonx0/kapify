@@ -1,3 +1,778 @@
 <!-- At the end of your template, before closing </div> -->
 
-<router-outlet />
+<!-- <router-outlet /> -->
+<div class="bg-finto-bg text-finto-text min-h-screen">
+  <!-- NAVBAR -->
+  <nav class="sticky top-0 z-50 bg-white border-b border-finto-border">
+    <div class="max-w-7xl mx-auto px-8 py-6 flex items-center justify-between">
+      <!-- Logo -->
+      <div class="flex items-center gap-3">
+        <div
+          class="w-8 h-8 rounded-lg bg-finto-dark flex items-center justify-center text-white font-bold"
+        >
+          ⚙
+        </div>
+        <span class="text-xl font-bold text-finto-dark">Finto</span>
+      </div>
+
+      <!-- Nav Menu -->
+      <ul class="hidden lg:flex items-center gap-8">
+        <li>
+          <a
+            (click)="scrollToSection('features')"
+            class="text-sm text-finto-text-light hover:text-finto-dark transition-colors duration-300 cursor-pointer"
+            >Features</a
+          >
+        </li>
+        <li>
+          <a
+            (click)="scrollToSection('pricing')"
+            class="text-sm text-finto-text-light hover:text-finto-dark transition-colors duration-300 cursor-pointer"
+            >Pricing</a
+          >
+        </li>
+        <li>
+          <a
+            (click)="scrollToSection('customers')"
+            class="text-sm text-finto-text-light hover:text-finto-dark transition-colors duration-300 cursor-pointer"
+            >Customers</a
+          >
+        </li>
+      </ul>
+
+      <!-- Nav Buttons -->
+      <div class="flex items-center gap-4">
+        <button
+          class="text-sm font-semibold text-finto-dark px-6 py-3 hover:bg-finto-light transition-colors duration-300 rounded-full"
+        >
+          Sign In
+        </button>
+        <button
+          class="text-sm font-semibold text-white bg-finto-dark px-6 py-3 rounded-full hover:bg-finto-dark-light transition-colors duration-300"
+        >
+          Open an Account
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- HERO SECTION -->
+  <section id="hero" class="py-20 lg:py-28 px-8">
+    <div class="max-w-7xl mx-auto">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+        <!-- Hero Content -->
+        <div class="fade-in">
+          <div class="text-sm font-semibold text-finto-dark mb-4">
+            Your Journey to Wealth
+          </div>
+          <h1
+            class="text-4xl lg:text-5xl font-bold text-finto-dark mb-6 leading-tight"
+          >
+            Build the Life You Dream Of
+          </h1>
+          <p class="text-lg text-finto-text-light mb-8 leading-relaxed">
+            Save smarter, invest confidently, earn real rewards. Keep your
+            savings organized and watch your wealth grow. Manage multiple goals,
+            track progress in real-time, earn tokens with every saving you make.
+          </p>
+          <div class="flex flex-col sm:flex-row gap-4">
+            <button
+              class="bg-finto-dark text-white px-8 py-4 rounded-full font-semibold hover:bg-finto-dark-light transition-colors duration-300"
+            >
+              Open an Account
+            </button>
+            <button
+              class="bg-white text-finto-dark border-2 border-finto-dark px-8 py-4 rounded-full font-semibold hover:bg-finto-light transition-colors duration-300"
+            >
+              Learn More
+            </button>
+          </div>
+        </div>
+
+        <!-- Hero Visual (Phone Mockup) -->
+        <div class="fade-in flex justify-center">
+          <div class="phone-mockup"></div>
+        </div>
+      </div>
+
+      <!-- Social Proof -->
+      <div class="fade-in mt-20 text-center">
+        <p class="text-sm text-finto-text-light mb-6">
+          Trusted by thousands of companies in the world
+        </p>
+        <div class="flex flex-wrap justify-center gap-8 items-center">
+          <div
+            class="flex items-center gap-2 text-sm font-semibold text-finto-text-light"
+          >
+            <span>🏦</span> AssessBank
+          </div>
+          <div
+            class="flex items-center gap-2 text-sm font-semibold text-finto-text-light"
+          >
+            <span>📊</span> Flutterwave
+          </div>
+          <div
+            class="flex items-center gap-2 text-sm font-semibold text-finto-text-light"
+          >
+            <span>💳</span> Paystack
+          </div>
+          <div
+            class="flex items-center gap-2 text-sm font-semibold text-finto-text-light"
+          >
+            <span>✨</span> Notion
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURES SECTION -->
+  <section id="features" class="py-20 lg:py-28 px-8 bg-white">
+    <div class="max-w-7xl mx-auto">
+      <!-- Section Header -->
+      <div class="fade-in text-center max-w-2xl mx-auto mb-16">
+        <p class="text-sm font-semibold text-finto-dark mb-4">
+          Global Payments
+        </p>
+        <h2 class="text-3xl lg:text-4xl font-bold text-finto-dark mb-6">
+          Expand Your Financial Power Faster and Easier
+        </h2>
+        <p class="text-lg text-finto-text-light mb-8">
+          Reduce the complexity and cost of multicurrency management with
+          flexible cross-border payment options available in 195 countries
+          across 135+ currencies
+        </p>
+        <button
+          class="text-finto-accent font-semibold hover:text-finto-accent-dark transition-colors duration-300"
+        >
+          Learn More →
+        </button>
+      </div>
+
+      <!-- Globe Visual -->
+      <div class="fade-in mb-16">
+        <div class="relative w-full h-80 flex items-center justify-center">
+          <svg
+            class="globe w-96 h-96"
+            viewBox="0 0 200 200"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <circle
+              cx="100"
+              cy="100"
+              r="95"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1"
+              opacity="0.3"
+            />
+            <circle
+              cx="100"
+              cy="100"
+              r="70"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1"
+              opacity="0.2"
+            />
+            <circle
+              cx="100"
+              cy="100"
+              r="45"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1"
+              opacity="0.1"
+            />
+            <path
+              d="M 20 100 Q 50 70, 100 100 Q 150 130, 180 100"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="0.5"
+              opacity="0.15"
+            />
+            <path
+              d="M 100 20 Q 120 60, 100 100 Q 80 140, 100 180"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="0.5"
+              opacity="0.15"
+            />
+          </svg>
+          <div class="absolute">
+            <span
+              class="globe-flag"
+              style="position: absolute; top: 15%; left: 18%; font-size: 28px"
+              >🇺🇸</span
+            >
+            <span
+              class="globe-flag"
+              style="
+                position: absolute;
+                top: 18%;
+                left: 42%;
+                font-size: 28px;
+                animation-delay: 0.3s;
+              "
+              >🇬🇧</span
+            >
+            <span
+              class="globe-flag"
+              style="
+                position: absolute;
+                top: 12%;
+                left: 62%;
+                font-size: 28px;
+                animation-delay: 0.6s;
+              "
+              >🇳🇬</span
+            >
+            <span
+              class="globe-flag"
+              style="
+                position: absolute;
+                top: 35%;
+                left: 72%;
+                font-size: 28px;
+                animation-delay: 0.9s;
+              "
+              >🇮🇳</span
+            >
+            <span
+              class="globe-flag"
+              style="
+                position: absolute;
+                top: 52%;
+                left: 68%;
+                font-size: 28px;
+                animation-delay: 1.2s;
+              "
+              >🇪🇹</span
+            >
+          </div>
+        </div>
+      </div>
+
+      <!-- Feature Cards -->
+      <div class="fade-in grid grid-cols-1 md:grid-cols-3 gap-6">
+        <!-- Card 1 -->
+        <div
+          class="bg-finto-light rounded-2xl p-8 border border-finto-border hover:shadow-md hover:border-finto-text/20 transition-all duration-300 cursor-pointer"
+        >
+          <div
+            class="w-10 h-10 bg-finto-dark rounded-lg flex items-center justify-center text-white mb-4"
+          >
+            <svg
+              class="w-6 h-6"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              viewBox="0 0 24 24"
+            >
+              <rect x="1" y="4" width="22" height="16" rx="2" ry="2" />
+              <path d="M1 8h22" />
+            </svg>
+          </div>
+          <h3 class="text-lg font-semibold text-finto-dark mb-2">
+            100+ Payment Methods
+          </h3>
+          <p class="text-finto-text-light">
+            Test your product idea by launching payments with little to no code.
+          </p>
+        </div>
+
+        <!-- Card 2 -->
+        <div
+          class="bg-finto-light rounded-2xl p-8 border border-finto-border hover:shadow-md hover:border-finto-text/20 transition-all duration-300 cursor-pointer"
+        >
+          <div
+            class="w-10 h-10 bg-finto-dark rounded-lg flex items-center justify-center text-white mb-4"
+          >
+            <svg
+              class="w-6 h-6"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              viewBox="0 0 24 24"
+            >
+              <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
+              <polyline points="17 6 23 6 23 12" />
+            </svg>
+          </div>
+          <h3 class="text-lg font-semibold text-finto-dark mb-2">
+            Convert Automatically
+          </h3>
+          <p class="text-finto-text-light">
+            Test your product idea by launching payments with little to no code.
+          </p>
+        </div>
+
+        <!-- Card 3 -->
+        <div
+          class="bg-finto-light rounded-2xl p-8 border border-finto-border hover:shadow-md hover:border-finto-text/20 transition-all duration-300 cursor-pointer"
+        >
+          <div
+            class="w-10 h-10 bg-finto-dark rounded-lg flex items-center justify-center text-white mb-4"
+          >
+            <svg
+              class="w-6 h-6"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              viewBox="0 0 24 24"
+            >
+              <path
+                d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"
+              />
+              <circle cx="9" cy="10" r="1" />
+              <circle cx="12" cy="10" r="1" />
+              <circle cx="15" cy="10" r="1" />
+            </svg>
+          </div>
+          <h3 class="text-lg font-semibold text-finto-dark mb-2">
+            Manage Funds
+          </h3>
+          <p class="text-finto-text-light">
+            Test your product idea by launching payments with little to no code.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRICING SECTION -->
+  <section id="pricing" class="py-20 lg:py-28 px-8">
+    <div class="max-w-7xl mx-auto">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
+        <!-- Left: Section Header & Pricing Cards -->
+        <div class="fade-in">
+          <p class="text-sm font-semibold text-finto-dark mb-4">
+            Capture More Revenue
+          </p>
+          <h2 class="text-3xl lg:text-4xl font-bold text-finto-dark mb-6">
+            Supports All Billing Models Easily
+          </h2>
+          <p class="text-lg text-finto-text-light mb-8">
+            Simple and Transparent. Simple pricing with no hidden fees. It's
+            free to start — no trial, no contract, no risk.
+          </p>
+          <button
+            class="text-finto-accent font-semibold hover:text-finto-accent-dark transition-colors duration-300 mb-12"
+          >
+            Learn More →
+          </button>
+
+          <!-- Pricing Cards -->
+          <div class="space-y-6">
+            <!-- Standard -->
+            <div
+              class="bg-white rounded-2xl border border-finto-border p-8 hover:shadow-md hover:border-finto-text/20 transition-all duration-300"
+            >
+              <p class="text-xs font-semibold text-finto-text-light mb-2">
+                STANDARD
+              </p>
+              <h3 class="text-xl font-semibold text-finto-dark mb-2">
+                Perfect for Growing Business
+              </h3>
+              <div class="mb-6">
+                <span class="text-3xl font-bold text-finto-dark">$89</span>
+                <span class="text-finto-text-light">/month</span>
+              </div>
+              <button
+                class="w-full bg-white border-2 border-finto-dark text-finto-dark px-6 py-3 rounded-full font-semibold hover:bg-finto-light transition-colors duration-300 mb-6"
+              >
+                Get Started
+              </button>
+              <ul class="space-y-2 text-sm text-finto-text-light">
+                <li class="flex items-center gap-2">
+                  <svg
+                    class="w-4 h-4 text-green-600"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="3"
+                    viewBox="0 0 24 24"
+                  >
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                  All features from standard
+                </li>
+                <li class="flex items-center gap-2">
+                  <svg
+                    class="w-4 h-4 text-green-600"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="3"
+                    viewBox="0 0 24 24"
+                  >
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                  Recurring & billing
+                </li>
+                <li class="flex items-center gap-2">
+                  <svg
+                    class="w-4 h-4 text-green-600"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="3"
+                    viewBox="0 0 24 24"
+                  >
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                  Launch eCommerce stores
+                </li>
+              </ul>
+            </div>
+
+            <!-- Professional (Featured) -->
+            <div
+              class="bg-finto-dark text-white rounded-2xl p-8 shadow-md transform scale-105"
+            >
+              <div
+                class="inline-block bg-finto-accent text-finto-dark text-xs font-bold px-3 py-1 rounded-full mb-4"
+              >
+                Most Popular
+              </div>
+              <p class="text-xs font-semibold text-gray-300 mb-2">
+                PROFESSIONAL
+              </p>
+              <h3 class="text-xl font-semibold mb-2">
+                Perfect for Growing Business
+              </h3>
+              <div class="mb-6">
+                <span class="text-3xl font-bold">$89</span>
+                <span class="text-gray-300">/month</span>
+              </div>
+              <button
+                class="w-full bg-finto-accent text-finto-dark px-6 py-3 rounded-full font-semibold hover:bg-finto-accent-dark transition-colors duration-300 mb-6"
+              >
+                Get Started
+              </button>
+              <ul class="space-y-2 text-sm text-gray-200">
+                <li class="flex items-center gap-2">
+                  <svg
+                    class="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="3"
+                    viewBox="0 0 24 24"
+                  >
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                  All features from standard
+                </li>
+                <li class="flex items-center gap-2">
+                  <svg
+                    class="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="3"
+                    viewBox="0 0 24 24"
+                  >
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                  Recurring & billing
+                </li>
+                <li class="flex items-center gap-2">
+                  <svg
+                    class="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="3"
+                    viewBox="0 0 24 24"
+                  >
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                  Launch eCommerce stores
+                </li>
+              </ul>
+            </div>
+
+            <!-- Custom -->
+            <div
+              class="bg-white rounded-2xl border border-finto-border p-8 hover:shadow-md hover:border-finto-text/20 transition-all duration-300"
+            >
+              <p class="text-xs font-semibold text-finto-text-light mb-2">
+                CUSTOM PLAN
+              </p>
+              <h3 class="text-xl font-semibold text-finto-dark mb-2">
+                Perfect for Large Companies
+              </h3>
+              <p class="text-finto-text-light mb-6">Talk to us</p>
+              <button
+                class="w-full bg-white border-2 border-finto-dark text-finto-dark px-6 py-3 rounded-full font-semibold hover:bg-finto-light transition-colors duration-300 mb-6"
+              >
+                Contact Sales
+              </button>
+              <ul class="space-y-2 text-sm text-finto-text-light">
+                <li class="flex items-center gap-2">
+                  <svg
+                    class="w-4 h-4 text-green-600"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="3"
+                    viewBox="0 0 24 24"
+                  >
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                  All features from standard
+                </li>
+                <li class="flex items-center gap-2">
+                  <svg
+                    class="w-4 h-4 text-green-600"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="3"
+                    viewBox="0 0 24 24"
+                  >
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                  No-code checkout
+                </li>
+                <li class="flex items-center gap-2">
+                  <svg
+                    class="w-4 h-4 text-green-600"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="3"
+                    viewBox="0 0 24 24"
+                  >
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                  Growth with marketplace
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Feature Cards -->
+        <div class="fade-in space-y-6">
+          <div>
+            <p class="text-sm font-semibold text-finto-dark mb-4">
+              Capture More Revenue
+            </p>
+            <h3 class="text-2xl font-bold text-finto-dark mb-4">
+              Supports All Billing Models Easily
+            </h3>
+            <p class="text-finto-text-light mb-6">
+              Simple and Transparent. Simple pricing with no hidden fees. It's
+              free to start.
+            </p>
+            <button
+              class="text-finto-accent font-semibold hover:text-finto-accent-dark transition-colors duration-300"
+            >
+              Learn More →
+            </button>
+          </div>
+
+          <!-- Bottom Feature Cards -->
+          <div class="space-y-4 pt-8">
+            <!-- Card 1 -->
+            <div
+              class="bg-white rounded-2xl border border-finto-border p-8 hover:shadow-md hover:border-finto-text/20 transition-all duration-300"
+            >
+              <div
+                class="w-10 h-10 bg-finto-light rounded-lg flex items-center justify-center text-finto-dark mb-4"
+              >
+                <svg
+                  class="w-6 h-6"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  viewBox="0 0 24 24"
+                >
+                  <rect x="1" y="4" width="22" height="16" rx="2" ry="2" />
+                  <path d="M1 8h22" />
+                </svg>
+              </div>
+              <h4 class="text-lg font-semibold text-finto-dark mb-2">
+                Accepting Payment
+              </h4>
+              <p class="text-sm text-finto-text-light">
+                Test your product idea by launching payments with little to no
+                code.
+              </p>
+            </div>
+
+            <!-- Card 2 -->
+            <div
+              class="bg-white rounded-2xl border border-finto-border p-8 hover:shadow-md hover:border-finto-text/20 transition-all duration-300"
+            >
+              <div
+                class="w-10 h-10 bg-finto-light rounded-lg flex items-center justify-center text-finto-dark mb-4"
+              >
+                <svg
+                  class="w-6 h-6"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"
+                  />
+                  <path d="M21 3v5h-5" />
+                </svg>
+              </div>
+              <h4 class="text-lg font-semibold text-finto-dark mb-2">
+                Support Any Pricing
+              </h4>
+              <p class="text-sm text-finto-text-light">
+                Test your product idea by launching payments with little to no
+                code.
+              </p>
+            </div>
+
+            <!-- Card 3 -->
+            <div
+              class="bg-white rounded-2xl border border-finto-border p-8 hover:shadow-md hover:border-finto-text/20 transition-all duration-300"
+            >
+              <div
+                class="w-10 h-10 bg-finto-light rounded-lg flex items-center justify-center text-finto-dark mb-4"
+              >
+                <svg
+                  class="w-6 h-6"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    d="M12 15c3.314 0 6-1.343 6-3s-2.686-3-6-3-6 1.343-6 3 2.686 3 6 3z"
+                  />
+                  <path d="M18 9v3c0 1.657-2.686 3-6 3s-6-1.343-6-3V9" />
+                  <path d="M18 12v3c0 1.657-2.686 3-6 3s-6-1.343-6-3v-3" />
+                </svg>
+              </div>
+              <h4 class="text-lg font-semibold text-finto-dark mb-2">
+                Custom Pricing
+              </h4>
+              <p class="text-sm text-finto-text-light">
+                Test your product idea by launching payments with little to no
+                code.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA SECTION -->
+  <section
+    class="py-20 lg:py-28 px-8 bg-gradient-to-br from-finto-dark to-finto-dark-light text-white"
+  >
+    <div class="max-w-4xl mx-auto text-center fade-in">
+      <h2 class="text-4xl lg:text-5xl font-bold mb-6">
+        Ready to Transform Your Finances?
+      </h2>
+      <p class="text-xl text-gray-200 mb-8">
+        Join thousands of savers building wealth with Finto today.
+      </p>
+      <div class="flex flex-col sm:flex-row gap-4 justify-center">
+        <button
+          class="bg-finto-accent text-finto-dark px-8 py-4 rounded-full font-semibold hover:bg-finto-accent-dark transition-colors duration-300"
+        >
+          Open an Account
+        </button>
+        <button
+          class="bg-white/10 backdrop-blur text-white px-8 py-4 rounded-full font-semibold border border-white/20 hover:border-white/40 transition-all duration-300"
+        >
+          Schedule Demo
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="bg-white border-t border-finto-border py-12 px-8">
+    <div class="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-8 mb-8">
+      <div>
+        <h4 class="font-semibold text-finto-dark mb-4">Product</h4>
+        <ul class="space-y-2 text-sm text-finto-text-light">
+          <li>
+            <a href="#" class="hover:text-finto-dark transition-colors"
+              >Features</a
+            >
+          </li>
+          <li>
+            <a href="#" class="hover:text-finto-dark transition-colors"
+              >Pricing</a
+            >
+          </li>
+          <li>
+            <a href="#" class="hover:text-finto-dark transition-colors"
+              >Security</a
+            >
+          </li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="font-semibold text-finto-dark mb-4">Company</h4>
+        <ul class="space-y-2 text-sm text-finto-text-light">
+          <li>
+            <a href="#" class="hover:text-finto-dark transition-colors"
+              >About</a
+            >
+          </li>
+          <li>
+            <a href="#" class="hover:text-finto-dark transition-colors">Blog</a>
+          </li>
+          <li>
+            <a href="#" class="hover:text-finto-dark transition-colors"
+              >Careers</a
+            >
+          </li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="font-semibold text-finto-dark mb-4">Legal</h4>
+        <ul class="space-y-2 text-sm text-finto-text-light">
+          <li>
+            <a href="#" class="hover:text-finto-dark transition-colors"
+              >Privacy</a
+            >
+          </li>
+          <li>
+            <a href="#" class="hover:text-finto-dark transition-colors"
+              >Terms</a
+            >
+          </li>
+          <li>
+            <a href="#" class="hover:text-finto-dark transition-colors"
+              >Cookies</a
+            >
+          </li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="font-semibold text-finto-dark mb-4">Connect</h4>
+        <ul class="space-y-2 text-sm text-finto-text-light">
+          <li>
+            <a href="#" class="hover:text-finto-dark transition-colors"
+              >Twitter</a
+            >
+          </li>
+          <li>
+            <a href="#" class="hover:text-finto-dark transition-colors"
+              >LinkedIn</a
+            >
+          </li>
+          <li>
+            <a href="#" class="hover:text-finto-dark transition-colors"
+              >GitHub</a
+            >
+          </li>
+        </ul>
+      </div>
+    </div>
+    <div
+      class="border-t border-finto-border pt-8 text-center text-sm text-finto-text-light"
+    >
+      <p>
+        &copy; 2024 Finto. All rights reserved. Built with elegance through
+        constraint.
+      </p>
+    </div>
+  </footer>
+</div>

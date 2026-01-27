@@ -1,5 +1,3 @@
-/* src/app/funder/components/application-detail/components/status-management-modal/status-management-modal.component.css */
-
 .modal-backdrop {
   backdrop-filter: blur(4px);
   animation: fadeIn 0.2s ease-out;
@@ -74,7 +72,7 @@
     max-width: 100%;
     margin: 1rem;
   }
-  
+
   .action-card {
     grid-column: span 2;
   }

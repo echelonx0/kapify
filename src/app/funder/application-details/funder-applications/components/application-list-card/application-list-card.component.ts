@@ -99,6 +99,8 @@ export class ApplicationListCardComponent {
   @Output() secondaryAction = new EventEmitter<BaseApplicationCard>();
   @Output() viewDetails = new EventEmitter<BaseApplicationCard>();
 
+  @Output() applicationWithdrawn = new EventEmitter<string>(); // Emit withdrawn app ID
+
   appManagementService = inject(FundingApplicationsManagerService);
   modalService = inject(ActionModalService);
   canWithdraw = computed(() => {
@@ -245,11 +247,23 @@ export class ApplicationListCardComponent {
     );
   }
 
+  // withdrawApplication(): void {
+  //   this.modalService.showWithdrawConfirm(
+  //     this.application.title,
+  //     this.application.applicationNumber
+  //   );
+  //   const subscription = this.modalService.confirmed$.subscribe(() => {
+  //     this.performWithdrawal();
+  //     subscription.unsubscribe();
+  //   });
+  // }
+
   withdrawApplication(): void {
     this.modalService.showWithdrawConfirm(
       this.application.title,
       this.application.applicationNumber
     );
+
     const subscription = this.modalService.confirmed$.subscribe(() => {
       this.performWithdrawal();
       subscription.unsubscribe();
@@ -261,8 +275,13 @@ export class ApplicationListCardComponent {
       .updateApplicationStatus(this.application.id, 'withdrawn')
       .subscribe({
         next: (updatedApp) => {
+          // ✅ Show success modal
           this.modalService.showWithdrawSuccess(this.application.title);
-          this.secondaryAction.emit(updatedApp as any);
+
+          // ✅ IMPORTANT: Emit event to parent with withdrawn app ID
+          this.applicationWithdrawn.emit(this.application.id);
+
+          // ✅ Parent will receive this event and reload the list
         },
         error: (error) => {
           this.modalService.showWithdrawError(
@@ -272,4 +291,20 @@ export class ApplicationListCardComponent {
         },
       });
   }
+  // private performWithdrawal(): void {
+  //   this.appManagementService
+  //     .updateApplicationStatus(this.application.id, 'withdrawn')
+  //     .subscribe({
+  //       next: (updatedApp) => {
+  //         this.modalService.showWithdrawSuccess(this.application.title);
+  //         this.secondaryAction.emit(updatedApp as any);
+  //       },
+  //       error: (error) => {
+  //         this.modalService.showWithdrawError(
+  //           this.application.title,
+  //           error.message || 'Failed to withdraw application. Please try again.'
+  //         );
+  //       },
+  //     });
+  // }
 }

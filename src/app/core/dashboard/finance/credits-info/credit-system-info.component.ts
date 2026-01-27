@@ -7,7 +7,6 @@ import {
   Zap,
   Shield,
   TrendingUp,
-  CheckCircle,
   Eye,
   MessageSquare,
   Download,
@@ -15,6 +14,7 @@ import {
   ArrowRight,
   Clock,
   DollarSign,
+  CircleCheck,
 } from 'lucide-angular';
 import { AuthService } from 'src/app/auth/services/production.auth.service';
 import {
@@ -23,7 +23,6 @@ import {
 } from 'src/app/shared/services/credit.service';
 
 import { PurchaseCreditsModalComponent } from 'src/app/core/dashboard/finance/credits/purchase-credits-modal.component';
-import { PricingPackagesComponent } from '../pricing-packages/pricing-packages.component';
 
 interface CreditAction {
   id: string;
@@ -37,13 +36,7 @@ interface CreditAction {
 @Component({
   selector: 'app-credits-explanation',
   standalone: true,
-  imports: [
-    CommonModule,
-    LucideAngularModule,
-
-    PurchaseCreditsModalComponent,
-    PricingPackagesComponent,
-  ],
+  imports: [CommonModule, LucideAngularModule, PurchaseCreditsModalComponent],
   templateUrl: './credit-system-info.component.html',
   styles: [],
 })
@@ -53,7 +46,7 @@ export class CreditsExplanationComponent {
   ZapIcon = Zap;
   ShieldIcon = Shield;
   TrendingUpIcon = TrendingUp;
-  CheckCircleIcon = CheckCircle;
+  CheckCircleIcon = CircleCheck;
   EyeIcon = Eye;
   MessageSquareIcon = MessageSquare;
   DownloadIcon = Download;

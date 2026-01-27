@@ -1,4 +1,4 @@
-// src/app/applications/components/new-application/models/application-form.models.ts
+// src/app/fund-seeking-orgs/applications/new-application/models/application-form.model.ts
 
 export interface ApplicationFormData {
   requestedAmount: string;

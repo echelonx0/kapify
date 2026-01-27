@@ -1,14 +1,19 @@
 import { Injectable, inject } from '@angular/core';
-import {
-  KapifyReports,
-  // KapifyReportsExportOptions,
-} from '../models/kapify-reports.interface';
+import { KapifyReports } from '../models/kapify-reports.interface';
 import { KapifyReportsTransformerService } from './kapify-reports-transformer.service';
 import { SharedSupabaseService } from 'src/app/shared/services/shared-supabase.service';
+import { GenericExportService } from 'src/app/core/services/kapify-export.service';
+import { ExportColumn } from 'src/app/core/models/export-options.interface';
+import { ReportExportConfig } from './kapify-reports.service';
 
 /**
- * KapifyReports Export Service
- * Handles exporting reports to Excel, PDF, CSV formats
+ * MERGED KapifyReports Export Service
+ * - Exports existing KapifyReports to Excel/PDF/CSV
+ * - Exports saved application reports with stored configuration
+ *
+ * USAGE:
+ * 1. For existing reports: exportToExcel(reports), exportToPDF(reports), exportToCSV(reports)
+ * 2. For saved reports: exportReport(data, config, fileName)
  */
 @Injectable({
   providedIn: 'root',
@@ -16,9 +21,14 @@ import { SharedSupabaseService } from 'src/app/shared/services/shared-supabase.s
 export class KapifyReportsExportService {
   private transformer = inject(KapifyReportsTransformerService);
   private supabase = inject(SharedSupabaseService);
+  private exportService = inject(GenericExportService);
+
+  // ===============================
+  // EXISTING REPORTS EXPORT
+  // ===============================
 
   /**
-   * Export reports to Excel
+   * Export existing KapifyReports to Excel
    */
   async exportToExcel(
     reports: KapifyReports[],
@@ -64,7 +74,7 @@ export class KapifyReportsExportService {
   }
 
   /**
-   * Export reports to CSV
+   * Export existing KapifyReports to CSV
    */
   async exportToCSV(
     reports: KapifyReports[],
@@ -95,7 +105,7 @@ export class KapifyReportsExportService {
   }
 
   /**
-   * Export reports to PDF (simplified - no autotable dependency)
+   * Export existing KapifyReports to PDF (simplified - no autotable dependency)
    */
   async exportToPDF(
     reports: KapifyReports[],
@@ -155,6 +165,79 @@ export class KapifyReportsExportService {
       throw error;
     }
   }
+
+  // ===============================
+  // SAVED REPORTS EXPORT
+  // ===============================
+
+  /**
+   * Export a saved application report using its stored configuration
+   * Used by KapifyApplicationReportsComponent
+   */
+  async exportReport(
+    data: any[], // ApplicationReportRecord[]
+    config: ReportExportConfig,
+    fileName: string
+  ): Promise<void> {
+    // Map field names to display labels
+    const fieldLabels: Record<string, string> = {
+      nameOfBusiness: 'Business Name',
+      industry: 'Industry',
+      businessStage: 'Business Stage',
+      yearsInOperation: 'Years in Operation',
+      numberOfEmployees: 'Employees',
+      province: 'Province',
+      priorYearAnnualRevenue: 'Prior Year Revenue',
+      firstName: 'First Name',
+      surname: 'Surname',
+      email: 'Email',
+      phoneNumber: 'Phone Number',
+      amountRequested: 'Amount Requested',
+      fundingType: 'Funding Type',
+      applicationStatus: 'Application Status',
+      funderName: 'Funder Name',
+      createdAt: 'Created Date',
+      updatedAt: 'Updated Date',
+    };
+
+    // Build columns from selected fields
+    const columns: ExportColumn<any>[] = config.selectedFields
+      .map((fieldKey: string) => {
+        const column: ExportColumn<any> = {
+          header: fieldLabels[fieldKey] || fieldKey,
+          key: fieldKey as keyof any,
+          width: 15,
+        };
+
+        // Apply formatting based on field type
+        if (
+          fieldKey === 'amountRequested' ||
+          fieldKey === 'priorYearAnnualRevenue'
+        ) {
+          column.format = (val) => this.formatCurrency(val);
+        } else if (fieldKey === 'createdAt' || fieldKey === 'updatedAt') {
+          column.format = (val) => this.formatDate(val);
+        }
+
+        return column;
+      })
+      .filter((col) => col.key); // Ensure only valid columns
+
+    // Execute export with the stored configuration
+    await this.exportService.export(data, {
+      fileName,
+      format: config.format,
+      columns,
+      pdf: {
+        title: fileName,
+        orientation: 'landscape',
+      },
+    });
+  }
+
+  // ===============================
+  // HELPER METHODS - EXISTING REPORTS
+  // ===============================
 
   /**
    * Manually add table to jsPDF document
@@ -261,10 +344,6 @@ export class KapifyReportsExportService {
       currentY += cellHeight;
     });
   }
-
-  // ===============================
-  // HELPER METHODS
-  // ===============================
 
   /**
    * Prepare data for Excel export
@@ -494,6 +573,34 @@ export class KapifyReportsExportService {
     }
   }
 
+  // ===============================
+  // HELPER METHODS - FORMATTING
+  // ===============================
+
+  /**
+   * Format currency for ZAR
+   */
+  private formatCurrency(amount: number): string {
+    if (!amount) return '';
+    return new Intl.NumberFormat('en-ZA', {
+      style: 'currency',
+      currency: 'ZAR',
+      maximumFractionDigits: 0,
+    }).format(amount);
+  }
+
+  /**
+   * Format date
+   */
+  private formatDate(date: Date | string | undefined): string {
+    if (!date) return '';
+    return new Intl.DateTimeFormat('en-ZA', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    }).format(new Date(date));
+  }
+
   /**
    * Filter reports to only include user's own + organization's applications
    */
@@ -510,7 +617,6 @@ export class KapifyReportsExportService {
       const orgUserIds = await this.getOrganizationUserIds(userId);
 
       // Filter reports - match on email (since KapifyReports has email field)
-      // OR match on applicantId if we add it to the interface
       const userEmails = await this.getUserEmails(orgUserIds);
 
       const filtered = reports.filter((report) =>
