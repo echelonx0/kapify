@@ -87,13 +87,13 @@ import { AuthService } from 'src/app/auth/services/production.auth.service';
         style({ opacity: 0, transform: 'translateX(20px)' }),
         animate(
           '250ms ease-out',
-          style({ opacity: 1, transform: 'translateX(0)' })
+          style({ opacity: 1, transform: 'translateX(0)' }),
         ),
       ]),
       transition(':leave', [
         animate(
           '200ms ease-in',
-          style({ opacity: 0, transform: 'translateX(-20px)' })
+          style({ opacity: 0, transform: 'translateX(-20px)' }),
         ),
       ]),
     ]),
@@ -196,7 +196,7 @@ export class CreateOpportunityComponent implements OnInit, OnDestroy {
     this.detectMode();
     console.log(
       'Form Data Current formState.formData:',
-      this.formState.formData()
+      this.formState.formData(),
     );
     console.log('Form Data Individual fields:', {
       ...this.formState.formData(),
@@ -347,7 +347,7 @@ export class CreateOpportunityComponent implements OnInit, OnDestroy {
         const validatedMaxInv = Math.max(validatedMinInv, maxInv);
         const validatedTypicalInv = Math.max(
           validatedMinInv,
-          Math.min(typicalInv, validatedMaxInv)
+          Math.min(typicalInv, validatedMaxInv),
         );
 
         const opportunityData: Partial<FundingOpportunity> = {
@@ -442,8 +442,8 @@ export class CreateOpportunityComponent implements OnInit, OnDestroy {
           new Error(
             `Failed to prepare opportunity data: ${
               error.message || 'Unknown error'
-            }`
-          )
+            }`,
+          ),
         );
       }
     });
@@ -489,7 +489,7 @@ export class CreateOpportunityComponent implements OnInit, OnDestroy {
     if (!this.canPublish()) {
       console.warn('⚠️ Cannot publish: Validation failed');
       this.toast.warning(
-        'Please complete all required fields before publishing'
+        'Please complete all required fields before publishing',
       );
       return;
     }
@@ -538,7 +538,7 @@ export class CreateOpportunityComponent implements OnInit, OnDestroy {
                     response.opportunityId,
                   ]);
                 },
-              }
+              },
             );
           },
           error: (error) => {
@@ -564,13 +564,13 @@ export class CreateOpportunityComponent implements OnInit, OnDestroy {
         // Show error toast
         this.toast.error(
           `Failed to prepare opportunity: ${errorMessage}`,
-          6000
+          6000,
         );
 
         // Show error modal
         this.actionModalService.showPublishError(
           'Cannot publish',
-          `Failed to prepare opportunity: ${errorMessage}`
+          `Failed to prepare opportunity: ${errorMessage}`,
         );
       },
     });
@@ -664,7 +664,7 @@ export class CreateOpportunityComponent implements OnInit, OnDestroy {
                       opportunityId,
                     ]);
                   },
-                }
+                },
               );
             },
             error: (error) => {
@@ -846,7 +846,7 @@ export class CreateOpportunityComponent implements OnInit, OnDestroy {
   getCurrentStepSubtitle() {
     return this.stepNavigation.getCurrentStepSubtitle(
       this.organizationLoading(),
-      this.organizationError()
+      this.organizationError(),
     );
   }
 

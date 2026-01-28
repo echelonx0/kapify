@@ -4,7 +4,6 @@ import { FormsModule } from '@angular/forms';
 import { Subject, takeUntil } from 'rxjs';
 import {
   LucideAngularModule,
-  Building2,
   Mail,
   Phone,
   Globe,
@@ -13,24 +12,19 @@ import {
   CircleAlert,
   ChevronDown,
   ChevronRight,
-  FileText,
 } from 'lucide-angular';
 import { UiButtonComponent } from '../../../shared/components';
 import { LogoUploadComponent } from './logo-upload.component';
 import { FunderOnboardingService } from '../../services/funder-onboarding.service';
 import { FunderOrganization } from '../../../shared/models/user.models';
 
+/**
+ * ✅ organizationType removed from form interface
+ * It's immutable at registration and should never be displayed or editable
+ */
 interface BasicInfoFormData {
   name: string;
   description: string;
-  organizationType:
-    | 'investment_fund'
-    | 'bank'
-    | 'government'
-    | 'ngo'
-    | 'private_equity'
-    | 'venture_capital'
-    | '';
   email: string;
   phone: string;
   website: string;
@@ -59,7 +53,6 @@ export class BasicInfoFormComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
 
   // Icons
-  Building2Icon = Building2;
   MailIcon = Mail;
   PhoneIcon = Phone;
   GlobeIcon = Globe;
@@ -68,7 +61,6 @@ export class BasicInfoFormComponent implements OnInit, OnDestroy {
   AlertCircleIcon = CircleAlert;
   ChevronDownIcon = ChevronDown;
   ChevronRightIcon = ChevronRight;
-  FileTextIcon = FileText;
 
   // Section expansion state
   expandedSections = signal<SectionState>({
@@ -76,11 +68,10 @@ export class BasicInfoFormComponent implements OnInit, OnDestroy {
     contact: false,
   });
 
-  // Form data - includes logoUrl field
+  // Form data - organizationType removed
   formData = signal<BasicInfoFormData>({
     name: '',
     description: '',
-    organizationType: '',
     email: '',
     phone: '',
     website: '',
@@ -119,7 +110,6 @@ export class BasicInfoFormComponent implements OnInit, OnDestroy {
       ...data,
       name: org.name || '',
       description: org.description || '',
-      organizationType: (org.organizationType as any) || '',
       email: org.email || '',
       phone: org.phone || '',
       website: org.website || '',
@@ -184,12 +174,14 @@ export class BasicInfoFormComponent implements OnInit, OnDestroy {
     console.log('📝 Auto-saved basic info to local storage');
   }
 
+  /**
+   * ✅ organizationType is excluded from all mappings
+   */
   private mapFormDataToOrganization(): Partial<FunderOrganization> {
     const data = this.formData();
     return {
       name: data.name?.trim() || undefined,
       description: data.description?.trim() || undefined,
-      organizationType: (data.organizationType as any) || undefined,
       email: data.email?.trim() || undefined,
       phone: data.phone?.trim() || undefined,
       website: data.website?.trim() || undefined,
@@ -201,13 +193,12 @@ export class BasicInfoFormComponent implements OnInit, OnDestroy {
   // VALIDATION METHODS
   // ===============================
 
+  /**
+   * ✅ organizationType check removed - it's immutable
+   */
   isBasicInfoComplete(): boolean {
     const data = this.formData();
-    return !!(
-      data.name?.trim() &&
-      data.description?.trim() &&
-      data.organizationType
-    );
+    return !!(data.name?.trim() && data.description?.trim());
   }
 
   isContactInfoComplete(): boolean {

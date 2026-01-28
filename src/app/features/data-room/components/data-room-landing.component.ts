@@ -290,7 +290,7 @@ export class DataRoomLandingComponent implements OnInit, OnDestroy {
   });
 
   ngOnInit() {
-    // this.loadWallet();
+    this.loadWallet();
     this.fetchUserDocuments();
   }
 

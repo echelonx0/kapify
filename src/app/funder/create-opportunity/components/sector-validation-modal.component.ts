@@ -1,11 +1,368 @@
+// // src/app/funder/create-opportunity/components/sector-validation-modal.component.ts
+// import {
+//   Component,
+//   inject,
+//   signal,
+//   OnInit,
+//   Output,
+//   EventEmitter,
+// } from '@angular/core';
+// import { CommonModule } from '@angular/common';
+// import { Router } from '@angular/router';
+// import { trigger, transition, style, animate } from '@angular/animations';
+// import {
+//   LucideAngularModule,
+//   CheckCircle,
+//   XCircle,
+//   AlertCircle,
+//   ShieldCheck,
+// } from 'lucide-angular';
+// import { FormsModule } from '@angular/forms';
+// import { ModalService } from 'src/app/shared/services/modal.service';
+
+// @Component({
+//   selector: 'app-sector-validation-modal',
+//   standalone: true,
+//   imports: [CommonModule, LucideAngularModule, FormsModule],
+//   animations: [
+//     trigger('modalBackdrop', [
+//       transition(':enter', [
+//         style({ opacity: 0 }),
+//         animate('200ms ease-out', style({ opacity: 1 })),
+//       ]),
+//       transition(':leave', [animate('150ms ease-in', style({ opacity: 0 }))]),
+//     ]),
+//     trigger('modalContent', [
+//       transition(':enter', [
+//         style({ opacity: 0, transform: 'scale(0.95) translateY(10px)' }),
+//         animate(
+//           '250ms ease-out',
+//           style({ opacity: 1, transform: 'scale(1) translateY(0)' }),
+//         ),
+//       ]),
+//       transition(':leave', [
+//         animate(
+//           '200ms ease-in',
+//           style({ opacity: 0, transform: 'scale(0.95) translateY(10px)' }),
+//         ),
+//       ]),
+//     ]),
+//   ],
+//   template: `
+//     <div class="fixed inset-0 z-50 overflow-y-auto" [@modalBackdrop]>
+//       <!-- Backdrop -->
+//       <div class="fixed inset-0 bg-black bg-opacity-40 backdrop-blur-sm"></div>
+
+//       <!-- Modal Container -->
+//       <div class="flex min-h-full items-center justify-center p-4">
+//         <div
+//           class="relative bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden"
+//           [@modalContent]
+//         >
+//           <!-- Header -->
+//           <div
+//             class="bg-gradient-to-r from-primary-50 to-green-50 px-8 py-6 border-b border-gray-100"
+//           >
+//             <div class="flex items-start space-x-4">
+//               <div
+//                 class="w-12 h-12 bg-primary-100 rounded-xl flex items-center justify-center flex-shrink-0"
+//               >
+//                 <lucide-angular
+//                   [img]="ShieldCheckIcon"
+//                   [size]="24"
+//                   class="text-primary-600"
+//                 ></lucide-angular>
+//               </div>
+//               <div>
+//                 <h2 class="text-2xl font-bold text-gray-900">
+//                   Eligible Sectors
+//                 </h2>
+//                 <p class="text-sm text-gray-600 mt-1">
+//                   Verify your opportunity aligns with platform requirements
+//                 </p>
+//               </div>
+//             </div>
+//           </div>
+
+//           <!-- Content -->
+//           <div class="px-8 py-6 overflow-y-auto max-h-[50vh]">
+//             <!-- Why Section -->
+//             <div class="mb-6 bg-blue-50 border border-blue-100 rounded-lg p-4">
+//               <div class="flex items-start space-x-3">
+//                 <lucide-angular
+//                   [img]="AlertCircleIcon"
+//                   [size]="18"
+//                   class="text-blue-600 mt-0.5 flex-shrink-0"
+//                 ></lucide-angular>
+//                 <div>
+//                   <h4 class="text-sm font-semibold text-blue-900 mb-1">
+//                     Why we check this
+//                   </h4>
+//                   <p class="text-xs text-blue-800 leading-relaxed">
+//                     Our platform supports businesses across core economic
+//                     sectors. This ensures meaningful matches between funders and
+//                     enterprises driving sustainable growth.
+//                   </p>
+//                 </div>
+//               </div>
+//             </div>
+
+//             <!-- Sectors Grid -->
+//             <div class="space-y-2">
+//               <h3 class="text-sm font-semibold text-gray-900 mb-3">
+//                 Supported Sectors
+//               </h3>
+//               @for (sector of sectors; track sector) {
+//                 <div
+//                   class="flex items-start space-x-3 py-2 px-3 rounded-lg hover:bg-gray-50 transition-colors"
+//                 >
+//                   <lucide-angular
+//                     [img]="CheckCircleIcon"
+//                     [size]="16"
+//                     class="text-green-500 mt-0.5 flex-shrink-0"
+//                   ></lucide-angular>
+//                   <div>
+//                     <p class="text-sm font-medium text-gray-900">
+//                       {{ sector.name }}
+//                     </p>
+//                     <p class="text-xs text-gray-500 mt-0.5">
+//                       {{ sector.description }}
+//                     </p>
+//                   </div>
+//                 </div>
+//               }
+//             </div>
+//           </div>
+
+//           <!-- Footer -->
+//           <div class="bg-gray-50 px-8 py-6 border-t border-gray-100">
+//             <!-- Confirmation Checkbox -->
+//             <label class="flex items-start space-x-3 mb-6 cursor-pointer group">
+//               <input
+//                 type="checkbox"
+//                 [(ngModel)]="isConfirmed"
+//                 class="w-5 h-5 text-primary-600 border-gray-300 rounded focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 mt-0.5 cursor-pointer"
+//               />
+//               <span
+//                 class="text-sm text-gray-700 group-hover:text-gray-900 transition-colors"
+//               >
+//                 I confirm my funding opportunity falls within one or more of the
+//                 sectors listed above
+//               </span>
+//             </label>
+
+//             <!-- Action Buttons -->
+//             <div class="flex items-center justify-between space-x-3">
+//               <button
+//                 (click)="handleDecline()"
+//                 class="px-5 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+//               >
+//                 My Sectors are not listed
+//               </button>
+
+//               <button
+//                 (click)="handleConfirm()"
+//                 [disabled]="!isConfirmed()"
+//                 class="px-6 py-2.5 text-sm font-semibold text-white bg-primary-600 rounded-lg hover:bg-primary-700 transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-primary-600 flex items-center"
+//               >
+//                 Continue to Create Opportunity
+//                 <lucide-angular
+//                   [img]="CheckCircleIcon"
+//                   [size]="16"
+//                   class="ml-2"
+//                 ></lucide-angular>
+//               </button>
+//             </div>
+
+//             <!-- Helper Text -->
+//             @if (!isConfirmed()) {
+//               <p class="text-xs text-gray-500 mt-3 text-center">
+//                 Please confirm to proceed
+//               </p>
+//             }
+//           </div>
+//         </div>
+//       </div>
+//     </div>
+//   `,
+//   styles: [
+//     `
+//       :host {
+//         display: block;
+//       }
+
+//       /* Custom scrollbar */
+//       .overflow-y-auto::-webkit-scrollbar {
+//         width: 6px;
+//       }
+
+//       .overflow-y-auto::-webkit-scrollbar-track {
+//         background: #f1f1f1;
+//         border-radius: 10px;
+//       }
+
+//       .overflow-y-auto::-webkit-scrollbar-thumb {
+//         background: #cbd5e0;
+//         border-radius: 10px;
+//       }
+
+//       .overflow-y-auto::-webkit-scrollbar-thumb:hover {
+//         background: #a0aec0;
+//       }
+//     `,
+//   ],
+// })
+// export class SectorValidationModalComponent implements OnInit {
+//   private router = inject(Router);
+//   modalService = inject(ModalService);
+//   // Icons
+//   CheckCircleIcon = CheckCircle;
+//   XCircleIcon = XCircle;
+//   AlertCircleIcon = AlertCircle;
+//   ShieldCheckIcon = ShieldCheck;
+
+//   // State
+//   isConfirmed = signal(false);
+
+//   // Sectors data
+//   sectors = [
+//     {
+//       name: 'Primary Agriculture',
+//       description: 'Cultivation of crops and farming of livestock',
+//     },
+//     {
+//       name: 'Agro-Processing',
+//       description:
+//         'Processing agricultural products into food, beverages, textiles',
+//     },
+//     {
+//       name: 'Mining & Quarrying',
+//       description: 'Extraction of minerals, metals, and natural resources',
+//     },
+//     {
+//       name: 'Manufacturing',
+//       description: 'Production of goods from raw materials',
+//     },
+//     {
+//       name: 'Construction',
+//       description: 'Building infrastructure, homes, roads, bridges',
+//     },
+//     {
+//       name: 'Energy & Utilities',
+//       description: 'Production and supply of electricity, gas, energy services',
+//     },
+//     {
+//       name: 'Water & Waste Management',
+//       description: 'Clean water provision, sanitation, waste disposal',
+//     },
+//     {
+//       name: 'Wholesale & Retail Trade',
+//       description: 'Bulk purchasing for resale or direct consumer sales',
+//     },
+//     {
+//       name: 'Transport & Logistics',
+//       description: 'Movement of goods and people across modalities',
+//     },
+//     {
+//       name: 'Tourism & Hospitality',
+//       description: 'Accommodation, food, leisure services for travellers',
+//     },
+//     {
+//       name: 'Information & Communication Technology',
+//       description: 'Software, telecoms, IT support services',
+//     },
+//     {
+//       name: 'Financial Services & Insurance',
+//       description: 'Banking, investment, credit, insurance products',
+//     },
+//     {
+//       name: 'Real Estate & Property',
+//       description: 'Land, housing, and commercial property management',
+//     },
+//     {
+//       name: 'Professional & Technical Services',
+//       description: 'Consulting, research, legal, expert services',
+//     },
+//     {
+//       name: 'Education & Training',
+//       description: 'Learning institutions and skills development',
+//     },
+//     {
+//       name: 'Healthcare & Social Services',
+//       description: 'Medical care, wellness, community support',
+//     },
+//     {
+//       name: 'Arts, Culture & Entertainment',
+//       description: 'Media, film, music, cultural activities',
+//     },
+//     {
+//       name: 'Public Administration & Defence',
+//       description: 'Government services, policy, defence',
+//     },
+//     {
+//       name: 'Non-Profit & Community Services',
+//       description: 'Social, environmental, community-focused organizations',
+//     },
+//   ];
+
+//   ngOnInit() {
+//     // Prevent body scroll when modal is open
+//     document.body.style.overflow = 'hidden';
+//   }
+
+//   ngOnDestroy() {
+//     // Restore body scroll
+//     document.body.style.overflow = '';
+//   }
+
+//   handleConfirm() {
+//     if (!this.isConfirmed()) return;
+
+//     // Store validation in localStorage
+//     localStorage.setItem('sectorValidationCompleted', 'true');
+//     localStorage.setItem('sectorValidationDate', new Date().toISOString());
+
+//     // Close modal - parent will handle this via event or service
+//     this.close();
+//   }
+
+//   handleDecline() {
+//     // Redirect back - user's opportunity doesn't fit
+//   }
+
+//   private close() {
+//     // Use the modal service to close
+
+//     this.modalService.closeSectorValidation();
+//   }
+// }
+
 // src/app/funder/create-opportunity/components/sector-validation-modal.component.ts
-import { Component, inject, signal, OnInit, Output, EventEmitter } from '@angular/core';
+import {
+  Component,
+  inject,
+  signal,
+  OnInit,
+  OnDestroy,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { trigger, transition, style, animate } from '@angular/animations';
-import { LucideAngularModule, CheckCircle, XCircle, AlertCircle, ShieldCheck } from 'lucide-angular';
+import {
+  LucideAngularModule,
+  CheckCircle,
+  XCircle,
+  AlertCircle,
+  ShieldCheck,
+  Send,
+  Loader,
+} from 'lucide-angular';
 import { FormsModule } from '@angular/forms';
 import { ModalService } from 'src/app/shared/services/modal.service';
+import { AuthService } from 'src/app/auth/services/production.auth.service';
+import { Subject, takeUntil, from } from 'rxjs';
+import { MessagingService } from 'src/app/features/messaging/services/messaging.service';
 
 @Component({
   selector: 'app-sector-validation-modal',
@@ -15,210 +372,541 @@ import { ModalService } from 'src/app/shared/services/modal.service';
     trigger('modalBackdrop', [
       transition(':enter', [
         style({ opacity: 0 }),
-        animate('200ms ease-out', style({ opacity: 1 }))
+        animate('200ms ease-out', style({ opacity: 1 })),
       ]),
-      transition(':leave', [
-        animate('150ms ease-in', style({ opacity: 0 }))
-      ])
+      transition(':leave', [animate('150ms ease-in', style({ opacity: 0 }))]),
     ]),
     trigger('modalContent', [
       transition(':enter', [
         style({ opacity: 0, transform: 'scale(0.95) translateY(10px)' }),
-        animate('250ms ease-out', style({ opacity: 1, transform: 'scale(1) translateY(0)' }))
+        animate(
+          '250ms ease-out',
+          style({ opacity: 1, transform: 'scale(1) translateY(0)' }),
+        ),
       ]),
       transition(':leave', [
-        animate('200ms ease-in', style({ opacity: 0, transform: 'scale(0.95) translateY(10px)' }))
-      ])
-    ])
+        animate(
+          '200ms ease-in',
+          style({ opacity: 0, transform: 'scale(0.95) translateY(10px)' }),
+        ),
+      ]),
+    ]),
+    trigger('slideIn', [
+      transition(':enter', [
+        style({ opacity: 0, transform: 'translateY(10px)' }),
+        animate(
+          '200ms ease-out',
+          style({ opacity: 1, transform: 'translateY(0)' }),
+        ),
+      ]),
+    ]),
   ],
   template: `
     <div class="fixed inset-0 z-50 overflow-y-auto" [@modalBackdrop]>
       <!-- Backdrop -->
       <div class="fixed inset-0 bg-black bg-opacity-40 backdrop-blur-sm"></div>
-      
+
       <!-- Modal Container -->
       <div class="flex min-h-full items-center justify-center p-4">
-        <div 
+        <div
           class="relative bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden"
           [@modalContent]
         >
           <!-- Header -->
-          <div class="bg-gradient-to-r from-primary-50 to-green-50 px-8 py-6 border-b border-gray-100">
+          <div
+            class="bg-gradient-to-r from-teal-50 to-green-50 px-8 py-6 border-b border-slate-200"
+          >
             <div class="flex items-start space-x-4">
-              <div class="w-12 h-12 bg-primary-100 rounded-xl flex items-center justify-center flex-shrink-0">
-                <lucide-angular [img]="ShieldCheckIcon" [size]="24" class="text-primary-600"></lucide-angular>
+              <div
+                class="w-12 h-12 bg-teal-100 rounded-xl flex items-center justify-center flex-shrink-0"
+              >
+                <lucide-angular
+                  [img]="ShieldCheckIcon"
+                  [size]="24"
+                  class="text-teal-600"
+                ></lucide-angular>
               </div>
               <div>
-                <h2 class="text-2xl font-bold text-gray-900">Eligible Sectors</h2>
-                <p class="text-sm text-gray-600 mt-1">Verify your opportunity aligns with platform requirements</p>
+                <h2 class="text-2xl font-bold text-slate-900">
+                  Eligible Sectors
+                </h2>
+                <p class="text-sm text-slate-600 mt-1">
+                  Verify your opportunity aligns with platform requirements
+                </p>
               </div>
             </div>
           </div>
 
           <!-- Content -->
           <div class="px-8 py-6 overflow-y-auto max-h-[50vh]">
-            <!-- Why Section -->
-            <div class="mb-6 bg-blue-50 border border-blue-100 rounded-lg p-4">
-              <div class="flex items-start space-x-3">
-                <lucide-angular [img]="AlertCircleIcon" [size]="18" class="text-blue-600 mt-0.5 flex-shrink-0"></lucide-angular>
-                <div>
-                  <h4 class="text-sm font-semibold text-blue-900 mb-1">Why we check this</h4>
-                  <p class="text-xs text-blue-800 leading-relaxed">
-                    Our platform supports businesses across core economic sectors. This ensures 
-                    meaningful matches between funders and enterprises driving sustainable growth.
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <!-- Sectors Grid -->
-            <div class="space-y-2">
-              <h3 class="text-sm font-semibold text-gray-900 mb-3">Supported Sectors</h3>
-              @for (sector of sectors; track sector) {
-                <div class="flex items-start space-x-3 py-2 px-3 rounded-lg hover:bg-gray-50 transition-colors">
-                  <lucide-angular [img]="CheckCircleIcon" [size]="16" class="text-green-500 mt-0.5 flex-shrink-0"></lucide-angular>
+            <!-- Default State: Sectors List -->
+            @if (declineReason() === null) {
+              <!-- Why Section -->
+              <div
+                class="mb-6 bg-blue-50 border border-blue-200/50 rounded-lg p-4"
+              >
+                <div class="flex items-start space-x-3">
+                  <lucide-angular
+                    [img]="AlertCircleIcon"
+                    [size]="18"
+                    class="text-blue-600 mt-0.5 flex-shrink-0"
+                  ></lucide-angular>
                   <div>
-                    <p class="text-sm font-medium text-gray-900">{{ sector.name }}</p>
-                    <p class="text-xs text-gray-500 mt-0.5">{{ sector.description }}</p>
+                    <h4 class="text-sm font-semibold text-blue-900 mb-1">
+                      Why we check this
+                    </h4>
+                    <p class="text-xs text-blue-800 leading-relaxed">
+                      Our platform supports businesses across core economic
+                      sectors. This ensures meaningful matches between funders
+                      and enterprises driving sustainable growth.
+                    </p>
                   </div>
                 </div>
-              }
-            </div>
+              </div>
+
+              <!-- Sectors Grid -->
+              <div class="space-y-2">
+                <h3 class="text-sm font-semibold text-slate-900 mb-3">
+                  Supported Sectors
+                </h3>
+                @for (sector of sectors; track sector.name) {
+                  <div
+                    class="flex items-start space-x-3 py-2 px-3 rounded-lg hover:bg-slate-50 transition-colors"
+                  >
+                    <lucide-angular
+                      [img]="CheckCircleIcon"
+                      [size]="16"
+                      class="text-green-500 mt-0.5 flex-shrink-0"
+                    ></lucide-angular>
+                    <div>
+                      <p class="text-sm font-medium text-slate-900">
+                        {{ sector.name }}
+                      </p>
+                      <p class="text-xs text-slate-500 mt-0.5">
+                        {{ sector.description }}
+                      </p>
+                    </div>
+                  </div>
+                }
+              </div>
+            }
+
+            <!-- Decline State: Sector Request Form -->
+            @if (declineReason() === 'notListed') {
+              <div [@slideIn]>
+                <!-- Message -->
+                <div
+                  class="bg-amber-50 border border-amber-200/50 rounded-xl p-4 mb-6"
+                >
+                  <div class="flex items-start gap-3">
+                    <lucide-angular
+                      [img]="AlertCircleIcon"
+                      [size]="18"
+                      class="text-amber-600 mt-0.5 flex-shrink-0"
+                    ></lucide-angular>
+                    <div>
+                      <h4 class="text-sm font-semibold text-amber-900 mb-1">
+                        Sector Not Listed?
+                      </h4>
+                      <p class="text-xs text-amber-800">
+                        We're always expanding. Let us know which sector your
+                        opportunity falls into and we'll review it.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Input -->
+                <div>
+                  <label
+                    for="sectorName"
+                    class="block text-xs font-semibold text-slate-900 mb-2"
+                  >
+                    What's your sector?
+                  </label>
+                  <input
+                    id="sectorName"
+                    type="text"
+                    [(ngModel)]="requestSectorName"
+                    name="requestSectorName"
+                    placeholder="e.g., Renewable Energy, EdTech, AgriTech..."
+                    class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all placeholder-slate-400"
+                    [disabled]="isSubmittingRequest()"
+                  />
+                  <p class="text-xs text-slate-500 mt-1.5">
+                    Be specific so we can evaluate your request quickly
+                  </p>
+                </div>
+
+                <!-- Error Message -->
+                @if (requestError()) {
+                  <div
+                    class="mt-4 p-3 bg-red-50 border border-red-200/50 rounded-lg flex gap-3"
+                  >
+                    <div
+                      class="w-5 h-5 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0 mt-0.5"
+                    >
+                      <span class="text-xs font-bold text-red-600">!</span>
+                    </div>
+                    <p class="text-sm text-red-700">{{ requestError() }}</p>
+                  </div>
+                }
+              </div>
+            }
           </div>
 
           <!-- Footer -->
-          <div class="bg-gray-50 px-8 py-6 border-t border-gray-100">
-            <!-- Confirmation Checkbox -->
-            <label class="flex items-start space-x-3 mb-6 cursor-pointer group">
-              <input 
-                type="checkbox" 
-                [(ngModel)]="isConfirmed"
-                class="w-5 h-5 text-primary-600 border-gray-300 rounded focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 mt-0.5 cursor-pointer"
-              />
-              <span class="text-sm text-gray-700 group-hover:text-gray-900 transition-colors">
-                I confirm my funding opportunity falls within one or more of the sectors listed above
-              </span>
-            </label>
+          <div class="bg-slate-50 px-8 py-6 border-t border-slate-200">
+            <!-- Default State: Confirmation & Action Buttons -->
+            @if (declineReason() === null) {
+              <div>
+                <!-- Confirmation Checkbox -->
+                <label
+                  class="flex items-start space-x-3 mb-6 cursor-pointer group"
+                >
+                  <input
+                    type="checkbox"
+                    [(ngModel)]="isConfirmed"
+                    name="isConfirmed"
+                    class="w-5 h-5 text-teal-600 border-slate-300 rounded focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 mt-0.5 cursor-pointer accent-teal-600"
+                  />
+                  <span
+                    class="text-sm text-slate-700 group-hover:text-slate-900 transition-colors"
+                  >
+                    I confirm my funding opportunity falls within one or more of
+                    the sectors listed above
+                  </span>
+                </label>
 
-            <!-- Action Buttons -->
-            <div class="flex items-center justify-between space-x-3">
-              <button
-                (click)="handleDecline()"
-                class="px-5 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
-              >
-                My Sector Not Listed
-              </button>
-              
-              <button
-                (click)="handleConfirm()"
-                [disabled]="!isConfirmed()"
-                class="px-6 py-2.5 text-sm font-semibold text-white bg-primary-600 rounded-lg hover:bg-primary-700 transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-primary-600 flex items-center"
-              >
-                Continue to Create Opportunity
-                <lucide-angular [img]="CheckCircleIcon" [size]="16" class="ml-2"></lucide-angular>
-              </button>
-            </div>
+                <!-- Action Buttons -->
+                <div class="flex items-center justify-between space-x-3">
+                  <button
+                    (click)="handleDecline()"
+                    class="px-5 py-2.5 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-xl hover:bg-slate-50 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500"
+                  >
+                    My Sectors are not listed
+                  </button>
 
-            <!-- Helper Text -->
-            @if (!isConfirmed()) {
-              <p class="text-xs text-gray-500 mt-3 text-center">
-                Please confirm to proceed
-              </p>
+                  <button
+                    (click)="handleConfirm()"
+                    [disabled]="!isConfirmed()"
+                    class="px-6 py-2.5 text-sm font-semibold text-white bg-teal-600 rounded-xl hover:bg-teal-700 transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-teal-600 flex items-center"
+                  >
+                    Continue to Create Opportunity
+                    <lucide-angular
+                      [img]="CheckCircleIcon"
+                      [size]="16"
+                      class="ml-2"
+                    ></lucide-angular>
+                  </button>
+                </div>
+
+                <!-- Helper Text -->
+                @if (!isConfirmed()) {
+                  <p class="text-xs text-slate-500 mt-3 text-center">
+                    Please confirm to proceed
+                  </p>
+                }
+              </div>
+            }
+
+            <!-- Decline State: Sector Request Buttons -->
+            @if (declineReason() === 'notListed') {
+              <div class="flex gap-3">
+                <button
+                  (click)="handleBackToSectors()"
+                  [disabled]="isSubmittingRequest()"
+                  class="flex-1 px-4 py-2.5 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-xl hover:bg-slate-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500"
+                >
+                  Back to Sectors
+                </button>
+                <button
+                  (click)="handleSectorRequest()"
+                  [disabled]="
+                    !requestSectorName().trim() || isSubmittingRequest()
+                  "
+                  class="flex-1 px-4 py-2.5 text-sm font-semibold text-white bg-amber-600 rounded-xl hover:bg-amber-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500 flex items-center justify-center gap-2"
+                >
+                  @if (isSubmittingRequest()) {
+                    <lucide-angular
+                      [img]="LoaderIcon"
+                      [size]="16"
+                      class="animate-spin"
+                    ></lucide-angular>
+                    <span>Submitting...</span>
+                  } @else {
+                    <lucide-angular [img]="SendIcon" [size]="16" />
+                    <span>Submit Request</span>
+                  }
+                </button>
+              </div>
             }
           </div>
         </div>
       </div>
     </div>
   `,
-  styles: [`
-    :host {
-      display: block;
-    }
+  styles: [
+    `
+      :host {
+        display: block;
+      }
 
-    /* Custom scrollbar */
-    .overflow-y-auto::-webkit-scrollbar {
-      width: 6px;
-    }
+      /* Custom scrollbar */
+      .overflow-y-auto::-webkit-scrollbar {
+        width: 6px;
+      }
 
-    .overflow-y-auto::-webkit-scrollbar-track {
-      background: #f1f1f1;
-      border-radius: 10px;
-    }
+      .overflow-y-auto::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 10px;
+      }
 
-    .overflow-y-auto::-webkit-scrollbar-thumb {
-      background: #cbd5e0;
-      border-radius: 10px;
-    }
+      .overflow-y-auto::-webkit-scrollbar-thumb {
+        background: #cbd5e0;
+        border-radius: 10px;
+      }
 
-    .overflow-y-auto::-webkit-scrollbar-thumb:hover {
-      background: #a0aec0;
-    }
-  `]
+      .overflow-y-auto::-webkit-scrollbar-thumb:hover {
+        background: #a0aec0;
+      }
+
+      /* Accent color for checkbox */
+      input[type='checkbox'].accent-teal-600 {
+        accent-color: #14b8a6;
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class SectorValidationModalComponent implements OnInit {
+export class SectorValidationModalComponent implements OnInit, OnDestroy {
   private router = inject(Router);
-   modalService = inject(ModalService);
+  private modalService = inject(ModalService);
+  private messagingService = inject(MessagingService);
+  private authService = inject(AuthService);
+  private destroy$ = new Subject<void>();
+
   // Icons
   CheckCircleIcon = CheckCircle;
   XCircleIcon = XCircle;
   AlertCircleIcon = AlertCircle;
   ShieldCheckIcon = ShieldCheck;
+  SendIcon = Send;
+  LoaderIcon = Loader;
 
   // State
   isConfirmed = signal(false);
+  declineReason = signal<'notListed' | null>(null);
+  requestSectorName = signal('');
+  isSubmittingRequest = signal(false);
+  requestError = signal<string | null>(null);
 
   // Sectors data
   sectors = [
-    { name: 'Primary Agriculture', description: 'Cultivation of crops and farming of livestock' },
-    { name: 'Agro-Processing', description: 'Processing agricultural products into food, beverages, textiles' },
-    { name: 'Mining & Quarrying', description: 'Extraction of minerals, metals, and natural resources' },
-    { name: 'Manufacturing', description: 'Production of goods from raw materials' },
-    { name: 'Construction', description: 'Building infrastructure, homes, roads, bridges' },
-    { name: 'Energy & Utilities', description: 'Production and supply of electricity, gas, energy services' },
-    { name: 'Water & Waste Management', description: 'Clean water provision, sanitation, waste disposal' },
-    { name: 'Wholesale & Retail Trade', description: 'Bulk purchasing for resale or direct consumer sales' },
-    { name: 'Transport & Logistics', description: 'Movement of goods and people across modalities' },
-    { name: 'Tourism & Hospitality', description: 'Accommodation, food, leisure services for travellers' },
-    { name: 'Information & Communication Technology', description: 'Software, telecoms, IT support services' },
-    { name: 'Financial Services & Insurance', description: 'Banking, investment, credit, insurance products' },
-    { name: 'Real Estate & Property', description: 'Land, housing, and commercial property management' },
-    { name: 'Professional & Technical Services', description: 'Consulting, research, legal, expert services' },
-    { name: 'Education & Training', description: 'Learning institutions and skills development' },
-    { name: 'Healthcare & Social Services', description: 'Medical care, wellness, community support' },
-    { name: 'Arts, Culture & Entertainment', description: 'Media, film, music, cultural activities' },
-    { name: 'Public Administration & Defence', description: 'Government services, policy, defence' },
-    { name: 'Non-Profit & Community Services', description: 'Social, environmental, community-focused organizations' }
+    {
+      name: 'Primary Agriculture',
+      description: 'Cultivation of crops and farming of livestock',
+    },
+    {
+      name: 'Agro-Processing',
+      description:
+        'Processing agricultural products into food, beverages, textiles',
+    },
+    {
+      name: 'Mining & Quarrying',
+      description: 'Extraction of minerals, metals, and natural resources',
+    },
+    {
+      name: 'Manufacturing',
+      description: 'Production of goods from raw materials',
+    },
+    {
+      name: 'Construction',
+      description: 'Building infrastructure, homes, roads, bridges',
+    },
+    {
+      name: 'Energy & Utilities',
+      description: 'Production and supply of electricity, gas, energy services',
+    },
+    {
+      name: 'Water & Waste Management',
+      description: 'Clean water provision, sanitation, waste disposal',
+    },
+    {
+      name: 'Wholesale & Retail Trade',
+      description: 'Bulk purchasing for resale or direct consumer sales',
+    },
+    {
+      name: 'Transport & Logistics',
+      description: 'Movement of goods and people across modalities',
+    },
+    {
+      name: 'Tourism & Hospitality',
+      description: 'Accommodation, food, leisure services for travellers',
+    },
+    {
+      name: 'Information & Communication Technology',
+      description: 'Software, telecoms, IT support services',
+    },
+    {
+      name: 'Financial Services & Insurance',
+      description: 'Banking, investment, credit, insurance products',
+    },
+    {
+      name: 'Real Estate & Property',
+      description: 'Land, housing, and commercial property management',
+    },
+    {
+      name: 'Professional & Technical Services',
+      description: 'Consulting, research, legal, expert services',
+    },
+    {
+      name: 'Education & Training',
+      description: 'Learning institutions and skills development',
+    },
+    {
+      name: 'Healthcare & Social Services',
+      description: 'Medical care, wellness, community support',
+    },
+    {
+      name: 'Arts, Culture & Entertainment',
+      description: 'Media, film, music, cultural activities',
+    },
+    {
+      name: 'Public Administration & Defence',
+      description: 'Government services, policy, defence',
+    },
+    {
+      name: 'Non-Profit & Community Services',
+      description: 'Social, environmental, community-focused organizations',
+    },
   ];
 
-  ngOnInit() {
-    // Prevent body scroll when modal is open
-    document.body.style.overflow = 'hidden';
+  ngOnInit(): void {
+    this.preventBodyScroll(true);
   }
 
-  ngOnDestroy() {
-    // Restore body scroll
-    document.body.style.overflow = '';
+  ngOnDestroy(): void {
+    this.preventBodyScroll(false);
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
-  handleConfirm() {
+  private preventBodyScroll(prevent: boolean): void {
+    if (prevent) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+  }
+
+  /**
+   * Handle confirmation of eligible sector
+   */
+  handleConfirm(): void {
     if (!this.isConfirmed()) return;
 
     // Store validation in localStorage
     localStorage.setItem('sectorValidationCompleted', 'true');
     localStorage.setItem('sectorValidationDate', new Date().toISOString());
 
-    // Close modal - parent will handle this via event or service
+    // Close modal
     this.close();
   }
 
-  handleDecline() {
-    // Redirect back - user's opportunity doesn't fit
-    window.location.href = '/funder/dashboard';
+  /**
+   * Handle decline - show sector request form
+   */
+  handleDecline(): void {
+    this.declineReason.set('notListed');
+    this.requestError.set(null);
+    this.requestSectorName.set('');
   }
 
-  private close() {
-    // Use the modal service to close
-   
+  /**
+   * Handle back to sectors list
+   */
+  handleBackToSectors(): void {
+    this.declineReason.set(null);
+    this.requestError.set(null);
+    this.requestSectorName.set('');
+  }
+
+  /**
+   * Submit sector request - notifies admins
+   * Fixed: Converts Promise to Observable using from()
+   */
+  handleSectorRequest(): void {
+    const sectorName = this.requestSectorName().trim();
+
+    // Validation
+    if (!sectorName) {
+      this.requestError.set('Please enter a sector name');
+      return;
+    }
+
+    if (sectorName.length < 3) {
+      this.requestError.set('Sector name must be at least 3 characters');
+      return;
+    }
+
+    this.isSubmittingRequest.set(true);
+    this.requestError.set(null);
+
+    // Get current user
+    const user = this.authService.user();
+    if (!user) {
+      this.requestError.set('Unable to identify user. Please try again.');
+      this.isSubmittingRequest.set(false);
+      return;
+    }
+
+    // ✅ FIX: Convert Promise to Observable using from()
+    from(
+      this.messagingService.sendMessage(
+        'admin-sector-requests-thread', // Thread ID for all sector requests
+        `New sector request from ${user.firstName} ${user.lastName} (${user.email}): "${sectorName}"`,
+        'system',
+      ),
+    )
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (success) => {
+          this.isSubmittingRequest.set(false);
+
+          if (success) {
+            // Close modal after brief delay to show success
+            this.requestSectorName.set('');
+            this.declineReason.set(null);
+
+            // Optional: Show success message
+            console.log('✅ Sector request submitted successfully');
+
+            // Close after 1 second
+            setTimeout(() => {
+              this.close();
+            }, 1000);
+          } else {
+            this.requestError.set(
+              'Failed to submit request. Please try again.',
+            );
+          }
+        },
+        error: (error) => {
+          this.isSubmittingRequest.set(false);
+          this.requestError.set(
+            error?.message ||
+              'Failed to submit request. Please try again or contact support.',
+          );
+          console.error('❌ Sector request error:', error);
+        },
+      });
+  }
+
+  /**
+   * Close modal
+   */
+  private close(): void {
     this.modalService.closeSectorValidation();
   }
 }

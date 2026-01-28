@@ -1,10 +1,13 @@
 // src/app/funder/services/organization-state.service.ts
 import { Injectable, signal, computed, inject } from '@angular/core';
 import { Subject, takeUntil } from 'rxjs';
-import { FunderOnboardingService, OnboardingState } from './funder-onboarding.service';
+import {
+  FunderOnboardingService,
+  OnboardingState,
+} from './funder-onboarding.service';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class OrganizationStateService {
   private onboardingService = inject(FunderOnboardingService);
@@ -19,8 +22,10 @@ export class OrganizationStateService {
   onboardingState$ = this.onboardingService.onboardingState$;
 
   // Computed properties
-  organizationId = computed(() => this.onboardingState()?.organization?.id || null);
-  
+  organizationId = computed(
+    () => this.onboardingState()?.organization?.id || null,
+  );
+
   canProceed = computed(() => {
     return !this.organizationLoading() && !!this.organizationId();
   });
@@ -39,42 +44,58 @@ export class OrganizationStateService {
     this.setupSubscriptions();
   }
 
-  // Load organization data
+  /**
+   * Load organization data - triggers onboarding service to fetch fresh state.
+   * The actual loading completion is managed by setupSubscriptions() listening to onboardingState$
+   *
+   * This is the ONLY place that triggers a fetch; the state machine handles the rest.
+   */
   loadOrganizationData() {
-    console.log('Loading organization data...');
-    this.organizationLoading.set(true);
+    console.log('📊 Loading organization data...');
     this.organizationError.set(null);
-    
-    // Load onboarding status (same pattern as dashboard)
+
+    // Trigger fresh check - onboardingState$ will emit when ready
+    // We don't set organizationLoading here; let setupSubscriptions handle it
     this.onboardingService.checkOnboardingStatus().subscribe({
       next: () => {
-        console.log('Onboarding status check initiated');
+        console.log('✅ Onboarding status check initiated');
       },
       error: (error) => {
-        console.error('Failed to load onboarding status:', error);
+        console.error('❌ Failed to load onboarding status:', error);
         this.organizationError.set('Failed to load organization data');
         this.organizationLoading.set(false);
-      }
+      },
     });
   }
 
-  // Set up subscriptions to onboarding state
+  /**
+   * Set up subscriptions to onboarding state (SINGLE SOURCE OF TRUTH)
+   *
+   * This subscription:
+   * - Listens to onboarding state changes
+   * - Sets organizationLoading = false when ANY state arrives (loading complete)
+   * - Updates error state based on whether org exists
+   *
+   * This is the ONLY place that manages organizationLoading state,
+   * eliminating race conditions.
+   */
   private setupSubscriptions() {
     this.onboardingService.onboardingState$
       .pipe(takeUntil(this.destroy$))
-      .subscribe(state => {
-        console.log('Onboarding state received:', state);
+      .subscribe((state) => {
+        console.log('📡 Onboarding state received:', state);
         this.onboardingState.set(state);
-        
+
+        // ✅ KEY FIX: Any state emission = loading complete
+        this.organizationLoading.set(false);
+
         if (state?.organization?.id) {
-          console.log('Organization found:', state.organization.id);
-          this.organizationLoading.set(false);
+          console.log('✅ Organization found:', state.organization.id);
           this.organizationError.set(null);
         } else {
-          console.warn('No organization found in state');
-          this.organizationLoading.set(false);
+          console.warn('⚠️ No organization found in state');
           this.organizationError.set(
-            'Organization setup required to create funding opportunities.'
+            'Organization setup required to create funding opportunities.',
           );
         }
       });
@@ -109,7 +130,12 @@ export class OrganizationStateService {
   }
 
   // Organization status helpers
-  getOrganizationStatus(): 'loading' | 'missing' | 'incomplete' | 'ready' | 'error' {
+  getOrganizationStatus():
+    | 'loading'
+    | 'missing'
+    | 'incomplete'
+    | 'ready'
+    | 'error' {
     if (this.organizationLoading()) {
       return 'loading';
     }
@@ -131,7 +157,7 @@ export class OrganizationStateService {
 
   getOrganizationStatusMessage(): string {
     const status = this.getOrganizationStatus();
-    
+
     switch (status) {
       case 'loading':
         return 'Loading organization data...';
