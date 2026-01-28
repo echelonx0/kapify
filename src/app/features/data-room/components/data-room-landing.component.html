@@ -16,11 +16,14 @@
   />
 
   <!-- Purchase Modal -->
-  <app-purchase-credits-modal
-    (close)="closePurchaseModal()"
-    (success)="closePurchaseModal()"
-  />
-
+  <div>
+    @if (showPurchaseModal()) {
+      <app-purchase-credits-modal
+        (close)="closePurchaseModal()"
+        (success)="closePurchaseModal()"
+      />
+    }
+  </div>
   <div class="max-w-7xl mx-auto">
     <!-- Credits Header (Always visible) -->
     <div
@@ -89,10 +92,7 @@
       </div>
 
       <!-- Bento Grid -->
-      <div
-        *ngIf="!isLoadingDocuments() && userDocuments().length"
-        class="grid grid-cols-12 gap-6"
-      >
+      <div *ngIf="!isLoadingDocuments()" class="grid grid-cols-12 gap-6">
         <!-- What is Data Room Card - Top Left -->
         <div
           class="col-span-12 lg:col-span-5 bento-card p-8 animate-fade-in-up"

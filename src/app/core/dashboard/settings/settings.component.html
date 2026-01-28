@@ -1,117 +1,116 @@
-<!-- Organization Settings Layout - Optimized for sleekness -->
+<!-- Organization Settings Layout - Neo-Brutalist Sidebar -->
 <div class="min-h-screen bg-slate-50 mt-8">
   <div class="max-w-7xl mx-auto">
     <div class="flex gap-8">
-      <!-- Left Sidebar Navigation -->
+      <!-- Left Sidebar Navigation - Neo-Brutalist -->
       <div class="w-56 flex-shrink-0 sticky top-8 self-start">
         <!-- Navigation Tabs -->
         <nav
-          class="space-y-1 bg-white rounded-2xl p-4 shadow-sm border border-slate-200"
+          class="settings-nav space-y-0 bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden"
         >
           @for (tab of settingsTabs; track tab.id) {
-          <button
-            (click)="setActiveSection(tab.id)"
-            [class]="getSectionClasses(tab.id)"
-            [disabled]="!tab.enabled"
-            class="w-full text-left transition-all duration-200"
-          >
-            <div class="flex items-center gap-3 px-4 py-3 rounded-xl">
+            <button
+              (click)="setActiveSection(tab.id)"
+              [class]="getSectionClasses(tab.id)"
+              [disabled]="!tab.enabled"
+              class="flex items-center gap-3 border-l-3 transition-all duration-200"
+            >
               <!-- Icon -->
               <lucide-icon
                 [img]="tab.icon"
                 [size]="18"
-                class="flex-shrink-0"
+                class="tab-icon flex-shrink-0"
                 [class]="getTabIconColor(tab.id)"
               />
 
               <!-- Label -->
               <div class="flex-1 min-w-0">
-                <div class="text-sm font-medium text-slate-900 truncate">
+                <div
+                  class="tab-label text-sm text-slate-900 truncate"
+                  [class]="getTabLabelClass(tab.id)"
+                >
                   {{ tab.label }}
                 </div>
                 @if (!tab.enabled) {
-                <div class="text-xs text-slate-500 font-medium">
-                  Coming Soon
-                </div>
+                  <div
+                    class="coming-soon-badge text-xs text-slate-500 font-medium"
+                  >
+                    Coming Soon
+                  </div>
                 }
               </div>
-
-              <!-- Active indicator -->
-              @if (activeSection() === tab.id) {
-              <div class="w-2 h-2 rounded-full bg-teal-500 flex-shrink-0"></div>
-              }
-            </div>
-          </button>
+            </button>
           }
         </nav>
 
         <!-- Organization Card -->
         @if (organization() && !isLoading() && !isSME) {
-
-        <div
-          class="mt-6 bg-white rounded-2xl p-5 shadow-sm border border-slate-200 hover:shadow-md transition-all duration-200"
-        >
-          <!-- Organization Header -->
-          <div class="flex items-center gap-3 mb-4">
-            @if (organization()?.logoUrl) {
-            <img
-              [src]="organization()?.logoUrl"
-              [alt]="organization()?.name + ' logo'"
-              class="w-10 h-10 rounded-lg object-cover flex-shrink-0"
-            />
-            }
-            <div class="flex-1 min-w-0">
-              <p class="text-sm font-semibold text-slate-900 truncate">
-                {{ organization()?.name }}
-              </p>
-              <p class="text-xs text-slate-500 font-medium">
-                {{ getOrganizationTypeLabel(organization()?.organizationType) }}
-              </p>
-            </div>
-          </div>
-
-          <!-- Status Badge -->
           <div
-            class="flex items-center justify-between mb-4 px-3 py-2.5 rounded-xl border border-slate-200 bg-slate-50"
+            class="org-card mt-6 bg-white rounded-2xl p-5 shadow-sm border border-slate-200"
           >
-            <span
-              class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold transition-all duration-200"
-              [class]="getStatusClasses(organization()?.status)"
+            <!-- Organization Header -->
+            <div class="flex items-center gap-3 mb-4">
+              @if (organization()?.logoUrl) {
+                <img
+                  [src]="organization()?.logoUrl"
+                  [alt]="organization()?.name + ' logo'"
+                  class="w-10 h-10 rounded-lg object-cover flex-shrink-0"
+                />
+              }
+              <div class="flex-1 min-w-0">
+                <p class="text-sm font-semibold text-slate-900 truncate">
+                  {{ organization()?.name }}
+                </p>
+                <p class="text-xs text-slate-500 font-medium">
+                  {{
+                    getOrganizationTypeLabel(organization()?.organizationType)
+                  }}
+                </p>
+              </div>
+            </div>
+
+            <!-- Status Badge -->
+            <div
+              class="flex items-center justify-between mb-4 px-3 py-2.5 rounded-xl border border-slate-200 bg-slate-50"
             >
               <span
-                class="w-2 h-2 rounded-full"
-                [ngClass]="{
-                  'bg-green-500': organization()?.status === 'active',
-                  'bg-amber-500':
-                    organization()?.status === 'pending_verification',
-                  'bg-red-500':
-                    organization()?.status === 'suspended' ||
-                    organization()?.status === 'verification_rejected',
-                  'bg-slate-400':
-                    organization()?.status === 'inactive' ||
-                    !organization()?.status
-                }"
-              ></span>
-              {{ getStatusLabel(organization()?.status) }}
-            </span>
-          </div>
+                class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold transition-all duration-200"
+                [class]="getStatusClasses(organization()?.status)"
+              >
+                <span
+                  class="w-2 h-2 rounded-full"
+                  [ngClass]="{
+                    'bg-green-500': organization()?.status === 'active',
+                    'bg-amber-500':
+                      organization()?.status === 'pending_verification',
+                    'bg-red-500':
+                      organization()?.status === 'suspended' ||
+                      organization()?.status === 'verification_rejected',
+                    'bg-slate-400':
+                      organization()?.status === 'inactive' ||
+                      !organization()?.status,
+                  }"
+                ></span>
+                {{ getStatusLabel(organization()?.status) }}
+              </span>
+            </div>
 
-          <!-- Verification Badge -->
-          @if (organization()?.isVerified) {
-          <div
-            class="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-green-50 border border-green-200/50"
-          >
-            <lucide-icon
-              [img]="ShieldIcon"
-              [size]="14"
-              class="text-green-600 flex-shrink-0"
-            />
-            <span class="text-xs font-semibold text-green-700"
-              >Verified Organization</span
-            >
+            <!-- Verification Badge -->
+            @if (organization()?.isVerified) {
+              <div
+                class="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-green-50 border border-green-200/50"
+              >
+                <lucide-icon
+                  [img]="ShieldIcon"
+                  [size]="14"
+                  class="text-green-600 flex-shrink-0"
+                />
+                <span class="text-xs font-semibold text-green-700"
+                  >Verified Organization</span
+                >
+              </div>
+            }
           </div>
-          }
-        </div>
         }
       </div>
 
@@ -119,78 +118,104 @@
       <div class="flex-1">
         <!-- Loading State -->
         @if (isLoading()) {
-        <div
-          class="bg-white rounded-2xl border border-slate-200 shadow-sm p-12"
-        >
-          <div class="flex flex-col items-center justify-center">
-            <div
-              class="w-10 h-10 rounded-full border-2 border-slate-200 border-t-teal-500 animate-spin mb-4"
-            ></div>
-            <p class="text-slate-600 font-medium">
-              Loading organization details...
-            </p>
+          <div
+            class="bg-white rounded-2xl border border-slate-200 shadow-sm p-12"
+          >
+            <div class="flex flex-col items-center justify-center">
+              <div
+                class="w-10 h-10 rounded-full border-2 border-slate-200 border-t-teal-500 animate-spin mb-4"
+              ></div>
+              <p class="text-slate-600 font-medium">
+                Loading organization details...
+              </p>
+            </div>
           </div>
-        </div>
         }
 
         <!-- Error State -->
         @else if (error()) {
-        <div
-          class="bg-white rounded-2xl border border-red-200/50 shadow-sm p-12"
-        >
-          <div class="text-center">
-            <h3 class="text-lg font-bold text-slate-900 mb-2">
-              Unable to load settings
-            </h3>
-            <p class="text-slate-600 text-sm mb-6">{{ error() }}</p>
-            <button
-              (click)="retryLoad()"
-              class="px-5 py-2.5 bg-teal-500 text-white font-medium rounded-xl hover:bg-teal-600 transition-colors duration-200 shadow-sm"
-            >
-              Try Again
-            </button>
+          <div
+            class="bg-white rounded-2xl border border-red-200/50 shadow-sm p-12"
+          >
+            <div class="text-center">
+              <h3 class="text-lg font-bold text-slate-900 mb-2">
+                Unable to load settings
+              </h3>
+              <p class="text-slate-600 text-sm mb-6">{{ error() }}</p>
+              <button
+                (click)="retryLoad()"
+                class="px-5 py-2.5 bg-teal-500 text-white font-medium rounded-xl hover:bg-teal-600 transition-colors duration-200 shadow-sm"
+              >
+                Try Again
+              </button>
+            </div>
           </div>
-        </div>
         }
 
         <!-- Content Sections -->
-        @else { @switch (activeSection()) { @case ('general') {
-        <app-general-info
-          [organization]="organization()"
-          [isLoading]="isSaving()"
-          (organizationUpdated)="onOrganizationUpdated($event)"
-        />
-        } @case ('account') {
-        <app-account />
-        } @case ('password') {
-        <app-change-password />
-        } @case ('contact') {
-        <app-contact-details
-          [organization]="organization()"
-          [isLoading]="isSaving()"
-          (organizationUpdated)="onOrganizationUpdated($event)"
-        />
-        } @case ('legal') {
-        <app-legal-info
-          [organization]="organization()"
-          [isLoading]="isSaving()"
-          (organizationUpdated)="onOrganizationUpdated($event)"
-        />
-        } @case ('billing') {
-        <!-- <app-billing-credits /> -->
-        <app-credits />
-        } @case ('team') {
-        <app-team-management />
-        } @default {
-        <div
-          class="bg-white rounded-2xl border border-slate-200 shadow-sm p-12 text-center"
-        >
-          <h3 class="text-lg font-semibold text-slate-900 mb-2">Coming Soon</h3>
-          <p class="text-slate-600 text-sm">
-            This section is under development. Check back soon.
-          </p>
-        </div>
-        } } }
+        @else {
+          @switch (activeSection()) {
+            @case ("general") {
+              <div class="settings-content">
+                <app-general-info
+                  [organization]="organization()"
+                  [isLoading]="isSaving()"
+                  (organizationUpdated)="onOrganizationUpdated($event)"
+                />
+              </div>
+            }
+            @case ("account") {
+              <div class="settings-content">
+                <app-account />
+              </div>
+            }
+            @case ("password") {
+              <div class="settings-content">
+                <app-change-password />
+              </div>
+            }
+            @case ("contact") {
+              <div class="settings-content">
+                <app-contact-details
+                  [organization]="organization()"
+                  [isLoading]="isSaving()"
+                  (organizationUpdated)="onOrganizationUpdated($event)"
+                />
+              </div>
+            }
+            @case ("legal") {
+              <div class="settings-content">
+                <app-legal-info
+                  [organization]="organization()"
+                  [isLoading]="isSaving()"
+                  (organizationUpdated)="onOrganizationUpdated($event)"
+                />
+              </div>
+            }
+            @case ("billing") {
+              <div class="settings-content">
+                <app-credits />
+              </div>
+            }
+            @case ("team") {
+              <div class="settings-content">
+                <app-team-management />
+              </div>
+            }
+            @default {
+              <div
+                class="settings-content bg-white rounded-2xl border border-slate-200 shadow-sm p-12 text-center"
+              >
+                <h3 class="text-lg font-semibold text-slate-900 mb-2">
+                  Coming Soon
+                </h3>
+                <p class="text-slate-600 text-sm">
+                  This section is under development. Check back soon.
+                </p>
+              </div>
+            }
+          }
+        }
       </div>
     </div>
   </div>

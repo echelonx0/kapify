@@ -1,3 +1,5 @@
+<!-- Updated invoice-component.component.html template section -->
+
 <div class="min-h-screen bg-slate-50">
   <!-- Header -->
   <header class="sticky top-0 z-30 bg-white border-b border-slate-200">
@@ -47,23 +49,30 @@
       <div class="space-y-4">
         @for (invoice of invoices(); track invoice.id) {
           <div
-            class="bg-white rounded-2xl border p-6 flex justify-between items-center"
+            class="bg-white rounded-2xl border border-slate-200 p-6 flex justify-between items-center hover:shadow-md transition-shadow"
           >
             <div>
-              <h3 class="font-semibold">
+              <h3 class="font-semibold text-slate-900">
                 {{ invoice.zohoInvoiceNumber || invoice.id.slice(0, 8) }}
               </h3>
-              <p class="text-sm text-slate-600">
+              <p class="text-sm text-slate-600 mt-1">
                 {{ formatDate(invoice.createdAt) }} ·
                 {{ formatCredits(invoice.creditAmount) }} credits ·
                 {{ formatAmount(invoice.amountZar) }}
               </p>
+              @if (invoice.invoiceDetails) {
+                <p class="text-xs text-slate-500 mt-2">
+                  {{ invoice.invoiceDetails.business_name }} ·
+                  {{ invoice.invoiceDetails.city }},
+                  {{ invoice.invoiceDetails.province }}
+                </p>
+              }
             </div>
 
             <button
               (click)="downloadInvoice(invoice)"
               [disabled]="isDownloading(invoice.id)"
-              class="bg-teal-500 text-white px-4 py-2 rounded-xl disabled:opacity-50"
+              class="bg-teal-500 text-white px-4 py-2 rounded-xl hover:bg-teal-600 transition-colors disabled:opacity-50"
             >
               {{ isDownloading(invoice.id) ? "Downloading…" : "Download" }}
             </button>

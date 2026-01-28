@@ -5,10 +5,11 @@ import {
   inject,
   signal,
   computed,
+  effect,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Subject, takeUntil } from 'rxjs';
+import { Subject, takeUntil, interval } from 'rxjs';
 import {
   LucideAngularModule,
   TrendingUp,
@@ -48,18 +49,45 @@ import { PurchaseCreditsModalComponent } from './purchase-credits-modal.componen
         transform: translateY(-2px);
       }
 
-      @keyframes pulse {
-        0%,
+      /* Animations */
+      @keyframes springFadeIn {
+        0% {
+          opacity: 0;
+          transform: translateY(12px) scale(0.98);
+        }
         100% {
           opacity: 1;
-        }
-        50% {
-          opacity: 0.5;
+          transform: translateY(0) scale(1);
         }
       }
 
-      .pulse {
-        animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+      @keyframes slideOut {
+        0% {
+          opacity: 1;
+          transform: translateY(0) scaleY(1);
+          max-height: 500px;
+        }
+        100% {
+          opacity: 0;
+          transform: translateY(-8px) scaleY(0.95);
+          max-height: 0;
+        }
+      }
+
+      .animate-in {
+        animation: springFadeIn 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+      }
+
+      .animate-in.dismissing {
+        animation: slideOut 0.35s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+      }
+
+      .success-banner {
+        overflow: hidden;
+      }
+
+      .cancelled-banner {
+        animation: springFadeIn 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
       }
 
       .chevron-rotate {
@@ -79,6 +107,47 @@ import { PurchaseCreditsModalComponent } from './purchase-credits-modal.componen
       .transactions-container.expanded {
         max-height: 600px;
       }
+
+      /* Focus Ring Styling (Neo-Brutalist) */
+      button:focus-visible {
+        outline: 2px solid;
+        outline-offset: 2px;
+      }
+
+      /* Pulse animation for loading */
+      @keyframes pulse {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.5;
+        }
+      }
+
+      .animate-spin {
+        animation: spin 1s linear infinite;
+      }
+
+      @keyframes spin {
+        from {
+          transform: rotate(0deg);
+        }
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      /* Mobile responsiveness */
+      @media (max-width: 768px) {
+        .success-banner {
+          margin-bottom: 1.5rem;
+        }
+
+        .cancelled-banner {
+          margin-bottom: 1.5rem;
+        }
+      }
     `,
   ],
 })
@@ -89,7 +158,7 @@ export class CreditsComponent implements OnInit, OnDestroy {
   private supabase = inject(SharedSupabaseService);
   private authService = inject(AuthService);
   private destroy$ = new Subject<void>();
-  isTransactionsExpanded = signal(false);
+
   // Icons
   TrendingUpIcon = TrendingUp;
   ZapIcon = Zap;
@@ -98,9 +167,15 @@ export class CreditsComponent implements OnInit, OnDestroy {
   AlertCircleIcon = CircleAlert;
   CheckCircle2Icon = CircleCheck;
   ChevronDownIcon = ChevronDown;
+
   // Payment Status
   status = signal<'success' | 'cancelled' | null>(null);
   reference = signal<string | null>(null);
+
+  // Auto-Dismiss Logic
+  autoDismissCountdown = signal<number>(5);
+  isDismissingSuccess = signal(false);
+  private autoDismissTimer$ = new Subject<void>();
 
   // Wallet State
   wallet = signal<OrgWallet | null>(null);
@@ -108,6 +183,7 @@ export class CreditsComponent implements OnInit, OnDestroy {
   isLoading = signal(false);
   isPurchaseModalOpen = signal(false);
   error = signal<string | null>(null);
+  isTransactionsExpanded = signal(false);
 
   // Computed: Total ever purchased
   totalPurchased = computed(() => {
@@ -141,6 +217,15 @@ export class CreditsComponent implements OnInit, OnDestroy {
     return this.transactions().slice(0, 5);
   });
 
+  constructor() {
+    // Auto-dismiss countdown effect
+    effect(() => {
+      if (this.status() === 'success' && !this.isDismissingSuccess()) {
+        this.startAutoDismiss();
+      }
+    });
+  }
+
   ngOnInit() {
     // Check payment status from query params
     this.route.queryParams.subscribe((params) => {
@@ -162,9 +247,55 @@ export class CreditsComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
+    this.autoDismissTimer$.next();
+    this.autoDismissTimer$.complete();
     this.destroy$.next();
     this.destroy$.complete();
   }
+
+  /**
+   * Start auto-dismiss countdown
+   * User has 5 seconds to view the success message
+   */
+  private startAutoDismiss(): void {
+    this.autoDismissCountdown.set(5);
+
+    interval(1000)
+      .pipe(takeUntil(this.autoDismissTimer$))
+      .subscribe(() => {
+        const current = this.autoDismissCountdown();
+
+        if (current <= 1) {
+          this.autoDismissTimer$.next();
+          this.dismissSuccess();
+        } else {
+          this.autoDismissCountdown.set(current - 1);
+        }
+      });
+  }
+
+  /**
+   * Dismiss success banner with animation
+   * Triggers slide-out animation and clears status
+   */
+  dismissSuccess(): void {
+    this.isDismissingSuccess.set(true);
+
+    // Wait for animation to complete before clearing status
+    setTimeout(() => {
+      this.status.set(null);
+      this.reference.set(null);
+      this.isDismissingSuccess.set(false);
+
+      // Clear query params cleanly
+      this.router.navigate([], {
+        relativeTo: this.route,
+        queryParams: {},
+        queryParamsHandling: 'merge',
+      });
+    }, 350);
+  }
+
   toggleTransactions() {
     this.isTransactionsExpanded.set(!this.isTransactionsExpanded());
   }
@@ -211,7 +342,7 @@ export class CreditsComponent implements OnInit, OnDestroy {
           if (payload.new) {
             this.wallet.set(payload.new as OrgWallet);
           }
-        }
+        },
       )
       .subscribe();
   }
@@ -256,29 +387,26 @@ export class CreditsComponent implements OnInit, OnDestroy {
     this.router.navigate(['/invoice']);
   }
 
-  goToDashboard() {
-    this.router.navigate(['/dashboard']);
+  /**
+   * Format balance as plain number with thousands separator
+   * Used for displaying credit counts
+   */
+  formatBalance(amount: number | undefined): string {
+    if (!amount) return '0';
+    return amount.toLocaleString('en-ZA');
   }
 
-  // Formatting helpers
-  formatBalance(balance: number | undefined): string {
-    if (!balance) return '0';
-    return balance.toLocaleString('en-ZA');
-  }
-
-  formatCurrency(amount: number): string {
-    return amount.toLocaleString('en-ZA', {
-      style: 'currency',
-      currency: 'ZAR',
-      minimumFractionDigits: 0,
-    });
-  }
-
+  /**
+   * Format transaction amount with sign
+   */
   formatTransactionAmount(txn: OrgTransaction): string {
-    const sign = txn.type === 'spend' ? '-' : '+';
+    const sign = txn.type === 'spend' ? '−' : '+';
     return sign + this.formatBalance(Math.abs(txn.amount));
   }
 
+  /**
+   * Format transaction date
+   */
   formatTransactionDate(date: string): string {
     return new Date(date).toLocaleDateString('en-ZA', {
       year: 'numeric',
@@ -287,6 +415,9 @@ export class CreditsComponent implements OnInit, OnDestroy {
     });
   }
 
+  /**
+   * Get human-readable transaction label
+   */
   getTransactionLabel(type: string): string {
     const labels: Record<string, string> = {
       purchase: 'Purchased',
@@ -297,6 +428,9 @@ export class CreditsComponent implements OnInit, OnDestroy {
     return labels[type] || type;
   }
 
+  /**
+   * Get color class for transaction type
+   */
   getTransactionColor(type: string): string {
     const colors: Record<string, string> = {
       purchase: 'text-green-600',
@@ -307,7 +441,10 @@ export class CreditsComponent implements OnInit, OnDestroy {
     return colors[type] || 'text-slate-600';
   }
 
+  /**
+   * Check if wallet balance is healthy
+   */
   isHighBalance(): boolean {
-    return (this.wallet()?.balance || 0) > 10000;
+    return (this.wallet()?.balance || 0) > 1000;
   }
 }

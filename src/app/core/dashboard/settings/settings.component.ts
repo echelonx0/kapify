@@ -5,6 +5,7 @@ import {
   inject,
   OnDestroy,
   computed,
+  effect,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Subject, takeUntil } from 'rxjs';
@@ -52,6 +53,8 @@ interface SettingsTab {
   enabled: boolean;
 }
 
+const SETTINGS_TAB_STORAGE_KEY = 'kapify_settings_active_tab';
+
 @Component({
   selector: 'app-settings',
   standalone: true,
@@ -73,18 +76,21 @@ interface SettingsTab {
         display: block;
       }
 
+      /* Neo-Brutalist Tab Styling */
       .tab-button {
         position: relative;
         overflow: hidden;
-        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-      }
-
-      .tab-button.active {
-        background-color: #f8fafc;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        border-left: 3px solid transparent;
       }
 
       .tab-button:hover:not(:disabled) {
         background-color: #f1f5f9;
+      }
+
+      .tab-button.active {
+        background-color: #f8fafc;
+        border-left-color: #14b8a6;
       }
 
       .tab-button:disabled {
@@ -92,7 +98,48 @@ interface SettingsTab {
         cursor: not-allowed;
       }
 
+      /* Icon color transition */
+      .tab-icon {
+        transition: color 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      .tab-button.active .tab-icon {
+        color: #0d9488;
+      }
+
+      /* Active label uppercase animation */
+      .tab-label {
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        font-weight: 500;
+      }
+
+      .tab-button.active .tab-label {
+        font-weight: 700;
+        letter-spacing: 0.025em;
+      }
+
+      /* Coming soon badge */
+      .coming-soon-badge {
+        animation: fadeIn 0.3s ease-out;
+      }
+
       @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(2px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      /* Content section fade in */
+      :host ::ng-deep .settings-content {
+        animation: contentFadeIn 0.3s ease-out;
+      }
+
+      @keyframes contentFadeIn {
         from {
           opacity: 0;
           transform: translateY(4px);
@@ -103,8 +150,25 @@ interface SettingsTab {
         }
       }
 
-      :host ::ng-deep .settings-content {
-        animation: fadeIn 0.3s ease-out;
+      /* Sidebar nav container */
+      .settings-nav {
+        transition: all 0.2s ease;
+      }
+
+      /* Organization card hover effect */
+      .org-card {
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      .org-card:hover {
+        transform: translateY(-1px);
+      }
+
+      /* Tab transition smoothness */
+      .tab-button {
+        --tw-transition-property: all;
+        --tw-transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+        --tw-transition-duration: 250ms;
       }
     `,
   ],
@@ -127,8 +191,10 @@ export class SettingsComponent implements OnInit, OnDestroy {
   ProfileIcon = Sticker;
   LockIcon = Lock;
 
-  // State
-  activeSection = signal<SettingsSection>('account');
+  // State with localStorage persistence
+  activeSection = signal<SettingsSection>(
+    this.getPersistedActiveTab() || 'account',
+  );
 
   // Service state
   isLoading = this.settingsService.isLoading;
@@ -202,9 +268,17 @@ export class SettingsComponent implements OnInit, OnDestroy {
     // Hide general, contact, legal for SMEs
     return isSME
       ? allTabs.filter(
-          (tab) => !['general', 'contact', 'legal'].includes(tab.id)
+          (tab) => !['general', 'contact', 'legal'].includes(tab.id),
         )
       : allTabs;
+  }
+
+  constructor() {
+    // Effect to persist active section to localStorage whenever it changes
+    effect(() => {
+      const section = this.activeSection();
+      this.persistActiveTab(section);
+    });
   }
 
   ngOnInit() {
@@ -212,8 +286,10 @@ export class SettingsComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe((org) => {
         if (org) {
-          // Reset to first available tab if current tab is hidden for this user type
-          if (!this.settingsTabs.find((t) => t.id === this.activeSection())) {
+          // Validate persisted tab is still available
+          const currentSection = this.activeSection();
+          if (!this.settingsTabs.find((t) => t.id === currentSection)) {
+            // Reset to first available tab if persisted tab is no longer available
             this.activeSection.set(this.settingsTabs[0]?.id || 'billing');
           }
         }
@@ -223,6 +299,50 @@ export class SettingsComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     this.destroy$.next();
     this.destroy$.complete();
+  }
+
+  /**
+   * Get persisted active tab from localStorage
+   */
+  private getPersistedActiveTab(): SettingsSection | null {
+    try {
+      const stored = localStorage.getItem(SETTINGS_TAB_STORAGE_KEY);
+      if (stored && this.isValidTabId(stored)) {
+        return stored as SettingsSection;
+      }
+    } catch (e) {
+      console.warn('Failed to read persisted tab:', e);
+    }
+    return null;
+  }
+
+  /**
+   * Persist active tab to localStorage
+   */
+  private persistActiveTab(section: SettingsSection): void {
+    try {
+      localStorage.setItem(SETTINGS_TAB_STORAGE_KEY, section);
+    } catch (e) {
+      console.warn('Failed to persist active tab:', e);
+    }
+  }
+
+  /**
+   * Validate tab ID is valid
+   */
+  private isValidTabId(id: string): boolean {
+    const validIds: SettingsSection[] = [
+      'general',
+      'contact',
+      'legal',
+      'integrations',
+      'billing',
+      'profile',
+      'account',
+      'password',
+      'team',
+    ];
+    return validIds.includes(id as SettingsSection);
   }
 
   setActiveSection(section: SettingsSection) {
@@ -270,17 +390,19 @@ export class SettingsComponent implements OnInit, OnDestroy {
   getSectionClasses(sectionId: SettingsSection): string {
     const isActive = this.activeSection() === sectionId;
     const isEnabled = this.settingsTabs.find(
-      (t) => t.id === sectionId
+      (t) => t.id === sectionId,
     )?.enabled;
 
     const classes = [
       'tab-button',
       'w-full',
       'text-left',
+      'px-4',
+      'py-3',
+      'rounded-lg',
       'transition-all',
       'duration-200',
-      'rounded-xl',
-      isActive ? 'active bg-slate-100' : 'hover:bg-slate-50',
+      isActive ? 'active' : '',
       !isEnabled ? 'disabled opacity-60 cursor-not-allowed' : 'cursor-pointer',
     ];
 
@@ -289,7 +411,12 @@ export class SettingsComponent implements OnInit, OnDestroy {
 
   getTabIconColor(tabId: SettingsSection): string {
     const isActive = this.activeSection() === tabId;
-    return isActive ? 'text-teal-500' : 'text-slate-400';
+    return isActive ? 'text-teal-600' : 'text-slate-400';
+  }
+
+  getTabLabelClass(tabId: SettingsSection): string {
+    const isActive = this.activeSection() === tabId;
+    return isActive ? 'uppercase tracking-wide' : '';
   }
 
   getStatusLabel(status: string | undefined): string {

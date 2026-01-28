@@ -30,10 +30,10 @@ import {
   CircleX,
   TriangleAlert,
   CircleCheckBig,
+  ChevronDown,
 } from 'lucide-angular';
 import { Subject, takeUntil } from 'rxjs';
 
-import { UiButtonComponent } from 'src/app/shared/components';
 import {
   FunderDocumentAnalysisService,
   ProcessingStatus,
@@ -49,11 +49,11 @@ import {
   ProcessingTimelineComponent,
 } from './components/processing-timeline.component';
 import { CostConfirmationModalComponent } from './components/cost-confirmation-modal.component';
-import { HowAnalysisWorksComponent } from './components/how-analysis-works.component';
+import { CondensedHowItWorksComponent } from './components/condensed-how-it-works.component';
+import { DocumentAnalysisHeader } from './components/analysis-header.component';
 
-// Cost model
-const ANALYSIS_COST_CREDITS = 5000;
-const ANALYSIS_COST_ZAR = 50;
+const ANALYSIS_COST_CREDITS = 500;
+const ANALYSIS_COST_ZAR = 500;
 
 interface CostConfirmation {
   isOpen: boolean;
@@ -66,10 +66,10 @@ interface CostConfirmation {
     CommonModule,
     FormsModule,
     LucideAngularModule,
-    UiButtonComponent,
-    HowAnalysisWorksComponent,
+    DocumentAnalysisHeader,
     CostConfirmationModalComponent,
     ProcessingTimelineComponent,
+    CondensedHowItWorksComponent,
   ],
   templateUrl: 'funder-document-analysis.component.html',
   styles: [],
@@ -101,6 +101,7 @@ export class FunderDocumentAnalysisComponent implements OnInit, OnDestroy {
   ZapIcon = Zap;
   XIcon = X;
   InfoIcon = Info;
+  ChevronDownIcon = ChevronDown;
 
   // State
   isDragOver = signal(false);
@@ -111,8 +112,6 @@ export class FunderDocumentAnalysisComponent implements OnInit, OnDestroy {
   companyName = signal<string | null>(null);
 
   // UI State
-  showHowItWorks = signal(false);
-  showAnalysisNotification = signal(false);
   redirectCountdown = signal(5);
 
   // Credits
@@ -148,16 +147,34 @@ export class FunderDocumentAnalysisComponent implements OnInit, OnDestroy {
       active: false,
     },
   ]);
+  keyFeatures = [
+    {
+      title: 'Investment Viability Score',
+      desc: 'Proprietary business intelligence rating',
+    },
+    {
+      title: 'Success Probability',
+      desc: 'Funding success modeling',
+    },
+    {
+      title: 'Market Benchmarks',
+      desc: 'Real-time market data comparison',
+    },
+    {
+      title: 'Strategic Intelligence',
+      desc: 'Competitive advantage analysis',
+    },
+  ];
 
   // Computed
   hasError = computed(() => !!this.errorMessage());
   orgId = computed(() => this.authService.getCurrentUserOrganizationId() || '');
   hasEnoughCredits = computed(
-    () => (this.wallet()?.balance || 0) >= ANALYSIS_COST_CREDITS
+    () => (this.wallet()?.balance || 0) >= ANALYSIS_COST_CREDITS,
   );
   creditsFormatted = computed(() => {
     const balance = this.wallet()?.balance || 0;
-    return (balance / 100).toLocaleString('en-ZA', {
+    return balance.toLocaleString('en-ZA', {
       style: 'currency',
       currency: 'ZAR',
     });
@@ -241,8 +258,8 @@ export class FunderDocumentAnalysisComponent implements OnInit, OnDestroy {
     if (!this.hasEnoughCredits()) {
       this.errorMessage.set(
         `Insufficient credits. You need ${this.formatCurrency(
-          ANALYSIS_COST_ZAR
-        )} to analyze this document.`
+          ANALYSIS_COST_ZAR,
+        )} to analyze this document.`,
       );
       return;
     }
@@ -286,7 +303,7 @@ export class FunderDocumentAnalysisComponent implements OnInit, OnDestroy {
           id,
           ANALYSIS_COST_CREDITS,
           'Document Analysis',
-          this.authService.user()?.id
+          this.authService.user()?.id,
         )
         .pipe(takeUntil(this.destroy$))
         .subscribe({
@@ -297,7 +314,7 @@ export class FunderDocumentAnalysisComponent implements OnInit, OnDestroy {
           error: (err) => {
             console.error('Failed to deduct credits:', err);
             this.errorMessage.set(
-              'Failed to process payment. Analysis cancelled.'
+              'Failed to process payment. Analysis cancelled.',
             );
             this.isProcessing.set(false);
           },
@@ -305,7 +322,7 @@ export class FunderDocumentAnalysisComponent implements OnInit, OnDestroy {
     } catch (error: any) {
       console.error('Analysis setup failed:', error);
       this.errorMessage.set(
-        error.message || 'Analysis failed. Please try again.'
+        error.message || 'Analysis failed. Please try again.',
       );
       this.isProcessing.set(false);
     }
@@ -361,13 +378,12 @@ export class FunderDocumentAnalysisComponent implements OnInit, OnDestroy {
         next: (result) => {
           this.analysisResult.set(result);
           this.markStageComplete('complete');
-          this.showAnalysisNotification.set(true);
           this.startRedirectCountdown();
         },
         error: (error) => {
           console.error('Analysis failed:', error);
           this.errorMessage.set(
-            error.message || 'Analysis failed. Please try again.'
+            error.message || 'Analysis failed. Please try again.',
           );
           this.refundCredits();
           this.isProcessing.set(false);
@@ -379,7 +395,7 @@ export class FunderDocumentAnalysisComponent implements OnInit, OnDestroy {
     } catch (error: any) {
       console.error('Analysis failed:', error);
       this.errorMessage.set(
-        error.message || 'Analysis failed. Please try again.'
+        error.message || 'Analysis failed. Please try again.',
       );
       this.refundCredits();
       this.isProcessing.set(false);
@@ -395,7 +411,7 @@ export class FunderDocumentAnalysisComponent implements OnInit, OnDestroy {
         id,
         ANALYSIS_COST_CREDITS,
         'Refund - Analysis Failed',
-        this.authService.user()?.id
+        this.authService.user()?.id,
       )
       .pipe(takeUntil(this.destroy$))
       .subscribe({
@@ -464,9 +480,6 @@ export class FunderDocumentAnalysisComponent implements OnInit, OnDestroy {
   }
 
   // ===== NAVIGATION =====
-  /**
-   * Start 5-second countdown before redirecting to analysis
-   */
   private startRedirectCountdown() {
     this.redirectCountdown.set(5);
 
@@ -481,23 +494,16 @@ export class FunderDocumentAnalysisComponent implements OnInit, OnDestroy {
       }
     }, 1000);
 
-    // Cleanup interval on destroy
     this.destroy$.pipe(takeUntil(this.destroy$)).subscribe(() => {
       clearInterval(countdownInterval);
     });
   }
 
-  /**
-   * Navigate to analysis detail view with result data
-   */
   viewAnalysisDetail() {
     const result = this.analysisResult();
     if (!result) return;
 
-    // Store in service
     this.analysisService.setCurrentAnalysisResult(result);
-
-    // Navigate
     this.router.navigate(['/dashboard/analysis', 'temp-' + Date.now()]);
   }
 
@@ -509,7 +515,6 @@ export class FunderDocumentAnalysisComponent implements OnInit, OnDestroy {
     this.uploadedFile.set(null);
     this.companyName.set(null);
     this.isDragOver.set(false);
-    this.showAnalysisNotification.set(false);
     this.analysisService.clearStatus();
   }
 
@@ -517,7 +522,6 @@ export class FunderDocumentAnalysisComponent implements OnInit, OnDestroy {
     const result = this.analysisResult();
     if (!result) return;
 
-    // Create a comprehensive report
     const reportData = {
       documentName: this.uploadedFile()?.name || 'Business Proposal',
       companyName: this.companyName() || 'Unknown',
@@ -533,7 +537,6 @@ export class FunderDocumentAnalysisComponent implements OnInit, OnDestroy {
       generatedBy: 'Kapify AI Document Analysis',
     };
 
-    // Convert to JSON and download
     const blob = new Blob([JSON.stringify(reportData, null, 2)], {
       type: 'application/json',
     });
@@ -547,12 +550,6 @@ export class FunderDocumentAnalysisComponent implements OnInit, OnDestroy {
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
-  }
-
-  shareAnalysis() {
-    // In a real implementation, this would open a sharing modal
-    // or copy a shareable link to the clipboard
-    console.log('Share analysis functionality to be implemented');
   }
 
   // ===== UI HELPER METHODS =====
